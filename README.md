@@ -3,7 +3,6 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/julia/PromoPing)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
-[![PHP](https://img.shields.io/badge/php-8.0+-blue.svg)](https://php.net/)
 
 > **Sistema inteligente de monitoramento de preços para o consumidor português**
 
@@ -34,7 +33,6 @@ O PromoPing é uma plataforma completa que permite monitorar preços de produtos
 - **Discord Bot** - Notificações em tempo real
 - **Telegram Bot** - Mensagens diretas
 - **WhatsApp** - Via Twilio
-- **Email** - Notificações por correio
 
 ### 🏪 **Lojas Suportadas**
 - Worten
@@ -50,28 +48,20 @@ O PromoPing é uma plataforma completa que permite monitorar preços de produtos
 ```
 frontend/
 ├── pages/          # Páginas HTML
-├── assets/
-│   ├── images/     # Imagens e ícones
-│   ├── styles/     # CSS organizado
-│   └── scripts/    # JavaScript modular
-└── components/     # Componentes reutilizáveis
+└── assets/
+    ├── images/     # Imagens e ícones
+    ├── styles/     # CSS organizado
+    └── scripts/    # JavaScript modular
 ```
 
-### **Backend PHP** (Base de Dados)
-```
-php/
-├── api/
-│   ├── auth/       # Autenticação
-│   └── produtos/   # Gestão de produtos
-└── includes/       # Funções utilitárias
-```
-
-### **Backend Node.js** (Bots & API)
+### **Backend Node.js** (API, Bots e Serviços)
 ```
 backend/
-├── bots/           # Discord, Telegram, WhatsApp
-├── routes/         # API REST
-└── middleware/     # Autenticação
+├── routes/         # Rotas da API (auth, produtos, user, config)
+├── services/       # Integrações (Discord, Telegram, Twilio, scraping)
+├── middleware/     # Autenticação e outros middlewares
+├── db.js           # Conexão com MySQL
+└── server.js       # Servidor Express
 ```
 
 ## 🚀 Instalação Super Rápida
@@ -112,7 +102,6 @@ npm run dev
 
 ### **Pré-requisitos (Apenas para método manual)**
 - Node.js 18+
-- PHP 8.0+
 - MySQL 8.0+
 
 > **💡 Dica:** O script `run.js` detecta automaticamente se você tem Docker e escolhe o melhor método!
@@ -124,6 +113,7 @@ npm run dev
 # Aplicação
 APP_ENV=development
 APP_URL=http://localhost:3000
+JWT_SECRET=your_jwt_secret
 
 # Base de Dados
 DB_HOST=localhost
@@ -163,10 +153,11 @@ TWILIO_ACCOUNT_SID=your_twilio_sid
 - **Design System** - Componentes reutilizáveis
 
 ### **Backend**
-- **PHP 8+** - Lógica de negócio e base de dados
-- **Node.js** - Bots e APIs avançadas
+- **Node.js** - API e bots
 - **Express.js** - Servidor web
 - **MySQL** - Base de dados relacional
+- **JWT** - Autenticação
+- **bcrypt** - Hash de senhas
 
 ### **Bots & Integrações**
 - **Discord.js** - Bot Discord
@@ -183,7 +174,7 @@ TWILIO_ACCOUNT_SID=your_twilio_sid
 ## 🔐 Segurança
 
 - ✅ **JWT Tokens** com expiração
-- ✅ **Hash de senhas** com `password_hash()`
+- ✅ **Hash de senhas** com `bcrypt`
 - ✅ **Rate limiting** por IP
 - ✅ **Validação de entrada** rigorosa
 - ✅ **Prepared statements** contra SQL injection
@@ -239,4 +230,4 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ---
 
-**Feito com ❤️ em Portugal** 🇵🇹
+**Feito com ❤️ por Julia & Lucas** 🇵🇹
