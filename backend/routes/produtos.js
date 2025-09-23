@@ -1,6 +1,7 @@
 import express from "express";
 import { pool } from "../db.js";
 import { verifyToken } from "../middleware/auth.js";
+import { detectStore } from "../services/scrapers/index.js";
 
 const router = express.Router();
 
@@ -37,13 +38,28 @@ router.post("/", verifyToken, async (req, res) => {
             });
         }
 
+        // detectar loja pela URL
+        const store = detectStore(link);
+
         // inserir produto
-        await pool.query(
-            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite) VALUES (?, ?, ?, ?)",
-            [req.user.id, nome, link, data]
+        const [result] = await pool.query(
+            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja) VALUES (?, ?, ?, ?, ?)",
+            [req.user.id, nome, link, data, store.name]
         );
 
-        res.json({ status: "ok", message: "Produto adicionado com sucesso" });
+        // cria registro inicial no histórico com preço se disponível via scraper leve (opcional)
+        try {
+            // Não bloqueante: tentar obter preço atual para iniciar histórico
+            const { scrapeProductInfo } = await import('../services/scrapers/index.js');
+            const info = await scrapeProductInfo(link);
+            if (info?.preco != null) {
+                await pool.query("INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",[result.insertId, info.preco]);
+            }
+        } catch (e) {
+            console.warn('Não foi possível iniciar histórico de preço:', e.message);
+        }
+
+        res.json({ status: "ok", message: "Produto adicionado com sucesso", loja: store.name });
     } catch (err) {
         console.error("Erro ao adicionar produto:", err);
         res.status(500).json({ error: "Erro no servidor" });
@@ -55,11 +71,23 @@ router.post("/", verifyToken, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
     try {
         const [rows] = await pool.query(
-            "SELECT Id, Nome, Link, DataLimite, DataCriacao FROM Produtos WHERE UserId = ? ORDER BY DataCriacao DESC",
+            "SELECT Id, Nome, Link, Loja, PrecoAlvo, DataLimite, DataCriacao FROM Produtos WHERE UserId = ? ORDER BY DataCriacao DESC",
             [req.user.id]
         );
 
-        res.json({ status: "ok", produtos: rows });
+        // anexar histórico curto e preços atuais/anteriores
+        const produtos = [];
+        for (const p of rows) {
+            const [hist] = await pool.query(
+                "SELECT Preco, DataRegistro FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegistro DESC LIMIT 10",
+                [p.Id]
+            );
+            const precoAtual = hist[0]?.Preco ?? null;
+            const precoAnterior = hist[1]?.Preco ?? null;
+            produtos.push({ ...p, PrecoAtual: precoAtual, PrecoAnterior: precoAnterior, Historico: hist });
+        }
+
+        res.json({ status: "ok", produtos });
     } catch (err) {
         console.error("Erro ao listar produtos:", err);
         res.status(500).json({ error: "Erro no servidor" });
