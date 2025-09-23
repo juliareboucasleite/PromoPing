@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  promoping:
+    build: .
+    ports:
+      - "80:80"
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_USER=promoping
+      - DB_PASS=promoping_password
+      - DB_NAME=promoping
+    depends_on:
+      - mysql
+    volumes:
+      - ./logs:/var/log/supervisor
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=promoping
+      - MYSQL_USER=promoping
+      - MYSQL_PASSWORD=promoping_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/promoping.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
