@@ -1,6 +1,6 @@
 # 🎯 PromoPing - Monitor de Preços Inteligente
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/julia/PromoPing)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 
@@ -69,7 +69,7 @@ backend/
 ### **Método 1: Execução Automática (Recomendado)**
 ```bash
 # Clone o repositório
-git clone https://github.com/julia/PromoPing.git
+git clone https://github.com/juliareboucasleite/PromoPing.git
 cd PromoPing
 
 # Execute tudo automaticamente
@@ -79,7 +79,7 @@ node run.js
 ### **Método 2: Com Docker (Mais Fácil)**
 ```bash
 # Clone e execute com Docker
-git clone https://github.com/julia/PromoPing.git
+git clone https://github.com/juliareboucasleite/PromoPing.git
 cd PromoPing
 npm run docker:dev
 ```
@@ -87,7 +87,7 @@ npm run docker:dev
 ### **Método 3: Setup Manual**
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/julia/PromoPing.git
+git clone https://github.com/juliareboucasleite/PromoPing.git
 cd PromoPing
 
 # 2. Setup automático
@@ -218,7 +218,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ## 📞 Suporte
 
 - **Documentação**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/julia/PromoPing/issues)
+- **Issues**: [GitHub Issues](https://github.com/juliareboucasleite/PromoPing/issues)
 - **Email**: suporte@promoping.com
 
 ## 🙏 Agradecimentos
