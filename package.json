@@ -1,0 +1,44 @@
+{
+    "name": "pap",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Projeto PromoPing - Backend + Frontend",
+    "main": "backend/server.js",
+    "scripts": {
+      "start": "node backend/server.js",
+      "dev": "nodemon backend/server.js",
+      "run": "node run.js",
+      "setup": "node scripts/setup.js",
+      "check": "node scripts/check-deps.js",
+      "migrate": "node scripts/migrate-db.js",
+      "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
+      "docker:prod": "docker-compose up --build",
+      "db:init": "mysql -u root -p < sql/promoping.sql",
+      "db:migrate": "npm run migrate",
+      "db:reset": "mysql -u root -p -e 'DROP DATABASE IF EXISTS promoping; CREATE DATABASE promoping;' && npm run db:init && npm run db:migrate",
+      "install:all": "npm install && npm run setup && npm run db:migrate",
+      "quick-start": "npm run setup && npm run db:migrate && npm run dev",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "Julia Rebouças Leite",
+    "license": "ISC",
+    "dependencies": {
+      "bcrypt": "^6.0.0",
+      "cors": "^2.8.5",
+      "discord.js": "^14.22.1",
+      "dotenv": "^17.2.2",
+      "express": "^5.1.0",
+      "jsonwebtoken": "^9.0.2",
+      "mysql2": "^3.15.0",
+      "node-fetch": "^3.3.2",
+      "puppeteer": "^24.21.0",
+      "telegraf": "^4.16.3",
+      "twilio": "^5.9.0"
+    },
+    "devDependencies": {
+      "nodemon": "^3.1.0",
+      "eslint": "^9.32.0"
+    }
+  }
+  
