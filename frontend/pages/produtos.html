@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produtos — PromoPing</title>
+  <link rel="stylesheet" href="../assets/styles/painel.css">
+  <link rel="stylesheet" href="../assets/styles/style.css">
+  <script src="../assets/scripts/auth.js"></script>
+</head>
+<body class="dashboard-body">
+
+  <!-- ===== NAV SUPERIOR ===== -->
+  <nav class="dashboard-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <img src="../assets/images/Logo.png" alt="PromoPing" class="nav-logo">
+        <span class="nav-brand-name">PromoPing</span>
+      </div>
+
+      <div class="nav-menu">
+        <a href="Painel.html" class="nav-item">Dashboard</a>
+        <a href="produtos.html" class="nav-item nav-item-active">Produtos</a>
+        <a href="perfil.html" class="nav-item">Perfil</a>
+      </div>
+
+      <div class="nav-actions">
+        <button class="nav-logout" onclick="logout()">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO ===== -->
+  <main class="dashboard-main">
+    <div class="dashboard-container">
+
+      <header class="page-header">
+        <h1 class="page-title">Produtos guardados</h1>
+        <p class="page-subtitle">Acompanhe os seus produtos monitorizados</p>
+      </header>
+
+      <div class="filters-bar">
+        <input type="text" id="pesquisa" placeholder="Pesquisar..." class="search-input">
+        <div class="filter-count"><span id="productCount">0</span> produtos</div>
+      </div>
+
+      <div id="productsList" class="products-list">
+        <!-- Produtos carregados via JS -->
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // ===== LOGOUT =====
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "Login.html";
+    }
+
+    // ===== CARREGAR PRODUTOS =====
+    async function carregarProdutos() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Precisa estar logado!");
+        return (window.location.href = "Login.html");
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const productsList = document.getElementById("productsList");
+        productsList.innerHTML = "";
+
+        if (data.status !== "ok" || data.produtos.length === 0) {
+          productsList.innerHTML = `
+            <div class="empty-state">
+              <h3>Nenhum produto encontrado</h3>
+              <p>Adicione produtos no Dashboard.</p>
+              <a href="Painel.html" class="pp-btn">Ir para Dashboard</a>
+            </div>`;
+          document.getElementById("productCount").textContent = 0;
+          return;
+        }
+
+        data.produtos.forEach(p => {
+          const card = `
+            <div class="product-card">
+              <h3>${p.Nome}</h3>
+              <p><strong>Link:</strong> <a href="${p.Link}" target="_blank">${p.Link}</a></p>
+              <p><strong>Data Limite:</strong> ${new Date(p.DataLimite).toLocaleDateString("pt-PT")}</p>
+              <button onclick="removerProduto(${p.Id})" class="delete-btn">Remover</button>
+            </div>`;
+          productsList.insertAdjacentHTML("beforeend", card);
+        });
+
+        document.getElementById("productCount").textContent = data.produtos.length;
+      } catch (err) {
+        console.error("Erro ao carregar produtos:", err);
+        alert("Erro ao carregar produtos.");
+      }
+    }
+
+    // ===== REMOVER PRODUTO =====
+    async function removerProduto(id) {
+      const token = localStorage.getItem("token");
+      if (!confirm("Tem certeza que deseja remover este produto?")) return;
+
+      try {
+        await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token }
+        });
+        carregarProdutos();
+      } catch (err) {
+        console.error("Erro ao remover produto:", err);
+        alert("Erro ao remover produto.");
+      }
+    }
+
+    // ===== INICIAR =====
+    window.onload = carregarProdutos;
+  </script>
+</body>
+</html>
+e

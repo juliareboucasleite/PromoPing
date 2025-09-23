@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — PromoPing</title>
+    <link rel="stylesheet" href="../assets/styles/painel.css">
+    <link rel="stylesheet" href="../assets/styles/style.css">
+    <script src="../assets/js/auth.js"></script>
+</head>
+<body class="dashboard-body">
+    
+    <!-- ===== NAVEGAÇÃO SUPERIOR ===== -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="../assets/images/Logo.png" alt="PromoPing" class="nav-logo">
+                <span class="nav-brand-name">PromoPing</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="Painel.html" class="nav-item nav-item-active">Dashboard</a>
+                <a href="produtos.html" class="nav-item">Produtos</a>
+                <a href="perfil.html" class="nav-item">Perfil</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="nav-logout" onclick="logout()">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            
+            <!-- ===== CABEÇALHO ===== -->
+            <header class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
+            </header>
+
+            <!-- ===== FORM ADICIONAR ===== -->
+            <div class="add-product-card">
+                <h2 class="card-title">+ Adicionar novo produto</h2>
+                <form id="formLink" class="add-product-form">
+                    <div class="form-group">
+                        <input type="text" id="nome" placeholder="Nome do produto" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <input type="url" id="url" placeholder="https://worten.pt/produto..." required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <input type="date" id="dataLimite" class="form-input">
+                        <label class="form-label">Data limite (opcional)</label>
+                    </div>
+                    <button type="submit" class="add-product-btn">+ Adicionar produto</button>
+                </form>
+            </div>
+
+            <!-- ===== LISTA DE PRODUTOS ===== -->
+            <section class="products-section">
+                <h2 class="section-title">Produtos monitorizados (<span id="productCount">0</span>)</h2>
+                <div id="productsList" class="products-list"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Precisa estar logado!");
+        window.location.href = "Login.html";
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "Login.html";
+      }
+
+      // Criar card de produto
+      function createProductCard(p) {
+        return `
+          <div class="product-card">
+            <div class="product-header">
+              <h3 class="product-name">${p.Nome}</h3>
+              <div class="product-actions">
+                <button class="action-btn" onclick="window.open('${p.Link}', '_blank')">Abrir</button>
+                <button class="action-btn delete-btn" onclick="deleteProduct(${p.Id})">Remover</button>
+              </div>
+            </div>
+            <div class="product-tags">
+              <span class="status-tag">Criado em: ${new Date(p.DataCriacao).toLocaleDateString('pt-PT')}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Carregar produtos
+      async function carregarProdutos() {
+        const productsList = document.getElementById("productsList");
+        try {
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+
+          productsList.innerHTML = "";
+          if (data.produtos && data.produtos.length > 0) {
+            document.getElementById("productCount").textContent = data.produtos.length;
+            data.produtos.forEach(p => {
+              productsList.insertAdjacentHTML("beforeend", createProductCard(p));
+            });
+          } else {
+            productsList.innerHTML = "<p>Nenhum produto encontrado.</p>";
+            document.getElementById("productCount").textContent = 0;
+          }
+        } catch (err) {
+          console.error("Erro ao carregar produtos:", err);
+          productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
+        }
+      }
+
+      // Adicionar produto
+      document.getElementById("formLink").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("nome").value;
+        const link = document.getElementById("url").value;
+        const dataLimite = document.getElementById("dataLimite").value;
+
+        try {
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token
+            },
+            body: JSON.stringify({ nome, link, data: dataLimite })
+          });
+
+          const data = await res.json();
+          if (data.status === "ok") {
+            document.getElementById("formLink").reset();
+            carregarProdutos();
+          } else {
+            alert(data.error || "Erro ao adicionar produto");
+          }
+        } catch (err) {
+          console.error("Erro ao adicionar produto:", err);
+          alert("Erro no servidor");
+        }
+      });
+
+      // Remover produto
+      async function deleteProduct(id) {
+        if (!confirm("Tem certeza que deseja remover este produto?")) return;
+        try {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+          if (data.status === "ok") {
+            carregarProdutos();
+          } else {
+            alert(data.error || "Erro ao remover produto");
+          }
+        } catch (err) {
+          console.error("Erro ao remover produto:", err);
+          alert("Erro no servidor");
+        }
+      }
+
+      // Iniciar
+      carregarProdutos();
+    </script>
+</body>
+</html>

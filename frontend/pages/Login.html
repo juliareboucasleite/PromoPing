@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Entrar — PromoPing</title>
+  <link rel="stylesheet" href="../assets/styles/login.css">
+</head>
+<body class="login-page">
+
+  <!-- ===== HEADER ===== -->
+  <header class="pp-header" style="
+        background: #1e121433;
+        border-radius: 32px;
+        margin: 40px auto 0 auto;
+        max-width: 1150px;
+        box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
+        border: 2px solid #ffffffb7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        left: 0;
+        right: 0;
+        top: 0;
+        transform: none;
+    ">
+    <div style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        height: 64px;
+        width: 100%;
+        max-width: 900px;
+    ">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="../assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
+        <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
+      </div>
+      <nav style="display: flex; align-items: center; gap: 24px;">
+        <a href="index.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Voltar</a>
+        <a href="register.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Registar</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== CONTEÚDO ===== -->
+  <main class="login-main">
+    <div class="login-split">
+
+      <!-- Coluna esquerda: formulário -->
+      <div class="login-container">
+        <h1 class="login-title">Iniciar sessão na sua conta</h1>
+
+        <form class="login-form" action="#" method="POST" id="loginForm">
+          <input id="email" type="email" class="login-input" placeholder="Endereço de email" required />
+          <input id="senha" type="password" class="login-input" placeholder="Palavra-passe" required />
+          <div class="login-actions">
+            <a href="index.html" class="pp-btn pp-btn-ghost">Cancelar</a>
+            <button type="submit" class="pp-btn pp-btn-cta">Entrar</button>
+          </div>
+        </form>
+
+        <div class="divider"><span>ou continue com</span></div>
+      </div>
+
+      <!-- Coluna direita: botões sociais largos claros -->
+      <aside class="auth-login-col">
+        <div class="auth-group">
+          <button class="auth-btn auth-discord" id="btnDiscord">Continue with Discord</button>
+          <button class="auth-btn auth-telegram" id="btnTelegram">Continue with Telegram</button>
+          <button class="auth-btn auth-google" id="btnGoogle">Continue with Google</button>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <script>
+    async function loginUser(email, password) {
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        return await res.json();
+      } catch (err) {
+        console.error("Erro no login:", err);
+        return { status: "error", error: "Erro de ligação com o servidor" };
+      }
+    }
+  
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+  
+      const data = await loginUser(email, senha);
+  
+      if (data.status === "ok" && data.token) {
+        localStorage.setItem("token", data.token);
+        location.href = "painel.html";
+      } else {
+        alert(data.error || data.message || "Credenciais inválidas");
+      }
+    });
+  
+    // Teste da sessão (opcional)
+    async function verificarSessao() {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Precisa estar logado!");
+      const res = await fetch("http://127.0.0.1:3000/api/auth/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+      console.log("Sessão:", data);
+    }
+  </script>
+  
+
+</body>
+</html>
