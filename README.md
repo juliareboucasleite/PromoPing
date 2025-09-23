@@ -219,7 +219,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 - **Documentação**: [docs/](docs/)
 - **Issues**: [GitHub Issues](https://github.com/juliareboucasleite/PromoPing/issues)
-- **Email**: suporte@promoping.com
+- **Email**: suporte.promoping@gmail.com
 
 ## 🙏 Agradecimentos
 
