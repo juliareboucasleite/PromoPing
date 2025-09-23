@@ -8,33 +8,33 @@
 
 O PromoPing é uma plataforma completa que permite monitorar preços de produtos em lojas online portuguesas e receber notificações automáticas quando os preços baixam. Economize dinheiro de forma inteligente! 💰
 
-## ✨ Funcionalidades Principais
+## Funcionalidades Principais
 
-### 🎨 **Interface Moderna**
+### **Interface Moderna**
 - Dashboard responsivo e intuitivo
 - Design system consistente
 - Navegação fluida entre páginas
 - Cards de produtos com histórico visual
 
-### 👤 **Sistema de Utilizador**
+### **Sistema de Utilizador**
 - Registro e login seguros
 - Perfil personalizável
 - Preferências de notificação
 - Estatísticas de economia
 
-### 📦 **Gestão de Produtos**
+### **Gestão de Produtos**
 - Adição de produtos via URL
 - Detecção automática de loja
 - Configuração de preço alvo
 - Histórico de preços detalhado
 - Filtros avançados
 
-### 🔔 **Sistema de Notificações**
+### **Sistema de Notificações**
 - **Discord Bot** - Notificações em tempo real
 - **Telegram Bot** - Mensagens diretas
 - **WhatsApp** - Via Twilio
 
-### 🏪 **Lojas Suportadas**
+### **Lojas Suportadas**
 - Worten
 - IKEA
 - Pingo Doce
@@ -64,7 +64,7 @@ backend/
 └── server.js       # Servidor Express
 ```
 
-## 🚀 Instalação Super Rápida
+##  Instalação Super Rápida
 
 ### **Método 1: Execução Automática (Recomendado)**
 ```bash
@@ -104,7 +104,7 @@ npm run dev
 - Node.js 18+
 - MySQL 8.0+
 
-> **💡 Dica:** O script `run.js` detecta automaticamente se você tem Docker e escolhe o melhor método!
+> **Dica:** O script `run.js` detecta automaticamente se você tem Docker e escolhe o melhor método!
 
 ## ⚙️ Configuração
 
@@ -171,7 +171,7 @@ TWILIO_ACCOUNT_SID=your_twilio_sid
 - **Prettier** - Formatação
 - **JWT** - Autenticação
 
-## 🔐 Segurança
+## Segurança
 
 - ✅ **JWT Tokens** com expiração
 - ✅ **Hash de senhas** com `bcrypt`
@@ -201,7 +201,7 @@ TWILIO_ACCOUNT_SID=your_twilio_sid
 - [ ] API pública
 - [ ] Dashboard analytics
 
-## 🤝 Contribuição
+## Contribuição
 
 Contribuições são bem-vindas! Por favor:
 
@@ -211,17 +211,17 @@ Contribuições são bem-vindas! Por favor:
 4. Push para a branch (`git push origin feature/nova-funcionalidade`)
 5. Abra um Pull Request
 
-## 📄 Licença
+## Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## 📞 Suporte
+## Suporte
 
 - **Documentação**: [docs/](docs/)
 - **Issues**: [GitHub Issues](https://github.com/juliareboucasleite/PromoPing/issues)
 - **Email**: suporte.promoping@gmail.com
 
-## 🙏 Agradecimentos
+## Agradecimentos
 
 - Comunidade Discord.js
 - Equipe do Telegraf
