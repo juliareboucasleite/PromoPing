@@ -1,19 +1,18 @@
-import puppeteer from "puppeteer";
+import express from 'express';
+import { scrapeProductInfo } from '../services/scrapers/index.js';
 
-export async function scrapeProduct(url) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "domcontentloaded" });
+const router = express.Router();
 
-    // Pega o título da página
-    const title = await page.title();
+router.get('/', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'url é obrigatório' });
+    const data = await scrapeProductInfo(String(url));
+    res.json(data);
+  } catch (err) {
+    console.error('Erro no scrape:', err.message);
+    res.status(500).json({ error: 'Falha ao obter dados do produto' });
+  }
+});
 
-    // Exemplo de pegar preço (teríamos que adaptar para cada site)
-    let preco = await page.evaluate(() => {
-        const el = document.querySelector(".price, .sales-price, .product-price");
-        return el ? el.innerText : "Preço não encontrado";
-    });
-
-    await browser.close();
-    return { nome: title, preco };
-}
+export default router;
