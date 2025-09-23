@@ -1,0 +1,47 @@
+# ============================================
+# Normalização de texto
+# ============================================
+* text=auto eol=lf
+
+# ============================================
+# Arquivos de código - sempre UTF-8
+# ============================================
+*.cs      text diff=csharp
+*.cshtml  text
+*.js      text
+*.jsx     text
+*.ts      text
+*.tsx     text
+*.json    text
+*.html    text
+*.css     text
+*.scss    text
+*.md      text
+*.yml     text
+*.yaml    text
+
+# ============================================
+# Arquivos binários - nunca mudar
+# ============================================
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.zip     binary
+*.rar     binary
+*.7z      binary
+*.pdf     binary
+*.dll     binary
+*.exe     binary
+*.pdb     binary
+*.db      binary
+*.sqlite  binary
+
+# ============================================
+# Ignorar export ao fazer git archive
+# ============================================
+.env*       export-ignore
+*.local     export-ignore
+*.secret    export-ignore
+node_modules/ export-ignore
