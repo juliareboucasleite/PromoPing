@@ -1,4 +1,4 @@
-# 🎯 PromoPing - Monitor de Preços Inteligente
+#  PromoPing - Monitor de Preços Inteligente
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -6,7 +6,7 @@
 
 > **Sistema inteligente de monitoramento de preços para o consumidor português**
 
-O PromoPing é uma plataforma completa que permite monitorar preços de produtos em lojas online portuguesas e receber notificações automáticas quando os preços baixam. Economize dinheiro de forma inteligente! 💰
+O PromoPing é uma plataforma completa que permite monitorar preços de produtos em lojas online portuguesas e receber notificações automáticas quando os preços baixam. Economize dinheiro de forma inteligente! 
 
 ## Funcionalidades Principais
 
