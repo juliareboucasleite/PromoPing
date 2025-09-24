@@ -17,15 +17,43 @@
         <img src="../assets/images/Logo.png" alt="PromoPing" class="nav-logo">
         <span class="nav-brand-name">PromoPing</span>
       </div>
-
+      
       <div class="nav-menu">
-        <a href="Painel.html" class="nav-item">Dashboard</a>
-        <a href="produtos.html" class="nav-item nav-item-active">Produtos</a>
-        <a href="perfil.html" class="nav-item">Perfil</a>
+        <a href="Painel.html" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Dashboard
+        </a>
+        <a href="produtos.html" class="nav-item nav-item-active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          Produtos
+        </a>
+        <a href="perfil.html" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Perfil
+        </a>
       </div>
-
+      
       <div class="nav-actions">
-        <button class="nav-logout" onclick="logout()">Sair</button>
+        <button class="nav-logout" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16,17 21,12 16,7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sair
+        </button>
       </div>
     </div>
   </nav>
@@ -40,7 +68,24 @@
       </header>
 
       <div class="filters-bar">
-        <input type="text" id="pesquisa" placeholder="Pesquisar..." class="search-input">
+        <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input">
+        <select id="filtroLoja" class="filter-select">
+          <option value="">Todas as lojas</option>
+          <option>Worten</option>
+          <option>IKEA</option>
+          <option>FNAC</option>
+          <option>Continente</option>
+          <option>Pingo Doce</option>
+          <option>Lidl</option>
+          <option>Aldi</option>
+          <option>Leroy Merlin</option>
+        </select>
+        <select id="filtroEstado" class="filter-select">
+          <option value="">Todos os estados</option>
+          <option value="meta">Meta atingida</option>
+          <option value="subiu">Preço subiu</option>
+          <option value="monitorar">A monitorizar</option>
+        </select>
         <div class="filter-count"><span id="productCount">0</span> produtos</div>
       </div>
 
@@ -67,7 +112,7 @@
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+        const res = await fetch("/api/produtos", {
           headers: { Authorization: "Bearer " + token }
         });
 
@@ -86,18 +131,71 @@
           return;
         }
 
-        data.produtos.forEach(p => {
+        const query = document.getElementById('pesquisa').value.toLowerCase();
+        const lojaFiltro = document.getElementById('filtroLoja').value;
+        const estadoFiltro = document.getElementById('filtroEstado').value;
+
+        const itens = data.produtos.filter(p => {
+          const nomeOk = !query || p.Nome.toLowerCase().includes(query);
+          const lojaOk = !lojaFiltro || (p.Loja && p.Loja.toLowerCase() === lojaFiltro.toLowerCase());
+          const precoAtual = p.PrecoAtual;
+          const metaAtingida = p.PrecoAlvo != null && precoAtual != null && precoAtual <= p.PrecoAlvo;
+          const subiu = p.PrecoAtual != null && p.PrecoAnterior != null && p.PrecoAtual > p.PrecoAnterior;
+          const estadoOk = !estadoFiltro || (estadoFiltro === 'meta' && metaAtingida) || (estadoFiltro === 'subiu' && subiu) || (estadoFiltro === 'monitorar' && !metaAtingida && !subiu);
+          return nomeOk && lojaOk && estadoOk;
+        });
+
+        itens.forEach(p => {
+          const lojaSlug = (p.Loja || 'Desconhecida').toLowerCase().replace(/\s+/g,'-');
+          const hist = Array.isArray(p.Historico) ? p.Historico : [];
+          const histHtml = hist.map(h => `<div class="history-item">${new Date(h.DataRegistro).toLocaleDateString('pt-PT')} — €${Number(h.Preco).toFixed(2)}</div>`).join('') || '<div class="history-item">Sem histórico</div>';
+          const precoAtualRaw = (p.PrecoAtual != null) ? p.PrecoAtual : (p.Historico && p.Historico[0] ? p.Historico[0].Preco : null);
+          const precoAnteriorRaw = (p.PrecoAnterior != null) ? p.PrecoAnterior : (p.Historico && p.Historico[1] ? p.Historico[1].Preco : null);
+          const precoAtual = (precoAtualRaw != null) ? `€${Number(precoAtualRaw).toFixed(2)}` : '—';
+          const precoAnterior = (precoAnteriorRaw != null) ? `€${Number(precoAnteriorRaw).toFixed(2)}` : '—';
+          const delta = (precoAtualRaw != null && precoAnteriorRaw != null) ? (Number(precoAtualRaw) - Number(precoAnteriorRaw)) : null;
+          const deltaHtml = delta == null ? '' : (delta < 0
+            ? `<span class=\"price-change price-down\">-${Math.abs(delta).toFixed(2)}€</span>`
+            : delta > 0 ? `<span class=\"price-change price-up\">+${delta.toFixed(2)}€</span>` : `<span class=\"price-change price-neutral\">0€</span>`);
           const card = `
             <div class="product-card">
-              <h3>${p.Nome}</h3>
-              <p><strong>Link:</strong> <a href="${p.Link}" target="_blank">${p.Link}</a></p>
-              <p><strong>Data Limite:</strong> ${new Date(p.DataLimite).toLocaleDateString("pt-PT")}</p>
-              <button onclick="removerProduto(${p.Id})" class="delete-btn">Remover</button>
+              <div class="product-header">
+                <div class="product-title-wrap">
+                  <img class="store-logo" src="https://www.google.com/s2/favicons?domain=${new URL(p.Link).hostname}&sz=32" alt="logo">
+                  <h3 class="product-name">${p.Nome}</h3>
+                </div>
+                <div class="product-actions">
+                  <button class="action-btn" title="Abrir produto" onclick="window.open('${p.Link}','_blank')">🔗</button>
+                  <button class="action-btn delete-btn" title="Remover" onclick="removerProduto(${p.Id})">🗑️</button>
+                </div>
+              </div>
+              <div class="product-tags">
+                <span class="store-tag store-${lojaSlug}">${p.Loja || 'Loja'}</span>
+                <span class="status-tag">Adicionado em: ${new Date(p.DataCriacao).toLocaleDateString('pt-PT')}</span>
+              </div>
+              <div class="product-details">
+                <div class="price-info">
+                  <div class="current-price">
+                    <span class="price-label">Preço atual</span>
+                    <span class="price-value">${precoAtual}</span>
+                    ${deltaHtml}
+                  </div>
+                  <div class="price-details">
+                    <div class="price-item"><span class="price-label">Preço anterior</span><span class="price-value">${precoAnterior}</span></div>
+                  <div class="price-item"><span class="price-label">Preço alvo</span><span class="price-value target-price">${p.PrecoAlvo ? '€' + Number(p.PrecoAlvo).toFixed(2) : '—'}</span></div>
+                  ${p.PrecoAlvo && p.PrecoAtual != null ? (p.PrecoAtual <= p.PrecoAlvo ? '<span class="status-tag status-target-reached">Meta atingida</span>' : '') : ''}
+                  </div>
+                </div>
+                <div class="price-history">
+                  <div class="history-header"><div class="history-title">Histórico de preços</div></div>
+                  <div class="history-list">${histHtml}</div>
+                </div>
+              </div>
             </div>`;
           productsList.insertAdjacentHTML("beforeend", card);
         });
 
-        document.getElementById("productCount").textContent = data.produtos.length;
+        document.getElementById("productCount").textContent = itens.length;
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
         alert("Erro ao carregar produtos.");
@@ -110,7 +208,7 @@
       if (!confirm("Tem certeza que deseja remover este produto?")) return;
 
       try {
-        await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+        await fetch(`/api/produtos/${id}`, {
           method: "DELETE",
           headers: { Authorization: "Bearer " + token }
         });
@@ -122,7 +220,12 @@
     }
 
     // ===== INICIAR =====
-    window.onload = carregarProdutos;
+    window.onload = () => {
+      carregarProdutos();
+      document.getElementById('pesquisa').addEventListener('input', carregarProdutos);
+      document.getElementById('filtroLoja').addEventListener('change', carregarProdutos);
+      document.getElementById('filtroEstado').addEventListener('change', carregarProdutos);
+    };
   </script>
 </body>
 </html>

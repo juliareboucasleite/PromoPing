@@ -19,13 +19,41 @@
             </div>
             
             <div class="nav-menu">
-                <a href="Painel.html" class="nav-item nav-item-active">Dashboard</a>
-                <a href="produtos.html" class="nav-item">Produtos</a>
-                <a href="perfil.html" class="nav-item">Perfil</a>
+                <a href="Painel.html" class="nav-item nav-item-active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Produtos
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Perfil
+                </a>
             </div>
             
             <div class="nav-actions">
-                <button class="nav-logout" onclick="logout()">Sair</button>
+                <button class="nav-logout" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                </button>
             </div>
         </div>
     </nav>
@@ -44,19 +72,26 @@
             <div class="add-product-card">
                 <h2 class="card-title">+ Adicionar novo produto</h2>
                 <form id="formLink" class="add-product-form">
-                    <div class="form-group">
-                        <input type="text" id="nome" placeholder="Nome do produto" required class="form-input">
+                    <div class="form-group name">
+                        <input type="text" id="nome" placeholder="Ex: iPhone 15" required class="form-input">
+                        <label class="form-label">Nome do produto</label>
                     </div>
-                    <div class="form-group">
-                        <input type="url" id="url" placeholder="https://worten.pt/produto..." required class="form-input">
+                    <div class="form-group link">
+                        <input type="url" id="url" placeholder="https://loja.com/produto123" required class="form-input">
+                        <label class="form-label">Link do produto</label>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group price">
+                        <input type="number" id="precoAlvo" placeholder="Ex: 999.99" step="0.01" min="0" class="form-input">
+                        <label class="form-label">Preço alvo (opcional)</label>
+                    </div>
+                    <div class="form-group date">
                         <input type="date" id="dataLimite" class="form-input">
                         <label class="form-label">Data limite (opcional)</label>
                     </div>
                     <button type="submit" class="add-product-btn">+ Adicionar produto</button>
                 </form>
             </div>
+
 
             <!-- ===== LISTA DE PRODUTOS ===== -->
             <section class="products-section">
@@ -81,17 +116,55 @@
 
       // Criar card de produto
       function createProductCard(p) {
+        const lojaSlug = (p.Loja || 'Desconhecida').toLowerCase().replace(/\s+/g,'-');
+        const hist = Array.isArray(p.Historico) ? p.Historico : [];
+        const histHtml = hist.map(h => `
+            <div class="history-item">${new Date(h.DataRegistro).toLocaleDateString('pt-PT')} — €${Number(h.Preco).toFixed(2)}</div>
+        `).join('') || '<div class="history-item">Sem histórico</div>';
+        const precoAtualRaw = (p.PrecoAtual != null) ? p.PrecoAtual : (p.Historico && p.Historico[0] ? p.Historico[0].Preco : null);
+        const precoAnteriorRaw = (p.PrecoAnterior != null) ? p.PrecoAnterior : (p.Historico && p.Historico[1] ? p.Historico[1].Preco : null);
+        const precoAtual = (precoAtualRaw != null) ? `€${Number(precoAtualRaw).toFixed(2)}` : '—';
+        const precoAnterior = (precoAnteriorRaw != null) ? `€${Number(precoAnteriorRaw).toFixed(2)}` : '—';
+        const delta = (precoAtualRaw != null && precoAnteriorRaw != null) ? (Number(precoAtualRaw) - Number(precoAnteriorRaw)) : null;
+        const deltaHtml = delta == null ? '' : (delta < 0 
+          ? `<span class=\"price-change price-down\">-${Math.abs(delta).toFixed(2)}€</span>`
+          : delta > 0 ? `<span class=\"price-change price-up\">+${delta.toFixed(2)}€</span>` : `<span class=\"price-change price-neutral\">0€</span>`);
+
         return `
           <div class="product-card">
             <div class="product-header">
-              <h3 class="product-name">${p.Nome}</h3>
+              <div class="product-title-wrap">
+                <img class="store-logo" src="https://www.google.com/s2/favicons?domain=${new URL(p.Link).hostname}&sz=32" alt="logo">
+                <h3 class="product-name">${p.Nome}</h3>
+              </div>
               <div class="product-actions">
-                <button class="action-btn" onclick="window.open('${p.Link}', '_blank')">Abrir</button>
-                <button class="action-btn delete-btn" onclick="deleteProduct(${p.Id})">Remover</button>
+                <button class="action-btn" title="Abrir produto" onclick="window.open('${p.Link}', '_blank')">🔗</button>
+                <button class="action-btn" title="Editar data" onclick="editarData(${p.Id}, '${p.DataLimite || ''}')">🗓️</button>
+                <button class="action-btn delete-btn" title="Remover" onclick="deleteProduct(${p.Id})">🗑️</button>
               </div>
             </div>
             <div class="product-tags">
+              <span class="store-tag store-${lojaSlug}">${p.Loja || 'Loja'}</span>
               <span class="status-tag">Criado em: ${new Date(p.DataCriacao).toLocaleDateString('pt-PT')}</span>
+            </div>
+            <div class="product-details">
+              <div class="price-info">
+                <div class="current-price">
+                  <span class="price-label">Preço atual</span>
+                  <span class="price-value">${precoAtual}</span>
+                  ${deltaHtml}
+                </div>
+                <div class="price-details">
+                  <div class="price-item"><span class="price-label">Preço anterior</span><span class="price-value">${precoAnterior}</span></div>
+                  <div class="price-item"><span class="price-label">Preço alvo</span><span class="price-value target-price">${p.PrecoAlvo ? '€' + Number(p.PrecoAlvo).toFixed(2) : '—'}</span></div>
+                </div>
+              </div>
+              <div class="price-history">
+                <div class="history-header">
+                  <div class="history-title">Histórico de preços</div>
+                </div>
+                <div class="history-list">${histHtml}</div>
+              </div>
             </div>
           </div>
         `;
@@ -101,7 +174,7 @@
       async function carregarProdutos() {
         const productsList = document.getElementById("productsList");
         try {
-          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+          const res = await fetch("/api/produtos", {
             headers: { Authorization: "Bearer " + token }
           });
           const data = await res.json();
@@ -128,15 +201,16 @@
         const nome = document.getElementById("nome").value;
         const link = document.getElementById("url").value;
         const dataLimite = document.getElementById("dataLimite").value;
+        const precoAlvo = document.getElementById("precoAlvo").value;
 
         try {
-          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+          const res = await fetch("/api/produtos", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: "Bearer " + token
             },
-            body: JSON.stringify({ nome, link, data: dataLimite })
+            body: JSON.stringify({ nome, link, data: dataLimite, precoAlvo: precoAlvo ? Number(precoAlvo) : null })
           });
 
           const data = await res.json();
@@ -156,7 +230,7 @@
       async function deleteProduct(id) {
         if (!confirm("Tem certeza que deseja remover este produto?")) return;
         try {
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+          const res = await fetch(`/api/produtos/${id}`, {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
           });
@@ -169,6 +243,27 @@
         } catch (err) {
           console.error("Erro ao remover produto:", err);
           alert("Erro no servidor");
+        }
+      }
+
+      // Editar data limite
+      async function editarData(id, atual) {
+        const novaData = prompt('Nova data limite (AAAA-MM-DD):', (atual || '').split('T')[0] || '');
+        if (novaData === null) return;
+        try {
+          const res = await fetch(`/api/produtos/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ nome: undefined, link: undefined, data: novaData })
+          });
+          const data = await res.json();
+          if (data.status === 'ok') carregarProdutos();
+          else alert(data.error || 'Erro ao atualizar data');
+        } catch (e) {
+          alert('Erro no servidor');
         }
       }
 

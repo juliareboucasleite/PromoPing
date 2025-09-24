@@ -2,28 +2,28 @@
 <html lang="pt-pt">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromoPing - Sempre ligado</title>
-    <link rel="stylesheet" href="/assets/styles/style.css">
-    <link rel="stylesheet" href="/assets/styles/dasboard.css">
-    <link rel="stylesheet" href="/assets/styles/header.css">
-    <link rel="stylesheet" href="/assets/styles/painel.css">
-    <link rel="stylesheet" href="/assets/styles/register.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromoPing - Sempre ligado</title>
+  <link rel="stylesheet" href="/assets/styles/style.css">
+  <link rel="stylesheet" href="/assets/styles/dasboard.css">
+  <link rel="stylesheet" href="/assets/styles/header.css">
+  <link rel="stylesheet" href="/assets/styles/painel.css">
+  <link rel="stylesheet" href="/assets/styles/register.css">
 
- 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const heroTitle = document.querySelector('.pp-hero-left h1');
-            if (heroTitle) {
-                heroTitle.classList.add('blur-text');
-            }
-        });
-    </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const heroTitle = document.querySelector('.pp-hero-left h1');
+      if (heroTitle) {
+        heroTitle.classList.add('blur-text');
+      }
+    });
+  </script>
 </head>
 
 <body class="theme-promoping">
-    <header class="pp-header" style="
+  <!-- ===== HEADER ===== -->
+  <header class="pp-header" style="
        background: #1e121433;
         border-radius: 32px;
         margin: 40px auto 0 auto;
@@ -39,8 +39,7 @@
         top: 0;
         transform: none;
         ">
-        
-        <div style="
+    <div style="
            display: flex;
         align-items: center;
         justify-content: space-between;
@@ -49,104 +48,203 @@
         width: 100%;
         max-width: 900px;
         ">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="/assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-                <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
-            </div>
-            <nav style="display: flex; align-items: center; gap: 24px;">
-                <a href="/pages/Login.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Entrar</a>
-                <a href="/pages/docs.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Docs</a>
-            </nav>
-        </div>
-    </header>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="/assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
+        <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
+      </div>
+      <nav style="display: flex; align-items: center; gap: 24px;">
+        <a href="/pages/Login.html"
+          style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Entrar</a>
+        <a href="/pages/docs.html"
+          style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Docs</a>
+      </nav>
+    </div>
+  </header>
 
+  <main>
     <!-- ===== HERO ===== -->
-    <main>
-        <section class="pp-hero">
-            <div class="pp-container pp-hero-grid">
-                <div class="pp-hero-left">
-                    <h1>Sempre ligado</h1>
-                    <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
-                </div>
-                <div class="pp-hero-right">
-                    <img src="/assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
-                </div>
-            </div>
-        </section>
-
-
-
-        <!-- ===== SOBRE ===== -->
-        <section id="sobre" class="pp-about">
-            <div class="pp-container">
-                <h2>
-                    <span class="highlight">Por que criámos o PromoPing?</span>
-                </h2>
-                <p class="pp-about-text">
-                    O PromoPing foi desenvolvido para facilitar a vida de quem procura as melhores promoções e descontos na internet. O objetivo do site é centralizar ofertas de diferentes lojas e plataformas, permitindo que os utilizadores encontrem rapidamente oportunidades de poupança sem perder tempo a pesquisar em vários sites. Com notificações em tempo real e integração com redes sociais, o PromoPing garante que você nunca mais perca uma boa oportunidade de compra.
-                </p>
-            </div>
-        </section>
-
-        <!-- ===== BASE SOCIAL ===== -->
-        <section class="pp-section pp-section-split">
-            <div class="pp-container pp-split-grid">
-                <div class="pp-split-left">
-                    <h2><span class="highlight">Conecte-se às suas plataformas favoritas</span></h2>
-                    <p>
-                        Com a PromoPing, você pode ligar a sua conta social a diferentes plataformas, facilitando o acesso a promoções e descontos exclusivos. Jovens e adultos podem aproveitar para nunca mais perder aquela oferta especial, recebendo alertas a tempo de garantir o produto desejado antes que acabe.
-                    </p>
-                </div>
-                <div class="pp-split-right">
-                    <img src="/assets/images/social-phone.png" alt="Conexão com plataformas" class="pp-split-img">
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== CONTACTO ===== -->
-        <section class="pp-section pp-section-split alt">
-            <div class="pp-container pp-split-grid">
-                <div class="pp-split-left order-2">
-                    <h2><span class="highlight">Mantenha o contacto</span></h2>
-                    <p>
-                        O nosso sistema de notificações mantém-no informado em tempo real sobre promoções relevantes. Além disso, pode interagir em grupos temáticos e trocar dicas com outros utilizadores apaixonados por boas compras.
-                    </p>
-                </div>
-                <div class="pp-split-right order-1">
-                    <img src="/assets/images/contact-phone.png" alt="Mantenha o contacto" class="pp-split-img">
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- ===== FOOTER ===== -->
-    <footer class="new-footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <img src="/assets/images/Logo.png" alt="Logo" class="footer-logo">
-                <span class="footer-brand-name">PromoPing</span>
-            </div>
-            <div class="footer-contact">
-                <h3><span class="highlight">Contacte-nos</span></h3>
-                <p>juliareboucasleite@gmail.com</p>
-                <div class="social-icons-imgs">
-                    <a href="https://www.linkedin.com/in/juliareboucasleite/" title="LinkedIn" target="_blank" rel="noopener">
-                        <img src="/assets/images/Linkedin.png" alt="LinkedIn">
-                    </a>
-                    <a href="https://www.instagram.com/_julissz_/" title="Instagram" target="_blank" rel="noopener">
-                        <img src="/assets/images/instagram.png" alt="Instagram">
-                    </a>
-                    <a href="https://www.facebook.com/profile.php?id=100086404328544" title="Facebook" target="_blank" rel="noopener">
-                        <img src="/assets/images/facebook.png" alt="Facebook">
-                    </a>
-                    <a href="https://github.com/juliareboucasleite" title="GitHub" target="_blank" rel="noopener">
-                        <img src="/assets/images/Github.png" alt="GitHub">
-                    </a>
-                </div>
-            </div>
+    <section class="pp-hero">
+      <div class="pp-container pp-hero-grid">
+        <div class="pp-hero-left">
+          <h1>Sempre ligado</h1>
+          <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
         </div>
-    </footer>
-</body>
+        <div class="pp-hero-right">
+          <img src="/assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
+        </div>
+      </div>
+    </section>
 
+    <!-- ===== SOBRE ===== -->
+    <section id="sobre" class="pp-about">
+      <div class="pp-container">
+        <h2>
+          <span class="highlight">Por que criámos o PromoPing?</span>
+        </h2>
+        <p class="pp-about-text">
+          O PromoPing foi desenvolvido para facilitar a vida de quem procura as melhores promoções e descontos na
+          internet. O objetivo do site é centralizar ofertas de diferentes lojas e plataformas, permitindo que os
+          utilizadores encontrem rapidamente oportunidades de poupança sem perder tempo a pesquisar em vários sites. Com
+          notificações em tempo real e integração com redes sociais, o PromoPing garante que você nunca mais perca uma
+          boa oportunidade de compra.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== BASE SOCIAL ===== -->
+    <section class="pp-section pp-section-split">
+      <div class="pp-container pp-split-grid">
+        <div class="pp-split-left">
+          <h2><span class="highlight">Conecte-se às suas plataformas favoritas</span></h2>
+          <p>
+            Com a PromoPing, você pode ligar a sua conta social a diferentes plataformas, facilitando o acesso a
+            promoções e descontos exclusivos. Jovens e adultos podem aproveitar para nunca mais perder aquela oferta
+            especial, recebendo alertas a tempo de garantir o produto desejado antes que acabe.
+          </p>
+        </div>
+        <div class="pp-split-right">
+          <img src="/assets/images/social-phone.png" alt="Conexão com plataformas" class="pp-split-img">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTACTO ===== -->
+    <section class="pp-section pp-section-split alt">
+      <div class="pp-container pp-split-grid">
+        <div class="pp-split-left order-2">
+          <h2><span class="highlight">Mantenha o contacto</span></h2>
+          <p>
+            O nosso sistema de notificações mantém-no informado em tempo real sobre promoções relevantes. Além disso,
+            pode interagir em grupos temáticos e trocar dicas com outros utilizadores apaixonados por boas compras.
+          </p>
+        </div>
+        <div class="pp-split-right order-1">
+          <img src="/assets/images/contact-phone.png" alt="Mantenha o contacto" class="pp-split-img">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== COMO FUNCIONA ===== -->
+    <section class="how-section">
+      <h2>Como funciona</h2>
+      <p>Em apenas 3 passos simples</p>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="circle">1</div>
+          <h3>Adicione produtos</h3>
+          <p>Cole o link do produto que pretende monitorizar</p>
+        </div>
+
+        <div class="how-step">
+          <div class="circle">2</div>
+          <h3>Configure alertas</h3>
+          <p>Defina quando quer ser notificado</p>
+        </div>
+
+        <div class="how-step">
+          <div class="circle">3</div>
+          <h3>Receba notificações</h3>
+          <p>Seja alertado quando os preços baixarem</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PLANOS ===== -->
+    <section class="pp-pricing">
+      <h2>Escolha o seu plano</h2>
+      <p>Diferentes níveis de acesso às notificações</p>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="pricing-card">
+          <h3>Free</h3>
+          <div class="price">€0<span>/mês</span></div>
+          <ul>
+            <li>Até 5 produtos</li>
+            <li>Notificações por Email</li>
+            <li class="muted">Alertas básicos</li>
+            <li class="muted">Verificação diária</li>
+          </ul>
+          <a href="/pages/register.html" class="pp-btn pp-btn-outline">Começar Grátis</a>
+        </div>
+
+        <!-- Basic -->
+        <div class="pricing-card popular">
+          <div class="tag">Mais Popular</div>
+          <h3>Basic</h3>
+          <div class="price">€4.99<span>/mês</span></div>
+          <ul>
+            <li>Até 25 produtos</li>
+            <li>Email + SMS</li>
+            <li>Alertas personalizados</li>
+            <li>Verificação de 4h/4h</li>
+            <li>Histórico de preços</li>
+          </ul>
+          <a href="/pages/register.html" class="pp-btn pp-btn-primary">Escolher Basic</a>
+        </div>
+
+        <!-- Premium -->
+        <div class="pricing-card">
+          <h3>Premium</h3>
+          <div class="price">€9.99<span>/mês</span></div>
+          <ul>
+            <li>Produtos ilimitados</li>
+            <li>Todas as notificações</li>
+            <li>Email, SMS, Discord, Telegram, WhatsApp</li>
+            <li>Verificação em tempo real</li>
+            <li>API de integração</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="/pages/register.html" class="pp-btn pp-btn-outline">Escolher Premium</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA FINAL ===== -->
+    <section class="pp-cta">
+      <div class="cta-box">
+        <h2>Pronto para poupar dinheiro?</h2>
+        <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
+        <a href="/pages/register.html">
+          Começar agora grátis
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="new-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="/assets/images/Logo.png" alt="Logo" class="footer-logo">
+        <span class="footer-brand-name">PromoPing</span>
+      </div>
+      <div class="footer-contact">
+        <h3><span class="highlight">Contacte-nos</span></h3>
+        <p>juliareboucasleite@gmail.com</p>
+        <div class="social-icons-imgs">
+          <a href="https://www.linkedin.com/in/juliareboucasleite/" title="LinkedIn" target="_blank" rel="noopener">
+            <img src="/assets/images/Linkedin.png" alt="LinkedIn">
+          </a>
+          <a href="https://www.instagram.com/_julissz_/" title="Instagram" target="_blank" rel="noopener">
+            <img src="/assets/images/instagram.png" alt="Instagram">
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=100086404328544" title="Facebook" target="_blank"
+            rel="noopener">
+            <img src="/assets/images/facebook.png" alt="Facebook">
+          </a>
+          <a href="https://github.com/juliareboucasleite" title="GitHub" target="_blank" rel="noopener">
+            <img src="/assets/images/Github.png" alt="GitHub">
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
 
 </html>
