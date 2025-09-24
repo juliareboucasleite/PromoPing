@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -25,35 +26,32 @@ namespace Painel_Admin
 
         private void BotaoEntrar_Click(object sender, EventArgs e)
         {
-            string nome = TxtNome.Text;
-            string senha = TxtSenha.Text;
+            string username = TxtNome.Text.Trim();
+            string password = TxtSenha.Text.Trim();
 
-            using (var con = new MySqlConnection(DbConfig.ConnString))
+            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
+
+            using (MySqlConnection con = new MySqlConnection(connStr))
             {
                 try
                 {
                     con.Open();
-                    string query = "SELECT * FROM utilizadores WHERE nome=@nome AND senha=@senha AND ativo=1";
+                    string query = "SELECT Id, Nome FROM perfis WHERE Nome = @nome AND Senha = @senha";
                     MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@nome", nome);
-                    cmd.Parameters.AddWithValue("@senha", senha);
+                    cmd.Parameters.AddWithValue("@nome", username);
+                    cmd.Parameters.AddWithValue("@senha", password);
 
-                    var reader = cmd.ExecuteReader();
+                    MySqlDataReader reader = cmd.ExecuteReader();
 
                     if (reader.Read())
                     {
-                        string perfil = reader["perfil"].ToString();
-                        if (perfil == "admin")
-                        {
-                            MessageBox.Show($"Bem-vindo administrador {reader["nome"]}!");
-                            Painel painel = new Painel();
-                            painel.Show();
-                            this.Hide();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Acesso negado! Apenas administradores podem entrar.");
-                        }
+                        string perfil = reader["Nome"].ToString();
+                        MessageBox.Show($"Bem-vindo, {perfil}!");
+
+                        // Abre o painel principal
+                        Painel formMain = new Painel();
+                        formMain.Show();
+                        this.Hide();
                     }
                     else
                     {
@@ -62,7 +60,7 @@ namespace Painel_Admin
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro: " + ex.Message);
+                    MessageBox.Show("Erro ao autenticar: " + ex.Message);
                 }
             }
         }

@@ -35,7 +35,7 @@ namespace Painel_Admin
                 using (MySqlConnection con = new MySqlConnection(connStr))
                 {
                     con.Open();
-                    string query = "SELECT id, nome, email, perfil, ativo, telefone, dinheiro_poupado FROM utilizadores";
+                    string query = "SELECT id, nome, email, data_registo, telefone, PerfilId FROM utilizadores";
                     MySqlDataAdapter adapter = new MySqlDataAdapter(query, con);
 
                     DataTable dt = new DataTable();
@@ -81,6 +81,30 @@ namespace Painel_Admin
             {
                 MessageBox.Show("Erro ao carregar produtos: " + ex.Message);
             }
+        }
+
+        private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            EditarProdutos form = new EditarProdutos();
+            form.ShowDialog(); 
+        }
+
+        private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormPerfilDetalhes form = new FormPerfilDetalhes();
+            form.ShowDialog();
+        }
+
+        private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormPerfilEditar form = new FormPerfilEditar();
+            form.ShowDialog();
+        }
+
+        private void painelPerfisToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PainelPerfis form = new PainelPerfis();
+            form.ShowDialog();
         }
     }
 }
