@@ -12,6 +12,8 @@ import { initDiscordBot } from "./services/discord.js";
 import authRoutes from "./routes/auth.js";
 import produtosRoutes from "./routes/produtos.js";
 import configRoutes from "./routes/config.js";
+import scrapeRoute from "./routes/scrape.js";
+import { startPriceChecker } from "./services/price-checker.js";
 import userRoutes from "./routes/user.js";
 
 // inicializa o express
@@ -47,6 +49,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/produtos", produtosRoutes);
 app.use("/api/config", configRoutes);
+app.use("/api/scrape", scrapeRoute);
 app.use("/api/user", userRoutes);
 
 // ================== NOTIFICAÇÕES ==================
@@ -86,6 +89,8 @@ app.listen(PORT, HOST, () => {
     console.log(`🚀 Servidor PromoPing rodando em http://${HOST}:${PORT}`);
     console.log(`📁 Frontend: http://${HOST}:${PORT}/`);
     console.log(`🔧 API: http://${HOST}:${PORT}/api/`);
+    // iniciar checker periódico
+    startPriceChecker();
 });
 
 // Inicia o bot do Discord (não bloqueante)

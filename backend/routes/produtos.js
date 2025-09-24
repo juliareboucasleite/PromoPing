@@ -8,7 +8,7 @@ const router = express.Router();
 // ➕ Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
     try {
-        const { nome, link, data } = req.body;
+        const { nome, link, data, precoAlvo } = req.body;
 
         if (!nome || !link || !data) {
             return res.status(400).json({ error: "Preencha todos os campos" });
@@ -43,8 +43,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         // inserir produto
         const [result] = await pool.query(
-            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja) VALUES (?, ?, ?, ?, ?)",
-            [req.user.id, nome, link, data, store.name]
+            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo) VALUES (?, ?, ?, ?, ?, ?)",
+            [req.user.id, nome, link, data, store.name, precoAlvo ?? null]
         );
 
         // cria registro inicial no histórico com preço se disponível via scraper leve (opcional)
@@ -78,10 +78,27 @@ router.get("/", verifyToken, async (req, res) => {
         // anexar histórico curto e preços atuais/anteriores
         const produtos = [];
         for (const p of rows) {
-            const [hist] = await pool.query(
+            let [hist] = await pool.query(
                 "SELECT Preco, DataRegistro FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegistro DESC LIMIT 10",
                 [p.Id]
             );
+            // Se não tiver histórico, capturar primeiro preço agora
+            if (hist.length === 0) {
+                try {
+                    const { scrapeProductInfo } = await import('../services/scrapers/index.js');
+                    const info = await scrapeProductInfo(p.Link);
+                    if (info?.preco != null) {
+                        await pool.query("INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)", [p.Id, info.preco]);
+                        const [h2] = await pool.query(
+                            "SELECT Preco, DataRegistro FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegistro DESC LIMIT 10",
+                            [p.Id]
+                        );
+                        hist = h2;
+                    }
+                } catch (e) {
+                    console.warn('Falha ao iniciar histórico para produto', p.Id, e.message);
+                }
+            }
             const precoAtual = hist[0]?.Preco ?? null;
             const precoAnterior = hist[1]?.Preco ?? null;
             produtos.push({ ...p, PrecoAtual: precoAtual, PrecoAnterior: precoAnterior, Historico: hist });
@@ -99,10 +116,13 @@ router.put("/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { nome, link, data } = req.body;
+        const nomeVal = nome ?? null;
+        const linkVal = link ?? null;
+        const dataVal = data ?? null;
 
         const [result] = await pool.query(
-            "UPDATE Produtos SET Nome=?, Link=?, DataLimite=? WHERE Id=? AND UserId=?",
-            [nome, link, data, id, req.user.id]
+            "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND UserId=?",
+            [nomeVal, linkVal, dataVal, id, req.user.id]
         );
 
         if (result.affectedRows === 0) {

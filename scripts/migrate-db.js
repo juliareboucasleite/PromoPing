@@ -21,34 +21,71 @@ async function migrate() {
   await addColumnIfNotExists('utilizadores', 'ultimo_login', 'TIMESTAMP NULL');
   await addColumnIfNotExists('utilizadores', 'ativo', 'BOOLEAN DEFAULT TRUE');
 
-  // Criar historico_precos
+  // Criar HistoricoPrecos alinhado com a base atual (tabelas camel-case)
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS historico_precos (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      produto_id INT NOT NULL,
-      preco DECIMAL(10,2) NOT NULL,
-      data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
+    CREATE TABLE IF NOT EXISTS HistoricoPrecos (
+      Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      ProdutoId INT UNSIGNED NOT NULL,
+      Preco DECIMAL(10,2) NOT NULL,
+      DataRegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id) ON DELETE CASCADE
     )
   `);
-  console.log('✅ Tabela historico_precos verificada/criada');
+  console.log('✅ Tabela HistoricoPrecos verificada/criada');
 
-  // Criar notificacoes
+  // Adicionar coluna Loja à tabela Produtos
+  await addColumnIfNotExists('Produtos', 'Loja', "VARCHAR(60) NULL");
+  console.log('✅ Coluna Loja verificada/criada em Produtos');
+
+  // Adicionar colunas de estatísticas à tabela utilizadores
+  await addColumnIfNotExists('utilizadores', 'telefone', "VARCHAR(20) NULL");
+  await addColumnIfNotExists('utilizadores', 'dinheiro_poupado', "DECIMAL(10,2) DEFAULT 0.00");
+  console.log('✅ Colunas de estatísticas verificadas/criadas em utilizadores');
+
+  // Criar tabela de contas conectadas
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS notificacoes (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      usuario_id INT NOT NULL,
-      produto_id INT,
-      tipo ENUM('discord','email','whatsapp') NOT NULL,
-      mensagem TEXT NOT NULL,
-      enviada BOOLEAN DEFAULT FALSE,
-      data_envio TIMESTAMP NULL,
-      criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (usuario_id) REFERENCES utilizadores(id) ON DELETE CASCADE,
-      FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
+    CREATE TABLE IF NOT EXISTS ContasConectadas (
+      Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      UserId INT UNSIGNED NOT NULL,
+      Tipo ENUM('google','discord','telegram','whatsapp') NOT NULL,
+      Identificador VARCHAR(255) NOT NULL,
+      Conectado BOOLEAN DEFAULT TRUE,
+      DataConexao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (UserId) REFERENCES utilizadores(id) ON DELETE CASCADE,
+      UNIQUE KEY unique_user_tipo (UserId, Tipo)
     )
   `);
-  console.log('✅ Tabela notificacoes verificada/criada');
+  console.log('✅ Tabela ContasConectadas verificada/criada');
+
+  // Criar tabela de preferências de notificação
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS PreferenciasNotificacao (
+      Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      UserId INT UNSIGNED NOT NULL,
+      Tipo ENUM('email','discord','telegram','whatsapp') NOT NULL,
+      Ativo BOOLEAN DEFAULT TRUE,
+      FOREIGN KEY (UserId) REFERENCES utilizadores(id) ON DELETE CASCADE,
+      UNIQUE KEY unique_user_tipo (UserId, Tipo)
+    )
+  `);
+  console.log('✅ Tabela PreferenciasNotificacao verificada/criada');
+
+  // Criar Notificacoes
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS Notificacoes (
+      Id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      UserId INT UNSIGNED NOT NULL,
+      ProdutoId INT UNSIGNED,
+      Tipo ENUM('discord','email','whatsapp') NOT NULL,
+      Mensagem TEXT NOT NULL,
+      Enviada BOOLEAN DEFAULT FALSE,
+      DataEnvio TIMESTAMP NULL,
+      CriadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (UserId) REFERENCES utilizadores(id) ON DELETE CASCADE,
+      FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id) ON DELETE CASCADE
+    )
+  `);
+  console.log('✅ Tabela Notificacoes verificada/criada');
 
   await pool.end();
   console.log('🎉 Migração concluída!');
