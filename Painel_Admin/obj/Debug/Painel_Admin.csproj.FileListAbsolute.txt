@@ -52,3 +52,10 @@ C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Edita
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Suporte.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Painel.aa.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\aa\Painel_Admin.resources.dll
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormNotificacoes.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.PainelForm.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.ProdutosListForm.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormProdutoEditar.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.PainelForm.aa.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormNotificacaoEditar.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormUtilizadoresList.resources

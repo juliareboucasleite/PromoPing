@@ -6,262 +6,186 @@
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
-        #region Código gerado pelo Windows Form Designer
+        #region Windows Form Designer generated code
 
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPerfilEditar));
+            this.lblNome = new System.Windows.Forms.Label();
             this.txtNome = new System.Windows.Forms.TextBox();
+            this.lblEmail = new System.Windows.Forms.Label();
             this.txtEmail = new System.Windows.Forms.TextBox();
+            this.lblTelefone = new System.Windows.Forms.Label();
             this.txtTelefone = new System.Windows.Forms.TextBox();
-            this.txtPlano = new System.Windows.Forms.TextBox();
-            this.txtLimiteProdutos = new System.Windows.Forms.TextBox();
+            this.lblPlano = new System.Windows.Forms.Label();
+            this.cmbPlano = new System.Windows.Forms.ComboBox();
+            this.lblCanal = new System.Windows.Forms.Label();
+            this.cmbCanal = new System.Windows.Forms.ComboBox();
+            this.lblNotificacoes = new System.Windows.Forms.Label();
+            this.clbNotificacoes = new System.Windows.Forms.CheckedListBox();
+            this.chkAtivo = new System.Windows.Forms.CheckBox();
             this.btnSalvar = new System.Windows.Forms.Button();
             this.btnCancelar = new System.Windows.Forms.Button();
-            this.txtSenha = new System.Windows.Forms.TextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.lblNome = new System.Windows.Forms.Label();
-            this.lblEmail = new System.Windows.Forms.Label();
-            this.lblTelefone = new System.Windows.Forms.Label();
-            this.lblPlano = new System.Windows.Forms.Label();
-            this.lblLimite = new System.Windows.Forms.Label();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.produtosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PainelPrincipal = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilDetalhesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilEditarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // lblNome
+            // 
+            this.lblNome.Location = new System.Drawing.Point(20, 20);
+            this.lblNome.Name = "lblNome";
+            this.lblNome.Size = new System.Drawing.Size(100, 23);
+            this.lblNome.TabIndex = 0;
+            this.lblNome.Text = "Nome:";
             // 
             // txtNome
             // 
-            this.txtNome.Location = new System.Drawing.Point(136, 45);
+            this.txtNome.Location = new System.Drawing.Point(120, 17);
             this.txtNome.Name = "txtNome";
-            this.txtNome.Size = new System.Drawing.Size(250, 22);
-            this.txtNome.TabIndex = 2;
+            this.txtNome.Size = new System.Drawing.Size(220, 20);
+            this.txtNome.TabIndex = 1;
+            // 
+            // lblEmail
+            // 
+            this.lblEmail.Location = new System.Drawing.Point(20, 55);
+            this.lblEmail.Name = "lblEmail";
+            this.lblEmail.Size = new System.Drawing.Size(100, 23);
+            this.lblEmail.TabIndex = 2;
+            this.lblEmail.Text = "Email:";
             // 
             // txtEmail
             // 
-            this.txtEmail.Location = new System.Drawing.Point(136, 85);
+            this.txtEmail.Location = new System.Drawing.Point(120, 52);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(250, 22);
-            this.txtEmail.TabIndex = 4;
+            this.txtEmail.Size = new System.Drawing.Size(220, 20);
+            this.txtEmail.TabIndex = 3;
+            // 
+            // lblTelefone
+            // 
+            this.lblTelefone.Location = new System.Drawing.Point(20, 90);
+            this.lblTelefone.Name = "lblTelefone";
+            this.lblTelefone.Size = new System.Drawing.Size(100, 23);
+            this.lblTelefone.TabIndex = 4;
+            this.lblTelefone.Text = "Telefone:";
             // 
             // txtTelefone
             // 
-            this.txtTelefone.Location = new System.Drawing.Point(136, 162);
+            this.txtTelefone.Location = new System.Drawing.Point(120, 87);
             this.txtTelefone.Name = "txtTelefone";
-            this.txtTelefone.Size = new System.Drawing.Size(250, 22);
-            this.txtTelefone.TabIndex = 8;
+            this.txtTelefone.Size = new System.Drawing.Size(220, 20);
+            this.txtTelefone.TabIndex = 5;
             // 
-            // txtPlano
+            // lblPlano
             // 
-            this.txtPlano.Location = new System.Drawing.Point(136, 202);
-            this.txtPlano.Name = "txtPlano";
-            this.txtPlano.Size = new System.Drawing.Size(250, 22);
-            this.txtPlano.TabIndex = 10;
+            this.lblPlano.Location = new System.Drawing.Point(20, 125);
+            this.lblPlano.Name = "lblPlano";
+            this.lblPlano.Size = new System.Drawing.Size(100, 23);
+            this.lblPlano.TabIndex = 6;
+            this.lblPlano.Text = "Plano:";
             // 
-            // txtLimiteProdutos
+            // cmbPlano
             // 
-            this.txtLimiteProdutos.Location = new System.Drawing.Point(136, 242);
-            this.txtLimiteProdutos.Name = "txtLimiteProdutos";
-            this.txtLimiteProdutos.Size = new System.Drawing.Size(250, 22);
-            this.txtLimiteProdutos.TabIndex = 12;
+            this.cmbPlano.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbPlano.Items.AddRange(new object[] {
+            "free",
+            "premium"});
+            this.cmbPlano.Location = new System.Drawing.Point(120, 122);
+            this.cmbPlano.Name = "cmbPlano";
+            this.cmbPlano.Size = new System.Drawing.Size(220, 21);
+            this.cmbPlano.TabIndex = 7;
+            // 
+            // lblCanal
+            // 
+            this.lblCanal.Location = new System.Drawing.Point(20, 160);
+            this.lblCanal.Name = "lblCanal";
+            this.lblCanal.Size = new System.Drawing.Size(100, 23);
+            this.lblCanal.TabIndex = 8;
+            this.lblCanal.Text = "Canal preferido:";
+            // 
+            // cmbCanal
+            // 
+            this.cmbCanal.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbCanal.Items.AddRange(new object[] {
+            "email",
+            "discord",
+            "telegram",
+            "whatsapp"});
+            this.cmbCanal.Location = new System.Drawing.Point(120, 157);
+            this.cmbCanal.Name = "cmbCanal";
+            this.cmbCanal.Size = new System.Drawing.Size(220, 21);
+            this.cmbCanal.TabIndex = 9;
+            // 
+            // lblNotificacoes
+            // 
+            this.lblNotificacoes.Location = new System.Drawing.Point(20, 190);
+            this.lblNotificacoes.Name = "lblNotificacoes";
+            this.lblNotificacoes.Size = new System.Drawing.Size(100, 23);
+            this.lblNotificacoes.TabIndex = 10;
+            this.lblNotificacoes.Text = "Notificações:";
+            // 
+            // clbNotificacoes
+            // 
+            this.clbNotificacoes.CheckOnClick = true;
+            this.clbNotificacoes.Items.AddRange(new object[] {
+            "Email",
+            "Discord",
+            "Telegram",
+            "WhatsApp"});
+            this.clbNotificacoes.Location = new System.Drawing.Point(120, 190);
+            this.clbNotificacoes.Name = "clbNotificacoes";
+            this.clbNotificacoes.Size = new System.Drawing.Size(220, 64);
+            this.clbNotificacoes.TabIndex = 11;
+            // 
+            // chkAtivo
+            // 
+            this.chkAtivo.Location = new System.Drawing.Point(120, 265);
+            this.chkAtivo.Name = "chkAtivo";
+            this.chkAtivo.Size = new System.Drawing.Size(104, 24);
+            this.chkAtivo.TabIndex = 12;
+            this.chkAtivo.Text = "Ativo";
             // 
             // btnSalvar
             // 
-            this.btnSalvar.Location = new System.Drawing.Point(135, 280);
+            this.btnSalvar.Location = new System.Drawing.Point(80, 310);
             this.btnSalvar.Name = "btnSalvar";
-            this.btnSalvar.Size = new System.Drawing.Size(90, 30);
+            this.btnSalvar.Size = new System.Drawing.Size(75, 23);
             this.btnSalvar.TabIndex = 13;
-            this.btnSalvar.Text = "&Salvar";
-            this.btnSalvar.UseVisualStyleBackColor = true;
+            this.btnSalvar.Text = "Salvar";
             this.btnSalvar.Click += new System.EventHandler(this.btnSalvar_Click);
             // 
             // btnCancelar
             // 
-            this.btnCancelar.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancelar.Location = new System.Drawing.Point(231, 280);
+            this.btnCancelar.Location = new System.Drawing.Point(200, 310);
             this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(90, 30);
-            this.btnCancelar.TabIndex = 0;
-            this.btnCancelar.Text = "&Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
-            // 
-            // txtSenha
-            // 
-            this.txtSenha.Location = new System.Drawing.Point(136, 125);
-            this.txtSenha.Name = "txtSenha";
-            this.txtSenha.Size = new System.Drawing.Size(250, 22);
-            this.txtSenha.TabIndex = 6;
-            this.txtSenha.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Maroon;
-            this.pictureBox1.Location = new System.Drawing.Point(12, 42);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(117, 270);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 14;
-            this.pictureBox1.TabStop = false;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.Maroon;
-            this.label1.Location = new System.Drawing.Point(25, 134);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(42, 13);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "&Senha:";
-            // 
-            // lblNome
-            // 
-            this.lblNome.AutoSize = true;
-            this.lblNome.BackColor = System.Drawing.Color.Maroon;
-            this.lblNome.Location = new System.Drawing.Point(25, 54);
-            this.lblNome.Name = "lblNome";
-            this.lblNome.Size = new System.Drawing.Size(40, 13);
-            this.lblNome.TabIndex = 1;
-            this.lblNome.Text = "&Nome:";
-            // 
-            // lblEmail
-            // 
-            this.lblEmail.AutoSize = true;
-            this.lblEmail.BackColor = System.Drawing.Color.Maroon;
-            this.lblEmail.Location = new System.Drawing.Point(25, 94);
-            this.lblEmail.Name = "lblEmail";
-            this.lblEmail.Size = new System.Drawing.Size(37, 13);
-            this.lblEmail.TabIndex = 3;
-            this.lblEmail.Text = "&Email:";
-            // 
-            // lblTelefone
-            // 
-            this.lblTelefone.AutoSize = true;
-            this.lblTelefone.BackColor = System.Drawing.Color.Maroon;
-            this.lblTelefone.Location = new System.Drawing.Point(25, 171);
-            this.lblTelefone.Name = "lblTelefone";
-            this.lblTelefone.Size = new System.Drawing.Size(59, 13);
-            this.lblTelefone.TabIndex = 7;
-            this.lblTelefone.Text = "&Telemovel:";
-            // 
-            // lblPlano
-            // 
-            this.lblPlano.AutoSize = true;
-            this.lblPlano.BackColor = System.Drawing.Color.Maroon;
-            this.lblPlano.Location = new System.Drawing.Point(25, 211);
-            this.lblPlano.Name = "lblPlano";
-            this.lblPlano.Size = new System.Drawing.Size(39, 13);
-            this.lblPlano.TabIndex = 9;
-            this.lblPlano.Text = "&Plano:";
-            // 
-            // lblLimite
-            // 
-            this.lblLimite.AutoSize = true;
-            this.lblLimite.BackColor = System.Drawing.Color.Maroon;
-            this.lblLimite.Location = new System.Drawing.Point(25, 251);
-            this.lblLimite.Name = "lblLimite";
-            this.lblLimite.Size = new System.Drawing.Size(90, 13);
-            this.lblLimite.TabIndex = 11;
-            this.lblLimite.Text = "&Limite Produtos:";
-            // 
-            // menuStrip1
-            // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.produtosToolStripMenuItem,
-            this.PainelPrincipal});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(413, 24);
-            this.menuStrip1.TabIndex = 15;
-            this.menuStrip1.Text = "menuStrip1";
-            // 
-            // produtosToolStripMenuItem
-            // 
-            this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem});
-            this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
-            this.produtosToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
-            this.produtosToolStripMenuItem.Text = "&Produtos";
-            // 
-            // editarProdutosToolStripMenuItem
-            // 
-            this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
-            this.editarProdutosToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.editarProdutosToolStripMenuItem.Text = "&Editar Produtos";
-            // 
-            // PainelPrincipal
-            // 
-            this.PainelPrincipal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.perfilDetalhesToolStripMenuItem1,
-            this.perfilEditarToolStripMenuItem,
-            this.painelPerfisToolStripMenuItem});
-            this.PainelPrincipal.Name = "PainelPrincipal";
-            this.PainelPrincipal.Size = new System.Drawing.Size(80, 20);
-            this.PainelPrincipal.Text = "&Utilizadores";
-            // 
-            // perfilDetalhesToolStripMenuItem1
-            // 
-            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
-            this.perfilDetalhesToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.perfilDetalhesToolStripMenuItem1.Text = "&Perfil Detalhes";
-            // 
-            // perfilEditarToolStripMenuItem
-            // 
-            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
-            this.perfilEditarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.perfilEditarToolStripMenuItem.Text = "&Perfil Editar";
-            // 
-            // painelPerfisToolStripMenuItem
-            // 
-            this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
-            this.painelPerfisToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.painelPerfisToolStripMenuItem.Text = "&Painel Perfis";
+            this.btnCancelar.Size = new System.Drawing.Size(75, 23);
+            this.btnCancelar.TabIndex = 14;
+            this.btnCancelar.Text = "Cancelar";
+            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
             // 
             // FormPerfilEditar
             // 
-            this.BackColor = System.Drawing.Color.Brown;
-            this.ClientSize = new System.Drawing.Size(413, 335);
-            this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(380, 370);
             this.Controls.Add(this.lblNome);
-            this.Controls.Add(this.lblEmail);
-            this.Controls.Add(this.lblTelefone);
-            this.Controls.Add(this.lblPlano);
-            this.Controls.Add(this.lblLimite);
-            this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.txtSenha);
             this.Controls.Add(this.txtNome);
+            this.Controls.Add(this.lblEmail);
             this.Controls.Add(this.txtEmail);
+            this.Controls.Add(this.lblTelefone);
             this.Controls.Add(this.txtTelefone);
-            this.Controls.Add(this.txtPlano);
-            this.Controls.Add(this.txtLimiteProdutos);
+            this.Controls.Add(this.lblPlano);
+            this.Controls.Add(this.cmbPlano);
+            this.Controls.Add(this.lblCanal);
+            this.Controls.Add(this.cmbCanal);
+            this.Controls.Add(this.lblNotificacoes);
+            this.Controls.Add(this.clbNotificacoes);
+            this.Controls.Add(this.chkAtivo);
             this.Controls.Add(this.btnSalvar);
             this.Controls.Add(this.btnCancelar);
-            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "FormPerfilEditar";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Editar Perfil de Utilizador";
+            this.Text = "Editar Perfil";
             this.Load += new System.EventHandler(this.FormPerfilEditar_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -269,28 +193,20 @@
 
         #endregion
 
+        private System.Windows.Forms.Label lblNome;
         private System.Windows.Forms.TextBox txtNome;
+        private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.TextBox txtEmail;
+        private System.Windows.Forms.Label lblTelefone;
         private System.Windows.Forms.TextBox txtTelefone;
-        private System.Windows.Forms.TextBox txtPlano;
-        private System.Windows.Forms.TextBox txtLimiteProdutos;
-
+        private System.Windows.Forms.Label lblPlano;
+        private System.Windows.Forms.ComboBox cmbPlano;
+        private System.Windows.Forms.Label lblCanal;
+        private System.Windows.Forms.ComboBox cmbCanal;
+        private System.Windows.Forms.Label lblNotificacoes;
+        private System.Windows.Forms.CheckedListBox clbNotificacoes;
+        private System.Windows.Forms.CheckBox chkAtivo;
         private System.Windows.Forms.Button btnSalvar;
         private System.Windows.Forms.Button btnCancelar;
-        private System.Windows.Forms.TextBox txtSenha;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label lblNome;
-        private System.Windows.Forms.Label lblEmail;
-        private System.Windows.Forms.Label lblTelefone;
-        private System.Windows.Forms.Label lblPlano;
-        private System.Windows.Forms.Label lblLimite;
-        private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem produtosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarProdutosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem PainelPrincipal;
-        private System.Windows.Forms.ToolStripMenuItem perfilDetalhesToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem perfilEditarToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem painelPerfisToolStripMenuItem;
     }
 }

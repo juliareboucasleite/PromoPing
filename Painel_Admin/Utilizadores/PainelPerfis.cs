@@ -1,13 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -17,6 +11,7 @@ namespace Painel_Admin
         public PainelPerfis()
         {
             InitializeComponent();
+            CarregarPerfis();
         }
 
         private void PainelPerfis_Load(object sender, EventArgs e)
@@ -33,9 +28,13 @@ namespace Painel_Admin
                 using (MySqlConnection con = new MySqlConnection(connStr))
                 {
                     con.Open();
-                    string query = "SELECT Id, Nome, Senha FROM perfis";
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(query, con);
+                    string query = @"
+                        SELECT u.id, u.nome, u.email, u.senha, u.telefone, 
+                               c.Plano, c.LimiteProdutos
+                        FROM utilizadores u
+                        LEFT JOIN configutilizador c ON u.id = c.UserId";
 
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(query, con);
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
 
@@ -50,8 +49,8 @@ namespace Painel_Admin
 
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            FormPerfilEditar form = new FormPerfilEditar();
-            if (form.ShowDialog() == DialogResult.OK)
+            FormRegistar frm = new FormRegistar();
+            if (frm.ShowDialog() == DialogResult.OK)
             {
                 CarregarPerfis();
             }
@@ -59,16 +58,22 @@ namespace Painel_Admin
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
-            if (dgvPerfis.SelectedRows.Count > 0)
+            if (dgvPerfis.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvPerfis.SelectedRows[0].Cells["Id"].Value);
-                string nome = dgvPerfis.SelectedRows[0].Cells["Nome"].Value.ToString();
-                string senha = dgvPerfis.SelectedRows[0].Cells["Senha"].Value.ToString();
+                int id = Convert.ToInt32(dgvPerfis.CurrentRow.Cells["id"].Value);
+                string nome = dgvPerfis.CurrentRow.Cells["nome"].Value.ToString();
+                string email = dgvPerfis.CurrentRow.Cells["email"].Value.ToString();
+                string telefone = dgvPerfis.CurrentRow.Cells["telefone"].Value.ToString();
+                string plano = dgvPerfis.CurrentRow.Cells["Plano"].Value.ToString();
 
-                FormPerfilEditar form = new FormPerfilEditar(id, nome, senha);
-                if (form.ShowDialog() == DialogResult.OK)
+                // valores adicionais (canal e ativo) — puxar depois do banco ou default
+                string canal = "email";
+                bool ativo = true;
+
+                FormPerfilEditar frm = new FormPerfilEditar(id, nome, email, telefone, plano, canal, ativo);
+                if (frm.ShowDialog() == DialogResult.OK)
                 {
-                    CarregarPerfis();
+                    CarregarPerfis(); // recarregar depois de editar
                 }
             }
         }
@@ -83,7 +88,8 @@ namespace Painel_Admin
                 using (MySqlConnection con = new MySqlConnection(connStr))
                 {
                     con.Open();
-                    MySqlCommand cmd = new MySqlCommand("DELETE FROM perfis WHERE Id=@id", con);
+                    // remove utilizador (configutilizador é ON DELETE CASCADE se FK configurada)
+                    MySqlCommand cmd = new MySqlCommand("DELETE FROM utilizadores WHERE Id=@id", con);
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.ExecuteNonQuery();
                 }
@@ -91,11 +97,15 @@ namespace Painel_Admin
                 CarregarPerfis();
             }
         }
-        
 
         private void btnAtualizar_Click(object sender, EventArgs e)
         {
             CarregarPerfis();
+        }
+
+        private void panelBotoes_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

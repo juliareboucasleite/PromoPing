@@ -4,9 +4,6 @@
     {
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Limpa recursos.
-        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -43,55 +40,79 @@
             // 
             this.dgvPerfis.AllowUserToAddRows = false;
             this.dgvPerfis.AllowUserToDeleteRows = false;
-            this.dgvPerfis.BackgroundColor = System.Drawing.Color.Brown;
+            this.dgvPerfis.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvPerfis.BackgroundColor = System.Drawing.Color.White;
+            this.dgvPerfis.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvPerfis.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightGray;
+            this.dgvPerfis.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.dgvPerfis.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPerfis.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.dgvPerfis.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            this.dgvPerfis.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+            this.dgvPerfis.EnableHeadersVisualStyles = false;
             this.dgvPerfis.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvPerfis.Location = new System.Drawing.Point(0, 0);
             this.dgvPerfis.MultiSelect = false;
             this.dgvPerfis.Name = "dgvPerfis";
             this.dgvPerfis.ReadOnly = true;
+            this.dgvPerfis.RowHeadersVisible = false;
             this.dgvPerfis.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvPerfis.Size = new System.Drawing.Size(802, 412);
             this.dgvPerfis.TabIndex = 0;
             // 
             // btnAdicionar
             // 
+            this.btnAdicionar.BackColor = System.Drawing.Color.ForestGreen;
+            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAdicionar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAdicionar.ForeColor = System.Drawing.Color.White;
             this.btnAdicionar.Location = new System.Drawing.Point(11, 8);
             this.btnAdicionar.Name = "btnAdicionar";
             this.btnAdicionar.Size = new System.Drawing.Size(90, 27);
             this.btnAdicionar.TabIndex = 1;
             this.btnAdicionar.Text = "&Adicionar";
-            this.btnAdicionar.UseVisualStyleBackColor = true;
+            this.btnAdicionar.UseVisualStyleBackColor = false;
             this.btnAdicionar.Click += new System.EventHandler(this.btnAdicionar_Click);
             // 
             // btnEditar
             // 
+            this.btnEditar.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEditar.ForeColor = System.Drawing.Color.White;
             this.btnEditar.Location = new System.Drawing.Point(111, 8);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(90, 27);
             this.btnEditar.TabIndex = 2;
             this.btnEditar.Text = "&Editar";
-            this.btnEditar.UseVisualStyleBackColor = true;
+            this.btnEditar.UseVisualStyleBackColor = false;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
             // btnRemover
             // 
+            this.btnRemover.BackColor = System.Drawing.Color.Firebrick;
+            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemover.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnRemover.ForeColor = System.Drawing.Color.White;
             this.btnRemover.Location = new System.Drawing.Point(211, 8);
             this.btnRemover.Name = "btnRemover";
             this.btnRemover.Size = new System.Drawing.Size(90, 27);
             this.btnRemover.TabIndex = 3;
             this.btnRemover.Text = "&Remover";
-            this.btnRemover.UseVisualStyleBackColor = true;
+            this.btnRemover.UseVisualStyleBackColor = false;
             this.btnRemover.Click += new System.EventHandler(this.btnRemover_Click);
             // 
             // btnAtualizar
             // 
+            this.btnAtualizar.BackColor = System.Drawing.Color.DimGray;
+            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAtualizar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAtualizar.ForeColor = System.Drawing.Color.White;
             this.btnAtualizar.Location = new System.Drawing.Point(311, 8);
             this.btnAtualizar.Name = "btnAtualizar";
             this.btnAtualizar.Size = new System.Drawing.Size(120, 27);
             this.btnAtualizar.TabIndex = 0;
-            this.btnAtualizar.Text = "&Atualizar Estatísticas";
-            this.btnAtualizar.UseVisualStyleBackColor = true;
+            this.btnAtualizar.Text = "&Atualizar";
+            this.btnAtualizar.UseVisualStyleBackColor = false;
             this.btnAtualizar.Click += new System.EventHandler(this.btnAtualizar_Click);
             // 
             // panelBotoes

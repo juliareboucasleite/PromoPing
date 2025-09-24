@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BCrypt.Net-Next, Version=4.0.3.0, Culture=neutral, PublicKeyToken=1e11be04b6288443, processorArchitecture=MSIL">
+      <HintPath>packages\BCrypt.Net-Next.4.0.3\lib\net48\BCrypt.Net-Next.dll</HintPath>
+    </Reference>
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
       <HintPath>packages\BouncyCastle.Cryptography.2.5.1\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
@@ -70,15 +73,15 @@
       <HintPath>packages\System.IO.Pipelines.5.0.2\lib\net461\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -98,29 +101,50 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbConfig.cs" />
-    <Compile Include="Produtos\EditarProdutos.cs">
+    <Compile Include="Core\DbConfig.cs" />
+    <Compile Include="Produtos\FormProdutoEditar.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Produtos\EditarProdutos.Designer.cs">
-      <DependentUpon>EditarProdutos.cs</DependentUpon>
+    <Compile Include="Produtos\FormProdutoEditar.Designer.cs">
+      <DependentUpon>FormProdutoEditar.cs</DependentUpon>
     </Compile>
-    <Compile Include="Painel.cs">
+    <Compile Include="Repositories\PreferenciaNotificacaoRepository.cs" />
+    <Compile Include="Repositories\ProdutoRepository.cs" />
+    <Compile Include="Repositories\UtilizadorRepository.cs" />
+    <Compile Include="Utilizadores\FormNotificacaoEditar.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Painel.Designer.cs">
-      <DependentUpon>Painel.cs</DependentUpon>
+    <Compile Include="Utilizadores\FormNotificacaoEditar.Designer.cs">
+      <DependentUpon>FormNotificacaoEditar.cs</DependentUpon>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\FormLogin.cs">
+    <Compile Include="Utilizadores\FormNotificacoes.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\FormLogin.Designer.cs">
+    <Compile Include="Utilizadores\FormNotificacoes.Designer.cs">
+      <DependentUpon>FormNotificacoes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Produtos\ProdutosListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Produtos\ProdutosListForm.Designer.cs">
+      <DependentUpon>ProdutosListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PainelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PainelForm.Designer.cs">
+      <DependentUpon>PainelForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\FormLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\FormLogin.Designer.cs">
       <DependentUpon>FormLogin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\Suporte.cs">
+    <Compile Include="Auth\Suporte.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\Suporte.Designer.cs">
+    <Compile Include="Auth\Suporte.Designer.cs">
       <DependentUpon>Suporte.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilizadores\FormPerfilDetalhes.cs">
@@ -135,11 +159,17 @@
     <Compile Include="Utilizadores\FormPerfilEditar.Designer.cs">
       <DependentUpon>FormPerfilEditar.cs</DependentUpon>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\FormRegistar.cs">
+    <Compile Include="Auth\FormRegistar.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Login&amp;Registro&amp;Suporte\FormRegistar.Designer.cs">
+    <Compile Include="Auth\FormRegistar.Designer.cs">
       <DependentUpon>FormRegistar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utilizadores\FormUtilizadoresList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utilizadores\FormUtilizadoresList.Designer.cs">
+      <DependentUpon>FormUtilizadoresList.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilizadores\PainelPerfis.cs">
       <SubType>Form</SubType>
@@ -149,20 +179,29 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Painel.aa.resx">
-      <DependentUpon>Painel.cs</DependentUpon>
+    <EmbeddedResource Include="PainelForm.aa.resx">
+      <DependentUpon>PainelForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Painel.resx">
-      <DependentUpon>Painel.cs</DependentUpon>
+    <EmbeddedResource Include="PainelForm.resx">
+      <DependentUpon>PainelForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Login&amp;Registro&amp;Suporte\FormLogin.resx">
+    <EmbeddedResource Include="Auth\FormLogin.resx">
       <DependentUpon>FormLogin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Produtos\EditarProdutos.resx">
-      <DependentUpon>EditarProdutos.cs</DependentUpon>
+    <EmbeddedResource Include="Produtos\ProdutosListForm.resx">
+      <DependentUpon>ProdutosListForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Login&amp;Registro&amp;Suporte\Suporte.resx">
+    <EmbeddedResource Include="Auth\Suporte.resx">
       <DependentUpon>Suporte.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Produtos\FormProdutoEditar.resx">
+      <DependentUpon>FormProdutoEditar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilizadores\FormNotificacaoEditar.resx">
+      <DependentUpon>FormNotificacaoEditar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilizadores\FormNotificacoes.resx">
+      <DependentUpon>FormNotificacoes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Utilizadores\FormPerfilDetalhes.resx">
       <DependentUpon>FormPerfilDetalhes.cs</DependentUpon>
@@ -170,8 +209,11 @@
     <EmbeddedResource Include="Utilizadores\FormPerfilEditar.resx">
       <DependentUpon>FormPerfilEditar.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Login&amp;Registro&amp;Suporte\FormRegistar.resx">
+    <EmbeddedResource Include="Auth\FormRegistar.resx">
       <DependentUpon>FormRegistar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilizadores\FormUtilizadoresList.resx">
+      <DependentUpon>FormUtilizadoresList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Utilizadores\PainelPerfis.resx">
       <DependentUpon>PainelPerfis.cs</DependentUpon>
@@ -185,6 +227,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Core\packages.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -197,7 +240,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="Core\App.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

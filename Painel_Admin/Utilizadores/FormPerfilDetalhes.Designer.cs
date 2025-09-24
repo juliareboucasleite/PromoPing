@@ -2,126 +2,282 @@
 {
     partial class FormPerfilDetalhes
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPerfilDetalhes));
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.produtosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PainelPrincipal = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilDetalhesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilEditarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip1.SuspendLayout();
+            this.grpInfo = new System.Windows.Forms.GroupBox();
+            this.lblNome = new System.Windows.Forms.Label();
+            this.lblEmail = new System.Windows.Forms.Label();
+            this.lblTelefone = new System.Windows.Forms.Label();
+            this.lblPlano = new System.Windows.Forms.Label();
+            this.lblAtivo = new System.Windows.Forms.Label();
+            this.grpEstatisticas = new System.Windows.Forms.GroupBox();
+            this.lblProdutos = new System.Windows.Forms.Label();
+            this.lblNotificacoes = new System.Windows.Forms.Label();
+            this.lblPoupado = new System.Windows.Forms.Label();
+            this.lblMembroDesde = new System.Windows.Forms.Label();
+            this.lblUltimoLogin = new System.Windows.Forms.Label();
+            this.lblLimiteProdutos = new System.Windows.Forms.Label();
+            this.lblCanalPreferido = new System.Windows.Forms.Label();
+            this.grpPreferencias = new System.Windows.Forms.GroupBox();
+            this.clbNotificacoes = new System.Windows.Forms.CheckedListBox();
+            this.btnSalvar = new System.Windows.Forms.Button();
+            this.btnEditarPerfil = new System.Windows.Forms.Button();
+            this.grpInfo.SuspendLayout();
+            this.grpEstatisticas.SuspendLayout();
+            this.grpPreferencias.SuspendLayout();
             this.SuspendLayout();
             // 
-            // menuStrip1
+            // grpInfo
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.produtosToolStripMenuItem,
-            this.PainelPrincipal});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
-            this.menuStrip1.TabIndex = 2;
-            this.menuStrip1.Text = "menuStrip1";
+            this.grpInfo.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.grpInfo.Controls.Add(this.lblNome);
+            this.grpInfo.Controls.Add(this.lblEmail);
+            this.grpInfo.Controls.Add(this.lblTelefone);
+            this.grpInfo.Controls.Add(this.lblPlano);
+            this.grpInfo.Controls.Add(this.lblAtivo);
+            this.grpInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpInfo.Location = new System.Drawing.Point(20, 20);
+            this.grpInfo.Name = "grpInfo";
+            this.grpInfo.Size = new System.Drawing.Size(350, 130);
+            this.grpInfo.TabIndex = 0;
+            this.grpInfo.TabStop = false;
+            this.grpInfo.Text = "Informações Pessoais";
             // 
-            // produtosToolStripMenuItem
+            // lblNome
             // 
-            this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem});
-            this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
-            this.produtosToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
-            this.produtosToolStripMenuItem.Text = "&Produtos";
+            this.lblNome.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblNome.Location = new System.Drawing.Point(10, 25);
+            this.lblNome.Name = "lblNome";
+            this.lblNome.Size = new System.Drawing.Size(100, 23);
+            this.lblNome.TabIndex = 0;
+            this.lblNome.Text = "Nome: [---]";
             // 
-            // editarProdutosToolStripMenuItem
+            // lblEmail
             // 
-            this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
-            this.editarProdutosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.editarProdutosToolStripMenuItem.Text = "&Editar Produtos";
+            this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblEmail.Location = new System.Drawing.Point(10, 50);
+            this.lblEmail.Name = "lblEmail";
+            this.lblEmail.Size = new System.Drawing.Size(100, 23);
+            this.lblEmail.TabIndex = 1;
+            this.lblEmail.Text = "Email: [---]";
             // 
-            // PainelPrincipal
+            // lblTelefone
             // 
-            this.PainelPrincipal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.perfilDetalhesToolStripMenuItem1,
-            this.perfilEditarToolStripMenuItem,
-            this.painelPerfisToolStripMenuItem});
-            this.PainelPrincipal.Name = "PainelPrincipal";
-            this.PainelPrincipal.Size = new System.Drawing.Size(80, 20);
-            this.PainelPrincipal.Text = "&Utilizadores";
+            this.lblTelefone.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblTelefone.Location = new System.Drawing.Point(10, 75);
+            this.lblTelefone.Name = "lblTelefone";
+            this.lblTelefone.Size = new System.Drawing.Size(100, 23);
+            this.lblTelefone.TabIndex = 2;
+            this.lblTelefone.Text = "Telefone: [---]";
             // 
-            // perfilDetalhesToolStripMenuItem1
+            // lblPlano
             // 
-            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
-            this.perfilDetalhesToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.perfilDetalhesToolStripMenuItem1.Text = "&Perfil Detalhes";
+            this.lblPlano.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblPlano.Location = new System.Drawing.Point(10, 100);
+            this.lblPlano.Name = "lblPlano";
+            this.lblPlano.Size = new System.Drawing.Size(100, 23);
+            this.lblPlano.TabIndex = 3;
+            this.lblPlano.Text = "Plano: [---]";
             // 
-            // perfilEditarToolStripMenuItem
+            // lblAtivo
             // 
-            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
-            this.perfilEditarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.perfilEditarToolStripMenuItem.Text = "&Perfil Editar";
+            this.lblAtivo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblAtivo.Location = new System.Drawing.Point(200, 100);
+            this.lblAtivo.Name = "lblAtivo";
+            this.lblAtivo.Size = new System.Drawing.Size(100, 23);
+            this.lblAtivo.TabIndex = 4;
+            this.lblAtivo.Text = "Ativo: [---]";
             // 
-            // painelPerfisToolStripMenuItem
+            // grpEstatisticas
             // 
-            this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
-            this.painelPerfisToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.painelPerfisToolStripMenuItem.Text = "&Painel Perfis";
+            this.grpEstatisticas.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.grpEstatisticas.Controls.Add(this.lblProdutos);
+            this.grpEstatisticas.Controls.Add(this.lblNotificacoes);
+            this.grpEstatisticas.Controls.Add(this.lblPoupado);
+            this.grpEstatisticas.Controls.Add(this.lblMembroDesde);
+            this.grpEstatisticas.Controls.Add(this.lblUltimoLogin);
+            this.grpEstatisticas.Controls.Add(this.lblLimiteProdutos);
+            this.grpEstatisticas.Controls.Add(this.lblCanalPreferido);
+            this.grpEstatisticas.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpEstatisticas.Location = new System.Drawing.Point(20, 160);
+            this.grpEstatisticas.Name = "grpEstatisticas";
+            this.grpEstatisticas.Size = new System.Drawing.Size(350, 170);
+            this.grpEstatisticas.TabIndex = 1;
+            this.grpEstatisticas.TabStop = false;
+            this.grpEstatisticas.Text = "Estatísticas";
+            // 
+            // lblProdutos
+            // 
+            this.lblProdutos.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblProdutos.Location = new System.Drawing.Point(10, 25);
+            this.lblProdutos.Name = "lblProdutos";
+            this.lblProdutos.Size = new System.Drawing.Size(100, 23);
+            this.lblProdutos.TabIndex = 0;
+            this.lblProdutos.Text = "Produtos monitorizados: [0]";
+            // 
+            // lblNotificacoes
+            // 
+            this.lblNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblNotificacoes.Location = new System.Drawing.Point(10, 45);
+            this.lblNotificacoes.Name = "lblNotificacoes";
+            this.lblNotificacoes.Size = new System.Drawing.Size(100, 23);
+            this.lblNotificacoes.TabIndex = 1;
+            this.lblNotificacoes.Text = "Notificações enviadas: [0]";
+            // 
+            // lblPoupado
+            // 
+            this.lblPoupado.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblPoupado.ForeColor = System.Drawing.Color.ForestGreen;
+            this.lblPoupado.Location = new System.Drawing.Point(10, 65);
+            this.lblPoupado.Name = "lblPoupado";
+            this.lblPoupado.Size = new System.Drawing.Size(100, 23);
+            this.lblPoupado.TabIndex = 2;
+            this.lblPoupado.Text = "Dinheiro poupado: €0,00";
+            // 
+            // lblMembroDesde
+            // 
+            this.lblMembroDesde.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblMembroDesde.Location = new System.Drawing.Point(10, 90);
+            this.lblMembroDesde.Name = "lblMembroDesde";
+            this.lblMembroDesde.Size = new System.Drawing.Size(100, 23);
+            this.lblMembroDesde.TabIndex = 3;
+            this.lblMembroDesde.Text = "Membro desde: ---";
+            // 
+            // lblUltimoLogin
+            // 
+            this.lblUltimoLogin.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblUltimoLogin.Location = new System.Drawing.Point(10, 110);
+            this.lblUltimoLogin.Name = "lblUltimoLogin";
+            this.lblUltimoLogin.Size = new System.Drawing.Size(100, 23);
+            this.lblUltimoLogin.TabIndex = 4;
+            this.lblUltimoLogin.Text = "Último login: ---";
+            // 
+            // lblLimiteProdutos
+            // 
+            this.lblLimiteProdutos.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblLimiteProdutos.Location = new System.Drawing.Point(10, 130);
+            this.lblLimiteProdutos.Name = "lblLimiteProdutos";
+            this.lblLimiteProdutos.Size = new System.Drawing.Size(100, 23);
+            this.lblLimiteProdutos.TabIndex = 5;
+            this.lblLimiteProdutos.Text = "Limite de produtos: ---";
+            // 
+            // lblCanalPreferido
+            // 
+            this.lblCanalPreferido.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblCanalPreferido.Location = new System.Drawing.Point(10, 150);
+            this.lblCanalPreferido.Name = "lblCanalPreferido";
+            this.lblCanalPreferido.Size = new System.Drawing.Size(100, 23);
+            this.lblCanalPreferido.TabIndex = 6;
+            this.lblCanalPreferido.Text = "Canal preferido: ---";
+            // 
+            // grpPreferencias
+            // 
+            this.grpPreferencias.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.grpPreferencias.Controls.Add(this.clbNotificacoes);
+            this.grpPreferencias.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpPreferencias.Location = new System.Drawing.Point(20, 340);
+            this.grpPreferencias.Name = "grpPreferencias";
+            this.grpPreferencias.Size = new System.Drawing.Size(350, 120);
+            this.grpPreferencias.TabIndex = 2;
+            this.grpPreferencias.TabStop = false;
+            this.grpPreferencias.Text = "Preferências de Notificação";
+            // 
+            // clbNotificacoes
+            // 
+            this.clbNotificacoes.CheckOnClick = true;
+            this.clbNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.clbNotificacoes.Items.AddRange(new object[] {
+            "Email",
+            "Discord",
+            "Telegram",
+            "WhatsApp"});
+            this.clbNotificacoes.Location = new System.Drawing.Point(10, 25);
+            this.clbNotificacoes.Name = "clbNotificacoes";
+            this.clbNotificacoes.Size = new System.Drawing.Size(200, 76);
+            this.clbNotificacoes.TabIndex = 0;
+            // 
+            // btnSalvar
+            // 
+            this.btnSalvar.BackColor = System.Drawing.Color.Firebrick;
+            this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSalvar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnSalvar.ForeColor = System.Drawing.Color.White;
+            this.btnSalvar.Location = new System.Drawing.Point(40, 470);
+            this.btnSalvar.Name = "btnSalvar";
+            this.btnSalvar.Size = new System.Drawing.Size(140, 40);
+            this.btnSalvar.TabIndex = 3;
+            this.btnSalvar.Text = "💾 Salvar Preferências";
+            this.btnSalvar.UseVisualStyleBackColor = false;
+            this.btnSalvar.Click += new System.EventHandler(this.btnSalvar_Click);
+            // 
+            // btnEditarPerfil
+            // 
+            this.btnEditarPerfil.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnEditarPerfil.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditarPerfil.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEditarPerfil.ForeColor = System.Drawing.Color.White;
+            this.btnEditarPerfil.Location = new System.Drawing.Point(200, 470);
+            this.btnEditarPerfil.Name = "btnEditarPerfil";
+            this.btnEditarPerfil.Size = new System.Drawing.Size(140, 40);
+            this.btnEditarPerfil.TabIndex = 4;
+            this.btnEditarPerfil.Text = "✏️ Editar Perfil";
+            this.btnEditarPerfil.UseVisualStyleBackColor = false;
+            this.btnEditarPerfil.Click += new System.EventHandler(this.btnEditarPerfil_Click);
             // 
             // FormPerfilDetalhes
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Maroon;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.menuStrip1);
-            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BackColor = System.Drawing.Color.Gainsboro;
+            this.ClientSize = new System.Drawing.Size(400, 530);
+            this.Controls.Add(this.grpInfo);
+            this.Controls.Add(this.grpEstatisticas);
+            this.Controls.Add(this.grpPreferencias);
+            this.Controls.Add(this.btnSalvar);
+            this.Controls.Add(this.btnEditarPerfil);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "FormPerfilDetalhes";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "FormPerfilDetalhes";
+            this.Text = "Detalhes do Perfil";
             this.Load += new System.EventHandler(this.FormPerfilDetalhes_Load);
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.grpInfo.ResumeLayout(false);
+            this.grpEstatisticas.ResumeLayout(false);
+            this.grpPreferencias.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem produtosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarProdutosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem PainelPrincipal;
-        private System.Windows.Forms.ToolStripMenuItem perfilDetalhesToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem perfilEditarToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem painelPerfisToolStripMenuItem;
+        private System.Windows.Forms.GroupBox grpInfo;
+        private System.Windows.Forms.Label lblNome;
+        private System.Windows.Forms.Label lblEmail;
+        private System.Windows.Forms.Label lblTelefone;
+        private System.Windows.Forms.Label lblPlano;
+        private System.Windows.Forms.Label lblAtivo;
+
+        private System.Windows.Forms.GroupBox grpEstatisticas;
+        private System.Windows.Forms.Label lblProdutos;
+        private System.Windows.Forms.Label lblNotificacoes;
+        private System.Windows.Forms.Label lblPoupado;
+        private System.Windows.Forms.Label lblMembroDesde;
+        private System.Windows.Forms.Label lblUltimoLogin;
+        private System.Windows.Forms.Label lblLimiteProdutos;
+        private System.Windows.Forms.Label lblCanalPreferido;
+
+        private System.Windows.Forms.GroupBox grpPreferencias;
+        private System.Windows.Forms.CheckedListBox clbNotificacoes;
+
+        private System.Windows.Forms.Button btnSalvar;
+        private System.Windows.Forms.Button btnEditarPerfil;
     }
 }
