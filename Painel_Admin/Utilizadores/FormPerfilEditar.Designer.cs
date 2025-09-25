@@ -140,7 +140,7 @@
             // 
             // chkAtivo
             // 
-            this.chkAtivo.Location = new System.Drawing.Point(120, 265);
+            this.chkAtivo.Location = new System.Drawing.Point(23, 216);
             this.chkAtivo.Name = "chkAtivo";
             this.chkAtivo.Size = new System.Drawing.Size(104, 24);
             this.chkAtivo.TabIndex = 12;
@@ -148,7 +148,7 @@
             // 
             // btnSalvar
             // 
-            this.btnSalvar.Location = new System.Drawing.Point(80, 310);
+            this.btnSalvar.Location = new System.Drawing.Point(120, 269);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(75, 23);
             this.btnSalvar.TabIndex = 13;
@@ -157,7 +157,7 @@
             // 
             // btnCancelar
             // 
-            this.btnCancelar.Location = new System.Drawing.Point(200, 310);
+            this.btnCancelar.Location = new System.Drawing.Point(265, 269);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(75, 23);
             this.btnCancelar.TabIndex = 14;
@@ -166,7 +166,7 @@
             // 
             // FormPerfilEditar
             // 
-            this.ClientSize = new System.Drawing.Size(380, 370);
+            this.ClientSize = new System.Drawing.Size(380, 314);
             this.Controls.Add(this.lblNome);
             this.Controls.Add(this.txtNome);
             this.Controls.Add(this.lblEmail);

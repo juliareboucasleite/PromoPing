@@ -28,6 +28,8 @@
             this.btnRegistrar = new System.Windows.Forms.ToolStripMenuItem();
             this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.BotaoLimpar = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip2.SuspendLayout();
             this.SuspendLayout();
@@ -35,7 +37,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(59, 48);
+            this.pictureBox1.Location = new System.Drawing.Point(102, 52);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(89, 78);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -44,23 +46,23 @@
             // 
             // TxtNome
             // 
-            this.TxtNome.Location = new System.Drawing.Point(36, 155);
+            this.TxtNome.Location = new System.Drawing.Point(66, 158);
             this.TxtNome.Name = "TxtNome";
-            this.TxtNome.Size = new System.Drawing.Size(137, 22);
+            this.TxtNome.Size = new System.Drawing.Size(175, 20);
             this.TxtNome.TabIndex = 6;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(77, 129);
+            this.label1.Location = new System.Drawing.Point(120, 133);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.Size = new System.Drawing.Size(50, 13);
             this.label1.TabIndex = 5;
             this.label1.Text = "Utilizador";
             // 
             // BotaoEntrar
             // 
-            this.BotaoEntrar.Location = new System.Drawing.Point(112, 227);
+            this.BotaoEntrar.Location = new System.Drawing.Point(180, 230);
             this.BotaoEntrar.Name = "BotaoEntrar";
             this.BotaoEntrar.Size = new System.Drawing.Size(61, 23);
             this.BotaoEntrar.TabIndex = 4;
@@ -70,9 +72,9 @@
             // 
             // TxtSenha
             // 
-            this.TxtSenha.Location = new System.Drawing.Point(36, 191);
+            this.TxtSenha.Location = new System.Drawing.Point(66, 194);
             this.TxtSenha.Name = "TxtSenha";
-            this.TxtSenha.Size = new System.Drawing.Size(137, 22);
+            this.TxtSenha.Size = new System.Drawing.Size(175, 20);
             this.TxtSenha.TabIndex = 8;
             // 
             // menuStrip2
@@ -82,7 +84,7 @@
             this.suporteToolStripMenuItem});
             this.menuStrip2.Location = new System.Drawing.Point(0, 0);
             this.menuStrip2.Name = "menuStrip2";
-            this.menuStrip2.Size = new System.Drawing.Size(201, 24);
+            this.menuStrip2.Size = new System.Drawing.Size(286, 24);
             this.menuStrip2.TabIndex = 10;
             this.menuStrip2.Text = "menuStrip2";
             // 
@@ -90,27 +92,30 @@
             // 
             this.loginToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnRegistrar});
+            this.loginToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.loginToolStripMenuItem.Name = "loginToolStripMenuItem";
-            this.loginToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
+            this.loginToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
             this.loginToolStripMenuItem.Text = "Login";
             // 
             // btnRegistrar
             // 
+            this.btnRegistrar.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.btnRegistrar.Name = "btnRegistrar";
-            this.btnRegistrar.Size = new System.Drawing.Size(120, 22);
+            this.btnRegistrar.Size = new System.Drawing.Size(180, 22);
             this.btnRegistrar.Text = "Registrar";
             this.btnRegistrar.Click += new System.EventHandler(this.AcessoRegistar);
             // 
             // suporteToolStripMenuItem
             // 
+            this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
-            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
+            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.suporteToolStripMenuItem.Text = "Suporte";
-            this.suporteToolStripMenuItem.Click += new System.EventHandler(this.suporteToolStripMenuItem_Click);
+            this.suporteToolStripMenuItem.Click += new System.EventHandler(this.AcessarSuporte);
             // 
             // BotaoLimpar
             // 
-            this.BotaoLimpar.Location = new System.Drawing.Point(36, 227);
+            this.BotaoLimpar.Location = new System.Drawing.Point(66, 230);
             this.BotaoLimpar.Name = "BotaoLimpar";
             this.BotaoLimpar.Size = new System.Drawing.Size(58, 23);
             this.BotaoLimpar.TabIndex = 11;
@@ -118,11 +123,31 @@
             this.BotaoLimpar.UseVisualStyleBackColor = true;
             this.BotaoLimpar.Click += new System.EventHandler(this.BotaoLimpar_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(19, 197);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(41, 13);
+            this.label4.TabIndex = 25;
+            this.label4.Text = "&Senha:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(19, 161);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.TabIndex = 23;
+            this.label2.Text = "&Nome:";
+            // 
             // FormLogin
             // 
             this.AcceptButton = this.BotaoEntrar;
-            this.BackColor = System.Drawing.Color.Maroon;
-            this.ClientSize = new System.Drawing.Size(201, 275);
+            this.BackColor = System.Drawing.Color.Gainsboro;
+            this.ClientSize = new System.Drawing.Size(286, 293);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.BotaoLimpar);
             this.Controls.Add(this.TxtSenha);
             this.Controls.Add(this.pictureBox1);
@@ -157,5 +182,7 @@
         private System.Windows.Forms.ToolStripMenuItem btnRegistrar;
         private System.Windows.Forms.ToolStripMenuItem suporteToolStripMenuItem;
         private System.Windows.Forms.Button BotaoLimpar;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label2;
     }
 }

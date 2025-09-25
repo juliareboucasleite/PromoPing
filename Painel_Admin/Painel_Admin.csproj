@@ -226,6 +226,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Core\packages.config" />
     <None Include="packages.config" />
@@ -242,6 +243,17 @@
   <ItemGroup>
     <None Include="Core\App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\Dinheiro.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Notificacoes.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pacote.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Usuario.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

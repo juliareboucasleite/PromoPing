@@ -17,6 +17,8 @@
 
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PainelPerfis));
             this.dgvPerfis = new System.Windows.Forms.DataGridView();
             this.btnAdicionar = new System.Windows.Forms.Button();
@@ -31,6 +33,10 @@
             this.perfilDetalhesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.perfilEditarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.listarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editarNotificacoesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editarNotificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPerfis)).BeginInit();
             this.panelBotoes.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -43,14 +49,26 @@
             this.dgvPerfis.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvPerfis.BackgroundColor = System.Drawing.Color.White;
             this.dgvPerfis.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dgvPerfis.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.LightGray;
-            this.dgvPerfis.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.LightGray;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvPerfis.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvPerfis.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvPerfis.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.dgvPerfis.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            this.dgvPerfis.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
-            this.dgvPerfis.EnableHeadersVisualStyles = false;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvPerfis.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvPerfis.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvPerfis.EnableHeadersVisualStyles = false;
+            this.dgvPerfis.Location = new System.Drawing.Point(0, 0);
             this.dgvPerfis.MultiSelect = false;
             this.dgvPerfis.Name = "dgvPerfis";
             this.dgvPerfis.ReadOnly = true;
@@ -131,7 +149,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.produtosToolStripMenuItem,
-            this.PainelPrincipal});
+            this.PainelPrincipal,
+            this.editarNotificacoesToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(802, 24);
@@ -141,15 +160,18 @@
             // produtosToolStripMenuItem
             // 
             this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem});
+            this.editarProdutosToolStripMenuItem,
+            this.listarProdutosToolStripMenuItem});
+            this.produtosToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("produtosToolStripMenuItem.Image")));
             this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
-            this.produtosToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
+            this.produtosToolStripMenuItem.Size = new System.Drawing.Size(83, 20);
             this.produtosToolStripMenuItem.Text = "&Produtos";
             // 
             // editarProdutosToolStripMenuItem
             // 
+            this.editarProdutosToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("editarProdutosToolStripMenuItem.Image")));
             this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
-            this.editarProdutosToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.editarProdutosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.editarProdutosToolStripMenuItem.Text = "&Editar Produtos";
             // 
             // PainelPrincipal
@@ -158,27 +180,62 @@
             this.perfilDetalhesToolStripMenuItem1,
             this.perfilEditarToolStripMenuItem,
             this.painelPerfisToolStripMenuItem});
+            this.PainelPrincipal.Image = ((System.Drawing.Image)(resources.GetObject("PainelPrincipal.Image")));
             this.PainelPrincipal.Name = "PainelPrincipal";
-            this.PainelPrincipal.Size = new System.Drawing.Size(80, 20);
+            this.PainelPrincipal.Size = new System.Drawing.Size(96, 20);
             this.PainelPrincipal.Text = "&Utilizadores";
             // 
             // perfilDetalhesToolStripMenuItem1
             // 
+            this.perfilDetalhesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
-            this.perfilDetalhesToolStripMenuItem1.Size = new System.Drawing.Size(149, 22);
+            this.perfilDetalhesToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.perfilDetalhesToolStripMenuItem1.Text = "&Perfil Detalhes";
             // 
             // perfilEditarToolStripMenuItem
             // 
+            this.perfilEditarToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
-            this.perfilEditarToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.perfilEditarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.perfilEditarToolStripMenuItem.Text = "&Perfil Editar";
             // 
             // painelPerfisToolStripMenuItem
             // 
+            this.painelPerfisToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
-            this.painelPerfisToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.painelPerfisToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.painelPerfisToolStripMenuItem.Text = "&Painel Perfis";
+            // 
+            // listarProdutosToolStripMenuItem
+            // 
+            this.listarProdutosToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Pacote;
+            this.listarProdutosToolStripMenuItem.Name = "listarProdutosToolStripMenuItem";
+            this.listarProdutosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.listarProdutosToolStripMenuItem.Text = "&Listar Produtos";
+            // 
+            // editarNotificacoesToolStripMenuItem
+            // 
+            this.editarNotificacoesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editarNotificaçõesToolStripMenuItem,
+            this.notificaçõesToolStripMenuItem});
+            this.editarNotificacoesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.editarNotificacoesToolStripMenuItem.Name = "editarNotificacoesToolStripMenuItem";
+            this.editarNotificacoesToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
+            this.editarNotificacoesToolStripMenuItem.Text = "&Notificações";
+            // 
+            // editarNotificaçõesToolStripMenuItem
+            // 
+            this.editarNotificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.editarNotificaçõesToolStripMenuItem.Name = "editarNotificaçõesToolStripMenuItem";
+            this.editarNotificaçõesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.editarNotificaçõesToolStripMenuItem.Text = "&Editar Notificações";
+            // 
+            // notificaçõesToolStripMenuItem
+            // 
+            this.notificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.notificaçõesToolStripMenuItem.Name = "notificaçõesToolStripMenuItem";
+            this.notificaçõesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.notificaçõesToolStripMenuItem.Text = "Notificações";
             // 
             // PainelPerfis
             // 
@@ -218,5 +275,9 @@
         private System.Windows.Forms.ToolStripMenuItem perfilDetalhesToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem perfilEditarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem painelPerfisToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem listarProdutosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editarNotificacoesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editarNotificaçõesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
     }
 }

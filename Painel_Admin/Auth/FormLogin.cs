@@ -36,17 +36,29 @@ namespace Painel_Admin
                 try
                 {
                     con.Open();
-                    string query = "SELECT Id, Nome, Senha FROM utilizadores WHERE Email = @mail";
+                    string query = "SELECT Id, Nome, Senha FROM utilizadores WHERE Nome = @nome";
                     MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@mail", username);
+                    cmd.Parameters.AddWithValue("@nome", username);
 
                     MySqlDataReader reader = cmd.ExecuteReader();
 
                     if (reader.Read())
                     {
-                        string senhaHash = reader["Senha"].ToString();
+                        string senhaDb = reader["Senha"].ToString();
+                        bool senhaCorreta = false;
 
-                        if (BCrypt.Net.BCrypt.Verify(password, senhaHash))
+                        // Verifica se parece ser um hash BCrypt
+                        if (senhaDb.StartsWith("$2a$") || senhaDb.StartsWith("$2b$") || senhaDb.StartsWith("$2y$"))
+                        {
+                            senhaCorreta = BCrypt.Net.BCrypt.Verify(password, senhaDb);
+                        }
+                        else
+                        {
+                            // Comparação direta (texto puro)
+                            senhaCorreta = password == senhaDb;
+                        }
+
+                        if (senhaCorreta)
                         {
                             string perfil = reader["Nome"].ToString();
                             MessageBox.Show($"Bem-vindo, {perfil}!");
@@ -67,7 +79,6 @@ namespace Painel_Admin
                     {
                         MessageBox.Show("Utilizador não encontrado!");
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -86,20 +97,17 @@ namespace Painel_Admin
         {
             using (var formRegistar = new FormRegistar())
             {
+               
                 formRegistar.ShowDialog();
             }
         }
 
-        private void suporteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AcessarSuporte(object sender, EventArgs e)
         {
-            try
+            using (var formSuporte = new Suporte())
             {
-                System.Diagnostics.Process.Start("https://github.com/juliareboucasleite"); // teu link de suporte
+                formSuporte.ShowDialog();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Não foi possível abrir o suporte: " + ex.Message);
-            }
-        }
+    }
     }
 }

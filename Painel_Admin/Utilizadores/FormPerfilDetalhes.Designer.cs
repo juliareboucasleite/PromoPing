@@ -33,6 +33,18 @@
             this.clbNotificacoes = new System.Windows.Forms.CheckedListBox();
             this.btnSalvar = new System.Windows.Forms.Button();
             this.btnEditarPerfil = new System.Windows.Forms.Button();
+            this.IdNome = new System.Windows.Forms.Label();
+            this.IdEmail = new System.Windows.Forms.Label();
+            this.IdTelemovel = new System.Windows.Forms.Label();
+            this.IdPlano = new System.Windows.Forms.Label();
+            this.IdAtivo = new System.Windows.Forms.Label();
+            this.IdProdutos = new System.Windows.Forms.Label();
+            this.IdNotificacoes = new System.Windows.Forms.Label();
+            this.IdDinheiro = new System.Windows.Forms.Label();
+            this.IdMembroDesde = new System.Windows.Forms.Label();
+            this.IdUltimoLogin = new System.Windows.Forms.Label();
+            this.IdLimitesProdutos = new System.Windows.Forms.Label();
+            this.IdCanalPreferido = new System.Windows.Forms.Label();
             this.grpInfo.SuspendLayout();
             this.grpEstatisticas.SuspendLayout();
             this.grpPreferencias.SuspendLayout();
@@ -41,6 +53,11 @@
             // grpInfo
             // 
             this.grpInfo.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.grpInfo.Controls.Add(this.IdAtivo);
+            this.grpInfo.Controls.Add(this.IdPlano);
+            this.grpInfo.Controls.Add(this.IdTelemovel);
+            this.grpInfo.Controls.Add(this.IdEmail);
+            this.grpInfo.Controls.Add(this.IdNome);
             this.grpInfo.Controls.Add(this.lblNome);
             this.grpInfo.Controls.Add(this.lblEmail);
             this.grpInfo.Controls.Add(this.lblTelefone);
@@ -61,7 +78,7 @@
             this.lblNome.Name = "lblNome";
             this.lblNome.Size = new System.Drawing.Size(100, 23);
             this.lblNome.TabIndex = 0;
-            this.lblNome.Text = "Nome: [---]";
+            this.lblNome.Text = "Nome:";
             // 
             // lblEmail
             // 
@@ -70,7 +87,7 @@
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(100, 23);
             this.lblEmail.TabIndex = 1;
-            this.lblEmail.Text = "Email: [---]";
+            this.lblEmail.Text = "Email:";
             // 
             // lblTelefone
             // 
@@ -79,7 +96,7 @@
             this.lblTelefone.Name = "lblTelefone";
             this.lblTelefone.Size = new System.Drawing.Size(100, 23);
             this.lblTelefone.TabIndex = 2;
-            this.lblTelefone.Text = "Telefone: [---]";
+            this.lblTelefone.Text = "&Telemovel:";
             // 
             // lblPlano
             // 
@@ -88,7 +105,7 @@
             this.lblPlano.Name = "lblPlano";
             this.lblPlano.Size = new System.Drawing.Size(100, 23);
             this.lblPlano.TabIndex = 3;
-            this.lblPlano.Text = "Plano: [---]";
+            this.lblPlano.Text = "Plano:";
             // 
             // lblAtivo
             // 
@@ -97,11 +114,18 @@
             this.lblAtivo.Name = "lblAtivo";
             this.lblAtivo.Size = new System.Drawing.Size(100, 23);
             this.lblAtivo.TabIndex = 4;
-            this.lblAtivo.Text = "Ativo: [---]";
+            this.lblAtivo.Text = "Ativo:";
             // 
             // grpEstatisticas
             // 
             this.grpEstatisticas.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.grpEstatisticas.Controls.Add(this.IdCanalPreferido);
+            this.grpEstatisticas.Controls.Add(this.IdLimitesProdutos);
+            this.grpEstatisticas.Controls.Add(this.IdUltimoLogin);
+            this.grpEstatisticas.Controls.Add(this.IdMembroDesde);
+            this.grpEstatisticas.Controls.Add(this.IdDinheiro);
+            this.grpEstatisticas.Controls.Add(this.IdNotificacoes);
+            this.grpEstatisticas.Controls.Add(this.IdProdutos);
             this.grpEstatisticas.Controls.Add(this.lblProdutos);
             this.grpEstatisticas.Controls.Add(this.lblNotificacoes);
             this.grpEstatisticas.Controls.Add(this.lblPoupado);
@@ -141,9 +165,9 @@
             this.lblPoupado.ForeColor = System.Drawing.Color.ForestGreen;
             this.lblPoupado.Location = new System.Drawing.Point(10, 65);
             this.lblPoupado.Name = "lblPoupado";
-            this.lblPoupado.Size = new System.Drawing.Size(100, 23);
+            this.lblPoupado.Size = new System.Drawing.Size(130, 23);
             this.lblPoupado.TabIndex = 2;
-            this.lblPoupado.Text = "Dinheiro poupado: €0,00";
+            this.lblPoupado.Text = "Dinheiro poupado:";
             // 
             // lblMembroDesde
             // 
@@ -161,16 +185,16 @@
             this.lblUltimoLogin.Name = "lblUltimoLogin";
             this.lblUltimoLogin.Size = new System.Drawing.Size(100, 23);
             this.lblUltimoLogin.TabIndex = 4;
-            this.lblUltimoLogin.Text = "Último login: ---";
+            this.lblUltimoLogin.Text = "Último login:";
             // 
             // lblLimiteProdutos
             // 
             this.lblLimiteProdutos.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblLimiteProdutos.Location = new System.Drawing.Point(10, 130);
             this.lblLimiteProdutos.Name = "lblLimiteProdutos";
-            this.lblLimiteProdutos.Size = new System.Drawing.Size(100, 23);
+            this.lblLimiteProdutos.Size = new System.Drawing.Size(116, 23);
             this.lblLimiteProdutos.TabIndex = 5;
-            this.lblLimiteProdutos.Text = "Limite de produtos: ---";
+            this.lblLimiteProdutos.Text = "Limite de produtos:";
             // 
             // lblCanalPreferido
             // 
@@ -235,6 +259,126 @@
             this.btnEditarPerfil.UseVisualStyleBackColor = false;
             this.btnEditarPerfil.Click += new System.EventHandler(this.btnEditarPerfil_Click);
             // 
+            // IdNome
+            // 
+            this.IdNome.AutoSize = true;
+            this.IdNome.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdNome.Location = new System.Drawing.Point(52, 26);
+            this.IdNome.Name = "IdNome";
+            this.IdNome.Size = new System.Drawing.Size(38, 13);
+            this.IdNome.TabIndex = 5;
+            this.IdNome.Text = "label1";
+            // 
+            // IdEmail
+            // 
+            this.IdEmail.AutoSize = true;
+            this.IdEmail.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdEmail.Location = new System.Drawing.Point(52, 51);
+            this.IdEmail.Name = "IdEmail";
+            this.IdEmail.Size = new System.Drawing.Size(38, 13);
+            this.IdEmail.TabIndex = 6;
+            this.IdEmail.Text = "label2";
+            // 
+            // IdTelemovel
+            // 
+            this.IdTelemovel.AutoSize = true;
+            this.IdTelemovel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdTelemovel.Location = new System.Drawing.Point(72, 76);
+            this.IdTelemovel.Name = "IdTelemovel";
+            this.IdTelemovel.Size = new System.Drawing.Size(38, 13);
+            this.IdTelemovel.TabIndex = 7;
+            this.IdTelemovel.Text = "label3";
+            // 
+            // IdPlano
+            // 
+            this.IdPlano.AutoSize = true;
+            this.IdPlano.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdPlano.Location = new System.Drawing.Point(52, 101);
+            this.IdPlano.Name = "IdPlano";
+            this.IdPlano.Size = new System.Drawing.Size(38, 13);
+            this.IdPlano.TabIndex = 8;
+            this.IdPlano.Text = "label4";
+            // 
+            // IdAtivo
+            // 
+            this.IdAtivo.AutoSize = true;
+            this.IdAtivo.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdAtivo.Location = new System.Drawing.Point(238, 101);
+            this.IdAtivo.Name = "IdAtivo";
+            this.IdAtivo.Size = new System.Drawing.Size(38, 13);
+            this.IdAtivo.TabIndex = 9;
+            this.IdAtivo.Text = "label5";
+            // 
+            // IdProdutos
+            // 
+            this.IdProdutos.AutoSize = true;
+            this.IdProdutos.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdProdutos.Location = new System.Drawing.Point(72, 26);
+            this.IdProdutos.Name = "IdProdutos";
+            this.IdProdutos.Size = new System.Drawing.Size(38, 13);
+            this.IdProdutos.TabIndex = 10;
+            this.IdProdutos.Text = "label6";
+            // 
+            // IdNotificacoes
+            // 
+            this.IdNotificacoes.AutoSize = true;
+            this.IdNotificacoes.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdNotificacoes.Location = new System.Drawing.Point(88, 46);
+            this.IdNotificacoes.Name = "IdNotificacoes";
+            this.IdNotificacoes.Size = new System.Drawing.Size(38, 13);
+            this.IdNotificacoes.TabIndex = 11;
+            this.IdNotificacoes.Text = "label7";
+            // 
+            // IdDinheiro
+            // 
+            this.IdDinheiro.AutoSize = true;
+            this.IdDinheiro.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdDinheiro.Location = new System.Drawing.Point(116, 66);
+            this.IdDinheiro.Name = "IdDinheiro";
+            this.IdDinheiro.Size = new System.Drawing.Size(38, 13);
+            this.IdDinheiro.TabIndex = 12;
+            this.IdDinheiro.Text = "label8";
+            // 
+            // IdMembroDesde
+            // 
+            this.IdMembroDesde.AutoSize = true;
+            this.IdMembroDesde.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdMembroDesde.Location = new System.Drawing.Point(102, 91);
+            this.IdMembroDesde.Name = "IdMembroDesde";
+            this.IdMembroDesde.Size = new System.Drawing.Size(38, 13);
+            this.IdMembroDesde.TabIndex = 13;
+            this.IdMembroDesde.Text = "label9";
+            // 
+            // IdUltimoLogin
+            // 
+            this.IdUltimoLogin.AutoSize = true;
+            this.IdUltimoLogin.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdUltimoLogin.Location = new System.Drawing.Point(88, 111);
+            this.IdUltimoLogin.Name = "IdUltimoLogin";
+            this.IdUltimoLogin.Size = new System.Drawing.Size(44, 13);
+            this.IdUltimoLogin.TabIndex = 14;
+            this.IdUltimoLogin.Text = "label10";
+            // 
+            // IdLimitesProdutos
+            // 
+            this.IdLimitesProdutos.AutoSize = true;
+            this.IdLimitesProdutos.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdLimitesProdutos.Location = new System.Drawing.Point(116, 131);
+            this.IdLimitesProdutos.Name = "IdLimitesProdutos";
+            this.IdLimitesProdutos.Size = new System.Drawing.Size(44, 13);
+            this.IdLimitesProdutos.TabIndex = 15;
+            this.IdLimitesProdutos.Text = "label11";
+            // 
+            // IdCanalPreferido
+            // 
+            this.IdCanalPreferido.AutoSize = true;
+            this.IdCanalPreferido.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IdCanalPreferido.Location = new System.Drawing.Point(102, 151);
+            this.IdCanalPreferido.Name = "IdCanalPreferido";
+            this.IdCanalPreferido.Size = new System.Drawing.Size(44, 13);
+            this.IdCanalPreferido.TabIndex = 16;
+            this.IdCanalPreferido.Text = "label12";
+            // 
             // FormPerfilDetalhes
             // 
             this.BackColor = System.Drawing.Color.Gainsboro;
@@ -250,7 +394,9 @@
             this.Text = "Detalhes do Perfil";
             this.Load += new System.EventHandler(this.FormPerfilDetalhes_Load);
             this.grpInfo.ResumeLayout(false);
+            this.grpInfo.PerformLayout();
             this.grpEstatisticas.ResumeLayout(false);
+            this.grpEstatisticas.PerformLayout();
             this.grpPreferencias.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -279,5 +425,17 @@
 
         private System.Windows.Forms.Button btnSalvar;
         private System.Windows.Forms.Button btnEditarPerfil;
+        private System.Windows.Forms.Label IdNome;
+        private System.Windows.Forms.Label IdAtivo;
+        private System.Windows.Forms.Label IdPlano;
+        private System.Windows.Forms.Label IdTelemovel;
+        private System.Windows.Forms.Label IdEmail;
+        private System.Windows.Forms.Label IdCanalPreferido;
+        private System.Windows.Forms.Label IdLimitesProdutos;
+        private System.Windows.Forms.Label IdUltimoLogin;
+        private System.Windows.Forms.Label IdMembroDesde;
+        private System.Windows.Forms.Label IdDinheiro;
+        private System.Windows.Forms.Label IdNotificacoes;
+        private System.Windows.Forms.Label IdProdutos;
     }
 }

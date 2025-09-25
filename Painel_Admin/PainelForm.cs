@@ -74,7 +74,7 @@ namespace Painel_Admin
         private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // abrir editor de um utilizador específico (exemplo: id=1)
-            new FormPerfilEditar(1, "Nome", "email@teste.com", "999999999", "free", "email", true).ShowDialog();
+            new FormPerfilEditar(1, "", "", "", "", "", true).ShowDialog();
         }
 
         private void picProdutos_Click(object sender, EventArgs e)
@@ -85,6 +85,30 @@ namespace Painel_Admin
         private void lblTotalProdutos_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void editarNotificaçõesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var FormNotificacaoEditar = new FormNotificacaoEditar())
+            {
+                FormNotificacaoEditar.ShowDialog();
+            }
+        }
+
+        private void notificaçõesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            using (var FormNotificacoes = new FormNotificacoes())
+            {
+                FormNotificacoes.ShowDialog();
+            }
+        }
+
+        private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var ProdutosListForm = new ProdutosListForm())
+            {
+               ProdutosListForm.ShowDialog();
+            }
         }
     }
 }

@@ -40,7 +40,7 @@
             // 
             this.txtUserId.Location = new System.Drawing.Point(100, 17);
             this.txtUserId.Name = "txtUserId";
-            this.txtUserId.Size = new System.Drawing.Size(150, 20);
+            this.txtUserId.Size = new System.Drawing.Size(188, 20);
             this.txtUserId.TabIndex = 1;
             // 
             // lblTipo
@@ -63,13 +63,13 @@
             "whatsapp"});
             this.cmbTipo.Location = new System.Drawing.Point(100, 57);
             this.cmbTipo.Name = "cmbTipo";
-            this.cmbTipo.Size = new System.Drawing.Size(150, 21);
+            this.cmbTipo.Size = new System.Drawing.Size(188, 21);
             this.cmbTipo.TabIndex = 3;
             // 
             // chkAtivo
             // 
             this.chkAtivo.AutoSize = true;
-            this.chkAtivo.Location = new System.Drawing.Point(100, 95);
+            this.chkAtivo.Location = new System.Drawing.Point(23, 92);
             this.chkAtivo.Name = "chkAtivo";
             this.chkAtivo.Size = new System.Drawing.Size(50, 17);
             this.chkAtivo.TabIndex = 4;
@@ -78,7 +78,7 @@
             // 
             // btnSalvar
             // 
-            this.btnSalvar.Location = new System.Drawing.Point(50, 140);
+            this.btnSalvar.Location = new System.Drawing.Point(100, 92);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(90, 30);
             this.btnSalvar.TabIndex = 5;
@@ -88,7 +88,7 @@
             // 
             // btnCancelar
             // 
-            this.btnCancelar.Location = new System.Drawing.Point(160, 140);
+            this.btnCancelar.Location = new System.Drawing.Point(198, 92);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(90, 30);
             this.btnCancelar.TabIndex = 6;
@@ -98,7 +98,7 @@
             // 
             // FormNotificacaoEditar
             // 
-            this.ClientSize = new System.Drawing.Size(300, 200);
+            this.ClientSize = new System.Drawing.Size(300, 149);
             this.Controls.Add(this.lblUserId);
             this.Controls.Add(this.txtUserId);
             this.Controls.Add(this.lblTipo);

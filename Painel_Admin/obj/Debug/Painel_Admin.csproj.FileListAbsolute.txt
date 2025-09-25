@@ -9,7 +9,6 @@ C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.cspro
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.exe
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.pdb
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.exe.config
-C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Painel.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormRegistar.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\bin\Debug\BouncyCastle.Cryptography.dll
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\bin\Debug\Google.Protobuf.dll
@@ -48,9 +47,7 @@ C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormP
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.PainelPerfis.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormPerfilDetalhes.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\bin\Debug\aa\Painel_Admin.resources.dll
-C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.EditarProdutos.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Suporte.resources
-C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.Painel.aa.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\aa\Painel_Admin.resources.dll
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormNotificacoes.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.PainelForm.resources
@@ -59,3 +56,5 @@ C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormP
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.PainelForm.aa.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormNotificacaoEditar.resources
 C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\obj\Debug\Painel_Admin.FormUtilizadoresList.resources
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\bin\Debug\BCrypt.Net-Next.dll
+C:\Users\julia\Documents\PromoPing 2.0\Painel_Admin\bin\Debug\BCrypt.Net-Next.xml

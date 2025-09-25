@@ -77,7 +77,7 @@
             // 
             this.txtPrecoAlvo.Location = new System.Drawing.Point(100, 97);
             this.txtPrecoAlvo.Name = "txtPrecoAlvo";
-            this.txtPrecoAlvo.Size = new System.Drawing.Size(100, 20);
+            this.txtPrecoAlvo.Size = new System.Drawing.Size(83, 20);
             this.txtPrecoAlvo.TabIndex = 5;
             // 
             // lblDataLimite
@@ -135,7 +135,7 @@
             // 
             // FormProdutoEditar
             // 
-            this.ClientSize = new System.Drawing.Size(400, 280);
+            this.ClientSize = new System.Drawing.Size(378, 280);
             this.Controls.Add(this.lblNome);
             this.Controls.Add(this.txtNome);
             this.Controls.Add(this.lblLink);

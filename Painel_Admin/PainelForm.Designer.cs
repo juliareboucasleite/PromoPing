@@ -39,6 +39,10 @@
             this.lblTotalPoupado = new System.Windows.Forms.Label();
             this.picPoupado = new System.Windows.Forms.PictureBox();
             this.btnAtualizarDashboard = new System.Windows.Forms.Button();
+            this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editarNotificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificaçõesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.listarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDashboard.SuspendLayout();
             this.cardUsers.SuspendLayout();
@@ -56,22 +60,24 @@
             this.menuStrip1.BackColor = System.Drawing.Color.SteelBlue;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.produtosToolStripMenuItem,
-            this.PainelPrincipal});
+            this.PainelPrincipal,
+            this.notificaçõesToolStripMenuItem});
             resources.ApplyResources(this.menuStrip1, "menuStrip1");
             this.menuStrip1.Name = "menuStrip1";
             // 
             // produtosToolStripMenuItem
             // 
             this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem});
+            this.editarProdutosToolStripMenuItem,
+            this.listarProdutosToolStripMenuItem});
             this.produtosToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
             resources.ApplyResources(this.produtosToolStripMenuItem, "produtosToolStripMenuItem");
             // 
             // editarProdutosToolStripMenuItem
             // 
-            this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
             resources.ApplyResources(this.editarProdutosToolStripMenuItem, "editarProdutosToolStripMenuItem");
+            this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
             this.editarProdutosToolStripMenuItem.Click += new System.EventHandler(this.editarProdutosToolStripMenuItem_Click);
             // 
             // PainelPrincipal
@@ -86,20 +92,20 @@
             // 
             // perfilDetalhesToolStripMenuItem1
             // 
-            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
             resources.ApplyResources(this.perfilDetalhesToolStripMenuItem1, "perfilDetalhesToolStripMenuItem1");
+            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
             this.perfilDetalhesToolStripMenuItem1.Click += new System.EventHandler(this.perfilDetalhesToolStripMenuItem_Click);
             // 
             // perfilEditarToolStripMenuItem
             // 
-            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
             resources.ApplyResources(this.perfilEditarToolStripMenuItem, "perfilEditarToolStripMenuItem");
+            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
             this.perfilEditarToolStripMenuItem.Click += new System.EventHandler(this.perfilEditarToolStripMenuItem_Click);
             // 
             // painelPerfisToolStripMenuItem
             // 
-            this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
             resources.ApplyResources(this.painelPerfisToolStripMenuItem, "painelPerfisToolStripMenuItem");
+            this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
             this.painelPerfisToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisToolStripMenuItem_Click);
             // 
             // panelDashboard
@@ -192,6 +198,7 @@
             // 
             // picPoupado
             // 
+            this.picPoupado.Image = global::Painel_Admin.Properties.Resources.Dinheiro;
             resources.ApplyResources(this.picPoupado, "picPoupado");
             this.picPoupado.Name = "picPoupado";
             this.picPoupado.TabStop = false;
@@ -204,6 +211,36 @@
             this.btnAtualizarDashboard.Name = "btnAtualizarDashboard";
             this.btnAtualizarDashboard.UseVisualStyleBackColor = false;
             this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click_1);
+            // 
+            // notificaçõesToolStripMenuItem
+            // 
+            this.notificaçõesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editarNotificaçõesToolStripMenuItem,
+            this.notificaçõesToolStripMenuItem1});
+            this.notificaçõesToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.notificaçõesToolStripMenuItem.Name = "notificaçõesToolStripMenuItem";
+            resources.ApplyResources(this.notificaçõesToolStripMenuItem, "notificaçõesToolStripMenuItem");
+            // 
+            // editarNotificaçõesToolStripMenuItem
+            // 
+            this.editarNotificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.editarNotificaçõesToolStripMenuItem.Name = "editarNotificaçõesToolStripMenuItem";
+            resources.ApplyResources(this.editarNotificaçõesToolStripMenuItem, "editarNotificaçõesToolStripMenuItem");
+            this.editarNotificaçõesToolStripMenuItem.Click += new System.EventHandler(this.editarNotificaçõesToolStripMenuItem_Click);
+            // 
+            // notificaçõesToolStripMenuItem1
+            // 
+            this.notificaçõesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.notificaçõesToolStripMenuItem1.Name = "notificaçõesToolStripMenuItem1";
+            resources.ApplyResources(this.notificaçõesToolStripMenuItem1, "notificaçõesToolStripMenuItem1");
+            this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificaçõesToolStripMenuItem1_Click);
+            // 
+            // listarProdutosToolStripMenuItem
+            // 
+            this.listarProdutosToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Pacote;
+            this.listarProdutosToolStripMenuItem.Name = "listarProdutosToolStripMenuItem";
+            resources.ApplyResources(this.listarProdutosToolStripMenuItem, "listarProdutosToolStripMenuItem");
+            this.listarProdutosToolStripMenuItem.Click += new System.EventHandler(this.listarProdutosToolStripMenuItem_Click);
             // 
             // PainelForm
             // 
@@ -257,5 +294,9 @@
         private System.Windows.Forms.Label lblTotalPoupado;
         private System.Windows.Forms.PictureBox picPoupado;
         private System.Windows.Forms.Button btnAtualizarDashboard;
+        private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem listarProdutosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editarNotificaçõesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem1;
     }
 }

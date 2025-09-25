@@ -28,13 +28,16 @@
             this.loginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TxtEmail = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // BotaoLimpar
             // 
-            this.BotaoLimpar.Location = new System.Drawing.Point(31, 244);
+            this.BotaoLimpar.Location = new System.Drawing.Point(75, 242);
             this.BotaoLimpar.Name = "BotaoLimpar";
             this.BotaoLimpar.Size = new System.Drawing.Size(58, 23);
             this.BotaoLimpar.TabIndex = 18;
@@ -44,16 +47,16 @@
             // 
             // TxtSenha
             // 
-            this.TxtSenha.Location = new System.Drawing.Point(31, 209);
+            this.TxtSenha.Location = new System.Drawing.Point(75, 207);
             this.TxtSenha.Name = "TxtSenha";
-            this.TxtSenha.Size = new System.Drawing.Size(137, 20);
+            this.TxtSenha.Size = new System.Drawing.Size(177, 20);
             this.TxtSenha.TabIndex = 16;
             this.TxtSenha.UseSystemPasswordChar = true;
             // 
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(54, 49);
+            this.pictureBox1.Location = new System.Drawing.Point(104, 47);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(89, 78);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -62,15 +65,15 @@
             // 
             // TxtNome
             // 
-            this.TxtNome.Location = new System.Drawing.Point(31, 156);
+            this.TxtNome.Location = new System.Drawing.Point(75, 154);
             this.TxtNome.Name = "TxtNome";
-            this.TxtNome.Size = new System.Drawing.Size(137, 20);
+            this.TxtNome.Size = new System.Drawing.Size(177, 20);
             this.TxtNome.TabIndex = 14;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(72, 130);
+            this.label1.Location = new System.Drawing.Point(124, 128);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 13);
             this.label1.TabIndex = 13;
@@ -78,7 +81,7 @@
             // 
             // BotaoEntrar
             // 
-            this.BotaoEntrar.Location = new System.Drawing.Point(107, 244);
+            this.BotaoEntrar.Location = new System.Drawing.Point(191, 242);
             this.BotaoEntrar.Name = "BotaoEntrar";
             this.BotaoEntrar.Size = new System.Drawing.Size(61, 23);
             this.BotaoEntrar.TabIndex = 12;
@@ -93,35 +96,67 @@
             this.suporteToolStripMenuItem});
             this.menuStrip2.Location = new System.Drawing.Point(0, 0);
             this.menuStrip2.Name = "menuStrip2";
-            this.menuStrip2.Size = new System.Drawing.Size(199, 24);
+            this.menuStrip2.Size = new System.Drawing.Size(286, 24);
             this.menuStrip2.TabIndex = 17;
             this.menuStrip2.Text = "menuStrip2";
             // 
             // loginToolStripMenuItem
             // 
+            this.loginToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.loginToolStripMenuItem.Name = "loginToolStripMenuItem";
-            this.loginToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
+            this.loginToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
             this.loginToolStripMenuItem.Text = "Login";
             this.loginToolStripMenuItem.Click += new System.EventHandler(this.btnLogin);
             // 
             // suporteToolStripMenuItem
             // 
+            this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
-            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
+            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.suporteToolStripMenuItem.Text = "Suporte";
             // 
             // TxtEmail
             // 
-            this.TxtEmail.Location = new System.Drawing.Point(31, 182);
+            this.TxtEmail.Location = new System.Drawing.Point(75, 180);
             this.TxtEmail.Name = "TxtEmail";
-            this.TxtEmail.Size = new System.Drawing.Size(137, 20);
+            this.TxtEmail.Size = new System.Drawing.Size(177, 20);
             this.TxtEmail.TabIndex = 19;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(31, 157);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.TabIndex = 20;
+            this.label2.Text = "&Nome:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(31, 183);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(35, 13);
+            this.label3.TabIndex = 21;
+            this.label3.Text = "&Email:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(31, 210);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(41, 13);
+            this.label4.TabIndex = 22;
+            this.label4.Text = "&Senha:";
             // 
             // FormRegistar
             // 
             this.AcceptButton = this.BotaoEntrar;
-            this.BackColor = System.Drawing.Color.Maroon;
-            this.ClientSize = new System.Drawing.Size(199, 293);
+            this.BackColor = System.Drawing.Color.Gainsboro;
+            this.ClientSize = new System.Drawing.Size(286, 293);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.TxtEmail);
             this.Controls.Add(this.BotaoLimpar);
             this.Controls.Add(this.TxtSenha);
@@ -157,5 +192,8 @@
         private System.Windows.Forms.ToolStripMenuItem loginToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem suporteToolStripMenuItem;
         private System.Windows.Forms.TextBox TxtEmail;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
     }
 }
