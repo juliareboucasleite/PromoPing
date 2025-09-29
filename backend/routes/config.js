@@ -1,45 +1,131 @@
+// @ts-nocheck
 import express from "express";
-import { pool } from "../db.js";
+import { pool } from "../database/db.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ➕ Criar ou atualizar configuração do utilizador
-router.post("/", verifyToken, async (req, res) => {
-    try {
-        const { plano, canal } = req.body;
+/**
+ * ===============================
+ * PERFIL DO UTILIZADOR
+ * ===============================
+ */
 
-        await pool.query(`
-            INSERT INTO ConfigUtilizador (UserId, Plano, CanalPreferido)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE Plano=?, CanalPreferido=?`,
-            [req.user.id, plano, canal, plano, canal]
-        );
-
-        res.json({ status: "ok", message: "Configuração atualizada" });
-    } catch (err) {
-        console.error("Erro ao salvar config:", err);
-        res.status(500).json({ error: "Erro no servidor" });
-    }
+// GET perfil
+router.get("/profile", verifyToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT Nome, Email, Telefone FROM ConfigUtilizador WHERE UserId=?",
+      [req.user.id]
+    );
+    res.json({ status: "ok", profile: rows[0] || {} });
+  } catch (err) {
+    console.error("Erro ao buscar perfil:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
+  }
 });
 
-// 📋 Obter configuração
-router.get("/", verifyToken, async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            "SELECT * FROM ConfigUtilizador WHERE UserId=?",
-            [req.user.id]
-        );
+// PUT perfil
+router.put("/profile", verifyToken, async (req, res) => {
+  try {
+    const { nome, email, telefone } = req.body;
+    await pool.query(
+      `INSERT INTO ConfigUtilizador (UserId, Nome, Email, Telefone) 
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE Nome=VALUES(Nome), Email=VALUES(Email), Telefone=VALUES(Telefone)`,
+      [req.user.id, nome, email, telefone]
+    );
+    res.json({ status: "ok" });
+  } catch (err) {
+    console.error("Erro ao salvar perfil:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
+  }
+});
 
-        if (rows.length === 0) {
-            return res.json({ status: "ok", config: { Plano: "free", CanalPreferido: "whatsapp", LimiteProdutos: 5 } });
-        }
+/**
+ * ===============================
+ * PREFERÊNCIAS DE NOTIFICAÇÃO
+ * ===============================
+ */
 
-        res.json({ status: "ok", config: rows[0] });
-    } catch (err) {
-        console.error("Erro ao buscar config:", err);
-        res.status(500).json({ error: "Erro no servidor" });
+// GET preferências
+router.get("/preferences", verifyToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE UserId=?",
+      [req.user.id]
+    );
+    res.json({ status: "ok", preferencias: rows });
+  } catch (err) {
+    console.error("Erro ao buscar preferências:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
+  }
+});
+
+// PUT preferências
+router.put("/preferences", verifyToken, async (req, res) => {
+  try {
+    const { preferences } = req.body; // [{tipo, ativo}]
+    if (!Array.isArray(preferences)) {
+      return res.status(400).json({ status: "error", error: "Formato inválido" });
     }
+
+    for (const p of preferences) {
+      await pool.query(
+        `INSERT INTO PreferenciasNotificacao (UserId, Tipo, Ativo) 
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
+        [req.user.id, p.tipo, p.ativo]
+      );
+    }
+
+    res.json({ status: "ok" });
+  } catch (err) {
+    console.error("Erro ao salvar preferências:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
+  }
+});
+
+/**
+ * ===============================
+ * ESTATÍSTICAS DO UTILIZADOR
+ * ===============================
+ */
+router.get("/stats", verifyToken, async (req, res) => {
+  try {
+    const [[{ totalProdutos }]] = await pool.query(
+      "SELECT COUNT(*) AS totalProdutos FROM Produtos WHERE UserId=?",
+      [req.user.id]
+    );
+
+    const [[{ totalNotificacoes }]] = await pool.query(
+      "SELECT COUNT(*) AS totalNotificacoes FROM Notificacoes WHERE UserId=?",
+      [req.user.id]
+    );
+
+    const [[{ membroDesde }]] = await pool.query(
+      "SELECT MIN(DataRegisto) AS membroDesde FROM Utilizadores WHERE Id=?",
+      [req.user.id]
+    );
+
+    res.json({
+      status: "ok",
+      stats: {
+        produtos_monitorizados: totalProdutos,
+        notificacoes_enviadas: totalNotificacoes,
+        dinheiro_poupado: 0, // implementar depois
+        membro_desde: membroDesde
+          ? new Date(membroDesde).toLocaleDateString("pt-PT", {
+              year: "numeric",
+              month: "short",
+            })
+          : "N/A",
+      },
+    });
+  } catch (err) {
+    console.error("Erro ao buscar estatísticas:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
+  }
 });
 
 export default router;

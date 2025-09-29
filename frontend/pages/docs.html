@@ -2,59 +2,815 @@
 <html lang="pt-pt">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromoPing - Sempre ligado</title>
-    <link rel="stylesheet" href="/assets/styles/style.css">
-    <link rel="stylesheet" href="/assets/styles/dasboard.css">
-    <link rel="stylesheet" href="/assets/styles/header.css">
-    <link rel="stylesheet" href="/assets/styles/painel.css">
-    <link rel="stylesheet" href="/assets/styles/register.css">
- 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const heroTitle = document.querySelector('.pp-hero-left h1');
-            if (heroTitle) {
-                heroTitle.classList.add('blur-text');
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentação - PromoPing</title>
+  <link rel="stylesheet" href="/assets/styles/style.css">
+  <link rel="stylesheet" href="/assets/styles/header.css">
+  <link rel="icon" type="image/png" href="/assets/images/Logo.png">
+
+  <script>
+    function openNavigation(button) {
+      const navLinks = button.nextElementSibling;
+      const isOpen = navLinks.style.display === 'block';
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+        link.style.display = 'none';
+      });
+      
+      // Toggle current dropdown
+      navLinks.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.pp-header-nav-wrapper')) {
+        document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+          link.style.display = 'none';
         });
-    </script>
+      }
+    });
+  </script>
 </head>
 
 <body class="theme-promoping">
-    <header class="pp-header" style="
-        background: #1e121433;
-        border-radius: 32px;
-        margin: 90px auto 0 auto;
-        max-width: 1150px;
-        box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
-        border: 2px solid #ffffffb7;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        left: 0;
-        right: 0;
-        top: 30px;
-        transform: none;
-        ">
-        
-        <div style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            height: 64px;
-            width: 100%;
-            max-width: 900px;
-        ">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="/assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-                <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
-            </div>
-            <nav style="display: flex; align-items: center; gap: 24px;">
-                <a href="Login.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Entrar</a>
-                <a href="index.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Voltar</a>
-            </nav>
+  <!-- ===== HEADER ===== -->
+  <header class="pp-header">
+    <div class="pp-header-container">
+      <!-- Logo -->
+      <a href="/pages/index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
+        <img src="/assets/images/Logo.png" alt="PromoPing Logo">
+        <span>PromoPing</span>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="pp-header-nav" id="pp-header-nav">
+        <!-- Soluções -->
+        <div class="pp-header-nav-wrapper">
+          <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Soluções" aria-labelledby="pp-header-nav-links-1" onclick="openNavigation(this)">
+            Soluções
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-1">
+            <a href="/pages/monitoramento.html">Monitoramento</a>
+            <a href="/pages/alertas.html">Alertas</a>
+            <a href="/pages/relatorios.html">Relatórios</a>
+          </div>
         </div>
-    </header>
+        
+        <!-- Recursos -->
+        <div class="pp-header-nav-wrapper">
+          <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Recursos" aria-labelledby="pp-header-nav-links-2" onclick="openNavigation(this)">
+            Recursos
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-2">
+            <a href="/pages/docs.html">Documentação</a>
+            <a href="/pages/casos-uso.html">Casos de Uso</a>
+            <a href="/pages/blog.html">Blog</a>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- Mobile Menu & CTA -->
+      <div class="pp-header-burger">
+        <div class="pp-header-burger-lang">
+          <button class="pp-header-lang-btn" type="button" aria-label="Idioma">
+            <span>PT</span>
+          </button>
+        </div>
+        
+        <button class="pp-header-burger-btn" type="button" role="button" title="Alternar Navegação" aria-label="Alternar Navegação" onclick="toggleNavigation()">
+          <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+            <path class="line line1" d="M20 25H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line2" d="M20 50H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line3" d="M20 75H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- CTA Button -->
+      <a href="/pages/register.html" class="pp-header-cta-button" aria-label="Começar Agora">
+        <span>Começar Agora</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="docs-main">
+    <div class="docs-container">
+      <div class="docs-header">
+        <h1>Documentação PromoPing</h1>
+        <p>Guia completo para maximizar as suas poupanças com o PromoPing</p>
+      </div>
+
+      <div class="docs-content">
+        <!-- ===== GUIA RÁPIDO ===== -->
+        <section class="docs-section">
+          <h2>🚀 Guia Rápido</h2>
+          <div class="quick-start-grid">
+            <div class="quick-start-card">
+              <div class="step-number">1</div>
+              <h3>Criar Conta</h3>
+              <p>Registe-se gratuitamente e comece a monitorizar produtos</p>
+            </div>
+            <div class="quick-start-card">
+              <div class="step-number">2</div>
+              <h3>Adicionar Produtos</h3>
+              <p>Cole links de produtos que deseja monitorizar</p>
+            </div>
+            <div class="quick-start-card">
+              <div class="step-number">3</div>
+              <h3>Configurar Alertas</h3>
+              <p>Defina quando quer ser notificado sobre mudanças de preço</p>
+            </div>
+            <div class="quick-start-card">
+              <div class="step-number">4</div>
+              <h3>Poupar Dinheiro</h3>
+              <p>Receba alertas e aproveite as melhores ofertas</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== FUNCIONALIDADES PRINCIPAIS ===== -->
+        <section class="docs-section">
+          <h2>⚡ Funcionalidades Principais</h2>
+          
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3>Monitoramento Inteligente</h3>
+              <p>Verifica preços automaticamente em múltiplas lojas portuguesas</p>
+              <ul>
+                <li>Verificação a cada 4 horas</li>
+                <li>Suporte para 20+ lojas</li>
+                <li>Histórico completo de preços</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">🔔</div>
+              <h3>Alertas Personalizados</h3>
+              <p>Receba notificações quando os preços baixam</p>
+              <ul>
+                <li>Email, SMS, Discord, Telegram</li>
+                <li>Alertas por percentagem ou valor</li>
+                <li>Filtros por categoria e loja</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">📈</div>
+              <h3>Relatórios Detalhados</h3>
+              <p>Analise as suas poupanças e padrões de compra</p>
+              <ul>
+                <li>Dashboard interativo</li>
+                <li>Relatórios de poupança</li>
+                <li>Análise de tendências</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== PLANOS E PREÇOS ===== -->
+        <section class="docs-section">
+          <h2>💰 Planos e Preços</h2>
+          
+          <div class="plans-comparison">
+            <div class="plan-card free">
+              <div class="plan-header">
+                <h3>Free</h3>
+                <div class="plan-price">€0<span>/mês</span></div>
+              </div>
+              <ul class="plan-features">
+                <li>✅ Até 5 produtos</li>
+                <li>✅ Alertas por email</li>
+                <li>✅ Verificação diária</li>
+                <li>✅ Histórico 7 dias</li>
+                <li>❌ SMS</li>
+                <li>❌ Relatórios avançados</li>
+              </ul>
+            </div>
+
+            <div class="plan-card basic popular">
+              <div class="plan-badge">Mais Popular</div>
+              <div class="plan-header">
+                <h3>Basic</h3>
+                <div class="plan-price">€4.99<span>/mês</span></div>
+              </div>
+              <ul class="plan-features">
+                <li>✅ Até 25 produtos</li>
+                <li>✅ Email + SMS</li>
+                <li>✅ Verificação 4h/4h</li>
+                <li>✅ Histórico 30 dias</li>
+                <li>✅ Discord + Telegram</li>
+                <li>✅ Relatórios básicos</li>
+              </ul>
+            </div>
+
+            <div class="plan-card premium">
+              <div class="plan-header">
+                <h3>Premium</h3>
+                <div class="plan-price">€9.99<span>/mês</span></div>
+              </div>
+              <ul class="plan-features">
+                <li>✅ Produtos ilimitados</li>
+                <li>✅ Todas as notificações</li>
+                <li>✅ Verificação em tempo real</li>
+                <li>✅ Histórico ilimitado</li>
+                <li>✅ API de integração</li>
+                <li>✅ Suporte prioritário</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== LOJAS SUPORTADAS ===== -->
+        <section class="docs-section">
+          <h2>🏪 Lojas Suportadas</h2>
+          
+          <div class="stores-categories">
+            <div class="store-category">
+              <h3>🛒 Eletrónicos e Tecnologia</h3>
+              <div class="store-list">
+                <span class="store-item">Worten</span>
+                <span class="store-item">Fnac</span>
+                <span class="store-item">PCDiga</span>
+                <span class="store-item">Globaldata</span>
+                <span class="store-item">Rádio Popular</span>
+                <span class="store-item">MediaMarkt</span>
+              </div>
+            </div>
+
+            <div class="store-category">
+              <h3>🏠 Casa e Decoração</h3>
+              <div class="store-list">
+                <span class="store-item">El Corte Inglés</span>
+                <span class="store-item">IKEA</span>
+                <span class="store-item">Leroy Merlin</span>
+                <span class="store-item">AKI</span>
+              </div>
+            </div>
+
+            <div class="store-category">
+              <h3>🛍️ Moda e Acessórios</h3>
+              <div class="store-list">
+                <span class="store-item">Zara</span>
+                <span class="store-item">H&M</span>
+                <span class="store-item">Pull & Bear</span>
+                <span class="store-item">Massimo Dutti</span>
+              </div>
+            </div>
+
+            <div class="store-category">
+              <h3>🌐 Marketplaces</h3>
+              <div class="store-list">
+                <span class="store-item">Amazon</span>
+                <span class="store-item">eBay</span>
+                <span class="store-item">OLX</span>
+                <span class="store-item">Custo Justo</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== GUIA DE INÍCIO ===== -->
+        <section class="docs-section">
+          <h2>📖 Guia de Início</h2>
+          
+          <div class="guide-steps">
+            <div class="guide-step">
+              <div class="step-icon">👤</div>
+              <h3>1. Criar Conta</h3>
+              <p>Registe-se gratuitamente no PromoPing. Pode usar email, Google ou redes sociais.</p>
+              <div class="step-details">
+                <h4>Passos:</h4>
+                <ol>
+                  <li>Aceda à página de registo</li>
+                  <li>Preencha os seus dados</li>
+                  <li>Confirme o email</li>
+                  <li>Faça login na sua conta</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="guide-step">
+              <div class="step-icon">➕</div>
+              <h3>2. Adicionar Primeiro Produto</h3>
+              <p>Comece por adicionar um produto que deseja monitorizar.</p>
+              <div class="step-details">
+                <h4>Como fazer:</h4>
+                <ol>
+                  <li>Vá ao seu painel de controlo</li>
+                  <li>Clique em "Adicionar Produto"</li>
+                  <li>Cole o link do produto</li>
+                  <li>Configure as preferências</li>
+                  <li>Salve e comece a monitorizar</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="guide-step">
+              <div class="step-icon">⚙️</div>
+              <h3>3. Configurar Alertas</h3>
+              <p>Defina quando quer ser notificado sobre mudanças de preço.</p>
+              <div class="step-details">
+                <h4>Opções disponíveis:</h4>
+                <ul>
+                  <li><strong>Email:</strong> Notificações por email</li>
+                  <li><strong>SMS:</strong> Alertas por mensagem (planos pagos)</li>
+                  <li><strong>Discord:</strong> Integração com servidor Discord</li>
+                  <li><strong>Telegram:</strong> Bot do Telegram</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="guide-step">
+              <div class="step-icon">📊</div>
+              <h3>4. Acompanhar Resultados</h3>
+              <p>Veja as suas poupanças e otimize as suas configurações.</p>
+              <div class="step-details">
+                <h4>Dashboard inclui:</h4>
+                <ul>
+                  <li>Produtos monitorizados</li>
+                  <li>Histórico de preços</li>
+                  <li>Alertas recebidos</li>
+                  <li>Poupanças realizadas</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== FAQ ===== -->
+        <section class="docs-section">
+          <h2>❓ Perguntas Frequentes</h2>
+          
+          <div class="faq-container">
+            <div class="faq-item">
+              <h3>Como funciona o monitoramento de preços?</h3>
+              <p>O PromoPing verifica automaticamente os preços dos produtos que adiciona, comparando-os com o histórico e enviando alertas quando há mudanças significativas.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>Posso monitorizar produtos de qualquer loja?</h3>
+              <p>Atualmente suportamos as principais lojas portuguesas. Consulte a lista completa na secção "Lojas Suportadas".</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>Os meus dados estão seguros?</h3>
+              <p>Sim, utilizamos encriptação de ponta a ponta e nunca partilhamos os seus dados pessoais com terceiros.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>Posso cancelar a qualquer momento?</h3>
+              <p>Sim, pode cancelar a sua subscrição a qualquer momento. Não há taxas de cancelamento.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>Como posso contactar o suporte?</h3>
+              <p>Pode contactar-nos através do email suporte@promoping.pt ou através do chat no site.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== CONTACTO ===== -->
+        <section class="docs-section">
+          <h2>📞 Contacto e Suporte</h2>
+          
+          <div class="contact-grid">
+            <div class="contact-card">
+              <h3>📧 Email</h3>
+              <p>suporte@promoping.pt</p>
+              <p>Resposta em 24h</p>
+            </div>
+
+            <div class="contact-card">
+              <h3>💬 Chat</h3>
+              <p>Disponível 24/7</p>
+              <p>Suporte em tempo real</p>
+            </div>
+
+            <div class="contact-card">
+              <h3>📱 WhatsApp</h3>
+              <p>+351 123 456 789</p>
+              <p>Segunda a Sexta, 9h-18h</p>
+            </div>
+
+            <div class="contact-card">
+              <h3>📚 Base de Conhecimento</h3>
+              <p>Guias e tutoriais</p>
+              <p>Respostas instantâneas</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .docs-main {
+      padding: 120px 20px 80px;
+      min-height: 100vh;
+    }
+
+    .docs-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--promoping-cream-transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 60px 40px;
+      box-shadow: 0 8px 32px var(--promoping-dark-transparent);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .docs-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .docs-header h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .docs-header p {
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      opacity: 0.8;
+    }
+
+    .docs-section {
+      margin-bottom: 60px;
+    }
+
+    .docs-section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 30px;
+      border-bottom: 3px solid var(--promoping-orange-light);
+      padding-bottom: 10px;
+    }
+
+    /* ===== GUIA RÁPIDO ===== */
+    .quick-start-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+
+    .quick-start-card {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+      transition: all 0.3s ease;
+    }
+
+    .quick-start-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px var(--promoping-dark-transparent);
+    }
+
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: var(--promoping-orange-gradient);
+      color: var(--text-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 auto 20px;
+    }
+
+    .quick-start-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .quick-start-card p {
+      font-size: 1rem;
+      color: var(--text-primary);
+      opacity: 0.8;
+    }
+
+    /* ===== FUNCIONALIDADES ===== */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .feature-card {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .feature-card p {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .feature-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-card li {
+      padding: 8px 0;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .feature-card li:last-child {
+      border-bottom: none;
+    }
+
+    /* ===== PLANOS ===== */
+    .plans-comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .plan-card {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px var(--promoping-dark-transparent);
+    }
+
+    .plan-card.popular {
+      border: 3px solid var(--promoping-orange-light);
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--promoping-orange-gradient);
+      color: var(--text-light);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .plan-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .plan-header h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .plan-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--promoping-orange-dark);
+    }
+
+    .plan-price span {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+    }
+
+    .plan-features li {
+      padding: 10px 0;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .plan-features li:last-child {
+      border-bottom: none;
+    }
+
+    /* ===== LOJAS ===== */
+    .stores-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .store-category {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+    }
+
+    .store-category h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .store-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .store-item {
+      background: var(--promoping-orange-gradient);
+      color: var(--text-light);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* ===== GUIA ===== */
+    .guide-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .guide-step {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+    }
+
+    .step-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .guide-step h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .guide-step p {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .step-details {
+      background: var(--promoping-cream);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .step-details h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .step-details ol,
+    .step-details ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .step-details li {
+      color: var(--text-primary);
+      margin-bottom: 5px;
+    }
+
+    /* ===== FAQ ===== */
+    .faq-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+    }
+
+    .faq-item {
+      background: var(--text-light);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px var(--promoping-dark-transparent);
+    }
+
+    .faq-item h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .faq-item p {
+      font-size: 1rem;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* ===== CONTACTO ===== */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+    }
+
+    .contact-card {
+      background: var(--text-light);
+      border-radius: 12px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 4px 12px var(--promoping-dark-transparent);
+    }
+
+    .contact-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .contact-card p {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* ===== RESPONSIVIDADE ===== */
+    @media (max-width: 768px) {
+      .docs-container {
+        padding: 40px 20px;
+        margin: 0 10px;
+      }
+
+      .docs-header h1 {
+        font-size: 2rem;
+      }
+
+      .docs-section h2 {
+        font-size: 1.5rem;
+      }
+
+      .quick-start-grid,
+      .features-grid,
+      .plans-comparison,
+      .stores-categories,
+      .guide-steps,
+      .faq-container,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</body>
+
+</html>

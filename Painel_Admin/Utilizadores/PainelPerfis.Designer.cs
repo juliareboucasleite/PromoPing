@@ -26,20 +26,8 @@
             this.btnRemover = new System.Windows.Forms.Button();
             this.btnAtualizar = new System.Windows.Forms.Button();
             this.panelBotoes = new System.Windows.Forms.Panel();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.produtosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PainelPrincipal = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilDetalhesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilEditarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.listarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarNotificacoesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarNotificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPerfis)).BeginInit();
             this.panelBotoes.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // dgvPerfis
@@ -145,102 +133,9 @@
             this.panelBotoes.Size = new System.Drawing.Size(802, 38);
             this.panelBotoes.TabIndex = 2;
             // 
-            // menuStrip1
-            // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.produtosToolStripMenuItem,
-            this.PainelPrincipal,
-            this.editarNotificacoesToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(802, 24);
-            this.menuStrip1.TabIndex = 3;
-            this.menuStrip1.Text = "menuStrip1";
-            // 
-            // produtosToolStripMenuItem
-            // 
-            this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem,
-            this.listarProdutosToolStripMenuItem});
-            this.produtosToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("produtosToolStripMenuItem.Image")));
-            this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
-            this.produtosToolStripMenuItem.Size = new System.Drawing.Size(83, 20);
-            this.produtosToolStripMenuItem.Text = "&Produtos";
-            // 
-            // editarProdutosToolStripMenuItem
-            // 
-            this.editarProdutosToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("editarProdutosToolStripMenuItem.Image")));
-            this.editarProdutosToolStripMenuItem.Name = "editarProdutosToolStripMenuItem";
-            this.editarProdutosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.editarProdutosToolStripMenuItem.Text = "&Editar Produtos";
-            // 
-            // PainelPrincipal
-            // 
-            this.PainelPrincipal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.perfilDetalhesToolStripMenuItem1,
-            this.perfilEditarToolStripMenuItem,
-            this.painelPerfisToolStripMenuItem});
-            this.PainelPrincipal.Image = ((System.Drawing.Image)(resources.GetObject("PainelPrincipal.Image")));
-            this.PainelPrincipal.Name = "PainelPrincipal";
-            this.PainelPrincipal.Size = new System.Drawing.Size(96, 20);
-            this.PainelPrincipal.Text = "&Utilizadores";
-            // 
-            // perfilDetalhesToolStripMenuItem1
-            // 
-            this.perfilDetalhesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Usuario;
-            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
-            this.perfilDetalhesToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.perfilDetalhesToolStripMenuItem1.Text = "&Perfil Detalhes";
-            // 
-            // perfilEditarToolStripMenuItem
-            // 
-            this.perfilEditarToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
-            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
-            this.perfilEditarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.perfilEditarToolStripMenuItem.Text = "&Perfil Editar";
-            // 
-            // painelPerfisToolStripMenuItem
-            // 
-            this.painelPerfisToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
-            this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
-            this.painelPerfisToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.painelPerfisToolStripMenuItem.Text = "&Painel Perfis";
-            // 
-            // listarProdutosToolStripMenuItem
-            // 
-            this.listarProdutosToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Pacote;
-            this.listarProdutosToolStripMenuItem.Name = "listarProdutosToolStripMenuItem";
-            this.listarProdutosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.listarProdutosToolStripMenuItem.Text = "&Listar Produtos";
-            // 
-            // editarNotificacoesToolStripMenuItem
-            // 
-            this.editarNotificacoesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarNotificaçõesToolStripMenuItem,
-            this.notificaçõesToolStripMenuItem});
-            this.editarNotificacoesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
-            this.editarNotificacoesToolStripMenuItem.Name = "editarNotificacoesToolStripMenuItem";
-            this.editarNotificacoesToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
-            this.editarNotificacoesToolStripMenuItem.Text = "&Notificações";
-            // 
-            // editarNotificaçõesToolStripMenuItem
-            // 
-            this.editarNotificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
-            this.editarNotificaçõesToolStripMenuItem.Name = "editarNotificaçõesToolStripMenuItem";
-            this.editarNotificaçõesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.editarNotificaçõesToolStripMenuItem.Text = "&Editar Notificações";
-            // 
-            // notificaçõesToolStripMenuItem
-            // 
-            this.notificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
-            this.notificaçõesToolStripMenuItem.Name = "notificaçõesToolStripMenuItem";
-            this.notificaçõesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.notificaçõesToolStripMenuItem.Text = "Notificações";
-            // 
             // PainelPerfis
             // 
             this.ClientSize = new System.Drawing.Size(802, 450);
-            this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.dgvPerfis);
             this.Controls.Add(this.panelBotoes);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -253,10 +148,7 @@
             this.Load += new System.EventHandler(this.PainelPerfis_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvPerfis)).EndInit();
             this.panelBotoes.ResumeLayout(false);
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -268,16 +160,5 @@
         private System.Windows.Forms.Button btnRemover;
         private System.Windows.Forms.Button btnAtualizar;
         private System.Windows.Forms.Panel panelBotoes;
-        private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem produtosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarProdutosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem PainelPrincipal;
-        private System.Windows.Forms.ToolStripMenuItem perfilDetalhesToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem perfilEditarToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem painelPerfisToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem listarProdutosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarNotificacoesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarNotificaçõesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
     }
 }

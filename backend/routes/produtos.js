@@ -1,5 +1,6 @@
 import express from "express";
-import { pool } from "../db.js";
+import { pool } from "../database/db.js";
+
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../services/scrapers/index.js";
 
@@ -47,13 +48,22 @@ router.post("/", verifyToken, async (req, res) => {
             [req.user.id, nome, link, data, store.name, precoAlvo ?? null]
         );
 
-        // cria registro inicial no histórico com preço se disponível via scraper leve (opcional)
+        // cria registro inicial no histórico com preço se disponível via scraper
         try {
-            // Não bloqueante: tentar obter preço atual para iniciar histórico
             const { scrapeProductInfo } = await import('../services/scrapers/index.js');
             const info = await scrapeProductInfo(link);
             if (info?.preco != null) {
-                await pool.query("INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",[result.insertId, info.preco]);
+                // Atualiza PrecoAtual no produto
+                await pool.query(
+                    "UPDATE Produtos SET PrecoAtual=? WHERE Id=?",
+                    [info.preco, result.insertId]
+                );
+
+                // Insere no histórico
+                await pool.query(
+                    "INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",
+                    [result.insertId, info.preco]
+                );
             }
         } catch (e) {
             console.warn('Não foi possível iniciar histórico de preço:', e.message);
@@ -66,12 +76,11 @@ router.post("/", verifyToken, async (req, res) => {
     }
 });
 
-
 // 📋 Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
         const [rows] = await pool.query(
-            "SELECT Id, Nome, Link, Loja, PrecoAlvo, DataLimite, DataCriacao FROM Produtos WHERE UserId = ? ORDER BY DataCriacao DESC",
+            "SELECT Id, Nome, Link, Loja, PrecoAlvo, DataLimite, DataCriacao, PrecoAtual FROM Produtos WHERE UserId = ? ORDER BY DataCriacao DESC",
             [req.user.id]
         );
 
@@ -79,18 +88,26 @@ router.get("/", verifyToken, async (req, res) => {
         const produtos = [];
         for (const p of rows) {
             let [hist] = await pool.query(
-                "SELECT Preco, DataRegistro FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegistro DESC LIMIT 10",
+                "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegisto DESC LIMIT 10",
                 [p.Id]
             );
-            // Se não tiver histórico, capturar primeiro preço agora
+
+            // Se não tiver histórico, tentar capturar agora
             if (hist.length === 0) {
                 try {
                     const { scrapeProductInfo } = await import('../services/scrapers/index.js');
                     const info = await scrapeProductInfo(p.Link);
                     if (info?.preco != null) {
-                        await pool.query("INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)", [p.Id, info.preco]);
+                        await pool.query(
+                            "UPDATE Produtos SET PrecoAtual=? WHERE Id=?",
+                            [info.preco, p.Id]
+                        );
+                        await pool.query(
+                            "INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",
+                            [p.Id, info.preco]
+                        );
                         const [h2] = await pool.query(
-                            "SELECT Preco, DataRegistro FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegistro DESC LIMIT 10",
+                            "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegisto DESC LIMIT 10",
                             [p.Id]
                         );
                         hist = h2;
@@ -99,9 +116,16 @@ router.get("/", verifyToken, async (req, res) => {
                     console.warn('Falha ao iniciar histórico para produto', p.Id, e.message);
                 }
             }
-            const precoAtual = hist[0]?.Preco ?? null;
+
+            const precoAtual = p.PrecoAtual ?? (hist[0]?.Preco ?? null);
             const precoAnterior = hist[1]?.Preco ?? null;
-            produtos.push({ ...p, PrecoAtual: precoAtual, PrecoAnterior: precoAnterior, Historico: hist });
+
+            produtos.push({
+                ...p,
+                PrecoAtual: precoAtual,
+                PrecoAnterior: precoAnterior,
+                Historico: hist
+            });
         }
 
         res.json({ status: "ok", produtos });
@@ -156,6 +180,5 @@ router.delete("/:id", verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro no servidor" });
     }
 });
-
 
 export default router;

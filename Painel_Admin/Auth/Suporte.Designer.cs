@@ -57,10 +57,10 @@
             this.linkLabel3.BackColor = System.Drawing.Color.White;
             this.linkLabel3.Location = new System.Drawing.Point(77, 125);
             this.linkLabel3.Name = "linkLabel3";
-            this.linkLabel3.Size = new System.Drawing.Size(173, 13);
+            this.linkLabel3.Size = new System.Drawing.Size(181, 13);
             this.linkLabel3.TabIndex = 14;
             this.linkLabel3.TabStop = true;
-            this.linkLabel3.Text = "https://github.com/reboucasericka";
+            this.linkLabel3.Text = "https://github.com/juliareboucasleite";
             // 
             // label4
             // 
@@ -81,7 +81,7 @@
             this.linkLabel2.Size = new System.Drawing.Size(151, 13);
             this.linkLabel2.TabIndex = 12;
             this.linkLabel2.TabStop = true;
-            this.linkLabel2.Text = "https://wa.me/351912345678";
+            this.linkLabel2.Text = "https://wa.me/351933992199";
             // 
             // label3
             // 

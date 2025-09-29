@@ -1,101 +1,80 @@
+// @ts-nocheck
 import express from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { pool } from "../db.js";
-import { verifyToken } from "../middleware/auth.js";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { pool } from "../database/db.js";
 
 const router = express.Router();
 
-// ================== REGISTER ==================
-router.post("/register", async (req, res) => {
-    try {
-        const { nome, email, password } = req.body;
+// ================== GOOGLE STRATEGY ==================
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        const googleId = profile.id;
 
-        if (!nome || !email || !password) {
-            return res.status(400).json({ error: "Preencha todos os campos" });
-        }
-
-        // verificar se já existe email
-        const [rows] = await pool.query("SELECT id FROM utilizadores WHERE email = ?", [email]);
-        if (rows.length > 0) {
-            return res.status(400).json({ error: "Email já registado" });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
-
-        await pool.query(
-            "INSERT INTO utilizadores (nome, email, senha) VALUES (?, ?, ?)",
-            [nome, email, hash]
-        );
-
-        res.json({ status: "ok", message: "Utilizador criado com sucesso" });
-    } catch (err) {
-        console.error("Erro no register:", err);
-        res.status(500).json({ error: "Erro interno no servidor" });
-    }
-});
-
-// ================== LOGIN ==================
-router.post("/login", async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: "Preencha email e password" });
-        }
-
-        const [rows] = await pool.query("SELECT * FROM utilizadores WHERE email = ?", [email]);
-        if (rows.length === 0) {
-            return res.status(400).json({ error: "Email não encontrado" });
-        }
-
-        const user = rows[0];
-        const isValid = await bcrypt.compare(password, user.senha);
-
-        if (!isValid) {
-            return res.status(400).json({ error: "Senha incorreta" });
-        }
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email, type: "web" },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        res.json({
-            status: "ok",
-            message: "Login bem sucedido",
-            token,
-            user: {
-                id: user.id,
-                nome: user.nome,
-                email: user.email
-            }
-        });
-    } catch (err) {
-        console.error("Erro no login:", err);
-        res.status(500).json({ error: "Erro interno no servidor" });
-    }
-});
-
-// ================== ME (rota protegida) ==================
-router.get("/me", verifyToken, async (req, res) => {
-    try {
+        // 🔹 Verifica se já existe utilizador com esse GoogleId
         const [rows] = await pool.query(
-            "SELECT id, nome, email, data_registo FROM utilizadores WHERE id = ?",
-            [req.user.id]
+          "SELECT * FROM Utilizadores WHERE GoogleId = ? OR Email = ?",
+          [googleId, email]
         );
 
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Utilizador não encontrado" });
+        let userId;
+        if (rows.length > 0) {
+          userId = rows[0].Id;
+          // Atualiza GoogleId se ainda não estava associado
+          await pool.query("UPDATE Utilizadores SET GoogleId=? WHERE Id=?", [
+            googleId,
+            userId,
+          ]);
+        } else {
+          // Cria novo utilizador
+          const [result] = await pool.query(
+            "INSERT INTO Utilizadores (Nome, Email, GoogleId) VALUES (?, ?, ?)",
+            [profile.displayName, email, googleId]
+          );
+          userId = result.insertId;
         }
 
-        res.json({ status: "ok", user: rows[0] });
-    } catch (err) {
-        console.error("Erro no /me:", err);
-        res.status(500).json({ error: "Erro interno no servidor" });
+        // 🔹 Salva/atualiza config do utilizador
+        await pool.query(
+          `INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) 
+           VALUES (?, ?, ?) 
+           ON DUPLICATE KEY UPDATE Email = VALUES(Email)`,
+          [userId, email, "email"]
+        );
+
+        return done(null, { id: userId, email });
+      } catch (err) {
+        return done(err, null);
+      }
     }
-});
+  )
+);
+
+// Serialização da sessão
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+// ================== ROTAS GOOGLE ==================
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    // 🔹 Aqui podes redirecionar para o painel
+    res.redirect("/painel");
+  }
+);
 
 export default router;

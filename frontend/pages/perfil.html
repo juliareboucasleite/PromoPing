@@ -6,6 +6,7 @@
     <title>Perfil — PromoPing</title>
     <link rel="stylesheet" href="../assets/styles/painel.css">
     <link rel="stylesheet" href="../assets/styles/style.css">
+     <link rel="icon" type="image/png" href="/assets/images/Logo.png">
     <script src="../assets/js/auth.js"></script>
 </head>
 <body class="dashboard-body">
@@ -216,7 +217,13 @@
                                     </svg>
                                     <span class="account-name">Discord</span>
                                 </div>
-                                <button class="account-status">Conectar</button>
+                                 <button 
+                              class="account-status disconnected" 
+                              onclick="connectDiscord()"
+                            >
+                              Conectar
+                            </button>
+                                
                             </div>
                             
                             <div class="account-item">
@@ -239,7 +246,14 @@
                                 <button class="account-status connected">Conectado</button>
                             </div>
                         </div>
-                    </div>
+                    </div><!-- ===== NOTIFICAÇÕES ===== -->
+                        <div class="profile-card">
+                          <div class="card-header">
+                            <h2 class="card-title">Histórico de Notificações</h2>
+                          </div>
+                          <ul id="lista-notificacoes" class="notification-list"></ul>
+                        </div>
+
 
                     <!-- ===== ESTATÍSTICAS ===== -->
                     <div class="profile-card">
@@ -281,217 +295,198 @@
     </main>
 
     <script>
-        // ===== VERIFICAR LOGIN E CARREGAR DADOS DO USUÁRIO =====
-        window.onload = async () => {
-          const token = localStorage.getItem("token");
-          if (!token) {
-            alert("Precisa estar logado!");
-            window.location.href = "Login.html";
-            return;
+
+        // ===== VERIFICAR LOGIN E CARREGAR DADOS =====
+  window.onload = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Precisa estar logado!");
+      window.location.href = "Login.html";
+      return;
+    }
+
+    try {
+      // Perfil básico
+      const resProfile = await fetch("/api/user/profile", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const dataProfile = await resProfile.json();
+
+      if (dataProfile.status === "ok") {
+        const profile = dataProfile.profile;
+        document.getElementById("fullName").value = profile.nome || "";
+        document.getElementById("email").value = profile.email || "";
+        document.getElementById("phone").value = profile.telefone || "";
+
+        updateConnectedAccounts(profile.contas_conectadas);
+        updateNotificationPreferences(profile.preferencias);
+      }
+
+      // Carregar notificações
+      await carregarNotificacoes();
+
+      // Estatísticas
+      const resStats = await fetch("/api/user/stats", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const dataStats = await resStats.json();
+
+      if (dataStats.status === "ok") {
+        const stats = dataStats.stats;
+        document.getElementById("produtos-monitorizados").textContent = stats.produtos_total || "0";
+        document.getElementById("notificacoes-enviadas").textContent = stats.notificacoes_total || "0";
+        document.getElementById("dinheiro-poupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+        document.getElementById("membro-desde").textContent = "Setembro 2025"; // Pode ser obtido da tabela utilizadores
+      }
+
+    } catch (err) {
+      console.error("Erro ao carregar perfil:", err);
+    }
+  };
+
+  // ===== LOGOUT =====
+  function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "Login.html";
+  }
+
+  // ===== SALVAR INFORMAÇÕES PESSOAIS =====
+  document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = {
+      nome: document.getElementById("fullName").value,
+      email: document.getElementById("email").value,
+      telefone: document.getElementById("phone").value
+    };
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      if (data.status === "ok") {
+        alert("Informações salvas com sucesso!");
+      } else {
+        alert(data.error || "Erro ao salvar informações.");
+      }
+    } catch (err) {
+      console.error("Erro ao salvar:", err);
+      alert("Erro de ligação ao servidor.");
+    }
+  });
+
+  function connectDiscord() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Faça login primeiro!");
+    window.location.href = "Login.html";
+    return;
+  }
+  window.location.href = `http://127.0.0.1:3000/auth/discord/login?token=${token}`;
+}
+
+  // ===== FUNÇÕES AUXILIARES =====
+ function updateConnectedAccounts(contas) {
+  const contasMap = {};
+  contas.forEach(c => contasMap[c.Tipo.toLowerCase()] = c.Conectado);
+
+  document.querySelectorAll('.account-item').forEach(item => {
+    const nome = item.querySelector('.account-name').textContent.toLowerCase();
+    const button = item.querySelector('.account-status');
+
+    let tipo = '';
+    if (nome.includes('google')) tipo = 'google';
+    else if (nome.includes('discord')) tipo = 'discord';
+    else if (nome.includes('telegram')) tipo = 'telegram';
+    else if (nome.includes('telefone')) tipo = 'whatsapp';
+
+    if (contasMap[tipo] === 1) {
+      // ✅ está conectado
+      button.textContent = "Conectado";
+      button.className = "account-status connected";
+    } else {
+      // ❌ não conectado → fica cinza
+      button.textContent = "Conectar";
+      button.className = "account-status disconnected";
+      if (tipo === "discord") {
+        button.onclick = () => window.location.href = "http://127.0.0.1:3000/auth/discord/login";
+      }
+    }
+  });
+}
+
+
+  async function carregarNotificacoes() {
+  try {
+    const res = await fetch("/api/notificacoes", {
+      headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+    });
+    const data = await res.json();
+
+    const lista = document.getElementById("lista-notificacoes");
+    lista.innerHTML = "";
+
+    if (data.status === "ok" && data.notificacoes.length > 0) {
+      data.notificacoes.forEach(n => {
+        const li = document.createElement("li");
+        li.textContent = `[${n.Tipo}] ${n.Mensagem} (${new Date(n.DataEnvio).toLocaleString()})`;
+        lista.appendChild(li);
+      });
+    } else {
+      lista.innerHTML = "<li>Nenhuma notificação encontrada.</li>";
+    }
+  } catch (err) {
+    console.error("Erro ao carregar notificações:", err);
+  }
+}
+
+// Carregar notificações junto com o perfil
+// (já está integrado no window.onload principal)
+
+
+  function updateNotificationPreferences(preferencias) {
+    const prefMap = {};
+    preferencias.forEach(p => prefMap[p.Tipo] = p.Ativo);
+
+    document.querySelectorAll('.preference-item').forEach(item => {
+      const nome = item.querySelector('.preference-name').textContent.toLowerCase();
+      const toggle = item.querySelector('.toggle-switch input');
+      let tipo = '';
+      if (nome.includes('email')) tipo = 'email';
+      else if (nome.includes('discord')) tipo = 'discord';
+      else if (nome.includes('telegram')) tipo = 'telegram';
+      else if (nome.includes('whatsapp')) tipo = 'whatsapp';
+
+      toggle.checked = prefMap[tipo] || false;
+
+      toggle.addEventListener("change", async (e) => {
+        try {
+          const res = await fetch("/api/user/preferences", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({ preferences: [{ tipo, ativo: e.target.checked }] })
+          });
+          const data = await res.json();
+          if (data.status !== "ok") {
+            console.error("Erro ao atualizar preferência:", data.error);
+            e.target.checked = !e.target.checked; // reverte
           }
-
-          try {
-            // Carregar perfil completo
-            const res = await fetch("/api/user/profile", {
-              headers: { Authorization: "Bearer " + token }
-            });
-            const data = await res.json();
-
-            if (data.status === "ok") {
-              const profile = data.profile;
-              
-              // Preenche o formulário com os dados reais do usuário
-              document.getElementById("fullName").value = profile.nome || "";
-              document.getElementById("email").value = profile.email || "";
-              document.getElementById("phone").value = profile.telefone || "";
-
-              // Preencher estatísticas
-              const stats = profile.estatisticas;
-              document.getElementById("produtos-monitorizados").textContent = stats.produtos_monitorizados || "0";
-              document.getElementById("notificacoes-enviadas").textContent = stats.notificacoes_enviadas || "0";
-              document.getElementById("dinheiro-poupado").textContent = `€${stats.dinheiro_poupado || "0.00"}`;
-              document.getElementById("membro-desde").textContent = stats.membro_desde || "N/A";
-
-              // Preencher contas conectadas
-              updateConnectedAccounts(profile.contas_conectadas);
-              
-              // Preencher preferências de notificação
-              updateNotificationPreferences(profile.preferencias);
-            } else {
-              console.error("Erro ao carregar perfil:", data.error);
-            }
-          } catch (err) {
-            console.error("Erro ao carregar perfil:", err);
-          }
-        };
-      
-        // ===== LOGOUT =====
-        function logout() {
-          localStorage.removeItem("token");
-          window.location.href = "Login.html";
+        } catch (err) {
+          console.error("Erro ao atualizar preferência:", err);
+          e.target.checked = !e.target.checked; // reverte
         }
-      
-        // ===== SALVAR INFORMAÇÕES PESSOAIS =====
-        document
-          .getElementById("personalInfoForm")
-          .addEventListener("submit", async (e) => {
-            e.preventDefault();
-      
-            const formData = {
-              nome: document.getElementById("fullName").value,
-              email: document.getElementById("email").value,
-              telefone: document.getElementById("phone").value
-            };
-      
-            try {
-              const res = await fetch("/api/user/profile", {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + localStorage.getItem("token")
-                },
-                body: JSON.stringify(formData)
-              });
-      
-              const data = await res.json();
-      
-              if (data.status === "ok") {
-                alert("Informações salvas com sucesso!");
-              } else {
-                alert(data.error || "Erro ao salvar informações.");
-              }
-            } catch (err) {
-              console.error("Erro ao salvar:", err);
-              alert("Erro de ligação ao servidor.");
-            }
-          });
-      
-        // ===== FUNÇÕES AUXILIARES =====
-        function updateConnectedAccounts(contas) {
-          const contasMap = {};
-          contas.forEach(conta => {
-            contasMap[conta.Tipo] = conta.Conectado;
-          });
-
-          // Atualizar status das contas
-          document.querySelectorAll('.account-item').forEach(item => {
-            const nome = item.querySelector('.account-name').textContent.toLowerCase();
-            const button = item.querySelector('.account-status');
-            
-            let tipo = '';
-            if (nome.includes('google')) tipo = 'google';
-            else if (nome.includes('discord')) tipo = 'discord';
-            else if (nome.includes('telegram')) tipo = 'telegram';
-            else if (nome.includes('telefone')) tipo = 'whatsapp';
-
-            if (contasMap[tipo]) {
-              button.textContent = 'Conectado';
-              button.className = 'account-status connected';
-            } else {
-              button.textContent = 'Conectar';
-              button.className = 'account-status';
-            }
-          });
-        }
-
-        function updateNotificationPreferences(preferencias) {
-          const prefMap = {};
-          preferencias.forEach(pref => {
-            prefMap[pref.Tipo] = pref.Ativo;
-          });
-
-          // Atualizar toggles
-          document.querySelectorAll('.preference-item').forEach(item => {
-            const nome = item.querySelector('.preference-name').textContent.toLowerCase();
-            const toggle = item.querySelector('.toggle-switch input');
-            
-            let tipo = '';
-            if (nome.includes('email')) tipo = 'email';
-            else if (nome.includes('discord')) tipo = 'discord';
-            else if (nome.includes('telegram')) tipo = 'telegram';
-            else if (nome.includes('whatsapp')) tipo = 'whatsapp';
-
-            toggle.checked = prefMap[tipo] || false;
-          });
-        }
-
-        // ===== CONTAS CONECTADAS =====
-        document.querySelectorAll(".account-status").forEach((button) => {
-          button.addEventListener("click", async (e) => {
-            const item = e.target.closest('.account-item');
-            const nome = item.querySelector('.account-name').textContent.toLowerCase();
-            
-            let tipo = '';
-            if (nome.includes('google')) tipo = 'google';
-            else if (nome.includes('discord')) tipo = 'discord';
-            else if (nome.includes('telegram')) tipo = 'telegram';
-            else if (nome.includes('telefone')) tipo = 'whatsapp';
-
-            if (e.target.textContent === 'Conectado') {
-              // Desconectar
-              try {
-                const res = await fetch(`/api/user/accounts/${tipo}`, {
-                  method: "DELETE",
-                  headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-                });
-                const data = await res.json();
-                
-                if (data.status === "ok") {
-                  e.target.textContent = 'Conectar';
-                  e.target.className = 'account-status';
-                } else {
-                  alert(data.error || "Erro ao desconectar conta");
-                }
-              } catch (err) {
-                console.error("Erro ao desconectar:", err);
-                alert("Erro de ligação ao servidor");
-              }
-            } else {
-              // Conectar (implementar OAuth depois)
-              alert(`Funcionalidade de conectar ${nome} será implementada em breve`);
-            }
-          });
-        });
-      
-        // ===== PREFERÊNCIAS DE NOTIFICAÇÃO =====
-        document.querySelectorAll(".toggle-switch input").forEach((toggle) => {
-          toggle.addEventListener("change", async (e) => {
-            const preferenceName = e.target
-              .closest(".preference-item")
-              .querySelector(".preference-name").textContent;
-            const isEnabled = e.target.checked;
-            
-            let tipo = '';
-            if (preferenceName.toLowerCase().includes('email')) tipo = 'email';
-            else if (preferenceName.toLowerCase().includes('discord')) tipo = 'discord';
-            else if (preferenceName.toLowerCase().includes('telegram')) tipo = 'telegram';
-            else if (preferenceName.toLowerCase().includes('whatsapp')) tipo = 'whatsapp';
-
-            try {
-              const res = await fetch("/api/user/preferences", {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + localStorage.getItem("token")
-                },
-                body: JSON.stringify({
-                  preferences: [{ tipo, ativo: isEnabled }]
-                })
-              });
-              
-              const data = await res.json();
-              if (data.status !== "ok") {
-                console.error("Erro ao atualizar preferência:", data.error);
-                // Reverter toggle
-                e.target.checked = !isEnabled;
-              }
-            } catch (err) {
-              console.error("Erro ao atualizar preferência:", err);
-              // Reverter toggle
-              e.target.checked = !isEnabled;
-            }
-          });
-        });
+      });
+    });
+  }
       </script>
 </body>
 </html>

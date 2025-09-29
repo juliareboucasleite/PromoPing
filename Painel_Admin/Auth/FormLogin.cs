@@ -1,4 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
+using Painel_Admin.Auth; // ← adiciona isto para aceder ao Sessao
+
 using System;
 using System.Configuration;
 using System.Windows.Forms;
@@ -36,7 +38,7 @@ namespace Painel_Admin
                 try
                 {
                     con.Open();
-                    string query = "SELECT Id, Nome, Senha FROM utilizadores WHERE Nome = @nome";
+                    string query = "SELECT Id, Nome, Email, Senha FROM utilizadores WHERE Nome = @nome";
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@nome", username);
 
@@ -60,8 +62,12 @@ namespace Painel_Admin
 
                         if (senhaCorreta)
                         {
-                            string perfil = reader["Nome"].ToString();
-                            MessageBox.Show($"Bem-vindo, {perfil}!");
+                            // ⚠️ Guardar dados do utilizador logado
+                            Sessao.UserId = Convert.ToInt32(reader["Id"]);
+                            Sessao.Nome = reader["Nome"].ToString();
+                            Sessao.Email = reader["Email"].ToString();
+
+                            MessageBox.Show($"Bem-vindo, {Sessao.Nome}!");
 
                             this.Hide();
                             using (var formMain = new PainelForm())
@@ -97,7 +103,6 @@ namespace Painel_Admin
         {
             using (var formRegistar = new FormRegistar())
             {
-               
                 formRegistar.ShowDialog();
             }
         }
@@ -108,6 +113,6 @@ namespace Painel_Admin
             {
                 formSuporte.ShowDialog();
             }
-    }
+        }
     }
 }

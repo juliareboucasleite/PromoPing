@@ -1,6 +1,5 @@
 ﻿using Painel_Admin.Repositories;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,6 +28,7 @@ namespace Painel_Admin
             try
             {
                 dgvProdutos.DataSource = _produtoRepo.GetAll();
+                dgvProdutos.Refresh(); // ⚠️ força atualização visual
             }
             catch (Exception ex)
             {
@@ -38,10 +38,12 @@ namespace Painel_Admin
 
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            FormProdutoEditar form = new FormProdutoEditar(); // form de edição individual
-            if (form.ShowDialog() == DialogResult.OK)
+            using (FormProdutoEditar form = new FormProdutoEditar()) // modal
             {
-                CarregarProdutos();
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    CarregarProdutos();
+                }
             }
         }
 
@@ -50,7 +52,6 @@ namespace Painel_Admin
             if (dgvProdutos.CurrentRow != null)
             {
                 int id = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["Id"].Value);
-                int userId = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["UserId"].Value);
                 string nome = dgvProdutos.CurrentRow.Cells["Nome"].Value.ToString();
                 string link = dgvProdutos.CurrentRow.Cells["Link"].Value.ToString();
                 decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value
@@ -61,10 +62,13 @@ namespace Painel_Admin
                     : (DateTime?)null;
                 string loja = dgvProdutos.CurrentRow.Cells["Loja"].Value.ToString();
 
-                FormProdutoEditar form = new FormProdutoEditar(id, userId, nome, link, precoAlvo, dataLimite, loja);
-                if (form.ShowDialog() == DialogResult.OK)
+                // ⚠️ removemos o parâmetro userId porque Update não usa mais
+                using (FormProdutoEditar form = new FormProdutoEditar(id, 0, nome, link, precoAlvo, dataLimite, loja))
                 {
-                    CarregarProdutos();
+                    if (form.ShowDialog() == DialogResult.OK)
+                    {
+                        CarregarProdutos();
+                    }
                 }
             }
         }

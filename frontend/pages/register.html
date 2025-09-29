@@ -1,164 +1,665 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Registar — PromoPing</title>
-    <link rel="stylesheet" href="../assets/styles/register.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registar — PromoPing</title>
+  <link rel="stylesheet" href="../assets/styles/header.css">
+  <link rel="stylesheet" href="../assets/styles/register.css">
+  <link rel="icon" type="image/png" href="/assets/images/Logo.png">
 </head>
-
 <body class="login-page">
-    <!-- ===== CABEÇALHO ===== -->
-    <header class="pp-header" style="
-        background: #1e121433;
-        border-radius: 32px;
-        margin: 40px auto 0 auto;
-        max-width: 1150px;
-        box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
-        border: 2px solid #ffffffb7;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        left: 0;
-        right: 0;
-        top: 0;
-        transform: none;
-        ">
-    <div style="
-       display: flex;
-       display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 32px;
-        height: 64px;
-        width: 100%;
-        max-width: 900px;
-    ">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="../assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-        <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
-      </div>
-      <nav style="display: flex; align-items: center; gap: 24px;">
-        <a href="index.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Inicio</a>
-        <a href="Login.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Login</a>
+
+  <!-- ===== HEADER ===== -->
+  <header class="pp-header">
+    <div class="pp-header-container">
+      <!-- Logo -->
+      <a href="/pages/index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
+        <img src="/assets/images/Logo.png" alt="PromoPing Logo">
+        <span>PromoPing</span>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="pp-header-nav" id="pp-header-nav">
+        <!-- Soluções -->
+        <div class="pp-header-nav-wrapper">
+       
+        
+        <!-- Recursos -->
+        <div class="pp-header-nav-wrapper">
+        
+        </div>
       </nav>
+      
+      <!-- Mobile Menu & CTA -->
+      <div class="pp-header-burger">
+        <div class="pp-header-burger-lang">
+          <button class="pp-header-lang-btn" type="button" aria-label="Idioma" onclick="toggleLanguage()">
+            <span id="lang-text">PT</span>
+          </button>
+        </div>
+        
+        <button class="pp-header-burger-btn" type="button" role="button" title="Alternar Navegação" aria-label="Alternar Navegação" onclick="toggleNavigation()">
+          <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+            <path class="line line1" d="M20 25H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line2" d="M20 50H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line3" d="M20 75H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </button>
+        
+        <div class="pp-header-burger-cta">
+          <a href="/pages/Login.html" class="pp-header-cta-button">Entrar</a>
+        </div>
+      </div>
     </div>
   </header>
 
+  <!-- ===== MAIN ===== -->
+  <main class="login-main">
+    <div class="register-container">
+      
+      <!-- Título -->
+      <h1 class="register-title">Criar Conta</h1>
+      <p class="register-subtitle">Junte-se ao PromoPing e comece a poupar dinheiro</p>
 
-    <!-- ===== PRINCIPAL ===== -->
-    <main class="login-main">
-        <div class="login-container">
-            <h1 class="login-title">Criar uma conta</h1>
+      <!-- Mensagens de erro/sucesso -->
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
 
-            <div class="social-login-group" style="display: flex; gap: 16px; justify-content: center; margin-bottom: 18px;">
-                <a href="#" class="social-btn social-btn-google" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; padding: 0;">
-                    <!-- Novo ícone do Google (Material Design) -->
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      <!-- Social login -->
+      <div class="social-login-group">
+        <button class="social-btn social-btn-google" id="btnGoogle">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-                </a>
-                <a href="#" class="social-btn social-btn-discord" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; padding: 0;">
-                    <svg viewBox="0 0 32 32" style="width: 32px; height: 32px;">
-            <path d="M27.6 6.2A26.9 26.9 0 0 0 20.9 4c-.3.5-.6 1.1-.8 1.6-2.4-.4-4.8-.4-7.2 0-.2-.6-.5-1.1-.8-1.6A26.9 26.9 0 0 0 4.4 6.2C1.2 11.1.2 15.8.5 20.4c2.7 2 5.3 3.2 7.9 4 .6-.8 1.1-1.6 1.5-2.5-1.1-.4-2.1-.9-3.1-1.5.3-.2.6-.4.9-.6 5.8 2.7 12.1 2.7 17.9 0 .3.2.6.4.9.6-1 .6-2 1.1-3.1 1.5.4.9.9 1.7 1.5 2.5 2.6-.8 5.2-2 7.9-4 .3-4.6-.7-9.3-3.9-14.2zM10.7 17.7c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2c1.1 0 2 1 2 2.2s-.9 2.2-2 2.2zm10.6 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2c1.1 0 2 1 2 2.2s-.9 2.2-2 2.2z" />
+          Google
+        </button>
+        <button class="social-btn social-btn-phone" id="btnSMS">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
-                </a>
-                <a href="#" class="social-btn social-btn-telegram" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; padding: 0;">
-                    <!-- Novo ícone do Telegram (Material Design) -->
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-            <path fill="#fff" d="M9.04 16.88l-.39 3.47c.56 0 .8-.24 1.09-.53l2.62-2.5 5.44 3.97c1 .55 1.71.26 1.96-.92l3.56-16.7c.32-1.48-.54-2.06-1.5-1.7L2.36 9.3c-1.45.56-1.43 1.36-.25 1.72l4.6 1.44 10.7-6.74c.5-.32.96-.14.58.18" />
-          </svg>
-                </a>
-                <a href="#" class="social-btn social-btn-phone" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; padding: 0;">
-                    <svg viewBox="0 0 24 24">
-            <path d="M6.62 10.79a15.053 15.053 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.07 21 3 13.93 3 5a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.24 1.01l-2.2 2.2z" fill="#fff" />
-          </svg>
-                </a>
-            </div>
+          SMS
+        </button>
+      </div>
 
-            <div class="divider"><span>ou registe-se com email</span></div>
-
-            <form class="login-form" id="regForm">
-                <input type="text" placeholder="Nome" class="login-input" id="nome" required>
-                <input type="email" placeholder="Email" class="login-input" id="email" required>
-                <input type="password" placeholder="Palavra-passe" class="login-input" id="senha" required>
-                <input type="password" placeholder="Confirmar palavra-passe" class="login-input" required>
-
-                <div class="login-actions">
-                    <a href="index.html" class="login-btn login-btn-cancel">Cancelar</a>
-                    <button type="submit" class="login-btn login-btn-register">Criar</button>
-                </div>
-            </form>
+      <!-- Formulário SMS -->
+      <div class="sms-register" id="smsRegister">
+        <h4>Registo com SMS</h4>
+        <div class="form-group">
+          <label class="form-label">Número de telemóvel</label>
+          <input id="telefone" type="tel" class="form-input" placeholder="+351 912 345 678" />
         </div>
-    </main>
+        <div class="form-group">
+          <button id="enviarCodigoSMS" class="btn-register btn-create">Enviar código</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de verificação</label>
+          <input id="codigoSMS" type="text" class="form-input" placeholder="123456" />
+          <div class="resend-section" id="resendSection" style="display: none;">
+            <p class="resend-text">Não recebeu o código? <span id="timer">30</span>s</p>
+            <button id="resendCode" class="btn-register btn-cancel" disabled>Reenviar código</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <button id="validarCodigoSMS" class="btn-register btn-create">Validar e Criar Conta</button>
+        </div>
+      </div>
 
-    <script type="module">
-        // Função para registar utilizador
-        async function registarUtilizador(nome, email, password) {
-          try {
-            const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
+      <div class="divider" id="emailDivider"><span>ou registe-se com email</span></div>
+
+      <!-- ===== FORM EMAIL ===== -->
+      <form class="login-form" id="regForm">
+        <div class="form-group">
+          <label class="form-label">Nome completo</label>
+          <input type="text" class="form-input" id="nome" placeholder="O seu nome completo" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Endereço de email</label>
+          <input type="email" class="form-input" id="email" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Palavra-passe</label>
+            <div style="position: relative;">
+              <input type="password" class="form-input" id="senha" placeholder="Mínimo 6 caracteres" required>
+              <button type="button" class="password-toggle" onclick="togglePassword('senha')">
+                <span id="senha-toggle">👁️</span>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar palavra-passe</label>
+            <div style="position: relative;">
+              <input type="password" class="form-input" id="confirmar" placeholder="Repita a palavra-passe" required>
+              <button type="button" class="password-toggle" onclick="togglePassword('confirmar')">
+                <span id="confirmar-toggle">👁️</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telefone opcional -->
+        <div class="phone-optional">
+          <label class="form-label">Número de telemóvel</label>
+          <input type="tel" class="form-input" id="telefoneOpcional" placeholder="+351 912 345 678">
+          <small style="color: #6c757d; font-size: 0.85rem; margin-top: 5px; display: block;">
+            Adicione o seu número para receber notificações por SMS
+          </small>
+        </div>
+
+        <div class="register-actions">
+          <a href="index.html" class="btn-register btn-cancel">Cancelar</a>
+          <button type="submit" class="btn-register btn-create" id="btnCriar">Criar Conta</button>
+        </div>
+      </form>
+
+      <!-- Caixa de verificação de email -->
+      <div class="verify-box" id="verifyBox">
+        <h3>Verifique o seu email</h3>
+        <p>Enviamos um código de 6 dígitos para <strong id="verifyEmail"></strong></p>
+        <div class="code-inputs">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+          <input maxlength="1" class="code-digit" type="text" inputmode="numeric">
+        </div>
+        <div class="verify-actions">
+          <button id="btnConfirmar" class="btn-register btn-create">Confirmar</button>
+          <button id="btnReenviar" class="btn-register btn-cancel" disabled>Reenviar código</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    // ===== NAVIGATION FUNCTIONS =====
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // ===== FUNÇÕES AUXILIARES =====
+    function showError(message) {
+      const errorDiv = document.getElementById("errorMessage");
+      errorDiv.textContent = message;
+      errorDiv.style.display = "block";
+      setTimeout(() => errorDiv.style.display = "none", 5000);
+    }
+
+    function showSuccess(message) {
+      const successDiv = document.getElementById("successMessage");
+      successDiv.textContent = message;
+      successDiv.style.display = "block";
+      setTimeout(() => successDiv.style.display = "none", 5000);
+    }
+
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const toggle = document.getElementById(fieldId + "-toggle");
+      
+      if (field.type === "password") {
+        field.type = "text";
+        toggle.textContent = "🙈";
+      } else {
+        field.type = "password";
+        toggle.textContent = "👁️";
+      }
+    }
+
+    // ===== REGISTO NORMAL =====
+    async function registarUtilizador(nome, email, password, telefone = null) {
+      const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, password, telefone }),
+      });
+      return await res.json();
+    }
+
+    function guardarToken(token) {
+      localStorage.setItem("token", token);
+    }
+
+    // Validação de formulário
+    function validarFormulario() {
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const confirmar = document.getElementById("confirmar").value;
+
+      if (!nome) {
+        showError("Por favor, insira o seu nome completo");
+        return false;
+      }
+
+      if (!email || !email.includes("@")) {
+        showError("Por favor, insira um email válido");
+        return false;
+      }
+
+      if (senha.length < 6) {
+        showError("A palavra-passe deve ter pelo menos 6 caracteres");
+        return false;
+      }
+
+      if (senha !== confirmar) {
+        showError("As palavras-passe não coincidem");
+        return false;
+      }
+
+      return true;
+    }
+
+    document.getElementById("regForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validarFormulario()) {
+        return;
+      }
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const telefone = document.getElementById("telefoneOpcional").value.trim();
+
+      // Desabilitar botão durante o processo
+      const btnCriar = document.getElementById("btnCriar");
+      btnCriar.disabled = true;
+      btnCriar.textContent = "A criar conta...";
+
+      try {
+        const data = await registarUtilizador(nome, email, senha, telefone || null);
+        
+        if (data.status === "ok") {
+          showSuccess("Conta criada com sucesso! Verifique o seu email.");
+          document.getElementById("verifyBox").style.display = "block";
+          document.getElementById("verifyEmail").textContent = email;
+          iniciarReenvio(email);
+        } else {
+          showError(data.error || "Erro ao criar conta");
+        }
+      } catch (error) {
+        showError("Erro de ligação ao servidor");
+      } finally {
+        btnCriar.disabled = false;
+        btnCriar.textContent = "Criar Conta";
+      }
+    });
+
+    // ===== VERIFICAÇÃO DE EMAIL =====
+    function getCodigoDigitado() {
+      return Array.from(document.querySelectorAll(".code-digit"))
+        .map(i => i.value)
+        .join("");
+    }
+
+    document.getElementById("btnConfirmar").addEventListener("click", async () => {
+      const email = document.getElementById("verifyEmail").textContent;
+      const codigo = getCodigoDigitado();
+
+      const res = await fetch("http://127.0.0.1:3000/api/auth/email/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, codigo })
+      });
+      const data = await res.json();
+
+      if (data.status === "ok" && data.token) {
+        guardarToken(data.token);
+        location.href = "Painel.html";
+      } else {
+        alert(data.error || "Código inválido");
+      }
+    });
+
+    // ===== REENVIAR CÓDIGO =====
+    function iniciarReenvio(email) {
+      const btn = document.getElementById("btnReenviar");
+      btn.disabled = true;
+
+      let tempo = 30;
+      btn.textContent = `Reenviar (${tempo}s)`;
+
+      const interval = setInterval(() => {
+        tempo--;
+        btn.textContent = `Reenviar (${tempo}s)`;
+        if (tempo <= 0) {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.textContent = "Reenviar código";
+          btn.onclick = async () => {
+            await fetch("http://127.0.0.1:3000/api/auth/email/send", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nome, email, password })
+              body: JSON.stringify({ email })
             });
-            return await res.json();
-          } catch (err) {
-            console.error("Erro no registo:", err);
-            return { error: "Erro de ligação com o servidor" };
-          }
+            iniciarReenvio(email);
+          };
         }
+      }, 1000);
+    }
+
+    // ===== REGISTO GOOGLE =====
+    document.getElementById("btnGoogle").addEventListener("click", () => {
+      window.location.href = "http://localhost:3000/auth/google";
+    });
+
+    // ===== REGISTO SMS/WHATSAPP =====
+    const btnSMS = document.getElementById("btnSMS");
+    const smsRegister = document.getElementById("smsRegister");
+    const emailDivider = document.getElementById("emailDivider");
+    const regForm = document.getElementById("regForm");
+
+    btnSMS.addEventListener("click", () => {
+      const isVisible = smsRegister.style.display === "block";
+      const container = document.querySelector('.register-container');
       
-        // Função para login automático após registo
-        async function iniciarSessao(email, password) {
-          try {
-            const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password })
-            });
-            return await res.json();
-          } catch (err) {
-            console.error("Erro no login automático:", err);
-            return { error: "Erro de ligação com o servidor" };
-          }
-        }
-      
-        function guardarToken(token) {
-          localStorage.setItem("token", token);
-        }
-      
-        const form = document.getElementById("regForm");
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-      
-          const nome = document.getElementById("nome").value.trim();
-          const email = document.getElementById("email").value.trim();
-          const senha = document.getElementById("senha").value;
-      
-          const data = await registarUtilizador(nome, email, senha);
-      
-          if (data.status === "ok") {
-            const login = await iniciarSessao(email, senha);
-            if (login.token) {
-              guardarToken(login.token);
-              location.href = "painel.html";
-            } else {
-              alert("Conta criada, mas falhou login automático.");
-              location.href = "login.html";
-            }
-          } else {
-            alert(data.error || "Erro no registo");
-          }
+      if (isVisible) {
+        // Esconder painel SMS e mostrar formulário email
+        smsRegister.style.display = "none";
+        emailDivider.style.display = "block";
+        regForm.style.display = "block";
+        btnSMS.classList.remove("active");
+        btnSMS.style.background = "linear-gradient(135deg, #f4af55, #dc7c35)";
+        container.classList.remove("sms-active");
+      } else {
+        // Mostrar painel SMS e esconder formulário email
+        smsRegister.style.display = "block";
+        emailDivider.style.display = "none";
+        regForm.style.display = "none";
+        btnSMS.classList.add("active");
+        btnSMS.style.background = "linear-gradient(135deg, #dc7c35, #f4af55)";
+        container.classList.add("sms-active");
+      }
+    });
+
+    document.getElementById("enviarCodigoSMS").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefone").value.trim();
+      if (!telefone) {
+        showError("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("enviarCodigoSMS");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
         });
-      </script>
-      
-    
-</body>
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          showSuccess("Código enviado por SMS!");
+          startSMSTimer();
+        } else {
+          showError(data.error || "Erro ao enviar código");
+        }
+      } catch (error) {
+        showError("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Enviar código";
+      }
+    });
 
+    document.getElementById("resendCode").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefone").value.trim();
+      if (!telefone) {
+        showError("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("resendCode");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          showSuccess("Código reenviado por SMS!");
+          startSMSTimer();
+        } else {
+          showError(data.error || "Erro ao reenviar código");
+        }
+      } catch (error) {
+        showError("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Reenviar código";
+      }
+    });
+
+    // ===== SMS TIMER =====
+    let smsTimer = null;
+    let smsCountdown = 0;
+
+    function startSMSTimer() {
+      const resendSection = document.getElementById("resendSection");
+      const timerSpan = document.getElementById("timer");
+      const resendBtn = document.getElementById("resendCode");
+      
+      resendSection.style.display = "block";
+      smsCountdown = 30;
+      timerSpan.textContent = smsCountdown;
+      resendBtn.disabled = true;
+      
+      smsTimer = setInterval(() => {
+        smsCountdown--;
+        timerSpan.textContent = smsCountdown;
+        
+        if (smsCountdown <= 0) {
+          clearInterval(smsTimer);
+          resendBtn.disabled = false;
+          timerSpan.textContent = "0";
+        }
+      }, 1000);
+    }
+
+    document.getElementById("validarCodigoSMS").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefone").value.trim();
+      const codigo = document.getElementById("codigoSMS").value.trim();
+
+      if (!telefone || !codigo) {
+        showError("Por favor, preencha todos os campos");
+        return;
+      }
+
+      const btn = document.getElementById("validarCodigoSMS");
+      btn.disabled = true;
+      btn.textContent = "A validar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone, codigo })
+        });
+        const data = await res.json();
+
+        if (data.status === "ok" && data.token) {
+          guardarToken(data.token);
+          showSuccess("Conta criada com sucesso!");
+          setTimeout(() => {
+            location.href = "Painel.html";
+          }, 1500);
+        } else {
+          showError(data.error || "Código inválido");
+        }
+      } catch (error) {
+        showError("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Validar e Criar Conta";
+      }
+    });
+
+    // ===== MELHORAR UX DOS CÓDIGOS =====
+    document.querySelectorAll('.code-digit').forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < 5) {
+          document.querySelectorAll('.code-digit')[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+          document.querySelectorAll('.code-digit')[index - 1].focus();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    // Navigation functions
+    function openNavigation(button) {
+      const navLinks = button.nextElementSibling;
+      const isOpen = navLinks.style.display === 'block';
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+        link.style.display = 'none';
+      });
+      
+      // Toggle current dropdown
+      navLinks.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.pp-header-nav-wrapper')) {
+        document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+          link.style.display = 'none';
+        });
+      }
+    });
+
+    // Language toggle function
+    function toggleLanguage() {
+      const langText = document.getElementById('lang-text');
+      const currentLang = langText.textContent;
+      
+      if (currentLang === 'PT') {
+        langText.textContent = 'EN';
+        translateToEnglish();
+      } else {
+        langText.textContent = 'PT';
+        translateToPortuguese();
+      }
+    }
+
+    function translateToEnglish() {
+      // Traduzir elementos específicos do register
+      const title = document.querySelector('.register-title');
+      if (title) title.textContent = 'Create Account';
+      
+      const subtitle = document.querySelector('.register-subtitle');
+      if (subtitle) subtitle.textContent = 'Join PromoPing and start saving money';
+      
+      const nameLabel = document.querySelector('label[for="name"]');
+      if (nameLabel) nameLabel.textContent = 'Full name';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Email address';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Password';
+      
+      const confirmLabel = document.querySelector('label[for="confirm-password"]');
+      if (confirmLabel) confirmLabel.textContent = 'Confirm password';
+      
+      const phoneLabel = document.querySelector('label[for="phone"]');
+      if (phoneLabel) phoneLabel.textContent = 'Mobile number (optional)';
+      
+      const registerBtn = document.querySelector('.register-btn');
+      if (registerBtn) registerBtn.textContent = 'Create Account';
+      
+      const cancelBtn = document.querySelector('.cancel-btn');
+      if (cancelBtn) cancelBtn.textContent = 'Cancel';
+
+      // Traduzir elementos adicionais
+      const googleBtn = document.querySelector('.google-btn');
+      if (googleBtn) googleBtn.textContent = 'Continue with Google';
+      
+      const smsBtn = document.querySelector('.social-btn-phone');
+      if (smsBtn) smsBtn.textContent = 'Continue with SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'or register with email';
+      
+      const phoneHint = document.querySelector('.phone-hint');
+      if (phoneHint) phoneHint.textContent = 'Add your number to receive SMS notifications';
+      
+      const termsText = document.querySelector('.terms-text');
+      if (termsText) termsText.textContent = 'By creating an account, you agree to our Terms of Service and Privacy Policy';
+    }
+
+    function translateToPortuguese() {
+      // Traduzir de volta para português
+      const title = document.querySelector('.register-title');
+      if (title) title.textContent = 'Criar Conta';
+      
+      const subtitle = document.querySelector('.register-subtitle');
+      if (subtitle) subtitle.textContent = 'Junte-se ao PromoPing e comece a poupar dinheiro';
+      
+      const nameLabel = document.querySelector('label[for="name"]');
+      if (nameLabel) nameLabel.textContent = 'Nome completo';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Endereço de email';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Palavra-passe';
+      
+      const confirmLabel = document.querySelector('label[for="confirm-password"]');
+      if (confirmLabel) confirmLabel.textContent = 'Confirmar palavra-passe';
+      
+      const phoneLabel = document.querySelector('label[for="phone"]');
+      if (phoneLabel) phoneLabel.textContent = 'Número de telemóvel (opcional)';
+      
+      const registerBtn = document.querySelector('.register-btn');
+      if (registerBtn) registerBtn.textContent = 'Criar Conta';
+      
+      const cancelBtn = document.querySelector('.cancel-btn');
+      if (cancelBtn) cancelBtn.textContent = 'Cancelar';
+
+      // Traduzir elementos adicionais de volta para português
+      const googleBtn = document.querySelector('.google-btn');
+      if (googleBtn) googleBtn.textContent = 'Continuar com Google';
+      
+      const smsBtn = document.querySelector('.social-btn-phone');
+      if (smsBtn) smsBtn.textContent = 'Continuar com SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'ou registe-se com email';
+      
+      const phoneHint = document.querySelector('.phone-hint');
+      if (phoneHint) phoneHint.textContent = 'Adicione o seu número para receber notificações por SMS';
+      
+      const termsText = document.querySelector('.terms-text');
+      if (termsText) termsText.textContent = 'Ao criar uma conta, concorda com os nossos Termos de Serviço e Política de Privacidade';
+    }
+  </script>
+</body>
 </html>

@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 
@@ -15,6 +14,7 @@ namespace Painel_Admin.Repositories
             _connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
         }
 
+        // Lista todos os produtos
         public DataTable GetAll()
         {
             using (var con = new MySqlConnection(_connStr))
@@ -28,6 +28,7 @@ namespace Painel_Admin.Repositories
             }
         }
 
+        // Insere produto novo (sempre precisa do UserId do utilizador logado)
         public void Add(int userId, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(_connStr))
@@ -46,17 +47,18 @@ namespace Painel_Admin.Repositories
             }
         }
 
-        public void Update(int id, int userId, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
+        // Atualiza produto existente (não altera o UserId)
+        public void Update(int id, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(_connStr))
             {
                 con.Open();
                 string query = @"UPDATE produtos 
-                                 SET UserId=@userId, Nome=@nome, Link=@link, PrecoAlvo=@precoAlvo, DataLimite=@dataLimite, Loja=@loja
+                                 SET Nome=@nome, Link=@link, PrecoAlvo=@precoAlvo, 
+                                     DataLimite=@dataLimite, Loja=@loja
                                  WHERE Id=@id";
                 var cmd = new MySqlCommand(query, con);
                 cmd.Parameters.AddWithValue("@id", id);
-                cmd.Parameters.AddWithValue("@userId", userId);
                 cmd.Parameters.AddWithValue("@nome", nome);
                 cmd.Parameters.AddWithValue("@link", link);
                 cmd.Parameters.AddWithValue("@precoAlvo", precoAlvo);
@@ -66,6 +68,7 @@ namespace Painel_Admin.Repositories
             }
         }
 
+        // Remove produto
         public void Delete(int id)
         {
             using (var con = new MySqlConnection(_connStr))

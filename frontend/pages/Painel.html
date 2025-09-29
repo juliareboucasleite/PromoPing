@@ -6,6 +6,7 @@
     <title>Dashboard — PromoPing</title>
     <link rel="stylesheet" href="../assets/styles/painel.css">
     <link rel="stylesheet" href="../assets/styles/style.css">
+     <link rel="icon" type="image/png" href="/assets/images/Logo.png">
     <script src="../assets/js/auth.js"></script>
 </head>
 <body class="dashboard-body">
@@ -67,6 +68,56 @@
                 <h1 class="page-title">Dashboard</h1>
                 <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
             </header>
+
+            <!-- ===== ESTATÍSTICAS RÁPIDAS ===== -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalProdutos">0</span>
+                        <span class="stat-label">Produtos</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalNotificacoes">0</span>
+                        <span class="stat-label">Notificações</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1v6l3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l-3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l-3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="dinheiroPoupado">€0.00</span>
+                        <span class="stat-label">Poupado</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- ===== FORM ADICIONAR ===== -->
             <div class="add-product-card">
@@ -267,8 +318,28 @@
         }
       }
 
+      // Carregar estatísticas
+      async function carregarEstatisticas() {
+        try {
+          const res = await fetch("/api/user/stats", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+          
+          if (data.status === "ok") {
+            const stats = data.stats;
+            document.getElementById("totalProdutos").textContent = stats.produtos_total || 0;
+            document.getElementById("totalNotificacoes").textContent = stats.notificacoes_total || 0;
+            document.getElementById("dinheiroPoupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+          }
+        } catch (err) {
+          console.error("Erro ao carregar estatísticas:", err);
+        }
+      }
+
       // Iniciar
       carregarProdutos();
+      carregarEstatisticas();
     </script>
 </body>
 </html>

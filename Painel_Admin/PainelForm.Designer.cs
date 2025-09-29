@@ -22,9 +22,9 @@
             this.produtosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.PainelPrincipal = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilDetalhesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilEditarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificaçõesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.panelDashboard = new System.Windows.Forms.FlowLayoutPanel();
             this.cardUsers = new System.Windows.Forms.Panel();
             this.lblTotalUsers = new System.Windows.Forms.Label();
@@ -39,10 +39,6 @@
             this.lblTotalPoupado = new System.Windows.Forms.Label();
             this.picPoupado = new System.Windows.Forms.PictureBox();
             this.btnAtualizarDashboard = new System.Windows.Forms.Button();
-            this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editarNotificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.notificaçõesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.listarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDashboard.SuspendLayout();
             this.cardUsers.SuspendLayout();
@@ -68,8 +64,7 @@
             // produtosToolStripMenuItem
             // 
             this.produtosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarProdutosToolStripMenuItem,
-            this.listarProdutosToolStripMenuItem});
+            this.editarProdutosToolStripMenuItem});
             this.produtosToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.produtosToolStripMenuItem.Name = "produtosToolStripMenuItem";
             resources.ApplyResources(this.produtosToolStripMenuItem, "produtosToolStripMenuItem");
@@ -83,30 +78,31 @@
             // PainelPrincipal
             // 
             this.PainelPrincipal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.perfilDetalhesToolStripMenuItem1,
-            this.perfilEditarToolStripMenuItem,
             this.painelPerfisToolStripMenuItem});
             this.PainelPrincipal.ForeColor = System.Drawing.Color.White;
             this.PainelPrincipal.Name = "PainelPrincipal";
             resources.ApplyResources(this.PainelPrincipal, "PainelPrincipal");
-            // 
-            // perfilDetalhesToolStripMenuItem1
-            // 
-            resources.ApplyResources(this.perfilDetalhesToolStripMenuItem1, "perfilDetalhesToolStripMenuItem1");
-            this.perfilDetalhesToolStripMenuItem1.Name = "perfilDetalhesToolStripMenuItem1";
-            this.perfilDetalhesToolStripMenuItem1.Click += new System.EventHandler(this.perfilDetalhesToolStripMenuItem_Click);
-            // 
-            // perfilEditarToolStripMenuItem
-            // 
-            resources.ApplyResources(this.perfilEditarToolStripMenuItem, "perfilEditarToolStripMenuItem");
-            this.perfilEditarToolStripMenuItem.Name = "perfilEditarToolStripMenuItem";
-            this.perfilEditarToolStripMenuItem.Click += new System.EventHandler(this.perfilEditarToolStripMenuItem_Click);
             // 
             // painelPerfisToolStripMenuItem
             // 
             resources.ApplyResources(this.painelPerfisToolStripMenuItem, "painelPerfisToolStripMenuItem");
             this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
             this.painelPerfisToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisToolStripMenuItem_Click);
+            // 
+            // notificaçõesToolStripMenuItem
+            // 
+            this.notificaçõesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.notificaçõesToolStripMenuItem1});
+            this.notificaçõesToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.notificaçõesToolStripMenuItem.Name = "notificaçõesToolStripMenuItem";
+            resources.ApplyResources(this.notificaçõesToolStripMenuItem, "notificaçõesToolStripMenuItem");
+            // 
+            // notificaçõesToolStripMenuItem1
+            // 
+            this.notificaçõesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
+            this.notificaçõesToolStripMenuItem1.Name = "notificaçõesToolStripMenuItem1";
+            resources.ApplyResources(this.notificaçõesToolStripMenuItem1, "notificaçõesToolStripMenuItem1");
+            this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificaçõesToolStripMenuItem1_Click);
             // 
             // panelDashboard
             // 
@@ -212,36 +208,6 @@
             this.btnAtualizarDashboard.UseVisualStyleBackColor = false;
             this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click_1);
             // 
-            // notificaçõesToolStripMenuItem
-            // 
-            this.notificaçõesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editarNotificaçõesToolStripMenuItem,
-            this.notificaçõesToolStripMenuItem1});
-            this.notificaçõesToolStripMenuItem.ForeColor = System.Drawing.Color.White;
-            this.notificaçõesToolStripMenuItem.Name = "notificaçõesToolStripMenuItem";
-            resources.ApplyResources(this.notificaçõesToolStripMenuItem, "notificaçõesToolStripMenuItem");
-            // 
-            // editarNotificaçõesToolStripMenuItem
-            // 
-            this.editarNotificaçõesToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
-            this.editarNotificaçõesToolStripMenuItem.Name = "editarNotificaçõesToolStripMenuItem";
-            resources.ApplyResources(this.editarNotificaçõesToolStripMenuItem, "editarNotificaçõesToolStripMenuItem");
-            this.editarNotificaçõesToolStripMenuItem.Click += new System.EventHandler(this.editarNotificaçõesToolStripMenuItem_Click);
-            // 
-            // notificaçõesToolStripMenuItem1
-            // 
-            this.notificaçõesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
-            this.notificaçõesToolStripMenuItem1.Name = "notificaçõesToolStripMenuItem1";
-            resources.ApplyResources(this.notificaçõesToolStripMenuItem1, "notificaçõesToolStripMenuItem1");
-            this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificaçõesToolStripMenuItem1_Click);
-            // 
-            // listarProdutosToolStripMenuItem
-            // 
-            this.listarProdutosToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Pacote;
-            this.listarProdutosToolStripMenuItem.Name = "listarProdutosToolStripMenuItem";
-            resources.ApplyResources(this.listarProdutosToolStripMenuItem, "listarProdutosToolStripMenuItem");
-            this.listarProdutosToolStripMenuItem.Click += new System.EventHandler(this.listarProdutosToolStripMenuItem_Click);
-            // 
             // PainelForm
             // 
             resources.ApplyResources(this, "$this");
@@ -277,8 +243,6 @@
         private System.Windows.Forms.ToolStripMenuItem produtosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editarProdutosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem PainelPrincipal;
-        private System.Windows.Forms.ToolStripMenuItem perfilDetalhesToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem perfilEditarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem painelPerfisToolStripMenuItem;
         private System.Windows.Forms.FlowLayoutPanel panelDashboard;
         private System.Windows.Forms.Panel cardUsers;
@@ -295,8 +259,6 @@
         private System.Windows.Forms.PictureBox picPoupado;
         private System.Windows.Forms.Button btnAtualizarDashboard;
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem listarProdutosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editarNotificaçõesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem1;
     }
 }

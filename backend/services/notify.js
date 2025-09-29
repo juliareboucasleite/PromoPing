@@ -1,27 +1,57 @@
-import { sendDiscord } from "./discord.js";
-import { sendTelegram } from "./telegram.js";
+import nodemailer from "nodemailer";
+import twilio from "twilio";
+import dotenv from "dotenv";
+dotenv.config();
 
-// Função temporária para Twilio (será implementada quando configurado)
-const sendTwilioNotification = null;
 
-async function sendNotification({ numero, mensagem, canal }) {
-    if (canal === "discord") {
-        await sendDiscord(numero, mensagem);
-        return { status: "ok", canal, mensagem };
-    }
+// ===== EMAIL =====
+export async function sendEmail(to, subject, message) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // podes trocar por "outlook" ou SMTP custom
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-    if (canal === "sms" || canal === "whatsapp") {
-        if (!sendTwilioNotification) {
-            throw new Error("Twilio não configurado. Configure TWILIO_ACCOUNT_SID e TWILIO_AUTH_TOKEN");
-        }
-        return await sendTwilioNotification({ numero, mensagem, canal });
-    }
+    await transporter.sendMail({
+      from: `"PromoPing" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text: message,
+    });
 
-    if (canal === "telegram") {
-        return await sendTelegram(numero, mensagem);
-    }
-
-    throw new Error(`❌ Canal inválido: ${canal}`);
+    console.log(`📧 Email enviado para ${to}`);
+  } catch (err) {
+    console.error("❌ Erro ao enviar email:", err.message);
+  }
 }
 
-export { sendNotification };
+// ===== SMS =====
+export async function sendSMS(to, message) {
+  try {
+    const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
+
+    await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE, // número fornecido pela Twilio
+      to, // número destino (+351... ou +55...)
+    });
+
+    console.log(`📱 SMS enviado para ${to}`);
+  } catch (err) {
+    console.error("❌ Erro ao enviar SMS:", err.message);
+  }
+}
+
+// ===== ESCOLHER CANAL =====
+export async function sendNotification({ canal, email, telefone, mensagem }) {
+  if (canal === "email" && email) {
+    await sendEmail(email, "PromoPing - Alerta de preço", mensagem);
+  } else if (canal === "sms" && telefone) {
+    await sendSMS(telefone, mensagem);
+  } else {
+    console.warn("⚠️ Canal não suportado ou dados em falta:", canal);
+  }
+}

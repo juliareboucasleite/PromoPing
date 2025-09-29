@@ -101,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\Sessao.cs" />
     <Compile Include="Core\DbConfig.cs" />
     <Compile Include="Produtos\FormProdutoEditar.cs">
       <SubType>Form</SubType>

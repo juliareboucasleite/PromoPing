@@ -1,6 +1,7 @@
 ﻿using Painel_Admin.Repositories;
 using System;
 using System.Windows.Forms;
+using Painel_Admin.Auth;
 
 namespace Painel_Admin
 {
@@ -37,7 +38,8 @@ namespace Painel_Admin
         {
             try
             {
-                int userId = 1; // ⚠️ Exemplo fixo (depois podemos integrar com login)
+                // ⚠️ Pega sempre o usuário logado da Sessão
+                int userId = Sessao.UserId;
 
                 string nome = txtNome.Text;
                 string link = txtLink.Text;
@@ -47,13 +49,13 @@ namespace Painel_Admin
 
                 if (_id == 0)
                 {
-                    // Novo produto
+                    // Novo produto → precisa do dono (UserId)
                     _produtoRepo.Add(userId, nome, link, precoAlvo, dataLimite, loja);
                 }
                 else
                 {
-                    // Atualizar produto existente
-                    _produtoRepo.Update(_id, userId, nome, link, precoAlvo, dataLimite, loja);
+                    // Atualizar produto existente → não altera o dono
+                    _produtoRepo.Update(_id, nome, link, precoAlvo, dataLimite, loja);
                 }
 
                 MessageBox.Show("Produto salvo com sucesso!");

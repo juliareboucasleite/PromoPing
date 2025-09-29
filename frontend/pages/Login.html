@@ -4,80 +4,196 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Entrar — PromoPing</title>
+  <link rel="stylesheet" href="../assets/styles/header.css">
   <link rel="stylesheet" href="../assets/styles/login.css">
+  <link rel="icon" type="image/png" href="/assets/images/Logo.png">
 </head>
 <body class="login-page">
 
   <!-- ===== HEADER ===== -->
-  <header class="pp-header" style="
-        background: #1e121433;
-        border-radius: 32px;
-        margin: 90px auto 0 auto;
-        max-width: 1150px;
-        box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
-        border: 2px solid #ffffffb7;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        left: 0;
-        right: 0;
-        top: 30px;
-        transform: none;
-    ">
-    <div style="
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 32px;
-        height: 64px;
-        width: 100%;
-        max-width: 900px;
-    ">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="../assets/images/Logo.png" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-        <span style="color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">PromoPing</span>
-      </div>
-      <nav style="display: flex; align-items: center; gap: 24px;">
-        <a href="index.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Voltar</a>
-        <a href="register.html" style="color: #fff; font-size: 0.98rem; font-weight: 600; text-decoration: none; opacity: 0.85; transition: opacity 0.2s;">Registar</a>
+  <header class="pp-header">
+    <div class="pp-header-container">
+      <!-- Logo -->
+      <a href="/pages/index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
+        <img src="/assets/images/Logo.png" alt="PromoPing Logo">
+        <span>PromoPing</span>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="pp-header-nav" id="pp-header-nav">
+        <!-- Soluções -->
+        <div class="pp-header-nav-wrapper">
+          <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Soluções" aria-labelledby="pp-header-nav-links-1" onclick="openNavigation(this)">
+            Soluções
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-1">
+            <a href="/pages/monitoramento.html">Monitoramento</a>
+            <a href="/pages/alertas.html">Alertas</a>
+            <a href="/pages/relatorios.html">Relatórios</a>
+          </div>
+        </div>
+        
+        <!-- Recursos -->
+        <div class="pp-header-nav-wrapper">
+          <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Recursos" aria-labelledby="pp-header-nav-links-2" onclick="openNavigation(this)">
+            Recursos
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-2">
+            <a href="/pages/docs.html">Documentação</a>
+            <a href="/pages/casos-uso.html">Casos de Uso</a>
+            <a href="/pages/blog.html">Blog</a>
+          </div>
+        </div>
       </nav>
+      
+      <!-- Mobile Menu & CTA -->
+      <div class="pp-header-burger">
+        <div class="pp-header-burger-lang">
+          <button class="pp-header-lang-btn" type="button" aria-label="Idioma" onclick="toggleLanguage()">
+            <span id="lang-text">PT</span>
+          </button>
+        </div>
+        
+        <button class="pp-header-burger-btn" type="button" role="button" title="Alternar Navegação" aria-label="Alternar Navegação" onclick="toggleNavigation()">
+          <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+            <path class="line line1" d="M20 25H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line2" d="M20 50H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path class="line line3" d="M20 75H80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </button>
+        
+        <div class="pp-header-burger-cta">
+          <a href="/pages/register.html" class="pp-header-cta-button">Começar Agora</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- ===== CONTEÚDO ===== -->
+  <!-- ===== MAIN ===== -->
   <main class="login-main">
-    <div class="login-split">
+    <div class="login-container">
+      <h1 class="login-title">Entrar com Email</h1>
+      <p class="login-subtitle">Digite suas credenciais para acessar sua conta</p>
 
-      <!-- Coluna esquerda: formulário -->
-      <div class="login-container">
-        <h1 class="login-title">Iniciar sessão na sua conta</h1>
-
-        <form class="login-form" action="#" method="POST" id="loginForm">
-          <input id="email" type="email" class="login-input" placeholder="Endereço de email" required />
-          <input id="senha" type="password" class="login-input" placeholder="Palavra-passe" required />
-          <div class="login-actions">
-            <a href="index.html" class="pp-btn pp-btn-ghost">Cancelar</a>
-            <button type="submit" class="pp-btn pp-btn-cta">Entrar</button>
-          </div>
-        </form>
-
-        <div class="divider"><span>ou continue com</span></div>
+      <!-- Social Login Buttons -->
+      <div class="social-login">
+        <button class="social-btn google-btn" id="btnGoogle">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span>Continuar com Google</span>
+        </button>
+        
+        <button class="social-btn sms-btn" id="btnSMS">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span>Continuar com SMS</span>
+        </button>
       </div>
 
-      <!-- Coluna direita: botões sociais largos claros -->
-      <aside class="auth-login-col">
-        <div class="auth-group">
-          <button class="auth-btn auth-discord" id="btnDiscord">Continue with Discord</button>
-          <button class="auth-btn auth-telegram" id="btnTelegram">Continue with Telegram</button>
-          <button class="auth-btn auth-google" id="btnGoogle">Continue with Google</button>
+      <!-- Formulário SMS -->
+      <div class="sms-login" id="smsLogin">
+        <h4>Entrar com SMS</h4>
+        <div class="form-group">
+          <label class="form-label">Número de telemóvel</label>
+          <input id="telefoneLogin" type="tel" class="form-input" placeholder="+351 912 345 678" />
         </div>
-      </aside>
+        <div class="form-group">
+          <button id="enviarCodigoSMSLogin" class="btn btn-primary">Enviar código</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de verificação</label>
+          <input id="codigoSMSLogin" type="text" class="form-input" placeholder="123456" />
+          <div class="resend-section" id="resendSectionLogin" style="display: none;">
+            <p class="resend-text">Não recebeu o código? <span id="timerLogin">30</span>s</p>
+            <button id="resendCodeLogin" class="btn btn-ghost" disabled>Reenviar código</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <button id="validarCodigoSMSLogin" class="btn btn-primary">Entrar</button>
+        </div>
+      </div>
 
+      <div class="divider" id="emailDivider">
+        <span class="or-text">ou entre com email</span>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="email" class="form-label">Endereço de email</label>
+          <input id="email" type="email" class="form-input" placeholder="seu@email.com" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Palavra-passe</label>
+          <div class="password-input">
+            <input id="password" type="password" class="form-input" placeholder="Mínimo 6 caracteres" required />
+            <button type="button" class="password-toggle" onclick="togglePassword()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" class="remember-me">
+            <span class="checkmark"></span>
+            <span class="remember-me">Lembrar-me</span>
+          </label>
+          <a href="forgot-password.html" class="forgot-password">Esqueceu a palavra-passe?</a>
+        </div>
+
+        <div class="form-actions">
+          <a href="index.html" class="btn btn-ghost">Cancelar</a>
+          <button type="submit" class="btn btn-primary">Entrar</button>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p class="register-link">Não tem conta? <a href="register.html">Registar</a></p>
+      </div>
+
+      <!-- Caixa de verificação de email -->
+      <div class="verify-box" id="verifyBox">
+        <h3>Verifique seu email</h3>
+        <p>Insira o código de 6 dígitos enviado para <span id="verifyEmail"></span></p>
+        <div class="code-inputs">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+        </div>
+        <div class="verify-actions">
+          <button id="btnConfirmar" class="btn btn-primary">Confirmar</button>
+          <button id="btnReenviar" class="btn btn-ghost" disabled>Reenviar código</button>
+        </div>
+      </div>
     </div>
   </main>
 
   <script>
+    // ===== NAVIGATION FUNCTIONS =====
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // ===== LOGIN NORMAL =====
     async function loginUser(email, password) {
       try {
         const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
@@ -91,35 +207,325 @@
         return { status: "error", error: "Erro de ligação com o servidor" };
       }
     }
-  
+
     const form = document.getElementById("loginForm");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("email").value.trim();
-      const senha = document.getElementById("senha").value;
-  
-      const data = await loginUser(email, senha);
-  
+      const password = document.getElementById("password").value;
+
+      const data = await loginUser(email, password);
+
       if (data.status === "ok" && data.token) {
         localStorage.setItem("token", data.token);
-        location.href = "painel.html";
+        location.href = "Painel.html";
       } else {
-        alert(data.error || data.message || "Credenciais inválidas");
+        alert(data.error || "Código inválido");
       }
     });
-  
-    // Teste da sessão (opcional)
-    async function verificarSessao() {
-      const token = localStorage.getItem("token");
-      if (!token) return alert("Precisa estar logado!");
-      const res = await fetch("http://127.0.0.1:3000/api/auth/me", {
-        headers: { "Authorization": "Bearer " + token }
+
+    // ===== PASSWORD TOGGLE =====
+    function togglePassword() {
+      const passwordInput = document.getElementById("password");
+      const toggleBtn = document.querySelector(".password-toggle");
+      
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+          </svg>
+        `;
+      } else {
+        passwordInput.type = "password";
+        toggleBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+          </svg>
+        `;
+      }
+    }
+
+    // ===== SMS LOGIN =====
+    const btnSMS = document.getElementById("btnSMS");
+    const smsLogin = document.getElementById("smsLogin");
+    const emailDivider = document.getElementById("emailDivider");
+    const loginForm = document.getElementById("loginForm");
+
+    btnSMS.addEventListener("click", () => {
+      const isVisible = smsLogin.style.display === "block";
+      
+      if (isVisible) {
+        // Esconder painel SMS e mostrar formulário email
+        smsLogin.style.display = "none";
+        emailDivider.style.display = "block";
+        loginForm.style.display = "block";
+        btnSMS.classList.remove("active");
+        btnSMS.style.background = "linear-gradient(135deg, #f4af55, #dc7c35)";
+      } else {
+        // Mostrar painel SMS e esconder formulário email
+        smsLogin.style.display = "block";
+        emailDivider.style.display = "none";
+        loginForm.style.display = "none";
+        btnSMS.classList.add("active");
+        btnSMS.style.background = "linear-gradient(135deg, #dc7c35, #f4af55)";
+      }
+    });
+
+    // ===== SMS LOGIN FUNCTIONALITY =====
+    let smsTimerLogin = null;
+    let smsCountdownLogin = 0;
+
+    document.getElementById("enviarCodigoSMSLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      if (!telefone) {
+        alert("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("enviarCodigoSMSLogin");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          alert("Código enviado por SMS!");
+          startSMSTimerLogin();
+        } else {
+          alert(data.error || "Erro ao enviar código");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Enviar código";
+      }
+    });
+
+    document.getElementById("resendCodeLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      if (!telefone) {
+        alert("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("resendCodeLogin");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          alert("Código reenviado por SMS!");
+          startSMSTimerLogin();
+        } else {
+          alert(data.error || "Erro ao reenviar código");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Reenviar código";
+      }
+    });
+
+    function startSMSTimerLogin() {
+      const resendSection = document.getElementById("resendSectionLogin");
+      const timerSpan = document.getElementById("timerLogin");
+      const resendBtn = document.getElementById("resendCodeLogin");
+      
+      resendSection.style.display = "block";
+      smsCountdownLogin = 30;
+      timerSpan.textContent = smsCountdownLogin;
+      resendBtn.disabled = true;
+      
+      smsTimerLogin = setInterval(() => {
+        smsCountdownLogin--;
+        timerSpan.textContent = smsCountdownLogin;
+        
+        if (smsCountdownLogin <= 0) {
+          clearInterval(smsTimerLogin);
+          resendBtn.disabled = false;
+          timerSpan.textContent = "0";
+        }
+      }, 1000);
+    }
+
+    // ===== VERIFICATION CODE =====
+    document.getElementById("btnConfirmar").addEventListener("click", async () => {
+      const code = Array.from(document.querySelectorAll(".code-digit")).map(input => input.value).join("");
+      
+      if (code.length !== 6) {
+        alert("Por favor, insira o código completo de 6 dígitos");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "ok" && data.token) {
+          localStorage.setItem("token", data.token);
+          location.href = "Painel.html";
+        } else {
+          alert(data.error || "Código inválido");
+        }
+      } catch (err) {
+        console.error("Erro na verificação:", err);
+        alert("Erro de ligação com o servidor");
+      }
+    });
+
+    // ===== CODE INPUTS =====
+    document.querySelectorAll('.code-digit').forEach((input, index) => {
+      input.addEventListener('input', function(e) {
+        if (e.target.value.length === 1 && index < 5) {
+          document.querySelectorAll('.code-digit')[index + 1].focus();
+        }
       });
-      const data = await res.json();
-      console.log("Sessão:", data);
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+          document.querySelectorAll('.code-digit')[index - 1].focus();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    // Navigation functions
+    function openNavigation(button) {
+      const navLinks = button.nextElementSibling;
+      const isOpen = navLinks.style.display === 'block';
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+        link.style.display = 'none';
+      });
+      
+      // Toggle current dropdown
+      navLinks.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.pp-header-nav-wrapper')) {
+        document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+          link.style.display = 'none';
+        });
+      }
+    });
+
+    // Language toggle function
+    function toggleLanguage() {
+      const langText = document.getElementById('lang-text');
+      const currentLang = langText.textContent;
+      
+      if (currentLang === 'PT') {
+        langText.textContent = 'EN';
+        translateToEnglish();
+      } else {
+        langText.textContent = 'PT';
+        translateToPortuguese();
+      }
+    }
+
+    function translateToEnglish() {
+      // Traduzir elementos específicos do login
+      const title = document.querySelector('.login-title');
+      if (title) title.textContent = 'Login with Email';
+      
+      const subtitle = document.querySelector('.login-subtitle');
+      if (subtitle) subtitle.textContent = 'Enter your credentials to access your account';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Email address';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Password';
+      
+      const loginBtn = document.querySelector('.btn-primary');
+      if (loginBtn) loginBtn.textContent = 'Login';
+      
+      const registerLink = document.querySelector('.register-link');
+      if (registerLink) registerLink.textContent = "Don't have an account? Register";
+
+      // Traduzir elementos adicionais
+      const googleBtn = document.querySelector('.google-btn span');
+      if (googleBtn) googleBtn.textContent = 'Continue with Google';
+      
+      const smsBtn = document.querySelector('.sms-btn span');
+      if (smsBtn) smsBtn.textContent = 'Continue with SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'or login with email';
+      
+      const forgotPassword = document.querySelector('.forgot-password');
+      if (forgotPassword) forgotPassword.textContent = 'Forgot password?';
+      
+      const rememberMe = document.querySelector('.remember-me');
+      if (rememberMe) rememberMe.textContent = 'Remember me';
+    }
+
+    function translateToPortuguese() {
+      // Traduzir de volta para português
+      const title = document.querySelector('.login-title');
+      if (title) title.textContent = 'Entrar com Email';
+      
+      const subtitle = document.querySelector('.login-subtitle');
+      if (subtitle) subtitle.textContent = 'Digite suas credenciais para acessar sua conta';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Endereço de email';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Palavra-passe';
+      
+      const loginBtn = document.querySelector('.btn-primary');
+      if (loginBtn) loginBtn.textContent = 'Entrar';
+      
+      const registerLink = document.querySelector('.register-link');
+      if (registerLink) registerLink.textContent = 'Não tem conta? Registar';
+
+      // Traduzir elementos adicionais de volta para português
+      const googleBtn = document.querySelector('.google-btn span');
+      if (googleBtn) googleBtn.textContent = 'Continuar com Google';
+      
+      const smsBtn = document.querySelector('.sms-btn span');
+      if (smsBtn) smsBtn.textContent = 'Continuar com SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'ou entre com email';
+      
+      const forgotPassword = document.querySelector('.forgot-password');
+      if (forgotPassword) forgotPassword.textContent = 'Esqueceu a palavra-passe?';
+      
+      const rememberMe = document.querySelector('.remember-me');
+      if (rememberMe) rememberMe.textContent = 'Lembrar-me';
     }
   </script>
-  
-
 </body>
 </html>
