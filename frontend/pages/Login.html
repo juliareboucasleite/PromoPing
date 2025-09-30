@@ -173,6 +173,11 @@
       html.classList.toggle('opened-nav');
     }
 
+    // ===== GOOGLE LOGIN =====
+    document.getElementById("btnGoogle").addEventListener("click", () => {
+      window.location.href = "http://127.0.0.1:3000/api/auth/google";
+    });
+
     // ===== LOGIN NORMAL =====
     async function loginUser(email, password) {
       try {
@@ -188,21 +193,6 @@
       }
     }
 
-    const form = document.getElementById("loginForm");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      const data = await loginUser(email, password);
-
-      if (data.status === "ok" && data.token) {
-        localStorage.setItem("token", data.token);
-        location.href = "Painel.html";
-      } else {
-        alert(data.error || "Código inválido");
-      }
-    });
 
     // ===== PASSWORD TOGGLE =====
     function togglePassword() {
@@ -374,6 +364,35 @@
       }
     });
 
+    // ===== VALIDAR CÓDIGO SMS LOGIN =====
+    document.getElementById("validarCodigoSMSLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      const codigo = document.getElementById("codigoSMSLogin").value.trim();
+
+      if (!telefone || !codigo) {
+        alert("Por favor, preencha todos os campos");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone, codigo })
+        });
+        const data = await res.json();
+
+        if (data.status === "ok" && data.token) {
+          localStorage.setItem("token", data.token);
+          location.href = "Painel.html";
+        } else {
+          alert(data.error || "Código inválido");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      }
+    });
+
     // ===== CODE INPUTS =====
     document.querySelectorAll('.code-digit').forEach((input, index) => {
       input.addEventListener('input', function(e) {
@@ -506,6 +525,17 @@
       const rememberMe = document.querySelector('.remember-me');
       if (rememberMe) rememberMe.textContent = 'Lembrar-me';
     }
+  </script>
+
+  <script type="module">
+    import { loginEmail } from "../assets/scripts/auth.js";
+
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      loginEmail(email, password);
+    });
   </script>
 </body>
 </html>

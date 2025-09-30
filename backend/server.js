@@ -1,12 +1,29 @@
 // @ts-nocheck
-import "dotenv/config";
 import express from "express";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 
-// Importa rotas
+// ================== CARREGAR VARIÁVEIS DE AMBIENTE ==================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Força o carregamento do .env que está na raiz do projeto
+dotenv.config({ path: join(__dirname, "../.env") });
+
+// Debug de variáveis críticas
+console.log("🔑 JWT_SECRET:", process.env.JWT_SECRET ? "OK" : "NÃO CARREGADO");
+console.log("🔍 DB Variáveis:");
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_PASSWORD:", process.env.DB_PASSWORD ? "***" : "vazio");
+console.log("DB_NAME:", process.env.DB_NAME);
+console.log("DB_PORT:", process.env.DB_PORT);
+
+// ================== IMPORTS DE ROTAS ==================
 import authGoogleRoutes from "./routes/auth-google.js";
 import authRoutes from "./routes/auth.js";
 import produtosRoutes from "./routes/produtos.js";
@@ -16,32 +33,22 @@ import userRoutes from "./routes/user.js";
 import notificacoesRoutes from "./routes/notificacoes.js";
 import contasRoutes from "./routes/contas.js";
 import preferencesRoutes from "./routes/preferences.js";
+import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
+import authSMSRoutes from "./routes/auth-sms.js";
+import monitorRoutes from "./routes/monitor.js";
 
-// Importa middleware
+// ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";
 
-// Importa serviços
+// ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js";
 import { startPriceChecker } from "./services/scrapers/price-checker.js";
+import { startPriceMonitoring } from "./services/monitor.js";
 
-// Express
+// ================== EXPRESS ==================
 const app = express();
 app.use(cookieParser());
-
-// ================== AUTENTICAÇÃO ==================
-app.use("/auth", authGoogleRoutes); // login com Google
-app.use("/auth", authRoutes);       // login/register local
-import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
-app.use("/api/auth", authEmailVerifyRoutes);
-
-
-// login/register com SMS
-import authSMSRoutes from "./routes/auth-sms.js";
-app.use("/api/auth", authSMSRoutes);
-
-
-
-// ================== MIDDLEWARES ==================
+app.use(express.json());
 app.use(
   cors({
     origin: [
@@ -52,14 +59,18 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
 
-// ================== ROTAS DE AUTENTICAÇÃO ==================
+// ================== AUTENTICAÇÃO ==================
+app.use("/api/auth", authGoogleRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/auth", authEmailVerifyRoutes);
+app.use("/api/auth", authSMSRoutes);
+
+// ================== ROTAS ==================
 app.get("/api/user/me", verifyToken, (req, res) => {
   res.json({ status: "ok", user: req.user });
 });
 
-// ================== ROTAS API ==================
 app.use("/api/produtos", produtosRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/scrape", scrapeRoute);
@@ -67,6 +78,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/notificacoes", notificacoesRoutes);
 app.use("/api/user/accounts", contasRoutes);
 app.use("/api/user/preferences", preferencesRoutes);
+app.use("/api/monitor", monitorRoutes);
 
 // ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {
@@ -76,6 +88,23 @@ app.get("/api/health", (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || "development",
     version: process.env.npm_package_version || "1.0.0",
+  });
+});
+
+// ================== API ROOT ==================
+app.get("/api/", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "PromoPing API",
+    version: "1.0.0",
+    endpoints: {
+      auth: "/api/auth/",
+      produtos: "/api/produtos/",
+      user: "/api/user/",
+      notificacoes: "/api/notificacoes/",
+      monitor: "/api/monitor/",
+      health: "/api/health",
+    },
   });
 });
 
@@ -91,7 +120,6 @@ app.post("/notify", async (req, res) => {
     }
 
     await sendNotification({ canal, email, telefone, mensagem });
-
     res.json({ status: "ok", canal, mensagem });
   } catch (err) {
     console.error("Erro na notificação:", err);
@@ -100,9 +128,6 @@ app.post("/notify", async (req, res) => {
 });
 
 // ================== FRONTEND ESTÁTICO ==================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/", (req, res) => {
@@ -118,6 +143,11 @@ app.listen(PORT, HOST, () => {
   console.log(`📁 Frontend: http://${HOST}:${PORT}/`);
   console.log(`🔧 API: http://${HOST}:${PORT}/api/`);
 
-  // Inicia checker periódico
+  // Inicia checker periódico (sistema antigo)
   startPriceChecker();
+  
+  // Inicia monitoramento automático (sistema novo)
+  console.log("🔄 Iniciando monitoramento automático de preços...");
+  startPriceMonitoring(30); // 30 minutos de intervalo
+  console.log("✅ Monitoramento automático ativo (30min)");
 });

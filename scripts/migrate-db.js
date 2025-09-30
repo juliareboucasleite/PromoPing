@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { pool } from '../backend/db.js';
+import { pool } from '../backend/database/db.js';
 
 async function addColumnIfNotExists(table, column, definition) {
   const [rows] = await pool.query(
@@ -81,11 +81,16 @@ async function migrate() {
       Enviada BOOLEAN DEFAULT FALSE,
       DataEnvio TIMESTAMP NULL,
       CriadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ValorPoupado DECIMAL(10,2) NULL,
       FOREIGN KEY (UserId) REFERENCES utilizadores(id) ON DELETE CASCADE,
       FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id) ON DELETE CASCADE
     )
   `);
   console.log('✅ Tabela Notificacoes verificada/criada');
+
+  // Adicionar coluna ValorPoupado se não existir (para tabelas já existentes)
+  await addColumnIfNotExists('Notificacoes', 'ValorPoupado', 'DECIMAL(10,2) NULL');
+  console.log('✅ Coluna ValorPoupado verificada/criada em Notificacoes');
 
   await pool.end();
   console.log('🎉 Migração concluída!');

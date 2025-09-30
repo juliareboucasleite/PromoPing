@@ -1,24 +1,60 @@
 // @ts-nocheck
 import express from "express";
 import { pool } from "../database/db.js";
+import { formatDate } from "../utils/format.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET perfil do utilizador logado (rota antiga mantida para compatibilidade)
+// ================== PERFIL DO UTILIZADOR ==================
 router.get("/me", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT Id, Nome, Email, DataCriacao FROM Utilizadores WHERE Id=?",
-      [req.user.id]
+    const userId = req.user.id;
+
+    // Info do utilizador
+    const [users] = await pool.query(
+      "SELECT Id, Nome, Email, Telefone, DataRegisto FROM Utilizadores WHERE Id = ?",
+      [userId]
     );
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Utilizador não encontrado" });
-    }
-    res.json({ status: "ok", user: rows[0] });
+    const user = users[0];
+
+    // Estatísticas
+    const [statsRows] = await pool.query(
+      `SELECT 
+          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
+          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
+      [userId, userId, userId]
+    );
+
+    // Histórico notificações
+    const [notificacoes] = await pool.query(
+      `SELECT Id, Tipo, Mensagem, DataEnvio, ValorPoupado 
+       FROM Notificacoes 
+       WHERE UserId = ? 
+       ORDER BY DataEnvio DESC 
+       LIMIT 20`,
+      [userId]
+    );
+
+    res.json({
+      status: "ok",
+      user: {
+        ...user,
+        DataRegisto: formatDate(user.DataRegisto) // 🔹 Data formatada
+      },
+      stats: {
+        ...statsRows[0],
+        dinheiro_poupado: Number(statsRows[0].dinheiro_poupado) || 0
+      },
+      notificacoes: notificacoes.map(n => ({
+        ...n,
+        DataEnvio: formatDate(n.DataEnvio) // 🔹 Data formatada
+      }))
+    });
   } catch (err) {
     console.error("Erro ao buscar perfil:", err);
-    res.status(500).json({ error: "Erro interno no servidor" });
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
   }
 });
 
@@ -108,35 +144,74 @@ router.get("/stats", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Contar produtos
-    const [produtosCount] = await pool.query(
-      "SELECT COUNT(*) as total FROM Produtos WHERE UserId = ?",
-      [userId]
+    // Estatísticas do utilizador
+    const [rows] = await pool.query(
+      `SELECT 
+          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
+          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
+      [userId, userId, userId]
     );
 
-    // Contar notificações
-    const [notificacoesCount] = await pool.query(
-      "SELECT COUNT(*) as total FROM Notificacoes WHERE UserId = ?",
-      [userId]
-    );
-
-    // Somar dinheiro poupado (assumindo que há um campo ValorPoupado na tabela Notificacoes)
-    const [dinheiroPoupado] = await pool.query(
-      "SELECT COALESCE(SUM(ValorPoupado), 0) as total FROM Notificacoes WHERE UserId = ? AND ValorPoupado IS NOT NULL",
-      [userId]
-    );
-
-    res.json({
-      status: "ok",
+    res.json({ 
+      status: "ok", 
       stats: {
-        produtos_total: produtosCount[0]?.total || 0,
-        notificacoes_total: notificacoesCount[0]?.total || 0,
-        dinheiro_poupado: dinheiroPoupado[0]?.total || 0
+        ...rows[0],
+        dinheiro_poupado: Number(rows[0].dinheiro_poupado) || 0
       }
     });
   } catch (err) {
     console.error("Erro ao buscar estatísticas:", err);
     res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
+// POST configurar senha para utilizador
+router.post("/set-password", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "A senha deve ter pelo menos 6 caracteres" 
+      });
+    }
+
+    // Hash da senha
+    const bcrypt = await import('bcrypt');
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Atualizar senha na base de dados
+    await pool.query(
+      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
+      [hashedPassword, userId]
+    );
+
+    res.json({ 
+      status: "ok", 
+      message: "Senha configurada com sucesso" 
+    });
+  } catch (err) {
+    console.error("Erro ao configurar senha:", err);
+    res.status(500).json({ 
+      status: "error", 
+      error: "Erro interno no servidor" 
+    });
+  }
+});
+
+// ================== RESETAR HISTÓRICO ==================
+router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await pool.query("DELETE FROM Notificacoes WHERE UserId = ?", [userId]);
+    res.json({ status: "ok", message: "Histórico de notificações limpo com sucesso!" });
+  } catch (err) {
+    console.error("Erro ao resetar notificações:", err);
+    res.status(500).json({ status: "error", error: "Erro no servidor" });
   }
 });
 

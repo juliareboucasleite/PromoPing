@@ -64,34 +64,64 @@
     <div class="dashboard-container">
 
       <header class="page-header">
-        <h1 class="page-title">Produtos guardados</h1>
-        <p class="page-subtitle">Acompanhe os seus produtos monitorizados</p>
+        <div class="page-header-content">
+          <div class="page-title-section">
+            <h1 class="page-title">Produtos guardados</h1>
+            <p class="page-subtitle">Acompanhe os seus produtos monitorizados</p>
+          </div>
+        </div>
       </header>
 
-      <div class="filters-bar">
-        <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input">
-        <select id="filtroLoja" class="filter-select">
-          <option value="">Todas as lojas</option>
-          <option>Worten</option>
-          <option>IKEA</option>
-          <option>FNAC</option>
-          <option>Continente</option>
-          <option>Pingo Doce</option>
-          <option>Lidl</option>
-          <option>Aldi</option>
-          <option>Leroy Merlin</option>
-        </select>
-        <select id="filtroEstado" class="filter-select">
-          <option value="">Todos os estados</option>
-          <option value="meta">Meta atingida</option>
-          <option value="subiu">Preço subiu</option>
-          <option value="monitorar">A monitorizar</option>
-        </select>
-        <div class="filter-count"><span id="productCount">0</span> produtos</div>
+      <div class="filters-section">
+        <div class="filters-bar">
+          <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input">
+          </div>
+          <div class="filter-group">
+            <select id="filtroLoja" class="filter-select">
+              <option value="">Todas as lojas</option>
+              <option>Worten</option>
+              <option>FNAC</option>
+              <option>PCDiga</option>
+              <option>Globaldata</option>
+              <option>Rádio Popular</option>
+              <option>MediaMarkt</option>
+              <option>IKEA</option>
+              <option>Leroy Merlin</option>
+              <option>Zara</option>
+              <option>H&M</option>
+              <option>Amazon</option>
+            </select>
+            <select id="filtroEstado" class="filter-select">
+              <option value="">Todos os estados</option>
+              <option value="meta">Meta atingida</option>
+              <option value="subiu">Preço subiu</option>
+              <option value="monitorar">A monitorizar</option>
+            </select>
+          </div>
+          <div class="filter-count">
+            <svg class="count-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <span id="productCount">0</span> produtos
+          </div>
+        </div>
       </div>
 
       <div id="productsList" class="products-list">
         <!-- Produtos carregados via JS -->
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="loading-state" style="display: none;">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+        <p>A carregar produtos...</p>
       </div>
 
     </div>
@@ -112,21 +142,44 @@
         return (window.location.href = "Login.html");
       }
 
+      // Mostrar loading
+      const productsList = document.getElementById("productsList");
+      const loadingState = document.getElementById("loadingState");
+      productsList.style.display = "none";
+      loadingState.style.display = "block";
+
       try {
-        const res = await fetch("/api/produtos", {
+        const res = await fetch("http://127.0.0.1:3000/api/produtos", {
           headers: { Authorization: "Bearer " + token }
         });
 
         const data = await res.json();
-        const productsList = document.getElementById("productsList");
         productsList.innerHTML = "";
+        loadingState.style.display = "none";
+        productsList.style.display = "block";
 
         if (data.status !== "ok" || data.produtos.length === 0) {
           productsList.innerHTML = `
             <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
               <h3>Nenhum produto encontrado</h3>
-              <p>Adicione produtos no Dashboard.</p>
-              <a href="Painel.html" class="pp-btn">Ir para Dashboard</a>
+              <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
+              <div class="empty-state-actions">
+                <a href="Painel.html" class="pp-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Adicionar primeiro produto
+                </a>
+                <a href="Painel.html" class="btn-ghost">Ver Dashboard</a>
+              </div>
             </div>`;
           document.getElementById("productCount").textContent = 0;
           return;
@@ -146,7 +199,7 @@
           return nomeOk && lojaOk && estadoOk;
         });
 
-        itens.forEach(p => {
+        itens.forEach((p, index) => {
           const lojaSlug = (p.Loja || 'Desconhecida').toLowerCase().replace(/\s+/g,'-');
           const hist = Array.isArray(p.Historico) ? p.Historico : [];
           const histHtml = hist.map(h => `<div class="history-item">${new Date(h.DataRegistro).toLocaleDateString('pt-PT')} — €${Number(h.Preco).toFixed(2)}</div>`).join('') || '<div class="history-item">Sem histórico</div>';
@@ -159,7 +212,7 @@
             ? `<span class=\"price-change price-down\">-${Math.abs(delta).toFixed(2)}€</span>`
             : delta > 0 ? `<span class=\"price-change price-up\">+${delta.toFixed(2)}€</span>` : `<span class=\"price-change price-neutral\">0€</span>`);
           const card = `
-            <div class="product-card">
+            <div class="product-card" style="animation-delay: ${index * 0.1}s">
               <div class="product-header">
                 <div class="product-title-wrap">
                   <img class="store-logo" src="https://www.google.com/s2/favicons?domain=${new URL(p.Link).hostname}&sz=32" alt="logo">
@@ -209,7 +262,7 @@
       if (!confirm("Tem certeza que deseja remover este produto?")) return;
 
       try {
-        await fetch(`/api/produtos/${id}`, {
+        await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
           method: "DELETE",
           headers: { Authorization: "Bearer " + token }
         });

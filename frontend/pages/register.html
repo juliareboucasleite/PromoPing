@@ -215,7 +215,7 @@
 
     // ===== REGISTO NORMAL =====
     async function registarUtilizador(nome, email, password, telefone = null) {
-      const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, password, telefone }),
@@ -280,6 +280,7 @@
         if (data.status === "ok") {
           showSuccess("Conta criada com sucesso! Verifique o seu email.");
           document.getElementById("verifyBox").style.display = "block";
+          document.getElementById("regForm").style.display = "none";
           document.getElementById("verifyEmail").textContent = email;
           iniciarReenvio(email);
         } else {
@@ -304,7 +305,7 @@
       const email = document.getElementById("verifyEmail").textContent;
       const codigo = getCodigoDigitado();
 
-      const res = await fetch("http://127.0.0.1:3000/api/auth/email/verify", {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/email/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, codigo })
@@ -348,7 +349,7 @@
 
     // ===== REGISTO GOOGLE =====
     document.getElementById("btnGoogle").addEventListener("click", () => {
-      window.location.href = "http://localhost:3000/auth/google";
+      window.location.href = "http://127.0.0.1:3000/auth/google";
     });
 
     // ===== REGISTO SMS/WHATSAPP =====
@@ -392,7 +393,7 @@
       btn.textContent = "A enviar...";
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/send", {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telefone })
@@ -425,7 +426,7 @@
       btn.textContent = "A enviar...";
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/send", {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telefone })

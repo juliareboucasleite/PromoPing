@@ -1,20 +1,26 @@
-export async function identificarProduto(link) {
-    try {
-        const response = await fetch(`/api/scrape?url=${encodeURIComponent(link)}`);
-        const data = await response.json();
-        return data?.nome || "Produto inserido";
-    } catch (error) {
-        console.error("Erro ao buscar produto:", error);
-        return "Produto inserido";
-    }
-}
+// utils.js
 
-export async function detectarLoja(link) {
-    try {
-        const res = await fetch(`/api/scrape?url=${encodeURIComponent(link)}`);
-        const data = await res.json();
-        return data?.loja || null;
-    } catch {
-        return null;
-    }
+/**
+ * Formata uma data vinda do MySQL (YYYY-MM-DD HH:mm:ss)
+ * para o formato local (DD/MM/YYYY).
+ */
+export function formatDateTime(dateString) {
+  if (!dateString) return "—";
+  
+  try {
+    // Corrige formato MySQL -> JS
+    const fixed = dateString.replace(" ", "T");
+    const d = new Date(fixed);
+
+    if (isNaN(d.getTime())) return "—";
+
+    return d.toLocaleDateString("pt-PT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch (e) {
+    console.error("Erro ao formatar data:", dateString, e);
+    return "—";
+  }
 }

@@ -1,5 +1,6 @@
 import express from "express";
 import { pool } from "../database/db.js";
+import { formatDate } from "../utils/format.js";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../services/scrapers/index.js";
@@ -48,28 +49,44 @@ router.post("/", verifyToken, async (req, res) => {
             [req.user.id, nome, link, data, store.name, precoAlvo ?? null]
         );
 
-        // cria registro inicial no histórico com preço se disponível via scraper
+        // 2. Rodar scraper inicial com sistema inteligente
         try {
-            const { scrapeProductInfo } = await import('../services/scrapers/index.js');
-            const info = await scrapeProductInfo(link);
-            if (info?.preco != null) {
+            const { scrapeProduct } = await import('../scraper/index.js');
+            const info = await scrapeProduct(link);
+            
+            if (info?.success && info?.price != null) {
                 // Atualiza PrecoAtual no produto
                 await pool.query(
                     "UPDATE Produtos SET PrecoAtual=? WHERE Id=?",
-                    [info.preco, result.insertId]
+                    [info.price, result.insertId]
                 );
 
-                // Insere no histórico
+                // Cria histórico inicial
                 await pool.query(
-                    "INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",
-                    [result.insertId, info.preco]
+                    "INSERT INTO HistoricoPrecos (ProdutoId, Preco, DataRegisto) VALUES (?, ?, NOW())",
+                    [result.insertId, info.price]
                 );
+                
+                console.log(`✅ Scraper inicial executado para ${nome}: €${info.price} (${info.loja} - ${info.method})`);
+            } else {
+                console.warn(`⚠️ Scraper inicial falhou para ${nome} - preço não encontrado`);
             }
         } catch (e) {
-            console.warn('Não foi possível iniciar histórico de preço:', e.message);
+            console.warn('❌ Erro no scraper inicial:', e.message);
         }
 
-        res.json({ status: "ok", message: "Produto adicionado com sucesso", loja: store.name });
+        // Buscar dados finais do produto para resposta
+        const [produtoFinal] = await pool.query(
+            "SELECT Id, Nome, PrecoAtual, Loja FROM Produtos WHERE Id = ?",
+            [result.insertId]
+        );
+
+        res.json({ 
+            status: "ok", 
+            message: "Produto adicionado com sucesso", 
+            produto: produtoFinal[0],
+            loja: store.name 
+        });
     } catch (err) {
         console.error("Erro ao adicionar produto:", err);
         res.status(500).json({ error: "Erro no servidor" });
@@ -79,59 +96,64 @@ router.post("/", verifyToken, async (req, res) => {
 // 📋 Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            "SELECT Id, Nome, Link, Loja, PrecoAlvo, DataLimite, DataCriacao, PrecoAtual FROM Produtos WHERE UserId = ? ORDER BY DataCriacao DESC",
+        // Buscar produtos com data criada
+        const [produtos] = await pool.query(
+            `SELECT Id, Nome, Marca, PrecoAtual, PrecoAnterior, PrecoAlvo, DataCriacao 
+             FROM Produtos 
+             WHERE UserId = ?`,
             [req.user.id]
         );
 
-        // anexar histórico curto e preços atuais/anteriores
-        const produtos = [];
-        for (const p of rows) {
-            let [hist] = await pool.query(
-                "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegisto DESC LIMIT 10",
-                [p.Id]
-            );
+        // Buscar histórico de preços separado
+        const [historicos] = await pool.query(
+            `SELECT ProdutoId, Preco, DataRegisto 
+             FROM HistoricoPrecos 
+             WHERE ProdutoId IN (?)`,
+            [produtos.map(p => p.Id)]
+        );
 
-            // Se não tiver histórico, tentar capturar agora
-            if (hist.length === 0) {
-                try {
-                    const { scrapeProductInfo } = await import('../services/scrapers/index.js');
-                    const info = await scrapeProductInfo(p.Link);
-                    if (info?.preco != null) {
-                        await pool.query(
-                            "UPDATE Produtos SET PrecoAtual=? WHERE Id=?",
-                            [info.preco, p.Id]
-                        );
-                        await pool.query(
-                            "INSERT INTO HistoricoPrecos (ProdutoId, Preco) VALUES (?, ?)",
-                            [p.Id, info.preco]
-                        );
-                        const [h2] = await pool.query(
-                            "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId=? ORDER BY DataRegisto DESC LIMIT 10",
-                            [p.Id]
-                        );
-                        hist = h2;
-                    }
-                } catch (e) {
-                    console.warn('Falha ao iniciar histórico para produto', p.Id, e.message);
-                }
-            }
+        // Mapear produtos com formatação
+        const produtosMap = produtos.map(p => ({
+            id: p.Id,
+            nome: p.Nome,                // 🔹 corresponde ao "nome" esperado
+            marca: p.Marca,              // 🔹 corresponde ao "marca" esperado
+            preco_atual: p.PrecoAtual,
+            preco_anterior: p.PrecoAnterior,
+            preco_alvo: p.PrecoAlvo,
+            criado_em: formatDate(p.DataCriacao),     // 🔹 Data formatada
+            historico: historicos
+                .filter(h => h.ProdutoId === p.Id)
+                .map(h => ({
+                    preco: h.Preco,
+                    data: formatDate(h.DataRegisto)    // 🔹 Data formatada
+                }))
+        }));
 
-            const precoAtual = p.PrecoAtual ?? (hist[0]?.Preco ?? null);
-            const precoAnterior = hist[1]?.Preco ?? null;
-
-            produtos.push({
-                ...p,
-                PrecoAtual: precoAtual,
-                PrecoAnterior: precoAnterior,
-                Historico: hist
-            });
-        }
-
-        res.json({ status: "ok", produtos });
+        res.json({ status: "ok", produtos: produtosMap });
     } catch (err) {
         console.error("Erro ao listar produtos:", err);
         res.status(500).json({ error: "Erro no servidor" });
+    }
+});
+
+// 📊 Histórico de preços de um produto específico
+router.get("/:id/historico", verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await pool.query(
+            "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId = ? ORDER BY DataRegisto DESC",
+            [id]
+        );
+
+        const historico = rows.map(h => ({
+            preco: h.Preco,
+            data: formatDate(h.DataRegisto)    // 🔹 Data formatada
+        }));
+
+        res.json({ status: "ok", historico });
+    } catch (err) {
+        console.error("Erro ao buscar histórico:", err);
+        res.status(500).json({ status: "error", message: "Erro ao carregar histórico" });
     }
 });
 

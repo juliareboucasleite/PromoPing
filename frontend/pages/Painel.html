@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../assets/styles/painel.css">
     <link rel="stylesheet" href="../assets/styles/style.css">
      <link rel="icon" type="image/png" href="/assets/images/Logo.png">
-    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/scripts/auth.js"></script>
 </head>
 <body class="dashboard-body">
     
@@ -47,6 +47,7 @@
             </div>
             
             <div class="nav-actions">
+                <span class="nav-user" id="userName">Utilizador</span>
                 <button class="nav-logout" onclick="logout()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -153,33 +154,61 @@
         </div>
     </main>
 
-    <script>
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Precisa estar logado!");
-        window.location.href = "Login.html";
+    <script type="module">
+      import { salvarToken, verificarSessao, logout } from "../assets/scripts/auth.js";
+      import { formatDateTime } from "../assets/scripts/utils.js";
+
+      function checkTokenFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        if (token) {
+          salvarToken(token);   // guarda no localStorage
+          window.history.replaceState({}, document.title, "Painel.html"); // limpa ?token= da URL
+        }
       }
 
-      function logout() {
-        localStorage.removeItem("token");
-        window.location.href = "Login.html";
+      async function init() {
+        checkTokenFromURL(); // <- novo
+        const user = await verificarSessao();
+        if (user) {
+          document.getElementById("userName").innerText = user.nome || user.email;
+        }
       }
+
+      // Tornar formatDateTime disponível globalmente
+      window.formatDateTime = formatDateTime;
+      window.logout = logout;
+      init();
+    </script>
+
+    <script>
 
       // Criar card de produto
       function createProductCard(p) {
         const lojaSlug = (p.Loja || 'Desconhecida').toLowerCase().replace(/\s+/g,'-');
         const hist = Array.isArray(p.Historico) ? p.Historico : [];
-        const histHtml = hist.map(h => `
-            <div class="history-item">${new Date(h.DataRegistro).toLocaleDateString('pt-PT')} — €${Number(h.Preco).toFixed(2)}</div>
-        `).join('') || '<div class="history-item">Sem histórico</div>';
+
+        // ✅ Histórico com data já formatada pelo backend
+        const histHtml = hist.map(h => {
+          const data = h.data || "Data desconhecida"; // 🔹 Backend já envia formatado
+          return `<div class="history-item">${data} — €${Number(h.preco).toFixed(2)}</div>`;
+        }).join('') || '<div class="history-item">Sem histórico</div>';
+
         const precoAtualRaw = (p.PrecoAtual != null) ? p.PrecoAtual : (p.Historico && p.Historico[0] ? p.Historico[0].Preco : null);
         const precoAnteriorRaw = (p.PrecoAnterior != null) ? p.PrecoAnterior : (p.Historico && p.Historico[1] ? p.Historico[1].Preco : null);
+
         const precoAtual = (precoAtualRaw != null) ? `€${Number(precoAtualRaw).toFixed(2)}` : '—';
         const precoAnterior = (precoAnteriorRaw != null) ? `€${Number(precoAnteriorRaw).toFixed(2)}` : '—';
-        const delta = (precoAtualRaw != null && precoAnteriorRaw != null) ? (Number(precoAtualRaw) - Number(precoAnteriorRaw)) : null;
+
+        const delta = (precoAtualRaw != null && precoAnteriorRaw != null) 
+          ? (Number(precoAtualRaw) - Number(precoAnteriorRaw)) 
+          : null;
+
         const deltaHtml = delta == null ? '' : (delta < 0 
-          ? `<span class=\"price-change price-down\">-${Math.abs(delta).toFixed(2)}€</span>`
-          : delta > 0 ? `<span class=\"price-change price-up\">+${delta.toFixed(2)}€</span>` : `<span class=\"price-change price-neutral\">0€</span>`);
+          ? `<span class="price-change price-down">-${Math.abs(delta).toFixed(2)}€</span>`
+          : delta > 0 
+            ? `<span class="price-change price-up">+${delta.toFixed(2)}€</span>` 
+            : `<span class="price-change price-neutral">0€</span>`);
 
         return `
           <div class="product-card">
@@ -196,7 +225,7 @@
             </div>
             <div class="product-tags">
               <span class="store-tag store-${lojaSlug}">${p.Loja || 'Loja'}</span>
-              <span class="status-tag">Criado em: ${new Date(p.DataCriacao).toLocaleDateString('pt-PT')}</span>
+              <span class="status-tag">Criado em: ${p.criado_em || '—'}</span>
             </div>
             <div class="product-details">
               <div class="price-info">
@@ -224,11 +253,20 @@
       // Carregar produtos
       async function carregarProdutos() {
         const productsList = document.getElementById("productsList");
+        const token = localStorage.getItem("token");
+        console.log("Token enviado:", token);
+        
         try {
-          const res = await fetch("/api/produtos", {
+          console.log("Fazendo requisição para /api/produtos...");
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
             headers: { Authorization: "Bearer " + token }
           });
+          
+          console.log("Status da resposta:", res.status);
+          console.log("Headers da resposta:", res.headers);
+          
           const data = await res.json();
+          console.log("Produtos recebidos:", data);
 
           productsList.innerHTML = "";
           if (data.produtos && data.produtos.length > 0) {
@@ -253,9 +291,10 @@
         const link = document.getElementById("url").value;
         const dataLimite = document.getElementById("dataLimite").value;
         const precoAlvo = document.getElementById("precoAlvo").value;
+        const token = localStorage.getItem("token");
 
         try {
-          const res = await fetch("/api/produtos", {
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -280,8 +319,9 @@
       // Remover produto
       async function deleteProduct(id) {
         if (!confirm("Tem certeza que deseja remover este produto?")) return;
+        const token = localStorage.getItem("token");
         try {
-          const res = await fetch(`/api/produtos/${id}`, {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
           });
@@ -301,8 +341,9 @@
       async function editarData(id, atual) {
         const novaData = prompt('Nova data limite (AAAA-MM-DD):', (atual || '').split('T')[0] || '');
         if (novaData === null) return;
+        const token = localStorage.getItem("token");
         try {
-          const res = await fetch(`/api/produtos/${id}`, {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -320,8 +361,9 @@
 
       // Carregar estatísticas
       async function carregarEstatisticas() {
+        const token = localStorage.getItem("token");
         try {
-          const res = await fetch("/api/user/stats", {
+          const res = await fetch("http://127.0.0.1:3000/api/user/stats", {
             headers: { Authorization: "Bearer " + token }
           });
           const data = await res.json();
@@ -343,3 +385,4 @@
     </script>
 </body>
 </html>
+

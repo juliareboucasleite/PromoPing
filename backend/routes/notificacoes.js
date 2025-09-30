@@ -12,21 +12,11 @@ router.get("/", verifyToken, async (req, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     
     const [rows] = await pool.query(
-      "SELECT Id, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio FROM Notificacoes WHERE UserId=? ORDER BY DataEnvio DESC LIMIT ?",
-      [userId, limit]
+      "SELECT Tipo, Mensagem, DataEnvio, ValorPoupado FROM Notificacoes WHERE UserId = ? ORDER BY DataEnvio DESC",
+      [userId]
     );
     
-    res.json({ 
-      status: "ok", 
-      notificacoes: rows.map(row => ({
-        id: row.Id,
-        produto_id: row.ProdutoId,
-        tipo: row.Tipo,
-        mensagem: row.Mensagem,
-        enviada: row.Enviada === 1,
-        data_envio: row.DataEnvio
-      }))
-    });
+    res.json({ status: "ok", notificacoes: rows });
   } catch (err) {
     console.error("Erro ao carregar notificações:", err);
     res.status(500).json({ status: "error", error: "Erro interno no servidor" });

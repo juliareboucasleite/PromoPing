@@ -6,8 +6,14 @@ import twilio from "twilio";
 
 const router = express.Router();
 
-// Twilio
-const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
+// Twilio - só inicializar se as credenciais estiverem configuradas
+let client = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && 
+    process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+  client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+} else {
+  console.log('⚠️ Twilio não configurado. Configure TWILIO_ACCOUNT_SID e TWILIO_AUTH_TOKEN no .env');
+}
 
 // Função para gerar código aleatório
 function gerarCodigo() {
@@ -15,8 +21,13 @@ function gerarCodigo() {
 }
 
 // ================== ENVIAR CÓDIGO POR SMS ==================
-router.post("/sms/send", async (req, res) => {
+router.post("/sms", async (req, res) => {
   try {
+    // Se não tiver Twilio configurado, apenas salva o código na base de dados
+    if (!client) {
+      console.log("⚠️ Twilio não configurado, apenas salvando código na base de dados");
+    }
+    
     const { telefone } = req.body;
     if (!telefone) return res.status(400).json({ error: "Telefone é obrigatório" });
 
@@ -30,12 +41,20 @@ router.post("/sms/send", async (req, res) => {
       [telefone, codigo, codigo]
     );
 
-    // Envia SMS via Twilio
-    await client.messages.create({
-      body: `Seu código PromoPing é: ${codigo}`,
-      from: process.env.TWILIO_PHONE,
-      to: telefone,
-    });
+    // Envia SMS via Twilio (se configurado)
+    if (client) {
+      try {
+        await client.messages.create({
+          body: `Seu código PromoPing é: ${codigo}`,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: telefone,
+        });
+      } catch (smsError) {
+        console.log("Erro ao enviar SMS:", smsError.message);
+      }
+    } else {
+      console.log("⚠️ Twilio não configurado. Código salvo na base de dados:", codigo);
+    }
 
     res.json({ status: "ok", message: "Código enviado por SMS" });
   } catch (err) {
