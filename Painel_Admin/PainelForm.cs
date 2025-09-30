@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -12,49 +11,59 @@ namespace Painel_Admin
             InitializeComponent();
         }
 
-        private void Painel_Load(object sender, EventArgs e)
+        private void PainelForm_Load(object sender, EventArgs e)
         {
             AtualizarDashboard();
         }
 
-        private void btnAtualizarDashboard_Click_1(object sender, EventArgs e)
+        private void btnAtualizarDashboard_Click(object sender, EventArgs e)
         {
             AtualizarDashboard();
         }
 
         private void AtualizarDashboard()
         {
-            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-            using (var con = new MySqlConnection(connStr))
+            string connStr = DbConfig.ConnectionString;
+
+            try
             {
-                con.Open();
-
-                // Total de utilizadores
-                using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM utilizadores", con))
+                using (var con = new MySqlConnection(connStr))
                 {
-                    lblTotalUsers.Text = $"Utilizadores: {cmd.ExecuteScalar()}";
-                }
+                    con.Open();
 
-                // Total de produtos
-                using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM produtos", con))
-                {
-                    lblTotalProdutos.Text = $"Produtos: {cmd.ExecuteScalar()}";
-                }
+                    // Total de utilizadores
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM utilizadores", con))
+                    {
+                        lblTotalUsers.Text = $"{cmd.ExecuteScalar()}";
+                    }
 
-                // Total de notificações ativas
-                using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM preferenciasnotificacao WHERE Ativo=1", con))
-                {
-                    lblTotalNotificacoes.Text = $"Notificações: {cmd.ExecuteScalar()}";
-                }
+                    // Total de produtos
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM produtos", con))
+                    {
+                        lblTotalProdutos.Text = $"{cmd.ExecuteScalar()}";
+                    }
 
-                // Total poupado
-                using (var cmd = new MySqlCommand("SELECT IFNULL(SUM(DinheiroPoupado),0) FROM perfilutilizador", con))
-                {
-                    lblTotalPoupado.Text = $"Poupado: €{cmd.ExecuteScalar()}";
+                    // Total de notificações ativas
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM preferenciasnotificacao WHERE Ativo = 1", con))
+                    {
+                        lblTotalNotificacoes.Text = $"{cmd.ExecuteScalar()}";
+                    }
+
+                    // Total poupado → por enquanto soma do PrecoAlvo
+                    using (var cmd = new MySqlCommand("SELECT IFNULL(SUM(PrecoAlvo), 0) FROM produtos", con))
+                    {
+                        decimal poupado = Convert.ToDecimal(cmd.ExecuteScalar());
+                        lblTotalPoupado.Text = $"€{poupado:0.00}";
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao atualizar o dashboard: " + ex.Message);
             }
         }
 
+        // Abrir formulários de gestão
         private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new ProdutosListForm().ShowDialog();
@@ -67,47 +76,45 @@ namespace Painel_Admin
 
         private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // abrir detalhes de um utilizador específico (exemplo: id=1)
+            // Exemplo: abrir detalhes de um utilizador com ID = 1
             new FormPerfilDetalhes(1).ShowDialog();
         }
 
         private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // abrir editor de um utilizador específico (exemplo: id=1)
-            new FormPerfilEditar(1, "", "", "", "", "", true).ShowDialog();
+            // Exemplo: abrir editor de um utilizador com ID = 1
+            new FormPerfilEditar(1, "Nome", "email@teste.com", "910000000", "free", "email", true).ShowDialog();
         }
 
-        private void picProdutos_Click(object sender, EventArgs e)
+        private void editarNotificacoesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void lblTotalProdutos_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void editarNotificaçõesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var FormNotificacaoEditar = new FormNotificacaoEditar())
+            using (var form = new FormNotificacaoEditar())
             {
-                FormNotificacaoEditar.ShowDialog();
+                form.ShowDialog();
             }
         }
 
-        private void notificaçõesToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void notificacoesToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            using (var FormNotificacoes = new FormNotificacoes())
+            using (var form = new FormNotificacoes())
             {
-                FormNotificacoes.ShowDialog();
+                form.ShowDialog();
             }
         }
 
         private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (var ProdutosListForm = new ProdutosListForm())
+            using (var form = new ProdutosListForm())
             {
-               ProdutosListForm.ShowDialog();
+                form.ShowDialog();
+            }
+        }
+
+        private void suporteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new Suporte())
+            {
+                form.ShowDialog();
             }
         }
     }

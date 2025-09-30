@@ -1,9 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
-using Painel_Admin.Auth; // ← adiciona isto para aceder ao Sessao
-
+using Painel_Admin.Auth;
 using System;
 using System.Configuration;
 using System.Windows.Forms;
+using BCrypt.Net;
 
 namespace Painel_Admin
 {
@@ -27,7 +27,7 @@ namespace Painel_Admin
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Por favor, preencha todos os campos.");
+                MessageBox.Show("⚠ Por favor, preencha todos os campos.");
                 return;
             }
 
@@ -38,52 +38,48 @@ namespace Painel_Admin
                 try
                 {
                     con.Open();
-                    string query = "SELECT Id, Nome, Email, Senha FROM utilizadores WHERE Nome = @nome";
+                    // ✅ Usa SenhaHash
+                    string query = "SELECT Id, Nome, Email, SenhaHash FROM utilizadores WHERE Nome = @nome";
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@nome", username);
 
-                    MySqlDataReader reader = cmd.ExecuteReader();
-
-                    if (reader.Read())
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        string senhaDb = reader["Senha"].ToString();
-                        bool senhaCorreta = false;
-
-                        // Verifica se parece ser um hash BCrypt
-                        if (senhaDb.StartsWith("$2a$") || senhaDb.StartsWith("$2b$") || senhaDb.StartsWith("$2y$"))
+                        if (reader.Read())
                         {
-                            senhaCorreta = BCrypt.Net.BCrypt.Verify(password, senhaDb);
-                        }
-                        else
-                        {
-                            // Comparação direta (texto puro)
-                            senhaCorreta = password == senhaDb;
-                        }
+                            string senhaDb = reader["SenhaHash"].ToString();
+                            bool senhaCorreta;
 
-                        if (senhaCorreta)
-                        {
-                            // ⚠️ Guardar dados do utilizador logado
-                            Sessao.UserId = Convert.ToInt32(reader["Id"]);
-                            Sessao.Nome = reader["Nome"].ToString();
-                            Sessao.Email = reader["Email"].ToString();
+                            // Verifica se é hash BCrypt ou texto simples
+                            if (senhaDb.StartsWith("$2a$") || senhaDb.StartsWith("$2b$") || senhaDb.StartsWith("$2y$"))
+                                senhaCorreta = BCrypt.Net.BCrypt.Verify(password, senhaDb);
+                            else
+                                senhaCorreta = password == senhaDb;
 
-                            MessageBox.Show($"Bem-vindo, {Sessao.Nome}!");
-
-                            this.Hide();
-                            using (var formMain = new PainelForm())
+                            if (senhaCorreta)
                             {
-                                formMain.ShowDialog();
+                                Sessao.UserId = Convert.ToInt32(reader["Id"]);
+                                Sessao.Nome = reader["Nome"].ToString();
+                                Sessao.Email = reader["Email"].ToString();
+
+                                MessageBox.Show($"✅ Bem-vindo, {Sessao.Nome}!");
+
+                                this.Hide();
+                                using (var formMain = new PainelForm())
+                                {
+                                    formMain.ShowDialog();
+                                }
+                                this.Show();
                             }
-                            this.Show();
+                            else
+                            {
+                                MessageBox.Show("❌ Senha inválida!");
+                            }
                         }
                         else
                         {
-                            MessageBox.Show("Senha inválida!");
+                            MessageBox.Show("❌ Utilizador não encontrado!");
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Utilizador não encontrado!");
                     }
                 }
                 catch (Exception ex)

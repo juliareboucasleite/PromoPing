@@ -1,5 +1,4 @@
-﻿using Painel_Admin.Repositories;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -21,31 +20,57 @@ namespace Painel_Admin
 
         private void CarregarPreferencias()
         {
-            dgvNotificacoes.DataSource = _repo.GetAll();
+            try
+            {
+                dgvNotificacoes.DataSource = _repo.GetAll();
+
+                if (dgvNotificacoes.Columns.Contains("Id"))
+                    dgvNotificacoes.Columns["Id"].HeaderText = "ID";
+
+                if (dgvNotificacoes.Columns.Contains("UserId"))
+                    dgvNotificacoes.Columns["UserId"].HeaderText = "Usuário";
+
+                if (dgvNotificacoes.Columns.Contains("Tipo"))
+                    dgvNotificacoes.Columns["Tipo"].HeaderText = "Tipo";
+
+                if (dgvNotificacoes.Columns.Contains("Ativo"))
+                    dgvNotificacoes.Columns["Ativo"].HeaderText = "Ativo";
+
+                dgvNotificacoes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dgvNotificacoes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvNotificacoes.MultiSelect = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao carregar notificações: " + ex.Message);
+            }
         }
 
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            FormNotificacaoEditar form = new FormNotificacaoEditar();
+            var form = new FormNotificacaoEditar();
             if (form.ShowDialog() == DialogResult.OK)
-            {
                 CarregarPreferencias();
-            }
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvNotificacoes.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Id"].Value);
-                int userId = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["UserId"].Value);
-                string tipo = dgvNotificacoes.CurrentRow.Cells["Tipo"].Value.ToString();
-                bool ativo = Convert.ToBoolean(dgvNotificacoes.CurrentRow.Cells["Ativo"].Value);
-
-                FormNotificacaoEditar form = new FormNotificacaoEditar(id, userId, tipo, ativo);
-                if (form.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    CarregarPreferencias();
+                    int id = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Id"].Value);
+                    int userId = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["UserId"].Value);
+                    string tipo = dgvNotificacoes.CurrentRow.Cells["Tipo"].Value.ToString();
+                    bool ativo = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Ativo"].Value) == 1;
+
+                    var form = new FormNotificacaoEditar(id, userId, tipo, ativo);
+                    if (form.ShowDialog() == DialogResult.OK)
+                        CarregarPreferencias();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao editar: " + ex.Message);
                 }
             }
         }
@@ -54,12 +79,19 @@ namespace Painel_Admin
         {
             if (dgvNotificacoes.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Id"].Value);
-                if (MessageBox.Show("Deseja realmente remover esta preferência?", "Confirmação",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                try
                 {
-                    _repo.Delete(id);
-                    CarregarPreferencias();
+                    int id = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Id"].Value);
+                    if (MessageBox.Show("Deseja realmente remover esta preferência?", "Confirmação",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        _repo.Delete(id);
+                        CarregarPreferencias();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao remover: " + ex.Message);
                 }
             }
         }

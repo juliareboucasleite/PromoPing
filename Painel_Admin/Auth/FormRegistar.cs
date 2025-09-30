@@ -2,7 +2,7 @@
 using System;
 using System.Configuration;
 using System.Windows.Forms;
-using BCrypt.Net; // Biblioteca para hash de senha
+using BCrypt.Net;
 
 namespace Painel_Admin
 {
@@ -28,34 +28,51 @@ namespace Painel_Admin
 
             if (string.IsNullOrEmpty(nome) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(senha))
             {
-                MessageBox.Show("Preencha todos os campos!");
+                MessageBox.Show("⚠ Preencha todos os campos!");
                 return;
             }
 
             try
             {
+                // Gera hash seguro da senha
+                string senhaHash = BCrypt.Net.BCrypt.HashPassword(senha);
+
                 string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
                 using (var con = new MySqlConnection(connStr))
                 {
                     con.Open();
-                    string query = @"INSERT INTO utilizadores (nome, email, senha, ativo, data_registo) 
-                             VALUES (@nome, @mail, @senha, 1, NOW())";
 
-                    MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@nome", nome);
-                    cmd.Parameters.AddWithValue("@mail", email);
-                    cmd.Parameters.AddWithValue("@senha", senha);
+                    // Verifica duplicados
+                    var checkCmd = new MySqlCommand("SELECT COUNT(*) FROM utilizadores WHERE Email=@mail", con);
+                    checkCmd.Parameters.AddWithValue("@mail", email);
+                    long count = (long)checkCmd.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        MessageBox.Show("❌ Já existe um utilizador registado com este email!");
+                        return;
+                    }
 
-                    cmd.ExecuteNonQuery();
+                    // Insere sempre como ADMIN (PerfilId = 1)
+                    string query = @"INSERT INTO utilizadores 
+                                    (Nome, Email, SenhaHash, Ativo, PerfilId, Data_Registo)
+                                    VALUES (@nome, @mail, @senhaHash, 1, 1, NOW())";
+
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@nome", nome);
+                        cmd.Parameters.AddWithValue("@mail", email);
+                        cmd.Parameters.AddWithValue("@senhaHash", senhaHash);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
-                MessageBox.Show("Utilizador registado com sucesso!");
+                MessageBox.Show("✅ Utilizador Admin registado com sucesso!");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao registar: " + ex.Message);
+                MessageBox.Show("❌ Erro ao registar: " + ex.Message);
             }
         }
 

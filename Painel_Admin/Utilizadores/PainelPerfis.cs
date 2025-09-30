@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Windows.Forms;
 
@@ -11,7 +10,6 @@ namespace Painel_Admin
         public PainelPerfis()
         {
             InitializeComponent();
-            CarregarPerfis();
         }
 
         private void PainelPerfis_Load(object sender, EventArgs e)
@@ -23,22 +21,22 @@ namespace Painel_Admin
         {
             try
             {
-                string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-
-                using (MySqlConnection con = new MySqlConnection(connStr))
+                string connStr = DbConfig.ConnectionString;
+                using (var con = new MySqlConnection(connStr))
                 {
                     con.Open();
                     string query = @"
-                        SELECT u.id, u.nome, u.email, u.senha, u.telefone, 
-                               c.Plano, c.LimiteProdutos
-                        FROM utilizadores u
-                        LEFT JOIN configutilizador c ON u.id = c.UserId";
+                SELECT u.Id, u.Nome, u.Email, u.Telefone, u.Ativo, p.Nome AS Perfil
+                FROM utilizadores u
+                INNER JOIN perfis p ON u.PerfilId = p.Id";
 
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(query, con);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
 
-                    dgvPerfis.DataSource = dt;
+                    using (var da = new MySqlDataAdapter(query, con))
+                    {
+                        var dt = new DataTable();
+                        da.Fill(dt);
+                        dgvPerfis.DataSource = dt;
+                    }
                 }
             }
             catch (Exception ex)
@@ -47,65 +45,68 @@ namespace Painel_Admin
             }
         }
 
+
+
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            FormRegistar frm = new FormRegistar();
+            var frm = new FormPerfilEditar(0, "", "", "", "free", "email", true);
             if (frm.ShowDialog() == DialogResult.OK)
-            {
                 CarregarPerfis();
-            }
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvPerfis.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvPerfis.CurrentRow.Cells["id"].Value);
-                string nome = dgvPerfis.CurrentRow.Cells["nome"].Value.ToString();
-                string email = dgvPerfis.CurrentRow.Cells["email"].Value.ToString();
-                string telefone = dgvPerfis.CurrentRow.Cells["telefone"].Value.ToString();
-                string plano = dgvPerfis.CurrentRow.Cells["Plano"].Value.ToString();
+                int id = Convert.ToInt32(dgvPerfis.CurrentRow.Cells["Id"].Value);
+                string nome = dgvPerfis.CurrentRow.Cells["Nome"].Value.ToString();
+                string email = dgvPerfis.CurrentRow.Cells["Email"].Value.ToString();
+                string telefone = dgvPerfis.CurrentRow.Cells["Telefone"].Value.ToString();
+                string perfil = dgvPerfis.CurrentRow.Cells["Perfil"].Value.ToString();
+                bool ativo = Convert.ToInt32(dgvPerfis.CurrentRow.Cells["Ativo"].Value) == 1;
 
-                // valores adicionais (canal e ativo) — puxar depois do banco ou default
+                // Por padrão definimos canal = "email"
                 string canal = "email";
-                bool ativo = true;
 
-                FormPerfilEditar frm = new FormPerfilEditar(id, nome, email, telefone, plano, canal, ativo);
+                // Como a tabela não tem "Plano", podes passar "free" como valor padrão
+                var frm = new FormPerfilEditar(id, nome, email, telefone, "free", canal, ativo);
                 if (frm.ShowDialog() == DialogResult.OK)
-                {
-                    CarregarPerfis(); // recarregar depois de editar
-                }
+                    CarregarPerfis();
             }
         }
+
 
         private void btnRemover_Click(object sender, EventArgs e)
         {
-            if (dgvPerfis.SelectedRows.Count > 0)
+            if (dgvPerfis.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvPerfis.SelectedRows[0].Cells["Id"].Value);
-
-                string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-                using (MySqlConnection con = new MySqlConnection(connStr))
+                int id = Convert.ToInt32(dgvPerfis.CurrentRow.Cells["Id"].Value);
+                if (MessageBox.Show("Remover este utilizador?", "Confirmação",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    con.Open();
-                    // remove utilizador (configutilizador é ON DELETE CASCADE se FK configurada)
-                    MySqlCommand cmd = new MySqlCommand("DELETE FROM utilizadores WHERE Id=@id", con);
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                        {
+                            con.Open();
+                            var cmd = new MySqlCommand("DELETE FROM utilizadores WHERE Id=@id", con);
+                            cmd.Parameters.AddWithValue("@id", id);
+                            cmd.ExecuteNonQuery();
+                        }
+                        CarregarPerfis();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erro ao remover: " + ex.Message);
+                    }
                 }
-
-                CarregarPerfis();
             }
         }
+
 
         private void btnAtualizar_Click(object sender, EventArgs e)
         {
             CarregarPerfis();
-        }
-
-        private void panelBotoes_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }

@@ -1,13 +1,14 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Configuration;
+using System.Data;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
 
 namespace Painel_Admin
 {
     public partial class FormPerfilDetalhes : Form
     {
-        private int _userId;
+        private readonly int _userId;
 
         public FormPerfilDetalhes(int userId)
         {
@@ -23,114 +24,139 @@ namespace Painel_Admin
 
         private void CarregarPerfil()
         {
-            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-            using (var con = new MySqlConnection(connStr))
+            try
             {
-                con.Open();
-                string query = @"
-                    SELECT p.Nome, p.Email, p.Telefone, p.Plano, p.Ativo,
-                           p.MembroDesde, p.ProdutosMonitorizados, 
-                           p.NotificacoesEnviadas, p.DinheiroPoupado,
-                           c.LimiteProdutos, c.CanalPreferido, c.UltimoLogin
-                    FROM perfilutilizador p
-                    LEFT JOIN configutilizador c ON p.UserId = c.UserId
-                    WHERE p.UserId=@id";
-
-                var cmd = new MySqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@id", _userId);
-
-                using (var reader = cmd.ExecuteReader())
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
-                    if (reader.Read())
-                    {
-                        // Info pessoal
-                        lblNome.Text = "Nome: " + reader["Nome"].ToString();
-                        lblEmail.Text = "Email: " + reader["Email"].ToString();
-                        lblTelefone.Text = "Telefone: " + reader["Telefone"].ToString();
-                        lblPlano.Text = "Plano: " + reader["Plano"].ToString();
-                        lblAtivo.Text = "Ativo: " + ((Convert.ToInt32(reader["Ativo"]) == 1) ? "Sim ✅" : "Não ❌");
+                    con.Open();
+                    string query = @"
+                        SELECT Nome, Email, Telefone, Plano, Ativo,
+                               MembroDesde, ProdutosMonitorizados, 
+                               NotificacoesEnviadas, DinheiroPoupado,
+                               UltimoLogin, LimiteProdutos, CanalPreferido
+                        FROM perfilutilizador
+                        WHERE UserId=@id";
 
-                        // Estatísticas
-                        lblProdutos.Text = "Produtos monitorizados: " + reader["ProdutosMonitorizados"].ToString();
-                        lblNotificacoes.Text = "Notificações enviadas: " + reader["NotificacoesEnviadas"].ToString();
-                        lblPoupado.Text = "Dinheiro poupado: €" + reader["DinheiroPoupado"].ToString();
-                        lblMembroDesde.Text = "Membro desde: " + Convert.ToDateTime(reader["MembroDesde"]).ToString("dd/MM/yyyy HH:mm");
-                        lblUltimoLogin.Text = "Último login: " + (reader["UltimoLogin"] != DBNull.Value ? Convert.ToDateTime(reader["UltimoLogin"]).ToString("dd/MM/yyyy HH:mm") : "---");
-                        lblLimiteProdutos.Text = "Limite de produtos: " + reader["LimiteProdutos"].ToString();
-                        lblCanalPreferido.Text = "Canal preferido: " + reader["CanalPreferido"].ToString();
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@id", _userId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                IdNome.Text = reader["Nome"].ToString();
+                                IdEmail.Text = reader["Email"].ToString();
+                                IdTelemovel.Text = reader["Telefone"].ToString();
+                                IdPlano.Text = reader["Plano"].ToString();
+                                IdAtivo.Text = (Convert.ToInt32(reader["Ativo"]) == 1) ? "Sim ✅" : "Não ❌";
+
+                                IdProdutos.Text = reader["ProdutosMonitorizados"].ToString();
+                                IdNotificacoes.Text = reader["NotificacoesEnviadas"].ToString();
+                                IdDinheiro.Text = "€ " + reader["DinheiroPoupado"].ToString();
+
+                                IdMembroDesde.Text = Convert.ToDateTime(reader["MembroDesde"]).ToString("dd/MM/yyyy HH:mm");
+                                IdUltimoLogin.Text = reader["UltimoLogin"] != DBNull.Value
+                                    ? Convert.ToDateTime(reader["UltimoLogin"]).ToString("dd/MM/yyyy HH:mm")
+                                    : "---";
+
+                                IdLimitesProdutos.Text = reader["LimiteProdutos"].ToString();
+                                IdCanalPreferido.Text = reader["CanalPreferido"].ToString();
+                            }
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao carregar perfil: " + ex.Message);
             }
         }
 
         private void CarregarPreferencias()
         {
-            // Desmarca tudo
-            for (int i = 0; i < clbNotificacoes.Items.Count; i++)
-                clbNotificacoes.SetItemChecked(i, false);
-
-            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-            using (var con = new MySqlConnection(connStr))
+            try
             {
-                con.Open();
-                string query = "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE UserId=@id";
-                var cmd = new MySqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@id", _userId);
+                for (int i = 0; i < clbNotificacoes.Items.Count; i++)
+                    clbNotificacoes.SetItemChecked(i, false);
 
-                using (var reader = cmd.ExecuteReader())
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
-                    while (reader.Read())
-                    {
-                        string tipo = reader["Tipo"].ToString();
-                        bool ativo = Convert.ToBoolean(reader["Ativo"]);
+                    con.Open();
+                    string query = "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE UserId=@id";
 
-                        int index = clbNotificacoes.Items.IndexOf(char.ToUpper(tipo[0]) + tipo.Substring(1));
-                        if (index >= 0)
-                            clbNotificacoes.SetItemChecked(index, ativo);
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@id", _userId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string tipo = reader["Tipo"].ToString();
+                                bool ativo = Convert.ToInt32(reader["Ativo"]) == 1;
+
+                                int index = clbNotificacoes.Items.IndexOf(
+                                    char.ToUpper(tipo[0]) + tipo.Substring(1)
+                                );
+
+                                if (index >= 0)
+                                    clbNotificacoes.SetItemChecked(index, ativo);
+                            }
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao carregar preferências: " + ex.Message);
             }
         }
 
         private void btnSalvar_Click(object sender, EventArgs e)
         {
-            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-            using (var con = new MySqlConnection(connStr))
+            try
             {
-                con.Open();
-
-                foreach (string item in clbNotificacoes.Items)
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
-                    int ativo = clbNotificacoes.CheckedItems.Contains(item) ? 1 : 0;
+                    con.Open();
 
-                    var cmd = new MySqlCommand(
-                        @"UPDATE preferenciasnotificacao 
-                          SET Ativo=@ativo 
-                          WHERE UserId=@userId AND Tipo=@tipo", con);
+                    foreach (string item in clbNotificacoes.Items)
+                    {
+                        int ativo = clbNotificacoes.CheckedItems.Contains(item) ? 1 : 0;
 
-                    cmd.Parameters.AddWithValue("@ativo", ativo);
-                    cmd.Parameters.AddWithValue("@userId", _userId);
-                    cmd.Parameters.AddWithValue("@tipo", item.ToLower());
+                        var cmd = new MySqlCommand(
+                            @"UPDATE preferenciasnotificacao 
+                              SET Ativo=@ativo 
+                              WHERE UserId=@userId AND Tipo=@tipo", con);
 
-                    cmd.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@ativo", ativo);
+                        cmd.Parameters.AddWithValue("@userId", _userId);
+                        cmd.Parameters.AddWithValue("@tipo", item.ToLower());
+
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            MessageBox.Show("Preferências atualizadas com sucesso!", "Perfil", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            CarregarPreferencias();
+                MessageBox.Show("Preferências atualizadas com sucesso!", "Perfil", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CarregarPreferencias();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao salvar preferências: " + ex.Message);
+            }
         }
 
         private void btnEditarPerfil_Click(object sender, EventArgs e)
         {
-            // abre o editor passando os dados atuais
             var editar = new FormPerfilEditar(
                 _userId,
-                lblNome.Text.Replace("Nome: ", ""),
-                lblEmail.Text.Replace("Email: ", ""),
-                lblTelefone.Text.Replace("Telefone: ", ""),
-                lblPlano.Text.Replace("Plano: ", ""),
-                lblCanalPreferido.Text.Replace("Canal preferido: ", ""),
-                lblAtivo.Text.Contains("Sim")
+                IdNome.Text,
+                IdEmail.Text,
+                IdTelemovel.Text,
+                IdPlano.Text,
+                IdCanalPreferido.Text,
+                IdAtivo.Text.Contains("Sim")
             );
 
             if (editar.ShowDialog() == DialogResult.OK)

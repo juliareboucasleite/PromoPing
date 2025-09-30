@@ -3,80 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\formregistar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\formregistar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\formlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\formlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|c:\\users\\julia\\documents\\promoping-2.0.1\\painel_admin\\utilizadores\\formnotificacoes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\formnotificacoes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\utilizadores\\formnotificacaoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\formnotificacaoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\produtos\\formprodutoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:produtos\\formprodutoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\produtos\\produtoslistform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:produtos\\produtoslistform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\produtos\\formprodutoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:produtos\\formprodutoeditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\produtos\\produtoslistform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:produtos\\produtoslistform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\repositories\\produtorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:repositories\\produtorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\formlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\formlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\sessao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\sessao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\utilizadores\\painelperfis.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\painelperfis.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\utilizadores\\formutilizadoreslist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\formutilizadoreslist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\utilizadores\\formperfileditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\formperfileditar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\utilizadores\\formperfildetalhes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:utilizadores\\formperfildetalhes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\suporte.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|c:\\users\\julia\\documents\\promoping-2.0.1\\painel_admin\\auth\\suporte.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\suporte.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\painelform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:painelform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\auth\\suporte.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:auth\\suporte.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\repositories\\preferencianotificacaorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{134A1E45-3FC7-46FE-8281-9AC1DD095302}|Painel_Admin.csproj|solutionrelative:repositories\\preferencianotificacaorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -86,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 17,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -98,223 +30,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "FormProdutoEditar.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\FormProdutoEditar.cs",
-              "RelativeDocumentMoniker": "Produtos\\FormProdutoEditar.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\FormProdutoEditar.cs",
-              "RelativeToolTip": "Produtos\\FormProdutoEditar.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T10:33:20.585Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Sessao.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Sessao.cs",
-              "RelativeDocumentMoniker": "Auth\\Sessao.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Sessao.cs",
-              "RelativeToolTip": "Auth\\Sessao.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T10:31:38.583Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "FormLogin.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormLogin.cs",
-              "RelativeDocumentMoniker": "Auth\\FormLogin.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormLogin.cs",
-              "RelativeToolTip": "Auth\\FormLogin.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T10:29:33.225Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ProdutoRepository.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Repositories\\ProdutoRepository.cs",
-              "RelativeDocumentMoniker": "Repositories\\ProdutoRepository.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Repositories\\ProdutoRepository.cs",
-              "RelativeToolTip": "Repositories\\ProdutoRepository.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAowFMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T10:28:38.5Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ProdutosListForm.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\ProdutosListForm.cs",
-              "RelativeDocumentMoniker": "Produtos\\ProdutosListForm.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\ProdutosListForm.cs",
-              "RelativeToolTip": "Produtos\\ProdutosListForm.cs",
-              "ViewState": "AgIAAE0AAAAAAAAAAAAuwGMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T10:27:58.153Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "FormNotificacoes.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormNotificacoes.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\FormNotificacoes.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormNotificacoes.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\FormNotificacoes.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:06:31.759Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "PainelForm.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\PainelForm.cs",
-              "RelativeDocumentMoniker": "PainelForm.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\PainelForm.cs [Design]",
-              "RelativeToolTip": "PainelForm.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T08:52:34.889Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "Suporte.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs",
-              "RelativeDocumentMoniker": "Auth\\Suporte.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs",
-              "RelativeToolTip": "Auth\\Suporte.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T08:48:08.642Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "FormLogin.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormLogin.cs",
-              "RelativeDocumentMoniker": "Auth\\FormLogin.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormLogin.cs [Design]",
-              "RelativeToolTip": "Auth\\FormLogin.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T08:43:35.608Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "FormNotificacaoEditar.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormNotificacaoEditar.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\FormNotificacaoEditar.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormNotificacaoEditar.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\FormNotificacaoEditar.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-29T08:42:40.697Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "PreferenciaNotificacaoRepository.cs",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Repositories\\PreferenciaNotificacaoRepository.cs",
-              "RelativeDocumentMoniker": "Repositories\\PreferenciaNotificacaoRepository.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Repositories\\PreferenciaNotificacaoRepository.cs",
-              "RelativeToolTip": "Repositories\\PreferenciaNotificacaoRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T18:11:32.468Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "FormPerfilDetalhes.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormPerfilDetalhes.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\FormPerfilDetalhes.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormPerfilDetalhes.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\FormPerfilDetalhes.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:06:30.948Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "ProdutosListForm.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\ProdutosListForm.cs",
-              "RelativeDocumentMoniker": "Produtos\\ProdutosListForm.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\ProdutosListForm.cs [Design]",
-              "RelativeToolTip": "Produtos\\ProdutosListForm.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:10:03.34Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "FormProdutoEditar.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\FormProdutoEditar.cs",
-              "RelativeDocumentMoniker": "Produtos\\FormProdutoEditar.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Produtos\\FormProdutoEditar.cs [Design]",
-              "RelativeToolTip": "Produtos\\FormProdutoEditar.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:10:01.928Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 0,
               "Title": "Suporte.cs [Design]",
               "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs",
               "RelativeDocumentMoniker": "Auth\\Suporte.cs",
               "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs [Design]",
               "RelativeToolTip": "Auth\\Suporte.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:09:59.426Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "FormRegistar.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormRegistar.cs",
-              "RelativeDocumentMoniker": "Auth\\FormRegistar.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\FormRegistar.cs [Design]",
-              "RelativeToolTip": "Auth\\FormRegistar.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:09:52.95Z",
+              "WhenOpened": "2025-09-30T15:05:51.732Z",
               "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "PainelPerfis.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\PainelPerfis.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\PainelPerfis.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\PainelPerfis.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\PainelPerfis.cs [Design]",
+              "DocumentIndex": 1,
+              "Title": "Suporte.cs",
+              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs",
+              "RelativeDocumentMoniker": "Auth\\Suporte.cs",
+              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Auth\\Suporte.cs",
+              "RelativeToolTip": "Auth\\Suporte.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAqwAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:08:25.307Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "FormPerfilEditar.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormPerfilEditar.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\FormPerfilEditar.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormPerfilEditar.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\FormPerfilEditar.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:08:23.729Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "FormUtilizadoresList.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormUtilizadoresList.cs",
-              "RelativeDocumentMoniker": "Utilizadores\\FormUtilizadoresList.cs",
-              "ToolTip": "C:\\Users\\julia\\Documents\\PromoPing-2.0.1\\Painel_Admin\\Utilizadores\\FormUtilizadoresList.cs [Design]",
-              "RelativeToolTip": "Utilizadores\\FormUtilizadoresList.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T16:08:22.589Z"
+              "WhenOpened": "2025-09-29T08:48:08.642Z",
+              "EditorCaption": ""
             }
           ]
         }

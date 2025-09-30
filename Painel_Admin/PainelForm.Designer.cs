@@ -39,6 +39,7 @@
             this.lblTotalPoupado = new System.Windows.Forms.Label();
             this.picPoupado = new System.Windows.Forms.PictureBox();
             this.btnAtualizarDashboard = new System.Windows.Forms.Button();
+            this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDashboard.SuspendLayout();
             this.cardUsers.SuspendLayout();
@@ -57,7 +58,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.produtosToolStripMenuItem,
             this.PainelPrincipal,
-            this.notificaçõesToolStripMenuItem});
+            this.notificaçõesToolStripMenuItem,
+            this.suporteToolStripMenuItem});
             resources.ApplyResources(this.menuStrip1, "menuStrip1");
             this.menuStrip1.Name = "menuStrip1";
             // 
@@ -102,7 +104,7 @@
             this.notificaçõesToolStripMenuItem1.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.notificaçõesToolStripMenuItem1.Name = "notificaçõesToolStripMenuItem1";
             resources.ApplyResources(this.notificaçõesToolStripMenuItem1, "notificaçõesToolStripMenuItem1");
-            this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificaçõesToolStripMenuItem1_Click);
+            this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificacoesToolStripMenuItem1_Click);
             // 
             // panelDashboard
             // 
@@ -206,7 +208,14 @@
             this.btnAtualizarDashboard.ForeColor = System.Drawing.Color.White;
             this.btnAtualizarDashboard.Name = "btnAtualizarDashboard";
             this.btnAtualizarDashboard.UseVisualStyleBackColor = false;
-            this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click_1);
+            this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click);
+            // 
+            // suporteToolStripMenuItem
+            // 
+            this.suporteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
+            resources.ApplyResources(this.suporteToolStripMenuItem, "suporteToolStripMenuItem");
+            this.suporteToolStripMenuItem.Click += new System.EventHandler(this.suporteToolStripMenuItem_Click);
             // 
             // PainelForm
             // 
@@ -220,7 +229,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PainelForm";
-            this.Load += new System.EventHandler(this.Painel_Load);
+            this.Load += new System.EventHandler(this.PainelForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panelDashboard.ResumeLayout(false);
@@ -260,5 +269,6 @@
         private System.Windows.Forms.Button btnAtualizarDashboard;
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem suporteToolStripMenuItem;
     }
 }

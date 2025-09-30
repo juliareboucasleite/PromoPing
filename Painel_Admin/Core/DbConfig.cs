@@ -9,7 +9,7 @@ namespace Painel_Admin
 {
     public static class DbConfig
     {
-        public static string ConnString =>
-            ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
+        public static string ConnectionString { get; } =
+            "Server=localhost;Database=pap;Uid=root;Pwd=;SslMode=none;";
     }
 }

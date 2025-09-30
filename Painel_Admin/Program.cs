@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
-
 
 namespace Painel_Admin
 {
@@ -15,10 +11,11 @@ namespace Painel_Admin
         {
             try
             {
-                // Debug: mostra qual string está sendo usada
-                var conn = DbConfig.ConnString;
+                var conn = DbConfig.ConnectionString;
                 var b = new MySqlConnectionStringBuilder(conn);
-                MessageBox.Show($"🔎 A conectar no MySQL com usuário: {b.UserID}", "Debug");
+
+                MessageBox.Show($"🔎 A conectar no MySQL com usuário: {b.UserID}",
+                    "Debug", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 using (var con = new MySqlConnection(conn))
                 {
@@ -28,8 +25,9 @@ namespace Painel_Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show("❌ Erro ao conectar na base de dados: " + ex.Message);
-                return; // não inicia se não conseguir conectar
+                MessageBox.Show("❌ Erro ao conectar na base de dados: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
             Application.EnableVisualStyles();

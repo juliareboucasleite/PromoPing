@@ -1,5 +1,4 @@
-﻿using Painel_Admin.Repositories;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -28,11 +27,29 @@ namespace Painel_Admin
             chkAtivo.Checked = ativo;
         }
 
+        private void FormNotificacaoEditar_Load(object sender, EventArgs e)
+        {
+            // 🔹 Sempre limpar e recarregar lista de opções
+            cmbTipo.Items.Clear();
+            cmbTipo.Items.Add("email");
+            cmbTipo.Items.Add("whatsapp");
+            cmbTipo.Items.Add("discord");
+            cmbTipo.Items.Add("telegram");
+
+            if (string.IsNullOrEmpty(cmbTipo.Text))
+                cmbTipo.SelectedIndex = 0; // por padrão seleciona email
+        }
+
         private void btnSalvar_Click(object sender, EventArgs e)
         {
             try
             {
-                int userId = int.Parse(txtUserId.Text);
+                if (!int.TryParse(txtUserId.Text, out int userId))
+                {
+                    MessageBox.Show("Informe um UserId válido!");
+                    return;
+                }
+
                 string tipo = cmbTipo.SelectedItem?.ToString() ?? "email";
                 bool ativo = chkAtivo.Checked;
 
@@ -45,7 +62,7 @@ namespace Painel_Admin
                     _repo.Update(_id, userId, tipo, ativo);
                 }
 
-                MessageBox.Show("Preferência salva com sucesso!");
+                MessageBox.Show("Preferência salva com sucesso!", "Notificações", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

@@ -1,7 +1,4 @@
-﻿using Painel_Admin.Repositories;
-using System;
-using System.Data;
-using System.Drawing;
+﻿using System;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -13,9 +10,7 @@ namespace Painel_Admin
         public ProdutosListForm()
         {
             InitializeComponent();
-            this.BackColor = Color.White; // fundo limpo
             _produtoRepo = new ProdutoRepository();
-            CarregarProdutos();
         }
 
         private void EditarProdutos_Load(object sender, EventArgs e)
@@ -28,17 +23,32 @@ namespace Painel_Admin
             try
             {
                 dgvProdutos.DataSource = _produtoRepo.GetAll();
-                dgvProdutos.Refresh(); // ⚠️ força atualização visual
+
+                if (dgvProdutos.Columns.Count > 0)
+                {
+                    dgvProdutos.Columns["Id"].HeaderText = "ID";
+                    dgvProdutos.Columns["UserId"].HeaderText = "Usuário";
+                    dgvProdutos.Columns["Nome"].HeaderText = "Nome";
+                    dgvProdutos.Columns["Link"].HeaderText = "Link";
+                    dgvProdutos.Columns["PrecoAlvo"].HeaderText = "Preço Alvo";
+                    dgvProdutos.Columns["DataLimite"].HeaderText = "Data Limite";
+                    dgvProdutos.Columns["Loja"].HeaderText = "Loja";
+                }
+
+                dgvProdutos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dgvProdutos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvProdutos.MultiSelect = false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao carregar produtos: " + ex.Message);
+                MessageBox.Show("Erro ao carregar produtos: " + ex.Message,
+                                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            using (FormProdutoEditar form = new FormProdutoEditar()) // modal
+            using (var form = new FormProdutoEditar()) // novo produto
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -52,6 +62,7 @@ namespace Painel_Admin
             if (dgvProdutos.CurrentRow != null)
             {
                 int id = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["Id"].Value);
+                int userId = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["UserId"].Value);
                 string nome = dgvProdutos.CurrentRow.Cells["Nome"].Value.ToString();
                 string link = dgvProdutos.CurrentRow.Cells["Link"].Value.ToString();
                 decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value
@@ -62,14 +73,18 @@ namespace Painel_Admin
                     : (DateTime?)null;
                 string loja = dgvProdutos.CurrentRow.Cells["Loja"].Value.ToString();
 
-                // ⚠️ removemos o parâmetro userId porque Update não usa mais
-                using (FormProdutoEditar form = new FormProdutoEditar(id, 0, nome, link, precoAlvo, dataLimite, loja))
+                using (var form = new FormProdutoEditar(id, userId, nome, link, precoAlvo, dataLimite, loja))
                 {
                     if (form.ShowDialog() == DialogResult.OK)
                     {
                         CarregarProdutos();
                     }
                 }
+            }
+            else
+            {
+                MessageBox.Show("Selecione um produto para editar!",
+                                "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -79,15 +94,25 @@ namespace Painel_Admin
             {
                 int id = Convert.ToInt32(dgvProdutos.SelectedRows[0].Cells["Id"].Value);
 
-                try
+                if (MessageBox.Show("Deseja remover este produto?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    _produtoRepo.Delete(id);
-                    CarregarProdutos();
+                    try
+                    {
+                        _produtoRepo.Delete(id);
+                        CarregarProdutos();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erro ao remover produto: " + ex.Message,
+                                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Erro ao remover produto: " + ex.Message);
-                }
+            }
+            else
+            {
+                MessageBox.Show("Selecione um produto para remover!",
+                                "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
