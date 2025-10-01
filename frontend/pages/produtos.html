@@ -66,8 +66,8 @@
       <header class="page-header">
         <div class="page-header-content">
           <div class="page-title-section">
-            <h1 class="page-title">Produtos guardados</h1>
-            <p class="page-subtitle">Acompanhe os seus produtos monitorizados</p>
+            <h1 class="page-title">Produtos guardados (<span id="productCount">0</span>)</h1>
+            <p class="page-subtitle">Acompanhe o histórico de preços dos seus produtos favoritos</p>
           </div>
         </div>
       </header>
@@ -107,7 +107,7 @@
             <svg class="count-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
             </svg>
-            <span id="productCount">0</span> produtos
+            <span id="filterProductCount">0</span> produtos
           </div>
         </div>
       </div>
@@ -182,6 +182,7 @@
               </div>
             </div>`;
           document.getElementById("productCount").textContent = 0;
+          document.getElementById("filterProductCount").textContent = 0;
           return;
         }
 
@@ -190,59 +191,149 @@
         const estadoFiltro = document.getElementById('filtroEstado').value;
 
         const itens = data.produtos.filter(p => {
-          const nomeOk = !query || p.Nome.toLowerCase().includes(query);
-          const lojaOk = !lojaFiltro || (p.Loja && p.Loja.toLowerCase() === lojaFiltro.toLowerCase());
-          const precoAtual = p.PrecoAtual;
-          const metaAtingida = p.PrecoAlvo != null && precoAtual != null && precoAtual <= p.PrecoAlvo;
-          const subiu = p.PrecoAtual != null && p.PrecoAnterior != null && p.PrecoAtual > p.PrecoAnterior;
+          const nome = p.Nome || p.nome || '';
+          const loja = p.Loja || p.loja || p.loja_nome || '';
+          const precoAtual = p.PrecoAtual || p.precoAtual || p.preco_atual;
+          const precoAlvo = p.PrecoAlvo || p.precoAlvo || p.preco_alvo;
+          
+          const nomeOk = !query || nome.toLowerCase().includes(query);
+          const lojaOk = !lojaFiltro || (loja && loja.toLowerCase() === lojaFiltro.toLowerCase());
+          const metaAtingida = precoAlvo != null && precoAtual != null && precoAtual <= precoAlvo;
+          const subiu = false; // PrecoAnterior não existe mais
           const estadoOk = !estadoFiltro || (estadoFiltro === 'meta' && metaAtingida) || (estadoFiltro === 'subiu' && subiu) || (estadoFiltro === 'monitorar' && !metaAtingida && !subiu);
           return nomeOk && lojaOk && estadoOk;
         });
 
         itens.forEach((p, index) => {
-          const lojaSlug = (p.Loja || 'Desconhecida').toLowerCase().replace(/\s+/g,'-');
           const hist = Array.isArray(p.Historico) ? p.Historico : [];
-          const histHtml = hist.map(h => `<div class="history-item">${new Date(h.DataRegistro).toLocaleDateString('pt-PT')} — €${Number(h.Preco).toFixed(2)}</div>`).join('') || '<div class="history-item">Sem histórico</div>';
-          const precoAtualRaw = (p.PrecoAtual != null) ? p.PrecoAtual : (p.Historico && p.Historico[0] ? p.Historico[0].Preco : null);
-          const precoAnteriorRaw = (p.PrecoAnterior != null) ? p.PrecoAnterior : (p.Historico && p.Historico[1] ? p.Historico[1].Preco : null);
-          const precoAtual = (precoAtualRaw != null) ? `€${Number(precoAtualRaw).toFixed(2)}` : '—';
-          const precoAnterior = (precoAnteriorRaw != null) ? `€${Number(precoAnteriorRaw).toFixed(2)}` : '—';
-          const delta = (precoAtualRaw != null && precoAnteriorRaw != null) ? (Number(precoAtualRaw) - Number(precoAnteriorRaw)) : null;
-          const deltaHtml = delta == null ? '' : (delta < 0
-            ? `<span class=\"price-change price-down\">-${Math.abs(delta).toFixed(2)}€</span>`
-            : delta > 0 ? `<span class=\"price-change price-up\">+${delta.toFixed(2)}€</span>` : `<span class=\"price-change price-neutral\">0€</span>`);
+          const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : '—';
+          const precoAnterior = hist.length > 0 ? `€${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : '—';
+          const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '—';
+          const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '—';
+          
+          // Calcular mudança de preço e percentual
+          const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0) 
+            ? (Number(p.PrecoAtual || p.precoAtual || p.preco_atual) - Number(hist[0].Preco || hist[0].preco)) 
+            : null;
+          
+          const percentual = delta && hist.length > 0 ? ((delta / Number(hist[0].Preco || hist[0].preco)) * 100) : 0;
+          
+          // Determinar status do produto
+          let statusTag = '';
+          let statusClass = '';
+          if ((p.PrecoAlvo || p.precoAlvo || p.preco_alvo) && (p.PrecoAtual || p.precoAtual || p.preco_atual) != null && (p.PrecoAtual || p.precoAtual || p.preco_atual) <= (p.PrecoAlvo || p.precoAlvo || p.preco_alvo)) {
+            statusTag = 'Meta atingida';
+            statusClass = 'status-target-reached';
+          } else if (delta && delta > 0) {
+            statusTag = 'Preço subiu';
+            statusClass = 'status-price-up';
+          } else {
+            statusTag = 'A monitorizar';
+            statusClass = 'status-monitoring';
+          }
+
+          // Determinar cor da tag da loja
+          let storeTagClass = 'store-tag';
+          const loja = p.Loja || p.loja || p.loja_nome;
+          if (loja) {
+            const lojaLower = loja.toLowerCase();
+            if (lojaLower.includes('worten')) storeTagClass = 'store-tag store-worten';
+            else if (lojaLower.includes('ikea')) storeTagClass = 'store-tag store-ikea';
+            else if (lojaLower.includes('fnac')) storeTagClass = 'store-tag store-fnac';
+            else if (lojaLower.includes('pcdiga')) storeTagClass = 'store-tag store-pcdiga';
+            else if (lojaLower.includes('globaldata')) storeTagClass = 'store-tag store-globaldata';
+            else if (lojaLower.includes('radiopopular') || lojaLower.includes('radio popular')) storeTagClass = 'store-tag store-radiopopular';
+            else if (lojaLower.includes('mediamarkt')) storeTagClass = 'store-tag store-mediamarkt';
+            else if (lojaLower.includes('leroymerlin') || lojaLower.includes('leroy merlin')) storeTagClass = 'store-tag store-leroymerlin';
+            else if (lojaLower.includes('zara')) storeTagClass = 'store-tag store-zara';
+            else if (lojaLower.includes('h&m') || lojaLower.includes('hm')) storeTagClass = 'store-tag store-hm';
+            else if (lojaLower.includes('amazon')) storeTagClass = 'store-tag store-amazon';
+            else if (lojaLower.includes('pingo doce')) storeTagClass = 'store-tag store-pingodoce';
+          }
+
+          // Gerar histórico de preços
+          const historicoHtml = hist.slice(0, 3).map(h => 
+            `<div class="history-item">${h.Preco || h.preco}€ (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
+          ).join('');
+
+          // Gerar indicador de mudança de preço
+          let priceChangeHtml = '';
+          if (delta !== null) {
+            const arrow = delta < 0 ? '↘' : delta > 0 ? '↗' : '—';
+            const color = delta < 0 ? 'price-down' : delta > 0 ? 'price-up' : 'price-neutral';
+            priceChangeHtml = `<div class="price-change-indicator ${color}">
+              <span class="change-arrow">${arrow}</span>
+              <span class="change-amount">${delta < 0 ? '-' : delta > 0 ? '+' : ''}${Math.abs(delta).toFixed(2)}€ (${Math.abs(percentual).toFixed(1)}%)</span>
+            </div>`;
+          }
+          
           const card = `
-            <div class="product-card" style="animation-delay: ${index * 0.1}s">
-              <div class="product-header">
-                <div class="product-title-wrap">
-                  <img class="store-logo" src="https://www.google.com/s2/favicons?domain=${new URL(p.Link).hostname}&sz=32" alt="logo">
-                  <h3 class="product-name">${p.Nome}</h3>
-                </div>
-                <div class="product-actions">
-                  <button class="action-btn" title="Abrir produto" onclick="window.open('${p.Link}','_blank')">🔗</button>
-                  <button class="action-btn delete-btn" title="Remover" onclick="removerProduto(${p.Id})">🗑️</button>
-                </div>
-              </div>
-              <div class="product-tags">
-                <span class="store-tag store-${lojaSlug}">${p.Loja || 'Loja'}</span>
-                <span class="status-tag">Adicionado em: ${new Date(p.DataCriacao).toLocaleDateString('pt-PT')}</span>
-              </div>
-              <div class="product-details">
-                <div class="price-info">
-                  <div class="current-price">
-                    <span class="price-label">Preço atual</span>
-                    <span class="price-value">${precoAtual}</span>
-                    ${deltaHtml}
-                  </div>
-                  <div class="price-details">
-                    <div class="price-item"><span class="price-label">Preço anterior</span><span class="price-value">${precoAnterior}</span></div>
-                  <div class="price-item"><span class="price-label">Preço alvo</span><span class="price-value target-price">${p.PrecoAlvo ? '€' + Number(p.PrecoAlvo).toFixed(2) : '—'}</span></div>
-                  ${p.PrecoAlvo && p.PrecoAtual != null ? (p.PrecoAtual <= p.PrecoAlvo ? '<span class="status-tag status-target-reached">Meta atingida</span>' : '') : ''}
+            <div class="product-card-dashboard" style="animation-delay: ${index * 0.1}s">
+              <div class="product-header-dashboard">
+                <div class="product-info-dashboard">
+                  <h3 class="product-name-dashboard">${p.Nome || p.nome || 'Sem nome'}</h3>
+                  <div class="product-tags-dashboard">
+                    <span class="${storeTagClass}">${loja || 'Loja'}</span>
+                    <span class="status-tag-dashboard ${statusClass}">${statusTag}</span>
                   </div>
                 </div>
-                <div class="price-history">
-                  <div class="history-header"><div class="history-title">Histórico de preços</div></div>
-                  <div class="history-list">${histHtml}</div>
+                <div class="product-actions-dashboard">
+                  <button class="action-btn-dashboard" title="Abrir produto" onclick="window.open('${p.Link || p.link}','_blank')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15,3 21,3 21,9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </button>
+                  <button class="action-btn-dashboard refresh-btn-dashboard" title="Atualizar preço" onclick="atualizarPrecoIndividual(${p.Id || p.id})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23,4 23,10 17,10"></polyline>
+                      <polyline points="1,20 1,14 7,14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                  </button>
+                  <button class="action-btn-dashboard delete-btn-dashboard" title="Remover" onclick="removerProduto(${p.Id || p.id})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3,6 5,6 21,6"></polyline>
+                      <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="product-content-dashboard">
+                <div class="price-section-dashboard">
+                  <div class="current-price-dashboard">
+                    <span class="price-label-dashboard">Preço atual</span>
+                    <span class="price-value-dashboard">${precoAtual}</span>
+                    ${priceChangeHtml}
+                  </div>
+                  <div class="price-details-dashboard">
+                    <div class="price-item-dashboard">
+                      <span class="price-label-dashboard">Preço anterior</span>
+                      <span class="price-value-dashboard">${precoAnterior}</span>
+                    </div>
+                    <div class="price-item-dashboard">
+                      <span class="price-label-dashboard">Preço alvo</span>
+                      <span class="price-value-dashboard target-price-dashboard">${precoAlvo}</span>
+                    </div>
+                    <div class="price-item-dashboard">
+                      <span class="price-label-dashboard">Adicionado</span>
+                      <span class="price-value-dashboard">${dataAdicao}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="history-section-dashboard">
+                  <div class="history-header-dashboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15,3 21,3 21,9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    <span class="history-title-dashboard">Histórico de preços</span>
+                  </div>
+                  <div class="history-list-dashboard">
+                    ${historicoHtml || '<div class="history-item">Nenhum histórico disponível</div>'}
+                  </div>
                 </div>
               </div>
             </div>`;
@@ -250,6 +341,7 @@
         });
 
         document.getElementById("productCount").textContent = itens.length;
+        document.getElementById("filterProductCount").textContent = itens.length;
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
         alert("Erro ao carregar produtos.");
@@ -273,6 +365,69 @@
       }
     }
 
+    // ===== ATUALIZAR PREÇO INDIVIDUAL =====
+    async function atualizarPrecoIndividual(produtoId) {
+      const token = localStorage.getItem("token");
+      const refreshBtn = document.querySelector(`[onclick="atualizarPrecoIndividual(${produtoId})"]`);
+      
+      if (!token) {
+        alert("Precisa estar logado!");
+        return (window.location.href = "Login.html");
+      }
+
+      // Mostrar estado de loading no botão
+      refreshBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
+          <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+        </svg>
+      `;
+      refreshBtn.disabled = true;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:3000/api/produtos/${produtoId}/refresh`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        const data = await res.json();
+        if (data.status === "ok") {
+          alert(`Preço do produto "${data.produto.nome}" atualizado para €${data.produto.novoPreco}!`);
+          carregarProdutos(); // Recarregar a lista
+        } else {
+          alert(data.error || "Erro ao atualizar preço");
+        }
+      } catch (err) {
+        console.error("Erro no refresh:", err);
+        alert("Erro no servidor");
+      } finally {
+        // Restaurar botão
+        refreshBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23,4 23,10 17,10"></polyline>
+            <polyline points="1,20 1,14 7,14"></polyline>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+        `;
+        refreshBtn.disabled = false;
+      }
+    }
+
+    // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
+    function verificarAtualizacoes() {
+      const ultimaAtualizacao = localStorage.getItem('ultimaAtualizacaoProduto');
+      if (ultimaAtualizacao) {
+        const agora = Date.now();
+        const diferenca = agora - parseInt(ultimaAtualizacao);
+        // Se foi atualizado nos últimos 5 segundos, recarregar
+        if (diferenca < 5000) {
+          carregarProdutos();
+        }
+      }
+    }
+
+    // Verificar atualizações a cada 2 segundos
+    setInterval(verificarAtualizacoes, 2000);
+
     // ===== INICIAR =====
     window.onload = () => {
       carregarProdutos();
@@ -283,4 +438,5 @@
   </script>
 </body>
 </html>
+e
 e

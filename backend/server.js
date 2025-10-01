@@ -28,22 +28,19 @@ import authGoogleRoutes from "./routes/auth-google.js";
 import authRoutes from "./routes/auth.js";
 import produtosRoutes from "./routes/produtos.js";
 import configRoutes from "./routes/config.js";
-import scrapeRoute from "./routes/scrape.js";
 import userRoutes from "./routes/user.js";
 import notificacoesRoutes from "./routes/notificacoes.js";
 import contasRoutes from "./routes/contas.js";
 import preferencesRoutes from "./routes/preferences.js";
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
 import authSMSRoutes from "./routes/auth-sms.js";
-import monitorRoutes from "./routes/monitor.js";
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";
 
 // ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js";
-import { startPriceChecker } from "./services/scrapers/price-checker.js";
-import { startPriceMonitoring } from "./services/monitor.js";
+import { atualizarPrecos } from "./services/atualizarPrecos.js";
 
 // ================== EXPRESS ==================
 const app = express();
@@ -73,12 +70,10 @@ app.get("/api/user/me", verifyToken, (req, res) => {
 
 app.use("/api/produtos", produtosRoutes);
 app.use("/api/config", configRoutes);
-app.use("/api/scrape", scrapeRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/notificacoes", notificacoesRoutes);
 app.use("/api/user/accounts", contasRoutes);
 app.use("/api/user/preferences", preferencesRoutes);
-app.use("/api/monitor", monitorRoutes);
 
 // ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {
@@ -102,7 +97,6 @@ app.get("/api/", (req, res) => {
       produtos: "/api/produtos/",
       user: "/api/user/",
       notificacoes: "/api/notificacoes/",
-      monitor: "/api/monitor/",
       health: "/api/health",
     },
   });
@@ -134,6 +128,21 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
 });
 
+// ================== AGENDAMENTO CRON ==================
+import cron from "node-cron";
+
+// A cada 6 horas (ajusta como quiser)
+// formato cron: "0 */6 * * *" = de 6h em 6h
+cron.schedule("0 */6 * * *", async () => {
+  console.log("⏰ Executando atualização automática de preços...");
+  try {
+    await atualizarPrecos();
+    console.log("✅ Atualização automática concluída com sucesso");
+  } catch (error) {
+    console.error("❌ Erro na atualização automática:", error);
+  }
+});
+
 // ================== INICIAR SERVIDOR ==================
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
@@ -142,12 +151,5 @@ app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor PromoPing rodando em http://${HOST}:${PORT}`);
   console.log(`📁 Frontend: http://${HOST}:${PORT}/`);
   console.log(`🔧 API: http://${HOST}:${PORT}/api/`);
-
-  // Inicia checker periódico (sistema antigo)
-  startPriceChecker();
-  
-  // Inicia monitoramento automático (sistema novo)
-  console.log("🔄 Iniciando monitoramento automático de preços...");
-  startPriceMonitoring(30); // 30 minutos de intervalo
-  console.log("✅ Monitoramento automático ativo (30min)");
+  console.log(`⏰ Cron agendado: atualização automática a cada 6 horas`);
 });

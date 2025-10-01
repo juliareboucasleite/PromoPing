@@ -193,12 +193,24 @@ router.post("/register", async (req, res) => {
     try {
       const { sendEmail } = await import("../services/notify.js");
       const messageHtml = `
-        <h2>Confirmação de conta - PromoPing</h2>
-        <p>Olá ${nome} 👋,</p>
-        <p>Use o código abaixo para verificar sua conta:</p>
-        <h3 style="color:#1e90ff">${codigo}</h3>
-        <p>Se não foi você, ignore este email.</p>
-      `;
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+    <h2 style="color: #1e90ff; text-align: center;">PromoPing</h2>
+    <p>Olá <b>${nome}</b> 👋,</p>
+    <p>Obrigado por se registar no <b>PromoPing</b>.</p>
+    <p>Use o código abaixo para verificar a sua conta:</p>
+    <div style="text-align: center; margin: 20px 0;">
+      <span style="font-size: 28px; font-weight: bold; color: #1e90ff; letter-spacing: 4px;">
+        ${codigo}
+      </span>
+    </div>
+    <p style="font-size: 14px; color: #666;">Este código expira em 10 minutos.</p>
+    <hr style="margin: 20px 0;"/>
+    <p style="font-size: 12px; color: #999; text-align: center;">
+      Se não foi você, ignore este e-mail.<br/>
+      &copy; ${new Date().getFullYear()} PromoPing
+    </p>
+  </div>
+`;
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
     } catch (emailError) {
       console.log("⚠️ Email não configurado, mas conta criada com sucesso");
