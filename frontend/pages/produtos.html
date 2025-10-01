@@ -413,20 +413,30 @@
     }
 
     // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
-    function verificarAtualizacoes() {
-      const ultimaAtualizacao = localStorage.getItem('ultimaAtualizacaoProduto');
-      if (ultimaAtualizacao) {
-        const agora = Date.now();
-        const diferenca = agora - parseInt(ultimaAtualizacao);
-        // Se foi atualizado nos últimos 5 segundos, recarregar
-        if (diferenca < 5000) {
+    let lastSyncTime = Date.now();
+    
+    async function verificarSincronizacao() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      
+      try {
+        const res = await fetch(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        
+        const data = await res.json();
+        if (data.status === "ok" && data.produtos.length > 0) {
+          // Há produtos atualizados, recarregar a lista
           carregarProdutos();
+          lastSyncTime = data.timestamp;
         }
+      } catch (err) {
+        console.error("Erro na sincronização:", err);
       }
     }
-
-    // Verificar atualizações a cada 2 segundos
-    setInterval(verificarAtualizacoes, 2000);
+    
+    // Verificar sincronização a cada 10 segundos
+    setInterval(verificarSincronizacao, 10000);
 
     // ===== INICIAR =====
     window.onload = () => {

@@ -299,4 +299,36 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
     }
 });
 
+// 📊 Verificar se há produtos atualizados recentemente
+router.get("/sync", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { lastSync } = req.query;
+        
+        let query = `
+            SELECT Id, Nome, PrecoAtual, UpdatedAt 
+            FROM Produtos 
+            WHERE UserId = ?
+        `;
+        let params = [userId];
+        
+        // Se foi fornecido um timestamp, buscar apenas produtos atualizados depois dele
+        if (lastSync) {
+            query += " AND UpdatedAt > ?";
+            params.push(new Date(parseInt(lastSync)));
+        }
+        
+        const [produtos] = await pool.query(query, params);
+        
+        res.json({
+            status: "ok",
+            produtos: produtos,
+            timestamp: Date.now()
+        });
+    } catch (err) {
+        console.error("Erro ao verificar sincronização:", err);
+        res.status(500).json({ error: "Erro ao verificar atualizações" });
+    }
+});
+
 export default router;
