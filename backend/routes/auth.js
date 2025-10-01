@@ -193,23 +193,12 @@ router.post("/register", async (req, res) => {
     try {
       const { sendEmail } = await import("../services/notify.js");
       const messageHtml = `
-  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-    <h2 style="color: #1e90ff; text-align: center;">PromoPing</h2>
-    <p>Olá <b>${nome}</b> 👋,</p>
-    <p>Obrigado por se registar no <b>PromoPing</b>.</p>
-    <p>Use o código abaixo para verificar a sua conta:</p>
-    <div style="text-align: center; margin: 20px 0;">
-      <span style="font-size: 28px; font-weight: bold; color: #1e90ff; letter-spacing: 4px;">
-        ${codigo}
-      </span>
-    </div>
-    <p style="font-size: 14px; color: #666;">Este código expira em 10 minutos.</p>
-    <hr style="margin: 20px 0;"/>
-    <p style="font-size: 12px; color: #999; text-align: center;">
-      Se não foi você, ignore este e-mail.<br/>
-      &copy; ${new Date().getFullYear()} PromoPing
-    </p>
-  </div>
+  Olá <b>${nome}👋,
+    Obrigado por se registar no <b>PromoPing</b>.
+    Use o código abaixo para verificar a sua conta: ${codigo}
+    Este código expira em 10 minutos.
+    Se não foi você, ignore este e-mail.
+    &copy; ${new Date().getFullYear()} PromoPing
 `;
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
     } catch (emailError) {

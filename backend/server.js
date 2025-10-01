@@ -34,6 +34,7 @@ import contasRoutes from "./routes/contas.js";
 import preferencesRoutes from "./routes/preferences.js";
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
 import authSMSRoutes from "./routes/auth-sms.js";
+import paymentRoutes from "./routes/payment.js";
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";
@@ -74,6 +75,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/notificacoes", notificacoesRoutes);
 app.use("/api/user/accounts", contasRoutes);
 app.use("/api/user/preferences", preferencesRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {

@@ -19,48 +19,14 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
     const savingsPercent = ((savings / precoAlvo) * 100).toFixed(1);
     
     const messageHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; color: #333;">
+    Olá <b>${product.Nome}</b> 👋,
+    O preço do produto ${product.Nome} atingiu o preço alvo de ${formatPriceDisplay(precoAlvo)}.
+    Aproveite antes que o preço volte a subir! ⏰
+    Atenciosamente, <br/>
+    <b>Equipe PromoPing 🚀</b><br/>
+    <small>Esta é uma notificação automática — não responda a este email.</small>
+  `;
         
-        <style>
-          @media (prefers-color-scheme: dark) {
-            div { background: #1e1e1e !important; color: #f0f0f0 !important; border: 1px solid #333 !important; }
-            h2 { color: #4dabf7 !important; }
-            .alert-box { background: #2d3748 !important; border: 1px solid #4a5568 !important; }
-            .price-highlight { color: #68d391 !important; }
-            a.btn { background: #4dabf7 !important; color: #fff !important; }
-          }
-        </style>
-
-        <h2 style="color: #1e90ff; text-align: center;">🎉 Preço Alvo Atingido!</h2>
-        
-        <div class="alert-box" style="padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin: 20px 0;">
-          <p><b>📌 Produto:</b> ${product.Nome}</p>
-          <p><b>🏪 Loja:</b> ${product.Loja}</p>
-          <p><b>💰 Preço atual:</b> <span class="price-highlight">${formatPriceDisplay(novoPreco)}</span></p>
-          <p><b>🎯 Preço alvo:</b> ${formatPriceDisplay(precoAlvo)}</p>
-          <p><b>💵 Poupança:</b> ${formatPriceDisplay(savings)} (${savingsPercent}%)</p>
-        </div>
-
-        <div style="text-align: center; margin: 20px 0;">
-          <a class="btn" href="${product.Link}" target="_blank" 
-             style="display: inline-block; padding: 12px 24px; background: #1e90ff; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            🔗 Ver oferta agora
-          </a>
-        </div>
-
-        <p style="text-align: center; color: #666; font-size: 14px;">
-          Aproveite antes que o preço volte a subir! ⏰
-        </p>
-
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;" />
-
-        <p style="font-size: 13px; color: #666; text-align: center;">
-          Atenciosamente, <br/>
-          <b>Equipe PromoPing 🚀</b><br/>
-          <small>Esta é uma notificação automática — não responda a este email.</small>
-        </p>
-      </div>
-    `;
 
     // Buscar configurações de notificação do utilizador
     const [configRows] = await pool.query(

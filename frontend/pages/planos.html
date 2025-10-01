@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos — PromoPing</title>
+    <link rel="stylesheet" href="../assets/styles/painel.css">
+    <link rel="stylesheet" href="../assets/styles/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/Logo.png">
+    <script src="../assets/js/auth.js"></script>
+</head>
+<body class="dashboard-body">
+    
+    <!-- ===== NAVEGAÇÃO SUPERIOR ===== -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="../assets/images/Logo.png" alt="PromoPing" class="nav-logo">
+                <span class="nav-brand-name">PromoPing</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="Painel.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Produtos
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Perfil
+                </a>
+                <a href="planos.html" class="nav-item nav-item-active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Planos
+                </a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="nav-logout" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <main class="dashboard-main">
+        <div class="particles-container">
+            <div class="particle particle-1"></div>
+            <div class="particle particle-2"></div>
+            <div class="particle particle-3"></div>
+            <div class="particle particle-4"></div>
+            <div class="particle particle-5"></div>
+            <div class="particle particle-6"></div>
+        </div>
+        <div class="dashboard-container">
+            
+
+
+            <!-- ===== COMPARAÇÃO DE PLANOS ===== -->
+            <div class="plans-comparison">
+                <div class="plans-background">
+                    <div class="bg-shape bg-shape-1"></div>
+                    <div class="bg-shape bg-shape-2"></div>
+                    <div class="bg-shape bg-shape-3"></div>
+                </div>
+                
+                <!-- ===== PLANO FREE ===== -->
+                <div class="plan-card" id="plan-free">
+                    <div class="plan-header-colored free">
+                        <h3 class="plan-name">FREE</h3>
+                    </div>
+                    <div class="plan-content">
+                        <div class="plan-price">
+                            <span class="price-amount">€0.00</span>
+                            <span class="price-period">per month</span>
+                        </div>
+                    
+                        <div class="plan-features-colored free">
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Até 5 produtos</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Verificação a cada 24h</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span>Notificações por email</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span>Histórico de 7 dias</span>
+                            </div>
+                        </div>
+                        
+                        <button class="plan-button-colored free" onclick="selecionarPlano('free')">
+                            SUBSCRIBE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== PLANO BASIC ===== -->
+                <div class="plan-card" id="plan-basic">
+                    <div class="plan-header-colored basic">
+                        <h3 class="plan-name">BASIC</h3>
+                    </div>
+                    <div class="plan-content">
+                        <div class="plan-price">
+                            <span class="price-amount">€4.99</span>
+                            <span class="price-period">per month</span>
+                        </div>
+                    
+                        <div class="plan-features-colored basic">
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Até 25 produtos</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Verificação a cada 4h</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span>Notificações por email + SMS</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span>Histórico de 30 dias</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span>Relatórios básicos</span>
+                            </div>
+                        </div>
+                        
+                        <button class="plan-button-colored basic" onclick="selecionarPlano('basic')">
+                            SUBSCRIBE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== PLANO PREMIUM ===== -->
+                <div class="plan-card premium" id="plan-premium">
+                    <div class="plan-header-colored premium">
+                        <h3 class="plan-name">PREMIUM</h3>
+                    </div>
+                    <div class="plan-content">
+                        <div class="plan-price">
+                            <span class="price-amount">€9.99</span>
+                            <span class="price-period">per month</span>
+                        </div>
+                    
+                        <div class="plan-features-colored premium">
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Produtos ilimitados</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Verificação contínua</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Todas as notificações</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Histórico ilimitado</span>
+                            </div>
+                            <div class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span>Relatórios avançados</span>
+                            </div>
+                        </div>
+                        
+                        <button class="plan-button-colored premium" onclick="selecionarPlano('premium')">
+                            SUBSCRIBE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <!-- ===== MODAL DE CONFIRMAÇÃO ===== -->
+    <div id="paymentModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Confirmar Alteração de Plano</h3>
+                <button class="modal-close" onclick="fecharModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="plan-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Plano selecionado:</span>
+                        <span class="summary-value" id="selectedPlanName">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Preço:</span>
+                        <span class="summary-value" id="selectedPlanPrice">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Próximo pagamento:</span>
+                        <span class="summary-value" id="nextPaymentDate">-</span>
+                    </div>
+                </div>
+                
+                <div class="payment-methods">
+                    <h4>Método de Pagamento</h4>
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="stripe" checked>
+                            <div class="payment-card">
+                                <svg class="payment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                </svg>
+                                <span>Cartão de Crédito/Débito</span>
+                            </div>
+                        </label>
+                        
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="paypal">
+                            <div class="payment-card">
+                                <svg class="payment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                </svg>
+                                <span>PayPal</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="terms-agreement">
+                    <label class="terms-checkbox">
+                        <input type="checkbox" id="termsAgreement">
+                        <span class="checkmark"></span>
+                        <span>Concordo com os <a href="#" onclick="abrirTermos()">Termos de Serviço</a> e <a href="#" onclick="abrirPrivacidade()">Política de Privacidade</a></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+                <button class="btn btn-primary" id="confirmPaymentBtn" onclick="processarPagamento()" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Confirmar Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== VERIFICAR LOGIN =====
+        window.onload = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Precisa estar logado!");
+                window.location.href = "Login.html";
+                return;
+            }
+
+            // Verificar se retornou do Stripe
+            await verificarRetornoPagamento();
+
+            // Carregar plano atual
+            await carregarPlanoAtual();
+        };
+
+        // ===== VERIFICAR RETORNO DO PAGAMENTO =====
+        async function verificarRetornoPagamento() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const sessionId = urlParams.get('session_id');
+            const canceled = urlParams.get('canceled');
+
+            if (success === 'true' && sessionId) {
+                try {
+                    // Verificar status da sessão
+                    const token = localStorage.getItem("token");
+                    const response = await fetch("http://127.0.0.1:3000/api/payment/verify-session", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + token
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === "ok" && data.session.status === "complete") {
+                        // Ativar plano
+                        await ativarPlanoPago(sessionId);
+                    } else {
+                        throw new Error("Pagamento não foi processado com sucesso");
+                    }
+                } catch (error) {
+                    console.error("Erro ao verificar pagamento:", error);
+                    alert("❌ Erro ao processar pagamento: " + error.message);
+                }
+            } else if (canceled === 'true') {
+                alert("ℹ️ Pagamento cancelado. Você pode tentar novamente a qualquer momento.");
+            }
+
+            // Limpar URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // ===== ATIVAR PLANO PAGO =====
+        async function ativarPlanoPago(sessionId) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch("http://127.0.0.1:3000/api/user/plano/alterar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "ok") {
+                    alert("✅ Pagamento processado com sucesso!\n\nSeu plano foi ativado e as funcionalidades já estão disponíveis.");
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error || "Erro ao ativar plano");
+                }
+            } catch (error) {
+                console.error("Erro ao ativar plano pago:", error);
+                alert("❌ Erro ao ativar plano: " + error.message);
+            }
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem("token");
+            window.location.href = "Login.html";
+        }
+
+        // ===== CARREGAR PLANO ATUAL =====
+        async function carregarPlanoAtual() {
+            const token = localStorage.getItem("token");
+            try {
+                const res = await fetch("http://127.0.0.1:3000/api/user/plano", {
+                    headers: { Authorization: "Bearer " + token }
+                });
+                const data = await res.json();
+
+                if (data.status === "ok") {
+                    const plano = data.plano;
+                    document.getElementById("currentPlanName").textContent = plano.nome;
+                    document.getElementById("currentPlanExpiry").textContent = "Nunca (gratuito)";
+                    
+                    // Mostrar banner se não for Free
+                    if (plano.nome !== 'Free') {
+                        document.getElementById("currentPlanBanner").style.display = "block";
+                    }
+                    
+                    // Marcar plano atual
+                    marcarPlanoAtual(plano.nome);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar plano:", err);
+            }
+        }
+
+        // ===== MARCAR PLANO ATUAL =====
+        function marcarPlanoAtual(planoNome) {
+            // Remover marcação de todos os planos
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('current-plan');
+                const button = card.querySelector('.plan-button');
+                button.classList.remove('current');
+                button.classList.add('upgrade');
+                button.disabled = false;
+                button.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Escolher ${planoNome}
+                `;
+            });
+
+            // Marcar plano atual
+            const currentPlanCard = document.getElementById(`plan-${planoNome.toLowerCase()}`);
+            if (currentPlanCard) {
+                currentPlanCard.classList.add('current-plan');
+                const button = currentPlanCard.querySelector('.plan-button');
+                button.classList.remove('upgrade');
+                button.classList.add('current');
+                button.disabled = true;
+                button.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Plano Atual
+                `;
+            }
+        }
+
+        // ===== SELECIONAR PLANO =====
+        async function selecionarPlano(planoTipo) {
+            const planos = {
+                'free': { nome: 'Free', preco: '€0.00', id: 1 },
+                'basic': { nome: 'Basic', preco: '€4.99', id: 2 },
+                'premium': { nome: 'Premium', preco: '€9.99', id: 3 }
+            };
+
+            const plano = planos[planoTipo];
+            if (!plano) return;
+
+            // Mostrar modal para todos os planos
+            mostrarModalPlano(plano);
+        }
+
+        // ===== MOSTRAR MODAL DO PLANO =====
+        function mostrarModalPlano(plano) {
+            // Atualizar informações do modal
+            document.getElementById('selectedPlanName').textContent = plano.nome;
+            document.getElementById('selectedPlanPrice').textContent = plano.preco;
+            
+            // Calcular próxima data de pagamento
+            const nextPayment = new Date();
+            nextPayment.setMonth(nextPayment.getMonth() + 1);
+            document.getElementById('nextPaymentDate').textContent = nextPayment.toLocaleDateString('pt-PT');
+            
+            // Mostrar modal
+            document.getElementById('paymentModal').style.display = 'flex';
+            
+            // Armazenar plano selecionado para processamento
+            window.selectedPlan = plano;
+        }
+
+
+        // ===== ATIVAR PLANO GRATUITO =====
+        async function ativarPlanoGratuito(planoId) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch("http://127.0.0.1:3000/api/user/plano/alterar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    },
+                    body: JSON.stringify({
+                        planoId: planoId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "ok") {
+                    alert("✅ Plano gratuito ativado com sucesso!");
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error || "Erro ao ativar plano");
+                }
+            } catch (error) {
+                console.error("Erro ao ativar plano gratuito:", error);
+                alert("❌ Erro ao ativar plano: " + error.message);
+            }
+        }
+
+
+        // ===== TERMOS E PRIVACIDADE =====
+        function abrirTermos() {
+            alert("Termos de Serviço\n\nAo usar o PromoPing, você concorda com nossos termos de serviço...");
+        }
+
+        function abrirPrivacidade() {
+            alert("Política de Privacidade\n\nRespeitamos sua privacidade e protegemos seus dados...");
+        }
+
+        // ===== PROCESSAR PAGAMENTO =====
+        async function processarPagamento() {
+            if (!window.selectedPlan) {
+                alert("Nenhum plano selecionado!");
+                return;
+            }
+
+            try {
+                // Se for plano FREE, ativar diretamente
+                if (window.selectedPlan.id === 1) {
+                    await ativarPlanoGratuito(window.selectedPlan.id);
+                    return;
+                }
+
+                // Para planos pagos, criar sessão de checkout
+                const token = localStorage.getItem("token");
+                
+                // Verificar se o servidor está rodando
+                console.log("🔄 Tentando conectar com o servidor...");
+                
+                const response = await fetch("http://127.0.0.1:3000/api/payment/create-checkout-session", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    },
+                    body: JSON.stringify({
+                        planoId: window.selectedPlan.id
+                    })
+                });
+
+                console.log("📡 Resposta do servidor:", response.status, response.statusText);
+
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const text = await response.text();
+                    console.error("❌ Resposta não é JSON:", text);
+                    throw new Error("Servidor retornou resposta inválida. Verifique se o backend está rodando.");
+                }
+
+                const data = await response.json();
+                console.log("📦 Dados recebidos:", data);
+
+                if (data.status === "ok") {
+                    if (data.checkout_url) {
+                        console.log("🔗 Redirecionando para:", data.checkout_url);
+                        // Redirecionar para checkout
+                        window.location.href = data.checkout_url;
+                    } else {
+                        throw new Error("URL de checkout não encontrada");
+                    }
+                } else {
+                    throw new Error(data.error || "Erro ao criar sessão de pagamento");
+                }
+            } catch (error) {
+                console.error("❌ Erro ao processar pagamento:", error);
+                
+                // Verificar se é erro de conexão
+                if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+                    alert("❌ Erro de conexão!\n\nVerifique se o servidor backend está rodando em http://127.0.0.1:3000");
+                } else {
+                    alert("❌ Erro ao processar pagamento: " + error.message);
+                }
+            }
+        }
+
+        // ===== FECHAR MODAL =====
+        function fecharModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            window.selectedPlan = null;
+        }
+
+        // ===== HABILITAR BOTÃO DE CONFIRMAÇÃO =====
+        document.getElementById('termsAgreement').addEventListener('change', function() {
+            const confirmBtn = document.getElementById('confirmPaymentBtn');
+            confirmBtn.disabled = !this.checked;
+        });
+    </script>
+</body>
+</html>

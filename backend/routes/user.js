@@ -215,4 +215,174 @@ router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
   }
 });
 
+// ================== INFORMAÇÕES DO PLANO ==================
+router.get("/plano", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log("🔍 Buscando plano para userId:", userId);
+
+    // Primeiro, verificar se o utilizador existe na configutilizador
+    const [configRows] = await pool.query(
+      `SELECT * FROM configutilizador WHERE UserId = ?`,
+      [userId]
+    );
+    console.log("📋 Config do utilizador:", configRows);
+
+    // Se não existe config, criar uma padrão
+    if (configRows.length === 0) {
+      console.log("⚠️ Utilizador não tem configuração, criando padrão...");
+      await pool.query(
+        `INSERT INTO configutilizador (UserId, PlanoId, LimiteProdutos, CanalPreferido, NotificacoesEnviadas, HistoricoAtivo) 
+         VALUES (?, 1, 5, 'email', 0, 1)`,
+        [userId]
+      );
+      console.log("✅ Configuração padrão criada");
+    }
+
+    // Buscar informações do plano do utilizador
+    const [planoRows] = await pool.query(
+      `SELECT p.Nome, p.Preco, p.LimiteProdutos, p.VerificacaoIntervalo, p.PermiteSMS, p.Relatorios
+       FROM configutilizador c
+       JOIN planos p ON p.Id = c.PlanoId
+       WHERE c.UserId = ?`,
+      [userId]
+    );
+
+    console.log("📊 Resultado da query:", planoRows);
+
+    if (planoRows.length === 0) {
+      console.log("❌ Nenhum plano encontrado para o utilizador");
+      return res.status(404).json({ 
+        status: "error", 
+        error: "Plano não encontrado. Verifique se o utilizador tem um plano configurado." 
+      });
+    }
+
+    const plano = planoRows[0];
+
+    // Determinar se produtos são ilimitados baseado no LimiteProdutos
+    const produtosIlimitados = plano.LimiteProdutos >= 9999;
+    
+    // Criar descrição baseada no plano
+    let descricao = `Plano ${plano.Nome}`;
+    if (plano.Nome === 'Free') {
+      descricao = 'Plano gratuito com funcionalidades básicas';
+    } else if (plano.Nome === 'Basic') {
+      descricao = 'Plano básico com mais produtos e atualizações frequentes';
+    } else if (plano.Nome === 'Premium') {
+      descricao = 'Plano premium com atualizações ilimitadas e recursos avançados';
+    }
+
+    res.json({
+      status: "ok",
+      plano: {
+        nome: plano.Nome,
+        descricao: descricao,
+        verificacao_intervalo: plano.VerificacaoIntervalo,
+        produtos_ilimitados: produtosIlimitados,
+        limite_produtos: plano.LimiteProdutos,
+        preco: plano.Preco,
+        permite_sms: plano.PermiteSMS === 1,
+        relatorios: plano.Relatorios
+      }
+    });
+  } catch (err) {
+    console.error("Erro ao buscar plano:", err);
+    res.status(500).json({ 
+      status: "error", 
+      error: "Erro no servidor" 
+    });
+  }
+});
+
+// ================== ALTERAR PLANO ==================
+router.post("/plano/alterar", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planoId, session_id } = req.body;
+
+    console.log("🔄 Alterando plano para userId:", userId, "planoId:", planoId);
+
+    // Validar plano
+    const [planoRows] = await pool.query(
+      `SELECT * FROM planos WHERE Id = ?`,
+      [planoId]
+    );
+
+    if (planoRows.length === 0) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Plano inválido" 
+      });
+    }
+
+    const plano = planoRows[0];
+
+    // Se for plano gratuito, ativar diretamente
+    if (plano.Preco === 0) {
+      await pool.query(
+        `UPDATE configutilizador 
+         SET PlanoId = ?, LimiteProdutos = ?
+         WHERE UserId = ?`,
+        [planoId, plano.LimiteProdutos, userId]
+      );
+
+      return res.json({
+        status: "ok",
+        message: "Plano gratuito ativado com sucesso",
+        plano: {
+          nome: plano.Nome,
+          preco: plano.Preco,
+          limite_produtos: plano.LimiteProdutos
+        }
+      });
+    }
+
+    // Para planos pagos, verificar se tem session_id
+    if (!session_id) {
+      return res.status(400).json({
+        status: "error",
+        error: "Session ID é obrigatório para planos pagos"
+      });
+    }
+
+    // Verificar status da sessão de pagamento
+    const stripe = (await import('../config/stripe.js')).default;
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status !== 'paid') {
+      return res.status(400).json({
+        status: "error",
+        error: "Pagamento não foi processado com sucesso"
+      });
+    }
+
+    // Atualizar plano do utilizador
+    await pool.query(
+      `UPDATE configutilizador 
+       SET PlanoId = ?, LimiteProdutos = ?, StripeSubscriptionId = ?
+       WHERE UserId = ?`,
+      [planoId, plano.LimiteProdutos, session.subscription, userId]
+    );
+
+    console.log("✅ Plano alterado com sucesso");
+
+    res.json({
+      status: "ok",
+      message: "Plano alterado com sucesso",
+      plano: {
+        nome: plano.Nome,
+        preco: plano.Preco,
+        limite_produtos: plano.LimiteProdutos
+      }
+    });
+  } catch (err) {
+    console.error("Erro ao alterar plano:", err);
+    res.status(500).json({ 
+      status: "error", 
+      error: "Erro no servidor" 
+    });
+  }
+});
+
 export default router;

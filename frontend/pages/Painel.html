@@ -406,8 +406,8 @@
         }
       }
 
-      // ===== ATUALIZAR PREÇO INDIVIDUAL =====
-      async function atualizarPrecoIndividual(produtoId) {
+      // ===== ATUALIZAR TODOS OS PREÇOS (VIA BOTÃO INDIVIDUAL) =====
+      async function atualizarPrecoIndividual(produtoId) { // produtoId ainda é usado para identificar o botão clicado
         const token = localStorage.getItem("token");
         const refreshBtn = document.querySelector(`[onclick="atualizarPrecoIndividual(${produtoId})"]`);
         
@@ -425,24 +425,29 @@
         refreshBtn.disabled = true;
 
         try {
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${produtoId}/refresh`, {
+          // Chamar a rota de refresh global
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/refresh`, {
             method: "POST",
             headers: { Authorization: "Bearer " + token }
           });
 
           const data = await res.json();
           if (data.status === "ok") {
-            alert(`Preço do produto "${data.produto.nome}" atualizado para €${data.produto.novoPreco}!`);
+            alert(`✅ ${data.atualizados.length} produto(s) atualizados!`);
             carregarProdutos(); // Recarregar a lista
             carregarEstatisticas(); // Recarregar estatísticas
           } else {
-            alert(data.error || "Erro ao atualizar preço");
+            if (res.status === 403) {
+              alert(`⏰ ${data.error}`);
+            } else {
+              alert(data.error || "Erro ao atualizar preços");
+            }
           }
         } catch (err) {
-          console.error("Erro no refresh:", err);
+          console.error("Erro no refresh global:", err);
           alert("Erro no servidor");
         } finally {
-          // Restaurar botão
+          // Restaurar o ícone do botão
           refreshBtn.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23,4 23,10 17,10"></polyline>
@@ -453,6 +458,7 @@
           refreshBtn.disabled = false;
         }
       }
+
 
       // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
       let lastSyncTime = Date.now();

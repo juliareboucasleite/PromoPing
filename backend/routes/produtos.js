@@ -19,7 +19,7 @@ router.post("/", verifyToken, async (req, res) => {
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
-            "SELECT Plano, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
+            "SELECT PlanoId, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
             [req.user.id]
         );
 
@@ -81,12 +81,16 @@ router.get("/", verifyToken, async (req, res) => {
         );
 
         // Buscar histórico de preços separado
-        const [historicos] = await pool.query(
-            `SELECT ProdutoId, Preco, DataRegisto 
-             FROM HistoricoPrecos 
-             WHERE ProdutoId IN (?)`,
-            [produtos.map(p => p.Id)]
-        );
+        let historicos = [];
+        if (produtos.length > 0) {
+            const [historicosResult] = await pool.query(
+                `SELECT ProdutoId, Preco, DataRegisto 
+                 FROM HistoricoPrecos 
+                 WHERE ProdutoId IN (?)`,
+                [produtos.map(p => p.Id)]
+            );
+            historicos = historicosResult;
+        }
 
         // Debug: verificar dados brutos da base de dados
         console.log("Produtos da base de dados:", produtos);
@@ -228,20 +232,20 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// 🔄 Atualizar preços manualmente (todos)
+// 🔄 Refresh manual
 router.post("/refresh", verifyToken, async (req, res) => {
-    try {
-        console.log(`🔄 Iniciando atualização manual de preços para usuário ${req.user.id}`);
-        const result = await atualizarPrecos(req.user.id); // só produtos do user
-        res.json({ 
-            status: "ok", 
-            message: "Preços atualizados com sucesso",
-            produtosAtualizados: result.produtosAtualizados
-        });
-    } catch (err) {
-        console.error("Erro no refresh:", err);
-        res.status(500).json({ error: "Erro ao atualizar preços" });
+  try {
+    const result = await atualizarPrecos(req.user.id);
+
+    if (result.error) {
+      return res.status(403).json({ error: result.error });
     }
+
+    res.json(result);
+  } catch (err) {
+    console.error("Erro no refresh manual:", err);
+    res.status(500).json({ error: "Erro no servidor" });
+  }
 });
 
 // 🔄 Atualizar preço de produto específico
@@ -252,9 +256,13 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         
         console.log(`🔄 Atualizando produto específico ${id} para usuário ${userId}`);
         
-        // Verificar se o produto pertence ao usuário
+        // Verificar se o produto pertence ao usuário e buscar plano
         const [produto] = await pool.query(
-            "SELECT * FROM Produtos WHERE Id = ? AND UserId = ?",
+            `SELECT p.*, c.PlanoId, pl.VerificacaoIntervalo, pl.Nome as PlanoNome
+             FROM Produtos p
+             JOIN ConfigUtilizador c ON c.UserId = p.UserId
+             JOIN Planos pl ON pl.Id = c.PlanoId
+             WHERE p.Id = ? AND p.UserId = ?`,
             [id, userId]
         );
         
@@ -263,6 +271,18 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         }
         
         const p = produto[0];
+        
+        // Verificar intervalo de verificação para produto específico
+        const ultimaAtualizacao = p.UpdatedAt || new Date(0);
+        const agora = new Date();
+        const diffHoras = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
+        
+        // Checar regra de refresh individual
+        if (p.VerificacaoIntervalo > 0 && diffHoras < p.VerificacaoIntervalo) {
+            return res.status(403).json({
+                error: `Produto só pode ser atualizado a cada ${p.VerificacaoIntervalo}h (faltam ${(p.VerificacaoIntervalo - diffHoras).toFixed(1)}h)`
+            });
+        }
         
         // Função fake de scraping -> trocar pelo real
         async function fetchPreco(link) {
@@ -282,7 +302,7 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         // Salva no histórico
         await salvarPreco(p.Id, novoPreco);
         
-        console.log(`✅ Produto ${p.Nome} atualizado para €${novoPreco}`);
+        console.log(`✅ Produto ${p.Nome} atualizado para €${novoPreco} (Plano: ${p.PlanoNome})`);
         
         res.json({ 
             status: "ok", 
@@ -291,7 +311,8 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
                 id: p.Id,
                 nome: p.Nome,
                 novoPreco: novoPreco
-            }
+            },
+            plano: p.PlanoNome
         });
     } catch (err) {
         console.error("Erro no refresh individual:", err);
