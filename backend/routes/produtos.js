@@ -5,8 +5,18 @@ import { formatDate } from "../utils/format.js";
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
 import { atualizarPrecos } from "../services/atualizarPrecos.js";
+import { enviarWhatsApp } from "./auth-whatsApp.js";
 
 const router = express.Router();
+
+// Função auxiliar para salvar preço no histórico
+async function salvarPreco(produtoId, preco) {
+    await pool.query(
+        `INSERT INTO HistoricoPrecos (ProdutoId, Preco, DataRegisto) 
+         VALUES (?, ?, NOW())`,
+        [produtoId, preco]
+    );
+}
 
 // ➕ Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
@@ -301,6 +311,22 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         
         // Salva no histórico
         await salvarPreco(p.Id, novoPreco);
+        
+        // 🔔 Enviar notificação WhatsApp se o usuário tiver telefone
+        try {
+            const [userData] = await pool.query(
+                "SELECT Telefone FROM Utilizadores WHERE Id = ?",
+                [userId]
+            );
+            
+            if (userData.length > 0 && userData[0].Telefone) {
+                await enviarWhatsApp(userData[0].Telefone, `📢 ${p.Nome}: €${novoPreco}`);
+                console.log(`📱 WhatsApp enviado para ${userData[0].Telefone}`);
+            }
+        } catch (whatsappError) {
+            console.error("Erro ao enviar WhatsApp:", whatsappError);
+            // Não falha a operação se o WhatsApp der erro
+        }
         
         console.log(`✅ Produto ${p.Nome} atualizado para €${novoPreco} (Plano: ${p.PlanoNome})`);
         

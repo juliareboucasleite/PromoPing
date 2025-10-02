@@ -43,15 +43,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           if (rows.length > 0) {
             userId = rows[0].Id;
 
-            // Associa GoogleId se ainda não existir
-            if (!rows[0].GoogleId) {
-              await pool.query("UPDATE Utilizadores SET GoogleId=? WHERE Id=?", [googleId, userId]);
-            }
+            // Usuário já existe, apenas log
+            console.log("Usuário Google já existe:", email);
           } else {
             // Cria novo utilizador
             const [result] = await pool.query(
-              "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, GoogleId) VALUES (?, ?, ?, ?, ?)",
-              [nome, email, "", 1, googleId]
+              "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado) VALUES (?, ?, ?, ?)",
+              [nome, email, "", 1]
             );
             userId = result.insertId;
 

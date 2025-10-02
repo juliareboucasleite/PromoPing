@@ -33,7 +33,6 @@ import notificacoesRoutes from "./routes/notificacoes.js";
 import contasRoutes from "./routes/contas.js";
 import preferencesRoutes from "./routes/preferences.js";
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
-import authSMSRoutes from "./routes/auth-sms.js";
 import paymentRoutes from "./routes/payment.js";
 
 // ================== MIDDLEWARE ==================
@@ -62,7 +61,6 @@ app.use(
 app.use("/api/auth", authGoogleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", authEmailVerifyRoutes);
-app.use("/api/auth", authSMSRoutes);
 
 // ================== ROTAS ==================
 app.get("/api/user/me", verifyToken, (req, res) => {

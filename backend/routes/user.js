@@ -73,12 +73,11 @@ router.get("/profile", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
-    // Contas conectadas
+    // Contas conectadas - usando apenas colunas que existem
     const [contas] = await pool.query(
-      "SELECT 'google' as Tipo, GoogleId IS NOT NULL as Conectado FROM Utilizadores WHERE Id = ? " +
-      "UNION SELECT 'discord', DiscordId IS NOT NULL FROM Utilizadores WHERE Id = ? " +
+      "SELECT 'email' as Tipo, Email IS NOT NULL as Conectado FROM Utilizadores WHERE Id = ? " +
       "UNION SELECT 'telefone', Telefone IS NOT NULL FROM Utilizadores WHERE Id = ?",
-      [userId, userId, userId]
+      [userId, userId]
     );
 
     // Preferências
