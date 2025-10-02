@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatórios - PromoPing</title>
   <link rel="stylesheet" href="/assets/styles/style.css">
   <link rel="stylesheet" href="/assets/styles/header.css">
-  <link rel="icon" type="image/png" href="/assets/images/Logo.png">
-
+  <link rel="stylesheet" href="/assets/styles/pages.css">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  
   <script>
     function openNavigation(button) {
       const navLinks = button.nextElementSibling;
@@ -28,6 +28,17 @@
       html.classList.toggle('opened-nav');
     }
 
+    function toggleLanguage() {
+      const langText = document.getElementById('lang-text');
+      const currentLang = langText.textContent;
+      
+      if (currentLang === 'PT') {
+        langText.textContent = 'EN';
+      } else {
+        langText.textContent = 'PT';
+      }
+    }
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
       if (!event.target.closest('.pp-header-nav-wrapper')) {
@@ -45,10 +56,10 @@
     <div class="pp-header-container">
       <!-- Logo -->
       <a href="/pages/index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
-        <img src="/assets/images/Logo.png" alt="PromoPing Logo">
+        <img src="/assets/images/PromoPing.png" alt="PromoPing Logo">
         <span>PromoPing</span>
       </a>
-      
+
       <!-- Navigation -->
       <nav class="pp-header-nav" id="pp-header-nav">
         <!-- Soluções -->
@@ -75,18 +86,17 @@
             </svg>
           </button>
           <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-2">
-            <a href="/pages/docs.html">Documentação</a>
             <a href="/pages/casos-uso.html">Casos de Uso</a>
             <a href="/pages/blog.html">Blog</a>
           </div>
         </div>
       </nav>
-      
+
       <!-- Mobile Menu & CTA -->
       <div class="pp-header-burger">
         <div class="pp-header-burger-lang">
-          <button class="pp-header-lang-btn" type="button" aria-label="Idioma">
-            <span>PT</span>
+          <button class="pp-header-lang-btn" type="button" aria-label="Idioma" onclick="toggleLanguage()">
+            <span id="lang-text">PT</span>
           </button>
         </div>
         
@@ -100,7 +110,7 @@
       </div>
       
       <!-- CTA Button -->
-      <a href="/pages/register.html" class="pp-header-cta-button" aria-label="Começar Agora">
+      <a href="/pages/Login.html" class="pp-header-cta-button" aria-label="Começar Agora">
         <span>Começar Agora</span>
       </a>
     </div>
@@ -116,200 +126,167 @@
 
       <div class="docs-content">
         <section class="docs-section">
-          <h2>Tipos de Relatórios</h2>
-          
-          <h3>📊 Relatório de Poupanças</h3>
-          <p>Veja exatamente quanto poupou com os nossos alertas:</p>
-          <ul>
-            <li>Valor total poupado por mês/ano</li>
-            <li>Comparação com preços originais</li>
-            <li>Percentagem de desconto média</li>
-            <li>Produtos com maior poupança</li>
-          </ul>
-
-          <h3>📈 Análise de Tendências</h3>
-          <p>Compreenda os padrões de preços dos seus produtos favoritos:</p>
-          <ul>
-            <li>Gráficos de evolução de preços</li>
-            <li>Identificação de melhores épocas para comprar</li>
-            <li>Previsões baseadas em dados históricos</li>
-            <li>Comparação entre diferentes lojas</li>
-          </ul>
-
-          <h3>🎯 Relatório de Eficácia</h3>
-          <p>Saiba quão eficazes são os seus alertas:</p>
-          <ul>
-            <li>Taxa de sucesso dos alertas</li>
-            <li>Produtos mais monitorizados</li>
-            <li>Frequência de mudanças de preço</li>
-            <li>Recomendações de otimização</li>
-          </ul>
-        </section>
-
-        <section class="docs-section">
-          <h2>Relatórios Personalizados</h2>
-          
-          <h3>Filtros Avançados</h3>
-          <p>Crie relatórios específicos para as suas necessidades:</p>
-          <ul>
-            <li><strong>Por Período:</strong> Diário, semanal, mensal, anual</li>
-            <li><strong>Por Categoria:</strong> Eletrónicos, moda, casa, etc.</li>
-            <li><strong>Por Loja:</strong> Análise específica de cada loja</li>
-            <li><strong>Por Produto:</strong> Histórico detalhado de produtos individuais</li>
-          </ul>
-
-          <h3>Exportação de Dados</h3>
-          <p>Exporte os seus dados em múltiplos formatos:</p>
-          <div class="export-grid">
-            <div class="export-item">
-              <h4>📄 PDF</h4>
-              <p>Relatórios formatados para impressão</p>
-            </div>
-            <div class="export-item">
-              <h4>📊 Excel</h4>
-              <p>Dados brutos para análise avançada</p>
-            </div>
-            <div class="export-item">
-              <h4>📈 CSV</h4>
-              <p>Dados compatíveis com outras ferramentas</p>
-            </div>
-            <div class="export-item">
-              <h4>🔗 API</h4>
-              <p>Integração com sistemas externos</p>
-            </div>
+          <h2>📊 Relatórios Detalhados</h2>
+          <div class="use-case-card">
+            <h3>Análise de Poupanças</h3>
+            <p>Visualize quanto dinheiro poupou com o PromoPing através de gráficos detalhados e estatísticas precisas.</p>
+            
+            <h3>Tipos de Relatórios</h3>
+            <ul>
+              <li><strong>Relatório Mensal:</strong> Resumo das suas poupanças do mês</li>
+              <li><strong>Relatório por Categoria:</strong> Análise por tipo de produto</li>
+              <li><strong>Relatório por Loja:</strong> Comparação entre diferentes lojas</li>
+              <li><strong>Relatório de Tendências:</strong> Padrões de preços ao longo do tempo</li>
+            </ul>
+            
+            <h3>Benefícios</h3>
+            <p>Entenda melhor os seus hábitos de compra e identifique oportunidades de poupança adicionais.</p>
           </div>
         </section>
 
         <section class="docs-section">
-          <h2>Dashboard Interativo</h2>
-          
-          <h3>Visualizações em Tempo Real</h3>
-          <p>Dashboard completo com métricas atualizadas:</p>
-          <ul>
-            <li><strong>Gráficos Interativos:</strong> Clique para explorar dados detalhados</li>
-            <li><strong>Filtros Dinâmicos:</strong> Altere parâmetros em tempo real</li>
-            <li><strong>Comparações:</strong> Compare períodos, produtos e lojas</li>
-            <li><strong>Alertas Visuais:</strong> Indicadores de tendências importantes</li>
-          </ul>
-
-          <h3>Widgets Personalizáveis</h3>
-          <p>Configure o seu dashboard com os widgets que mais usa:</p>
-          <ul>
-            <li>Poupanças do mês atual</li>
-            <li>Top 5 produtos com maior desconto</li>
-            <li>Evolução de preços dos favoritos</li>
-            <li>Alertas mais eficazes</li>
-            <li>Comparação entre lojas</li>
-          </ul>
+          <h2>📈 Gráficos e Visualizações</h2>
+          <div class="use-case-card">
+            <h3>Dashboard Interativo</h3>
+            <p>Acesse um dashboard completo com gráficos interativos que mostram a evolução dos preços e as suas poupanças.</p>
+            
+            <h3>Funcionalidades</h3>
+            <ul>
+              <li><strong>Gráficos de Linha:</strong> Evolução dos preços ao longo do tempo</li>
+              <li><strong>Gráficos de Barras:</strong> Comparação entre diferentes produtos</li>
+              <li><strong>Gráficos de Pizza:</strong> Distribuição das suas compras por categoria</li>
+              <li><strong>Filtros Avançados:</strong> Personalize as visualizações conforme necessário</li>
+            </ul>
+            
+            <h3>Vantagens</h3>
+            <p>Dados visuais claros que facilitam a tomada de decisões de compra mais inteligentes.</p>
+          </div>
         </section>
 
         <section class="docs-section">
-          <h2>Relatórios Automáticos</h2>
-          
-          <h3>Agendamento Personalizado</h3>
-          <p>Receba relatórios automaticamente:</p>
-          <ul>
-            <li><strong>Relatório Semanal:</strong> Resumo das melhores oportunidades</li>
-            <li><strong>Relatório Mensal:</strong> Análise completa de poupanças</li>
-            <li><strong>Relatório Trimestral:</strong> Tendências e recomendações</li>
-            <li><strong>Relatório Anual:</strong> Análise completa do ano</li>
-          </ul>
-
-          <h3>Notificações Inteligentes</h3>
-          <p>Alertas baseados em análise de dados:</p>
-          <ul>
-            <li>Produtos com preços historicamente baixos</li>
-            <li>Padrões sazonais de desconto</li>
-            <li>Oportunidades de compra únicas</li>
-            <li>Recomendações de produtos similares</li>
-          </ul>
-        </section>
-
-        <section class="docs-section">
-          <h2>Análise Preditiva</h2>
-          
-          <h3>Previsões de Preços</h3>
-          <p>O nosso algoritmo prevê tendências futuras:</p>
-          <ul>
-            <li>Probabilidade de queda de preços</li>
-            <li>Melhor momento para comprar</li>
-            <li>Previsão de preços para os próximos 30 dias</li>
-            <li>Identificação de produtos em promoção sazonal</li>
-          </ul>
-
-          <h3>Recomendações Personalizadas</h3>
-          <p>Sugestões baseadas no seu comportamento:</p>
-          <ul>
-            <li>Produtos similares aos que monitoriza</li>
-            <li>Lojas com melhores preços para as suas categorias</li>
-            <li>Horários ideais para receber alertas</li>
-            <li>Configurações otimizadas de monitoramento</li>
-          </ul>
-        </section>
-
-        <section class="docs-section">
-          <h2>Limitações por Plano</h2>
-          <table class="plans-table">
-            <thead>
-              <tr>
-                <th>Funcionalidade</th>
-                <th>Free</th>
-                <th>Basic</th>
-                <th>Premium</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Relatórios Básicos</td>
-                <td>✅ 7 dias</td>
-                <td>✅ 30 dias</td>
-                <td>✅ Ilimitado</td>
-              </tr>
-              <tr>
-                <td>Exportação PDF</td>
-                <td>❌</td>
-                <td>✅</td>
-                <td>✅</td>
-              </tr>
-              <tr>
-                <td>Exportação Excel/CSV</td>
-                <td>❌</td>
-                <td>✅</td>
-                <td>✅</td>
-              </tr>
-              <tr>
-                <td>Dashboard Interativo</td>
-                <td>❌</td>
-                <td>✅ Básico</td>
-                <td>✅ Completo</td>
-              </tr>
-              <tr>
-                <td>Análise Preditiva</td>
-                <td>❌</td>
-                <td>❌</td>
-                <td>✅</td>
-              </tr>
-              <tr>
-                <td>API Access</td>
-                <td>❌</td>
-                <td>❌</td>
-                <td>✅</td>
-              </tr>
-            </tbody>
-          </table>
+          <h2>💡 Insights Inteligentes</h2>
+          <div class="use-case-card">
+            <h3>Recomendações Personalizadas</h3>
+            <p>Receba sugestões baseadas nos seus padrões de compra e nas tendências de mercado.</p>
+            
+            <h3>Tipos de Insights</h3>
+            <ul>
+              <li><strong>Melhor Momento para Comprar:</strong> Quando os preços costumam baixar</li>
+              <li><strong>Produtos Similares:</strong> Alternativas mais baratas</li>
+              <li><strong>Padrões Sazonais:</strong> Épocas do ano com melhores ofertas</li>
+              <li><strong>Alertas Inteligentes:</strong> Notificações baseadas no seu comportamento</li>
+            </ul>
+            
+            <h3>Resultado</h3>
+            <p>Maximize as suas poupanças com recomendações personalizadas e insights de mercado.</p>
+          </div>
         </section>
       </div>
     </div>
   </main>
 
+  <!-- ===== FOOTER ===== -->
+  <footer class="modern-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <!-- Left Section - System Info -->
+        <div class="footer-left-section">
+          <div class="system-info">
+            <div class="system-icon">
+              <img src="/assets/images/windows_logo.png" alt="Windows Logo" class="windows-logo">
+            </div>
+            <div class="system-text">
+              <p class="system-label">Supported OS</p>
+              <p class="system-versions">Windows 10 / 11 / Server 2022</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Section - Important Links -->
+        <div class="footer-right-section">
+          <p class="links-title">Important Links</p>
+          <ul class="footer-links-list">
+            <li class="footer-link-item">
+              <a href="/pages/docs/docs.html" class="footer-link">
+                <span>Support</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/alertas.html" class="footer-link">
+                <span>Service Status</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/PoliticaBotTelegram.html" class="footer-link">
+                <span>Terms of Service</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/register.html" class="footer-link">
+                <span>Discord and Download</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="https://www.youtube.com" class="footer-link" target="_blank" rel="noopener">
+                <span>Official YouTube Channel</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/docs/docs.html" class="footer-link">
+                <span>Documentation and User Manual</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="footer-bottom">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="/assets/images/PromoPing.png" alt="PromoPing Logo" class="footer-logo">
+            <span class="brand-name">PromoPing</span>
+          </div>
+          <div class="version-badge">
+            <span>v2.0.1</span>
+          </div>
+        </div>
+        
+        <div class="footer-copyright">
+          <span>Copyright © 2024-2025 PromoPing</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <style>
+    /* ===== DOCS MAIN STYLES ===== */
     .docs-main {
       padding: 120px 20px 80px;
       min-height: 100vh;
+      background: var(--promoping-orange-gradient);
     }
 
     .docs-container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
       background: var(--promoping-cream-transparent);
       backdrop-filter: blur(20px);
@@ -339,97 +316,63 @@
     }
 
     .docs-section {
-      margin-bottom: 40px;
+      margin-bottom: 60px;
     }
 
     .docs-section h2 {
       font-size: 2rem;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       border-bottom: 3px solid var(--promoping-orange-light);
       padding-bottom: 10px;
     }
 
-    .docs-section h3 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin: 30px 0 15px;
+    .use-case-card {
+      background: var(--text-light);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 16px var(--promoping-dark-transparent);
+      transition: all 0.3s ease;
     }
 
-    .docs-section p {
-      font-size: 1.1rem;
-      line-height: 1.7;
+    .use-case-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px var(--promoping-dark-transparent);
+    }
+
+    .use-case-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+    }
+
+    .use-case-card p {
+      font-size: 1rem;
+      line-height: 1.6;
       color: var(--text-primary);
       margin-bottom: 20px;
     }
 
-    .docs-section ul, .docs-section ol {
-      margin: 20px 0;
-      padding-left: 30px;
+    .use-case-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px 0;
     }
 
-    .docs-section li {
-      font-size: 1.1rem;
-      line-height: 1.7;
-      color: var(--text-primary);
-      margin-bottom: 10px;
+    .use-case-card li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
 
-    .export-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin: 30px 0;
+    .use-case-card li:last-child {
+      border-bottom: none;
     }
 
-    .export-item {
-      background: var(--promoping-orange-gradient);
-      color: var(--text-light);
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 4px 12px var(--promoping-dark-transparent);
-    }
-
-    .export-item h4 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .export-item p {
-      font-size: 1rem;
-      opacity: 0.9;
-      margin: 0;
-    }
-
-    .plans-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 30px 0;
-      background: var(--text-light);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px var(--promoping-dark-transparent);
-    }
-
-    .plans-table th,
-    .plans-table td {
-      padding: 20px;
-      text-align: left;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-
-    .plans-table th {
-      background: var(--promoping-orange-gradient);
-      color: var(--text-light);
-      font-weight: 700;
-    }
-
-    .plans-table td {
-      color: var(--text-primary);
+    .use-case-card strong {
+      color: var(--promoping-orange-dark);
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {
@@ -446,8 +389,300 @@
         font-size: 1.5rem;
       }
 
-      .export-grid {
-        grid-template-columns: 1fr;
+      .use-case-card {
+        padding: 20px;
+      }
+    }
+
+    /* ===== MODERN FOOTER STYLES ===== */
+    .modern-footer {
+      background: #1a1a1a;
+      color: #a0a0a0;
+      margin-top: 80px;
+    }
+
+    .footer-container {
+      max-width: min(95%, 1200px);
+      margin: 0 auto;
+      padding: 40px 16px;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px 24px;
+      justify-content: space-between;
+      align-items: flex-center;
+      margin-bottom: 40px;
+    }
+
+    /* ===== LEFT SECTION - SYSTEM INFO ===== */
+    .footer-left-section {
+      flex: 0 0 auto;
+      max-width: 50%;
+    }
+
+    .system-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .system-icon {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .windows-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      opacity: 0.7;
+      filter: brightness(0.8);
+    }
+
+    .system-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .system-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #a0a0a0;
+      margin: 0;
+    }
+
+    .system-versions {
+      font-size: 0.85rem;
+      color: #a0a0a0;
+      margin: 0;
+    }
+
+    /* ===== RIGHT SECTION - LINKS ===== */
+    .footer-right-section {
+      flex: 0 0 auto;
+      max-width: 50%;
+      text-align: left;
+    }
+
+    .links-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a0a0a0;
+      margin: 0 0 16px 0;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-link-item {
+      margin-bottom: 2px;
+    }
+
+    .footer-link-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .footer-link {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      color: #a0a0a0;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      padding: 1px 0;
+      position: relative;
+      justify-content: flex-start;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .footer-link:focus-visible {
+      outline: 2px solid var(--promoping-orange-light);
+      outline-offset: 2px;
+      text-decoration: underline;
+    }
+
+    .link-icon {
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .footer-link:hover .link-icon {
+      opacity: 1;
+    }
+
+    /* ===== BOTTOM SECTION ===== */
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #333333;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .brand-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #a0a0a0;
+    }
+
+    .version-badge {
+      background: #333333;
+      color: #a0a0a0;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .version-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+
+    .footer-copyright {
+      color: #a0a0a0;
+      font-size: 0.9rem;
+    }
+
+    /* ===== ENHANCED ANIMATIONS ===== */
+    .footer-link {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .footer-link:hover::before {
+      left: 100%;
+    }
+
+    .footer-link:hover {
+      transform: translateX(4px);
+    }
+
+    /* ===== RESPONSIVIDADE ===== */
+    @media (max-width: 768px) {
+      .footer-content {
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .footer-left-section,
+      .footer-right-section {
+        max-width: 100%;
+      }
+
+      .footer-right-section {
+        text-align: left;
+      }
+
+      .footer-links-list {
+        align-items: flex-start;
+      }
+
+      .footer-link {
+        justify-content: flex-start;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .footer-brand {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .brand-logo {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer-container {
+        padding: 30px 12px;
+      }
+
+      .footer-content {
+        gap: 25px;
+      }
+
+      .system-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .system-icon {
+        margin-top: 0;
+      }
+
+      .footer-links-list {
+        align-items: center;
+      }
+
+      .footer-link {
+        justify-content: center;
       }
     }
   </style>

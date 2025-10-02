@@ -5,7 +5,7 @@
     "description": "Projeto PromoPing - Backend + Frontend",
     "main": "backend/server.js",
     "scripts": {
-        "start": "node backend/server.js",
+        "start": "node run.js",
         "dev": "nodemon backend/server.js",
         "run": "node run.js",
         "setup": "node scripts/setup.js",
@@ -30,6 +30,7 @@
         "bcrypt": "^6.0.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
+        "discord-rpc": "^4.0.1",
         "discord.js": "^14.22.1",
         "dotenv": "^17.2.3",
         "express": "^5.1.0",

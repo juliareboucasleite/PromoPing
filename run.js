@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Script de Execução Rápida para PromoPing
- * Detecta automaticamente o melhor método de execução
- */
-
 import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -47,19 +40,19 @@ function checkFile(file) {
 }
 
 function runSetup() {
-    log('🔧 Executando setup automático...', 'blue');
+    log('Executando setup automático...', 'blue');
     try {
         execSync('node scripts/setup.js', { stdio: 'inherit', cwd: __dirname });
         return true;
     } catch (error) {
-        log('❌ Erro no setup automático', 'red');
+        log('Erro no setup automático', 'red');
         return false;
     }
 }
 
 function runDocker() {
-    log('🐳 Iniciando com Docker...', 'blue');
-    log('📦 Isso pode demorar alguns minutos na primeira vez...', 'yellow');
+    log('Iniciando com Docker...', 'blue');
+    log('Isso pode demorar alguns minutos na primeira vez...', 'yellow');
     
     const dockerComposeFile = checkFile('docker-compose.dev.yml') ? 'docker-compose.dev.yml' : 'docker-compose.yml';
     
@@ -69,7 +62,7 @@ function runDocker() {
             cwd: __dirname 
         });
     } catch (error) {
-        log('❌ Erro ao executar Docker', 'red');
+        log('Erro ao executar Docker', 'red');
         process.exit(1);
     }
 }
@@ -79,58 +72,97 @@ function runLocal() {
     
     // Verificar se .env existe
     if (!checkFile('.env')) {
-        log('⚠️ Arquivo .env não encontrado, executando setup...', 'yellow');
+        log('Arquivo .env não encontrado, executando setup...', 'yellow');
         if (!runSetup()) {
-            log('❌ Falha no setup, não é possível continuar', 'red');
+            log('Falha no setup, não é possível continuar', 'red');
             process.exit(1);
         }
     }
     
     // Verificar dependências
     if (!checkCommand('node')) {
-        log('❌ Node.js não encontrado. Instale Node.js primeiro.', 'red');
+        log('Node.js não encontrado. Instale Node.js primeiro.', 'red');
         process.exit(1);
     }
     
     // Instalar dependências se necessário
     if (!checkFile('node_modules')) {
-        log('📦 Instalando dependências...', 'blue');
+        log('Instalando dependências...', 'blue');
         try {
             execSync('npm install', { stdio: 'inherit', cwd: __dirname });
         } catch (error) {
-            log('❌ Erro ao instalar dependências', 'red');
+            log('Erro ao instalar dependências', 'red');
             process.exit(1);
         }
     }
     
+    // Iniciar Rich Presence (se disponível)
+    let presenceProcess = null;
+    if (checkFile('presence.js')) {
+        log('🎮 Iniciando Discord Rich Presence...', 'cyan');
+        try {
+            presenceProcess = spawn('node', ['presence.js'], { 
+                stdio: 'pipe', 
+                cwd: __dirname 
+            });
+            
+            presenceProcess.stdout.on('data', (data) => {
+                const message = data.toString().trim();
+                if (message.includes('✅') || message.includes('🎮')) {
+                    log(`🎮 ${message}`, 'green');
+                } else if (message.includes('❌') || message.includes('⚠️')) {
+                    log(`🎮 ${message}`, 'red');
+                } else if (message.includes('🔄')) {
+                    log(`🎮 ${message}`, 'yellow');
+                }
+            });
+            
+            presenceProcess.stderr.on('data', (data) => {
+                const message = data.toString().trim();
+                if (message.includes('Client ID')) {
+                    log('Configure seu Client ID do Discord no presence.js', 'yellow');
+                } else {
+                    log(`🎮 ${message}`, 'red');
+                }
+            });
+            
+        } catch (error) {
+            log('Não foi possível iniciar Rich Presence', 'yellow');
+        }
+    }
+    
     // Iniciar servidor
-    log('🚀 Iniciando servidor...', 'green');
+    log('Iniciando servidor...', 'green');
     try {
-        const server = spawn('node', ['server.js'], { 
+        const server = spawn('node', ['backend/server.js'], { 
             stdio: 'inherit', 
             cwd: __dirname 
         });
         
         server.on('error', (error) => {
-            log(`❌ Erro no servidor: ${error.message}`, 'red');
+            log(`Erro no servidor: ${error.message}`, 'red');
             process.exit(1);
         });
         
         // Graceful shutdown
         process.on('SIGINT', () => {
-            log('\n🛑 Parando servidor...', 'yellow');
+            log('\nParando servidor...', 'yellow');
+            if (presenceProcess) {
+                log('Parando Rich Presence...', 'yellow');
+                presenceProcess.kill('SIGINT');
+            }
             server.kill('SIGINT');
             process.exit(0);
         });
         
     } catch (error) {
-        log(`❌ Erro ao iniciar servidor: ${error.message}`, 'red');
+        log(`Erro ao iniciar servidor: ${error.message}`, 'red');
         process.exit(1);
     }
 }
 
 function main() {
-    log('🎯 PromoPing - Execução Rápida', 'bright');
+    log('PromoPing - Execução Rápida', 'bright');
     log('================================', 'bright');
     
     const args = process.argv.slice(2);
@@ -158,10 +190,10 @@ function main() {
         default:
             // Detectar melhor método
             if (checkCommand('docker') && checkCommand('docker-compose')) {
-                log('🐳 Docker detectado, usando Docker...', 'green');
+                log('Docker detectado, usando Docker...', 'green');
                 runDocker();
             } else {
-                log('💻 Docker não encontrado, usando execução local...', 'yellow');
+                log('Docker não encontrado, usando execução local...', 'yellow');
                 runLocal();
             }
             break;
@@ -170,7 +202,7 @@ function main() {
 
 // Mostrar ajuda
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
-    log('🎯 PromoPing - Execução Rápida', 'bright');
+    log('PromoPing - Execução Rápida', 'bright');
     log('================================', 'bright');
     log('');
     log('Uso: node run.js [modo]', 'cyan');

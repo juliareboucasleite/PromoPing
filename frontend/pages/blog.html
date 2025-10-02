@@ -7,7 +7,7 @@
   <title>Blog - PromoPing</title>
   <link rel="stylesheet" href="/assets/styles/style.css">
   <link rel="stylesheet" href="/assets/styles/header.css">
-  <link rel="icon" type="image/png" href="/assets/images/Logo.png">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
 
   <script>
     function openNavigation(button) {
@@ -45,7 +45,7 @@
     <div class="pp-header-container">
       <!-- Logo -->
       <a href="/pages/index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
-        <img src="/assets/images/Logo.png" alt="PromoPing Logo">
+        <img src="/assets/images/PromoPing.png" alt="PromoPing Logo">
         <span>PromoPing</span>
       </a>
       
@@ -75,7 +75,6 @@
             </svg>
           </button>
           <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-2">
-            <a href="/pages/docs.html">Documentação</a>
             <a href="/pages/casos-uso.html">Casos de Uso</a>
             <a href="/pages/blog.html">Blog</a>
           </div>
@@ -618,7 +617,391 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ===== MODERN FOOTER STYLES ===== */
+    .modern-footer {
+      background: #1a1a1a;
+      color: #a0a0a0;
+      margin-top: 80px;
+    }
+
+    .footer-container {
+      max-width: min(95%, 1200px);
+      margin: 0 auto;
+      padding: 40px 16px;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px 24px;
+      justify-content: space-between;
+      align-items: flex-center;
+      margin-bottom: 40px;
+    }
+
+    /* ===== LEFT SECTION - SYSTEM INFO ===== */
+    .footer-left-section {
+      flex: 0 0 auto;
+      max-width: 50%;
+    }
+
+    .system-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .system-icon {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .windows-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      opacity: 0.7;
+      filter: brightness(0.8);
+    }
+
+    .system-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .system-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #a0a0a0;
+      margin: 0;
+    }
+
+    .system-versions {
+      font-size: 0.85rem;
+      color: #a0a0a0;
+      margin: 0;
+    }
+
+    /* ===== RIGHT SECTION - LINKS ===== */
+    .footer-right-section {
+      flex: 0 0 auto;
+      max-width: 50%;
+      text-align: left;
+    }
+
+    .links-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a0a0a0;
+      margin: 0 0 16px 0;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-link-item {
+      margin-bottom: 2px;
+    }
+
+    .footer-link-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .footer-link {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      color: #a0a0a0;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      padding: 1px 0;
+      position: relative;
+      justify-content: flex-start;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .footer-link:focus-visible {
+      outline: 2px solid var(--promoping-orange-light);
+      outline-offset: 2px;
+      text-decoration: underline;
+    }
+
+    .link-icon {
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .footer-link:hover .link-icon {
+      opacity: 1;
+    }
+
+    /* ===== BOTTOM SECTION ===== */
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #333333;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .brand-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #a0a0a0;
+    }
+
+    .version-badge {
+      background: #333333;
+      color: #a0a0a0;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .version-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+
+    .footer-copyright {
+      color: #a0a0a0;
+      font-size: 0.9rem;
+    }
+
+    /* ===== ENHANCED ANIMATIONS ===== */
+    .footer-link {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .footer-link:hover::before {
+      left: 100%;
+    }
+
+    .footer-link:hover {
+      transform: translateX(4px);
+    }
+
+    /* ===== RESPONSIVIDADE ===== */
+    @media (max-width: 768px) {
+      .footer-content {
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .footer-left-section,
+      .footer-right-section {
+        max-width: 100%;
+      }
+
+      .footer-right-section {
+        text-align: left;
+      }
+
+      .footer-links-list {
+        align-items: flex-start;
+      }
+
+      .footer-link {
+        justify-content: flex-start;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .footer-brand {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .brand-logo {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer-container {
+        padding: 30px 12px;
+      }
+
+      .footer-content {
+        gap: 25px;
+      }
+
+      .system-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .system-icon {
+        margin-top: 0;
+      }
+
+      .footer-links-list {
+        align-items: center;
+      }
+
+      .footer-link {
+        justify-content: center;
+      }
+    }
   </style>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="modern-footer">
+    <div class="footer-container">
+    <div class="footer-content">
+        <!-- Left Section - System Info -->
+        <div class="footer-left-section">
+          <div class="system-info">
+            <div class="system-icon">
+              <img src="/assets/images/windows_logo.png" alt="Windows Logo" class="windows-logo">
+            </div>
+            <div class="system-text">
+              <p class="system-label">Supported OS</p>
+              <p class="system-versions">Windows 10 / 11 / Server 2022</p>
+            </div>
+          </div>
+      </div>
+
+        <!-- Right Section - Important Links -->
+        <div class="footer-right-section">
+          <p class="links-title">Important Links</p>
+          <ul class="footer-links-list">
+            <li class="footer-link-item">
+              <a href="/pages/docs/docs.html" class="footer-link">
+                <span>Support</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/alertas.html" class="footer-link">
+                <span>Service Status</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/PoliticaBotTelegram.html" class="footer-link">
+                <span>Terms of Service</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/register.html" class="footer-link">
+                <span>Discord and Download</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="https://www.youtube.com" class="footer-link" target="_blank" rel="noopener">
+                <span>Official YouTube Channel</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/pages/docs/docs.html" class="footer-link">
+                <span>Documentation and User Manual</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="footer-bottom">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="/assets/images/PromoPing.png" alt="PromoPing Logo" class="footer-logo">
+            <span class="brand-name">PromoPing</span>
+          </div>
+          <div class="version-badge">
+            <span>v2.0.1</span>
+          </div>
+        </div>
+        
+        <div class="footer-copyright">
+          <span>Copyright © 2024-2025 PromoPing</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 
 </html>
