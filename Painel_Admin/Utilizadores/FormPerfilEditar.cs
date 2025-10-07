@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Windows.Forms;
 
 namespace Painel_Admin
@@ -13,8 +12,6 @@ namespace Painel_Admin
         {
             InitializeComponent();
             _userId = userId;
-
-            // Preenche os campos
             txtNome.Text = nome;
             txtEmail.Text = email;
             txtTelefone.Text = telefone;
@@ -22,15 +19,15 @@ namespace Painel_Admin
             cmbCanal.SelectedItem = canal;
             chkAtivo.Checked = ativo;
 
-            // Lista de notificações
+            // Inicializa lista de notificações
             clbNotificacoes.Items.Clear();
             clbNotificacoes.Items.Add("Email", false);
+            clbNotificacoes.Items.Add("Telefone", false);
             clbNotificacoes.Items.Add("Discord", false);
             clbNotificacoes.Items.Add("Telegram", false);
             clbNotificacoes.Items.Add("WhatsApp", false);
         }
 
-        // 🔹 Load do formulário
         private void FormPerfilEditar_Load(object sender, EventArgs e)
         {
             CarregarPreferencias();
@@ -48,7 +45,6 @@ namespace Painel_Admin
                     using (var cmd = new MySqlCommand(query, con))
                     {
                         cmd.Parameters.AddWithValue("@id", _userId);
-
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -72,7 +68,6 @@ namespace Painel_Admin
             }
         }
 
-        // 🔹 Botão salvar
         private void btnSalvar_Click(object sender, EventArgs e)
         {
             try
@@ -81,33 +76,32 @@ namespace Painel_Admin
                 {
                     con.Open();
 
-                    // Atualizar dados principais
+                    // Atualiza dados básicos do utilizador
                     var cmd = new MySqlCommand(@"
-                        UPDATE perfilutilizador 
-                        SET Nome=@nome, Email=@mail, Telefone=@tel, Plano=@plano, Ativo=@ativo
-                        WHERE UserId=@id;", con);
+                        UPDATE utilizadores
+                        SET Nome=@nome, Email=@mail, Telefone=@tel, Ativo=@ativo
+                        WHERE Id=@id;", con);
 
                     cmd.Parameters.AddWithValue("@id", _userId);
                     cmd.Parameters.AddWithValue("@nome", txtNome.Text);
                     cmd.Parameters.AddWithValue("@mail", txtEmail.Text);
                     cmd.Parameters.AddWithValue("@tel", txtTelefone.Text);
-                    cmd.Parameters.AddWithValue("@plano", cmbPlano.SelectedItem?.ToString() ?? "free");
                     cmd.Parameters.AddWithValue("@ativo", chkAtivo.Checked ? 1 : 0);
                     cmd.ExecuteNonQuery();
 
-                    // Atualizar notificações
+                    // Atualiza preferências de notificação
                     foreach (string item in clbNotificacoes.Items)
                     {
                         int ativo = clbNotificacoes.CheckedItems.Contains(item) ? 1 : 0;
 
-                        var cmd2 = new MySqlCommand(
-                            @"UPDATE preferenciasnotificacao 
-                              SET Ativo=@ativo 
-                              WHERE UserId=@userId AND Tipo=@tipo", con);
+                        var cmd2 = new MySqlCommand(@"
+                            INSERT INTO preferenciasnotificacao (UserId, Tipo, Ativo)
+                            VALUES (@userId, @tipo, @ativo)
+                            ON DUPLICATE KEY UPDATE Ativo=@ativo;", con);
 
-                        cmd2.Parameters.AddWithValue("@ativo", ativo);
                         cmd2.Parameters.AddWithValue("@userId", _userId);
                         cmd2.Parameters.AddWithValue("@tipo", item.ToLower());
+                        cmd2.Parameters.AddWithValue("@ativo", ativo);
                         cmd2.ExecuteNonQuery();
                     }
                 }
@@ -122,7 +116,6 @@ namespace Painel_Admin
             }
         }
 
-        // 🔹 Botão cancelar
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;

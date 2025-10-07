@@ -1,17 +1,32 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Painel_Admin
 {
     public class ProdutoRepository
     {
+        // ✅ Retorna todos os produtos com nome do utilizador
         public DataTable GetAll()
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
             {
                 con.Open();
-                string query = "SELECT Id, UserId, Nome, Link, PrecoAlvo, DataLimite, Loja FROM produtos";
+
+                string query = @"
+                    SELECT 
+                        p.Id,
+                        u.Nome AS UsuarioNome,
+                        p.Nome,
+                        p.Link,
+                        p.PrecoAlvo,
+                        p.DataLimite,
+                        p.Loja
+                    FROM produtos p
+                    INNER JOIN utilizadores u ON u.Id = p.UserId
+                    ORDER BY p.Id ASC;";
+
                 using (var cmd = new MySqlCommand(query, con))
                 using (var adapter = new MySqlDataAdapter(cmd))
                 {
@@ -22,13 +37,17 @@ namespace Painel_Admin
             }
         }
 
+        // ✅ Adiciona novo produto
         public void Add(int userId, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
             {
                 con.Open();
-                string query = @"INSERT INTO produtos (UserId, Nome, Link, PrecoAlvo, DataLimite, Loja)
+
+                string query = @"INSERT INTO produtos 
+                                (UserId, Nome, Link, PrecoAlvo, DataLimite, Loja)
                                  VALUES (@userId, @nome, @link, @precoAlvo, @dataLimite, @loja)";
+
                 using (var cmd = new MySqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
@@ -37,19 +56,24 @@ namespace Painel_Admin
                     cmd.Parameters.AddWithValue("@precoAlvo", precoAlvo);
                     cmd.Parameters.AddWithValue("@dataLimite", (object)dataLimite ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@loja", loja);
+
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
+        // ✅ Atualiza produto existente
         public void Update(int id, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
             {
                 con.Open();
+
                 string query = @"UPDATE produtos 
-                                 SET Nome=@nome, Link=@link, PrecoAlvo=@precoAlvo, DataLimite=@dataLimite, Loja=@loja
+                                 SET Nome=@nome, Link=@link, PrecoAlvo=@precoAlvo, 
+                                     DataLimite=@dataLimite, Loja=@loja
                                  WHERE Id=@id";
+
                 using (var cmd = new MySqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@id", id);
@@ -58,17 +82,44 @@ namespace Painel_Admin
                     cmd.Parameters.AddWithValue("@precoAlvo", precoAlvo);
                     cmd.Parameters.AddWithValue("@dataLimite", (object)dataLimite ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@loja", loja);
+
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
+        // ✅ Retorna lista de utilizadores que têm produtos (Id + Nome)
+        public DataTable GetUserIdsComProdutos()
+        {
+            using (var con = new MySqlConnection(DbConfig.ConnectionString))
+            {
+                con.Open();
+
+                string query = @"
+                    SELECT DISTINCT u.Id, CONCAT(u.Id, ' - ', u.Nome) AS Nome
+                    FROM produtos p
+                    INNER JOIN utilizadores u ON u.Id = p.UserId
+                    ORDER BY u.Id ASC;";
+
+                using (var cmd = new MySqlCommand(query, con))
+                using (var adapter = new MySqlDataAdapter(cmd))
+                {
+                    var dt = new DataTable();
+                    adapter.Fill(dt);
+                    return dt;
+                }
+            }
+        }
+
+        // ✅ Exclui produto
         public void Delete(int id)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
             {
                 con.Open();
+
                 string query = "DELETE FROM produtos WHERE Id=@id";
+
                 using (var cmd = new MySqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@id", id);

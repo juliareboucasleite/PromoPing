@@ -27,8 +27,8 @@ namespace Painel_Admin
                 if (dgvNotificacoes.Columns.Contains("Id"))
                     dgvNotificacoes.Columns["Id"].HeaderText = "ID";
 
-                if (dgvNotificacoes.Columns.Contains("UserId"))
-                    dgvNotificacoes.Columns["UserId"].HeaderText = "Usuário";
+                if (dgvNotificacoes.Columns.Contains("UsuarioNome"))
+                    dgvNotificacoes.Columns["UsuarioNome"].HeaderText = "Usuário";
 
                 if (dgvNotificacoes.Columns.Contains("Tipo"))
                     dgvNotificacoes.Columns["Tipo"].HeaderText = "Tipo";
@@ -60,11 +60,9 @@ namespace Painel_Admin
                 try
                 {
                     int id = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Id"].Value);
-                    int userId = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["UserId"].Value);
                     string tipo = dgvNotificacoes.CurrentRow.Cells["Tipo"].Value.ToString();
                     bool ativo = Convert.ToInt32(dgvNotificacoes.CurrentRow.Cells["Ativo"].Value) == 1;
-
-                    var form = new FormNotificacaoEditar(id, userId, tipo, ativo);
+                    var form = new FormNotificacaoEditar(id, 0, tipo, ativo);
                     if (form.ShowDialog() == DialogResult.OK)
                         CarregarPreferencias();
                 }
@@ -72,6 +70,11 @@ namespace Painel_Admin
                 {
                     MessageBox.Show("Erro ao editar: " + ex.Message);
                 }
+            }
+            else
+            {
+                MessageBox.Show("Selecione uma notificação para editar!",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 

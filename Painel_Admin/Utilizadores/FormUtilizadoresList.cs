@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Windows.Forms;
 
@@ -15,9 +14,30 @@ namespace Painel_Admin
 
         private void FormUtilizadoresList_Load(object sender, EventArgs e)
         {
+            CorrigirPerfisNulos();
             CarregarUtilizadores();
         }
 
+        // ✅ Garante que nenhum utilizador fique sem perfil (NULL → 2)
+        private void CorrigirPerfisNulos()
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                {
+                    con.Open();
+                    string query = "UPDATE utilizadores SET PerfilId = 2 WHERE PerfilId IS NULL;";
+                    new MySqlCommand(query, con).ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao corrigir perfis nulos: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ✅ Carrega apenas utilizadores (PerfilId = 2)
         private void CarregarUtilizadores()
         {
             try
@@ -25,27 +45,46 @@ namespace Painel_Admin
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
                     con.Open();
-                    string query = "SELECT UserId, Nome, Email, Telefone, Plano, Ativo FROM perfilutilizador";
+
+                    string query = @"
+                        SELECT 
+                            u.Id AS UserId,
+                            u.Nome,
+                            u.Email,
+                            u.Telefone,
+                            p.Nome AS Perfil,
+                            u.Ativo
+                        FROM utilizadores u
+                        INNER JOIN perfis p ON p.Id = u.PerfilId
+                        WHERE u.PerfilId = 2
+                        ORDER BY u.Nome ASC;";
+
                     var adapter = new MySqlDataAdapter(query, con);
                     var dt = new DataTable();
                     adapter.Fill(dt);
                     dgvUtilizadores.DataSource = dt;
 
-                    // Ajustar cabeçalhos
+                    // Ajusta cabeçalhos
                     dgvUtilizadores.Columns["UserId"].HeaderText = "ID";
                     dgvUtilizadores.Columns["Nome"].HeaderText = "Nome";
                     dgvUtilizadores.Columns["Email"].HeaderText = "Email";
                     dgvUtilizadores.Columns["Telefone"].HeaderText = "Telefone";
-                    dgvUtilizadores.Columns["Plano"].HeaderText = "Plano";
+                    dgvUtilizadores.Columns["Perfil"].HeaderText = "Perfil";
                     dgvUtilizadores.Columns["Ativo"].HeaderText = "Ativo";
+
+                    dgvUtilizadores.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                    dgvUtilizadores.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                    dgvUtilizadores.MultiSelect = false;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao carregar utilizadores: " + ex.Message);
+                MessageBox.Show("Erro ao carregar utilizadores: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        // ✅ Adicionar novo utilizador
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
             var form = new FormPerfilEditar(0, "", "", "", "free", "email", true);
@@ -53,16 +92,23 @@ namespace Painel_Admin
                 CarregarUtilizadores();
         }
 
+        // ✅ Editar utilizador existente
         private void btnEditar_Click(object sender, EventArgs e)
         {
-            if (dgvUtilizadores.CurrentRow != null)
+            if (dgvUtilizadores.CurrentRow == null)
+            {
+                MessageBox.Show("Selecione um utilizador para editar!",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
             {
                 int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
                 string nome = dgvUtilizadores.CurrentRow.Cells["Nome"].Value.ToString();
                 string email = dgvUtilizadores.CurrentRow.Cells["Email"].Value.ToString();
-                string telefone = dgvUtilizadores.CurrentRow.Cells["Telefone"].Value.ToString();
-                string plano = dgvUtilizadores.CurrentRow.Cells["Plano"].Value.ToString();
-                bool ativo = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["Ativo"].Value) == 1;
+                string telefone = dgvUtilizadores.CurrentRow.Cells["Telefone"].Value?.ToString() ?? "";
+                bool ativo = Convert.ToBoolean(dgvUtilizadores.CurrentRow.Cells["Ativo"].Value);
 
                 string canal = "email";
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -71,54 +117,85 @@ namespace Painel_Admin
                     var cmd = new MySqlCommand("SELECT CanalPreferido FROM configutilizador WHERE UserId=@id", con);
                     cmd.Parameters.AddWithValue("@id", id);
                     var result = cmd.ExecuteScalar();
-                    if (result != null) canal = result.ToString();
+                    if (result != null)
+                        canal = result.ToString();
                 }
 
-                var form = new FormPerfilEditar(id, nome, email, telefone, plano, canal, ativo);
+                var form = new FormPerfilEditar(id, nome, email, telefone, "free", canal, ativo);
                 if (form.ShowDialog() == DialogResult.OK)
                     CarregarUtilizadores();
             }
-        }
-
-        private void btnDetalhes_Click(object sender, EventArgs e)
-        {
-            if (dgvUtilizadores.CurrentRow != null)
+            catch (Exception ex)
             {
-                int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
-                var form = new FormPerfilDetalhes(id);
-                form.ShowDialog();
+                MessageBox.Show("Erro ao editar utilizador: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        // ✅ Remover utilizador
         private void btnRemover_Click(object sender, EventArgs e)
         {
-            if (dgvUtilizadores.CurrentRow != null)
+            if (dgvUtilizadores.CurrentRow == null)
             {
-                int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
-                if (MessageBox.Show("Remover este utilizador?", "Confirmação", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                MessageBox.Show("Selecione um utilizador para remover!",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
+            if (MessageBox.Show("Remover este utilizador?", "Confirmação",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                try
                 {
-                    try
+                    using (var con = new MySqlConnection(DbConfig.ConnectionString))
                     {
-                        using (var con = new MySqlConnection(DbConfig.ConnectionString))
-                        {
-                            con.Open();
-                            var cmd = new MySqlCommand("DELETE FROM perfilutilizador WHERE UserId=@id", con);
-                            cmd.Parameters.AddWithValue("@id", id);
-                            cmd.ExecuteNonQuery();
-                        }
-                        CarregarUtilizadores();
+                        con.Open();
+                        var cmd = new MySqlCommand("DELETE FROM utilizadores WHERE Id=@id", con);
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Erro ao remover: " + ex.Message);
-                    }
+                    CarregarUtilizadores();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao remover utilizador: " + ex.Message,
+                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
+        // ✅ Atualizar tabela
         private void btnAtualizar_Click(object sender, EventArgs e)
         {
+            CorrigirPerfisNulos();
             CarregarUtilizadores();
         }
+
+        // ✅ Exibir detalhes do utilizador
+        private void btnDetalhes_Click(object sender, EventArgs e)
+        {
+            if (dgvUtilizadores.CurrentRow == null)
+            {
+                MessageBox.Show("Selecione um utilizador para ver os detalhes!",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
+
+                // Abre a janela de detalhes
+                var form = new FormPerfilDetalhes(id);
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao abrir detalhes: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
 }

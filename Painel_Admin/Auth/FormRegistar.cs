@@ -34,25 +34,25 @@ namespace Painel_Admin
 
             try
             {
-                // Gera hash seguro da senha
+
                 string senhaHash = BCrypt.Net.BCrypt.HashPassword(senha);
 
                 string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
+
                 using (var con = new MySqlConnection(connStr))
                 {
                     con.Open();
 
-                    // Verifica duplicados
                     var checkCmd = new MySqlCommand("SELECT COUNT(*) FROM utilizadores WHERE Email=@mail", con);
                     checkCmd.Parameters.AddWithValue("@mail", email);
                     long count = (long)checkCmd.ExecuteScalar();
+
                     if (count > 0)
                     {
                         MessageBox.Show("❌ Já existe um utilizador registado com este email!");
                         return;
                     }
 
-                    // Insere sempre como ADMIN (PerfilId = 1)
                     string query = @"INSERT INTO utilizadores 
                                     (Nome, Email, SenhaHash, Ativo, PerfilId, Data_Registo)
                                     VALUES (@nome, @mail, @senhaHash, 1, 1, NOW())";
@@ -66,7 +66,7 @@ namespace Painel_Admin
                     }
                 }
 
-                MessageBox.Show("✅ Utilizador Admin registado com sucesso!");
+                MessageBox.Show("✅ Utilizador registado com sucesso!");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

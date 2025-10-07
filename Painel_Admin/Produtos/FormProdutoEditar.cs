@@ -7,7 +7,7 @@ namespace Painel_Admin
     public partial class FormProdutoEditar : Form
     {
         private readonly ProdutoRepository _produtoRepo;
-        private int _id; // se 0 = novo produto, se > 0 = edição
+        private int _id;
 
         public FormProdutoEditar()
         {
@@ -15,12 +15,10 @@ namespace Painel_Admin
             _produtoRepo = new ProdutoRepository();
             _id = 0;
 
-            // Marca "Sem limite" por padrão
             chkSemData.Checked = true;
             dtpDataLimite.Enabled = false;
         }
 
-        // Construtor para edição de produto existente
         public FormProdutoEditar(int id, int userId, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             InitializeComponent();
@@ -48,20 +46,38 @@ namespace Painel_Admin
 
         private void FormProdutoEditar_Load(object sender, EventArgs e)
         {
-            // Ativa ou desativa o DateTimePicker conforme o check
-            chkSemData.CheckedChanged += (s, ev) =>
+            try
             {
-                dtpDataLimite.Enabled = !chkSemData.Checked;
-            };
+                var users = _produtoRepo.GetUserIdsComProdutos(); 
+                ComboBoxID.DataSource = users;
+                ComboBoxID.DisplayMember = "Nome"; 
+                ComboBoxID.ValueMember = "Id";   
+                ComboBoxID.SelectedIndex = -1;    
+
+                chkSemData.CheckedChanged += (s, ev) =>
+                {
+                    dtpDataLimite.Enabled = !chkSemData.Checked;
+                };
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao carregar lista de utilizadores: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnSalvar_Click(object sender, EventArgs e)
         {
             try
             {
-                // Pega sempre o usuário logado
-                int userId = Sessao.UserId;
+                if (ComboBoxID.SelectedValue == null)
+                {
+                    MessageBox.Show("Selecione um ID de utilizador válido!", "Aviso",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
+                int userId = Convert.ToInt32(ComboBoxID.SelectedValue);
                 string nome = txtNome.Text.Trim();
                 string link = txtLink.Text.Trim();
                 decimal precoAlvo = decimal.TryParse(txtPrecoAlvo.Text, out decimal preco) ? preco : 0;
@@ -76,12 +92,10 @@ namespace Painel_Admin
 
                 if (_id == 0)
                 {
-                    // Novo produto → precisa do dono (UserId)
                     _produtoRepo.Add(userId, nome, link, precoAlvo, dataLimite, loja);
                 }
                 else
                 {
-                    // Atualizar produto existente → não altera o dono
                     _produtoRepo.Update(_id, nome, link, precoAlvo, dataLimite, loja);
                 }
 
@@ -99,6 +113,37 @@ namespace Painel_Admin
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void ComboBoxID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // ✅ Mostra informação do utilizador selecionado no console (para debug)
+            if (ComboBoxID.SelectedItem is System.Data.DataRowView row)
+            {
+                int id = Convert.ToInt32(row["Id"]);
+                string nome = row["Nome"].ToString();
+                Console.WriteLine($"Selecionado: ID = {id}, Nome = {nome}");
+            }
+        }
+
+        private void txtNome_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtLink_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtPrecoAlvo_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtLoja_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

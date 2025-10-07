@@ -57,47 +57,67 @@
             // 
             // btnAdicionar
             // 
+            this.btnAdicionar.BackColor = System.Drawing.Color.ForestGreen;
+            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnAdicionar.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.btnAdicionar.Location = new System.Drawing.Point(10, 6);
             this.btnAdicionar.Name = "btnAdicionar";
-            this.btnAdicionar.Size = new System.Drawing.Size(75, 23);
+            this.btnAdicionar.Size = new System.Drawing.Size(80, 23);
             this.btnAdicionar.TabIndex = 0;
-            this.btnAdicionar.Text = "Adicionar";
+            this.btnAdicionar.Text = "➕ Adicionar";
+            this.btnAdicionar.UseVisualStyleBackColor = false;
             this.btnAdicionar.Click += new System.EventHandler(this.btnAdicionar_Click);
             // 
             // btnEditar
             // 
+            this.btnEditar.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnEditar.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.btnEditar.Location = new System.Drawing.Point(110, 6);
             this.btnEditar.Name = "btnEditar";
-            this.btnEditar.Size = new System.Drawing.Size(75, 23);
+            this.btnEditar.Size = new System.Drawing.Size(79, 23);
             this.btnEditar.TabIndex = 1;
-            this.btnEditar.Text = "Editar";
+            this.btnEditar.Text = "✏️ Editar";
+            this.btnEditar.UseVisualStyleBackColor = false;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
             // btnDetalhes
             // 
+            this.btnDetalhes.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.btnDetalhes.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnDetalhes.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.btnDetalhes.Location = new System.Drawing.Point(210, 6);
             this.btnDetalhes.Name = "btnDetalhes";
-            this.btnDetalhes.Size = new System.Drawing.Size(75, 23);
+            this.btnDetalhes.Size = new System.Drawing.Size(80, 23);
             this.btnDetalhes.TabIndex = 2;
-            this.btnDetalhes.Text = "Detalhes";
+            this.btnDetalhes.Text = "➕ Detalhes";
+            this.btnDetalhes.UseVisualStyleBackColor = false;
             this.btnDetalhes.Click += new System.EventHandler(this.btnDetalhes_Click);
             // 
             // btnRemover
             // 
+            this.btnRemover.BackColor = System.Drawing.Color.Firebrick;
+            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnRemover.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.btnRemover.Location = new System.Drawing.Point(310, 6);
             this.btnRemover.Name = "btnRemover";
             this.btnRemover.Size = new System.Drawing.Size(75, 23);
             this.btnRemover.TabIndex = 3;
-            this.btnRemover.Text = "Remover";
+            this.btnRemover.Text = "🗑️ Remover";
+            this.btnRemover.UseVisualStyleBackColor = false;
             this.btnRemover.Click += new System.EventHandler(this.btnRemover_Click);
             // 
             // btnAtualizar
             // 
+            this.btnAtualizar.BackColor = System.Drawing.Color.DimGray;
+            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnAtualizar.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.btnAtualizar.Location = new System.Drawing.Point(410, 6);
             this.btnAtualizar.Name = "btnAtualizar";
             this.btnAtualizar.Size = new System.Drawing.Size(75, 23);
             this.btnAtualizar.TabIndex = 4;
-            this.btnAtualizar.Text = "Atualizar";
+            this.btnAtualizar.Text = "🔄 Atualizar";
+            this.btnAtualizar.UseVisualStyleBackColor = false;
             this.btnAtualizar.Click += new System.EventHandler(this.btnAtualizar_Click);
             // 
             // FormUtilizadoresList
@@ -105,8 +125,12 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.dgvUtilizadores);
             this.Controls.Add(this.panelBotoes);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "FormUtilizadoresList";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Gestão de Utilizadores";
             this.Load += new System.EventHandler(this.FormUtilizadoresList_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvUtilizadores)).EndInit();

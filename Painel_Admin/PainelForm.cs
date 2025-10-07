@@ -117,5 +117,13 @@ namespace Painel_Admin
                 form.ShowDialog();
             }
         }
+
+        private void painelPerfisUtilizadoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new FormUtilizadoresList())
+            {
+                form.ShowDialog();
+            }
+        }
     }
 }

@@ -25,6 +25,7 @@
             this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notificaçõesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelDashboard = new System.Windows.Forms.FlowLayoutPanel();
             this.cardUsers = new System.Windows.Forms.Panel();
             this.lblTotalUsers = new System.Windows.Forms.Label();
@@ -39,7 +40,7 @@
             this.lblTotalPoupado = new System.Windows.Forms.Label();
             this.picPoupado = new System.Windows.Forms.PictureBox();
             this.btnAtualizarDashboard = new System.Windows.Forms.Button();
-            this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.painelPerfisUtilizadoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDashboard.SuspendLayout();
             this.cardUsers.SuspendLayout();
@@ -54,7 +55,7 @@
             // 
             // menuStrip1
             // 
-            this.menuStrip1.BackColor = System.Drawing.Color.SteelBlue;
+            this.menuStrip1.BackColor = System.Drawing.Color.DarkOrange;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.produtosToolStripMenuItem,
             this.PainelPrincipal,
@@ -80,7 +81,8 @@
             // PainelPrincipal
             // 
             this.PainelPrincipal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.painelPerfisToolStripMenuItem});
+            this.painelPerfisToolStripMenuItem,
+            this.painelPerfisUtilizadoresToolStripMenuItem});
             this.PainelPrincipal.ForeColor = System.Drawing.Color.White;
             this.PainelPrincipal.Name = "PainelPrincipal";
             resources.ApplyResources(this.PainelPrincipal, "PainelPrincipal");
@@ -105,6 +107,13 @@
             this.notificaçõesToolStripMenuItem1.Name = "notificaçõesToolStripMenuItem1";
             resources.ApplyResources(this.notificaçõesToolStripMenuItem1, "notificaçõesToolStripMenuItem1");
             this.notificaçõesToolStripMenuItem1.Click += new System.EventHandler(this.notificacoesToolStripMenuItem1_Click);
+            // 
+            // suporteToolStripMenuItem
+            // 
+            this.suporteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
+            resources.ApplyResources(this.suporteToolStripMenuItem, "suporteToolStripMenuItem");
+            this.suporteToolStripMenuItem.Click += new System.EventHandler(this.suporteToolStripMenuItem_Click);
             // 
             // panelDashboard
             // 
@@ -204,18 +213,18 @@
             // btnAtualizarDashboard
             // 
             resources.ApplyResources(this.btnAtualizarDashboard, "btnAtualizarDashboard");
-            this.btnAtualizarDashboard.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnAtualizarDashboard.BackColor = System.Drawing.Color.Orange;
             this.btnAtualizarDashboard.ForeColor = System.Drawing.Color.White;
             this.btnAtualizarDashboard.Name = "btnAtualizarDashboard";
             this.btnAtualizarDashboard.UseVisualStyleBackColor = false;
             this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click);
             // 
-            // suporteToolStripMenuItem
+            // painelPerfisUtilizadoresToolStripMenuItem
             // 
-            this.suporteToolStripMenuItem.ForeColor = System.Drawing.Color.White;
-            this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
-            resources.ApplyResources(this.suporteToolStripMenuItem, "suporteToolStripMenuItem");
-            this.suporteToolStripMenuItem.Click += new System.EventHandler(this.suporteToolStripMenuItem_Click);
+            this.painelPerfisUtilizadoresToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
+            this.painelPerfisUtilizadoresToolStripMenuItem.Name = "painelPerfisUtilizadoresToolStripMenuItem";
+            resources.ApplyResources(this.painelPerfisUtilizadoresToolStripMenuItem, "painelPerfisUtilizadoresToolStripMenuItem");
+            this.painelPerfisUtilizadoresToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisUtilizadoresToolStripMenuItem_Click);
             // 
             // PainelForm
             // 
@@ -270,5 +279,6 @@
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem notificaçõesToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem suporteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem painelPerfisUtilizadoresToolStripMenuItem;
     }
 }

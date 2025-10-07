@@ -103,6 +103,12 @@
   <ItemGroup>
     <Compile Include="Auth\Sessao.cs" />
     <Compile Include="Core\DbConfig.cs" />
+    <Compile Include="Produtos\FormProdutoAdicionar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Produtos\FormProdutoAdicionar.Designer.cs">
+      <DependentUpon>FormProdutoAdicionar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Produtos\FormProdutoEditar.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,6 +118,12 @@
     <Compile Include="Repositories\PreferenciaNotificacaoRepository.cs" />
     <Compile Include="Repositories\ProdutoRepository.cs" />
     <Compile Include="Repositories\UtilizadorRepository.cs" />
+    <Compile Include="Utilizadores\FormAdicionar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utilizadores\FormAdicionar.Designer.cs">
+      <DependentUpon>FormAdicionar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utilizadores\FormNotificacaoEditar.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -189,6 +201,9 @@
     <EmbeddedResource Include="Auth\FormLogin.resx">
       <DependentUpon>FormLogin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Produtos\FormProdutoAdicionar.resx">
+      <DependentUpon>FormProdutoAdicionar.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Produtos\ProdutosListForm.resx">
       <DependentUpon>ProdutosListForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -197,6 +212,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Produtos\FormProdutoEditar.resx">
       <DependentUpon>FormProdutoEditar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilizadores\FormAdicionar.resx">
+      <DependentUpon>FormAdicionar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Utilizadores\FormNotificacaoEditar.resx">
       <DependentUpon>FormNotificacaoEditar.cs</DependentUpon>
@@ -255,6 +273,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Usuario.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\android-chrome-192x192.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

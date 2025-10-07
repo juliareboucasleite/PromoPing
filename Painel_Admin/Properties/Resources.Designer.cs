@@ -63,6 +63,16 @@ namespace Painel_Admin.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap android_chrome_192x192 {
+            get {
+                object obj = ResourceManager.GetObject("android-chrome-192x192", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Dinheiro {
             get {
                 object obj = ResourceManager.GetObject("Dinheiro", resourceCulture);

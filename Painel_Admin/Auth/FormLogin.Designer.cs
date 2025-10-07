@@ -37,7 +37,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(102, 52);
+            this.pictureBox1.Location = new System.Drawing.Point(98, 52);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(89, 78);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -79,6 +79,7 @@
             // 
             // menuStrip2
             // 
+            this.menuStrip2.BackColor = System.Drawing.Color.Orange;
             this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loginToolStripMenuItem,
             this.suporteToolStripMenuItem});
@@ -101,7 +102,7 @@
             // 
             this.btnRegistrar.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.btnRegistrar.Name = "btnRegistrar";
-            this.btnRegistrar.Size = new System.Drawing.Size(180, 22);
+            this.btnRegistrar.Size = new System.Drawing.Size(120, 22);
             this.btnRegistrar.Text = "Registrar";
             this.btnRegistrar.Click += new System.EventHandler(this.AcessoRegistar);
             // 
@@ -109,8 +110,8 @@
             // 
             this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
-            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
-            this.suporteToolStripMenuItem.Text = "Suporte";
+            this.suporteToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
+            this.suporteToolStripMenuItem.Text = "Support";
             this.suporteToolStripMenuItem.Click += new System.EventHandler(this.AcessarSuporte);
             // 
             // BotaoLimpar

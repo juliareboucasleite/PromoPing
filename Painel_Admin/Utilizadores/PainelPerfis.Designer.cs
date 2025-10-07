@@ -68,7 +68,7 @@
             // btnAdicionar
             // 
             this.btnAdicionar.BackColor = System.Drawing.Color.ForestGreen;
-            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAdicionar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAdicionar.ForeColor = System.Drawing.Color.White;
             this.btnAdicionar.Location = new System.Drawing.Point(11, 8);
@@ -82,7 +82,7 @@
             // btnEditar
             // 
             this.btnEditar.BackColor = System.Drawing.Color.SteelBlue;
-            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEditar.ForeColor = System.Drawing.Color.White;
             this.btnEditar.Location = new System.Drawing.Point(111, 8);
@@ -96,7 +96,7 @@
             // btnRemover
             // 
             this.btnRemover.BackColor = System.Drawing.Color.Firebrick;
-            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnRemover.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnRemover.ForeColor = System.Drawing.Color.White;
             this.btnRemover.Location = new System.Drawing.Point(211, 8);
@@ -110,7 +110,7 @@
             // btnAtualizar
             // 
             this.btnAtualizar.BackColor = System.Drawing.Color.DimGray;
-            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAtualizar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAtualizar.ForeColor = System.Drawing.Color.White;
             this.btnAtualizar.Location = new System.Drawing.Point(311, 8);
@@ -144,7 +144,7 @@
             this.MinimizeBox = false;
             this.Name = "PainelPerfis";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Gestão de Perfis de Utilizador";
+            this.Text = "Gestão de Perfis de Administradores";
             this.Load += new System.EventHandler(this.PainelPerfis_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvPerfis)).EndInit();
             this.panelBotoes.ResumeLayout(false);

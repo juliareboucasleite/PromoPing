@@ -137,7 +137,7 @@
             this.MinimizeBox = false;
             this.Name = "FormNotificacoes";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "🔔 Gestão de Notificações";
+            this.Text = "Gestão de Notificações";
             this.Load += new System.EventHandler(this.FormNotificacoes_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvNotificacoes)).EndInit();
             this.panelBotoes.ResumeLayout(false);

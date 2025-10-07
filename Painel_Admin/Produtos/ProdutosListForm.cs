@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Windows.Forms;
+using Painel_Admin.Produtos;
 
 namespace Painel_Admin
 {
     public partial class ProdutosListForm : Form
     {
         private readonly ProdutoRepository _produtoRepo;
+
 
         public ProdutosListForm()
         {
@@ -27,7 +29,7 @@ namespace Painel_Admin
                 if (dgvProdutos.Columns.Count > 0)
                 {
                     dgvProdutos.Columns["Id"].HeaderText = "ID";
-                    dgvProdutos.Columns["UserId"].HeaderText = "Usuário";
+                    dgvProdutos.Columns["UsuarioNome"].HeaderText = "Usuário";
                     dgvProdutos.Columns["Nome"].HeaderText = "Nome";
                     dgvProdutos.Columns["Link"].HeaderText = "Link";
                     dgvProdutos.Columns["PrecoAlvo"].HeaderText = "Preço Alvo";
@@ -48,7 +50,7 @@ namespace Painel_Admin
 
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            using (var form = new FormProdutoEditar()) // novo produto
+            using (var form = new FormProdutoAdicionar())
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
@@ -61,32 +63,39 @@ namespace Painel_Admin
         {
             if (dgvProdutos.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["Id"].Value);
-                int userId = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["UserId"].Value);
-                string nome = dgvProdutos.CurrentRow.Cells["Nome"].Value.ToString();
-                string link = dgvProdutos.CurrentRow.Cells["Link"].Value.ToString();
-                decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value
-                    ? Convert.ToDecimal(dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value)
-                    : 0;
-                DateTime? dataLimite = dgvProdutos.CurrentRow.Cells["DataLimite"].Value != DBNull.Value
-                    ? Convert.ToDateTime(dgvProdutos.CurrentRow.Cells["DataLimite"].Value)
-                    : (DateTime?)null;
-                string loja = dgvProdutos.CurrentRow.Cells["Loja"].Value.ToString();
-
-                using (var form = new FormProdutoEditar(id, userId, nome, link, precoAlvo, dataLimite, loja))
+                try
                 {
-                    if (form.ShowDialog() == DialogResult.OK)
+                    int id = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["Id"].Value);
+                    string nome = dgvProdutos.CurrentRow.Cells["Nome"].Value.ToString();
+                    string link = dgvProdutos.CurrentRow.Cells["Link"].Value.ToString();
+                    decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value
+                        ? Convert.ToDecimal(dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value)
+                        : 0;
+                    DateTime? dataLimite = dgvProdutos.CurrentRow.Cells["DataLimite"].Value != DBNull.Value
+                        ? Convert.ToDateTime(dgvProdutos.CurrentRow.Cells["DataLimite"].Value)
+                        : (DateTime?)null;
+                    string loja = dgvProdutos.CurrentRow.Cells["Loja"].Value.ToString();
+                    using (var form = new FormProdutoEditar(id, 0, nome, link, precoAlvo, dataLimite, loja))
                     {
-                        CarregarProdutos();
+                        if (form.ShowDialog() == DialogResult.OK)
+                        {
+                            CarregarProdutos();
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao editar produto: " + ex.Message,
+                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
                 MessageBox.Show("Selecione um produto para editar!",
-                                "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
 
         private void btnRemover_Click(object sender, EventArgs e)
         {

@@ -97,8 +97,9 @@
             this.cmbPlano.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPlano.FormattingEnabled = true;
             this.cmbPlano.Items.AddRange(new object[] {
-            "free",
-            "premium"});
+            "Free",
+            "Basic",
+            "Premium"});
             this.cmbPlano.Location = new System.Drawing.Point(120, 142);
             this.cmbPlano.Name = "cmbPlano";
             this.cmbPlano.Size = new System.Drawing.Size(250, 23);
@@ -118,10 +119,8 @@
             this.cmbCanal.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCanal.FormattingEnabled = true;
             this.cmbCanal.Items.AddRange(new object[] {
-            "email",
-            "discord",
-            "telegram",
-            "whatsapp"});
+            "Email",
+            "Telefone"});
             this.cmbCanal.Location = new System.Drawing.Point(120, 182);
             this.cmbCanal.Name = "cmbCanal";
             this.cmbCanal.Size = new System.Drawing.Size(250, 23);
@@ -142,18 +141,16 @@
             this.clbNotificacoes.FormattingEnabled = true;
             this.clbNotificacoes.Items.AddRange(new object[] {
             "Email",
-            "Discord",
-            "Telegram",
-            "WhatsApp"});
+            "Telefone"});
             this.clbNotificacoes.Location = new System.Drawing.Point(120, 222);
             this.clbNotificacoes.Name = "clbNotificacoes";
-            this.clbNotificacoes.Size = new System.Drawing.Size(250, 76);
+            this.clbNotificacoes.Size = new System.Drawing.Size(250, 40);
             this.clbNotificacoes.TabIndex = 11;
             // 
             // chkAtivo
             // 
             this.chkAtivo.AutoSize = true;
-            this.chkAtivo.Location = new System.Drawing.Point(28, 310);
+            this.chkAtivo.Location = new System.Drawing.Point(28, 257);
             this.chkAtivo.Name = "chkAtivo";
             this.chkAtivo.Size = new System.Drawing.Size(54, 19);
             this.chkAtivo.TabIndex = 12;
@@ -167,7 +164,7 @@
             this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSalvar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSalvar.ForeColor = System.Drawing.Color.White;
-            this.btnSalvar.Location = new System.Drawing.Point(120, 345);
+            this.btnSalvar.Location = new System.Drawing.Point(120, 285);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(100, 30);
             this.btnSalvar.TabIndex = 13;
@@ -182,7 +179,7 @@
             this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnCancelar.ForeColor = System.Drawing.Color.White;
-            this.btnCancelar.Location = new System.Drawing.Point(270, 345);
+            this.btnCancelar.Location = new System.Drawing.Point(270, 285);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(100, 30);
             this.btnCancelar.TabIndex = 14;
@@ -195,7 +192,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
-            this.ClientSize = new System.Drawing.Size(420, 400);
+            this.ClientSize = new System.Drawing.Size(420, 349);
             this.Controls.Add(this.lblNome);
             this.Controls.Add(this.txtNome);
             this.Controls.Add(this.lblEmail);

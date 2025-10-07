@@ -137,7 +137,7 @@
             this.MinimizeBox = false;
             this.Name = "ProdutosListForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "📦 Gestão de Produtos";
+            this.Text = "Gestão de Produtos";
             this.Load += new System.EventHandler(this.EditarProdutos_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvProdutos)).EndInit();
             this.panelBotoes.ResumeLayout(false);
