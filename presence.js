@@ -78,7 +78,7 @@ function updateActivity() {
   rpc.setActivity({
     details: texts.details || "PromoPing - Monitor de Preços",
     state: texts.state || "Servidor rodando localmente",
-    largeImageKey: images.largeImageKey || "promoping-logo",
+    largeImageKey: images.largeImageKey || "promoping",
     largeImageText: texts.largeImageText || "PromoPing - Sistema de Monitoramento",
     smallImageKey: images.smallImageKey || "server",
     smallImageText: texts.smallImageText || "Servidor Ativo",
