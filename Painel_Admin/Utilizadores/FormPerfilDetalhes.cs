@@ -126,7 +126,6 @@ namespace Painel_Admin
         {
             try
             {
-                // Limpa seleção atual
                 for (int i = 0; i < clbNotificacoes.Items.Count; i++)
                     clbNotificacoes.SetItemChecked(i, false);
 
@@ -213,19 +212,8 @@ namespace Painel_Admin
             }
         }
 
-        private void IdProdutos_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void IdNotificacoes_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void IdMembroDesde_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void IdProdutos_Click(object sender, EventArgs e) {}
+        private void IdNotificacoes_Click(object sender, EventArgs e) {}
+        private void IdMembroDesde_Click(object sender, EventArgs e) {}
     }
 }

@@ -582,55 +582,7 @@
     flex: 1;
 }
 
-/* ===== BOTÃO REFRESH INDIVIDUAL ===== */
-.refresh-btn-dashboard {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    color: #6c757d;
-    transition: all 0.3s ease;
-}
 
-.refresh-btn-dashboard:hover {
-    background: #f4af55;
-    border-color: #f4af55;
-    color: #fff;
-    transform: rotate(90deg);
-}
-
-.refresh-btn-dashboard:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.refresh-btn-dashboard .spinning {
-    animation: spin 1s linear infinite;
-}
-
-/* ===== BOTÃO REFRESH INDIVIDUAL PAINEL ===== */
-.refresh-btn-new {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    color: #6c757d;
-    transition: all 0.3s ease;
-}
-
-.refresh-btn-new:hover {
-    background: #f4af55;
-    border-color: #f4af55;
-    color: #fff;
-    transform: rotate(90deg);
-}
-
-.refresh-btn-new:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.refresh-btn-new .spinning {
-    animation: spin 1s linear infinite;
-}
 
 .filter-count {
     display: flex;
@@ -1633,6 +1585,304 @@ input:checked + .toggle-slider:before {
         gap: 6px;
     }
 }
+/* ===== MODAL DE UPGRADE ===== */
+.upgrade-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.upgrade-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.upgrade-modal-content {
+  position: relative;
+  z-index: 10000;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  margin: auto;
+}
+
+.upgrade-content {
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+  border-radius: 20px;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  animation: modalSlideIn 0.4s ease-out;
+}
+
+.upgrade-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.upgrade-close:hover {
+  background: #f8f9fa;
+  color: #495057;
+  transform: scale(1.1);
+}
+
+.upgrade-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.upgrade-icon {
+  margin-bottom: 1rem;
+  color: #f4af55;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upgrade-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.upgrade-content h3 {
+  color: #2c3e50;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.upgrade-content p {
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+}
+
+.upgrade-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.benefit {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #495057;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.benefit svg {
+  color: #f4af55;
+  flex-shrink: 0;
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, #f4af55, #ed9a6c) !important;
+  color: white !important;
+  border: none !important;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(244, 175, 85, 0.4) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  text-decoration: none !important;
+}
+
+.upgrade-btn:hover {
+  background: linear-gradient(135deg, #ed9a6c, #dc7c35) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(244, 175, 85, 0.6) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.upgrade-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== GARANTIR CORES LARANJA NO BOTÃO ===== */
+.upgrade-modal .upgrade-btn,
+.upgrade-modal .upgrade-btn:link,
+.upgrade-modal .upgrade-btn:visited,
+.upgrade-modal .upgrade-btn:focus {
+  background: linear-gradient(135deg, #f4af55, #ed9a6c) !important;
+  color: white !important;
+  border: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 15px rgba(244, 175, 85, 0.4) !important;
+}
+
+.upgrade-modal .upgrade-btn:hover {
+  background: linear-gradient(135deg, #ed9a6c, #dc7c35) !important;
+  color: white !important;
+  text-decoration: none !important;
+  box-shadow: 0 6px 20px rgba(244, 175, 85, 0.6) !important;
+}
+
+/* ===== PRODUTOS COM BLUR PARA PLANO FREE ===== */
+.product-card-dashboard.blurred .product-content-dashboard {
+  position: relative;
+  filter: blur(3px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.product-card-dashboard.blurred .product-content-dashboard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  z-index: 1;
+}
+
+/* Overlay fora da área com blur */
+.product-card-dashboard.blurred .product-upgrade-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  max-width: 280px;
+  width: 90%;
+  filter: none !important; /* Garantir que não tenha blur */
+  pointer-events: auto; /* Permitir interação */
+  margin-top: 40px; /* Ajustar para cobrir a área de preços */
+}
+
+.product-upgrade-overlay h4 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.product-upgrade-overlay p {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.product-upgrade-overlay .upgrade-btn-small {
+  background: linear-gradient(135deg, #f4af55, #ed9a6c);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.product-upgrade-overlay .upgrade-btn-small:hover {
+  background: linear-gradient(135deg, #ed9a6c, #dc7c35);
+  transform: translateY(-1px);
+  text-decoration: none;
+  color: white;
+}
+
+.product-upgrade-overlay .upgrade-btn-small svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .upgrade-modal {
+    padding: 1rem;
+  }
+  
+  .upgrade-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .upgrade-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .upgrade-benefits {
+    gap: 0.5rem;
+  }
+  
+  .benefit {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .upgrade-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
 /* ===== ESTILOS ADICIONAIS PARA PERFIL ===== */
 .account-status {
   background: #f0f0f0;
@@ -2067,6 +2317,71 @@ input:checked + .toggle-slider:before {
 
 .store-pingodoce {
   background: #198754;
+}
+
+.store-continente {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+}
+
+.store-auchan {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+}
+
+.store-elcorteingles {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+}
+
+.store-primark {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+}
+
+.store-decathlon {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: white;
+}
+
+.store-sportzone {
+  background: linear-gradient(135deg, #be185d, #ec4899);
+  color: white;
+}
+
+.store-footlocker {
+  background: linear-gradient(135deg, #1f2937, #374151);
+  color: white;
+}
+
+.store-bershka {
+  background: linear-gradient(135deg, #7c2d12, #dc2626);
+  color: white;
+}
+
+.store-pullandbear {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: white;
+}
+
+.store-stradivarius {
+  background: linear-gradient(135deg, #be185d, #ec4899);
+  color: white;
+}
+
+.store-massimodutti {
+  background: linear-gradient(135deg, #374151, #6b7280);
+  color: white;
+}
+
+.store-oysho {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+}
+
+.store-lefties {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
 }
 
 /* ===== RESPONSIVIDADE PARA DASHBOARD ===== */
@@ -3462,5 +3777,106 @@ input:checked + .toggle-slider:before {
     .btn {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* ================== AVISO DE UPGRADE ================== */
+.upgrade-box {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 2px solid #f39c12;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    padding: 0;
+    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.2);
+    animation: upgradeSlideIn 0.5s ease;
+    overflow: hidden;
+}
+
+.upgrade-content {
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.upgrade-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: bounce 2s infinite;
+}
+
+.upgrade-box h3 {
+    color: #d68910;
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.upgrade-box p {
+    color: #856404;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.upgrade-benefits {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.benefit {
+    background: rgba(255, 255, 255, 0.8);
+    color: #856404;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.upgrade-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #0984e3, #74b9ff);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(9, 132, 227, 0.4);
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+}
+
+/* ================== ANIMAÇÕES ================== */
+@keyframes upgradeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
     }
 }

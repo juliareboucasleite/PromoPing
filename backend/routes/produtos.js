@@ -117,21 +117,8 @@ router.get("/", verifyToken, async (req, res) => {
             console.log("Detectando loja para link:", p.Link);
             console.log("Store detectada:", store);
             
-            // Forçar o nome da loja baseado no link
-            let nomeLoja = "Loja";
-            if (p.Link) {
-                if (p.Link.includes('fnac')) nomeLoja = "FNAC";
-                else if (p.Link.includes('worten')) nomeLoja = "Worten";
-                else if (p.Link.includes('ikea')) nomeLoja = "IKEA";
-                else if (p.Link.includes('pcdiga')) nomeLoja = "PCDiga";
-                else if (p.Link.includes('globaldata')) nomeLoja = "GlobalData";
-                else if (p.Link.includes('radiopopular')) nomeLoja = "Radio Popular";
-                else if (p.Link.includes('mediamarkt')) nomeLoja = "MediaMarkt";
-                else if (p.Link.includes('leroymerlin')) nomeLoja = "Leroy Merlin";
-                else if (p.Link.includes('zara')) nomeLoja = "Zara";
-                else if (p.Link.includes('hm')) nomeLoja = "H&M";
-                else if (p.Link.includes('amazon')) nomeLoja = "Amazon";
-            }
+            // Usar o nome da loja da base de dados ou detectar pelo link
+            let nomeLoja = p.Loja || store.name || "Loja";
             
             console.log("Nome da loja detectado:", nomeLoja);
             

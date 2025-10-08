@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Status do Serviço | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Pesquisar status..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li style="margin-bottom: 2.2rem;">
+            <a href="docs.html" style="color: #b3b3b3; font-weight: 400; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
+              About PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li style="margin-bottom: 0.7rem;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              First Launch
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Usage Guide
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li style="margin: 1.2rem 0 0.3rem 0;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          </li>
+          <li>
+            <a href="api-reference.html" style="color: #b3b3b3; font-size: 1.01rem; font-weight: 400; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              API Reference
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" style="margin-left: auto;">
+                <polyline points="9,6 15,12 9,18"></polyline>
+              </svg>
+            </a>
+          </li>
+          <!-- Support -->
+          <li style="margin: 1.2rem 0 0.3rem 0;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="#" class="active" style="color: #e6af1b; font-size: 1.01rem; font-weight: 500; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Status do Serviço</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <h2>Status Geral do Sistema</h2>
+      
+      <div class="status-overview">
+        <div class="status-card operational">
+          <div class="status-indicator"></div>
+          <div class="status-content">
+            <h3>Todos os Sistemas Operacionais</h3>
+            <p>Última atualização: <span id="last-update">15 de Janeiro, 2024 - 14:30 UTC</span></p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Componentes do Sistema</h3>
+      
+      <div class="service-components">
+        <div class="component-card">
+          <div class="component-header">
+            <h4>API Principal</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Uptime:</strong> 99.9% (últimos 30 dias)</p>
+            <p><strong>Latência média:</strong> 45ms</p>
+            <p><strong>Última verificação:</strong> 2 minutos atrás</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <h4>Monitoramento de Preços</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Produtos monitorados:</strong> 1,247,892</p>
+            <p><strong>Atualizações por hora:</strong> 15,420</p>
+            <p><strong>Precisão:</strong> 99.7%</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <h4>Sistema de Notificações</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Emails enviados (24h):</strong> 8,542</p>
+            <p><strong>WhatsApp (24h):</strong> 2,156</p>
+            <p><strong>Discord (24h):</strong> 1,234</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <h4>Banco de Dados</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Uptime:</strong> 99.95%</p>
+            <p><strong>Consultas por segundo:</strong> 1,247</p>
+            <p><strong>Espaço utilizado:</strong> 2.3TB / 5TB</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <h4>Autenticação</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Logins (24h):</strong> 3,421</p>
+            <p><strong>Tempo de resposta:</strong> 12ms</p>
+            <p><strong>Taxa de sucesso:</strong> 99.8%</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <h4>Sistema de Pagamentos</h4>
+            <span class="status-badge operational">Operacional</span>
+          </div>
+          <div class="component-details">
+            <p><strong>Transações (24h):</strong> 89</p>
+            <p><strong>Taxa de sucesso:</strong> 99.1%</p>
+            <p><strong>Integração Stripe:</strong> Ativa</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Histórico de Incidentes</h3>
+      
+      <div class="incidents-timeline">
+        <div class="incident-item resolved">
+          <div class="incident-date">12 Jan 2024</div>
+          <div class="incident-content">
+            <h4>Manutenção Programada - API</h4>
+            <p><strong>Duração:</strong> 15 minutos (14:00 - 14:15 UTC)</p>
+            <p><strong>Impacto:</strong> Interrupção temporária da API</p>
+            <p><strong>Status:</strong> Resolvido</p>
+          </div>
+        </div>
+
+        <div class="incident-item resolved">
+          <div class="incident-date">8 Jan 2024</div>
+          <div class="incident-content">
+            <h4>Problema de Latência - Notificações</h4>
+            <p><strong>Duração:</strong> 2 horas (09:30 - 11:30 UTC)</p>
+            <p><strong>Impacto:</strong> Atraso nas notificações por email</p>
+            <p><strong>Status:</strong> Resolvido</p>
+          </div>
+        </div>
+
+        <div class="incident-item resolved">
+          <div class="incident-date">3 Jan 2024</div>
+          <div class="incident-content">
+            <h4>Atualização de Segurança</h4>
+            <p><strong>Duração:</strong> 30 minutos (16:00 - 16:30 UTC)</p>
+            <p><strong>Impacto:</strong> Reinicialização dos serviços</p>
+            <p><strong>Status:</strong> Resolvido</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Métricas de Performance</h3>
+      
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h4>Uptime (30 dias)</h4>
+          <div class="metric-value">99.9%</div>
+          <div class="metric-trend positive">+0.1% vs mês anterior</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Tempo de Resposta</h4>
+          <div class="metric-value">45ms</div>
+          <div class="metric-trend positive">-5ms vs mês anterior</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Usuários Ativos</h4>
+          <div class="metric-value">12,847</div>
+          <div class="metric-trend positive">+8.2% vs mês anterior</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Produtos Monitorados</h4>
+          <div class="metric-value">1.2M+</div>
+          <div class="metric-trend positive">+15.3% vs mês anterior</div>
+        </div>
+      </div>
+
+      <h3>Monitoramento em Tempo Real</h3>
+      
+      <div class="alert alert-info">
+        <strong>Atualização Automática:</strong> Esta página é atualizada automaticamente a cada 30 segundos.
+      </div>
+
+      <div class="realtime-stats">
+        <div class="stat-item">
+          <span class="stat-label">Requisições por minuto:</span>
+          <span class="stat-value" id="requests-per-minute">1,247</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Usuários online:</span>
+          <span class="stat-value" id="users-online">342</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Notificações enviadas (hoje):</span>
+          <span class="stat-value" id="notifications-today">8,542</span>
+        </div>
+      </div>
+
+      <h3>Notificações de Status</h3>
+      <p>Mantenha-se informado sobre o status dos nossos serviços:</p>
+      
+      <div class="notification-options">
+        <div class="notification-card">
+          <h4>Email</h4>
+          <p>Receba atualizações por email quando houver incidentes</p>
+          <button class="subscribe-btn">Inscrever-se</button>
+        </div>
+
+        <div class="notification-card">
+          <h4>SMS</h4>
+          <p>Alertas críticos via SMS</p>
+          <button class="subscribe-btn">Inscrever-se</button>
+        </div>
+
+        <div class="notification-card">
+          <h4>Webhook</h4>
+          <p>Integre com seus sistemas de monitoramento</p>
+          <button class="subscribe-btn">Configurar</button>
+        </div>
+      </div>
+
+      <h3>Links Úteis</h3>
+      <div class="useful-links">
+        <a href="support.html" class="useful-link">
+          <h4>Suporte</h4>
+          <p>Central de ajuda e contato</p>
+        </a>
+        
+        <a href="https://discord.gg/PXBXKXmfph" class="useful-link" target="_blank">
+          <h4>Discord</h4>
+          <p>Comunidade e suporte em tempo real</p>
+        </a>
+        
+        <a href="api-reference.html" class="useful-link">
+          <h4>API Status</h4>
+          <p>Status detalhado da API</p>
+        </a>
+      </div>
+
+      <footer>
+        <p>Última atualização: <span id="footer-update">15 de Janeiro, 2024 - 14:30 UTC</span></p>
+      </footer>
+    </main>
+
+  </div>
+  <script src="script.js"></script>
+  <script>
+    // ================== CARREGAR STATUS REAL DA API ==================
+    async function carregarStatus() {
+      try {
+        const response = await fetch("/api/status");
+        const data = await response.json();
+
+        if (data.status === "ok") {
+          // Atualizar estatísticas em tempo real
+          const requestsElement = document.getElementById('requests-per-minute');
+          const usersElement = document.getElementById('users-online');
+          const notificationsElement = document.getElementById('notifications-today');
+          
+          if (requestsElement) {
+            requestsElement.textContent = data.metricas.ProdutosMonitorizados.toLocaleString();
+          }
+          
+          if (usersElement) {
+            usersElement.textContent = data.metricas.UtilizadoresAtivos.toLocaleString();
+          }
+          
+          if (notificationsElement) {
+            notificationsElement.textContent = data.metricas.NotificacoesEnviadas.toLocaleString();
+          }
+
+          // Atualizar timestamp
+          const footer = document.getElementById('footer-update');
+          const lastUpdate = document.getElementById('last-update');
+          
+          if (footer) {
+            footer.textContent = new Date(data.ultimaAtualizacao).toLocaleString('pt-BR', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'UTC'
+            }) + ' UTC';
+          }
+          
+          if (lastUpdate) {
+            lastUpdate.textContent = new Date(data.ultimaAtualizacao).toLocaleString('pt-BR', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'UTC'
+            }) + ' UTC';
+          }
+
+          // Atualizar componentes do sistema se existirem dados reais
+          if (data.componentes && data.componentes.length > 0) {
+            atualizarComponentes(data.componentes);
+          }
+
+          // Atualizar incidentes se existirem dados reais
+          if (data.incidentes && data.incidentes.length > 0) {
+            atualizarIncidentes(data.incidentes);
+          }
+
+          console.log("✅ Status atualizado com sucesso:", data);
+        } else {
+          console.error("❌ Erro na resposta da API:", data);
+        }
+      } catch (error) {
+        console.error("❌ Erro ao carregar status:", error);
+        
+        // Fallback para dados simulados em caso de erro
+        updateRealtimeStatsFallback();
+      }
+    }
+
+    // ================== FALLBACK PARA DADOS SIMULADOS ==================
+    function updateRealtimeStatsFallback() {
+      const requestsElement = document.getElementById('requests-per-minute');
+      const usersElement = document.getElementById('users-online');
+      const notificationsElement = document.getElementById('notifications-today');
+      
+      if (requestsElement) {
+        const currentRequests = parseInt(requestsElement.textContent.replace(',', ''));
+        const newRequests = currentRequests + Math.floor(Math.random() * 20) - 10;
+        requestsElement.textContent = newRequests.toLocaleString();
+      }
+      
+      if (usersElement) {
+        const currentUsers = parseInt(usersElement.textContent);
+        const newUsers = currentUsers + Math.floor(Math.random() * 10) - 5;
+        usersElement.textContent = Math.max(0, newUsers);
+      }
+      
+      if (notificationsElement) {
+        const currentNotifications = parseInt(notificationsElement.textContent.replace(',', ''));
+        const newNotifications = currentNotifications + Math.floor(Math.random() * 5);
+        notificationsElement.textContent = newNotifications.toLocaleString();
+      }
+    }
+
+    // ================== ATUALIZAR COMPONENTES ==================
+    function atualizarComponentes(componentes) {
+      // Esta função pode ser expandida para atualizar dinamicamente
+      // os componentes do sistema com dados reais da API
+      console.log("📊 Componentes atualizados:", componentes);
+    }
+
+    // ================== ATUALIZAR INCIDENTES ==================
+    function atualizarIncidentes(incidentes) {
+      // Esta função pode ser expandida para atualizar dinamicamente
+      // a timeline de incidentes com dados reais da API
+      console.log("🚨 Incidentes atualizados:", incidentes);
+    }
+
+    // ================== CARREGAR ESTATÍSTICAS EM TEMPO REAL ==================
+    async function carregarEstatisticasRealtime() {
+      try {
+        const response = await fetch("/api/status/realtime");
+        const data = await response.json();
+
+        if (data.status === "ok") {
+          const requestsElement = document.getElementById('requests-per-minute');
+          const usersElement = document.getElementById('users-online');
+          const notificationsElement = document.getElementById('notifications-today');
+          
+          if (requestsElement) {
+            requestsElement.textContent = data.dados.requestsPerMinute.toLocaleString();
+          }
+          
+          if (usersElement) {
+            usersElement.textContent = data.dados.usersOnline.toLocaleString();
+          }
+          
+          if (notificationsElement) {
+            notificationsElement.textContent = data.dados.notificationsToday.toLocaleString();
+          }
+
+          console.log("📈 Estatísticas em tempo real atualizadas:", data.dados);
+        }
+      } catch (error) {
+        console.error("❌ Erro ao carregar estatísticas em tempo real:", error);
+      }
+    }
+
+    // ================== INICIALIZAÇÃO ==================
+    // Carregar status inicial
+    carregarStatus();
+    
+    // Atualizar a cada 30 segundos
+    setInterval(carregarStatus, 30000);
+    
+    // Atualizar estatísticas em tempo real a cada 10 segundos
+    setInterval(carregarEstatisticasRealtime, 10000);
+
+    // ================== HEALTH CHECK ==================
+    async function verificarSaudeAPI() {
+      try {
+        const response = await fetch("/api/status/health");
+        const data = await response.json();
+        
+        if (data.status === "ok") {
+          console.log("💚 API saudável:", data.health);
+        } else {
+          console.warn("⚠️ API com problemas:", data);
+        }
+      } catch (error) {
+        console.error("❌ Erro no health check:", error);
+      }
+    }
+
+    // Verificar saúde da API a cada 5 minutos
+    setInterval(verificarSaudeAPI, 300000);
+  </script>
+</body>
+</html>

@@ -70,6 +70,7 @@
                 <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
             </header>
 
+
             <!-- ===== ESTATÍSTICAS RÁPIDAS ===== -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -213,6 +214,19 @@
           else if (lojaLower.includes("h&m") || lojaLower.includes("hm")) storeTagClass += " store-hm";
           else if (lojaLower.includes("amazon")) storeTagClass += " store-amazon";
           else if (lojaLower.includes("pingo doce")) storeTagClass += " store-pingodoce";
+          else if (lojaLower.includes("continente")) storeTagClass += " store-continente";
+          else if (lojaLower.includes("auchan")) storeTagClass += " store-auchan";
+          else if (lojaLower.includes("el corte inglés") || lojaLower.includes("elcorteingles")) storeTagClass += " store-elcorteingles";
+          else if (lojaLower.includes("primark")) storeTagClass += " store-primark";
+          else if (lojaLower.includes("decathlon")) storeTagClass += " store-decathlon";
+          else if (lojaLower.includes("sport zone")) storeTagClass += " store-sportzone";
+          else if (lojaLower.includes("foot locker")) storeTagClass += " store-footlocker";
+          else if (lojaLower.includes("bershka")) storeTagClass += " store-bershka";
+          else if (lojaLower.includes("pull & bear") || lojaLower.includes("pullandbear")) storeTagClass += " store-pullandbear";
+          else if (lojaLower.includes("stradivarius")) storeTagClass += " store-stradivarius";
+          else if (lojaLower.includes("massimo dutti") || lojaLower.includes("massimodutti")) storeTagClass += " store-massimodutti";
+          else if (lojaLower.includes("oysho")) storeTagClass += " store-oysho";
+          else if (lojaLower.includes("lefties")) storeTagClass += " store-lefties";
         }
 
         return `
@@ -228,13 +242,6 @@
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                     <polyline points="15,3 21,3 21,9"></polyline>
                     <line x1="10" y1="14" x2="21" y2="3"></line>
-                  </svg>
-                </button>
-                <button class="action-btn-new refresh-btn-new" title="Atualizar preço" onclick="atualizarPrecoIndividual(${p.Id || p.id})">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23,4 23,10 17,10"></polyline>
-                    <polyline points="1,20 1,14 7,14"></polyline>
-                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
                   </svg>
                 </button>
                 <button class="action-btn-new" title="Editar data" onclick="editarData(${p.Id || p.id}, '${p.DataLimite || p.dataLimite || ''}')">
@@ -281,7 +288,7 @@
         
         try {
           console.log("Fazendo requisição para /api/produtos...");
-          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+          const res = await fetch("http://localhost:3000/api/produtos", {
             headers: { Authorization: "Bearer " + token }
           });
           
@@ -321,7 +328,7 @@
         const token = localStorage.getItem("token");
 
         try {
-          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+          const res = await fetch("http://localhost:3000/api/produtos", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -348,7 +355,7 @@
         if (!confirm("Tem certeza que deseja remover este produto?")) return;
         const token = localStorage.getItem("token");
         try {
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+          const res = await fetch(`http://localhost:3000/api/produtos/${id}`, {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
           });
@@ -370,7 +377,7 @@
         if (novaData === null) return;
         const token = localStorage.getItem("token");
         try {
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+          const res = await fetch(`http://localhost:3000/api/produtos/${id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -389,24 +396,44 @@
       // Carregar estatísticas
       async function carregarEstatisticas() {
         const token = localStorage.getItem("token");
+        console.log("🔍 Carregando estatísticas...");
+        console.log("🔑 Token:", token ? "Presente" : "Ausente");
+        
+        if (!token) {
+          console.error("❌ Token não encontrado no localStorage");
+          return;
+        }
+        
         try {
-          const res = await fetch("http://127.0.0.1:3000/api/user/stats", {
+          console.log("📡 Fazendo requisição para /api/user/stats...");
+          const res = await fetch("http://localhost:3000/api/user/stats", {
             headers: { Authorization: "Bearer " + token }
           });
+          
+          console.log("📊 Status da resposta:", res.status);
           const data = await res.json();
+          console.log("📋 Dados recebidos:", data);
           
           if (data.status === "ok") {
             const stats = data.stats;
+            console.log("📈 Estatísticas:", stats);
+            
             document.getElementById("totalProdutos").textContent = stats.produtos_total || 0;
             document.getElementById("totalNotificacoes").textContent = stats.notificacoes_total || 0;
             document.getElementById("dinheiroPoupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+            
+            console.log("✅ Estatísticas atualizadas na UI");
+          } else {
+            console.error("❌ Erro na resposta:", data.error);
           }
         } catch (err) {
-          console.error("Erro ao carregar estatísticas:", err);
+          console.error("❌ Erro ao carregar estatísticas:", err);
         }
       }
 
       // ===== ATUALIZAR TODOS OS PREÇOS (VIA BOTÃO INDIVIDUAL) =====
+      // FUNÇÃO REMOVIDA - Botão de refresh individual foi removido
+      /*
       async function atualizarPrecoIndividual(produtoId) { // produtoId ainda é usado para identificar o botão clicado
         const token = localStorage.getItem("token");
         const refreshBtn = document.querySelector(`[onclick="atualizarPrecoIndividual(${produtoId})"]`);
@@ -426,7 +453,7 @@
 
         try {
           // Chamar a rota de refresh global
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/refresh`, {
+          const res = await fetch(`http://localhost:3000/api/produtos/refresh`, {
             method: "POST",
             headers: { Authorization: "Bearer " + token }
           });
@@ -458,6 +485,7 @@
           refreshBtn.disabled = false;
         }
       }
+      */
 
 
       // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
@@ -468,7 +496,7 @@
         if (!token) return;
         
         try {
-          const res = await fetch(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
+          const res = await fetch(`http://localhost:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
             headers: { Authorization: "Bearer " + token }
           });
           
@@ -491,6 +519,7 @@
       carregarProdutos();
       carregarEstatisticas();
     </script>
+
 </body>
 </html>
 

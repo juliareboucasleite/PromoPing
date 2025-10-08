@@ -6,8 +6,12 @@ export function verifyToken(req, res, next) {
 
   if (!token) return res.status(401).json({ error: "Token não fornecido" });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: "Token inválido" });
+  const secret = process.env.JWT_SECRET || "promoping_secret_key_2025_very_secure_12345";
+  
+  jwt.verify(token, secret, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Token inválido" });
+    }
     req.user = user; // payload do JWT
     next();
   });

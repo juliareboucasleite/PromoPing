@@ -64,7 +64,7 @@
             this.dgvPerfis.ReadOnly = true;
             this.dgvPerfis.RowHeadersVisible = false;
             this.dgvPerfis.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvPerfis.Size = new System.Drawing.Size(900, 427);
+            this.dgvPerfis.Size = new System.Drawing.Size(900, 429);
             this.dgvPerfis.TabIndex = 0;
             // 
             // btnAdicionar
@@ -79,7 +79,7 @@
             this.btnAdicionar.Location = new System.Drawing.Point(11, 8);
             this.btnAdicionar.Name = "btnAdicionar";
             this.btnAdicionar.Size = new System.Drawing.Size(90, 27);
-            this.btnAdicionar.TabIndex = 0;
+            this.btnAdicionar.TabIndex = 4;
             this.btnAdicionar.Text = "➕ &Adicionar";
             this.btnAdicionar.UseVisualStyleBackColor = false;
             this.btnAdicionar.Click += new System.EventHandler(this.btnAdicionar_Click);

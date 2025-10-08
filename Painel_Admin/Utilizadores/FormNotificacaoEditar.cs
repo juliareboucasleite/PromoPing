@@ -7,8 +7,8 @@ namespace Painel_Admin
     public partial class FormNotificacaoEditar : Form
     {
         private readonly PreferenciaNotificacaoRepository _repo;
-        private readonly ProdutoRepository _produtoRepo; // para buscar utilizadores
-        private int _id; // 0 = novo, >0 = editar
+        private readonly ProdutoRepository _produtoRepo; 
+        private int _id;
 
         public FormNotificacaoEditar()
         {
@@ -18,7 +18,6 @@ namespace Painel_Admin
             _id = 0;
         }
 
-        // 🔹 Construtor para edição
         public FormNotificacaoEditar(int id, int userId, string tipo, bool ativo)
         {
             InitializeComponent();
@@ -39,12 +38,10 @@ namespace Painel_Admin
         {
             CarregarUtilizadores();
 
-            // 🔹 Preenche tipos de notificação
             cmbTipo.Items.Clear();
-            cmbTipo.Items.Add("email");
-            cmbTipo.Items.Add("whatsapp");
-            cmbTipo.Items.Add("discord");
-            cmbTipo.Items.Add("telegram");
+            cmbTipo.Items.Add("Email");
+            cmbTipo.Items.Add("Telefone");
+
 
             if (string.IsNullOrEmpty(cmbTipo.Text))
                 cmbTipo.SelectedIndex = 0;
@@ -54,7 +51,6 @@ namespace Painel_Admin
         {
             try
             {
-                // Busca todos os utilizadores com produtos
                 DataTable dtUsers = _produtoRepo.GetUserIdsComProdutos();
 
                 cmbUser.DataSource = dtUsers;
@@ -105,9 +101,6 @@ namespace Painel_Admin
             this.Close();
         }
 
-        private void FormNotificacaoEditar_Load_1(object sender, EventArgs e)
-        {
-
-        }
+        private void FormNotificacaoEditar_Load_1(object sender, EventArgs e) { }
     }
 }

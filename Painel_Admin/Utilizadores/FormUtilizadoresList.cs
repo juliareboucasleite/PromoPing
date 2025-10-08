@@ -18,7 +18,6 @@ namespace Painel_Admin
             CarregarUtilizadores();
         }
 
-        // ✅ Garante que nenhum utilizador fique sem perfil (NULL → 2)
         private void CorrigirPerfisNulos()
         {
             try
@@ -37,7 +36,7 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Carrega apenas utilizadores (PerfilId = 2)
+
         private void CarregarUtilizadores()
         {
             try
@@ -45,7 +44,6 @@ namespace Painel_Admin
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
                     con.Open();
-
                     string query = @"
                         SELECT 
                             u.Id AS UserId,
@@ -63,15 +61,12 @@ namespace Painel_Admin
                     var dt = new DataTable();
                     adapter.Fill(dt);
                     dgvUtilizadores.DataSource = dt;
-
-                    // Ajusta cabeçalhos
                     dgvUtilizadores.Columns["UserId"].HeaderText = "ID";
                     dgvUtilizadores.Columns["Nome"].HeaderText = "Nome";
                     dgvUtilizadores.Columns["Email"].HeaderText = "Email";
                     dgvUtilizadores.Columns["Telefone"].HeaderText = "Telefone";
                     dgvUtilizadores.Columns["Perfil"].HeaderText = "Perfil";
                     dgvUtilizadores.Columns["Ativo"].HeaderText = "Ativo";
-
                     dgvUtilizadores.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     dgvUtilizadores.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                     dgvUtilizadores.MultiSelect = false;
@@ -83,8 +78,6 @@ namespace Painel_Admin
                     "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        // ✅ Adicionar novo utilizador
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
             var form = new FormPerfilEditar(0, "", "", "", "free", "email", true);
@@ -92,7 +85,6 @@ namespace Painel_Admin
                 CarregarUtilizadores();
         }
 
-        // ✅ Editar utilizador existente
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvUtilizadores.CurrentRow == null)
@@ -109,7 +101,6 @@ namespace Painel_Admin
                 string email = dgvUtilizadores.CurrentRow.Cells["Email"].Value.ToString();
                 string telefone = dgvUtilizadores.CurrentRow.Cells["Telefone"].Value?.ToString() ?? "";
                 bool ativo = Convert.ToBoolean(dgvUtilizadores.CurrentRow.Cells["Ativo"].Value);
-
                 string canal = "email";
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
@@ -131,8 +122,6 @@ namespace Painel_Admin
                     "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        // ✅ Remover utilizador
         private void btnRemover_Click(object sender, EventArgs e)
         {
             if (dgvUtilizadores.CurrentRow == null)
@@ -164,15 +153,11 @@ namespace Painel_Admin
                 }
             }
         }
-
-        // ✅ Atualizar tabela
         private void btnAtualizar_Click(object sender, EventArgs e)
         {
             CorrigirPerfisNulos();
             CarregarUtilizadores();
         }
-
-        // ✅ Exibir detalhes do utilizador
         private void btnDetalhes_Click(object sender, EventArgs e)
         {
             if (dgvUtilizadores.CurrentRow == null)
@@ -181,12 +166,9 @@ namespace Painel_Admin
                     "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
             try
             {
                 int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
-
-                // Abre a janela de detalhes
                 var form = new FormPerfilDetalhes(id);
                 form.ShowDialog();
             }

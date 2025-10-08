@@ -41,7 +41,7 @@
             this.dgvUtilizadores.Name = "dgvUtilizadores";
             this.dgvUtilizadores.ReadOnly = true;
             this.dgvUtilizadores.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvUtilizadores.Size = new System.Drawing.Size(900, 417);
+            this.dgvUtilizadores.Size = new System.Drawing.Size(900, 420);
             this.dgvUtilizadores.TabIndex = 0;
             // 
             // panelBotoes
@@ -58,7 +58,7 @@
             this.panelBotoes.ForeColor = System.Drawing.Color.Transparent;
             this.panelBotoes.Location = new System.Drawing.Point(0, 417);
             this.panelBotoes.Name = "panelBotoes";
-            this.panelBotoes.Size = new System.Drawing.Size(900, 45);
+            this.panelBotoes.Size = new System.Drawing.Size(900, 51);
             this.panelBotoes.TabIndex = 1;
             // 
             // btnAdicionar
@@ -67,12 +67,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAdicionar.BackColor = System.Drawing.Color.ForestGreen;
-            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAdicionar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAdicionar.ForeColor = System.Drawing.Color.White;
             this.btnAdicionar.Location = new System.Drawing.Point(10, 10);
             this.btnAdicionar.Name = "btnAdicionar";
-            this.btnAdicionar.Size = new System.Drawing.Size(90, 27);
+            this.btnAdicionar.Size = new System.Drawing.Size(90, 33);
             this.btnAdicionar.TabIndex = 0;
             this.btnAdicionar.Text = "➕ &Adicionar";
             this.btnAdicionar.UseVisualStyleBackColor = false;
@@ -84,12 +84,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnEditar.BackColor = System.Drawing.Color.SteelBlue;
-            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEditar.ForeColor = System.Drawing.Color.White;
             this.btnEditar.Location = new System.Drawing.Point(110, 10);
             this.btnEditar.Name = "btnEditar";
-            this.btnEditar.Size = new System.Drawing.Size(90, 27);
+            this.btnEditar.Size = new System.Drawing.Size(90, 33);
             this.btnEditar.TabIndex = 1;
             this.btnEditar.Text = "✏️ &Editar";
             this.btnEditar.UseVisualStyleBackColor = false;
@@ -101,12 +101,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDetalhes.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.btnDetalhes.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDetalhes.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnDetalhes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnDetalhes.ForeColor = System.Drawing.Color.White;
             this.btnDetalhes.Location = new System.Drawing.Point(208, 9);
             this.btnDetalhes.Name = "btnDetalhes";
-            this.btnDetalhes.Size = new System.Drawing.Size(90, 27);
+            this.btnDetalhes.Size = new System.Drawing.Size(90, 33);
             this.btnDetalhes.TabIndex = 2;
             this.btnDetalhes.Text = "➕ &Detalhes";
             this.btnDetalhes.UseVisualStyleBackColor = false;
@@ -118,12 +118,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRemover.BackColor = System.Drawing.Color.Firebrick;
-            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnRemover.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnRemover.ForeColor = System.Drawing.Color.White;
             this.btnRemover.Location = new System.Drawing.Point(308, 9);
             this.btnRemover.Name = "btnRemover";
-            this.btnRemover.Size = new System.Drawing.Size(90, 27);
+            this.btnRemover.Size = new System.Drawing.Size(90, 33);
             this.btnRemover.TabIndex = 3;
             this.btnRemover.Text = "🗑️ &Remover";
             this.btnRemover.UseVisualStyleBackColor = false;
@@ -135,12 +135,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAtualizar.BackColor = System.Drawing.Color.DimGray;
-            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAtualizar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAtualizar.ForeColor = System.Drawing.Color.White;
             this.btnAtualizar.Location = new System.Drawing.Point(408, 9);
             this.btnAtualizar.Name = "btnAtualizar";
-            this.btnAtualizar.Size = new System.Drawing.Size(90, 27);
+            this.btnAtualizar.Size = new System.Drawing.Size(90, 33);
             this.btnAtualizar.TabIndex = 4;
             this.btnAtualizar.Text = "🔄 &Atualizar";
             this.btnAtualizar.UseVisualStyleBackColor = false;

@@ -23,7 +23,7 @@ const migrateToSequelize = async () => {
     const { models } = db;
     
     // Contar registros existentes
-    const productCount = await models.products.count();
+    const productCount = await models.produtos.count();
     
     console.log(`🛍️ Produtos encontrados: ${productCount}`);
   

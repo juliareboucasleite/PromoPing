@@ -9,10 +9,7 @@ namespace Painel_Admin
 {
     public partial class FormLogin : Form
     {
-        public FormLogin()
-        {
-            InitializeComponent();
-        }
+        public FormLogin() {InitializeComponent();}
 
         private void FormLogin_Load(object sender, EventArgs e)
         {
@@ -79,10 +76,7 @@ namespace Painel_Admin
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Erro ao autenticar: " + ex.Message);
-                }
+                catch (Exception ex) { MessageBox.Show("Erro ao autenticar: " + ex.Message); }
             }
         }
 
@@ -102,10 +96,7 @@ namespace Painel_Admin
 
         private void AcessarSuporte(object sender, EventArgs e)
         {
-            using (var formSuporte = new Suporte())
-            {
-                formSuporte.ShowDialog();
-            }
+            using (var formSuporte = new Suporte()) {formSuporte.ShowDialog(); }
         }
     }
 }

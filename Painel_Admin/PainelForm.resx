@@ -3567,7 +3567,7 @@
     <value>Bottom</value>
   </data>
   <data name="btnAtualizarDashboard.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
+    <value>Popup</value>
   </data>
   <data name="btnAtualizarDashboard.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt, style=Bold</value>
@@ -3902,6 +3902,12 @@
   <data name="&gt;&gt;painelPerfisToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;painelPerfisUtilizadoresToolStripMenuItem.Name" xml:space="preserve">
+    <value>painelPerfisUtilizadoresToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;painelPerfisUtilizadoresToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;notificaçõesToolStripMenuItem.Name" xml:space="preserve">
     <value>notificaçõesToolStripMenuItem</value>
   </data>
@@ -3918,12 +3924,6 @@
     <value>suporteToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;suporteToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;painelPerfisUtilizadoresToolStripMenuItem.Name" xml:space="preserve">
-    <value>painelPerfisUtilizadoresToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;painelPerfisUtilizadoresToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

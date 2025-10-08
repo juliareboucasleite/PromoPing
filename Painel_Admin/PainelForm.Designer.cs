@@ -23,6 +23,7 @@
             this.editarProdutosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.PainelPrincipal = new System.Windows.Forms.ToolStripMenuItem();
             this.painelPerfisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.painelPerfisUtilizadoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notificaçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notificaçõesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.suporteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,7 +41,6 @@
             this.lblTotalPoupado = new System.Windows.Forms.Label();
             this.picPoupado = new System.Windows.Forms.PictureBox();
             this.btnAtualizarDashboard = new System.Windows.Forms.Button();
-            this.painelPerfisUtilizadoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDashboard.SuspendLayout();
             this.cardUsers.SuspendLayout();
@@ -92,6 +92,13 @@
             resources.ApplyResources(this.painelPerfisToolStripMenuItem, "painelPerfisToolStripMenuItem");
             this.painelPerfisToolStripMenuItem.Name = "painelPerfisToolStripMenuItem";
             this.painelPerfisToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisToolStripMenuItem_Click);
+            // 
+            // painelPerfisUtilizadoresToolStripMenuItem
+            // 
+            this.painelPerfisUtilizadoresToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
+            this.painelPerfisUtilizadoresToolStripMenuItem.Name = "painelPerfisUtilizadoresToolStripMenuItem";
+            resources.ApplyResources(this.painelPerfisUtilizadoresToolStripMenuItem, "painelPerfisUtilizadoresToolStripMenuItem");
+            this.painelPerfisUtilizadoresToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisUtilizadoresToolStripMenuItem_Click);
             // 
             // notificaçõesToolStripMenuItem
             // 
@@ -218,13 +225,6 @@
             this.btnAtualizarDashboard.Name = "btnAtualizarDashboard";
             this.btnAtualizarDashboard.UseVisualStyleBackColor = false;
             this.btnAtualizarDashboard.Click += new System.EventHandler(this.btnAtualizarDashboard_Click);
-            // 
-            // painelPerfisUtilizadoresToolStripMenuItem
-            // 
-            this.painelPerfisUtilizadoresToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
-            this.painelPerfisUtilizadoresToolStripMenuItem.Name = "painelPerfisUtilizadoresToolStripMenuItem";
-            resources.ApplyResources(this.painelPerfisUtilizadoresToolStripMenuItem, "painelPerfisUtilizadoresToolStripMenuItem");
-            this.painelPerfisUtilizadoresToolStripMenuItem.Click += new System.EventHandler(this.painelPerfisUtilizadoresToolStripMenuItem_Click);
             // 
             // PainelForm
             // 

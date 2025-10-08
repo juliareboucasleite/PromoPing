@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>API Reference | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Ask or search..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li style="margin-bottom: 2.2rem;">
+            <a href="docs.html" style="color: #b3b3b3; font-weight: 400; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
+              About PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li style="margin-bottom: 0.7rem;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              First Launch
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Usage Guide
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li style="margin: 1.2rem 0 0.3rem 0;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          </li>
+          <li>
+            <a href="#" class="active" style="color: #e6af1b; font-size: 1.01rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              API Reference
+            </a>
+          </li>
+          <!-- Support -->
+          <li style="margin: 1.2rem 0 0.3rem 0;">
+            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="service-status.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>API Reference</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <h2>PromoPing API Documentation</h2>
+      <h3>Base URL</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        https://api.promoping.com
+      </div>
+
+      <h3>Authentication</h3>
+      <p>All API endpoints (except authentication) require a valid JWT token in the Authorization header:</p>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        Authorization: Bearer &lt;your_jwt_token&gt;
+      </div>
+
+      <h2>User Profile & Statistics</h2>
+      
+      <h3>Get User Profile</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/profile
+      </div>
+      <p>Returns the complete profile of the logged-in user.</p>
+      
+      <h4>Response</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "ok",<br>
+&nbsp;&nbsp;"profile": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"nome": "João Silva",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"email": "joao@example.com",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"telefone": "+351912345678",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"contas_conectadas": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "google", "Conectado": true },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "discord", "Conectado": false },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "telefone", "Conectado": true }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"preferencias": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "email", "Ativo": 1 },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "sms", "Ativo": 0 }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;]<br>
+&nbsp;&nbsp;}<br>
+}
+      </div>
+
+      <h3>Update User Profile</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/user/profile
+      </div>
+      <p>Updates the user's profile data.</p>
+      
+      <h4>Request Body</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"nome": "João Silva",<br>
+&nbsp;&nbsp;"email": "joao@example.com",<br>
+&nbsp;&nbsp;"telefone": "+351912345678"<br>
+}
+      </div>
+
+      <h3>Get User Statistics</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/stats
+      </div>
+      <p>Returns user statistics including total products, notifications, and money saved.</p>
+      
+      <h4>Response</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "ok",<br>
+&nbsp;&nbsp;"stats": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"produtos_total": 15,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"notificacoes_total": 42,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"dinheiro_poupado": 125.50<br>
+&nbsp;&nbsp;}<br>
+}
+      </div>
+
+      <h2>Notification Preferences</h2>
+      
+      <h3>Get Notification Preferences</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/preferences
+      </div>
+      <p>Returns the user's notification preferences.</p>
+      
+      <h4>Response</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "ok",<br>
+&nbsp;&nbsp;"preferences": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "email", "Ativo": 1 },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "sms", "Ativo": 0 },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "push", "Ativo": 1 }<br>
+&nbsp;&nbsp;]<br>
+}
+      </div>
+
+      <h3>Update Notification Preferences</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/user/preferences
+      </div>
+      <p>Updates the user's notification preferences.</p>
+      
+      <h4>Request Body</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"preferences": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "email", "ativo": true },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "sms", "ativo": false },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "push", "ativo": true }<br>
+&nbsp;&nbsp;]<br>
+}
+      </div>
+
+      <h2>Notifications</h2>
+      
+      <h3>Get Notifications</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/notificacoes
+      </div>
+      <p>Returns the user's notifications.</p>
+      
+      <h4>Query Parameters</h4>
+      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
+        <li><code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">limit</code> (optional): Maximum number of notifications (default: 20)</li>
+      </ul>
+      
+      <h4>Response</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "ok",<br>
+&nbsp;&nbsp;"notificacoes": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 1,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"produto_id": 5,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"tipo": "preco_baixou",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mensagem": "O preço do produto X baixou para €25.99",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"enviada": true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"data_envio": "2024-01-15T10:30:00Z"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;]<br>
+}
+      </div>
+
+      <h3>Mark Notification as Read</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/notificacoes/:id/lida
+      </div>
+      <p>Marks a notification as read.</p>
+      
+      <h4>Response</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "ok",<br>
+&nbsp;&nbsp;"message": "Notificação marcada como lida"<br>
+}
+      </div>
+
+      <h2>Error Responses</h2>
+      <p>All endpoints may return error responses with the following structure:</p>
+      
+      <h4>Authentication Error</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "error",<br>
+&nbsp;&nbsp;"message": "Token inválido ou expirado",<br>
+&nbsp;&nbsp;"code": 401<br>
+}
+      </div>
+
+      <h4>Validation Error</h4>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"status": "error",<br>
+&nbsp;&nbsp;"message": "Dados inválidos",<br>
+&nbsp;&nbsp;"code": 400,<br>
+&nbsp;&nbsp;"errors": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"Email é obrigatório",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"Telefone deve ter formato válido"<br>
+&nbsp;&nbsp;]<br>
+}
+      </div>
+
+      <h2>Rate Limiting</h2>
+      <p>The API implements rate limiting to ensure fair usage:</p>
+      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
+        <li><strong>Free tier:</strong> 100 requests per hour</li>
+        <li><strong>Premium tier:</strong> 1000 requests per hour</li>
+        <li><strong>Enterprise:</strong> Custom limits</li>
+      </ul>
+
+      <h2>SDK Examples</h2>
+      
+      <h3>JavaScript/Node.js</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+const axios = require('axios');<br><br>
+const api = axios.create({<br>
+&nbsp;&nbsp;baseURL: 'https://api.promoping.com',<br>
+&nbsp;&nbsp;headers: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'Authorization': `Bearer ${token}`<br>
+&nbsp;&nbsp;}<br>
+});<br><br>
+// Get user profile<br>
+const profile = await api.get('/api/user/profile');<br><br>
+// Update preferences<br>
+await api.put('/api/user/preferences', {<br>
+&nbsp;&nbsp;preferences: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ tipo: 'email', ativo: true }<br>
+&nbsp;&nbsp;]<br>
+});
+      </div>
+
+      <h3>Python</h3>
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+import requests<br><br>
+headers = {<br>
+&nbsp;&nbsp;'Authorization': f'Bearer {token}'<br>
+}<br><br>
+# Get user stats<br>
+response = requests.get(<br>
+&nbsp;&nbsp;'https://api.promoping.com/api/user/stats',<br>
+&nbsp;&nbsp;headers=headers<br>
+)<br><br>
+stats = response.json()
+      </div>
+
+      <footer>
+        <p>Last updated 1 year ago</p>
+      </footer>
+    </main>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

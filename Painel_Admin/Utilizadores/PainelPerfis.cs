@@ -25,9 +25,7 @@ namespace Painel_Admin
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
                     con.Open();
-
-                    // 🔹 Exibe apenas utilizadores com PerfilId = 1 (Admins)
-                    string query = @"
+                    var query = @"
                         SELECT 
                             u.Id, 
                             u.Nome, 
@@ -39,15 +37,12 @@ namespace Painel_Admin
                         INNER JOIN perfis p ON u.PerfilId = p.Id
                         WHERE u.PerfilId = 1
                         ORDER BY u.Nome ASC;";
-
                     using (var da = new MySqlDataAdapter(query, con))
                     {
                         var dt = new DataTable();
                         da.Fill(dt);
                         dgvPerfis.DataSource = dt;
                     }
-
-                    // Ajusta colunas da grid
                     if (dgvPerfis.Columns.Count > 0)
                     {
                         dgvPerfis.Columns["Id"].HeaderText = "ID";
@@ -68,14 +63,12 @@ namespace Painel_Admin
                 MessageBox.Show("Erro ao carregar perfis: " + ex.Message);
             }
         }
-
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
             var frm = new FormAdicionar();
             if (frm.ShowDialog() == DialogResult.OK)
                 CarregarPerfis();
         }
-
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvPerfis.CurrentRow != null)
@@ -94,7 +87,6 @@ namespace Painel_Admin
                     CarregarPerfis();
             }
         }
-
         private void btnRemover_Click(object sender, EventArgs e)
         {
             if (dgvPerfis.CurrentRow != null)

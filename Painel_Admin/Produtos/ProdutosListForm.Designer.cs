@@ -65,6 +65,7 @@
             // btnAdicionarProduto
             // 
             this.btnAdicionarProduto.BackColor = System.Drawing.Color.ForestGreen;
+            this.btnAdicionarProduto.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.btnAdicionarProduto.FlatAppearance.BorderSize = 0;
             this.btnAdicionarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAdicionarProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -80,6 +81,7 @@
             // btnEditarProduto
             // 
             this.btnEditarProduto.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnEditarProduto.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.btnEditarProduto.FlatAppearance.BorderSize = 0;
             this.btnEditarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnEditarProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -95,6 +97,7 @@
             // btnRemoverProduto
             // 
             this.btnRemoverProduto.BackColor = System.Drawing.Color.Firebrick;
+            this.btnRemoverProduto.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.btnRemoverProduto.FlatAppearance.BorderSize = 0;
             this.btnRemoverProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnRemoverProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -110,6 +113,7 @@
             // btnAtualizarLista
             // 
             this.btnAtualizarLista.BackColor = System.Drawing.Color.DimGray;
+            this.btnAtualizarLista.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.btnAtualizarLista.FlatAppearance.BorderSize = 0;
             this.btnAtualizarLista.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAtualizarLista.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);

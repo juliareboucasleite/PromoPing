@@ -6,124 +6,44 @@ namespace Painel_Admin
 {
     public partial class PainelForm : Form
     {
-        public PainelForm()
-        {
-            InitializeComponent();
-        }
-
-        private void PainelForm_Load(object sender, EventArgs e)
-        {
-            AtualizarDashboard();
-        }
-
-        private void btnAtualizarDashboard_Click(object sender, EventArgs e)
-        {
-            AtualizarDashboard();
-        }
-
+        public PainelForm() {InitializeComponent(); }
+        private void PainelForm_Load(object sender, EventArgs e) { AtualizarDashboard(); }
+        private void btnAtualizarDashboard_Click(object sender, EventArgs e) { AtualizarDashboard(); }
         private void AtualizarDashboard()
         {
             string connStr = DbConfig.ConnectionString;
-
-            try
-            {
+            try {
                 using (var con = new MySqlConnection(connStr))
                 {
                     con.Open();
-
-                    // Total de utilizadores
                     using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM utilizadores", con))
                     {
                         lblTotalUsers.Text = $"{cmd.ExecuteScalar()}";
                     }
-
-                    // Total de produtos
                     using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM produtos", con))
                     {
                         lblTotalProdutos.Text = $"{cmd.ExecuteScalar()}";
                     }
-
-                    // Total de notificações ativas
                     using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM preferenciasnotificacao WHERE Ativo = 1", con))
                     {
                         lblTotalNotificacoes.Text = $"{cmd.ExecuteScalar()}";
                     }
-
-                    // Total poupado → por enquanto soma do PrecoAlvo
                     using (var cmd = new MySqlCommand("SELECT IFNULL(SUM(PrecoAlvo), 0) FROM produtos", con))
                     {
                         decimal poupado = Convert.ToDecimal(cmd.ExecuteScalar());
                         lblTotalPoupado.Text = $"€{poupado:0.00}";
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao atualizar o dashboard: " + ex.Message);
-            }
+            } catch (Exception ex) { MessageBox.Show("Erro ao atualizar o dashboard: " + ex.Message); }
         }
-
-        // Abrir formulários de gestão
-        private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new ProdutosListForm().ShowDialog();
-        }
-
-        private void painelPerfisToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new PainelPerfis().ShowDialog();
-        }
-
-        private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Exemplo: abrir detalhes de um utilizador com ID = 1
-            new FormPerfilDetalhes(1).ShowDialog();
-        }
-
-        private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Exemplo: abrir editor de um utilizador com ID = 1
-            new FormPerfilEditar(1, "Nome", "email@teste.com", "910000000", "free", "email", true).ShowDialog();
-        }
-
-        private void editarNotificacoesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var form = new FormNotificacaoEditar())
-            {
-                form.ShowDialog();
-            }
-        }
-
-        private void notificacoesToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            using (var form = new FormNotificacoes())
-            {
-                form.ShowDialog();
-            }
-        }
-
-        private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var form = new ProdutosListForm())
-            {
-                form.ShowDialog();
-            }
-        }
-
-        private void suporteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var form = new Suporte())
-            {
-                form.ShowDialog();
-            }
-        }
-
-        private void painelPerfisUtilizadoresToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var form = new FormUtilizadoresList())
-            {
-                form.ShowDialog();
-            }
-        }
+        private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e) {new ProdutosListForm().ShowDialog();}
+        private void painelPerfisToolStripMenuItem_Click(object sender, EventArgs e) {new PainelPerfis().ShowDialog();}
+        private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e) {new FormPerfilDetalhes(1).ShowDialog();}
+        private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e) { new FormPerfilEditar(1, "Nome", "email@teste.com", "910000000", "free", "email", true).ShowDialog(); }
+        private void editarNotificacoesToolStripMenuItem_Click(object sender, EventArgs e) {using (var form = new FormNotificacaoEditar()) {form.ShowDialog(); } }
+        private void notificacoesToolStripMenuItem1_Click(object sender, EventArgs e) {using (var form = new FormNotificacoes()) {form.ShowDialog(); } }
+        private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e) {using (var form = new ProdutosListForm()) {form.ShowDialog(); } }
+        private void suporteToolStripMenuItem_Click(object sender, EventArgs e) { using (var form = new Suporte()) {form.ShowDialog(); } }
+        private void painelPerfisUtilizadoresToolStripMenuItem_Click(object sender, EventArgs e) { using (var form = new FormUtilizadoresList()) { form.ShowDialog(); } }
     }
 }

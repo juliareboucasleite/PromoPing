@@ -120,3 +120,4 @@ C:\Users\julia\Documents\PromoPing-2.0.1\Painel_Admin\obj\Debug\Painel_Admin.exe
 C:\Users\julia\Documents\PromoPing-2.0.1\Painel_Admin\obj\Debug\Painel_Admin.pdb
 C:\Users\julia\Documents\PromoPing-2.0.1\Painel_Admin\obj\Debug\Painel_Admin.Utilizadores.FormAdicionar.resources
 C:\Users\julia\Documents\PromoPing-2.0.1\Painel_Admin\obj\Debug\Painel_Admin.Produtos.FormProdutoAdicionar.resources
+C:\Users\julia\Documents\PromoPing-2.0.1\Painel_Admin\bin\Debug\MaterialSkin.dll

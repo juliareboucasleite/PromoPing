@@ -18,14 +18,9 @@ namespace Painel_Admin
             cmbPlano.SelectedItem = plano;
             cmbCanal.SelectedItem = canal;
             chkAtivo.Checked = ativo;
-
-            // Inicializa lista de notificações
             clbNotificacoes.Items.Clear();
             clbNotificacoes.Items.Add("Email", false);
             clbNotificacoes.Items.Add("Telefone", false);
-            clbNotificacoes.Items.Add("Discord", false);
-            clbNotificacoes.Items.Add("Telegram", false);
-            clbNotificacoes.Items.Add("WhatsApp", false);
         }
 
         private void FormPerfilEditar_Load(object sender, EventArgs e)
@@ -75,13 +70,10 @@ namespace Painel_Admin
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
                     con.Open();
-
-                    // Atualiza dados básicos do utilizador
                     var cmd = new MySqlCommand(@"
                         UPDATE utilizadores
                         SET Nome=@nome, Email=@mail, Telefone=@tel, Ativo=@ativo
                         WHERE Id=@id;", con);
-
                     cmd.Parameters.AddWithValue("@id", _userId);
                     cmd.Parameters.AddWithValue("@nome", txtNome.Text);
                     cmd.Parameters.AddWithValue("@mail", txtEmail.Text);
@@ -89,17 +81,13 @@ namespace Painel_Admin
                     cmd.Parameters.AddWithValue("@ativo", chkAtivo.Checked ? 1 : 0);
                     string tipo = ComboTipoUtilizador.SelectedItem?.ToString() ?? "Utilizador";
                     cmd.ExecuteNonQuery();
-
-                    // Atualiza preferências de notificação
                     foreach (string item in clbNotificacoes.Items)
                     {
                         int ativo = clbNotificacoes.CheckedItems.Contains(item) ? 1 : 0;
-
                         var cmd2 = new MySqlCommand(@"
                             INSERT INTO preferenciasnotificacao (UserId, Tipo, Ativo)
                             VALUES (@userId, @tipo, @ativo)
                             ON DUPLICATE KEY UPDATE Ativo=@ativo;", con);
-
                         cmd2.Parameters.AddWithValue("@userId", _userId);
                         cmd2.Parameters.AddWithValue("@tipo", item.ToLower());
                         cmd2.Parameters.AddWithValue("@ativo", ativo);

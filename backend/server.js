@@ -34,6 +34,8 @@ import contasRoutes from "./routes/contas.js";
 import preferencesRoutes from "./routes/preferences.js";
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js";
 import paymentRoutes from "./routes/payment.js";
+import statusRoutes from "./routes/status.js";
+import exportRoutes from "./routes/exportRoutes.js";
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";
@@ -52,8 +54,14 @@ app.use(
       "http://localhost:8080",
       "http://localhost:3000",
       "http://localhost:5500",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:8080",
+      "http://127.0.0.1:5500",
+      "file://",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -74,6 +82,8 @@ app.use("/api/notificacoes", notificacoesRoutes);
 app.use("/api/user/accounts", contasRoutes);
 app.use("/api/user/preferences", preferencesRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/exportar", exportRoutes);
+app.use("/", statusRoutes);
 
 // ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {

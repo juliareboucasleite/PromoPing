@@ -1,3 +1,4 @@
+// detectStore.js
 // Função para detectar loja pelo link
 export function detectStore(link) {
   if (!link) {
@@ -7,15 +8,15 @@ export function detectStore(link) {
   try {
     const url = new URL(link);
     let hostname = url.hostname.toLowerCase();
-    
+
     // Remover www. se presente
     if (hostname.startsWith('www.')) {
       hostname = hostname.substring(4);
     }
-    
+
     // Mapeamento de lojas conhecidas (simplificado)
     const storeMap = {
-      // Lojas portuguesas
+      // 🇵🇹 Lojas portuguesas
       'worten.pt': { name: 'Worten', domain: 'worten.pt', logo: 'https://www.google.com/s2/favicons?domain=worten.pt&sz=32' },
       'fnac.pt': { name: 'FNAC', domain: 'fnac.pt', logo: 'https://www.google.com/s2/favicons?domain=fnac.pt&sz=32' },
       'mediamarkt.pt': { name: 'MediaMarkt', domain: 'mediamarkt.pt', logo: 'https://www.google.com/s2/favicons?domain=mediamarkt.pt&sz=32' },
@@ -26,8 +27,22 @@ export function detectStore(link) {
       'hm.pt': { name: 'H&M', domain: 'hm.pt', logo: 'https://www.google.com/s2/favicons?domain=hm.pt&sz=32' },
       'zara.pt': { name: 'Zara', domain: 'zara.pt', logo: 'https://www.google.com/s2/favicons?domain=zara.pt&sz=32' },
       'radiopopular.pt': { name: 'Rádio Popular', domain: 'radiopopular.pt', logo: 'https://www.google.com/s2/favicons?domain=radiopopular.pt&sz=32' },
+      'continente.pt': { name: 'Continente', domain: 'continente.pt', logo: 'https://www.google.com/s2/favicons?domain=continente.pt&sz=32' },
+      'pingodoce.pt': { name: 'Pingo Doce', domain: 'pingodoce.pt', logo: 'https://www.google.com/s2/favicons?domain=pingodoce.pt&sz=32' },
+      'auchan.pt': { name: 'Auchan', domain: 'auchan.pt', logo: 'https://www.google.com/s2/favicons?domain=auchan.pt&sz=32' },
+      'elcorteingles.pt': { name: 'El Corte Inglés', domain: 'elcorteingles.pt', logo: 'https://www.google.com/s2/favicons?domain=elcorteingles.pt&sz=32' },
+      'primark.pt': { name: 'Primark', domain: 'primark.pt', logo: 'https://www.google.com/s2/favicons?domain=primark.pt&sz=32' },
+      'decathlon.pt': { name: 'Decathlon', domain: 'decathlon.pt', logo: 'https://www.google.com/s2/favicons?domain=decathlon.pt&sz=32' },
+      'sportzone.pt': { name: 'Sport Zone', domain: 'sportzone.pt', logo: 'https://www.google.com/s2/favicons?domain=sportzone.pt&sz=32' },
+      'footlocker.pt': { name: 'Foot Locker', domain: 'footlocker.pt', logo: 'https://www.google.com/s2/favicons?domain=footlocker.pt&sz=32' },
+      'bershka.pt': { name: 'Bershka', domain: 'bershka.pt', logo: 'https://www.google.com/s2/favicons?domain=bershka.pt&sz=32' },
+      'pullandbear.pt': { name: 'Pull & Bear', domain: 'pullandbear.pt', logo: 'https://www.google.com/s2/favicons?domain=pullandbear.pt&sz=32' },
+      'stradivarius.pt': { name: 'Stradivarius', domain: 'stradivarius.pt', logo: 'https://www.google.com/s2/favicons?domain=stradivarius.pt&sz=32' },
+      'massimodutti.pt': { name: 'Massimo Dutti', domain: 'massimodutti.pt', logo: 'https://www.google.com/s2/favicons?domain=massimodutti.pt&sz=32' },
+      'oysho.pt': { name: 'Oysho', domain: 'oysho.pt', logo: 'https://www.google.com/s2/favicons?domain=oysho.pt&sz=32' },
+      'lefties.pt': { name: 'Lefties', domain: 'lefties.pt', logo: 'https://www.google.com/s2/favicons?domain=lefties.pt&sz=32' },
       
-      // Lojas internacionais
+      // 🌍 Lojas internacionais
       'amazon.pt': { name: 'Amazon', domain: 'amazon.pt', logo: 'https://www.google.com/s2/favicons?domain=amazon.pt&sz=32' },
       'amazon.es': { name: 'Amazon', domain: 'amazon.es', logo: 'https://www.google.com/s2/favicons?domain=amazon.es&sz=32' },
       'amazon.com': { name: 'Amazon', domain: 'amazon.com', logo: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
@@ -60,12 +75,14 @@ export function detectStore(link) {
       'remington.com': { name: 'Remington', domain: 'remington.com', logo: 'https://www.google.com/s2/favicons?domain=remington.com&sz=32' }
     };
 
-    // Verificar se a loja está no mapeamento
-    if (storeMap[hostname]) {
-      return storeMap[hostname];
+    // ✅ Correção: aceitar subdomínios (ex: super.continente.pt)
+    for (const domain in storeMap) {
+      if (hostname.endsWith(domain)) {
+        return storeMap[domain];
+      }
     }
 
-    // Se não encontrar, usar favicon genérico
+    // Caso não seja uma loja conhecida
     return {
       name: 'Loja',
       domain: hostname,

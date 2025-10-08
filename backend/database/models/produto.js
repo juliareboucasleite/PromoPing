@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
   const Products = sequelize.define(
-    'products', 
+    'produtos', 
     {
       id: {
         type: DataTypes.INTEGER,
@@ -61,7 +61,7 @@ export default (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'products',
+      tableName: 'produtos',
       timestamps: true,
       underscored: false,
     }
