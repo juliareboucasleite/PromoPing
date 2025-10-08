@@ -87,6 +87,7 @@ namespace Painel_Admin
                     cmd.Parameters.AddWithValue("@mail", txtEmail.Text);
                     cmd.Parameters.AddWithValue("@tel", txtTelefone.Text);
                     cmd.Parameters.AddWithValue("@ativo", chkAtivo.Checked ? 1 : 0);
+                    string tipo = ComboTipoUtilizador.SelectedItem?.ToString() ?? "Utilizador";
                     cmd.ExecuteNonQuery();
 
                     // Atualiza preferências de notificação

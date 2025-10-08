@@ -47,11 +47,11 @@
             this.dgvProdutos.RowHeadersVisible = false;
             this.dgvProdutos.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvProdutos.Size = new System.Drawing.Size(900, 420);
-            this.dgvProdutos.TabIndex = 0;
+            this.dgvProdutos.TabIndex = 1;
             // 
             // panelBotoes
             // 
-            this.panelBotoes.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panelBotoes.BackColor = System.Drawing.Color.Orange;
             this.panelBotoes.Controls.Add(this.btnAdicionarProduto);
             this.panelBotoes.Controls.Add(this.btnEditarProduto);
             this.panelBotoes.Controls.Add(this.btnRemoverProduto);
@@ -66,14 +66,14 @@
             // 
             this.btnAdicionarProduto.BackColor = System.Drawing.Color.ForestGreen;
             this.btnAdicionarProduto.FlatAppearance.BorderSize = 0;
-            this.btnAdicionarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAdicionarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAdicionarProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAdicionarProduto.ForeColor = System.Drawing.Color.White;
             this.btnAdicionarProduto.Location = new System.Drawing.Point(10, 10);
             this.btnAdicionarProduto.Name = "btnAdicionarProduto";
             this.btnAdicionarProduto.Size = new System.Drawing.Size(90, 27);
             this.btnAdicionarProduto.TabIndex = 0;
-            this.btnAdicionarProduto.Text = "➕ Adicionar";
+            this.btnAdicionarProduto.Text = "➕ &Adicionar";
             this.btnAdicionarProduto.UseVisualStyleBackColor = false;
             this.btnAdicionarProduto.Click += new System.EventHandler(this.btnAdicionar_Click);
             // 
@@ -81,14 +81,14 @@
             // 
             this.btnEditarProduto.BackColor = System.Drawing.Color.SteelBlue;
             this.btnEditarProduto.FlatAppearance.BorderSize = 0;
-            this.btnEditarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditarProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnEditarProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEditarProduto.ForeColor = System.Drawing.Color.White;
             this.btnEditarProduto.Location = new System.Drawing.Point(110, 10);
             this.btnEditarProduto.Name = "btnEditarProduto";
             this.btnEditarProduto.Size = new System.Drawing.Size(90, 27);
             this.btnEditarProduto.TabIndex = 1;
-            this.btnEditarProduto.Text = "✏️ Editar";
+            this.btnEditarProduto.Text = "✏️ &Editar";
             this.btnEditarProduto.UseVisualStyleBackColor = false;
             this.btnEditarProduto.Click += new System.EventHandler(this.btnEditar_Click);
             // 
@@ -96,14 +96,14 @@
             // 
             this.btnRemoverProduto.BackColor = System.Drawing.Color.Firebrick;
             this.btnRemoverProduto.FlatAppearance.BorderSize = 0;
-            this.btnRemoverProduto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemoverProduto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnRemoverProduto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnRemoverProduto.ForeColor = System.Drawing.Color.White;
             this.btnRemoverProduto.Location = new System.Drawing.Point(210, 10);
             this.btnRemoverProduto.Name = "btnRemoverProduto";
             this.btnRemoverProduto.Size = new System.Drawing.Size(90, 27);
             this.btnRemoverProduto.TabIndex = 2;
-            this.btnRemoverProduto.Text = "🗑️ Remover";
+            this.btnRemoverProduto.Text = "🗑️ &Remover";
             this.btnRemoverProduto.UseVisualStyleBackColor = false;
             this.btnRemoverProduto.Click += new System.EventHandler(this.btnRemover_Click);
             // 
@@ -111,14 +111,14 @@
             // 
             this.btnAtualizarLista.BackColor = System.Drawing.Color.DimGray;
             this.btnAtualizarLista.FlatAppearance.BorderSize = 0;
-            this.btnAtualizarLista.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAtualizarLista.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAtualizarLista.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAtualizarLista.ForeColor = System.Drawing.Color.White;
             this.btnAtualizarLista.Location = new System.Drawing.Point(310, 10);
             this.btnAtualizarLista.Name = "btnAtualizarLista";
             this.btnAtualizarLista.Size = new System.Drawing.Size(100, 27);
             this.btnAtualizarLista.TabIndex = 3;
-            this.btnAtualizarLista.Text = "🔄 Atualizar";
+            this.btnAtualizarLista.Text = "🔄 &Atualizar";
             this.btnAtualizarLista.UseVisualStyleBackColor = false;
             this.btnAtualizarLista.Click += new System.EventHandler(this.btnAtualizar_Click);
             // 

@@ -38,7 +38,7 @@
             this.linkLabel3.Location = new System.Drawing.Point(77, 125);
             this.linkLabel3.Name = "linkLabel3";
             this.linkLabel3.Size = new System.Drawing.Size(181, 13);
-            this.linkLabel3.TabIndex = 14;
+            this.linkLabel3.TabIndex = 6;
             this.linkLabel3.TabStop = true;
             this.linkLabel3.Text = "https://github.com/juliareboucasleite";
             this.linkLabel3.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel3_LinkClicked_1);
@@ -50,7 +50,7 @@
             this.label4.Location = new System.Drawing.Point(18, 125);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(43, 13);
-            this.label4.TabIndex = 13;
+            this.label4.TabIndex = 5;
             this.label4.Text = "&GitHub:";
             // 
             // linkLabel2
@@ -60,7 +60,7 @@
             this.linkLabel2.Location = new System.Drawing.Point(77, 100);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(151, 13);
-            this.linkLabel2.TabIndex = 12;
+            this.linkLabel2.TabIndex = 4;
             this.linkLabel2.TabStop = true;
             this.linkLabel2.Text = "https://wa.me/351933992199";
             this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel2_LinkClicked_1);
@@ -72,7 +72,7 @@
             this.label3.Location = new System.Drawing.Point(18, 100);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(53, 13);
-            this.label3.TabIndex = 11;
+            this.label3.TabIndex = 3;
             this.label3.Text = "&Contacto:";
             // 
             // linkLabel1
@@ -82,7 +82,7 @@
             this.linkLabel1.Location = new System.Drawing.Point(77, 75);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(152, 13);
-            this.linkLabel1.TabIndex = 10;
+            this.linkLabel1.TabIndex = 2;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "suporte.promoping@gmail.com";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked_1);
@@ -94,7 +94,7 @@
             this.label2.Location = new System.Drawing.Point(18, 75);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(35, 13);
-            this.label2.TabIndex = 9;
+            this.label2.TabIndex = 1;
             this.label2.Text = "&Email:";
             // 
             // label1
@@ -105,7 +105,7 @@
             this.label1.Location = new System.Drawing.Point(16, 33);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(192, 25);
-            this.label1.TabIndex = 8;
+            this.label1.TabIndex = 0;
             this.label1.Text = "Suporte PromoPing";
             // 
             // pictureBox2

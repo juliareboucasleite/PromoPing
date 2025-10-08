@@ -52,6 +52,9 @@
             // 
             // grpInfo
             // 
+            this.grpInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpInfo.BackColor = System.Drawing.Color.WhiteSmoke;
             this.grpInfo.Controls.Add(this.IdAtivo);
             this.grpInfo.Controls.Add(this.IdPlano);
@@ -63,6 +66,7 @@
             this.grpInfo.Controls.Add(this.lblTelefone);
             this.grpInfo.Controls.Add(this.lblPlano);
             this.grpInfo.Controls.Add(this.lblAtivo);
+            this.grpInfo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.grpInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpInfo.Location = new System.Drawing.Point(20, 20);
             this.grpInfo.Name = "grpInfo";
@@ -78,7 +82,7 @@
             this.IdAtivo.Location = new System.Drawing.Point(238, 101);
             this.IdAtivo.Name = "IdAtivo";
             this.IdAtivo.Size = new System.Drawing.Size(38, 13);
-            this.IdAtivo.TabIndex = 9;
+            this.IdAtivo.TabIndex = 0;
             this.IdAtivo.Text = "label5";
             // 
             // IdPlano
@@ -98,7 +102,7 @@
             this.IdTelemovel.Location = new System.Drawing.Point(72, 76);
             this.IdTelemovel.Name = "IdTelemovel";
             this.IdTelemovel.Size = new System.Drawing.Size(38, 13);
-            this.IdTelemovel.TabIndex = 7;
+            this.IdTelemovel.TabIndex = 6;
             this.IdTelemovel.Text = "label3";
             // 
             // IdEmail
@@ -108,7 +112,7 @@
             this.IdEmail.Location = new System.Drawing.Point(52, 51);
             this.IdEmail.Name = "IdEmail";
             this.IdEmail.Size = new System.Drawing.Size(38, 13);
-            this.IdEmail.TabIndex = 6;
+            this.IdEmail.TabIndex = 4;
             this.IdEmail.Text = "label2";
             // 
             // IdNome
@@ -118,7 +122,7 @@
             this.IdNome.Location = new System.Drawing.Point(52, 26);
             this.IdNome.Name = "IdNome";
             this.IdNome.Size = new System.Drawing.Size(38, 13);
-            this.IdNome.TabIndex = 5;
+            this.IdNome.TabIndex = 2;
             this.IdNome.Text = "label1";
             // 
             // lblNome
@@ -127,8 +131,8 @@
             this.lblNome.Location = new System.Drawing.Point(10, 25);
             this.lblNome.Name = "lblNome";
             this.lblNome.Size = new System.Drawing.Size(100, 23);
-            this.lblNome.TabIndex = 0;
-            this.lblNome.Text = "Nome:";
+            this.lblNome.TabIndex = 1;
+            this.lblNome.Text = "&Nome:";
             // 
             // lblEmail
             // 
@@ -136,8 +140,8 @@
             this.lblEmail.Location = new System.Drawing.Point(10, 50);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(100, 23);
-            this.lblEmail.TabIndex = 1;
-            this.lblEmail.Text = "Email:";
+            this.lblEmail.TabIndex = 3;
+            this.lblEmail.Text = "&Email:";
             // 
             // lblTelefone
             // 
@@ -145,7 +149,7 @@
             this.lblTelefone.Location = new System.Drawing.Point(10, 75);
             this.lblTelefone.Name = "lblTelefone";
             this.lblTelefone.Size = new System.Drawing.Size(100, 23);
-            this.lblTelefone.TabIndex = 2;
+            this.lblTelefone.TabIndex = 5;
             this.lblTelefone.Text = "&Telemovel:";
             // 
             // lblPlano
@@ -154,8 +158,8 @@
             this.lblPlano.Location = new System.Drawing.Point(10, 100);
             this.lblPlano.Name = "lblPlano";
             this.lblPlano.Size = new System.Drawing.Size(100, 23);
-            this.lblPlano.TabIndex = 3;
-            this.lblPlano.Text = "Plano:";
+            this.lblPlano.TabIndex = 7;
+            this.lblPlano.Text = "&Plano:";
             // 
             // lblAtivo
             // 
@@ -163,11 +167,14 @@
             this.lblAtivo.Location = new System.Drawing.Point(200, 100);
             this.lblAtivo.Name = "lblAtivo";
             this.lblAtivo.Size = new System.Drawing.Size(100, 23);
-            this.lblAtivo.TabIndex = 4;
+            this.lblAtivo.TabIndex = 9;
             this.lblAtivo.Text = "Ativo:";
             // 
             // grpEstatisticas
             // 
+            this.grpEstatisticas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpEstatisticas.BackColor = System.Drawing.Color.WhiteSmoke;
             this.grpEstatisticas.Controls.Add(this.IdCanalPreferido);
             this.grpEstatisticas.Controls.Add(this.IdLimitesProdutos);
@@ -183,6 +190,7 @@
             this.grpEstatisticas.Controls.Add(this.lblUltimoLogin);
             this.grpEstatisticas.Controls.Add(this.lblLimiteProdutos);
             this.grpEstatisticas.Controls.Add(this.lblCanalPreferido);
+            this.grpEstatisticas.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.grpEstatisticas.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpEstatisticas.Location = new System.Drawing.Point(20, 160);
             this.grpEstatisticas.Name = "grpEstatisticas";
@@ -198,7 +206,7 @@
             this.IdCanalPreferido.Location = new System.Drawing.Point(102, 151);
             this.IdCanalPreferido.Name = "IdCanalPreferido";
             this.IdCanalPreferido.Size = new System.Drawing.Size(44, 13);
-            this.IdCanalPreferido.TabIndex = 16;
+            this.IdCanalPreferido.TabIndex = 13;
             this.IdCanalPreferido.Text = "label12";
             // 
             // IdLimitesProdutos
@@ -208,7 +216,7 @@
             this.IdLimitesProdutos.Location = new System.Drawing.Point(116, 131);
             this.IdLimitesProdutos.Name = "IdLimitesProdutos";
             this.IdLimitesProdutos.Size = new System.Drawing.Size(44, 13);
-            this.IdLimitesProdutos.TabIndex = 15;
+            this.IdLimitesProdutos.TabIndex = 11;
             this.IdLimitesProdutos.Text = "label11";
             // 
             // IdUltimoLogin
@@ -218,7 +226,7 @@
             this.IdUltimoLogin.Location = new System.Drawing.Point(88, 111);
             this.IdUltimoLogin.Name = "IdUltimoLogin";
             this.IdUltimoLogin.Size = new System.Drawing.Size(44, 13);
-            this.IdUltimoLogin.TabIndex = 14;
+            this.IdUltimoLogin.TabIndex = 9;
             this.IdUltimoLogin.Text = "label10";
             // 
             // IdMembroDesde
@@ -228,8 +236,9 @@
             this.IdMembroDesde.Location = new System.Drawing.Point(102, 91);
             this.IdMembroDesde.Name = "IdMembroDesde";
             this.IdMembroDesde.Size = new System.Drawing.Size(38, 13);
-            this.IdMembroDesde.TabIndex = 13;
+            this.IdMembroDesde.TabIndex = 7;
             this.IdMembroDesde.Text = "label9";
+            this.IdMembroDesde.Click += new System.EventHandler(this.IdMembroDesde_Click);
             // 
             // IdDinheiro
             // 
@@ -238,46 +247,48 @@
             this.IdDinheiro.Location = new System.Drawing.Point(116, 66);
             this.IdDinheiro.Name = "IdDinheiro";
             this.IdDinheiro.Size = new System.Drawing.Size(38, 13);
-            this.IdDinheiro.TabIndex = 12;
+            this.IdDinheiro.TabIndex = 5;
             this.IdDinheiro.Text = "label8";
             // 
             // IdNotificacoes
             // 
             this.IdNotificacoes.AutoSize = true;
             this.IdNotificacoes.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.IdNotificacoes.Location = new System.Drawing.Point(88, 46);
+            this.IdNotificacoes.Location = new System.Drawing.Point(136, 46);
             this.IdNotificacoes.Name = "IdNotificacoes";
             this.IdNotificacoes.Size = new System.Drawing.Size(38, 13);
-            this.IdNotificacoes.TabIndex = 11;
+            this.IdNotificacoes.TabIndex = 3;
             this.IdNotificacoes.Text = "label7";
+            this.IdNotificacoes.Click += new System.EventHandler(this.IdNotificacoes_Click);
             // 
             // IdProdutos
             // 
             this.IdProdutos.AutoSize = true;
             this.IdProdutos.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.IdProdutos.Location = new System.Drawing.Point(72, 26);
+            this.IdProdutos.Location = new System.Drawing.Point(147, 26);
             this.IdProdutos.Name = "IdProdutos";
             this.IdProdutos.Size = new System.Drawing.Size(38, 13);
-            this.IdProdutos.TabIndex = 10;
+            this.IdProdutos.TabIndex = 1;
             this.IdProdutos.Text = "label6";
+            this.IdProdutos.Click += new System.EventHandler(this.IdProdutos_Click);
             // 
             // lblProdutos
             // 
             this.lblProdutos.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblProdutos.Location = new System.Drawing.Point(10, 25);
             this.lblProdutos.Name = "lblProdutos";
-            this.lblProdutos.Size = new System.Drawing.Size(100, 23);
+            this.lblProdutos.Size = new System.Drawing.Size(184, 23);
             this.lblProdutos.TabIndex = 0;
-            this.lblProdutos.Text = "Produtos monitorizados: [0]";
+            this.lblProdutos.Text = "&Produtos monitorizados:";
             // 
             // lblNotificacoes
             // 
             this.lblNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblNotificacoes.Location = new System.Drawing.Point(10, 45);
             this.lblNotificacoes.Name = "lblNotificacoes";
-            this.lblNotificacoes.Size = new System.Drawing.Size(100, 23);
-            this.lblNotificacoes.TabIndex = 1;
-            this.lblNotificacoes.Text = "Notificações enviadas: [0]";
+            this.lblNotificacoes.Size = new System.Drawing.Size(150, 23);
+            this.lblNotificacoes.TabIndex = 2;
+            this.lblNotificacoes.Text = "&Notificações enviadas:";
             // 
             // lblPoupado
             // 
@@ -286,8 +297,8 @@
             this.lblPoupado.Location = new System.Drawing.Point(10, 65);
             this.lblPoupado.Name = "lblPoupado";
             this.lblPoupado.Size = new System.Drawing.Size(130, 23);
-            this.lblPoupado.TabIndex = 2;
-            this.lblPoupado.Text = "Dinheiro poupado:";
+            this.lblPoupado.TabIndex = 4;
+            this.lblPoupado.Text = "&Dinheiro poupado:";
             // 
             // lblMembroDesde
             // 
@@ -295,8 +306,8 @@
             this.lblMembroDesde.Location = new System.Drawing.Point(10, 90);
             this.lblMembroDesde.Name = "lblMembroDesde";
             this.lblMembroDesde.Size = new System.Drawing.Size(100, 23);
-            this.lblMembroDesde.TabIndex = 3;
-            this.lblMembroDesde.Text = "Membro desde: ---";
+            this.lblMembroDesde.TabIndex = 6;
+            this.lblMembroDesde.Text = "&Membro desde:";
             // 
             // lblUltimoLogin
             // 
@@ -304,8 +315,8 @@
             this.lblUltimoLogin.Location = new System.Drawing.Point(10, 110);
             this.lblUltimoLogin.Name = "lblUltimoLogin";
             this.lblUltimoLogin.Size = new System.Drawing.Size(100, 23);
-            this.lblUltimoLogin.TabIndex = 4;
-            this.lblUltimoLogin.Text = "Último login:";
+            this.lblUltimoLogin.TabIndex = 8;
+            this.lblUltimoLogin.Text = "&Último login:";
             // 
             // lblLimiteProdutos
             // 
@@ -313,8 +324,8 @@
             this.lblLimiteProdutos.Location = new System.Drawing.Point(10, 130);
             this.lblLimiteProdutos.Name = "lblLimiteProdutos";
             this.lblLimiteProdutos.Size = new System.Drawing.Size(116, 23);
-            this.lblLimiteProdutos.TabIndex = 5;
-            this.lblLimiteProdutos.Text = "Limite de produtos:";
+            this.lblLimiteProdutos.TabIndex = 10;
+            this.lblLimiteProdutos.Text = "&Limite de produtos:";
             // 
             // lblCanalPreferido
             // 
@@ -322,13 +333,17 @@
             this.lblCanalPreferido.Location = new System.Drawing.Point(10, 150);
             this.lblCanalPreferido.Name = "lblCanalPreferido";
             this.lblCanalPreferido.Size = new System.Drawing.Size(100, 23);
-            this.lblCanalPreferido.TabIndex = 6;
-            this.lblCanalPreferido.Text = "Canal preferido: ---";
+            this.lblCanalPreferido.TabIndex = 12;
+            this.lblCanalPreferido.Text = "&Canal preferido:";
             // 
             // grpPreferencias
             // 
+            this.grpPreferencias.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpPreferencias.BackColor = System.Drawing.Color.WhiteSmoke;
             this.grpPreferencias.Controls.Add(this.clbNotificacoes);
+            this.grpPreferencias.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.grpPreferencias.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpPreferencias.Location = new System.Drawing.Point(20, 340);
             this.grpPreferencias.Name = "grpPreferencias";
@@ -339,6 +354,7 @@
             // 
             // clbNotificacoes
             // 
+            this.clbNotificacoes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.clbNotificacoes.CheckOnClick = true;
             this.clbNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.clbNotificacoes.Items.AddRange(new object[] {
@@ -346,34 +362,40 @@
             "Telefone"});
             this.clbNotificacoes.Location = new System.Drawing.Point(10, 25);
             this.clbNotificacoes.Name = "clbNotificacoes";
-            this.clbNotificacoes.Size = new System.Drawing.Size(200, 76);
+            this.clbNotificacoes.Size = new System.Drawing.Size(200, 74);
             this.clbNotificacoes.TabIndex = 0;
             // 
             // btnSalvar
             // 
+            this.btnSalvar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSalvar.BackColor = System.Drawing.Color.Firebrick;
-            this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSalvar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSalvar.ForeColor = System.Drawing.Color.White;
-            this.btnSalvar.Location = new System.Drawing.Point(40, 470);
+            this.btnSalvar.Location = new System.Drawing.Point(20, 470);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(140, 40);
             this.btnSalvar.TabIndex = 3;
-            this.btnSalvar.Text = "💾 Salvar Preferências";
+            this.btnSalvar.Text = "💾 &Salvar Preferências";
             this.btnSalvar.UseVisualStyleBackColor = false;
             this.btnSalvar.Click += new System.EventHandler(this.btnSalvar_Click);
             // 
             // btnEditarPerfil
             // 
+            this.btnEditarPerfil.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnEditarPerfil.BackColor = System.Drawing.Color.SteelBlue;
-            this.btnEditarPerfil.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditarPerfil.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnEditarPerfil.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEditarPerfil.ForeColor = System.Drawing.Color.White;
-            this.btnEditarPerfil.Location = new System.Drawing.Point(200, 470);
+            this.btnEditarPerfil.Location = new System.Drawing.Point(230, 470);
             this.btnEditarPerfil.Name = "btnEditarPerfil";
             this.btnEditarPerfil.Size = new System.Drawing.Size(140, 40);
             this.btnEditarPerfil.TabIndex = 4;
-            this.btnEditarPerfil.Text = "✏️ Editar Perfil";
+            this.btnEditarPerfil.Text = "✏️ &Editar Perfil";
             this.btnEditarPerfil.UseVisualStyleBackColor = false;
             this.btnEditarPerfil.Click += new System.EventHandler(this.btnEditarPerfil_Click);
             // 
@@ -386,6 +408,7 @@
             this.Controls.Add(this.grpPreferencias);
             this.Controls.Add(this.btnSalvar);
             this.Controls.Add(this.btnEditarPerfil);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;

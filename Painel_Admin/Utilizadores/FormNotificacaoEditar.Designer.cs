@@ -29,16 +29,24 @@
             // 
             // lblUserId
             // 
+            this.lblUserId.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblUserId.AutoSize = true;
+            this.lblUserId.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUserId.Location = new System.Drawing.Point(20, 20);
             this.lblUserId.Name = "lblUserId";
-            this.lblUserId.Size = new System.Drawing.Size(49, 13);
+            this.lblUserId.Size = new System.Drawing.Size(50, 13);
             this.lblUserId.TabIndex = 0;
-            this.lblUserId.Text = "Usuário:";
+            this.lblUserId.Text = "&Usuário:";
             // 
             // cmbUser
             // 
+            this.cmbUser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbUser.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbUser.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbUser.FormattingEnabled = true;
             this.cmbUser.Location = new System.Drawing.Point(100, 17);
             this.cmbUser.Name = "cmbUser";
@@ -47,16 +55,24 @@
             // 
             // lblTipo
             // 
+            this.lblTipo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblTipo.AutoSize = true;
+            this.lblTipo.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTipo.Location = new System.Drawing.Point(20, 60);
             this.lblTipo.Name = "lblTipo";
-            this.lblTipo.Size = new System.Drawing.Size(32, 13);
+            this.lblTipo.Size = new System.Drawing.Size(33, 13);
             this.lblTipo.TabIndex = 2;
-            this.lblTipo.Text = "Tipo:";
+            this.lblTipo.Text = "&Tipo:";
             // 
             // cmbTipo
             // 
+            this.cmbTipo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbTipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTipo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbTipo.FormattingEnabled = true;
             this.cmbTipo.Location = new System.Drawing.Point(100, 57);
             this.cmbTipo.Name = "cmbTipo";
@@ -65,16 +81,25 @@
             // 
             // chkAtivo
             // 
+            this.chkAtivo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkAtivo.Appearance = System.Windows.Forms.Appearance.Button;
             this.chkAtivo.AutoSize = true;
+            this.chkAtivo.BackColor = System.Drawing.Color.Orange;
+            this.chkAtivo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chkAtivo.Location = new System.Drawing.Point(23, 92);
             this.chkAtivo.Name = "chkAtivo";
-            this.chkAtivo.Size = new System.Drawing.Size(52, 17);
+            this.chkAtivo.Size = new System.Drawing.Size(43, 23);
             this.chkAtivo.TabIndex = 4;
-            this.chkAtivo.Text = "Ativo";
-            this.chkAtivo.UseVisualStyleBackColor = true;
+            this.chkAtivo.Text = "&Ativo";
+            this.chkAtivo.UseVisualStyleBackColor = false;
             // 
             // btnSalvar
             // 
+            this.btnSalvar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSalvar.BackColor = System.Drawing.Color.ForestGreen;
             this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSalvar.Font = new System.Drawing.Font("Segoe UI", 8.25F);
@@ -83,12 +108,15 @@
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(90, 30);
             this.btnSalvar.TabIndex = 5;
-            this.btnSalvar.Text = "💾 Salvar";
+            this.btnSalvar.Text = "💾 &Salvar";
             this.btnSalvar.UseVisualStyleBackColor = false;
             this.btnSalvar.Click += new System.EventHandler(this.btnSalvar_Click);
             // 
             // btnCancelar
             // 
+            this.btnCancelar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancelar.BackColor = System.Drawing.Color.Firebrick;
             this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 8.25F);
@@ -97,7 +125,7 @@
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(90, 30);
             this.btnCancelar.TabIndex = 6;
-            this.btnCancelar.Text = "❌ Cancelar";
+            this.btnCancelar.Text = "❌ &Cancelar";
             this.btnCancelar.UseVisualStyleBackColor = false;
             this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
             // 
@@ -120,8 +148,10 @@
             this.MinimizeBox = false;
             this.Name = "FormNotificacaoEditar";
             this.Text = "Editar Preferência";
+            this.Load += new System.EventHandler(this.FormNotificacaoEditar_Load_1);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

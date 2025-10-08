@@ -104,5 +104,10 @@ namespace Painel_Admin
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
+
+        private void FormNotificacaoEditar_Load_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

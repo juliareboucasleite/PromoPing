@@ -46,36 +46,41 @@
             // 
             // TxtNome
             // 
+            this.TxtNome.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.TxtNome.Location = new System.Drawing.Point(66, 158);
             this.TxtNome.Name = "TxtNome";
-            this.TxtNome.Size = new System.Drawing.Size(175, 20);
-            this.TxtNome.TabIndex = 6;
+            this.TxtNome.Size = new System.Drawing.Size(175, 22);
+            this.TxtNome.TabIndex = 4;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(120, 133);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(50, 13);
-            this.label1.TabIndex = 5;
+            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.TabIndex = 2;
             this.label1.Text = "Utilizador";
             // 
             // BotaoEntrar
             // 
+            this.BotaoEntrar.BackColor = System.Drawing.Color.Orange;
+            this.BotaoEntrar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.BotaoEntrar.ForeColor = System.Drawing.Color.White;
             this.BotaoEntrar.Location = new System.Drawing.Point(180, 230);
             this.BotaoEntrar.Name = "BotaoEntrar";
             this.BotaoEntrar.Size = new System.Drawing.Size(61, 23);
-            this.BotaoEntrar.TabIndex = 4;
-            this.BotaoEntrar.Text = "Entrar";
-            this.BotaoEntrar.UseVisualStyleBackColor = true;
+            this.BotaoEntrar.TabIndex = 0;
+            this.BotaoEntrar.Text = "&Entrar";
+            this.BotaoEntrar.UseVisualStyleBackColor = false;
             this.BotaoEntrar.Click += new System.EventHandler(this.BotaoEntrar_Click);
             // 
             // TxtSenha
             // 
+            this.TxtSenha.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.TxtSenha.Location = new System.Drawing.Point(66, 194);
             this.TxtSenha.Name = "TxtSenha";
-            this.TxtSenha.Size = new System.Drawing.Size(175, 20);
-            this.TxtSenha.TabIndex = 8;
+            this.TxtSenha.Size = new System.Drawing.Size(175, 22);
+            this.TxtSenha.TabIndex = 6;
             // 
             // menuStrip2
             // 
@@ -86,7 +91,7 @@
             this.menuStrip2.Location = new System.Drawing.Point(0, 0);
             this.menuStrip2.Name = "menuStrip2";
             this.menuStrip2.Size = new System.Drawing.Size(286, 24);
-            this.menuStrip2.TabIndex = 10;
+            this.menuStrip2.TabIndex = 1;
             this.menuStrip2.Text = "menuStrip2";
             // 
             // loginToolStripMenuItem
@@ -96,14 +101,14 @@
             this.loginToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.loginToolStripMenuItem.Name = "loginToolStripMenuItem";
             this.loginToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
-            this.loginToolStripMenuItem.Text = "Login";
+            this.loginToolStripMenuItem.Text = "&Login";
             // 
             // btnRegistrar
             // 
             this.btnRegistrar.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.btnRegistrar.Name = "btnRegistrar";
-            this.btnRegistrar.Size = new System.Drawing.Size(120, 22);
-            this.btnRegistrar.Text = "Registrar";
+            this.btnRegistrar.Size = new System.Drawing.Size(180, 22);
+            this.btnRegistrar.Text = "&Registrar";
             this.btnRegistrar.Click += new System.EventHandler(this.AcessoRegistar);
             // 
             // suporteToolStripMenuItem
@@ -111,17 +116,20 @@
             this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
             this.suporteToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
-            this.suporteToolStripMenuItem.Text = "Support";
+            this.suporteToolStripMenuItem.Text = "&Support";
             this.suporteToolStripMenuItem.Click += new System.EventHandler(this.AcessarSuporte);
             // 
             // BotaoLimpar
             // 
+            this.BotaoLimpar.BackColor = System.Drawing.Color.Orange;
+            this.BotaoLimpar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.BotaoLimpar.ForeColor = System.Drawing.Color.White;
             this.BotaoLimpar.Location = new System.Drawing.Point(66, 230);
             this.BotaoLimpar.Name = "BotaoLimpar";
             this.BotaoLimpar.Size = new System.Drawing.Size(58, 23);
-            this.BotaoLimpar.TabIndex = 11;
-            this.BotaoLimpar.Text = "Limpar";
-            this.BotaoLimpar.UseVisualStyleBackColor = true;
+            this.BotaoLimpar.TabIndex = 7;
+            this.BotaoLimpar.Text = "&Limpar";
+            this.BotaoLimpar.UseVisualStyleBackColor = false;
             this.BotaoLimpar.Click += new System.EventHandler(this.BotaoLimpar_Click);
             // 
             // label4
@@ -129,8 +137,8 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(19, 197);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(41, 13);
-            this.label4.TabIndex = 25;
+            this.label4.Size = new System.Drawing.Size(42, 13);
+            this.label4.TabIndex = 5;
             this.label4.Text = "&Senha:";
             // 
             // label2
@@ -138,8 +146,8 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(19, 161);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 13);
-            this.label2.TabIndex = 23;
+            this.label2.Size = new System.Drawing.Size(40, 13);
+            this.label2.TabIndex = 3;
             this.label2.Text = "&Nome:";
             // 
             // FormLogin
@@ -156,6 +164,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.BotaoEntrar);
             this.Controls.Add(this.menuStrip2);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;

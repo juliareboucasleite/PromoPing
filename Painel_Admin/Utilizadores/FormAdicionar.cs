@@ -13,13 +13,13 @@ namespace Painel_Admin.Utilizadores
             InitializeComponent();
             _repo = new UtilizadorRepository();
             if (cmbPlano.Items.Count > 0)
-                cmbPlano.SelectedIndex = 0; 
+                cmbPlano.SelectedIndex = 0;
 
             if (cmbCanal.Items.Count > 0)
-                cmbCanal.SelectedIndex = 0; 
+                cmbCanal.SelectedIndex = 0;
 
             if (ComboTipoUtilizador.Items.Count > 0)
-                ComboTipoUtilizador.SelectedIndex = 1; 
+                ComboTipoUtilizador.SelectedIndex = 1;
         }
 
         private void txtNome_TextChanged(object sender, EventArgs e) { }
@@ -78,5 +78,7 @@ namespace Painel_Admin.Utilizadores
             }
             return result.TrimEnd(' ', ';');
         }
+
+        private void FormAdicionar_Load(object sender, EventArgs e) { }
     }
 }

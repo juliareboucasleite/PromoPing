@@ -212,5 +212,20 @@ namespace Painel_Admin
                 CarregarPreferencias();
             }
         }
+
+        private void IdProdutos_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void IdNotificacoes_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void IdMembroDesde_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

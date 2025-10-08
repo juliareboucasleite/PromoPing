@@ -37,26 +37,36 @@
             // 
             // BotaoLimpar
             // 
-            this.BotaoLimpar.Location = new System.Drawing.Point(75, 242);
+            this.BotaoLimpar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.BotaoLimpar.BackColor = System.Drawing.Color.Orange;
+            this.BotaoLimpar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.BotaoLimpar.ForeColor = System.Drawing.Color.White;
+            this.BotaoLimpar.Location = new System.Drawing.Point(70, 243);
             this.BotaoLimpar.Name = "BotaoLimpar";
             this.BotaoLimpar.Size = new System.Drawing.Size(58, 23);
-            this.BotaoLimpar.TabIndex = 18;
-            this.BotaoLimpar.Text = "Limpar";
-            this.BotaoLimpar.UseVisualStyleBackColor = true;
+            this.BotaoLimpar.TabIndex = 9;
+            this.BotaoLimpar.Text = "&Limpar";
+            this.BotaoLimpar.UseVisualStyleBackColor = false;
             this.BotaoLimpar.Click += new System.EventHandler(this.BotaoLimpar_Click);
             // 
             // TxtSenha
             // 
-            this.TxtSenha.Location = new System.Drawing.Point(75, 207);
+            this.TxtSenha.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TxtSenha.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TxtSenha.Location = new System.Drawing.Point(70, 208);
             this.TxtSenha.Name = "TxtSenha";
             this.TxtSenha.Size = new System.Drawing.Size(177, 20);
-            this.TxtSenha.TabIndex = 16;
+            this.TxtSenha.TabIndex = 8;
             this.TxtSenha.UseSystemPasswordChar = true;
             // 
             // pictureBox1
             // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(104, 47);
+            this.pictureBox1.Location = new System.Drawing.Point(99, 48);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(89, 78);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -65,28 +75,38 @@
             // 
             // TxtNome
             // 
-            this.TxtNome.Location = new System.Drawing.Point(75, 154);
+            this.TxtNome.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TxtNome.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TxtNome.Location = new System.Drawing.Point(70, 155);
             this.TxtNome.Name = "TxtNome";
             this.TxtNome.Size = new System.Drawing.Size(177, 20);
-            this.TxtNome.TabIndex = 14;
+            this.TxtNome.TabIndex = 4;
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(124, 128);
+            this.label1.Location = new System.Drawing.Point(119, 129);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 13);
-            this.label1.TabIndex = 13;
+            this.label1.TabIndex = 2;
             this.label1.Text = "Utilizador";
             // 
             // BotaoEntrar
             // 
-            this.BotaoEntrar.Location = new System.Drawing.Point(191, 242);
+            this.BotaoEntrar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.BotaoEntrar.BackColor = System.Drawing.Color.Orange;
+            this.BotaoEntrar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.BotaoEntrar.ForeColor = System.Drawing.Color.White;
+            this.BotaoEntrar.Location = new System.Drawing.Point(186, 243);
             this.BotaoEntrar.Name = "BotaoEntrar";
             this.BotaoEntrar.Size = new System.Drawing.Size(61, 23);
-            this.BotaoEntrar.TabIndex = 12;
-            this.BotaoEntrar.Text = "Registrar";
-            this.BotaoEntrar.UseVisualStyleBackColor = true;
+            this.BotaoEntrar.TabIndex = 0;
+            this.BotaoEntrar.Text = "&Registrar";
+            this.BotaoEntrar.UseVisualStyleBackColor = false;
             this.BotaoEntrar.Click += new System.EventHandler(this.BotaoEntrar_Click);
             // 
             // menuStrip2
@@ -98,7 +118,7 @@
             this.menuStrip2.Location = new System.Drawing.Point(0, 0);
             this.menuStrip2.Name = "menuStrip2";
             this.menuStrip2.Size = new System.Drawing.Size(286, 24);
-            this.menuStrip2.TabIndex = 17;
+            this.menuStrip2.TabIndex = 1;
             this.menuStrip2.Text = "menuStrip2";
             // 
             // loginToolStripMenuItem
@@ -106,7 +126,7 @@
             this.loginToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.loginToolStripMenuItem.Name = "loginToolStripMenuItem";
             this.loginToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
-            this.loginToolStripMenuItem.Text = "Login";
+            this.loginToolStripMenuItem.Text = "&Login";
             this.loginToolStripMenuItem.Click += new System.EventHandler(this.btnLogin);
             // 
             // suporteToolStripMenuItem
@@ -114,40 +134,49 @@
             this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
             this.suporteToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
-            this.suporteToolStripMenuItem.Text = "Suporte";
+            this.suporteToolStripMenuItem.Text = "&Suporte";
             // 
             // TxtEmail
             // 
-            this.TxtEmail.Location = new System.Drawing.Point(75, 180);
+            this.TxtEmail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TxtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TxtEmail.Location = new System.Drawing.Point(70, 181);
             this.TxtEmail.Name = "TxtEmail";
             this.TxtEmail.Size = new System.Drawing.Size(177, 20);
-            this.TxtEmail.TabIndex = 19;
+            this.TxtEmail.TabIndex = 6;
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(31, 157);
+            this.label2.Location = new System.Drawing.Point(26, 158);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 13);
-            this.label2.TabIndex = 20;
+            this.label2.TabIndex = 3;
             this.label2.Text = "&Nome:";
             // 
             // label3
             // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(31, 183);
+            this.label3.Location = new System.Drawing.Point(26, 184);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 21;
+            this.label3.TabIndex = 5;
             this.label3.Text = "&Email:";
             // 
             // label4
             // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(31, 210);
+            this.label4.Location = new System.Drawing.Point(26, 211);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(41, 13);
-            this.label4.TabIndex = 22;
+            this.label4.TabIndex = 7;
             this.label4.Text = "&Senha:";
             // 
             // FormRegistar

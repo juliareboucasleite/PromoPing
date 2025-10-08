@@ -32,12 +32,14 @@
             // 
             this.dgvNotificacoes.AllowUserToAddRows = false;
             this.dgvNotificacoes.AllowUserToDeleteRows = false;
+            this.dgvNotificacoes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvNotificacoes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvNotificacoes.BackgroundColor = System.Drawing.Color.White;
             this.dgvNotificacoes.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvNotificacoes.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             this.dgvNotificacoes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvNotificacoes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvNotificacoes.EnableHeadersVisualStyles = false;
             this.dgvNotificacoes.GridColor = System.Drawing.Color.LightGray;
             this.dgvNotificacoes.Location = new System.Drawing.Point(0, 0);
@@ -51,12 +53,14 @@
             // 
             // panelBotoes
             // 
-            this.panelBotoes.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panelBotoes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelBotoes.BackColor = System.Drawing.Color.Orange;
             this.panelBotoes.Controls.Add(this.btnAdicionar);
             this.panelBotoes.Controls.Add(this.btnEditar);
             this.panelBotoes.Controls.Add(this.btnRemover);
             this.panelBotoes.Controls.Add(this.btnAtualizar);
-            this.panelBotoes.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelBotoes.Location = new System.Drawing.Point(0, 420);
             this.panelBotoes.Name = "panelBotoes";
             this.panelBotoes.Size = new System.Drawing.Size(900, 45);
@@ -64,6 +68,9 @@
             // 
             // btnAdicionar
             // 
+            this.btnAdicionar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAdicionar.BackColor = System.Drawing.Color.ForestGreen;
             this.btnAdicionar.FlatAppearance.BorderSize = 0;
             this.btnAdicionar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -73,12 +80,15 @@
             this.btnAdicionar.Name = "btnAdicionar";
             this.btnAdicionar.Size = new System.Drawing.Size(90, 27);
             this.btnAdicionar.TabIndex = 0;
-            this.btnAdicionar.Text = "➕ Adicionar";
+            this.btnAdicionar.Text = "➕ &Adicionar";
             this.btnAdicionar.UseVisualStyleBackColor = false;
             this.btnAdicionar.Click += new System.EventHandler(this.btnAdicionar_Click);
             // 
             // btnEditar
             // 
+            this.btnEditar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnEditar.BackColor = System.Drawing.Color.SteelBlue;
             this.btnEditar.FlatAppearance.BorderSize = 0;
             this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -88,12 +98,15 @@
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(90, 27);
             this.btnEditar.TabIndex = 1;
-            this.btnEditar.Text = "✏️ Editar";
+            this.btnEditar.Text = "✏️ &Editar";
             this.btnEditar.UseVisualStyleBackColor = false;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
             // btnRemover
             // 
+            this.btnRemover.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRemover.BackColor = System.Drawing.Color.Firebrick;
             this.btnRemover.FlatAppearance.BorderSize = 0;
             this.btnRemover.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -103,12 +116,15 @@
             this.btnRemover.Name = "btnRemover";
             this.btnRemover.Size = new System.Drawing.Size(90, 27);
             this.btnRemover.TabIndex = 2;
-            this.btnRemover.Text = "🗑️ Remover";
+            this.btnRemover.Text = "🗑️ &Remover";
             this.btnRemover.UseVisualStyleBackColor = false;
             this.btnRemover.Click += new System.EventHandler(this.btnRemover_Click);
             // 
             // btnAtualizar
             // 
+            this.btnAtualizar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAtualizar.BackColor = System.Drawing.Color.DimGray;
             this.btnAtualizar.FlatAppearance.BorderSize = 0;
             this.btnAtualizar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -118,7 +134,7 @@
             this.btnAtualizar.Name = "btnAtualizar";
             this.btnAtualizar.Size = new System.Drawing.Size(100, 27);
             this.btnAtualizar.TabIndex = 3;
-            this.btnAtualizar.Text = "🔄 Atualizar";
+            this.btnAtualizar.Text = "🔄 &Atualizar";
             this.btnAtualizar.UseVisualStyleBackColor = false;
             this.btnAtualizar.Click += new System.EventHandler(this.btnAtualizar_Click);
             // 
