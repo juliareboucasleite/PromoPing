@@ -36,7 +36,9 @@ namespace Painel_Admin
                     cmbCanal.SelectedItem = char.ToUpper(canal[0]) + canal.Substring(1);
             };
         }
-
+        /// <summary>
+        /// Carrega os planos disponíveis da base de dados e popula o ComboBox cmbPlano.
+        /// </summary>
         private void CarregarPlanos()
         {
             try
@@ -70,7 +72,10 @@ namespace Painel_Admin
                 MessageBox.Show($"Erro ao carregar planos: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
+        /// <summary>
+        /// Seleciona o plano atual do utilizador no ComboBox com base no ID fornecido.
+        /// </summary>
+        /// <param name="planoId"></param>
         private void SelecionarPlanoAtual(string planoId)
         {
             if (string.IsNullOrEmpty(planoId))
@@ -79,8 +84,6 @@ namespace Painel_Admin
             if (int.TryParse(planoId, out int id))
             {
                 cmbPlano.SelectedValue = id;
-
-                // fallback manual
                 if (cmbPlano.SelectedValue == null || (int)cmbPlano.SelectedValue != id)
                 {
                     foreach (PlanoItem item in cmbPlano.Items)
@@ -94,7 +97,9 @@ namespace Painel_Admin
                 }
             }
         }
-
+        /// <summary>
+        /// Carrega as preferncias de notificações do utilizador e marca os itens correspondentes na CheckedListBox.
+        /// </summary>
         private void CarregarPreferencias()
         {
             try
@@ -135,8 +140,6 @@ namespace Painel_Admin
                 using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
                     con.Open();
-
-                    // Atualiza dados básicos
                     var cmd = new MySqlCommand(@"
                         UPDATE utilizadores
                         SET Nome=@nome, 
@@ -166,7 +169,10 @@ namespace Painel_Admin
                 MessageBox.Show("Erro ao salvar: " + ex.Message);
             }
         }
-
+        /// <summary>
+        /// Atualiza o plano do utilizador na tabela configutilizador.
+        /// </summary>
+        /// <param name="con"></param>
         private void AtualizarPlanoUtilizador(MySqlConnection con)
         {
             try
@@ -210,8 +216,7 @@ namespace Painel_Admin
                         if (planoId != planoAtual)
                         {
                             var planoNome = ((PlanoItem)cmbPlano.SelectedItem).Nome;
-                            MessageBox.Show($"Plano atualizado para \"{planoNome}\" com sucesso",
-                                "Plano Atualizado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"Plano atualizado para \"{planoNome}\" com sucesso","Plano Atualizado", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                 }
@@ -221,7 +226,10 @@ namespace Painel_Admin
                 MessageBox.Show($"Erro ao atualizar plano: {ex.Message}", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
+        /// <summary>
+        /// Atualiza o canal preferido do utilizador na tabela configutilizador.
+        /// </summary>
+        /// <param name="con"></param>
         private void AtualizarCanalPreferido(MySqlConnection con)
         {
             string canal = cmbCanal.SelectedItem?.ToString() ?? "email";
@@ -230,7 +238,10 @@ namespace Painel_Admin
             cmd.Parameters.AddWithValue("@canal", canal.ToLower());
             cmd.ExecuteNonQuery();
         }
-
+        /// <summary>
+        /// Atualiza as preferências de notificações do utilizador na tabela preferenciasnotificacao.
+        /// </summary>
+        /// <param name="con"></param>
         private void AtualizarPreferencias(MySqlConnection con)
         {
             foreach (string item in clbNotificacoes.Items)
@@ -247,7 +258,9 @@ namespace Painel_Admin
                 cmd2.ExecuteNonQuery();
             }
         }
-
+        /// <summary>
+        /// Botao mudar estado Ativo/Inativo
+        /// </summary>
         private void AtualizarCorBotaoAtivo()
         {
             if (chkAtivo.Checked)

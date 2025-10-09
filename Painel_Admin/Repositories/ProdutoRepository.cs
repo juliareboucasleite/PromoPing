@@ -7,7 +7,6 @@ namespace Painel_Admin
 {
     public class ProdutoRepository
     {
-        // ✅ Retorna todos os produtos com nome do utilizador
         public DataTable GetAll()
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -37,7 +36,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Adiciona novo produto
         public void Add(int userId, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -62,7 +60,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Atualiza produto existente
         public void Update(int id, string nome, string link, decimal precoAlvo, DateTime? dataLimite, string loja)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -88,7 +85,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Retorna lista de utilizadores que têm produtos (Id + Nome)
         public DataTable GetUserIdsComProdutos()
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -110,8 +106,6 @@ namespace Painel_Admin
                 }
             }
         }
-
-        // ✅ Exclui produto
         public void Delete(int id)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))

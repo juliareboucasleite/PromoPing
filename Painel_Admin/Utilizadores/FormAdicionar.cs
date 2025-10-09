@@ -1,7 +1,8 @@
-﻿using System;
-using System.Windows.Forms;
-using BCrypt.Net;
+﻿using BCrypt.Net;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace Painel_Admin.Utilizadores
 {
@@ -36,26 +37,35 @@ namespace Painel_Admin.Utilizadores
                     using (var cmd = new MySqlCommand(query, con))
                     using (var reader = cmd.ExecuteReader())
                     {
-                        CmbPlano.Items.Clear();
+                        var listaPlanos = new List<PlanoItem>();
+
                         while (reader.Read())
                         {
-                            CmbPlano.Items.Add(new { Id = reader.GetInt32("Id"), Nome = reader.GetString("Nome") });
+                            listaPlanos.Add(new PlanoItem
+                            {
+                                Id = reader.GetInt32("Id"),
+                                Nome = reader.GetString("Nome")
+                            });
                         }
+
+                        CmbPlano.DataSource = listaPlanos;
+                        CmbPlano.DisplayMember = "Nome";
+                        CmbPlano.ValueMember = "Id";
                     }
                 }
-
-                if (CmbPlano.Items.Count > 0)
-                    CmbPlano.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao carregar planos:\n{ex.Message}", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
+                // fallback local
+                CmbPlano.Items.Clear();
                 CmbPlano.Items.AddRange(new object[] { "Free", "Basic", "Standard", "Premium" });
                 if (CmbPlano.Items.Count > 0)
                     CmbPlano.SelectedIndex = 0;
             }
         }
+
 
         private void TxtNome_TextChanged(object sender, EventArgs e) { }
         private void TxtEmail_TextChanged(object sender, EventArgs e) { }
@@ -131,31 +141,28 @@ namespace Painel_Admin.Utilizadores
         {
             try
             {
-                var planoSelecionado = CmbPlano.SelectedItem;
-                if (planoSelecionado != null)
+                if (CmbPlano.SelectedValue == null)
+                    return;
+
+                int planoId = Convert.ToInt32(CmbPlano.SelectedValue);
+
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
                 {
-                    int planoId = 1;
-                    if (planoSelecionado.GetType().GetProperty("Id") != null)
-                        planoId = (int)planoSelecionado.GetType().GetProperty("Id").GetValue(planoSelecionado);
+                    con.Open();
 
-                    using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                    const string query = @"
+                INSERT INTO configutilizador 
+                (UserId, PlanoId, LimiteProdutos, HistoricoDias, CanalPreferido, NotificacoesEnviadas, HistoricoAtivo) 
+                SELECT @userId, @planoId, LimiteProdutos, HistoricoDias, @canal, 0, 1 
+                FROM planos 
+                WHERE Id = @planoId";
+
+                    using (var cmd = new MySqlCommand(query, con))
                     {
-                        con.Open();
-
-                        const string query = @"
-                            INSERT INTO configutilizador 
-                            (UserId, PlanoId, LimiteProdutos, HistoricoDias, CanalPreferido, NotificacoesEnviadas, HistoricoAtivo) 
-                            SELECT @userId, @planoId, LimiteProdutos, HistoricoDias, @canal, 0, 1 
-                            FROM planos 
-                            WHERE Id = @planoId";
-
-                        using (var cmd = new MySqlCommand(query, con))
-                        {
-                            cmd.Parameters.AddWithValue("@userId", userId);
-                            cmd.Parameters.AddWithValue("@planoId", planoId);
-                            cmd.Parameters.AddWithValue("@canal", canalPreferido);
-                            cmd.ExecuteNonQuery();
-                        }
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@planoId", planoId);
+                        cmd.Parameters.AddWithValue("@canal", canalPreferido);
+                        cmd.ExecuteNonQuery();
                     }
                 }
             }
@@ -164,6 +171,7 @@ namespace Painel_Admin.Utilizadores
                 MessageBox.Show("Erro ao configurar plano:\n" + ex.Message, "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
 
         private void ConfigurarPreferenciasNotificacao(int userId)
         {

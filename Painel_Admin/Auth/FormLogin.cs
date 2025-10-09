@@ -9,6 +9,8 @@ namespace Painel_Admin
 {
     public partial class FormLogin : Form
     {
+        private bool senhaVisivel = false;
+
         public FormLogin()
         {
             InitializeComponent();
@@ -19,6 +21,7 @@ namespace Painel_Admin
             TxtNome.Clear();
             TxtSenha.Clear();
             TxtSenha.UseSystemPasswordChar = true;
+            btnMostrarSenha.Image = Properties.Resources.OlhoFechado;
         }
 
         private void BotaoEntrar_Click(object sender, EventArgs e)
@@ -85,6 +88,22 @@ namespace Painel_Admin
             catch (Exception ex)
             {
                 MessageBox.Show("Erro ao autenticar:\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnMostrarSenha_Click(object sender, EventArgs e)
+        {
+            senhaVisivel = !senhaVisivel;
+
+            if (senhaVisivel)
+            {
+                TxtSenha.UseSystemPasswordChar = false;
+                btnMostrarSenha.Image = Properties.Resources.OlhoAberto;
+            }
+            else
+            {
+                TxtSenha.UseSystemPasswordChar = true;
+                btnMostrarSenha.Image = Properties.Resources.OlhoFechado;
             }
         }
 

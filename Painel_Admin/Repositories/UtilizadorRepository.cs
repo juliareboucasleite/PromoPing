@@ -6,7 +6,6 @@ namespace Painel_Admin
 {
     public class UtilizadorRepository
     {
- 
         public DataTable GetAll()
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -25,7 +24,6 @@ namespace Painel_Admin
                 }
             }
         }
-
         public void Add(string nome, string email, string senhaHash, string telefone, bool ativo, int perfilId)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -50,8 +48,6 @@ namespace Painel_Admin
             }
         }
 
-
-
         public void Update(int id, string nome, string email, string telefone, bool ativo, int perfilId)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -75,7 +71,6 @@ namespace Painel_Admin
                 }
             }
         }
-
         public void Delete(int id)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))

@@ -5,7 +5,6 @@ namespace Painel_Admin
 {
     public class PreferenciaNotificacaoRepository
     {
-        // ✅ Retorna todas as preferências com nome do utilizador
         public DataTable GetAll()
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -32,7 +31,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Adiciona nova preferência
         public void Add(int userId, string tipo, bool ativo)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -52,7 +50,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Atualiza preferência existente
         public void Update(int id, int userId, string tipo, bool ativo)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))
@@ -74,7 +71,6 @@ namespace Painel_Admin
             }
         }
 
-        // ✅ Exclui preferência
         public void Delete(int id)
         {
             using (var con = new MySqlConnection(DbConfig.ConnectionString))

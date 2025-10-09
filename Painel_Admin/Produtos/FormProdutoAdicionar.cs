@@ -79,7 +79,6 @@ namespace Painel_Admin.Produtos
                     "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;

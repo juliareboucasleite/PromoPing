@@ -36,14 +36,51 @@ namespace Painel_Admin
                 }
             } catch (Exception ex) { MessageBox.Show("Erro ao atualizar o dashboard: " + ex.Message); }
         }
-        private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e) {new ProdutosListForm().ShowDialog();}
-        private void painelPerfisToolStripMenuItem_Click(object sender, EventArgs e) {new PainelPerfis().ShowDialog();}
-        private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e) {new FormPerfilDetalhes(1).ShowDialog();}
-        private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e) { new FormPerfilEditar(1, "Nome", "email@teste.com", "910000000", "free", "email", true).ShowDialog(); }
-        private void editarNotificacoesToolStripMenuItem_Click(object sender, EventArgs e) {using (var form = new FormNotificacaoEditar()) {form.ShowDialog(); } }
-        private void notificacoesToolStripMenuItem1_Click(object sender, EventArgs e) {using (var form = new FormNotificacoes()) {form.ShowDialog(); } }
-        private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e) {using (var form = new ProdutosListForm()) {form.ShowDialog(); } }
-        private void suporteToolStripMenuItem_Click(object sender, EventArgs e) { using (var form = new Suporte()) {form.ShowDialog(); } }
-        private void painelPerfisUtilizadoresToolStripMenuItem_Click(object sender, EventArgs e) { using (var form = new FormUtilizadoresList()) { form.ShowDialog(); } }
+
+        private void editarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new ProdutosListForm().ShowDialog();
+
+        }
+
+        private void painelPerfisToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new PainelPerfis().ShowDialog();
+        }
+
+        private void perfilDetalhesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new FormPerfilDetalhes(1).ShowDialog();
+        }
+
+        private void perfilEditarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new FormPerfilEditar(1, "Nome", "email@teste.com", "910000000", "free", "email", true).ShowDialog();
+        }
+
+        private void editarNotificacoesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new FormNotificacaoEditar()) {form.ShowDialog(); }
+        }
+
+        private void notificacoesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            using (var form = new FormNotificacoes()) {form.ShowDialog(); }
+        }
+
+        private void listarProdutosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new ProdutosListForm()) {form.ShowDialog(); }
+        }
+
+        private void suporteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new Suporte()) {form.ShowDialog(); }
+        }
+
+        private void painelPerfisUtilizadoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var form = new FormUtilizadoresList()) { form.ShowDialog(); }
+        }
     }
 }

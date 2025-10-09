@@ -7,9 +7,7 @@
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
@@ -23,6 +21,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.BotaoEntrar = new System.Windows.Forms.Button();
             this.TxtSenha = new System.Windows.Forms.TextBox();
+            this.btnMostrarSenha = new System.Windows.Forms.PictureBox();
             this.menuStrip2 = new System.Windows.Forms.MenuStrip();
             this.loginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRegistrar = new System.Windows.Forms.ToolStripMenuItem();
@@ -31,6 +30,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnMostrarSenha)).BeginInit();
             this.menuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -79,8 +79,21 @@
             this.TxtSenha.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.TxtSenha.Location = new System.Drawing.Point(66, 194);
             this.TxtSenha.Name = "TxtSenha";
-            this.TxtSenha.Size = new System.Drawing.Size(175, 22);
+            this.TxtSenha.Size = new System.Drawing.Size(150, 22);
             this.TxtSenha.TabIndex = 6;
+            this.TxtSenha.UseSystemPasswordChar = true;
+            // 
+            // btnMostrarSenha
+            // 
+            this.btnMostrarSenha.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnMostrarSenha.Image = global::Painel_Admin.Properties.Resources.OlhoFechado;
+            this.btnMostrarSenha.Location = new System.Drawing.Point(222, 194);
+            this.btnMostrarSenha.Name = "btnMostrarSenha";
+            this.btnMostrarSenha.Size = new System.Drawing.Size(24, 22);
+            this.btnMostrarSenha.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.btnMostrarSenha.TabIndex = 8;
+            this.btnMostrarSenha.TabStop = false;
+            this.btnMostrarSenha.Click += new System.EventHandler(this.btnMostrarSenha_Click);
             // 
             // menuStrip2
             // 
@@ -107,7 +120,7 @@
             // 
             this.btnRegistrar.Image = global::Painel_Admin.Properties.Resources.Usuario;
             this.btnRegistrar.Name = "btnRegistrar";
-            this.btnRegistrar.Size = new System.Drawing.Size(180, 22);
+            this.btnRegistrar.Size = new System.Drawing.Size(122, 22);
             this.btnRegistrar.Text = "&Registrar";
             this.btnRegistrar.Click += new System.EventHandler(this.AcessoRegistar);
             // 
@@ -116,7 +129,7 @@
             this.suporteToolStripMenuItem.Image = global::Painel_Admin.Properties.Resources.Notificacoes;
             this.suporteToolStripMenuItem.Name = "suporteToolStripMenuItem";
             this.suporteToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
-            this.suporteToolStripMenuItem.Text = "&Support";
+            this.suporteToolStripMenuItem.Text = "&Suporte";
             this.suporteToolStripMenuItem.Click += new System.EventHandler(this.AcessarSuporte);
             // 
             // BotaoLimpar
@@ -155,6 +168,7 @@
             this.AcceptButton = this.BotaoEntrar;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(286, 293);
+            this.Controls.Add(this.btnMostrarSenha);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.BotaoLimpar);
@@ -164,7 +178,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.BotaoEntrar);
             this.Controls.Add(this.menuStrip2);
-            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -173,11 +187,11 @@
             this.Text = "Login";
             this.Load += new System.EventHandler(this.FormLogin_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnMostrarSenha)).EndInit();
             this.menuStrip2.ResumeLayout(false);
             this.menuStrip2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -187,6 +201,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button BotaoEntrar;
         private System.Windows.Forms.TextBox TxtSenha;
+        private System.Windows.Forms.PictureBox btnMostrarSenha;
         private System.Windows.Forms.MenuStrip menuStrip2;
         private System.Windows.Forms.ToolStripMenuItem loginToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem btnRegistrar;

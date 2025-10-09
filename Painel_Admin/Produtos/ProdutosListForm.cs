@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Windows.Forms;
 using Painel_Admin.Produtos;
 
@@ -7,8 +8,6 @@ namespace Painel_Admin
     public partial class ProdutosListForm : Form
     {
         private readonly ProdutoRepository _produtoRepo;
-
-
         public ProdutosListForm()
         {
             InitializeComponent();
@@ -19,7 +18,6 @@ namespace Painel_Admin
         {
             CarregarProdutos();
         }
-
         private void CarregarProdutos()
         {
             try
@@ -47,7 +45,6 @@ namespace Painel_Admin
                                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
             using (var form = new FormProdutoAdicionar())
@@ -58,7 +55,6 @@ namespace Painel_Admin
                 }
             }
         }
-
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvProdutos.CurrentRow != null)
@@ -68,12 +64,8 @@ namespace Painel_Admin
                     int id = Convert.ToInt32(dgvProdutos.CurrentRow.Cells["Id"].Value);
                     string nome = dgvProdutos.CurrentRow.Cells["Nome"].Value.ToString();
                     string link = dgvProdutos.CurrentRow.Cells["Link"].Value.ToString();
-                    decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value
-                        ? Convert.ToDecimal(dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value)
-                        : 0;
-                    DateTime? dataLimite = dgvProdutos.CurrentRow.Cells["DataLimite"].Value != DBNull.Value
-                        ? Convert.ToDateTime(dgvProdutos.CurrentRow.Cells["DataLimite"].Value)
-                        : (DateTime?)null;
+                    decimal precoAlvo = dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value != DBNull.Value ? Convert.ToDecimal(dgvProdutos.CurrentRow.Cells["PrecoAlvo"].Value) : 0;
+                    DateTime? dataLimite = dgvProdutos.CurrentRow.Cells["DataLimite"].Value != DBNull.Value ? Convert.ToDateTime(dgvProdutos.CurrentRow.Cells["DataLimite"].Value) : (DateTime?)null;
                     string loja = dgvProdutos.CurrentRow.Cells["Loja"].Value.ToString();
                     using (var form = new FormProdutoEditar(id, 0, nome, link, precoAlvo, dataLimite, loja))
                     {
@@ -85,26 +77,21 @@ namespace Painel_Admin
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro ao editar produto: " + ex.Message,
-                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Erro ao editar produto: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Selecione um produto para editar!",
-                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um produto para editar!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
         private void btnRemover_Click(object sender, EventArgs e)
         {
             if (dgvProdutos.SelectedRows.Count > 0)
             {
                 int id = Convert.ToInt32(dgvProdutos.SelectedRows[0].Cells["Id"].Value);
 
-                if (MessageBox.Show("Deseja remover este produto?", "Confirmação",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("Deseja remover este produto?", "Confirmação",MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     try
                     {
@@ -113,18 +100,15 @@ namespace Painel_Admin
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Erro ao remover produto: " + ex.Message,
-                                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Erro ao remover produto: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
             else
             {
-                MessageBox.Show("Selecione um produto para remover!",
-                                "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um produto para remover!","Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
         private void btnAtualizar_Click(object sender, EventArgs e)
         {
             CarregarProdutos();

@@ -32,8 +32,7 @@ namespace Painel_Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao corrigir perfis nulos: " + ex.Message,
-                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao corrigir perfis nulos: " + ex.Message,"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -75,8 +74,7 @@ namespace Painel_Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao carregar utilizadores: " + ex.Message,
-                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao carregar utilizadores: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void btnAdicionar_Click(object sender, EventArgs e)
@@ -90,8 +88,7 @@ namespace Painel_Admin
         {
             if (dgvUtilizadores.CurrentRow == null)
             {
-                MessageBox.Show("Selecione um utilizador para editar!",
-                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um utilizador para editar!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -119,22 +116,19 @@ namespace Painel_Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao editar utilizador: " + ex.Message,
-                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao editar utilizador: " + ex.Message,"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void btnRemover_Click(object sender, EventArgs e)
         {
             if (dgvUtilizadores.CurrentRow == null)
             {
-                MessageBox.Show("Selecione um utilizador para remover!",
-                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um utilizador para remover!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             int id = Convert.ToInt32(dgvUtilizadores.CurrentRow.Cells["UserId"].Value);
-            if (MessageBox.Show("Remover este utilizador?", "Confirmação",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show("Remover este utilizador?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
                 {
@@ -149,8 +143,7 @@ namespace Painel_Admin
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro ao remover utilizador: " + ex.Message,
-                        "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Erro ao remover utilizador: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -163,8 +156,7 @@ namespace Painel_Admin
         {
             if (dgvUtilizadores.CurrentRow == null)
             {
-                MessageBox.Show("Selecione um utilizador para ver os detalhes!",
-                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um utilizador para ver os detalhes!","Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             try
@@ -175,8 +167,7 @@ namespace Painel_Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao abrir detalhes: " + ex.Message,
-                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao abrir detalhes: " + ex.Message,  "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

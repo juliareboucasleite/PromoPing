@@ -117,7 +117,6 @@ namespace Painel_Admin
 
         private void ComboBoxID_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // ✅ Mostra informação do utilizador selecionado no console (para debug)
             if (ComboBoxID.SelectedItem is System.Data.DataRowView row)
             {
                 int id = Convert.ToInt32(row["Id"]);
@@ -125,25 +124,12 @@ namespace Painel_Admin
                 Console.WriteLine($"Selecionado: ID = {id}, Nome = {nome}");
             }
         }
+        private void txtNome_TextChanged(object sender, EventArgs e){ }
 
-        private void txtNome_TextChanged(object sender, EventArgs e)
-        {
+        private void txtLink_TextChanged(object sender, EventArgs e) {}
 
-        }
+        private void txtPrecoAlvo_TextChanged(object sender, EventArgs e) { }
 
-        private void txtLink_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtPrecoAlvo_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtLoja_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void txtLoja_TextChanged(object sender, EventArgs e){}
     }
 }
