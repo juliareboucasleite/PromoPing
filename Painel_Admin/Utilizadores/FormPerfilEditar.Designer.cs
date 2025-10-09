@@ -7,9 +7,7 @@
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
@@ -30,20 +28,18 @@
             this.cmbCanal = new System.Windows.Forms.ComboBox();
             this.lblNotificacoes = new System.Windows.Forms.Label();
             this.clbNotificacoes = new System.Windows.Forms.CheckedListBox();
-            this.chkAtivo = new System.Windows.Forms.CheckBox();
+            this.btnAtivo = new System.Windows.Forms.Button();
             this.btnSalvar = new System.Windows.Forms.Button();
             this.btnCancelar = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.ComboTipoUtilizador = new System.Windows.Forms.ComboBox();
+            this.chkAtivo = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblNome
             // 
-            this.lblNome.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblNome.AutoSize = true;
-            this.lblNome.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNome.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblNome.Location = new System.Drawing.Point(31, 37);
             this.lblNome.Name = "lblNome";
             this.lblNome.Size = new System.Drawing.Size(44, 15);
@@ -52,9 +48,6 @@
             // 
             // txtNome
             // 
-            this.txtNome.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtNome.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtNome.Location = new System.Drawing.Point(126, 35);
             this.txtNome.Name = "txtNome";
@@ -63,11 +56,8 @@
             // 
             // lblEmail
             // 
-            this.lblEmail.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblEmail.AutoSize = true;
-            this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblEmail.Location = new System.Drawing.Point(31, 77);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(39, 15);
@@ -76,9 +66,6 @@
             // 
             // txtEmail
             // 
-            this.txtEmail.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtEmail.Location = new System.Drawing.Point(126, 75);
             this.txtEmail.Name = "txtEmail";
@@ -87,11 +74,8 @@
             // 
             // lblTelefone
             // 
-            this.lblTelefone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblTelefone.AutoSize = true;
-            this.lblTelefone.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTelefone.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblTelefone.Location = new System.Drawing.Point(31, 117);
             this.lblTelefone.Name = "lblTelefone";
             this.lblTelefone.Size = new System.Drawing.Size(59, 15);
@@ -100,9 +84,6 @@
             // 
             // txtTelefone
             // 
-            this.txtTelefone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtTelefone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtTelefone.Location = new System.Drawing.Point(126, 115);
             this.txtTelefone.Name = "txtTelefone";
@@ -111,11 +92,8 @@
             // 
             // lblPlano
             // 
-            this.lblPlano.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblPlano.AutoSize = true;
-            this.lblPlano.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPlano.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblPlano.Location = new System.Drawing.Point(31, 158);
             this.lblPlano.Name = "lblPlano";
             this.lblPlano.Size = new System.Drawing.Size(40, 15);
@@ -124,27 +102,19 @@
             // 
             // cmbPlano
             // 
-            this.cmbPlano.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmbPlano.DisplayMember = "Nome";
             this.cmbPlano.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPlano.FormattingEnabled = true;
-            this.cmbPlano.Items.AddRange(new object[] {
-            "Free",
-            "Basic",
-            "Premium"});
             this.cmbPlano.Location = new System.Drawing.Point(126, 155);
             this.cmbPlano.Name = "cmbPlano";
             this.cmbPlano.Size = new System.Drawing.Size(250, 23);
             this.cmbPlano.TabIndex = 7;
+            this.cmbPlano.ValueMember = "Id";
             // 
             // lblCanal
             // 
-            this.lblCanal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblCanal.AutoSize = true;
-            this.lblCanal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCanal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCanal.Location = new System.Drawing.Point(31, 198);
             this.lblCanal.Name = "lblCanal";
             this.lblCanal.Size = new System.Drawing.Size(95, 15);
@@ -153,9 +123,6 @@
             // 
             // cmbCanal
             // 
-            this.cmbCanal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbCanal.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCanal.FormattingEnabled = true;
             this.cmbCanal.Items.AddRange(new object[] {
@@ -168,11 +135,8 @@
             // 
             // lblNotificacoes
             // 
-            this.lblNotificacoes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblNotificacoes.AutoSize = true;
-            this.lblNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNotificacoes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblNotificacoes.Location = new System.Drawing.Point(31, 244);
             this.lblNotificacoes.Name = "lblNotificacoes";
             this.lblNotificacoes.Size = new System.Drawing.Size(79, 15);
@@ -181,9 +145,6 @@
             // 
             // clbNotificacoes
             // 
-            this.clbNotificacoes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.clbNotificacoes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.clbNotificacoes.CheckOnClick = true;
             this.clbNotificacoes.FormattingEnabled = true;
@@ -195,30 +156,24 @@
             this.clbNotificacoes.Size = new System.Drawing.Size(250, 38);
             this.clbNotificacoes.TabIndex = 11;
             // 
-            // chkAtivo
+            // btnAtivo
             // 
-            this.chkAtivo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkAtivo.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chkAtivo.AutoSize = true;
-            this.chkAtivo.BackColor = System.Drawing.Color.Orange;
-            this.chkAtivo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAtivo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkAtivo.Location = new System.Drawing.Point(34, 324);
-            this.chkAtivo.Name = "chkAtivo";
-            this.chkAtivo.Size = new System.Drawing.Size(47, 25);
-            this.chkAtivo.TabIndex = 14;
-            this.chkAtivo.Text = "Ativo";
-            this.chkAtivo.UseVisualStyleBackColor = false;
+            this.btnAtivo.BackColor = System.Drawing.Color.DarkGray;
+            this.btnAtivo.FlatAppearance.BorderSize = 0;
+            this.btnAtivo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAtivo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAtivo.ForeColor = System.Drawing.Color.White;
+            this.btnAtivo.Location = new System.Drawing.Point(34, 324);
+            this.btnAtivo.Name = "btnAtivo";
+            this.btnAtivo.Size = new System.Drawing.Size(70, 30);
+            this.btnAtivo.TabIndex = 14;
+            this.btnAtivo.Text = "Inativo ❌";
+            this.btnAtivo.UseVisualStyleBackColor = false;
+            this.btnAtivo.Click += new System.EventHandler(this.chkAtivo_CheckedChanged);
             // 
             // btnSalvar
             // 
-            this.btnSalvar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSalvar.BackColor = System.Drawing.Color.ForestGreen;
-            this.btnSalvar.FlatAppearance.BorderSize = 0;
             this.btnSalvar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSalvar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSalvar.ForeColor = System.Drawing.Color.White;
@@ -232,11 +187,7 @@
             // 
             // btnCancelar
             // 
-            this.btnCancelar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancelar.BackColor = System.Drawing.Color.Firebrick;
-            this.btnCancelar.FlatAppearance.BorderSize = 0;
             this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnCancelar.ForeColor = System.Drawing.Color.White;
@@ -250,11 +201,8 @@
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.label1.Location = new System.Drawing.Point(29, 285);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(91, 15);
@@ -263,9 +211,6 @@
             // 
             // ComboTipoUtilizador
             // 
-            this.ComboTipoUtilizador.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ComboTipoUtilizador.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ComboTipoUtilizador.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.ComboTipoUtilizador.FormattingEnabled = true;
@@ -276,6 +221,14 @@
             this.ComboTipoUtilizador.Name = "ComboTipoUtilizador";
             this.ComboTipoUtilizador.Size = new System.Drawing.Size(250, 23);
             this.ComboTipoUtilizador.TabIndex = 13;
+            // 
+            // chkAtivo
+            // 
+            this.chkAtivo.Location = new System.Drawing.Point(0, 0);
+            this.chkAtivo.Name = "chkAtivo";
+            this.chkAtivo.Size = new System.Drawing.Size(104, 24);
+            this.chkAtivo.TabIndex = 17;
+            this.chkAtivo.Visible = false;
             // 
             // FormPerfilEditar
             // 
@@ -297,9 +250,10 @@
             this.Controls.Add(this.cmbCanal);
             this.Controls.Add(this.lblNotificacoes);
             this.Controls.Add(this.clbNotificacoes);
-            this.Controls.Add(this.chkAtivo);
+            this.Controls.Add(this.btnAtivo);
             this.Controls.Add(this.btnSalvar);
             this.Controls.Add(this.btnCancelar);
+            this.Controls.Add(this.chkAtivo);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -315,7 +269,7 @@
         }
 
         #endregion
-
+        private System.Windows.Forms.CheckBox chkAtivo;
         private System.Windows.Forms.Label lblNome;
         private System.Windows.Forms.TextBox txtNome;
         private System.Windows.Forms.Label lblEmail;
@@ -328,7 +282,7 @@
         private System.Windows.Forms.ComboBox cmbCanal;
         private System.Windows.Forms.Label lblNotificacoes;
         private System.Windows.Forms.CheckedListBox clbNotificacoes;
-        private System.Windows.Forms.CheckBox chkAtivo;
+        private System.Windows.Forms.Button btnAtivo;
         private System.Windows.Forms.Button btnSalvar;
         private System.Windows.Forms.Button btnCancelar;
         private System.Windows.Forms.Label label1;

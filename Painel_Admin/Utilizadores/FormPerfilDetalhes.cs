@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -39,11 +40,12 @@ namespace Painel_Admin
                             u.ultimo_login,
                             u.dinheiro_poupado,
                             pl.Nome AS Plano,
-                            pl.LimiteProdutos,
-                            pl.VerificacaoIntervalo
+                            c.LimiteProdutos,
+                            c.CanalPreferido
                         FROM utilizadores u
                         LEFT JOIN perfis p ON p.Id = u.PerfilId
-                        LEFT JOIN planos pl ON pl.Id = 1
+                        LEFT JOIN configutilizador c ON c.UserId = u.Id
+                        LEFT JOIN planos pl ON pl.Id = c.PlanoId
                         WHERE u.Id = @id;";
 
                     using (var cmd = new MySqlCommand(query, con))
@@ -57,20 +59,35 @@ namespace Painel_Admin
                                 IdNome.Text = reader["Nome"].ToString();
                                 IdEmail.Text = reader["Email"].ToString();
                                 IdTelemovel.Text = reader["Telefone"].ToString();
+
                                 IdPlano.Text = reader["Plano"].ToString();
-                                IdAtivo.Text = (Convert.ToInt32(reader["Ativo"]) == 1) ? "Sim ✅" : "Não ❌";
+                                AplicarCorPlano(IdPlano.Text);
+
+                                bool ativo = Convert.ToInt32(reader["Ativo"]) == 1;
+                                IdAtivo.Text = ativo ? "Sim ✅" : "Não ❌";
+                                IdAtivo.ForeColor = ativo ? Color.ForestGreen : Color.Firebrick;
 
                                 IdProdutos.Text = ObterTotal("produtos", "UserId", _userId).ToString();
                                 IdNotificacoes.Text = ObterTotal("notificacoes", "UserId", _userId).ToString();
                                 IdDinheiro.Text = "€ " + Convert.ToDecimal(reader["dinheiro_poupado"]).ToString("F2");
 
-                                IdMembroDesde.Text = Convert.ToDateTime(reader["Data_Registo"]).ToString("dd/MM/yyyy HH:mm");
+                                IdMembroDesde.Text = Convert
+                                    .ToDateTime(reader["Data_Registo"])
+                                    .ToString("dd/MM/yyyy HH:mm");
+
                                 IdUltimoLogin.Text = reader["ultimo_login"] != DBNull.Value
                                     ? Convert.ToDateTime(reader["ultimo_login"]).ToString("dd/MM/yyyy HH:mm")
                                     : "---";
 
-                                IdLimitesProdutos.Text = reader["LimiteProdutos"].ToString();
-                                IdCanalPreferido.Text = ObterCanalPreferido();
+                                IdLimitesProdutos.Text = reader["LimiteProdutos"] != DBNull.Value
+                                    ? reader["LimiteProdutos"].ToString()
+                                    : "5";
+
+                                IdCanalPreferido.Text = reader["CanalPreferido"] != DBNull.Value
+                                    ? reader["CanalPreferido"].ToString()
+                                    : "Email";
+
+                                AplicarCorCanal(IdCanalPreferido.Text);
                             }
                         }
                     }
@@ -79,6 +96,44 @@ namespace Painel_Admin
             catch (Exception ex)
             {
                 MessageBox.Show("Erro ao carregar perfil: " + ex.Message);
+            }
+        }
+
+        private void AplicarCorPlano(string plano)
+        {
+            switch (plano.ToLower())
+            {
+                case "free":
+                    IdPlano.ForeColor = Color.Gray;
+                    break;
+                case "basic":
+                    IdPlano.ForeColor = Color.RoyalBlue;
+                    break;
+                case "standard":
+                    IdPlano.ForeColor = Color.DarkOrange;
+                    break;
+                case "premium":
+                    IdPlano.ForeColor = Color.ForestGreen;
+                    break;
+                default:
+                    IdPlano.ForeColor = Color.Black;
+                    break;
+            }
+        }
+
+        private void AplicarCorCanal(string canal)
+        {
+            switch (canal.ToLower())
+            {
+                case "email":
+                    IdCanalPreferido.ForeColor = Color.MediumBlue;
+                    break;
+                case "telefone":
+                    IdCanalPreferido.ForeColor = Color.Purple;
+                    break;
+                default:
+                    IdCanalPreferido.ForeColor = Color.Black;
+                    break;
             }
         }
 
@@ -100,25 +155,6 @@ namespace Painel_Admin
             catch
             {
                 return 0;
-            }
-        }
-
-        private string ObterCanalPreferido()
-        {
-            try
-            {
-                using (var con = new MySqlConnection(DbConfig.ConnectionString))
-                {
-                    con.Open();
-                    var cmd = new MySqlCommand("SELECT CanalPreferido FROM configutilizador WHERE UserId=@id", con);
-                    cmd.Parameters.AddWithValue("@id", _userId);
-                    var result = cmd.ExecuteScalar();
-                    return result != null ? result.ToString() : "Email";
-                }
-            }
-            catch
-            {
-                return "Email";
             }
         }
 
@@ -212,8 +248,8 @@ namespace Painel_Admin
             }
         }
 
-        private void IdProdutos_Click(object sender, EventArgs e) {}
-        private void IdNotificacoes_Click(object sender, EventArgs e) {}
-        private void IdMembroDesde_Click(object sender, EventArgs e) {}
+        private void IdProdutos_Click(object sender, EventArgs e) { }
+        private void IdNotificacoes_Click(object sender, EventArgs e) { }
+        private void IdMembroDesde_Click(object sender, EventArgs e) { }
     }
 }

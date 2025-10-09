@@ -9,7 +9,10 @@ namespace Painel_Admin
 {
     public partial class FormLogin : Form
     {
-        public FormLogin() {InitializeComponent();}
+        public FormLogin()
+        {
+            InitializeComponent();
+        }
 
         private void FormLogin_Load(object sender, EventArgs e)
         {
@@ -22,18 +25,22 @@ namespace Painel_Admin
         {
             string username = TxtNome.Text.Trim();
             string password = TxtSenha.Text.Trim();
+
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Por favor, preencha todos os campos.");
+                MessageBox.Show("Por favor, preencha todos os campos!", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
-            using (MySqlConnection con = new MySqlConnection(connStr))
+
+            try
             {
-                try
+                string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
+
+                using (MySqlConnection con = new MySqlConnection(connStr))
                 {
                     con.Open();
                     string query = "SELECT Id, Nome, Email, SenhaHash FROM utilizadores WHERE Nome = @nome";
+
                     using (MySqlCommand cmd = new MySqlCommand(query, con))
                     {
                         cmd.Parameters.AddWithValue("@nome", username);
@@ -43,11 +50,11 @@ namespace Painel_Admin
                             if (reader.Read())
                             {
                                 string senhaDb = reader["SenhaHash"].ToString();
-                                bool senhaCorreta;
-                                if (senhaDb.StartsWith("$2a$") || senhaDb.StartsWith("$2b$") || senhaDb.StartsWith("$2y$"))
-                                    senhaCorreta = BCrypt.Net.BCrypt.Verify(password, senhaDb);
-                                else
-                                    senhaCorreta = password == senhaDb;
+
+                                bool senhaCorreta =
+                                    (senhaDb.StartsWith("$2a$") || senhaDb.StartsWith("$2b$") || senhaDb.StartsWith("$2y$"))
+                                    ? BCrypt.Net.BCrypt.Verify(password, senhaDb)
+                                    : password == senhaDb;
 
                                 if (senhaCorreta)
                                 {
@@ -55,28 +62,29 @@ namespace Painel_Admin
                                     Sessao.Nome = reader["Nome"].ToString();
                                     Sessao.Email = reader["Email"].ToString();
 
-                                    MessageBox.Show($"Bem-vindo, {Sessao.Nome}!");
+                                    MessageBox.Show($"Bem-vindo, {Sessao.Nome}!", "Login efetuado", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                                     this.Hide();
                                     using (var formMain = new PainelForm())
-                                    {
                                         formMain.ShowDialog();
-                                    }
                                     this.Show();
                                 }
                                 else
                                 {
-                                    MessageBox.Show("Senha inválida!");
+                                    MessageBox.Show("Senha incorreta!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
                             }
                             else
                             {
-                                MessageBox.Show("Utilizador não encontrado!");
+                                MessageBox.Show("Utilizador não encontrado!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     }
                 }
-                catch (Exception ex) { MessageBox.Show("Erro ao autenticar: " + ex.Message); }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao autenticar:\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -96,7 +104,10 @@ namespace Painel_Admin
 
         private void AcessarSuporte(object sender, EventArgs e)
         {
-            using (var formSuporte = new Suporte()) {formSuporte.ShowDialog(); }
+            using (var formSuporte = new Suporte())
+            {
+                formSuporte.ShowDialog();
+            }
         }
     }
 }

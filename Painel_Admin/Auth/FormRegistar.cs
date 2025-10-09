@@ -1,13 +1,16 @@
-﻿using MySql.Data.MySqlClient;
+﻿using BCrypt.Net;
+using MySql.Data.MySqlClient;
+using Painel_Admin.Auth;
 using System;
 using System.Configuration;
 using System.Windows.Forms;
-using BCrypt.Net;
 
 namespace Painel_Admin
 {
     public partial class FormRegistar : Form
     {
+        private bool senhaVisivel = false;
+
         public FormRegistar()
         {
             InitializeComponent();
@@ -18,6 +21,7 @@ namespace Painel_Admin
             TxtNome.Clear();
             TxtEmail.Clear();
             TxtSenha.Clear();
+            TxtSenha.PasswordChar = '•';
         }
 
         private void BotaoEntrar_Click(object sender, EventArgs e)
@@ -28,15 +32,13 @@ namespace Painel_Admin
 
             if (string.IsNullOrEmpty(nome) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(senha))
             {
-                MessageBox.Show("⚠ Preencha todos os campos!");
+                MessageBox.Show("Por favor, preencha todos os campos!", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-
                 string senhaHash = BCrypt.Net.BCrypt.HashPassword(senha);
-
                 string connStr = ConfigurationManager.ConnectionStrings["MySqlConn"].ConnectionString;
 
                 using (var con = new MySqlConnection(connStr))
@@ -49,7 +51,7 @@ namespace Painel_Admin
 
                     if (count > 0)
                     {
-                        MessageBox.Show("❌ Já existe um utilizador registado com este email!");
+                        MessageBox.Show("Já existe um utilizador registado com este e-mail.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
 
@@ -66,13 +68,33 @@ namespace Painel_Admin
                     }
                 }
 
-                MessageBox.Show("✅ Utilizador registado com sucesso!");
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                // ✅ Mensagem de sucesso
+                MessageBox.Show($"Bem-vindo, {nome}!\nRegistro concluído com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                this.Hide();
+                using (var formMain = new PainelForm())
+                    formMain.ShowDialog();
+                this.Show();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("❌ Erro ao registar: " + ex.Message);
+                MessageBox.Show("Erro ao registar o utilizador:\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnMostrarSenha_Click(object sender, EventArgs e)
+        {
+            senhaVisivel = !senhaVisivel;
+
+            if (senhaVisivel)
+            {
+                TxtSenha.PasswordChar = '\0';
+                btnMostrarSenha.Image = Properties.Resources.OlhoAberto;
+            }
+            else
+            {
+                TxtSenha.PasswordChar = '•';
+                btnMostrarSenha.Image = Properties.Resources.OlhoFechado;
             }
         }
 
@@ -87,10 +109,16 @@ namespace Painel_Admin
         {
             this.Hide();
             using (var login = new FormLogin())
-            {
                 login.ShowDialog();
-            }
             this.Show();
+        }
+
+        private void suporteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var suporte = new Suporte())
+            {
+                suporte.ShowDialog();
+            }
         }
     }
 }

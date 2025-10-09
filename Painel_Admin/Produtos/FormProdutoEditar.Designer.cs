@@ -233,7 +233,7 @@
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox2.Image = global::Painel_Admin.Properties.Resources.android_chrome_192x192;
+            this.pictureBox2.Image = global::Painel_Admin.Properties.Resources.android_chrome_192x1921;
             this.pictureBox2.Location = new System.Drawing.Point(450, 64);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(150, 120);

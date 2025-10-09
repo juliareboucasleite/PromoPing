@@ -73,6 +73,16 @@ namespace Painel_Admin.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap android_chrome_192x1921 {
+            get {
+                object obj = ResourceManager.GetObject("android-chrome-192x1921", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Dinheiro {
             get {
                 object obj = ResourceManager.GetObject("Dinheiro", resourceCulture);
@@ -86,6 +96,26 @@ namespace Painel_Admin.Properties {
         internal static System.Drawing.Bitmap Notificacoes {
             get {
                 object obj = ResourceManager.GetObject("Notificacoes", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap OlhoAberto {
+            get {
+                object obj = ResourceManager.GetObject("OlhoAberto", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap OlhoFechado {
+            get {
+                object obj = ResourceManager.GetObject("OlhoFechado", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

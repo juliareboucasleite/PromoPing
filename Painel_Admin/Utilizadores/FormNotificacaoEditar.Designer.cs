@@ -71,6 +71,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbTipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbTipo.FormattingEnabled = true;
+            this.cmbTipo.Items.AddRange(new object[] {
+            "Telefone",
+            "Email"});
             this.cmbTipo.Location = new System.Drawing.Point(100, 57);
             this.cmbTipo.Name = "cmbTipo";
             this.cmbTipo.Size = new System.Drawing.Size(188, 21);

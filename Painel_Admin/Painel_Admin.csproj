@@ -119,6 +119,11 @@
     <Compile Include="Produtos\FormProdutoEditar.Designer.cs">
       <DependentUpon>FormProdutoEditar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Repositories\PreferenciaNotificacaoRepository.cs" />
     <Compile Include="Repositories\ProdutoRepository.cs" />
     <Compile Include="Repositories\UtilizadorRepository.cs" />
@@ -196,6 +201,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilizadores\PlanoItem.cs" />
     <EmbeddedResource Include="PainelForm.aa.resx">
       <DependentUpon>PainelForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -243,14 +249,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Core\packages.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -280,6 +281,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\android-chrome-192x192.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OlhoAberto.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OlhoAberto.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OlhoFechado.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\android-chrome-192x1921.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

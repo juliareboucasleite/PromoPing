@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using BCrypt.Net;
+using MySql.Data.MySqlClient;
 
 namespace Painel_Admin.Utilizadores
 {
@@ -12,71 +13,228 @@ namespace Painel_Admin.Utilizadores
         {
             InitializeComponent();
             _repo = new UtilizadorRepository();
-            if (cmbPlano.Items.Count > 0)
-                cmbPlano.SelectedIndex = 0;
 
-            if (cmbCanal.Items.Count > 0)
-                cmbCanal.SelectedIndex = 0;
+            AtualizarCorBotaoAtivo();
+            CarregarPlanos();
+
+            if (CmbCanal.Items.Count > 0)
+                CmbCanal.SelectedIndex = 0;
 
             if (ComboTipoUtilizador.Items.Count > 0)
                 ComboTipoUtilizador.SelectedIndex = 1;
         }
 
-        private void txtNome_TextChanged(object sender, EventArgs e) { }
-        private void txtEmail_TextChanged(object sender, EventArgs e) { }
-        private void txtSenha_TextChanged(object sender, EventArgs e) { }
-        private void cmbPlano_SelectedIndexChanged(object sender, EventArgs e) { }
-        private void cmbCanal_SelectedIndexChanged(object sender, EventArgs e) { }
-        private void clbNotificacoes_SelectedIndexChanged(object sender, EventArgs e) { }
-        private void chkAtivo_CheckedChanged(object sender, EventArgs e) { }
-        private void ComboTipoUtilizador_SelectedIndexChanged(object sender, EventArgs e) { }
-
-        private void btnSalvar_Click(object sender, EventArgs e)
+        private void CarregarPlanos()
         {
             try
             {
-                string nome = txtNome.Text.Trim();
-                string email = txtEmail.Text.Trim();
-                string senha = txtSenha.Text.Trim();
-                bool ativo = chkAtivo.Checked;
-                string plano = cmbPlano.SelectedItem?.ToString() ?? "free";
-                string canal = cmbCanal.SelectedItem?.ToString() ?? "email";
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                {
+                    con.Open();
+                    const string query = "SELECT Id, Nome FROM planos ORDER BY Preco ASC";
+
+                    using (var cmd = new MySqlCommand(query, con))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        CmbPlano.Items.Clear();
+                        while (reader.Read())
+                        {
+                            CmbPlano.Items.Add(new { Id = reader.GetInt32("Id"), Nome = reader.GetString("Nome") });
+                        }
+                    }
+                }
+
+                if (CmbPlano.Items.Count > 0)
+                    CmbPlano.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao carregar planos:\n{ex.Message}", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                CmbPlano.Items.AddRange(new object[] { "Free", "Basic", "Standard", "Premium" });
+                if (CmbPlano.Items.Count > 0)
+                    CmbPlano.SelectedIndex = 0;
+            }
+        }
+
+        private void TxtNome_TextChanged(object sender, EventArgs e) { }
+        private void TxtEmail_TextChanged(object sender, EventArgs e) { }
+        private void TxtSenha_TextChanged(object sender, EventArgs e) { }
+        private void CmbPlano_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void CmbCanal_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void ClbNotificacoes_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void ComboTipoUtilizador_SelectedIndexChanged(object sender, EventArgs e) { }
+
+        private void ChkAtivo_CheckedChanged(object sender, EventArgs e)
+        {
+            ChkAtivo.Checked = !ChkAtivo.Checked;
+            AtualizarCorBotaoAtivo();
+        }
+
+        private void BtnSalvar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string nome = TxtNome.Text.Trim();
+                string email = TxtEmail.Text.Trim();
+                string senha = TxtSenha.Text.Trim();
+                bool ativo = ChkAtivo.Checked;
+                string canal = CmbCanal.SelectedItem?.ToString() ?? "email";
                 string tipo = ComboTipoUtilizador.SelectedItem?.ToString() ?? "Utilizador";
-                string notificacoes = ObterNotificacoesSelecionadas();
                 int perfilId = tipo == "Admin" ? 1 : 2;
 
                 if (string.IsNullOrEmpty(nome) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(senha))
                 {
-                    MessageBox.Show("⚠ Por favor, preencha Nome, Email e Senha.", "Campos obrigatórios", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Por favor, preencha Nome, Email e Senha.", "Campos obrigatórios", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+
                 string senhaHash = BCrypt.Net.BCrypt.HashPassword(senha);
                 _repo.Add(nome, email, senhaHash, "", ativo, perfilId);
 
-                MessageBox.Show("✅ Utilizador adicionado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                int userId = ObterUltimoIdUtilizador();
+                ConfigurarPlanoUtilizador(userId, canal);
+                ConfigurarPreferenciasNotificacao(userId);
 
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                MessageBox.Show("Utilizador adicionado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.OK;
+                Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("❌ Erro ao adicionar utilizador: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao adicionar utilizador:\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnCancelar_Click(object sender, EventArgs e)
+        private int ObterUltimoIdUtilizador()
         {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
-        }
-        private string ObterNotificacoesSelecionadas()
-        {
-            string result = "";
-            foreach (var item in clbNotificacoes.CheckedItems)
+            try
             {
-                result += item.ToString() + "; ";
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                {
+                    con.Open();
+                    const string query = "SELECT MAX(Id) FROM utilizadores";
+
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
             }
-            return result.TrimEnd(' ', ';');
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private void ConfigurarPlanoUtilizador(int userId, string canalPreferido)
+        {
+            try
+            {
+                var planoSelecionado = CmbPlano.SelectedItem;
+                if (planoSelecionado != null)
+                {
+                    int planoId = 1;
+                    if (planoSelecionado.GetType().GetProperty("Id") != null)
+                        planoId = (int)planoSelecionado.GetType().GetProperty("Id").GetValue(planoSelecionado);
+
+                    using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                    {
+                        con.Open();
+
+                        const string query = @"
+                            INSERT INTO configutilizador 
+                            (UserId, PlanoId, LimiteProdutos, HistoricoDias, CanalPreferido, NotificacoesEnviadas, HistoricoAtivo) 
+                            SELECT @userId, @planoId, LimiteProdutos, HistoricoDias, @canal, 0, 1 
+                            FROM planos 
+                            WHERE Id = @planoId";
+
+                        using (var cmd = new MySqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.Parameters.AddWithValue("@planoId", planoId);
+                            cmd.Parameters.AddWithValue("@canal", canalPreferido);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao configurar plano:\n" + ex.Message, "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void ConfigurarPreferenciasNotificacao(int userId)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DbConfig.ConnectionString))
+                {
+                    con.Open();
+
+                    foreach (var item in ClbNotificacoes.CheckedItems)
+                    {
+                        string tipo = item.ToString().ToLower();
+
+                        const string query = @"
+                            INSERT INTO preferenciasnotificacao (UserId, Tipo, Ativo)
+                            SELECT @userId, @tipo, 1
+                            WHERE NOT EXISTS (
+                                SELECT 1 FROM preferenciasnotificacao WHERE UserId = @userId AND Tipo = @tipo
+                            );";
+
+                        using (var cmd = new MySqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.Parameters.AddWithValue("@tipo", tipo);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    if (ClbNotificacoes.CheckedItems.Count == 0)
+                    {
+                        const string query = @"
+                            INSERT INTO preferenciasnotificacao (UserId, Tipo, Ativo)
+                            SELECT @userId, 'email', 1
+                            WHERE NOT EXISTS (
+                                SELECT 1 FROM preferenciasnotificacao WHERE UserId = @userId AND Tipo = 'email'
+                            );";
+
+                        using (var cmd = new MySqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao configurar notificações:\n" + ex.Message, "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void BtnCancelar_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
+
+        private void AtualizarCorBotaoAtivo()
+        {
+            if (ChkAtivo.Checked)
+            {
+                BtnAtivo.BackColor = System.Drawing.Color.SeaGreen;
+                BtnAtivo.ForeColor = System.Drawing.Color.White;
+                BtnAtivo.Text = "Ativo ✅";
+            }
+            else
+            {
+                BtnAtivo.BackColor = System.Drawing.Color.DarkGray;
+                BtnAtivo.ForeColor = System.Drawing.Color.White;
+                BtnAtivo.Text = "Inativo ❌";
+            }
         }
 
         private void FormAdicionar_Load(object sender, EventArgs e) { }

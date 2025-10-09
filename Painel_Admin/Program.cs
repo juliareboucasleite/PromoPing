@@ -13,19 +13,18 @@ namespace Painel_Admin
             {
                 var conn = DbConfig.ConnectionString;
                 var b = new MySqlConnectionStringBuilder(conn);
-
-                MessageBox.Show($"🔎 A conectar no MySQL com usuário: {b.UserID}",
+                MessageBox.Show($"A conectar no MySQL com usuário: {b.UserID}",
                     "Debug", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 using (var con = new MySqlConnection(conn))
                 {
                     con.Open();
-                    Console.WriteLine("✅ Conexão bem sucedida!");
+                    Console.WriteLine("Conexão bem-sucedida!");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("❌ Erro ao conectar na base de dados: " + ex.Message,
+                MessageBox.Show("Erro ao conectar na base de dados: " + ex.Message,
                     "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }

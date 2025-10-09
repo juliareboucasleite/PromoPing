@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.Windows.Forms;
+using Painel_Admin.Utilizadores;
 
 namespace Painel_Admin
 {
@@ -80,7 +81,7 @@ namespace Painel_Admin
         }
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            var form = new FormPerfilEditar(0, "", "", "", "free", "email", true);
+            var form = new FormAdicionar();
             if (form.ShowDialog() == DialogResult.OK)
                 CarregarUtilizadores();
         }
