@@ -135,11 +135,11 @@ PromoPing-2.0.1/
 
 ## Contribuição
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Faça um fork deste repositório (github.com/juliareboucasleite/nome-do-projeto)
+2. Crie uma branch para sua feature (`git checkout -b feature/SuaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature: SuaFeature'`)
+4. Dê push para sua branch (`git push origin feature/SuaFeature`)
+5. Abra um Pull Request para o repositório juliareboucasleite/nome-do-projeto
 
 ## Licença
 
@@ -147,4 +147,4 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ## Suporte
 
-Para suporte, envie um email para suporte@promoping.pt ou abra uma issue no GitHub.
+Para suporte, envie um email para juliareboucasleite@gmail.com ou abra uma issue no GitHub.
