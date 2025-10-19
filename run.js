@@ -1,3 +1,17 @@
+// PromoPing - Script de execução principal
+// Silenciar dotenv globalmente
+process.env.DOTENV_CONFIG_SILENT = 'true';
+process.env.DOTENV_CONFIG_DEBUG = 'false';
+
+// Interceptar console.log para filtrar mensagens do dotenv
+const originalConsoleLog = console.log;
+console.log = (...args) => {
+  const message = args.join(' ');
+  if (!message.includes('[dotenv@') && !message.includes('injecting env')) {
+    originalConsoleLog(...args);
+  }
+};
+
 import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -54,7 +68,7 @@ function runDocker() {
     log('Iniciando com Docker...', 'blue');
     log('Isso pode demorar alguns minutos na primeira vez...', 'yellow');
     
-    const dockerComposeFile = checkFile('docker-compose.dev.yml') ? 'docker-compose.dev.yml' : 'docker-compose.yml';
+    const dockerComposeFile = checkFile('docker-files/docker-compose.dev.yml') ? 'docker-files/docker-compose.dev.yml' : 'docker-files/docker-compose.yml';
     
     try {
         execSync(`docker-compose -f ${dockerComposeFile} up --build`, { 
@@ -68,7 +82,7 @@ function runDocker() {
 }
 
 function runLocal() {
-    log('💻 Iniciando localmente...', 'blue');
+    log('Iniciando localmente...', 'blue');
     
     // Verificar se .env existe
     if (!checkFile('.env')) {
@@ -99,7 +113,9 @@ function runLocal() {
     // Iniciar Rich Presence (se disponível)
     let presenceProcess = null;
     if (checkFile('presence.js')) {
-        log('🎮 Iniciando Discord Rich Presence...', 'cyan');
+        if (process.env.NODE_ENV !== 'production') {
+            log('Iniciando Discord Rich Presence...', 'cyan');
+        }
         try {
             presenceProcess = spawn('node', ['presence.js'], { 
                 stdio: 'pipe', 
@@ -109,11 +125,11 @@ function runLocal() {
             presenceProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim();
                 if (message.includes('✅') || message.includes('🎮')) {
-                    log(`🎮 ${message}`, 'green');
+                    log(`Rich Presence: ${message}`, 'green');
                 } else if (message.includes('❌') || message.includes('⚠️')) {
-                    log(`🎮 ${message}`, 'red');
+                    log(`Rich Presence: ${message}`, 'red');
                 } else if (message.includes('🔄')) {
-                    log(`🎮 ${message}`, 'yellow');
+                    log(`Rich Presence: ${message}`, 'yellow');
                 }
             });
             
@@ -122,7 +138,7 @@ function runLocal() {
                 if (message.includes('Client ID')) {
                     log('Configure seu Client ID do Discord no presence.js', 'yellow');
                 } else {
-                    log(`🎮 ${message}`, 'red');
+                    log(`Rich Presence: ${message}`, 'red');
                 }
             });
             
@@ -132,7 +148,9 @@ function runLocal() {
     }
     
     // Iniciar servidor
-    log('Iniciando servidor...', 'green');
+    if (process.env.NODE_ENV !== 'production') {
+        log('Iniciando servidor...', 'green');
+    }
     try {
         const server = spawn('node', ['backend/server.js'], { 
             stdio: 'inherit', 
@@ -162,8 +180,10 @@ function runLocal() {
 }
 
 function main() {
-    log('PromoPing - Execução Rápida', 'bright');
-    log('================================', 'bright');
+    if (process.env.NODE_ENV !== 'production') {
+        log('PromoPing - Execução Rápida', 'bright');
+        log('================================', 'bright');
+    }
     
     const args = process.argv.slice(2);
     const mode = args[0] || 'auto';
@@ -173,7 +193,7 @@ function main() {
             if (checkCommand('docker') && checkCommand('docker-compose')) {
                 runDocker();
             } else {
-                log('❌ Docker não encontrado. Instale Docker e Docker Compose.', 'red');
+                log('Docker não encontrado. Instale Docker e Docker Compose.', 'red');
                 process.exit(1);
             }
             break;
@@ -190,10 +210,11 @@ function main() {
         default:
             // Detectar melhor método
             if (checkCommand('docker') && checkCommand('docker-compose')) {
-                log('Docker detectado, usando Docker...', 'green');
+                if (process.env.NODE_ENV !== 'production') {
+                    log('Docker detectado, usando Docker...', 'green');
+                }
                 runDocker();
             } else {
-                log('Docker não encontrado, usando execução local...', 'yellow');
                 runLocal();
             }
             break;

@@ -1,3 +1,17 @@
+// Discord Rich Presence para PromoPing
+// Silenciar dotenv globalmente
+process.env.DOTENV_CONFIG_SILENT = 'true';
+process.env.DOTENV_CONFIG_DEBUG = 'false';
+
+// Interceptar console.log para filtrar mensagens do dotenv
+const originalConsoleLog = console.log;
+console.log = (...args) => {
+  const message = args.join(' ');
+  if (!message.includes('[dotenv@') && !message.includes('injecting env')) {
+    originalConsoleLog(...args);
+  }
+};
+
 import RPC from "discord-rpc";
 import fs from "fs";
 import path from "path";
@@ -8,25 +22,25 @@ const __dirname = path.dirname(__filename);
 
 async function initPresence() {
   let config = null;
-  const configPath = "./discord-config.js";
+  const configPath = "./config-files/discord-config.js";
 
   if (fs.existsSync(configPath)) {
     try {
       const configModule = await import(configPath);
       config = configModule.default || configModule;
     } catch (error) {
-      console.log("⚠️  Erro ao carregar discord-config.js:", error.message);
-      console.log("⚠️  Usando configuração padrão");
+    console.log("Erro ao carregar discord-config.js:", error.message);
+    console.log("Usando configuração padrão");
     }
   }
 
   const clientId = config?.clientId || "SEU_CLIENT_ID_DISCORD";
   const settings = config?.settings || {};
   if (clientId === "SEU_CLIENT_ID_DISCORD" || clientId === "SEU_CLIENT_ID_AQUI") {
-    console.log("⚠️  Configure seu Client ID do Discord:");
-    console.log("📝 1. Copie discord-config.example.js para discord-config.js");
-    console.log("📝 2. Configure seu Client ID em discord-config.js");
-    console.log("📝 3. Acesse: https://discord.com/developers/applications");
+    console.log("Configure seu Client ID do Discord:");
+    console.log("1. Copie config-files/discord-config.example.js para config-files/discord-config.js");
+    console.log("2. Configure seu Client ID em config-files/discord-config.js");
+    console.log("3. Acesse: https://discord.com/developers/applications");
     process.exit(1);
   }
 
@@ -41,27 +55,29 @@ async function initPresence() {
 function connectToDiscord() {
   rpc.login({ clientId })
     .then(() => {
-      console.log("✅ Conectado ao Discord Rich Presence!");
+      console.log("Conectado ao Discord Rich Presence!");
       isConnected = true;
       reconnectAttempts = 0;
     })
     .catch((error) => {
-      console.error("❌ Erro ao conectar ao Discord:", error.message);
+      console.error("Erro ao conectar ao Discord:", error.message);
       isConnected = false;
       
       if (reconnectAttempts < maxReconnectAttempts) {
         reconnectAttempts++;
-        console.log(`🔄 Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts} em ${reconnectDelay/1000} segundos...`);
+        console.log(`Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts} em ${reconnectDelay/1000} segundos...`);
         setTimeout(connectToDiscord, reconnectDelay);
       } else {
-        console.log("❌ Máximo de tentativas de reconexão atingido. Rich Presence desabilitado.");
+        console.log("Máximo de tentativas de reconexão atingido. Rich Presence desabilitado.");
       }
     });
 }
 
 
 rpc.on("ready", () => {
-  console.log("🎮 Rich Presence ativo no Discord!");
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("Rich Presence ativo no Discord!");
+  }
   updateActivity();
   setInterval(updateActivity, updateInterval);
 });
@@ -94,22 +110,22 @@ function updateActivity() {
       }
     ]
   }).catch((error) => {
-    console.error("❌ Erro ao atualizar atividade:", error.message);
+    console.error("Erro ao atualizar atividade:", error.message);
   });
 }
 
 rpc.on("disconnected", () => {
-  console.log("🔌 Desconectado do Discord Rich Presence");
+  console.log("Desconectado do Discord Rich Presence");
   isConnected = false;
 });
 
 rpc.on("error", (error) => {
-  console.error("❌ Erro no Rich Presence:", error.message);
+  console.error("Erro no Rich Presence:", error.message);
   isConnected = false;
 });
 
 process.on("SIGINT", () => {
-  console.log("\n🛑 Desconectando Rich Presence...");
+  console.log("\nDesconectando Rich Presence...");
   if (isConnected) {
     rpc.destroy();
   }
@@ -117,14 +133,16 @@ process.on("SIGINT", () => {
 });
 
 process.on("SIGTERM", () => {
-  console.log("\n🛑 Desconectando Rich Presence...");
+  console.log("\nDesconectando Rich Presence...");
   if (isConnected) {
     rpc.destroy();
   }
   process.exit(0);
 });
 
-  console.log("🎯 Iniciando Discord Rich Presence...");
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("Iniciando Discord Rich Presence...");
+  }
   connectToDiscord();
 }
 
