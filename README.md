@@ -139,7 +139,7 @@ PromoPing-2.0.1/
 2. Crie uma branch para sua feature (`git checkout -b feature/SuaFeature`)
 3. Commit suas mudanças (`git commit -m 'Adiciona nova feature: SuaFeature'`)
 4. Dê push para sua branch (`git push origin feature/SuaFeature`)
-5. Abra um Pull Request para o repositório juliareboucasleite/nome-do-projeto
+5. Abra um Pull Request para o repositório juliareboucasleite/PromoPing-2.0.1
 
 ## Licença
 
