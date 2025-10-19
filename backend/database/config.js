@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
 export default {
   username: process.env.DB_USER,

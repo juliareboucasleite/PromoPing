@@ -68,7 +68,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     )
   );
 } else {
-  console.log("⚠️ Google OAuth não configurado. Configure GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env");
+  // Google OAuth não configurado - silencioso
 }
 
 passport.serializeUser((user, done) => done(null, user));
@@ -90,15 +90,18 @@ router.get("/google", (req, res, next) => {
 // Callback do Google
 router.get("/google/callback", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    passport.authenticate("google", { failureRedirect: "/login.html" })(req, res, (err) => {
+    const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+    passport.authenticate("google", { failureRedirect: loginUrl })(req, res, (err) => {
       if (err) {
         console.error("Erro na autenticação Google:", err);
-        return res.redirect("/login.html?error=auth_failed");
+        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        return res.redirect(`${loginUrl}?error=auth_failed`);
       }
 
       if (!req.user) {
         console.error("req.user está undefined");
-        return res.redirect("/login.html?error=user_undefined");
+        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        return res.redirect(`${loginUrl}?error=user_undefined`);
       }
 
       try {
@@ -110,10 +113,12 @@ router.get("/google/callback", (req, res) => {
         );
 
         // Redireciona para o painel com token
-        res.redirect(`/pages/Painel.html?token=${token}`);
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/pages/Painel.html";
+        res.redirect(`${panelUrl}?token=${token}`);
       } catch (tokenError) {
         console.error("Erro ao gerar token:", tokenError);
-        res.redirect("/login.html?error=token_error");
+        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        res.redirect(`${loginUrl}?error=token_error`);
       }
     });
   } else {

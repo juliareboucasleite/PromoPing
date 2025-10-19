@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import twilio from "twilio";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
 
 // ===== EMAIL =====

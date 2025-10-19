@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
 // Configuração do Stripe com fallback para desenvolvimento
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';

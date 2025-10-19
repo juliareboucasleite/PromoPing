@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 // Carregar variáveis de ambiente
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-dotenv.config({ path: join(__dirname, "../../.env") });
+dotenv.config({ path: join(__dirname, "../../.env"), silent: true, debug: false, override: false, quiet: true });
 
 async function setupHistoricoPrecos() {
   let connection;

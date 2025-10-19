@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'promoping-api',
-      script: 'server.js',
+      script: 'backend/server.js',
       instances: 'max',
       exec_mode: 'cluster',
       env: {
@@ -27,10 +27,10 @@ module.exports = {
       user: 'deploy',
       host: 'your-server.com',
       ref: 'origin/main',
-      repo: 'https://github.com/juliareboucasleite/Pap.git',
-      path: '/var/www/promoping',
+      repo: 'https://github.com/juliareboucasleite/PromoPing-2.0.git',
+      path: '/var/www/PromoPing-2.0',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'npm install && pm2 reload config-files/ecosystem.config.js --env production',
       'pre-setup': ''
     }
   }

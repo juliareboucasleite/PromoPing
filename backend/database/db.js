@@ -1,14 +1,6 @@
 import mysql from "mysql2/promise";
 
-// Debug (só em dev)
-if (process.env.NODE_ENV !== "production") {
-  console.log("🔍 Variáveis de ambiente:");
-  console.log("DB_HOST:", process.env.DB_HOST);
-  console.log("DB_USER:", process.env.DB_USER);
-  console.log("DB_PASSWORD:", process.env.DB_PASSWORD ? "***" : "vazio");
-  console.log("DB_NAME:", process.env.DB_NAME);
-  console.log("DB_PORT:", process.env.DB_PORT);
-}
+// Debug removido para logs mais limpos
 
 // Criar pool de conexões
 const pool = mysql.createPool({

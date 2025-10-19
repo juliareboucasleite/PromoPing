@@ -2,7 +2,7 @@
 import { pool } from "../database/db.js";
 import { salvarPreco } from "../database/models/historico.js";
 import { detectStore } from "../utils/storeDetector.js";
-import { enviarWhatsApp } from "../routes/auth-whatsApp.js";
+// import { enviarWhatsApp } from "../routes/auth-whatsApp.js"; // WhatsApp desabilitado
 
 // Função mock que busca preço atual (aqui tu troca pelo scraping real depois)
 async function fetchPreco(link) {
@@ -51,21 +51,21 @@ export async function atualizarPrecos(userId) {
       // Salvar no histórico
       await salvarPreco(p.Id, novoPreco);
 
-      // Enviar notificação WhatsApp (se o utilizador tiver número configurado)
-      try {
-        // Buscar número do utilizador (assumindo que existe um campo Telefone na tabela Users)
-        const [userData] = await pool.query(
-          "SELECT Telefone FROM Users WHERE Id = ?",
-          [userId]
-        );
-        
-        if (userData.length > 0 && userData[0].Telefone) {
-          await enviarWhatsApp(userData[0].Telefone, novoPreco);
-        }
-      } catch (whatsappError) {
-        console.error('Erro ao enviar WhatsApp:', whatsappError);
-        // Não falha a atualização se o WhatsApp falhar
-      }
+      // WhatsApp desabilitado
+      // try {
+      //   // Buscar número do utilizador (assumindo que existe um campo Telefone na tabela Users)
+      //   const [userData] = await pool.query(
+      //     "SELECT Telefone FROM Users WHERE Id = ?",
+      //     [userId]
+      //   );
+      //   
+      //   if (userData.length > 0 && userData[0].Telefone) {
+      //     await enviarWhatsApp(userData[0].Telefone, novoPreco);
+      //   }
+      // } catch (whatsappError) {
+      //   console.error('Erro ao enviar WhatsApp:', whatsappError);
+      //   // Não falha a atualização se o WhatsApp falhar
+      // }
 
       atualizados.push({
         id: p.Id,

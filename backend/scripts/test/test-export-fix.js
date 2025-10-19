@@ -3,7 +3,7 @@
 import dotenv from "dotenv";
 import { pool as db } from "../database/db.js";
 
-dotenv.config();
+dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
 async function testarCorrecoes() {
   console.log("🔧 Testando correções do sistema de exportação...\n");

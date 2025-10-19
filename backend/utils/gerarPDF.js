@@ -1,7 +1,6 @@
 // ================== UTILITÁRIO PARA GERAR PDF ==================
 
 import PDFDocument from "pdfkit";
-import { buffer as getStreamBuffer } from "get-stream";
 
 /**
  * Gerar arquivo PDF com dados de produtos
@@ -27,7 +26,7 @@ export async function gerarPDF(produtos, historico = [], userPlano = "Free") {
     return await gerarPDFProdutos(doc, produtos, historico, userPlano);
     
   } catch (error) {
-    console.error("❌ Erro ao gerar PDF:", error);
+    console.error("Erro ao gerar PDF:", error);
     throw error;
   }
 }
@@ -98,7 +97,7 @@ async function gerarPDFProdutos(doc, produtos, historico, userPlano) {
     if (hist && hist.registos.length > 0) {
       doc.fontSize(12)
          .fillColor('#703F00')
-         .text(`📊 Histórico de Preços (${hist.totalRegistros} registros):`);
+         .text(`Histórico de Preços (${hist.totalRegistros} registros):`);
       
       // Mostrar apenas os primeiros 10 registros para não sobrecarregar o PDF
       const registrosParaMostrar = hist.registos.slice(0, 10);
@@ -117,7 +116,7 @@ async function gerarPDFProdutos(doc, produtos, historico, userPlano) {
     } else {
       doc.fontSize(10)
          .fillColor('#999')
-         .text('📊 Sem histórico de preços disponível');
+         .text('Sem histórico de preços disponível');
     }
     
     doc.moveDown(1);
@@ -133,8 +132,13 @@ async function gerarPDFProdutos(doc, produtos, historico, userPlano) {
      .fillColor('#636e72')
      .text('Relatório gerado pelo PromoPing', { align: 'center' });
 
-  doc.end();
-  return await getStreamBuffer(doc);
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    doc.end();
+  });
 }
 
 /**
@@ -198,8 +202,13 @@ async function gerarPDFIncidentes(doc, incidentes, userPlano) {
      .fillColor('#636e72')
      .text('Relatório gerado pelo PromoPing', 50, doc.page.height - 30, { align: 'center' });
 
-  doc.end();
-  return await getStreamBuffer(doc);
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    doc.end();
+  });
 }
 
 /**
@@ -307,6 +316,11 @@ async function gerarPDFRelatorioCompleto(doc, dados, userPlano) {
      .fillColor('#636e72')
      .text('Relatório Executivo gerado pelo PromoPing', 50, doc.page.height - 30, { align: 'center' });
 
-  doc.end();
-  return await getStreamBuffer(doc);
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    doc.end();
+  });
 }

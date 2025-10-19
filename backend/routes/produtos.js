@@ -5,7 +5,7 @@ import { formatDate } from "../utils/format.js";
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
 import { atualizarPrecos } from "../services/atualizarPrecos.js";
-import { enviarWhatsApp } from "./auth-whatsApp.js";
+// import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
 
 const router = express.Router();
 
@@ -24,7 +24,10 @@ router.post("/", verifyToken, async (req, res) => {
         const { nome, link, data, precoAlvo } = req.body;
 
         if (!nome || !link || !data) {
-            return res.status(400).json({ error: "Preencha todos os campos" });
+            return res.status(400).json({ 
+                status: "error", 
+                message: "Preencha todos os campos obrigatórios" 
+            });
         }
 
         // pegar plano e limite do utilizador
@@ -47,7 +50,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         if (total >= limite) {
             return res.status(403).json({
-                error: `Limite de ${limite} produtos atingido no plano atual.`
+                status: "error",
+                message: `Limite de ${limite} produtos atingido no plano atual.`
             });
         }
 
@@ -60,22 +64,23 @@ router.post("/", verifyToken, async (req, res) => {
             [req.user.id, nome, link, data, store.name, precoAlvo ?? null]
         );
 
-        // Buscar dados finais do produto para resposta
-        const [produtoFinal] = await pool.query(
-            "SELECT Id, Nome, PrecoAtual, Loja FROM Produtos WHERE Id = ?",
-            [result.insertId]
-        );
-
         res.json({ 
             status: "ok", 
             message: "Produto adicionado com sucesso", 
-            produto: produtoFinal[0],
-            loja: store.name,
+            produto: {
+                Id: result.insertId,
+                Nome: nome,
+                PrecoAtual: null,
+                Loja: store.name
+            },
             storeInfo: store
         });
     } catch (err) {
         console.error("Erro ao adicionar produto:", err);
-        res.status(500).json({ error: "Erro no servidor" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro interno do servidor" 
+        });
     }
 });
 
@@ -102,27 +107,13 @@ router.get("/", verifyToken, async (req, res) => {
             historicos = historicosResult;
         }
 
-        // Debug: verificar dados brutos da base de dados
-        console.log("Produtos da base de dados:", produtos);
-        if (produtos.length > 0) {
-            console.log("Primeiro produto da BD:", produtos[0]);
-            console.log("PrecoAlvo:", produtos[0].PrecoAlvo);
-            console.log("DataCriacao:", produtos[0].DataCriacao);
-            console.log("Loja:", produtos[0].Loja);
-        }
-
         // Mapear produtos com formatação e informações da loja
         const produtosMap = produtos.map(p => {
-            const store = detectStore(p.Link);
-            console.log("Detectando loja para link:", p.Link);
-            console.log("Store detectada:", store);
-            
             // Usar o nome da loja da base de dados ou detectar pelo link
-            let nomeLoja = p.Loja || store.name || "Loja";
+            const store = p.Loja ? { name: p.Loja } : detectStore(p.Link);
+            const nomeLoja = store.name || "Loja";
             
-            console.log("Nome da loja detectado:", nomeLoja);
-            
-            const produtoMapeado = {
+            return {
                 Id: p.Id,
                 Nome: p.Nome,
                 Link: p.Link,
@@ -130,7 +121,7 @@ router.get("/", verifyToken, async (req, res) => {
                 PrecoAlvo: p.PrecoAlvo,
                 DataCriacao: p.DataCriacao,
                 DataLimite: p.DataLimite,
-                Loja: nomeLoja, // Nome da loja detectado pelo link
+                Loja: nomeLoja,
                 storeInfo: store,
                 Historico: historicos
                     .filter(h => h.ProdutoId === p.Id)
@@ -139,26 +130,15 @@ router.get("/", verifyToken, async (req, res) => {
                         Data: h.DataRegisto
                     }))
             };
-            
-            // Debug: verificar produto mapeado
-            console.log("Produto mapeado:", produtoMapeado);
-            console.log("PrecoAlvo mapeado:", produtoMapeado.PrecoAlvo);
-            console.log("DataCriacao mapeada:", produtoMapeado.DataCriacao);
-            console.log("Loja mapeada:", produtoMapeado.Loja);
-            console.log("Loja da BD:", p.Loja);
-            console.log("Store name:", store.name);
-            
-            return produtoMapeado;
         });
-
-        console.log("Enviando produtos para frontend:");
-        console.log("Primeiro produto a ser enviado:", produtosMap[0]);
-        console.log("Campo Loja do primeiro produto:", produtosMap[0]?.Loja);
         
         res.json({ status: "ok", produtos: produtosMap });
     } catch (err) {
         console.error("Erro ao listar produtos:", err);
-        res.status(500).json({ error: "Erro no servidor" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro interno do servidor" 
+        });
     }
 });
 
@@ -198,13 +178,19 @@ router.put("/:id", verifyToken, async (req, res) => {
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Produto não encontrado" });
+            return res.status(404).json({ 
+                status: "error", 
+                message: "Produto não encontrado" 
+            });
         }
 
         res.json({ status: "ok", message: "Produto atualizado com sucesso" });
     } catch (err) {
         console.error("Erro ao editar produto:", err);
-        res.status(500).json({ error: "Erro no servidor" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro interno do servidor" 
+        });
     }
 });
 
@@ -219,13 +205,19 @@ router.delete("/:id", verifyToken, async (req, res) => {
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Produto não encontrado" });
+            return res.status(404).json({ 
+                status: "error", 
+                message: "Produto não encontrado" 
+            });
         }
 
         res.json({ status: "ok", message: "Produto removido com sucesso" });
     } catch (err) {
         console.error("Erro ao remover produto:", err);
-        res.status(500).json({ error: "Erro no servidor" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro interno do servidor" 
+        });
     }
 });
 
@@ -235,13 +227,19 @@ router.post("/refresh", verifyToken, async (req, res) => {
     const result = await atualizarPrecos(req.user.id);
 
     if (result.error) {
-      return res.status(403).json({ error: result.error });
+      return res.status(403).json({ 
+        status: "error", 
+        message: result.error 
+      });
     }
 
     res.json(result);
   } catch (err) {
     console.error("Erro no refresh manual:", err);
-    res.status(500).json({ error: "Erro no servidor" });
+    res.status(500).json({ 
+      status: "error", 
+      message: "Erro interno do servidor" 
+    });
   }
 });
 
@@ -264,7 +262,10 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         );
         
         if (produto.length === 0) {
-            return res.status(404).json({ error: "Produto não encontrado" });
+            return res.status(404).json({ 
+                status: "error", 
+                message: "Produto não encontrado" 
+            });
         }
         
         const p = produto[0];
@@ -277,14 +278,15 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         // Checar regra de refresh individual
         if (p.VerificacaoIntervalo > 0 && diffHoras < p.VerificacaoIntervalo) {
             return res.status(403).json({
-                error: `Produto só pode ser atualizado a cada ${p.VerificacaoIntervalo}h (faltam ${(p.VerificacaoIntervalo - diffHoras).toFixed(1)}h)`
+                status: "error",
+                message: `Produto só pode ser atualizado a cada ${p.VerificacaoIntervalo}h (faltam ${(p.VerificacaoIntervalo - diffHoras).toFixed(1)}h)`
             });
         }
         
-        // Função fake de scraping -> trocar pelo real
+        // Função temporária de scraping - substituir pela implementação real
         async function fetchPreco(link) {
-            // TODO: aqui vem scraping/API real
-            // por enquanto devolve número aleatório pra testar
+            // TODO: Implementar scraping real ou integração com API
+            // Por enquanto retorna valor aleatório para testes
             return (Math.random() * 1000).toFixed(2);
         }
         
@@ -299,21 +301,21 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         // Salva no histórico
         await salvarPreco(p.Id, novoPreco);
         
-        // 🔔 Enviar notificação WhatsApp se o usuário tiver telefone
-        try {
-            const [userData] = await pool.query(
-                "SELECT Telefone FROM Utilizadores WHERE Id = ?",
-                [userId]
-            );
-            
-            if (userData.length > 0 && userData[0].Telefone) {
-                await enviarWhatsApp(userData[0].Telefone, `📢 ${p.Nome}: €${novoPreco}`);
-                console.log(`📱 WhatsApp enviado para ${userData[0].Telefone}`);
-            }
-        } catch (whatsappError) {
-            console.error("Erro ao enviar WhatsApp:", whatsappError);
-            // Não falha a operação se o WhatsApp der erro
-        }
+        // WhatsApp desabilitado
+        // try {
+        //     const [userData] = await pool.query(
+        //         "SELECT Telefone FROM Utilizadores WHERE Id = ?",
+        //         [userId]
+        //     );
+        //     
+        //     if (userData.length > 0 && userData[0].Telefone) {
+        //         await enviarWhatsApp(userData[0].Telefone, `${p.Nome}: €${novoPreco}`);
+        //         console.log(`WhatsApp enviado para ${userData[0].Telefone}`);
+        //     }
+        // } catch (whatsappError) {
+        //     console.error("Erro ao enviar WhatsApp:", whatsappError);
+        //     // Não falha a operação se o WhatsApp der erro
+        // }
         
         console.log(`✅ Produto ${p.Nome} atualizado para €${novoPreco} (Plano: ${p.PlanoNome})`);
         
@@ -329,7 +331,10 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         });
     } catch (err) {
         console.error("Erro no refresh individual:", err);
-        res.status(500).json({ error: "Erro ao atualizar preço do produto" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro ao atualizar preço do produto" 
+        });
     }
 });
 
@@ -361,7 +366,10 @@ router.get("/sync", verifyToken, async (req, res) => {
         });
     } catch (err) {
         console.error("Erro ao verificar sincronização:", err);
-        res.status(500).json({ error: "Erro ao verificar atualizações" });
+        res.status(500).json({ 
+            status: "error", 
+            message: "Erro ao verificar atualizações" 
+        });
     }
 });
 

@@ -190,12 +190,12 @@ router.get("/api/status/realtime", async (req, res) => {
     
     // Contar usuários ativos (últimos 24h)
     const [configutilizadorCount] = await db.query(
-      "SELECT COUNT(*) as total FROM configutilizador WHERE lastLogin >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"
+      "SELECT COUNT(*) as total FROM configutilizador WHERE UltimoLogin >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"
     );
     
     // Contar notificações enviadas hoje
     const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(createdAt) = CURDATE()"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
     );
 
     // Simular requisições por minuto (baseado em atividade real)

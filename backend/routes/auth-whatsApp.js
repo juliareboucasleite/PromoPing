@@ -1,15 +1,15 @@
-// npm install whatsapp-web.js qrcode-terminal
-import qrcode from 'qrcode-terminal';
+// npm install whatsapp-web.js
 import { Client } from 'whatsapp-web.js';
 
 const client = new Client();
 
 client.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
+    console.log('QR Code gerado. Escaneie com o WhatsApp:');
+    console.log(qr);
 });
 
 client.on('ready', () => {
-    console.log('🤖 Bot conectado ao WhatsApp!');
+    console.log('Bot conectado ao WhatsApp!');
 });
 
 client.initialize();
@@ -19,7 +19,7 @@ async function enviarWhatsApp(numero, mensagem) {
     try {
         // Verificar se o cliente está conectado
         if (client.getState() !== 'CONNECTED') {
-            console.log('⚠️ WhatsApp não está conectado. Estado:', client.getState());
+            console.log('WhatsApp não está conectado. Estado:', client.getState());
             return { success: false, error: 'WhatsApp não conectado' };
         }
 
@@ -27,15 +27,15 @@ async function enviarWhatsApp(numero, mensagem) {
         const numeroLimpo = numero.replace(/[^\d]/g, '');
         const numeroCompleto = numeroLimpo + '@c.us';
         
-        console.log(`📱 Tentando enviar mensagem para: ${numeroCompleto}`);
-        console.log(`📝 Mensagem: ${mensagem}`);
+        console.log(`Tentando enviar mensagem para: ${numeroCompleto}`);
+        console.log(`Mensagem: ${mensagem}`);
         
         await client.sendMessage(numeroCompleto, mensagem);
-        console.log(`✅ Mensagem enviada com sucesso para ${numero}`);
+        console.log(`Mensagem enviada com sucesso para ${numero}`);
         
         return { success: true, message: 'Mensagem enviada com sucesso' };
     } catch (err) {
-        console.error('❌ Erro ao enviar mensagem WhatsApp:', err);
+        console.error('Erro ao enviar mensagem WhatsApp:', err);
         return { success: false, error: err.message };
     }
 }

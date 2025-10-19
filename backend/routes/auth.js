@@ -6,7 +6,7 @@ import { pool } from "../database/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { verifyToken } from "../middleware/auth.js";
-import { enviarWhatsApp } from "./auth-whatsApp.js";
+// import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
 
 const router = express.Router();
 
@@ -77,9 +77,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     )
   );
 } else {
-  console.log(
-    "⚠️ Google OAuth não configurado. Configure GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env"
-  );
+  // Google OAuth não configurado - silencioso
 }
 
 passport.serializeUser((user, done) => done(null, user));
@@ -123,22 +121,16 @@ router.post("/register-sms", async (req, res) => {
       [codigo, userId]
     );
 
-    // Enviar WhatsApp
-    const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-    const resultadoWhatsApp = await enviarWhatsApp(
-      telefoneLimpo,
-      `📢 Seu código PromoPing é: ${codigo}\n\nUse este código para ativar sua conta.\n\nSe não foi você, ignore esta mensagem.`
-    );
-
-    if (resultadoWhatsApp.success) {
-      console.log(`📱 Código SMS enviado para ${telefone}: ${codigo}`);
-    } else {
-      console.error(`❌ Erro ao enviar WhatsApp para ${telefone}:`, resultadoWhatsApp.error);
-    }
+    // WhatsApp desabilitado
+    // const telefoneLimpo = telefone.replace(/[^\d]/g, '');
+    // const resultadoWhatsApp = await enviarWhatsApp(
+    //   telefoneLimpo,
+    //   `Seu código PromoPing é: ${codigo}\n\nUse este código para ativar sua conta.\n\nSe não foi você, ignore esta mensagem.`
+    // );
 
     res.json({
       status: "ok",
-      message: "Código enviado para WhatsApp!",
+      message: "Código enviado!",
       telefone: telefone
     });
   } catch (err) {
@@ -363,32 +355,32 @@ router.post("/register", async (req, res) => {
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
-      console.log(`📧 Código de verificação enviado para ${email}: ${codigo}`);
+      console.log(`Código de verificação enviado para ${email}: ${codigo}`);
     } catch (emailError) {
-      console.log("⚠️ Email não configurado, mas conta criada com sucesso");
+      console.log("Email não configurado, mas conta criada com sucesso");
     }
 
-    // Se telefone foi fornecido, também enviar por WhatsApp
-    if (telefone) {
-      try {
-        const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-        await enviarWhatsApp(
-          telefoneLimpo,
-          `🔐 Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-        );
-        console.log(`📱 Código de verificação enviado para ${telefone}: ${codigo}`);
-      } catch (whatsappError) {
-        console.log("⚠️ WhatsApp não configurado, mas conta criada com sucesso");
-      }
-    }
+    // WhatsApp desabilitado
+    // if (telefone) {
+    //   try {
+    //     const telefoneLimpo = telefone.replace(/[^\d]/g, '');
+    //     await enviarWhatsApp(
+    //       telefoneLimpo,
+    //       `Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+    //     );
+    //     console.log(`Código de verificação enviado para ${telefone}: ${codigo}`);
+    //   } catch (whatsappError) {
+    //     console.log("WhatsApp não configurado, mas conta criada com sucesso");
+    //   }
+    // }
 
     res.json({
       status: "ok",
-      message: "Conta criada com sucesso! Verifique seu email (e WhatsApp se fornecido) para ativar a conta.",
+      message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
       codigo: codigo // Para desenvolvimento - remover em produção
     });
   } catch (err) {
-    console.error("❌ Erro no registo:", err);
+    console.error("Erro no registo:", err);
     res.status(500).json({
       status: "error",
       error: err.message || "Erro interno no servidor",
@@ -414,7 +406,8 @@ router.get("/google/callback", (req, res) => {
       req,
       res,
       () => {
-        res.redirect("/pages/Painel.html");
+        const redirectUrl = process.env.AFTER_LOGIN_REDIRECT || "/pages/Painel.html";
+        res.redirect(redirectUrl);
       }
     );
   } else {
@@ -476,10 +469,10 @@ router.post("/verificar/telefone", verifyToken, async (req, res) => {
 
     res.json({
       status: "ok",
-      message: "Código enviado para WhatsApp!",
+      message: "Código enviado!",
     });
   } catch (err) {
-    console.error("❌ Erro ao enviar código por WhatsApp:", err);
+    console.error("Erro ao enviar código:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao enviar código de verificação",
