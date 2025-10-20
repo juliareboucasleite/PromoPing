@@ -217,80 +217,94 @@ router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
 // ================== INFORMAÇÕES DO PLANO ==================
 router.get("/plano", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    console.log("🔍 Buscando plano para userId:", userId);
+    const userId = req.user.id; // vindo do middleware de autenticação
 
-    // Primeiro, verificar se o utilizador existe na configutilizador
-    const [configRows] = await pool.query(
-      `SELECT * FROM configutilizador WHERE UserId = ?`,
-      [userId]
-    );
-    console.log("📋 Config do utilizador:", configRows);
+    // Primeiro, verificar se há cancelamento ativo
+    const [stripeRows] = await pool.query(`
+      SELECT 
+        subscription_status,
+        plan_name,
+        grace_period_end,
+        status
+      FROM stripe_subscriptions 
+      WHERE user_id = ? AND status = 'canceled' AND grace_period_end > NOW()
+    `, [userId]);
 
-    // Se não existe config, criar uma padrão
-    if (configRows.length === 0) {
-      console.log("⚠️ Utilizador não tem configuração, criando padrão...");
-      await pool.query(
-        `INSERT INTO configutilizador (UserId, PlanoId, LimiteProdutos, CanalPreferido, NotificacoesEnviadas, HistoricoAtivo) 
-         VALUES (?, 1, 5, 'email', 0, 1)`,
-        [userId]
-      );
-      console.log("✅ Configuração padrão criada");
+    console.log("🔍 [BACKEND] Verificando cancelamentos para userId:", userId);
+    console.log("🔍 [BACKEND] Stripe rows encontradas:", stripeRows.length);
+
+    if (stripeRows.length > 0) {
+      console.log("✅ [BACKEND] Cancelamento ativo encontrado:", stripeRows[0]);
+      
+      // Usuário em período de graça - mostrar plano original
+      const stripeData = stripeRows[0];
+      const [originalPlanRows] = await pool.query(`
+        SELECT 
+          p.Id AS id,
+          p.Nome AS nome,
+          p.Preco AS preco,
+          p.IntervaloVerificacao AS verificacao_intervalo,
+          p.LimiteProdutos AS limite_produtos,
+          'PeriodoGraca' AS status,
+          ? AS expiracao
+        FROM planos p
+        WHERE p.Nome = ?
+      `, [stripeData.grace_period_end, stripeData.plan_name]);
+
+      console.log("🔍 [BACKEND] Plano original encontrado:", originalPlanRows);
+
+      if (originalPlanRows.length > 0) {
+        console.log("✅ [BACKEND] Retornando período de graça");
+        return res.json({
+          status: "ok",
+          plano: originalPlanRows[0],
+          is_in_grace_period: true,
+          grace_period_end: stripeData.grace_period_end,
+          customer_id: null, // Não tem customer ativo durante graça
+          subscription_id: null
+        });
+      }
+    } else {
+      console.log("❌ [BACKEND] Nenhum cancelamento ativo encontrado");
     }
 
-    // Buscar informações do plano do utilizador
-    const [planoRows] = await pool.query(
-      `SELECT p.Nome, p.Preco, p.LimiteProdutos, p.VerificacaoIntervalo, p.PermiteSMS, p.Relatorios
-       FROM configutilizador c
-       JOIN planos p ON p.Id = c.PlanoId
-       WHERE c.UserId = ?`,
-      [userId]
-    );
+    // Se não está em período de graça, buscar plano atual
+    const [rows] = await pool.query(`
+      SELECT 
+        p.Id AS id,
+        p.Nome AS nome,
+        p.Preco AS preco,
+        p.IntervaloVerificacao AS verificacao_intervalo,
+        p.LimiteProdutos AS limite_produtos,
+        c.StatusAssinatura AS status,
+        c.DataExpiracao AS expiracao
+      FROM configutilizador c
+      JOIN planos p ON c.PlanoAtualId = p.Id
+      WHERE c.UserId = ?;
+    `, [userId]);
 
-    console.log("📊 Resultado da query:", planoRows);
-
-    if (planoRows.length === 0) {
-      console.log("❌ Nenhum plano encontrado para o utilizador");
-      return res.status(404).json({ 
-        status: "error", 
-        error: "Plano não encontrado. Verifique se o utilizador tem um plano configurado." 
-      });
+    if (rows.length === 0) {
+      return res.json({ status: "erro", message: "Utilizador sem plano ativo." });
     }
 
-    const plano = planoRows[0];
-
-    // Determinar se produtos são ilimitados baseado no LimiteProdutos
-    const produtosIlimitados = plano.LimiteProdutos >= 9999;
-    
-    // Criar descrição baseada no plano
-    let descricao = `Plano ${plano.Nome}`;
-    if (plano.Nome === 'Free') {
-      descricao = 'Plano gratuito com funcionalidades básicas';
-    } else if (plano.Nome === 'Basic') {
-      descricao = 'Plano básico com mais produtos e atualizações frequentes';
-    } else if (plano.Nome === 'Premium') {
-      descricao = 'Plano premium com atualizações ilimitadas e recursos avançados';
-    }
+    // Verificar se tem customer_id ativo
+    const [customerRows] = await pool.query(`
+      SELECT customer_id, subscription_id
+      FROM stripe_subscriptions 
+      WHERE user_id = ? AND status = 'active'
+    `, [userId]);
 
     res.json({
       status: "ok",
-      plano: {
-        nome: plano.Nome,
-        descricao: descricao,
-        verificacao_intervalo: plano.VerificacaoIntervalo,
-        produtos_ilimitados: produtosIlimitados,
-        limite_produtos: plano.LimiteProdutos,
-        preco: plano.Preco,
-        permite_sms: plano.PermiteSMS === 1,
-        relatorios: plano.Relatorios
-      }
+      plano: rows[0],
+      is_in_grace_period: false,
+      grace_period_end: null,
+      customer_id: customerRows.length > 0 ? customerRows[0].customer_id : null,
+      subscription_id: customerRows.length > 0 ? customerRows[0].subscription_id : null
     });
   } catch (err) {
     console.error("Erro ao buscar plano:", err);
-    res.status(500).json({ 
-      status: "error", 
-      error: "Erro no servidor" 
-    });
+    res.status(500).json({ status: "erro", message: "Erro no servidor ao buscar plano." });
   }
 });
 
@@ -321,7 +335,7 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
     if (plano.Preco === 0) {
       await pool.query(
         `UPDATE configutilizador 
-         SET PlanoId = ?, LimiteProdutos = ?
+         SET PlanoAtualId = ?, LimiteProdutos = ?
          WHERE UserId = ?`,
         [planoId, plano.LimiteProdutos, userId]
       );
@@ -359,7 +373,7 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
     // Atualizar plano do utilizador
     await pool.query(
       `UPDATE configutilizador 
-       SET PlanoId = ?, LimiteProdutos = ?, StripeSubscriptionId = ?
+       SET PlanoAtualId = ?, LimiteProdutos = ?, StripeSubscriptionId = ?
        WHERE UserId = ?`,
       [planoId, plano.LimiteProdutos, session.subscription, userId]
     );

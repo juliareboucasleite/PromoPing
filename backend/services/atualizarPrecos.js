@@ -16,7 +16,7 @@ export async function atualizarPrecos(userId) {
   const [config] = await pool.query(
     `SELECT p.VerificacaoIntervalo 
      FROM ConfigUtilizador c
-     JOIN Planos p ON p.Id = c.PlanoId
+     JOIN Planos p ON p.Id = c.PlanoAtualId
      WHERE c.UserId = ?`,
     [userId]
   );

@@ -22,19 +22,28 @@ export const PLANOS_STRIPE = {
   },
   2: { // BASIC
     nome: 'Basic',
-    preco: 9.99,
+    preco: 4.99,
     stripe_price_id: process.env.STRIPE_BASIC_PRICE_ID, // Configurar no .env
     limite_produtos: 25,
     verificacao_intervalo: 4,
     permite_sms: true,
     relatorios: true
   },
-  3: { // PREMIUM
+  3: { // STANDARD
+    nome: 'Standard',
+    preco: 12.99,
+    stripe_price_id: process.env.STRIPE_STANDARD_PRICE_ID, // Price ID específico para Standard
+    limite_produtos: 9999, // Ilimitado
+    verificacao_intervalo: 0.5, // 30 minutos
+    permite_sms: true,
+    relatorios: true
+  },
+  4: { // PREMIUM
     nome: 'Premium',
-    preco: 9.99,
+    preco: 15.30,
     stripe_price_id: process.env.STRIPE_PREMIUM_PRICE_ID, // Configurar no .env
     limite_produtos: 9999, // Ilimitado
-    verificacao_intervalo: 1,
+    verificacao_intervalo: 0.083, // 5 minutos
     permite_sms: true,
     relatorios: true
   }

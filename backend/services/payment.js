@@ -8,12 +8,34 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
   try {
     const plano = PLANOS_STRIPE[planoId];
     
+    console.log(`🔍 [PAYMENT] Criando checkout para usuário ${userId}, plano ${planoId}`);
+    console.log(`📋 [PAYMENT] Plano encontrado:`, {
+      nome: plano?.nome,
+      preco: plano?.preco,
+      stripe_price_id: plano?.stripe_price_id
+    });
+    
+    // Log detalhado para debug
+    console.log(`🔧 [PAYMENT] DEBUG - Variáveis de ambiente:`, {
+      STRIPE_BASIC_PRICE_ID: process.env.STRIPE_BASIC_PRICE_ID,
+      STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
+      STRIPE_PREMIUM_PRICE_ID: process.env.STRIPE_PREMIUM_PRICE_ID
+    });
+    
+    // Log específico para o plano Standard
+    if (planoId === 3) {
+      console.log(`🔍 [PAYMENT] DEBUG - Plano Standard detectado!`);
+      console.log(`🔍 [PAYMENT] DEBUG - STRIPE_STANDARD_PRICE_ID: ${process.env.STRIPE_STANDARD_PRICE_ID}`);
+      console.log(`🔍 [PAYMENT] DEBUG - Price ID que será usado: ${plano.stripe_price_id}`);
+    }
+    
     if (!plano) {
       throw new Error('Plano inválido');
     }
 
     // Se for plano gratuito, não precisa de checkout
     if (plano.preco === 0) {
+      console.log(`✅ [PAYMENT] Plano gratuito detectado - ativação direta`);
       return {
         success: true,
         tipo: 'gratuito',
@@ -22,10 +44,16 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
     }
 
     if (!plano.stripe_price_id) {
-      throw new Error('Price ID não configurado para este plano');
+      console.error(`❌ [PAYMENT] Price ID não configurado para plano ${plano.nome}`);
+      console.error(`❌ [PAYMENT] Configure STRIPE_STANDARD_PRICE_ID no arquivo .env`);
+      throw new Error(`Price ID não configurado para o plano ${plano.nome}. Configure STRIPE_STANDARD_PRICE_ID no .env`);
     }
 
+    console.log(`💳 [PAYMENT] Usando price_id: ${plano.stripe_price_id} para plano ${plano.nome}`);
+    console.log(`⚠️ [PAYMENT] ATENÇÃO: Se este price_id não for válido, o Stripe pode redirecionar para outro plano!`);
+
     // Criar sessão de checkout
+    console.log(`🚀 [PAYMENT] Criando sessão Stripe com price_id: ${plano.stripe_price_id}`);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -48,6 +76,12 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
           planoId: planoId.toString()
         }
       }
+    });
+
+    console.log(`✅ [PAYMENT] Sessão criada com sucesso:`, {
+      session_id: session.id,
+      url: session.url,
+      plano: plano.nome
     });
 
     return {

@@ -49,6 +49,7 @@ import authEmailVerifyRoutes from "./routes/auth-email-verify.js"; // Verificaç
 import paymentRoutes from "./routes/payment.js";              // Pagamentos
 import statusRoutes from "./routes/status.js";                // Status
 import exportRoutes from "./routes/exportRoutes.js";         // Exportação
+import gracePeriodRoutes from "./routes/grace-period.js";    // Períodos de graça
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";            // JWT
@@ -107,6 +108,7 @@ app.use("/api/produtos", produtosRoutes);        // Produtos
 app.use("/api/config", configRoutes);            // Configurações
 app.use("/api/user", userRoutes);               // Usuários
 app.use("/api/notificacoes", notificacoesRoutes); // Notificações
+app.use("/api/grace-period", gracePeriodRoutes); // Períodos de graça
 app.use("/api/user/accounts", contasRoutes);      // Contas
 app.use("/api/user/preferences", preferencesRoutes); // Preferências
 app.use("/api/payment", paymentRoutes);          // Pagamentos
@@ -187,15 +189,25 @@ cron.schedule("0 */6 * * *", async () => {
   }
 });
 
+// ================== IMPORTAR SERVIÇOS ==================
+import { GracePeriodManager } from './services/gracePeriodManager.js';
+
 // ================== INICIAR SERVIDOR ==================
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, () => {
+app.listen(PORT, HOST, async () => {
   console.log(`PromoPing rodando em http://${HOST}:${PORT}`);
   if (process.env.NODE_ENV === 'development') {
     console.log(`Frontend: http://${HOST}:${PORT}/`);
     console.log(`API: http://${HOST}:${PORT}/api/`);
     console.log(`Cron: atualização automática a cada 6 horas`);
+  }
+  
+  // Iniciar verificação automática de períodos de graça
+  try {
+    await GracePeriodManager.startAutomaticCheck();
+  } catch (error) {
+    console.error('❌ Erro ao iniciar verificação automática de períodos de graça:', error);
   }
 });

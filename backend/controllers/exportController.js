@@ -303,9 +303,9 @@ export async function obterPlanoUsuario(req, res) {
     
     // Buscar informações do usuário e plano
     const [usuarios] = await db.query(`
-      SELECT c.*, p.nome as plano_nome
+      SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.VerificacaoIntervalo, p.PermiteSMS, p.Relatorios
       FROM configutilizador c
-      LEFT JOIN planos p ON c.PlanoId = p.id
+      LEFT JOIN planos p ON c.PlanoAtualId = p.Id
       WHERE c.UserId = ?
     `, [userId]);
 
@@ -319,17 +319,93 @@ export async function obterPlanoUsuario(req, res) {
     const usuario = usuarios[0];
     const plano = {
       nome: usuario.plano_nome || "Free",
-      descricao: "Plano gratuito com funcionalidades básicas"
+      preco: usuario.preco || 0,
+      limite_produtos: usuario.limite_produtos || 5,
+      verificacao_intervalo: usuario.verificacao_intervalo || 24,
+      permite_sms: usuario.permite_sms || false,
+      relatorios: usuario.relatorios || false
     };
+
+    // Buscar informações do Stripe se disponível
+    let stripeInfo = {};
+    let isInGracePeriod = false;
+    let gracePeriodEnd = null;
+    let originalPlan = null; // Plano original durante período de graça
+    
+    try {
+      const [stripeData] = await db.query(`
+        SELECT customer_id, subscription_id, subscription_status, grace_period_end, status, plan_name
+        FROM stripe_subscriptions 
+        WHERE user_id = ? AND (status = 'active' OR status = 'canceled')
+        ORDER BY created_at DESC 
+        LIMIT 1
+      `, [userId]);
+      
+      if (stripeData.length > 0) {
+        const data = stripeData[0];
+        
+        // Verificar se está em período de graça
+        if (data.status === 'canceled' && data.grace_period_end) {
+          const now = new Date();
+          const graceEnd = new Date(data.grace_period_end);
+          
+          if (now < graceEnd) {
+            isInGracePeriod = true;
+            gracePeriodEnd = data.grace_period_end;
+            originalPlan = data.plan_name; // Nome do plano original
+            console.log(`⏰ [PLANO] Usuário ${userId} em período de graça até ${graceEnd.toISOString()}`);
+            console.log(`📋 [PLANO] Plano original durante graça: ${originalPlan}`);
+          }
+        }
+        
+        stripeInfo = {
+          customer_id: data.customer_id,
+          subscription_id: data.subscription_id,
+          subscription_status: data.subscription_status,
+          is_in_grace_period: isInGracePeriod,
+          grace_period_end: gracePeriodEnd,
+          original_plan: originalPlan
+        };
+      }
+    } catch (stripeErr) {
+      console.log("ℹ️ Nenhuma informação do Stripe encontrada para o usuário");
+    }
+
+    // Se está em período de graça, usar o plano original
+    if (isInGracePeriod && originalPlan) {
+      // Buscar informações do plano original
+      const [originalPlanData] = await db.query(`
+        SELECT Nome, Preco, LimiteProdutos, VerificacaoIntervalo, PermiteSMS, Relatorios
+        FROM planos 
+        WHERE Nome = ?
+      `, [originalPlan]);
+      
+      if (originalPlanData.length > 0) {
+        const original = originalPlanData[0];
+        plano.nome = original.Nome;
+        plano.preco = original.Preco;
+        plano.limite_produtos = original.LimiteProdutos;
+        plano.verificacao_intervalo = original.VerificacaoIntervalo;
+        plano.permite_sms = original.PermiteSMS;
+        plano.relatorios = original.Relatorios;
+        
+        console.log(`🔄 [PLANO] Usando plano original durante graça: ${original.Nome} (€${original.Preco})`);
+      }
+    }
 
     res.json({
       status: "ok",
       plano: plano,
       usuario: {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email
+        id: usuario.UserId,
+        nome: usuario.Nome,
+        email: usuario.Email
       },
+      stripe: stripeInfo,
+      customer_id: stripeInfo.customer_id,
+      subscription_id: stripeInfo.subscription_id,
+      is_in_grace_period: isInGracePeriod,
+      grace_period_end: gracePeriodEnd,
       timestamp: new Date().toISOString()
     });
     

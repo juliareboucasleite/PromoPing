@@ -32,7 +32,7 @@ router.post("/", verifyToken, async (req, res) => {
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
-            "SELECT PlanoId, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
+            "SELECT PlanoAtualId, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
             [req.user.id]
         );
 
@@ -253,10 +253,10 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         
         // Verificar se o produto pertence ao usuário e buscar plano
         const [produto] = await pool.query(
-            `SELECT p.*, c.PlanoId, pl.VerificacaoIntervalo, pl.Nome as PlanoNome
+            `SELECT p.*, c.PlanoAtualId, pl.VerificacaoIntervalo, pl.Nome as PlanoNome
              FROM Produtos p
              JOIN ConfigUtilizador c ON c.UserId = p.UserId
-             JOIN Planos pl ON pl.Id = c.PlanoId
+             JOIN Planos pl ON pl.Id = c.PlanoAtualId
              WHERE p.Id = ? AND p.UserId = ?`,
             [id, userId]
         );
