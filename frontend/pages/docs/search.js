@@ -1,4 +1,4 @@
-// Sistema de Pesquisa para Documentação PromoPing
+// Sistema de Pesquisa para Documentação PromoPing (versão endurecida)
 class DocumentationSearch {
     constructor() {
         this.searchIndex = [];
@@ -13,18 +13,12 @@ class DocumentationSearch {
     }
 
     initializeSearch() {
-        // Indexar todas as páginas de documentação
         this.buildSearchIndex();
-        
-        // Configurar eventos de pesquisa
         this.setupSearchEvents();
-        
-        // Configurar atalho de teclado
         this.setupKeyboardShortcut();
     }
 
     buildSearchIndex() {
-        // Dados indexados de todas as páginas de documentação
         this.searchIndex = [
             {
                 title: "Sobre o PromoPing",
@@ -83,11 +77,41 @@ class DocumentationSearch {
         ];
     }
 
+    /* ---------- UTILITÁRIOS DE SEGURANÇA ---------- */
+
+    // Escapa HTML (usa textContent para evitar XSS)
+    escapeHTML(str) {
+        if (str == null) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
+    // Gera uma versão "highlighted" segura:
+    // - escapa todo o texto primeiro
+    // - aplica <mark> apenas aos termos correspondentes (usando regex seguro)
+    highlightSafe(text, query) {
+        if (!query) return this.escapeHTML(text);
+        const escapedText = this.escapeHTML(text);
+        // Construir regex seguro para palavras (escape dos termos)
+        const terms = query.toString().toLowerCase().split(/\s+/).filter(t => t.length > 0);
+        if (terms.length === 0) return escapedText;
+
+        // Escape para regex de cada termo
+        const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = terms.map(escapeRegex).join('|');
+        const regex = new RegExp(`(${pattern})`, 'ig');
+
+        // Substituir no texto escapado. Como o texto está escapado, a substituição é segura.
+        return escapedText.replace(regex, '<mark>$1</mark>');
+    }
+
+  //Eventos e UI
+
     setupSearchEvents() {
-        const searchInputs = document.querySelectorAll('input[type="text"]');
-        
+        const searchInputs = document.querySelectorAll('.search-container input[type="text"], input.search-input');
+
         searchInputs.forEach(input => {
-            // Evento de digitação com debounce
             let timeout;
             input.addEventListener('input', (e) => {
                 clearTimeout(timeout);
@@ -96,12 +120,11 @@ class DocumentationSearch {
                 }, 300);
             });
 
-            // Evento de foco
             input.addEventListener('focus', (e) => {
                 this.showSearchResults(e.target.value);
             });
 
-            // Evento de clique fora para fechar
+            // Fecha resultados ao clicar fora (uma vez)
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-container')) {
                     this.hideSearchResults();
@@ -112,17 +135,14 @@ class DocumentationSearch {
 
     setupKeyboardShortcut() {
         document.addEventListener('keydown', (e) => {
-            // Ctrl+K ou Cmd+K para focar na pesquisa
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                const searchInput = document.querySelector('input[type="text"]');
+                const searchInput = document.querySelector('.search-container input[type="text"], input.search-input');
                 if (searchInput) {
                     searchInput.focus();
                     searchInput.select();
                 }
             }
-
-            // Escape para fechar resultados
             if (e.key === 'Escape') {
                 this.hideSearchResults();
             }
@@ -130,18 +150,17 @@ class DocumentationSearch {
     }
 
     performSearch(query) {
-        if (!query || query.length < 2) {
+        if (!query || String(query).trim().length < 2) {
             this.hideSearchResults();
             return;
         }
-
         const results = this.searchInIndex(query);
         this.displaySearchResults(results, query);
     }
 
     searchInIndex(query) {
-        const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
-        
+        const searchTerms = String(query).toLowerCase().split(/\s+/).filter(t => t.length > 0);
+
         return this.searchIndex
             .map(item => {
                 let score = 0;
@@ -149,19 +168,10 @@ class DocumentationSearch {
                 const content = item.content.toLowerCase();
                 const keywords = item.keywords.join(' ').toLowerCase();
 
-                // Pesquisar em título (peso maior)
                 searchTerms.forEach(term => {
                     if (title.includes(term)) score += 10;
                     if (title.startsWith(term)) score += 5;
-                });
-
-                // Pesquisar em conteúdo
-                searchTerms.forEach(term => {
                     if (content.includes(term)) score += 3;
-                });
-
-                // Pesquisar em keywords
-                searchTerms.forEach(term => {
                     if (keywords.includes(term)) score += 2;
                 });
 
@@ -169,111 +179,158 @@ class DocumentationSearch {
             })
             .filter(item => item.score > 0)
             .sort((a, b) => b.score - a.score)
-            .slice(0, 8); // Máximo 8 resultados
+            .slice(0, 8);
+    }
+
+    //Renderização segura
+
+    removeExistingResults() {
+        const existing = document.querySelector('.search-results');
+        if (existing) existing.remove();
     }
 
     displaySearchResults(results, query) {
         this.removeExistingResults();
 
-        if (results.length === 0) {
-            this.showNoResults(query);
-            return;
-        }
-
         const searchContainer = document.querySelector('.search-container');
         if (!searchContainer) return;
 
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'search-results';
-        resultsContainer.innerHTML = `
-            <div class="search-results-header">
-                <span class="search-results-count">${results.length} resultado${results.length !== 1 ? 's' : ''} encontrado${results.length !== 1 ? 's' : ''}</span>
-                <button class="search-results-close" onclick="this.closest('.search-results').remove()">×</button>
-            </div>
-            <div class="search-results-list">
-                ${results.map(result => this.createResultItem(result, query)).join('')}
-            </div>
-        `;
 
+        // Cabeçalho
+        const header = document.createElement('div');
+        header.className = 'search-results-header';
+        const countSpan = document.createElement('span');
+        countSpan.className = 'search-results-count';
+        countSpan.textContent = `${results.length} resultado${results.length !== 1 ? 's' : ''} encontrado${results.length !== 1 ? 's' : ''}`;
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'search-results-close';
+        closeBtn.type = 'button';
+        closeBtn.setAttribute('aria-label', 'Fechar resultados de pesquisa');
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => resultsContainer.remove());
+        header.appendChild(countSpan);
+        header.appendChild(closeBtn);
+        resultsContainer.appendChild(header);
+
+        // Lista
+        const list = document.createElement('div');
+        list.className = 'search-results-list';
+
+        results.forEach(result => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            if (result.url === this.currentPage) item.classList.add('current-page');
+
+            // Título (highlight seguro)
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'search-result-title';
+            titleDiv.innerHTML = this.highlightSafe(result.title, query);
+
+            // Conteúdo (resumo) - limita e highlight
+            const excerpt = result.content.length > 120 ? result.content.substring(0, 120) + '...' : result.content;
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'search-result-content';
+            contentDiv.innerHTML = this.highlightSafe(excerpt, query);
+
+            // URL - como texto simples
+            const urlDiv = document.createElement('div');
+            urlDiv.className = 'search-result-url';
+            urlDiv.textContent = result.url;
+
+            // Evento de clique (navegação) — sem inline JS
+            item.addEventListener('click', (ev) => {
+                // permite Ctrl/Cmd+click para abrir nova aba
+                if (ev.ctrlKey || ev.metaKey) {
+                    window.open(result.url, '_blank', 'noopener');
+                } else {
+                    window.location.href = result.url;
+                }
+            });
+
+            // Accessibility: tornar clicável com Enter quando focado
+            item.tabIndex = 0;
+            item.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter') {
+                    if (ev.ctrlKey || ev.metaKey) {
+                        window.open(result.url, '_blank', 'noopener');
+                    } else {
+                        window.location.href = result.url;
+                    }
+                }
+            });
+
+            item.appendChild(titleDiv);
+            item.appendChild(contentDiv);
+            item.appendChild(urlDiv);
+            list.appendChild(item);
+        });
+
+        if (results.length === 0) {
+            // fallback (não deve acontecer porque tratámos antes)
+            const noRes = document.createElement('div');
+            noRes.className = 'search-no-results';
+            noRes.innerHTML = `<p>Nenhum resultado encontrado</p>`;
+            list.appendChild(noRes);
+        }
+
+        resultsContainer.appendChild(list);
         searchContainer.appendChild(resultsContainer);
     }
 
-    createResultItem(result, query) {
-        const isCurrentPage = result.url === this.currentPage;
-        const highlightedTitle = this.highlightText(result.title, query);
-        const highlightedContent = this.highlightText(result.content.substring(0, 120) + '...', query);
-
-        return `
-            <div class="search-result-item ${isCurrentPage ? 'current-page' : ''}" 
-                 onclick="window.location.href='${result.url}'">
-                <div class="search-result-title">${highlightedTitle}</div>
-                <div class="search-result-content">${highlightedContent}</div>
-                <div class="search-result-url">${result.url}</div>
-            </div>
-        `;
-    }
-
-    highlightText(text, query) {
-        const terms = query.toLowerCase().split(' ').filter(term => term.length > 0);
-        let highlightedText = text;
-
-        terms.forEach(term => {
-            const regex = new RegExp(`(${term})`, 'gi');
-            highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
-        });
-
-        return highlightedText;
-    }
-
     showNoResults(query) {
+        this.removeExistingResults();
         const searchContainer = document.querySelector('.search-container');
         if (!searchContainer) return;
 
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'search-results';
-        resultsContainer.innerHTML = `
-            <div class="search-results-header">
-                <span class="search-results-count">Nenhum resultado encontrado</span>
-                <button class="search-results-close" onclick="this.closest('.search-results').remove()">×</button>
-            </div>
-            <div class="search-results-list">
-                <div class="search-no-results">
-                    <p>Não foram encontrados resultados para "<strong>${query}</strong>"</p>
-                    <p class="search-suggestions">Tente:</p>
-                    <ul>
-                        <li>Verificar a ortografia</li>
-                        <li>Usar termos mais gerais</li>
-                        <li>Experimentar palavras-chave diferentes</li>
-                    </ul>
-                </div>
-            </div>
-        `;
 
+        const header = document.createElement('div');
+        header.className = 'search-results-header';
+        const countSpan = document.createElement('span');
+        countSpan.className = 'search-results-count';
+        countSpan.textContent = 'Nenhum resultado encontrado';
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'search-results-close';
+        closeBtn.type = 'button';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => resultsContainer.remove());
+        header.appendChild(countSpan);
+        header.appendChild(closeBtn);
+
+        const list = document.createElement('div');
+        list.className = 'search-results-list';
+        const noRes = document.createElement('div');
+        noRes.className = 'search-no-results';
+        noRes.innerHTML = `
+            <p>Não foram encontrados resultados para "<strong>${this.escapeHTML(query)}</strong>"</p>
+            <p class="search-suggestions">Tente:</p>
+            <ul>
+                <li>Verificar a ortografia</li>
+                <li>Usar termos mais gerais</li>
+                <li>Experimentar palavras-chave diferentes</li>
+            </ul>
+        `;
+        list.appendChild(noRes);
+
+        resultsContainer.appendChild(header);
+        resultsContainer.appendChild(list);
         searchContainer.appendChild(resultsContainer);
     }
 
     showSearchResults(query) {
-        if (query && query.length >= 2) {
-            this.performSearch(query);
-        }
+        if (query && query.length >= 2) this.performSearch(query);
     }
 
     hideSearchResults() {
         this.removeExistingResults();
     }
-
-    removeExistingResults() {
-        const existingResults = document.querySelector('.search-results');
-        if (existingResults) {
-            existingResults.remove();
-        }
-    }
 }
 
-// Inicializar pesquisa quando o DOM estiver carregado
+// Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
+    window.DocumentationSearch = DocumentationSearch; // expõe a classe
     new DocumentationSearch();
 });
-
-// Exportar para uso global se necessário
-window.DocumentationSearch = DocumentationSearch;
