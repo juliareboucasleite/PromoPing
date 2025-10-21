@@ -312,6 +312,7 @@
 
     <script>
 
+  // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
   window.onload = async () => {
     // Verificar se há token na URL (do Google OAuth)
     const urlParams = new URLSearchParams(window.location.search);
@@ -338,7 +339,7 @@
     }
 
     try {
-      // Perfil básico
+      // Buscar perfil do usuário da API
       const resProfile = await fetch("http://127.0.0.1:3000/api/user/profile", {
         headers: { Authorization: "Bearer " + token }
       });
@@ -350,14 +351,14 @@
         document.getElementById("email").value = profile.email || "";
         document.getElementById("phone").value = profile.telefone || "";
 
-        updateConnectedAccounts(profile.contas_conectadas);
-        updateNotificationPreferences(profile.preferencias);
+        updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
+        updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
       }
 
-      // Carregar notificações
+      // Carregar notificações históricas do usuário
       await carregarNotificacoes();
 
-      // Estatísticas
+      // Buscar estatísticas da conta do usuário
       const resStats = await fetch("http://127.0.0.1:3000/api/user/stats", {
         headers: { Authorization: "Bearer " + token }
       });
@@ -370,7 +371,7 @@
         document.getElementById("dinheiro-poupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
         document.getElementById("membro-desde").textContent = "Setembro 2025"; // Pode ser obtido da tabela utilizadores
       }
-      // Carregar informações do plano
+      // Buscar informações do plano atual
       await carregarPlano();
 
     } catch (err) {
@@ -378,11 +379,13 @@
     }
   };
 
+  // Função para remover token da storage e sair
   function logout() {
     localStorage.removeItem("token");
     window.location.href = "/login";
   }
 
+  // Evento de submit das informações pessoais
   document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = {
@@ -391,6 +394,7 @@
       telefone: document.getElementById("phone").value
     };
     try {
+      // Salvar perfil editado na API
       const res = await fetch("http://127.0.0.1:3000/api/user/profile", {
         method: "PUT",
         headers: {
@@ -412,6 +416,7 @@
     }
   });
 
+  // Evento de submit para troca/criação da senha do usuário
   document.getElementById("passwordForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -428,6 +433,7 @@
       return;
     }
     try {
+      // Enviar senha nova para API
       const res = await fetch("http://127.0.0.1:3000/api/user/set-password", {
         method: "POST",
         headers: {
@@ -450,6 +456,7 @@
     }
   });
 
+ // Atualiza status de contas conectadas na UI
  function updateConnectedAccounts(contas) {
   const contasMap = {};
   contas.forEach(c => contasMap[c.Tipo.toLowerCase()] = c.Conectado);
@@ -472,33 +479,34 @@
   });
 }
 
-  async function carregarNotificacoes() {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch("http://127.0.0.1:3000/api/user/me", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const data = await res.json();
-      if (data.status === "ok") {
-        const list = document.getElementById("notificacoesList");
-        list.innerHTML = "";
+// Buscar notificações recentes do usuário e inserir na lista
+async function carregarNotificacoes() {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch("http://127.0.0.1:3000/api/user/me", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const data = await res.json();
+    if (data.status === "ok") {
+      const list = document.getElementById("notificacoesList");
+      list.innerHTML = "";
 
-        if (data.notificacoes && data.notificacoes.length > 0) {
-          data.notificacoes.forEach(n => {
-            const li = document.createElement("li");
-            li.innerHTML = `[${n.Tipo}] ${n.Mensagem} (${n.DataEnvio || '—'})`; // 🔹 Backend já envia formatado
-            list.appendChild(li);
-          });
-        } else {
-          list.innerHTML = "<li>Sem notificações ainda.</li>";
-        }
+      if (data.notificacoes && data.notificacoes.length > 0) {
+        data.notificacoes.forEach(n => {
+          const li = document.createElement("li");
+          li.innerHTML = `[${n.Tipo}] ${n.Mensagem} (${n.DataEnvio || '—'})`; // 🔹 Backend já envia formatado
+          list.appendChild(li);
+        });
+      } else {
+        list.innerHTML = "<li>Sem notificações ainda.</li>";
       }
-    } catch (err) {
-      console.error("Erro ao carregar notificações:", err);
     }
+  } catch (err) {
+    console.error("Erro ao carregar notificações:", err);
   }
+}
 
-// Resetar notificações
+// Evento para resetar/limpar notificações do histórico
 document.getElementById("resetHistory").addEventListener("click", async () => {
   if (!confirm("Tem certeza que deseja limpar todo o histórico?")) return;
   const token = localStorage.getItem("token");
@@ -520,46 +528,48 @@ document.getElementById("resetHistory").addEventListener("click", async () => {
   }
 });
 
-// Chamar no load
+// Chamar notificações ao carregar (podem duplicar mas backend já protege)
 carregarNotificacoes();
 
+// Atualizar switches de preferências de notificação
+function updateNotificationPreferences(preferencias) {
+  const prefMap = {};
+  preferencias.forEach(p => prefMap[p.Tipo] = p.Ativo);
 
-  function updateNotificationPreferences(preferencias) {
-    const prefMap = {};
-    preferencias.forEach(p => prefMap[p.Tipo] = p.Ativo);
+  document.querySelectorAll('.preference-item').forEach(item => {
+    const nome = item.querySelector('.preference-name').textContent.toLowerCase();
+    const toggle = item.querySelector('.toggle-switch input');
+    let tipo = '';
+    if (nome.includes('email')) tipo = 'email';
+    else if (nome.includes('discord')) tipo = 'discord';
 
-    document.querySelectorAll('.preference-item').forEach(item => {
-      const nome = item.querySelector('.preference-name').textContent.toLowerCase();
-      const toggle = item.querySelector('.toggle-switch input');
-      let tipo = '';
-      if (nome.includes('email')) tipo = 'email';
-      else if (nome.includes('discord')) tipo = 'discord';
+    toggle.checked = prefMap[tipo] || false;
 
-      toggle.checked = prefMap[tipo] || false;
-
-      toggle.addEventListener("change", async (e) => {
-        try {
-          const res = await fetch("http://127.0.0.1:3000/api/user/preferences", {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + localStorage.getItem("token")
-            },
-            body: JSON.stringify({ preferences: [{ tipo, ativo: e.target.checked }] })
-          });
-          const data = await res.json();
-          if (data.status !== "ok") {
-            console.error("Erro ao atualizar preferência:", data.error);
-            e.target.checked = !e.target.checked; // reverte
-          }
-        } catch (err) {
-          console.error("Erro ao atualizar preferência:", err);
+    // Adicionar evento para salvar a alteração no switch
+    toggle.addEventListener("change", async (e) => {
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/user/preferences", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({ preferences: [{ tipo, ativo: e.target.checked }] })
+        });
+        const data = await res.json();
+        if (data.status !== "ok") {
+          console.error("Erro ao atualizar preferência:", data.error);
           e.target.checked = !e.target.checked; // reverte
         }
-      });
+      } catch (err) {
+        console.error("Erro ao atualizar preferência:", err);
+        e.target.checked = !e.target.checked; // reverte
+      }
     });
-  }
+  });
+}
 
+// Buscar info do plano do usuário e preencher UI do plano
 async function carregarPlano() {
   const token = localStorage.getItem("token");
 
@@ -599,7 +609,7 @@ async function carregarPlano() {
         document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
         document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
       } else {
-        // FALLBACK
+        // FALLBACK se id não reconhecido
         document.getElementById("plano-nome").textContent = "Free";
         document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
         document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
@@ -616,32 +626,34 @@ async function carregarPlano() {
   }
 }
 
-  function abrirModalPlanos() {
-    window.location.href = "/dashboard/planos";
-  }
+// Abre página de planos para troca de plano
+function abrirModalPlanos() {
+  window.location.href = "/dashboard/planos";
+}
 
-  async function carregarNomeUsuario() {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+// Busca o nome do usuário e preenche no topo do painel (nav)
+async function carregarNomeUsuario() {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-      const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
-        headers: { Authorization: "Bearer " + token }
-      });
+    const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.user) {
-          document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
-        }
+    if (response.ok) {
+      const data = await response.json();
+      if (data.user) {
+        document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
       }
-    } catch (error) {
-      console.error("Erro ao carregar nome do usuário:", error);
     }
+  } catch (error) {
+    console.error("Erro ao carregar nome do usuário:", error);
   }
+}
+// Carregar nome do usuário ao iniciar (exibe na nav geral)
+carregarNomeUsuario();
 
-  // Carregar nome do usuário ao iniciar
-  carregarNomeUsuario();
-      </script>
+    </script>
 </body>
 </html>
