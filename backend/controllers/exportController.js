@@ -303,7 +303,7 @@ export async function obterPlanoUsuario(req, res) {
     
     // Buscar informações do usuário e plano
     const [usuarios] = await db.query(`
-      SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.VerificacaoIntervalo, p.PermiteSMS, p.Relatorios
+      SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.PermiteSMS, p.Relatorios
       FROM configutilizador c
       LEFT JOIN planos p ON c.PlanoAtualId = p.Id
       WHERE c.UserId = ?
@@ -375,7 +375,7 @@ export async function obterPlanoUsuario(req, res) {
     if (isInGracePeriod && originalPlan) {
       // Buscar informações do plano original
       const [originalPlanData] = await db.query(`
-        SELECT Nome, Preco, LimiteProdutos, VerificacaoIntervalo, PermiteSMS, Relatorios
+        SELECT Nome, Preco, LimiteProdutos, PermiteSMS, Relatorios
         FROM planos 
         WHERE Nome = ?
       `, [originalPlan]);
@@ -385,7 +385,7 @@ export async function obterPlanoUsuario(req, res) {
         plano.nome = original.Nome;
         plano.preco = original.Preco;
         plano.limite_produtos = original.LimiteProdutos;
-        plano.verificacao_intervalo = original.VerificacaoIntervalo;
+        // VerificacaoIntervalo removido - coluna não existe
         plano.permite_sms = original.PermiteSMS;
         plano.relatorios = original.Relatorios;
         
