@@ -133,6 +133,20 @@ body.login-page {
   box-shadow: 0 10px 30px rgba(244, 175, 85, 0.5);
 }
 
+/* ===== DISCORD BUTTON ===== */
+.discord-btn {
+  background: linear-gradient(135deg, #5865F2, #7289DA);
+  color: #fff;
+  border-color: #5865F2;
+  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+}
+
+.discord-btn:hover {
+  background: linear-gradient(135deg, #7289DA, #5865F2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
+}
+
 /* ===== SMS LOGIN ===== */
 .sms-login {
   display: none;
