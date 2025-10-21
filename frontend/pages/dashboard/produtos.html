@@ -10,8 +10,6 @@
   <script src="../../assets/scripts/auth.js"></script>
 </head>
 <body class="dashboard-body">
-
-  <!-- ===== NAV SUPERIOR ===== -->
   <nav class="dashboard-nav">
     <div class="nav-container">
       <div class="nav-brand">
@@ -47,6 +45,7 @@
       </div>
       
       <div class="nav-actions">
+        <span class="nav-user" id="userName">Utilizador</span>
         <button class="nav-logout" onclick="logout()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -58,8 +57,6 @@
       </div>
     </div>
   </nav>
-
-  <!-- ===== CONTEÚDO ===== -->
   <main class="dashboard-main">
     <div class="dashboard-container">
 
@@ -113,10 +110,7 @@
       </div>
 
       <div id="productsList" class="products-list">
-        <!-- Produtos carregados via JS -->
       </div>
-
-      <!-- Loading State -->
       <div id="loadingState" class="loading-state" style="display: none;">
         <div class="loading-spinner">
           <div class="spinner"></div>
@@ -127,7 +121,6 @@
     </div>
   </main>
 
-  <!-- ===== MODAL DE UPGRADE ===== -->
   <div id="upgradeModal" class="upgrade-modal" style="display: none;">
     <div class="upgrade-modal-backdrop"></div>
     <div class="upgrade-modal-content">
@@ -187,13 +180,11 @@
   </div>
 
   <script>
-    // ===== LOGOUT =====
     function logout() {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
 
-    // ===== CARREGAR PRODUTOS =====
     async function carregarProdutos() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -201,7 +192,6 @@
         return (window.location.href = "/login");
       }
 
-      // Mostrar loading
       const productsList = document.getElementById("productsList");
       const loadingState = document.getElementById("loadingState");
       productsList.style.display = "none";
@@ -262,22 +252,17 @@
           const estadoOk = !estadoFiltro || (estadoFiltro === 'meta' && metaAtingida) || (estadoFiltro === 'subiu' && subiu) || (estadoFiltro === 'monitorar' && !metaAtingida && !subiu);
           return nomeOk && lojaOk && estadoOk;
         });
-
         itens.forEach((p, index) => {
           const hist = Array.isArray(p.Historico) ? p.Historico : [];
           const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : '—';
           const precoAnterior = hist.length > 0 ? `€${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : '—';
           const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '—';
           const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '—';
-          
-          // Calcular mudança de preço e percentual
-          const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0) 
+                 const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0) 
             ? (Number(p.PrecoAtual || p.precoAtual || p.preco_atual) - Number(hist[0].Preco || hist[0].preco)) 
             : null;
           
           const percentual = delta && hist.length > 0 ? ((delta / Number(hist[0].Preco || hist[0].preco)) * 100) : 0;
-          
-          // Determinar status do produto
           let statusTag = '';
           let statusClass = '';
           if ((p.PrecoAlvo || p.precoAlvo || p.preco_alvo) && (p.PrecoAtual || p.precoAtual || p.preco_atual) != null && (p.PrecoAtual || p.precoAtual || p.preco_atual) <= (p.PrecoAlvo || p.precoAlvo || p.preco_alvo)) {
@@ -431,7 +416,6 @@
       }
     }
 
-    // ===== REMOVER PRODUTO =====
     async function removerProduto(id) {
       const token = localStorage.getItem("token");
       if (!confirm("Tem certeza que deseja remover este produto?")) return;
@@ -448,63 +432,6 @@
       }
     }
 
-    // ===== ATUALIZAR TODOS OS PREÇOS (VIA BOTÃO INDIVIDUAL) =====
-    // FUNÇÃO REMOVIDA - Botão de refresh individual foi removido
-    /*
-    async function atualizarPrecoIndividual(produtoId) { // produtoId ainda é usado para identificar o botão clicado
-      const token = localStorage.getItem("token");
-      const refreshBtn = document.querySelector(`[onclick="atualizarPrecoIndividual(${produtoId})"]`);
-      
-      if (!token) {
-        alert("Precisa estar logado!");
-        return (window.location.href = "/login");
-      }
-
-      // Mostrar estado de loading no botão
-      refreshBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
-          <path d="M21 12a9 9 0 11-6.219-8.56"></path>
-        </svg>
-      `;
-      refreshBtn.disabled = true;
-
-      try {
-        // Chamar a rota de refresh global
-        const res = await fetch(`http://127.0.0.1:3000/api/produtos/refresh`, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token }
-        });
-
-        const data = await res.json();
-        if (data.status === "ok") {
-          alert(`✅ ${data.atualizados.length} produto(s) atualizados!`);
-          carregarProdutos(); // Recarregar a lista
-        } else {
-          if (res.status === 403) {
-            alert(`⏰ ${data.error}`);
-          } else {
-            alert(data.error || "Erro ao atualizar preços");
-          }
-        }
-      } catch (err) {
-        console.error("Erro no refresh global:", err);
-        alert("Erro no servidor");
-      } finally {
-        // Restaurar o ícone do botão
-        refreshBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23,4 23,10 17,10"></polyline>
-            <polyline points="1,20 1,14 7,14"></polyline>
-            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-          </svg>
-        `;
-        refreshBtn.disabled = false;
-      }
-    }
-    */
-
-
-    // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
     let lastSyncTime = Date.now();
     
     async function verificarSincronizacao() {
@@ -530,15 +457,14 @@
     // Verificar sincronização a cada 10 segundos
     setInterval(verificarSincronizacao, 10000);
 
-    // ===== VERIFICAÇÃO DE PLANOS =====
     let userPlan = "Free"; // Plano padrão
 
     async function verificarPlanoUsuario() {
-      console.log("🔍 Verificando plano do usuário...");
+      console.log("Verificando plano do usuário...");
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          console.log("🔒 Usuário não autenticado");
+          console.log("Usuário não autenticado");
           return;
         }
 
@@ -547,16 +473,16 @@
         });
 
         if (!response.ok) {
-          console.error("❌ Erro ao verificar plano:", response.status);
+          console.error("Erro ao verificar plano:", response.status);
           return;
         }
 
         const data = await response.json();
-        console.log("📋 Dados do plano:", data);
+        console.log("Dados do plano:", data);
 
         if (data.status === "ok") {
           userPlan = data.plano.nome;
-          console.log(`✅ Plano verificado: ${userPlan}`);
+          console.log(`Plano verificado: ${userPlan}`);
 
           // Se for plano Free, mostrar modal de upgrade
           if (userPlan === "Free") {
@@ -564,11 +490,10 @@
           }
         }
       } catch (error) {
-        console.error("❌ Erro ao verificar plano:", error);
+        console.error("Erro ao verificar plano:", error);
       }
     }
 
-    // ===== MOSTRAR MODAL DE UPGRADE =====
     function mostrarModalUpgrade(planoAtual) {
       const modal = document.getElementById("upgradeModal");
       const currentPlanSpan = document.getElementById("currentPlan");
@@ -579,18 +504,15 @@
       
       modal.style.display = "block";
       document.body.style.overflow = "hidden"; // Prevenir scroll
-      console.log("💎 Modal de upgrade exibido");
+      console.log("Modal de upgrade exibido");
     }
 
-    // ===== FECHAR MODAL DE UPGRADE =====
     function fecharModalUpgrade() {
       const modal = document.getElementById("upgradeModal");
       modal.style.display = "none";
       document.body.style.overflow = "auto"; // Restaurar scroll
-      console.log("❌ Modal de upgrade fechado");
+      console.log("Modal de upgrade fechado");
     }
-
-    // ===== FECHAR MODAL AO CLICAR NO BACKDROP =====
     document.addEventListener('click', function(event) {
       const modal = document.getElementById("upgradeModal");
       const backdrop = document.querySelector('.upgrade-modal-backdrop');
@@ -599,16 +521,35 @@
         fecharModalUpgrade();
       }
     });
-
-    // ===== FECHAR MODAL COM ESC =====
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
         fecharModalUpgrade();
       }
     });
 
-    // ===== INICIAR =====
+    async function carregarNomeUsuario() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+          headers: { Authorization: "Bearer " + token }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user) {
+            document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar nome do usuário:", error);
+      }
+    }
+
     window.onload = async () => {
+      // Carregar nome do usuário
+      await carregarNomeUsuario();
       // Verificar plano primeiro, depois carregar produtos
       await verificarPlanoUsuario();
       carregarProdutos();
@@ -620,5 +561,3 @@
   </script>
 </body>
 </html>
-e
-e

@@ -123,13 +123,21 @@ function runLocal() {
             });
             
             presenceProcess.stdout.on('data', (data) => {
-                const message = data.toString().trim();
-                if (message.includes('✅') || message.includes('🎮')) {
+                const message = data.toString().trim()
+                  // Remove emojis comuns do início/fim/mensagens
+                  .replace(/[✅🎮❌⚠️🔄]/g, '')
+                  .replace(/^\s+|\s+$/g, '');
+
+                if (message === '') return; // ignora linhas vazias (só emoji)
+
+                if (message.includes('Rich Presence iniciado') || message.includes('Rich Presence pronto')) {
                     log(`Rich Presence: ${message}`, 'green');
-                } else if (message.includes('❌') || message.includes('⚠️')) {
+                } else if (message.includes('Rich Presence erro') || message.includes('Rich Presence alerta')) {
                     log(`Rich Presence: ${message}`, 'red');
-                } else if (message.includes('🔄')) {
+                } else if (message.includes('Rich Presence sincronizando')) {
                     log(`Rich Presence: ${message}`, 'yellow');
+                } else {
+                    log(`Rich Presence: ${message}`, 'green');
                 }
             });
             

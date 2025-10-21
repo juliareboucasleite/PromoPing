@@ -11,15 +11,12 @@
     <script type="module" src="../../assets/scripts/auth.js"></script>
 </head>
 <body class="dashboard-body">
-    
-    <!-- ===== NAVEGAÇÃO SUPERIOR ===== -->
     <nav class="dashboard-nav">
         <div class="nav-container">
             <div class="nav-brand">
                 <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
                 <span class="nav-brand-name">PromoPing</span>
             </div>
-            
             <div class="nav-menu">
                 <a href="/dashboard" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -46,8 +43,8 @@
                     Perfil
                 </a>
             </div>
-            
-            <div class="nav-actions">
+                        <div class="nav-actions">
+                <span class="nav-user" id="userName">Utilizador</span>
                 <button class="nav-logout" onclick="logout()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -60,23 +57,18 @@
         </div>
     </nav>
 
-    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
     <main class="dashboard-main">
         <div class="dashboard-container">
             
-            <!-- ===== CABEÇALHO DA PÁGINA ===== -->
             <header class="page-header">
                 <h1 class="page-title">Perfil</h1>
                 <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
             </header>
 
-            <!-- ===== LAYOUT EM DUAS COLUNAS ===== -->
             <div class="profile-layout">
-                
-                <!-- ===== COLUNA ESQUERDA ===== -->
+
                 <div class="profile-left">
-                    
-                    <!-- ===== INFORMAÇÕES PESSOAIS ===== -->
+
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,7 +98,6 @@
                         </form>
                     </div>
 
-                    <!-- ===== CONFIGURAR SENHA ===== -->
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -136,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- ===== PREFERÊNCIAS DE NOTIFICAÇÃO ===== -->
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -166,11 +156,11 @@
                             
                             <div class="preference-item">
                                 <div class="preference-info">
-                                    <svg class="preference-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    <svg class="preference-icon discord-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
                                     </svg>
                                     <div class="preference-details">
-                                        <span class="preference-name">SMS</span>
+                                        <span class="preference-name">Discord</span>
                                         <span class="preference-desc"></span>
                                     </div>
                                 </div>
@@ -183,10 +173,9 @@
                     </div>
                 </div>
 
-                <!-- ===== COLUNA DIREITA ===== -->
                 <div class="profile-right">
                     
-                    <!-- ===== CONTAS CONECTADAS ===== -->
+                   
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -219,7 +208,7 @@
                                 <button class="account-status connected">Conectado</button>
                             </div>
                         </div>
-                    </div><!-- ===== NOTIFICAÇÕES ===== -->
+                    </div>
                         <div class="profile-card">
                           <div class="card-header">
                             <h2 class="card-title">Histórico de Notificações</h2>
@@ -235,8 +224,6 @@
                           <ul id="notificacoesList" class="notification-list"></ul>
                         </div>
 
-
-                    <!-- ===== ESTATÍSTICAS ===== -->
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -270,7 +257,6 @@
                         </div>
                     </div>
 
-                    <!-- ===== PLANO DO UTILIZADOR ===== -->
                     <div class="profile-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -326,7 +312,6 @@
 
     <script>
 
-        // ===== VERIFICAR LOGIN E CARREGAR DADOS =====
   window.onload = async () => {
     // Verificar se há token na URL (do Google OAuth)
     const urlParams = new URLSearchParams(window.location.search);
@@ -385,7 +370,6 @@
         document.getElementById("dinheiro-poupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
         document.getElementById("membro-desde").textContent = "Setembro 2025"; // Pode ser obtido da tabela utilizadores
       }
-
       // Carregar informações do plano
       await carregarPlano();
 
@@ -394,13 +378,11 @@
     }
   };
 
-  // ===== LOGOUT =====
   function logout() {
     localStorage.removeItem("token");
     window.location.href = "/login";
   }
 
-  // ===== SALVAR INFORMAÇÕES PESSOAIS =====
   document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = {
@@ -408,7 +390,6 @@
       email: document.getElementById("email").value,
       telefone: document.getElementById("phone").value
     };
-
     try {
       const res = await fetch("http://127.0.0.1:3000/api/user/profile", {
         method: "PUT",
@@ -431,7 +412,6 @@
     }
   });
 
-  // ===== CONFIGURAR SENHA =====
   document.getElementById("passwordForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -447,7 +427,6 @@
       alert("As senhas não coincidem!");
       return;
     }
-
     try {
       const res = await fetch("http://127.0.0.1:3000/api/user/set-password", {
         method: "POST",
@@ -471,8 +450,6 @@
     }
   });
 
-
-  // ===== FUNÇÕES AUXILIARES =====
  function updateConnectedAccounts(contas) {
   const contasMap = {};
   contas.forEach(c => contasMap[c.Tipo.toLowerCase()] = c.Conectado);
@@ -486,17 +463,14 @@
     else if (nome.includes('sms')) tipo = 'sms';
 
     if (contasMap[tipo] === 1) {
-      // ✅ está conectado
       button.textContent = "Conectado";
       button.className = "account-status connected";
     } else {
-      // ❌ não conectado → fica cinza
       button.textContent = "Conectar";
       button.className = "account-status disconnected";
     }
   });
 }
-
 
   async function carregarNotificacoes() {
     const token = localStorage.getItem("token");
@@ -505,7 +479,6 @@
         headers: { Authorization: "Bearer " + token }
       });
       const data = await res.json();
-
       if (data.status === "ok") {
         const list = document.getElementById("notificacoesList");
         list.innerHTML = "";
@@ -560,7 +533,7 @@ carregarNotificacoes();
       const toggle = item.querySelector('.toggle-switch input');
       let tipo = '';
       if (nome.includes('email')) tipo = 'email';
-      else if (nome.includes('sms')) tipo = 'sms';
+      else if (nome.includes('discord')) tipo = 'discord';
 
       toggle.checked = prefMap[tipo] || false;
 
@@ -587,7 +560,6 @@ carregarNotificacoes();
     });
   }
 
-// ===== CARREGAR INFORMAÇÕES DO PLANO =====
 async function carregarPlano() {
   const token = localStorage.getItem("token");
 
@@ -644,10 +616,32 @@ async function carregarPlano() {
   }
 }
 
-  // ===== ABRIR MODAL DE PLANOS =====
   function abrirModalPlanos() {
     window.location.href = "/dashboard/planos";
   }
+
+  async function carregarNomeUsuario() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user) {
+          document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar nome do usuário:", error);
+    }
+  }
+
+  // Carregar nome do usuário ao iniciar
+  carregarNomeUsuario();
       </script>
 </body>
 </html>
