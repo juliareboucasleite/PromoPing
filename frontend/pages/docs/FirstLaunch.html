@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
-  <title>First Launch | PromoPing Docs</title>
+  <title>Primeiro Lançamento | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
@@ -24,7 +24,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Ask or search..." />
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -39,53 +39,53 @@
       <nav>
         <ul>
           <!-- About Section -->
-          <li style="margin-bottom: 2.2rem;">
-            <a href="docs.html" style="color: #b3b3b3; font-weight: 400; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
-              About PromoPing
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
             </a>
           </li>
           <!-- Getting Started -->
-          <li style="margin-bottom: 0.7rem;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
           </li>
           <li>
-            <a href="#" class="active" style="color: #e6af1b; font-size: 1.01rem; font-weight: 500; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              First Launch
+            <a href="#" class="sidebar-nav-link active">
+              Primeiro Lançamento
             </a>
           </li>
           <li>
-            <a href="usage-guide.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              Usage Guide
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
             </a>
           </li>
           <!-- UI Scripting -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
           </li>
           <li>
-            <a href="api-reference.html" style="color: #b3b3b3; font-size: 1.01rem; font-weight: 400; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              API Reference
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" style="margin-left: auto;">
+            <a href="api-reference.html" class="sidebar-nav-link inactive">
+              Referência da API
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
                 <polyline points="9,6 15,12 9,18"></polyline>
               </svg>
             </a>
           </li>
           <!-- Support -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
           </li>
           <li>
-            <a href="support.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="support.html" class="sidebar-nav-link">
               Suporte
             </a>
           </li>
           <li>
-            <a href="service-status.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="service-status.html" class="sidebar-nav-link">
               Status do Serviço
             </a>
           </li>
           <li>
-            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="terms.html" class="sidebar-nav-link">
               Termos de Uso
             </a>
           </li>
@@ -99,7 +99,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>First Launch</h1>
+        <h1>Primeiro Lançamento</h1>
         <button class="copy-button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -112,86 +112,86 @@
         </button>
       </div>
       
-      <h2>Getting Started</h2>
-      <h3>Welcome to PromoPing!</h3>
+      <h2>Começar</h2>
+      <h3>Bem-vindo ao PromoPing!</h3>
       <p>
-        This guide will help you set up PromoPing for the first time and get you monitoring your favorite products in minutes.
+        Este guia irá ajudá-lo a configurar o PromoPing pela primeira vez e a monitorizar os seus produtos favoritos em minutos.
       </p>
 
-      <h3>System Requirements</h3>
-      <p>Before starting, ensure your system meets these requirements:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Node.js 16.0 or higher</li>
-        <li>MySQL 8.0 or higher</li>
-        <li>At least 2GB of available RAM</li>
-        <li>Stable internet connection</li>
+      <h3>Requisitos do Sistema</h3>
+      <p>Antes de começar, certifique-se de que o seu sistema cumpre estes requisitos:</p>
+      <ul class="list-styled">
+        <li>Node.js 16.0 ou superior</li>
+        <li>MySQL 8.0 ou superior</li>
+        <li>Pelo menos 2GB de RAM disponível</li>
+        <li>Conexão estável à internet</li>
       </ul>
 
-      <h3>Installation Steps</h3>
+      <h3>Passos de Instalação</h3>
       
-      <h4>1. Clone the Repository</h4>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+      <h4>1. Clonar o Repositório</h4>
+      <div class="code-block">
         git clone https://github.com/yourusername/PromoPing-2.0.1.git
       </div>
 
-      <h4>2. Install Dependencies</h4>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+      <h4>2. Instalar Dependências</h4>
+      <div class="code-block">
         cd PromoPing-2.0.1<br>
         npm install
       </div>
 
-      <h4>3. Environment Configuration</h4>
-      <p>Create a <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">.env</code> file in the root directory:</p>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
-        # Database Configuration<br>
+      <h4>3. Configuração do Ambiente</h4>
+      <p>Crie um ficheiro <code class="code-inline">.env</code> no directório raiz:</p>
+      <div class="code-block code-block-small">
+        # Configuração da Base de Dados<br>
         DB_HOST=localhost<br>
         DB_USER=your_username<br>
         DB_PASSWORD=your_password<br>
         DB_NAME=promoping<br><br>
         
-        # API Keys<br>
+        # Chaves da API<br>
         STRIPE_SECRET_KEY=your_stripe_key<br>
         GOOGLE_CLIENT_ID=your_google_client_id<br>
         GOOGLE_CLIENT_SECRET=your_google_client_secret<br><br>
         
-        # Server Configuration<br>
+        # Configuração do Servidor<br>
         PORT=3000<br>
         NODE_ENV=development
       </div>
 
-      <h4>4. Database Setup</h4>
-      <p>Run the database migrations:</p>
+      <h4>4. Configuração da Base de Dados</h4>
+      <p>Execute as migrações da base de dados:</p>
       <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
         npm run migrate
       </div>
 
-      <h4>5. Start the Application</h4>
+      <h4>5. Iniciar a Aplicação</h4>
       <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
         npm start
       </div>
 
-      <h3>First Time Setup</h3>
-      <p>Once the application is running:</p>
+      <h3>Configuração Inicial</h3>
+      <p>Assim que a aplicação estiver a funcionar:</p>
       <ol style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Open your browser and navigate to <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">http://localhost:3000</code></li>
-        <li>Create your first admin account</li>
-        <li>Configure your notification preferences</li>
-        <li>Add your first product to monitor</li>
+        <li>Abra o seu navegador e navegue para <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">http://localhost:3000</code></li>
+        <li>Crie a sua primeira conta de administrador</li>
+        <li>Configure as suas preferências de notificação</li>
+        <li>Adicione o seu primeiro produto para monitorizar</li>
       </ol>
 
-      <h3>Troubleshooting</h3>
-      <p>If you encounter any issues during setup:</p>
+      <h3>Resolução de Problemas</h3>
+      <p>Se encontrar algum problema durante a configuração:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Check that all environment variables are correctly set</li>
-        <li>Ensure MySQL is running and accessible</li>
-        <li>Verify that all required ports are available</li>
-        <li>Check the console logs for specific error messages</li>
+        <li>Verifique se todas as variáveis de ambiente estão correctamente definidas</li>
+        <li>Certifique-se de que o MySQL está a funcionar e acessível</li>
+        <li>Verifique se todas as portas necessárias estão disponíveis</li>
+        <li>Verifique os logs da consola para mensagens de erro específicas</li>
       </ul>
 
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='usage-guide.html'">
         <div class="next-content">
-          <span class="next-label">Next</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Usage Guide</span>
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Guia de Utilização</span>
         </div>
         <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
@@ -199,7 +199,7 @@
       </div>
 
       <footer>
-        <p>Last updated 1 year ago</p>
+        <p>Última actualização há 1 dia</p>
       </footer>
     </main>
 

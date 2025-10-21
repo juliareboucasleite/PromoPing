@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
   <title>Suporte | PromoPing Docs</title>
@@ -24,7 +24,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Ask or search..." />
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -39,53 +39,53 @@
       <nav>
         <ul>
           <!-- About Section -->
-          <li style="margin-bottom: 2.2rem;">
-            <a href="docs.html" style="color: #b3b3b3; font-weight: 400; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
-              About PromoPing
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
             </a>
           </li>
           <!-- Getting Started -->
-          <li style="margin-bottom: 0.7rem;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
           </li>
           <li>
-            <a href="FirstLaunch.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              First Launch
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
             </a>
           </li>
           <li>
-            <a href="usage-guide.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              Usage Guide
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
             </a>
           </li>
           <!-- UI Scripting -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
           </li>
           <li>
-            <a href="api-reference.html" style="color: #b3b3b3; font-size: 1.01rem; font-weight: 400; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              API Reference
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" style="margin-left: auto;">
+            <a href="api-reference.html" class="sidebar-nav-link inactive">
+              Referência da API
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
                 <polyline points="9,6 15,12 9,18"></polyline>
               </svg>
             </a>
           </li>
           <!-- Support -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
           </li>
           <li>
-            <a href="#" class="active" style="color: #e6af1b; font-size: 1.01rem; font-weight: 500; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="#" class="sidebar-nav-link active">
               Suporte
             </a>
           </li>
           <li>
-            <a href="service-status.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="service-status.html" class="sidebar-nav-link">
               Status do Serviço
             </a>
           </li>
           <li>
-            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="terms.html" class="sidebar-nav-link">
               Termos de Uso
             </a>
           </li>
@@ -180,9 +180,10 @@
         <div class="faq-item">
           <h5>Existe limite de requisições na API?</h5>
           <ul>
-            <li><strong>Plano gratuito:</strong> 100 requisições por hora</li>
-            <li><strong>Plano premium:</strong> 1000 requisições por hora</li>
-            <li><strong>Enterprise:</strong> Limites personalizados</li>
+            <li><strong>Free:</strong> 100 requisições por hora</li>
+            <li><strong>Basic:</strong> 500 requisições por hora</li>
+            <li><strong>Standard:</strong> 1000 requisições por hora</li>
+            <li><strong>Premium:</strong> 2000 requisições por hora</li>
           </ul>
         </div>
 
@@ -193,7 +194,18 @@
       </div>
 
       <div class="faq-section">
-        <h4>Pagamentos e Planos</h4>
+        <h4>Planos e Preços</h4>
+        
+        <div class="faq-item">
+          <h5>Quais são os planos disponíveis?</h5>
+          <p>Oferecemos 4 planos para diferentes necessidades:</p>
+          <ul>
+            <li><strong>Free (€0,00/mês):</strong> Até 5 produtos, verificação a cada 24h, apenas email, histórico de 7 dias</li>
+            <li><strong>Basic (€4,99/mês):</strong> Até 25 produtos, verificação a cada 4h, email + SMS, histórico de 30 dias, relatórios básicos</li>
+            <li><strong>Standard (€12,99/mês):</strong> Produtos ilimitados, verificação a cada 0.5h, email + SMS + Discord, histórico completo, relatórios avançados</li>
+            <li><strong>Premium (€15,30/mês):</strong> Produtos ilimitados, verificação contínua, todos os canais, histórico completo, relatórios avançados</li>
+          </ul>
+        </div>
         
         <div class="faq-item">
           <h5>Quais métodos de pagamento são aceitos?</h5>
@@ -207,7 +219,7 @@
 
         <div class="faq-item">
           <h5>Há período de teste gratuito?</h5>
-          <p>Oferecemos 14 dias de teste gratuito para todos os novos usuários. Não é necessário cartão de crédito para começar.</p>
+          <p>Oferecemos 30 dias de teste gratuito para todos os novos usuários. Não é necessário cartão de crédito para começar.</p>
         </div>
       </div>
 

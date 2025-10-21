@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
-  <title>About PromoPing | PromoPing Docs</title>
+  <title>Sobre o PromoPing | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
@@ -24,7 +24,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Ask or search..." />
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -39,53 +39,53 @@
       <nav>
         <ul>
           <!-- About Section -->
-          <li style="margin-bottom: 2.2rem;">
-            <a href="#" class="active" style="color: #e6af1b; font-weight: 500; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
-              About PromoPing
+          <li class="sidebar-nav-about">
+            <a href="#" class="active">
+              Sobre o PromoPing
             </a>
           </li>
           <!-- Getting Started -->
-          <li style="margin-bottom: 0.7rem;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
           </li>
           <li>
-            <a href="FirstLaunch.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              First Launch
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
             </a>
           </li>
           <li>
-            <a href="usage-guide.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              Usage Guide
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
             </a>
           </li>
           <!-- UI Scripting -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
           </li>
           <li>
-            <a href="api-reference.html" style="color: #b3b3b3; font-size: 1.01rem; font-weight: 400; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              API Reference
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" style="margin-left: auto;">
+            <a href="api-reference.html" class="sidebar-nav-link inactive">
+              Referência da API
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
                 <polyline points="9,6 15,12 9,18"></polyline>
               </svg>
             </a>
           </li>
           <!-- Support -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
           </li>
           <li>
-            <a href="support.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="support.html" class="sidebar-nav-link">
               Suporte
             </a>
           </li>
           <li>
-            <a href="service-status.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="service-status.html" class="sidebar-nav-link">
               Status do Serviço
             </a>
           </li>
           <li>
-            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="terms.html" class="sidebar-nav-link">
               Termos de Uso
             </a>
           </li>
@@ -99,7 +99,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>About PromoPing</h1>
+        <h1>Sobre o PromoPing</h1>
         <button class="copy-button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -112,25 +112,34 @@
         </button>
       </div>
       
-      <h2>Welcome!</h2>
-      <h3>What is PromoPing, and how do I set it up?</h3>
+      <h2>Bem-vindo!</h2>
+      <h3>O que é o PromoPing e como o configuro?</h3>
       <p>
-        PromoPing is a specialized platform designed to help you monitor and compare product prices in one place. 
-        It operates as a smart tool that collects data from multiple online stores, offering users the ability to 
-        track prices, receive alerts when discounts appear, and make smarter purchase decisions.
+        O PromoPing é uma plataforma especializada concebida para o ajudar a monitorizar e comparar preços de produtos num só local. 
+        Funciona como uma ferramenta inteligente que recolhe dados de múltiplas lojas online, oferecendo aos utilizadores a capacidade de 
+        rastrear preços, receber alertas quando aparecem descontos e tomar decisões de compra mais inteligentes.
       </p>
       <p>
-        With PromoPing, users can enjoy features such as real-time price tracking, price drop alerts, 
-        centralized dashboards for favorite products, and quick comparisons between sellers. 
-        PromoPing saves you both time and money by ensuring you never miss the best deal.
+        Com o PromoPing, os utilizadores podem desfrutar de funcionalidades como rastreamento de preços em tempo real, alertas de queda de preços, 
+        painéis centralizados para produtos favoritos e comparações rápidas entre vendedores. 
+        O PromoPing poupa-lhe tempo e dinheiro, garantindo que nunca perde a melhor oferta.
       </p>
+      
+      <h3>Planos Disponíveis</h3>
+      <p>Oferecemos 4 planos para diferentes necessidades:</p>
+      <ul class="list-styled">
+        <li><strong>Free (€0,00/mês):</strong> Ideal para começar - até 5 produtos, verificação a cada 24h</li>
+        <li><strong>Basic (€4,99/mês):</strong> Para utilizadores regulares - até 25 produtos, verificação a cada 4h</li>
+        <li><strong>Standard (€12,99/mês):</strong> Para utilizadores avançados - produtos ilimitados, verificação a cada 30 minutos</li>
+        <li><strong>Premium (€15,30/mês):</strong> Para utilizadores profissionais - verificação contínua, todos os canais</li>
+      </ul>
       <p>
-        To set up PromoPing, you can follow the written steps provided in the Getting Started section.
+        Para configurar o PromoPing, pode seguir os passos escritos fornecidos na secção Começar.
       </p>
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='FirstLaunch.html'">
         <div class="next-content">
-          <span class="next-label">Next</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">First Launch</span>
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Primeiro Lançamento</span>
         </div>
         <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
@@ -138,7 +147,7 @@
       </div>
 
       <footer>
-        <p>Last updated 1 year ago</p>
+        <p>Última actualização há 1 dia</p>
       </footer>
     </main>
 

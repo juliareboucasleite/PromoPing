@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
-  <title>Usage Guide | PromoPing Docs</title>
+  <title>Guia de Utilização | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
@@ -24,7 +24,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Ask or search..." />
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -39,53 +39,53 @@
       <nav>
         <ul>
           <!-- About Section -->
-          <li style="margin-bottom: 2.2rem;">
-            <a href="docs.html" style="color: #b3b3b3; font-weight: 400; font-size: 1.05rem; background: none; border-radius: 0; padding: 0; display: block; text-decoration: none;">
-              About PromoPing
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
             </a>
           </li>
           <!-- Getting Started -->
-          <li style="margin-bottom: 0.7rem;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">GETTING STARTED</span>
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
           </li>
           <li>
-            <a href="FirstLaunch.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              First Launch
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
             </a>
           </li>
           <li>
-            <a href="#" class="active" style="color: #e6af1b; font-size: 1.01rem; font-weight: 500; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              Usage Guide
+            <a href="#" class="sidebar-nav-link active">
+              Guia de Utilização
             </a>
           </li>
           <!-- UI Scripting -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">UI SCRIPTING</span>
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
           </li>
           <li>
-            <a href="api-reference.html" style="color: #b3b3b3; font-size: 1.01rem; font-weight: 400; display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
-              API Reference
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" style="margin-left: auto;">
+            <a href="api-reference.html" class="sidebar-nav-link inactive">
+              Referência da API
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
                 <polyline points="9,6 15,12 9,18"></polyline>
               </svg>
             </a>
           </li>
           <!-- Support -->
-          <li style="margin: 1.2rem 0 0.3rem 0;">
-            <span style="color: #fff; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.03em; display: block; text-align: left;">SUPORTE</span>
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
           </li>
           <li>
-            <a href="support.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="support.html" class="sidebar-nav-link">
               Suporte
             </a>
           </li>
           <li>
-            <a href="service-status.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="service-status.html" class="sidebar-nav-link">
               Status do Serviço
             </a>
           </li>
           <li>
-            <a href="terms.html" style="color: #fff; font-size: 1.01rem; font-weight: 400; display: block; padding: 0.2rem 0 0.2rem 0; border-radius: 0; text-decoration: none;">
+            <a href="terms.html" class="sidebar-nav-link">
               Termos de Uso
             </a>
           </li>
@@ -99,7 +99,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Usage Guide</h1>
+        <h1>Guia de Utilização</h1>
         <button class="copy-button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -112,139 +112,147 @@
         </button>
       </div>
       
-      <h2>Getting Started with PromoPing</h2>
-      <h3>Overview</h3>
+      <h2>Começar com o PromoPing</h2>
+      <h3>Visão Geral</h3>
       <p>
-        PromoPing is a comprehensive price monitoring platform that helps you track products across multiple online stores. 
-        This guide will walk you through all the essential features and how to use them effectively.
+        O PromoPing é uma plataforma abrangente de monitorização de preços que o ajuda a rastrear produtos em múltiplas lojas online. 
+        Este guia irá conduzi-lo através de todas as funcionalidades essenciais e como utilizá-las eficazmente.
       </p>
 
-      <h3>Dashboard Overview</h3>
-      <p>When you first log in, you'll see the main dashboard with:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li><strong>Product List:</strong> All your monitored products</li>
-        <li><strong>Price Alerts:</strong> Recent price changes and notifications</li>
-        <li><strong>Analytics:</strong> Price trends and savings statistics</li>
-        <li><strong>Quick Actions:</strong> Add new products, manage alerts</li>
+      <h3>Visão Geral do Painel</h3>
+      <p>Quando iniciar sessão pela primeira vez, verá o painel principal com:</p>
+      <ul class="list-styled">
+        <li><strong>Lista de Produtos:</strong> Todos os seus produtos monitorizados</li>
+        <li><strong>Alertas de Preço:</strong> Alterações de preço recentes e notificações</li>
+        <li><strong>Análises:</strong> Tendências de preços e estatísticas de poupança</li>
+        <li><strong>Acções Rápidas:</strong> Adicionar novos produtos, gerir alertas</li>
       </ul>
 
-      <h3>Adding Products to Monitor</h3>
+      <h3>Adicionar Produtos para Monitorizar</h3>
       
-      <h4>Method 1: Direct URL</h4>
-      <p>The easiest way to add a product is by pasting its URL:</p>
-      <ol style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Click the "Add Product" button</li>
-        <li>Paste the product URL from your favorite store</li>
-        <li>PromoPing will automatically detect the product details</li>
-        <li>Set your desired price threshold</li>
-        <li>Choose notification preferences</li>
+      <h4>Método 1: URL Directa</h4>
+      <p>A forma mais fácil de adicionar um produto é colando o seu URL:</p>
+      <ol class="list-styled">
+        <li>Clique no botão "Adicionar Produto"</li>
+        <li>Cole o URL do produto da sua loja favorita</li>
+        <li>O PromoPing detectará automaticamente os detalhes do produto</li>
+        <li>Defina o seu limiar de preço desejado</li>
+        <li>Escolha as preferências de notificação</li>
       </ol>
 
-      <h4>Method 2: Manual Entry</h4>
-      <p>For more control, you can manually enter product information:</p>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
-        Product Name: iPhone 15 Pro<br>
-        Store: Apple Store<br>
-        Current Price: $999.00<br>
-        Target Price: $899.00<br>
-        Category: Electronics
+      <h4>Método 2: Entrada Manual</h4>
+      <p>Para mais controlo, pode introduzir manualmente as informações do produto:</p>
+      <div class="code-block code-block-small">
+        Nome do Produto: iPhone 15 Pro<br>
+        Loja: Apple Store<br>
+        Preço Actual: $999.00<br>
+        Preço Alvo: $899.00<br>
       </div>
 
-      <h3>Setting Up Price Alerts</h3>
-      <p>Configure alerts to be notified when prices drop:</p>
+      <h3>Configurar Alertas de Preço</h3>
+      <p>Configure alertas para ser notificado quando os preços descem:</p>
       
-      <h4>Alert Types</h4>
+      <h4>Tipos de Alerta</h4>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li><strong>Price Drop:</strong> Notify when price goes below threshold</li>
-        <li><strong>Price Increase:</strong> Alert when price rises significantly</li>
-        <li><strong>Stock Alert:</strong> Notify when out-of-stock items become available</li>
-        <li><strong>Daily Summary:</strong> Receive daily price updates</li>
+        <li><strong>Queda de Preço:</strong> Notificar quando o preço desce abaixo do limiar</li>
+        <li><strong>Aumento de Preço:</strong> Alertar quando o preço sobe significativamente</li>
+        <li><strong>Alerta de Stock:</strong> Notificar quando itens esgotados ficam disponíveis</li>
+        <li><strong>Resumo Diário:</strong> Receber actualizações de preços diárias</li>
       </ul>
 
-      <h4>Notification Channels</h4>
-      <p>Choose how you want to receive alerts:</p>
+      <h4>Canais de Notificação</h4>
+      <p>Escolha como quer receber os alertas:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Email notifications</li>
-        <li>WhatsApp messages</li>
-        <li>Discord bot notifications</li>
-        <li>In-app notifications</li>
+        <li>Notificações por email</li>
+        <li>Mensagens WhatsApp</li>
+        <li>Notificações do bot Discord</li>
+        <li>Notificações na aplicação</li>
       </ul>
 
-      <h3>Managing Your Products</h3>
+      <h3>Gerir os Seus Produtos</h3>
       
-      <h4>Product List View</h4>
-      <p>Your product list shows:</p>
+      <h4>Vista da Lista de Produtos</h4>
+      <p>A sua lista de produtos mostra:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Product name and image</li>
-        <li>Current price and price history</li>
-        <li>Store information</li>
-        <li>Alert status</li>
-        <li>Last updated timestamp</li>
+        <li>Nome e imagem do produto</li>
+        <li>Preço actual e histórico de preços</li>
+        <li>Informações da loja</li>
+        <li>Estado do alerta</li>
+        <li>Timestamp da última actualização</li>
       </ul>
 
-      <h4>Bulk Actions</h4>
-      <p>Perform actions on multiple products:</p>
+      <h4>Acções em Massa</h4>
+      <p>Executar acções em múltiplos produtos:</p>
       <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
-        • Select multiple products<br>
-        • Update price thresholds<br>
-        • Enable/disable alerts<br>
-        • Export to CSV<br>
-        • Delete selected items
+        • Seleccionar múltiplos produtos<br>
+        • Actualizar limiares de preço<br>
+        • Activar/desactivar alertas<br>
+        • Exportar para CSV<br>
+        • Eliminar itens seleccionados
       </div>
 
-      <h3>Analytics and Reports</h3>
+      <h3>Análises e Relatórios</h3>
       
-      <h4>Price History</h4>
-      <p>View detailed price trends for each product:</p>
+      <h4>Histórico de Preços</h4>
+      <p>Ver tendências de preços detalhadas para cada produto:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Interactive price charts</li>
-        <li>Historical data export</li>
-        <li>Price prediction algorithms</li>
-        <li>Seasonal trend analysis</li>
+        <li>Gráficos de preços interactivos</li>
+        <li>Exportação de dados históricos</li>
+        <li>Algoritmos de previsão de preços</li>
+        <li>Análise de tendências sazonais</li>
       </ul>
 
-      <h4>Savings Reports</h4>
-      <p>Track your savings over time:</p>
+      <h4>Relatórios de Poupança</h4>
+      <p>Rastrear as suas poupanças ao longo do tempo:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Total money saved</li>
-        <li>Best deals found</li>
-        <li>Average discount percentage</li>
-        <li>Monthly savings summary</li>
+        <li>Dinheiro total poupado</li>
+        <li>Melhores ofertas encontradas</li>
+        <li>Percentagem média de desconto</li>
+        <li>Resumo de poupanças mensais</li>
       </ul>
 
-      <h3>Advanced Features</h3>
+      <h3>Funcionalidades Avançadas</h3>
       
-      <h4>Price Comparison</h4>
-      <p>Compare prices across multiple stores:</p>
+      <h4>Comparação de Preços</h4>
+      <p>Comparar preços em múltiplas lojas:</p>
       <ol style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Add the same product from different stores</li>
-        <li>View side-by-side price comparison</li>
-        <li>Get alerts for the best deals</li>
-        <li>Track price differences over time</li>
+        <li>Adicionar o mesmo produto de diferentes lojas</li>
+        <li>Ver comparação de preços lado a lado</li>
+        <li>Receber alertas para as melhores ofertas</li>
+        <li>Rastrear diferenças de preços ao longo do tempo</li>
       </ol>
 
-      <h4>Wishlist Management</h4>
-      <p>Organize your products into wishlists:</p>
+      <h4>Gestão de Lista de Desejos</h4>
+      <p>Organizar os seus produtos em listas de desejos:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Create custom wishlists (e.g., "Electronics", "Gifts")</li>
-        <li>Set different alert preferences per wishlist</li>
-        <li>Share wishlists with family and friends</li>
-        <li>Get budget alerts for wishlist totals</li>
+        <li>Criar listas de desejos personalizadas (ex: "Electrónicos", "Presentes")</li>
+        <li>Definir preferências de alerta diferentes por lista de desejos</li>
+        <li>Partilhar listas de desejos com família e amigos</li>
+        <li>Receber alertas de orçamento para totais da lista de desejos</li>
       </ul>
 
-      <h3>Tips for Best Results</h3>
+      <h3>Escolher o Plano Ideal</h3>
+      <p>Seleccione o plano que melhor se adequa às suas necessidades:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Set realistic price thresholds (10-20% below current price)</li>
-        <li>Monitor multiple stores for the same product</li>
-        <li>Use seasonal trends to time your purchases</li>
-        <li>Enable stock alerts for popular items</li>
-        <li>Regularly review and update your product list</li>
+        <li><strong>Free:</strong> Perfeito para testar o serviço com até 5 produtos</li>
+        <li><strong>Basic:</strong> Ideal para utilizadores casuais que monitorizam algumas dezenas de produtos</li>
+        <li><strong>Standard:</strong> Recomendado para utilizadores activos que precisam de monitorização frequente</li>
+        <li><strong>Premium:</strong> Para utilizadores profissionais que precisam de monitorização em tempo real</li>
+      </ul>
+
+      <h3>Dicas para Melhores Resultados</h3>
+      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
+        <li>Definir limiares de preço realistas (10-20% abaixo do preço actual)</li>
+        <li>Monitorizar múltiplas lojas para o mesmo produto</li>
+        <li>Usar tendências sazonais para cronometrar as suas compras</li>
+        <li>Activar alertas de stock para itens populares</li>
+        <li>Revisar e actualizar regularmente a sua lista de produtos</li>
       </ul>
 
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='api-reference.html'">
         <div class="next-content">
-          <span class="next-label">Next</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">API Reference</span>
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
         </div>
         <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
@@ -252,7 +260,7 @@
       </div>
 
       <footer>
-        <p>Last updated 1 year ago</p>
+        <p>Última actualização há 1 ano</p>
       </footer>
     </main>
 

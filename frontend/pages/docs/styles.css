@@ -1072,6 +1072,100 @@ tr:hover {
   text-decoration: underline;
 }
 
+/* ==== SIDEBAR NAVIGATION STYLES ==== */
+.sidebar-nav-about {
+  margin-bottom: 2.2rem;
+}
+
+.sidebar-nav-about a {
+  color: #b3b3b3;
+  font-weight: 400;
+  font-size: 1.05rem;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  display: block;
+  text-decoration: none;
+}
+
+.sidebar-nav-about a.active {
+  color: #e6af1b;
+  font-weight: 500;
+}
+
+.sidebar-nav-section {
+  margin-bottom: 0.7rem;
+}
+
+.sidebar-nav-section span {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: block;
+  text-align: left;
+}
+
+.sidebar-nav-item {
+  margin: 1.2rem 0 0.3rem 0;
+}
+
+.sidebar-nav-link {
+  color: #fff;
+  font-size: 1.01rem;
+  font-weight: 400;
+  display: block;
+  padding: 0.2rem 0 0.2rem 0;
+  border-radius: 0;
+  text-decoration: none;
+}
+
+.sidebar-nav-link.active {
+  color: #e6af1b;
+  font-weight: 500;
+}
+
+.sidebar-nav-link.inactive {
+  color: #b3b3b3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-nav-link svg {
+  margin-left: auto;
+}
+
+/* ==== CODE BLOCK STYLES ==== */
+.code-block {
+  background: #18181a;
+  border: 1px solid #232326;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+}
+
+.code-block-small {
+  font-size: 0.9rem;
+}
+
+.code-inline {
+  background: #18181a;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: #ff9800;
+}
+
+/* ==== LIST STYLES ==== */
+.list-styled {
+  color: #ccc;
+  line-height: 1.6;
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
 /* ==== RESPONSIVE ==== */
 @media (max-width: 900px) {
   .header {
