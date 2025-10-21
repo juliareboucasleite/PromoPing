@@ -253,7 +253,7 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         
         // Verificar se o produto pertence ao usuário e buscar plano
         const [produto] = await pool.query(
-            `SELECT p.*, c.PlanoAtualId, pl.VerificacaoIntervalo, pl.Nome as PlanoNome
+            `SELECT p.*, c.PlanoAtualId, pl.Nome as PlanoNome
              FROM Produtos p
              JOIN ConfigUtilizador c ON c.UserId = p.UserId
              JOIN Planos pl ON pl.Id = c.PlanoAtualId
@@ -276,12 +276,7 @@ router.post("/:id/refresh", verifyToken, async (req, res) => {
         const diffHoras = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
         
         // Checar regra de refresh individual
-        if (p.VerificacaoIntervalo > 0 && diffHoras < p.VerificacaoIntervalo) {
-            return res.status(403).json({
-                status: "error",
-                message: `Produto só pode ser atualizado a cada ${p.VerificacaoIntervalo}h (faltam ${(p.VerificacaoIntervalo - diffHoras).toFixed(1)}h)`
-            });
-        }
+        // Verificação de intervalo removida - coluna VerificacaoIntervalo não existe
         
         // Função temporária de scraping - substituir pela implementação real
         async function fetchPreco(link) {

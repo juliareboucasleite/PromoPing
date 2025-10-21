@@ -1,19 +1,119 @@
 // @ts-nocheck
 import express from "express";
 import { pool } from "../database/db.js";
-import { formatDate } from "../utils/format.js";
+// import { formatDate } from "../utils/format.js"; // Removido - função não existe
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // ================== PERFIL DO UTILIZADOR ==================
+// Rota /profile (alias para /me)
+router.get("/profile", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Info do utilizador
+    const [users] = await pool.query(
+      "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+    const user = users[0];
+
+    // Verificar se é usuário Discord e buscar dados do JSON
+    let discordData = null;
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.join(process.cwd(), 'backend', 'data', 'discord-users.json');
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const discordUsers = JSON.parse(fileContent);
+      
+      // Buscar usuário Discord pelo userId
+      const discordUser = discordUsers.users.find(u => u.userId === userId);
+      if (discordUser) {
+        discordData = {
+          username: discordUser.username,
+          email: discordUser.email,
+          avatar: discordUser.avatar,
+          discordId: discordUser.discordId
+        };
+        console.log("Dados Discord encontrados:", discordData);
+      } else {
+        console.log("Usuário Discord não encontrado para userId:", userId);
+      }
+    } catch (discordError) {
+      console.log("ℹ️ Erro ao buscar dados Discord:", discordError.message);
+    }
+
+    // Buscar configuração do usuário (plano atual)
+    const [configRows] = await pool.query(
+      `SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.IntervaloVerificacao, p.PermiteSMS, p.Relatorios
+       FROM configutilizador c
+       LEFT JOIN planos p ON c.PlanoAtualId = p.Id
+       WHERE c.UserId = ?`,
+      [userId]
+    );
+
+    const userConfig = configRows.length > 0 ? configRows[0] : null;
+
+    // Estatísticas
+    const [statsRows] = await pool.query(
+      `SELECT 
+          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
+          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
+      [userId, userId, userId]
+    );
+
+    // Histórico notificações
+    const [notificacoesRows] = await pool.query(
+      "SELECT * FROM Notificacoes WHERE UserId = ? ORDER BY Data DESC LIMIT 5",
+      [userId]
+    );
+
+    // Se tem dados do Discord, usar eles, senão usar dados do banco
+    const finalUser = discordData ? {
+      ...user,
+      Nome: discordData.username,
+      Email: discordData.email,
+      DiscordData: discordData
+    } : user;
+    
+    // Adicionar dados do plano
+    if (userConfig) {
+      finalUser.plano_nome = userConfig.plano_nome || 'Free';
+      finalUser.LimiteProdutos = userConfig.LimiteProdutos;
+      finalUser.StatusAssinatura = userConfig.StatusAssinatura;
+      finalUser.DataExpiracao = userConfig.DataExpiracao;
+    }
+    
+    console.log("🔍 Dados finais do usuário:", finalUser);
+
+    res.json({
+      status: "success",
+      user: {
+        ...finalUser,
+        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' // 🔹 Data formatada
+      },
+      stats: statsRows[0],
+      notificacoes: notificacoesRows
+    });
+  } catch (error) {
+    console.error("❌ Erro ao buscar perfil:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
+    });
+  }
+});
+
 router.get("/me", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
     // Info do utilizador
     const [users] = await pool.query(
-      "SELECT Id, Nome, Email, Telefone, DataRegisto FROM Utilizadores WHERE Id = ?",
+      "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
       [userId]
     );
     const user = users[0];
@@ -41,7 +141,7 @@ router.get("/me", verifyToken, async (req, res) => {
       status: "ok",
       user: {
         ...user,
-        DataRegisto: formatDate(user.DataRegisto) // 🔹 Data formatada
+        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' // 🔹 Data formatada
       },
       stats: {
         ...statsRows[0],
@@ -394,6 +494,154 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
     res.status(500).json({ 
       status: "error", 
       error: "Erro no servidor" 
+    });
+  }
+});
+
+// ================== BUSCAR PLANOS ==================
+router.get("/planos", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Buscar todos os planos
+    const [planos] = await pool.query(
+      "SELECT * FROM planos ORDER BY Preco ASC"
+    );
+
+    // Buscar plano atual do usuário
+    const [userConfig] = await pool.query(
+      "SELECT PlanoAtualId FROM configutilizador WHERE UserId = ?",
+      [userId]
+    );
+
+    const userPlanId = userConfig.length > 0 ? userConfig[0].PlanoAtualId : 1;
+
+    console.log("📋 Planos carregados:", planos.length);
+    console.log("👤 Plano atual do usuário:", userPlanId);
+
+    res.json({
+      status: "success",
+      planos: planos,
+      userPlanId: userPlanId
+    });
+  } catch (error) {
+    console.error("❌ Erro ao buscar planos:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
+    });
+  }
+});
+
+// ================== ALTERAR PLANO ==================
+router.post("/change-plan", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planId } = req.body;
+
+    if (!planId) {
+      return res.status(400).json({
+        status: "error",
+        error: "ID do plano é obrigatório"
+      });
+    }
+
+    // Verificar se o plano existe
+    const [planoRows] = await pool.query(
+      "SELECT * FROM planos WHERE Id = ?",
+      [planId]
+    );
+
+    if (planoRows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        error: "Plano não encontrado"
+      });
+    }
+
+    const plano = planoRows[0];
+
+    // Atualizar plano do usuário
+    await pool.query(
+      "UPDATE configutilizador SET PlanoAtualId = ?, LimiteProdutos = ? WHERE UserId = ?",
+      [planId, plano.LimiteProdutos, userId]
+    );
+
+    console.log(`✅ Plano alterado para ${plano.Nome} (ID: ${planId}) para usuário ${userId}`);
+
+    res.json({
+      status: "success",
+      message: "Plano alterado com sucesso",
+      plano: {
+        id: plano.Id,
+        nome: plano.Nome,
+        preco: plano.Preco,
+        limite_produtos: plano.LimiteProdutos
+      }
+    });
+  } catch (error) {
+    console.error("❌ Erro ao alterar plano:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
+    });
+  }
+});
+
+// ================== CANCELAR ASSINATURA ==================
+router.post("/cancel-subscription", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Buscar configuração atual do usuário
+    const [userConfig] = await pool.query(
+      "SELECT * FROM configutilizador WHERE UserId = ?",
+      [userId]
+    );
+
+    if (userConfig.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuário não encontrado"
+      });
+    }
+
+    const config = userConfig[0];
+
+    // Se já está em período de graça, não fazer nada
+    if (config.StatusAssinatura === 'PeriodoGraca') {
+      return res.json({
+        status: "success",
+        message: "Assinatura já está cancelada e em período de graça"
+      });
+    }
+
+    // Calcular data de expiração do período de graça (30 dias)
+    const gracePeriodEnd = new Date();
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 30);
+
+    // Atualizar status para período de graça
+    await pool.query(
+      `UPDATE configutilizador 
+       SET StatusAssinatura = 'PeriodoGraca', 
+           DataExpiracao = ?,
+           DataCancelamento = NOW()
+       WHERE UserId = ?`,
+      [gracePeriodEnd, userId]
+    );
+
+    console.log(`✅ Assinatura cancelada para usuário ${userId}. Período de graça até: ${gracePeriodEnd}`);
+
+    res.json({
+      status: "success",
+      message: "Assinatura cancelada com sucesso",
+      grace_period_end: gracePeriodEnd
+    });
+  } catch (error) {
+    console.error("❌ Erro ao cancelar assinatura:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
     });
   }
 });

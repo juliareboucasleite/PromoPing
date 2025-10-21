@@ -161,11 +161,140 @@ app.post("/notify", async (req, res) => {
   }
 });
 
+// ================== SERVIÇOS DE INCLUDES ==================
+// Servir includes específicos ANTES dos arquivos estáticos
+app.get("/inc/header.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header.html"));
+});
+
+app.get("/inc/header-login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header-login.html"));
+});
+
+app.get("/inc/header-register.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header-register.html"));
+});
+
+app.get("/inc/footer.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/footer.html"));
+});
+
+app.get("/inc/load-includes.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes.js"));
+});
+
+app.get("/inc/load-includes-index.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-index.js"));
+});
+
+app.get("/inc/load-includes-login.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-login.js"));
+});
+
+app.get("/inc/load-includes-register.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-register.js"));
+});
+
 // ================== FRONTEND ESTÁTICO ==================
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// ================== ROTAS DISCORD DIRETAS ==================
+// Discord OAuth - redirecionar para API
+app.get("/auth/discord", (req, res) => {
+  res.redirect("/api/auth/discord");
+});
+
+app.get("/auth/discord/callback", (req, res) => {
+  console.log("🔄 Redirecionando callback Discord para API com query:", JSON.stringify(req.query));
+  // Preservar os parâmetros da query string
+  const queryString = new URLSearchParams(req.query).toString();
+  res.redirect(`/api/auth/discord/callback?${queryString}`);
+});
+
+// ================== ROTAS DO FRONTEND ==================
+// Página inicial
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
+});
+
+// Páginas principais
+app.get("/monitoramento", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/monitoramento.html"));
+});
+
+app.get("/alertas", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/alertas.html"));
+});
+
+app.get("/relatorios", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/relatorios.html"));
+});
+
+app.get("/casos-uso", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/casos-uso.html"));
+});
+
+app.get("/blog", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/blog.html"));
+});
+
+// Páginas de autenticação
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+});
+
+app.get("/register", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+});
+
+// Páginas do dashboard
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+});
+
+app.get("/dashboard/painel", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+});
+
+app.get("/dashboard/perfil", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+});
+
+app.get("/dashboard/planos", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+});
+
+app.get("/dashboard/produtos", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+});
+
+// Páginas de documentação
+app.get("/docs", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/docs.html"));
+});
+
+app.get("/docs/support", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/support.html"));
+});
+
+app.get("/docs/service-status", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/service-status.html"));
+});
+
+app.get("/docs/terms", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/terms.html"));
+});
+
+app.get("/docs/usage-guide", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/usage-guide.html"));
+});
+
+app.get("/docs/api-reference", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/api-reference.html"));
+});
+
+app.get("/docs/FirstLaunch", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html"));
 });
 
 // Redirecionamento baseado no .env

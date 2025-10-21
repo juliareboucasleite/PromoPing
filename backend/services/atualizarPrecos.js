@@ -14,7 +14,7 @@ async function fetchPreco(link) {
 export async function atualizarPrecos(userId) {
   // Buscar plano do utilizador
   const [config] = await pool.query(
-    `SELECT p.VerificacaoIntervalo 
+    `SELECT p.Nome as plano_nome
      FROM ConfigUtilizador c
      JOIN Planos p ON p.Id = c.PlanoAtualId
      WHERE c.UserId = ?`,
@@ -23,7 +23,8 @@ export async function atualizarPrecos(userId) {
 
   if (!config.length) return { error: "Plano não encontrado" };
 
-  const intervalo = config[0].VerificacaoIntervalo;
+  // VerificacaoIntervalo removido - usar valor padrão
+  const intervalo = 1; // 1 hora por padrão
 
   // Buscar produtos do utilizador
   const [produtos] = await pool.query(

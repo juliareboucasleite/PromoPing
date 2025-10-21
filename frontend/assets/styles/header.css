@@ -200,6 +200,7 @@
 .pp-header-burger-cta {
   display: flex;
   align-items: center;
+  gap: 24px;
 }
 
 .pp-header-cta-button {

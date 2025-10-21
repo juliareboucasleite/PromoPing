@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — PromoPing</title>
+    <link rel="stylesheet" href="../../assets/styles/painel.css">
+    <link rel="stylesheet" href="../../assets/styles/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <script src="../../assets/scripts/auth.js"></script>
+</head>
+<body class="dashboard-body">
+    
+    <!-- ===== NAVEGAÇÃO SUPERIOR ===== -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
+                <span class="nav-brand-name">PromoPing</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-item nav-item-active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/dashboard/produtos" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Produtos
+                </a>
+                <a href="/dashboard/perfil" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Perfil
+                </a>
+            </div>
+            
+            <div class="nav-actions">
+                <span class="nav-user" id="userName">Utilizador</span>
+                <button class="nav-logout" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            
+            <!-- ===== CABEÇALHO ===== -->
+            <header class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
+            </header>
+
+
+            <!-- ===== ESTATÍSTICAS RÁPIDAS ===== -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalProdutos">0</span>
+                        <span class="stat-label">Produtos</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalNotificacoes">0</span>
+                        <span class="stat-label">Notificações</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1v6l3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l-3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                            <path d="M12 1v6l-3 3"></path>
+                            <path d="M12 1L9 4l3 3"></path>
+                            <path d="M12 1l3 3-3 3"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="dinheiroPoupado">€0.00</span>
+                        <span class="stat-label">Poupado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FORM ADICIONAR ===== -->
+            <div class="add-product-card">
+                <h2 class="card-title">+ Adicionar novo produto</h2>
+                <form id="formLink" class="add-product-form">
+                    <div class="form-group name">
+                        <input type="text" id="nome" placeholder="Ex: iPhone 15" required class="form-input">
+                        <label class="form-label">Nome do produto</label>
+                    </div>
+                    <div class="form-group link">
+                        <input type="url" id="url" placeholder="https://loja.com/produto123" required class="form-input">
+                        <label class="form-label">Link do produto</label>
+                    </div>
+                    <div class="form-group price">
+                        <input type="number" id="precoAlvo" placeholder="Ex: 999.99" step="0.01" min="0" class="form-input">
+                        <label class="form-label">Preço alvo (opcional)</label>
+                    </div>
+                    <div class="form-group date">
+                        <input type="date" id="dataLimite" class="form-input">
+                        <label class="form-label">Data limite (opcional)</label>
+                    </div>
+                    <button type="submit" class="add-product-btn">+ Adicionar produto</button>
+                </form>
+            </div>
+
+
+            <!-- ===== LISTA DE PRODUTOS ===== -->
+            <section class="products-section">
+                <h2 class="section-title">Produtos monitorizados (<span id="productCount">0</span>)</h2>
+                <div id="productsList" class="products-list"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <script type="module">
+      import { salvarToken, verificarSessao, logout } from "../../assets/scripts/auth.js";
+      import { formatDateTime } from "../../assets/scripts/utils.js";
+
+      function checkTokenFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        if (token) {
+          salvarToken(token);   // guarda no localStorage
+          window.history.replaceState({}, document.title, "Painel.html"); // limpa ?token= da URL
+        }
+      }
+
+      async function init() {
+        checkTokenFromURL(); // <- novo
+        const user = await verificarSessao();
+        if (user) {
+          document.getElementById("userName").innerText = user.nome || user.email;
+        }
+      }
+
+      // Tornar formatDateTime disponível globalmente
+      window.formatDateTime = formatDateTime;
+      window.logout = logout;
+      init();
+    </script>
+
+    <script>
+
+      // Criar card de produto
+      function createProductCard(p) {
+        const nome = p.Nome || p.nome || "Sem nome";
+        const loja = p.Loja || "Loja";
+        console.log("Loja recebida:", loja);
+        const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null
+          ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}`
+          : "—";
+        const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) != null
+          ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}`
+          : "—";
+        const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em)
+          ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("pt-PT")
+          : "—";
+
+        let storeTagClass = "store-tag";
+        if (loja) {
+          const lojaLower = loja.toLowerCase();
+          if (lojaLower.includes("fnac")) storeTagClass += " store-fnac";
+          else if (lojaLower.includes("worten")) storeTagClass += " store-worten";
+          else if (lojaLower.includes("ikea")) storeTagClass += " store-ikea";
+          else if (lojaLower.includes("pcdiga")) storeTagClass += " store-pcdiga";
+          else if (lojaLower.includes("globaldata")) storeTagClass += " store-globaldata";
+          else if (lojaLower.includes("radiopopular") || lojaLower.includes("radio popular")) storeTagClass += " store-radiopopular";
+          else if (lojaLower.includes("mediamarkt")) storeTagClass += " store-mediamarkt";
+          else if (lojaLower.includes("leroymerlin") || lojaLower.includes("leroy merlin")) storeTagClass += " store-leroymerlin";
+          else if (lojaLower.includes("zara")) storeTagClass += " store-zara";
+          else if (lojaLower.includes("h&m") || lojaLower.includes("hm")) storeTagClass += " store-hm";
+          else if (lojaLower.includes("amazon")) storeTagClass += " store-amazon";
+          else if (lojaLower.includes("pingo doce")) storeTagClass += " store-pingodoce";
+          else if (lojaLower.includes("continente")) storeTagClass += " store-continente";
+          else if (lojaLower.includes("auchan")) storeTagClass += " store-auchan";
+          else if (lojaLower.includes("el corte inglés") || lojaLower.includes("elcorteingles")) storeTagClass += " store-elcorteingles";
+          else if (lojaLower.includes("primark")) storeTagClass += " store-primark";
+          else if (lojaLower.includes("decathlon")) storeTagClass += " store-decathlon";
+          else if (lojaLower.includes("sport zone")) storeTagClass += " store-sportzone";
+          else if (lojaLower.includes("foot locker")) storeTagClass += " store-footlocker";
+          else if (lojaLower.includes("bershka")) storeTagClass += " store-bershka";
+          else if (lojaLower.includes("pull & bear") || lojaLower.includes("pullandbear")) storeTagClass += " store-pullandbear";
+          else if (lojaLower.includes("stradivarius")) storeTagClass += " store-stradivarius";
+          else if (lojaLower.includes("massimo dutti") || lojaLower.includes("massimodutti")) storeTagClass += " store-massimodutti";
+          else if (lojaLower.includes("oysho")) storeTagClass += " store-oysho";
+          else if (lojaLower.includes("lefties")) storeTagClass += " store-lefties";
+        }
+
+        return `
+          <div class="product-card-new">
+            <div class="product-header-new">
+              <div class="product-info">
+                <h3 class="product-name-new">${nome}</h3>
+                <span class="${storeTagClass}">${loja}</span>
+              </div>
+              <div class="product-actions-new">
+                <button class="action-btn-new" title="Abrir produto" onclick="window.open('${p.Link || p.link}', '_blank')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15,3 21,3 21,9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </button>
+                <button class="action-btn-new" title="Editar data" onclick="editarData(${p.Id || p.id}, '${p.DataLimite || p.dataLimite || ''}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </button>
+                <button class="action-btn-new delete-btn-new" title="Remover" onclick="deleteProduct(${p.Id || p.id})">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3,6 5,6 21,6"></polyline>
+                    <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="product-details-new">
+              <div class="price-row">
+                <div class="price-item-new">
+                  <span class="price-label-new">Preço atual</span>
+                  <span class="price-value-new">${precoAtual}</span>
+                </div>
+                <div class="price-item-new">
+                  <span class="price-label-new">Preço alvo</span>
+                  <span class="price-value-new target-price-new">${precoAlvo}</span>
+                </div>
+                <div class="price-item-new">
+                  <span class="price-label-new">Adicionado em</span>
+                  <span class="price-value-new">${dataAdicao}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Carregar produtos
+      async function carregarProdutos() {
+        const productsList = document.getElementById("productsList");
+        const token = localStorage.getItem("token");
+        console.log("🔍 [FRONTEND] Token enviado:", token);
+        console.log("🔍 [FRONTEND] localStorage completo:", localStorage);
+        
+        try {
+          console.log("🔍 [FRONTEND] Fazendo requisição para /api/produtos...");
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          
+          console.log("🔍 [FRONTEND] Status da resposta:", res.status);
+          console.log("🔍 [FRONTEND] Headers da resposta:", res.headers);
+          
+          const data = await res.json();
+          console.log("🔍 [FRONTEND] Dados recebidos:", data);
+          console.log("JSON cru recebido:", data);
+          if (data.produtos && data.produtos.length > 0) {
+            console.log("Primeiro produto:", data.produtos[0]);
+            console.log("Loja do primeiro produto:", data.produtos[0].Loja);
+          }
+
+          productsList.innerHTML = "";
+          if (data.produtos && data.produtos.length > 0) {
+            document.getElementById("productCount").textContent = data.produtos.length;
+            data.produtos.forEach(p => {
+              productsList.insertAdjacentHTML("beforeend", createProductCard(p));
+            });
+          } else {
+            productsList.innerHTML = "<p>Nenhum produto encontrado.</p>";
+            document.getElementById("productCount").textContent = 0;
+          }
+        } catch (err) {
+          console.error("Erro ao carregar produtos:", err);
+          productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
+        }
+      }
+
+      // Adicionar produto
+      document.getElementById("formLink").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("nome").value;
+        const link = document.getElementById("url").value;
+        const dataLimite = document.getElementById("dataLimite").value;
+        const precoAlvo = document.getElementById("precoAlvo").value;
+        const token = localStorage.getItem("token");
+
+        try {
+          const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token
+            },
+            body: JSON.stringify({ nome, link, data: dataLimite, precoAlvo: precoAlvo ? Number(precoAlvo) : null })
+          });
+
+          const data = await res.json();
+          if (data.status === "ok") {
+            document.getElementById("formLink").reset();
+            carregarProdutos();
+          } else {
+            alert(data.error || "Erro ao adicionar produto");
+          }
+        } catch (err) {
+          console.error("Erro ao adicionar produto:", err);
+          alert("Erro no servidor");
+        }
+      });
+
+      // Remover produto
+      async function deleteProduct(id) {
+        if (!confirm("Tem certeza que deseja remover este produto?")) return;
+        const token = localStorage.getItem("token");
+        try {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+          if (data.status === "ok") {
+            carregarProdutos();
+          } else {
+            alert(data.error || "Erro ao remover produto");
+          }
+        } catch (err) {
+          console.error("Erro ao remover produto:", err);
+          alert("Erro no servidor");
+        }
+      }
+
+      // Editar data limite
+      async function editarData(id, atual) {
+        const novaData = prompt('Nova data limite (AAAA-MM-DD):', (atual || '').split('T')[0] || '');
+        if (novaData === null) return;
+        const token = localStorage.getItem("token");
+        try {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ nome: undefined, link: undefined, data: novaData })
+          });
+          const data = await res.json();
+          if (data.status === 'ok') carregarProdutos();
+          else alert(data.error || 'Erro ao atualizar data');
+        } catch (e) {
+          alert('Erro no servidor');
+        }
+      }
+
+      // Carregar estatísticas
+      async function carregarEstatisticas() {
+        const token = localStorage.getItem("token");
+        console.log("🔍 Carregando estatísticas...");
+        console.log("🔑 Token:", token ? "Presente" : "Ausente");
+        
+        if (!token) {
+          console.error("❌ Token não encontrado no localStorage");
+          return;
+        }
+        
+        try {
+          console.log("📡 Fazendo requisição para /api/user/stats...");
+          const res = await fetch("http://127.0.0.1:3000/api/user/stats", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          
+          console.log("📊 Status da resposta:", res.status);
+          const data = await res.json();
+          console.log("📋 Dados recebidos:", data);
+          
+          if (data.status === "ok") {
+            const stats = data.stats;
+            console.log("📈 Estatísticas:", stats);
+            
+            document.getElementById("totalProdutos").textContent = stats.produtos_total || 0;
+            document.getElementById("totalNotificacoes").textContent = stats.notificacoes_total || 0;
+            document.getElementById("dinheiroPoupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+            
+            console.log("✅ Estatísticas atualizadas na UI");
+          } else {
+            console.error("❌ Erro na resposta:", data.error);
+          }
+        } catch (err) {
+          console.error("❌ Erro ao carregar estatísticas:", err);
+        }
+      }
+
+      // ===== ATUALIZAR TODOS OS PREÇOS (VIA BOTÃO INDIVIDUAL) =====
+      // FUNÇÃO REMOVIDA - Botão de refresh individual foi removido
+      /*
+      async function atualizarPrecoIndividual(produtoId) { // produtoId ainda é usado para identificar o botão clicado
+        const token = localStorage.getItem("token");
+        const refreshBtn = document.querySelector(`[onclick="atualizarPrecoIndividual(${produtoId})"]`);
+        
+        if (!token) {
+          alert("Precisa estar logado!");
+          return (window.location.href = "/login");
+        }
+
+        // Mostrar estado de loading no botão
+        refreshBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
+            <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+          </svg>
+        `;
+        refreshBtn.disabled = true;
+
+        try {
+          // Chamar a rota de refresh global
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/refresh`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token }
+          });
+
+          const data = await res.json();
+          if (data.status === "ok") {
+            alert(`✅ ${data.atualizados.length} produto(s) atualizados!`);
+            carregarProdutos(); // Recarregar a lista
+            carregarEstatisticas(); // Recarregar estatísticas
+          } else {
+            if (res.status === 403) {
+              alert(`⏰ ${data.error}`);
+            } else {
+              alert(data.error || "Erro ao atualizar preços");
+            }
+          }
+        } catch (err) {
+          console.error("Erro no refresh global:", err);
+          alert("Erro no servidor");
+        } finally {
+          // Restaurar o ícone do botão
+          refreshBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23,4 23,10 17,10"></polyline>
+              <polyline points="1,20 1,14 7,14"></polyline>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+            </svg>
+          `;
+          refreshBtn.disabled = false;
+        }
+      }
+      */
+
+
+      // ===== SINCRONIZAÇÃO ENTRE PÁGINAS =====
+      let lastSyncTime = Date.now();
+      
+      async function verificarSincronizacao() {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        try {
+          const res = await fetch(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
+            headers: { Authorization: "Bearer " + token }
+          });
+          
+          const data = await res.json();
+          if (data.status === "ok" && data.produtos.length > 0) {
+            // Há produtos atualizados, recarregar a lista
+            carregarProdutos();
+            carregarEstatisticas();
+            lastSyncTime = data.timestamp;
+          }
+        } catch (err) {
+          console.error("Erro na sincronização:", err);
+        }
+      }
+      
+      // Verificar sincronização a cada 10 segundos
+      setInterval(verificarSincronizacao, 10000);
+
+      // Iniciar
+      carregarProdutos();
+      carregarEstatisticas();
+    </script>
+
+    <script>
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+    </script>
+
+</body>
+</html>
+
