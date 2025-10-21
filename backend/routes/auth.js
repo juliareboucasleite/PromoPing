@@ -2,17 +2,21 @@
 import express from "express";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as DiscordStrategy } from "passport-discord";
 import { pool } from "../database/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { verifyToken } from "../middleware/auth.js";
-// import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import { findDiscordUser, registerDiscordUser, linkDiscordUser } from "../utils/discord-users.js";
+import { getCachedDiscordUser, setCachedDiscordUser } from "../utils/discord-cache.js";
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') }); // Garante que .env está sendo lido da raiz
 
 const router = express.Router();
 
-// ================== FUNÇÕES AUXILIARES ==================
-
-// Função para gerar código de 6 dígitos
 function gerarCodigo() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -30,7 +34,6 @@ async function enviarEmail(to, subject, text) {
   }
 }
 
-// ================== GOOGLE STRATEGY ==================
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(
     new GoogleStrategy(
@@ -80,130 +83,209 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   // Google OAuth não configurado - silencioso
 }
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+// ================== DISCORD STRATEGY ==================
+if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+  passport.use(
+    new DiscordStrategy(
+      {
+        clientID: process.env.DISCORD_CLIENT_ID,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET,
+        callbackURL: "http://127.0.0.1:3000/auth/discord/callback",
+        scope: ['identify', 'email']
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          console.log("🔍 Discord profile recebido:", {
+            id: profile.id,
+            username: profile.username,
+            email: profile.email,
+            avatar: profile.avatar
+          });
 
-// ================== ROTAS SMS/WHATSAPP ==================
+          const email = profile.email;
+          const discordId = profile.id;
+          const username = profile.username;
+          const avatar = profile.avatar;
 
-// Criar conta via telefone (SMS/WhatsApp)
-router.post("/register-sms", async (req, res) => {
-  try {
-    const { telefone, nome } = req.body;
+          // Verificar se usuário Discord já existe no JSON
+          let discordUser = findDiscordUser(discordId);
+          
+          if (discordUser && discordUser.userId) {
+            // Usuário Discord já existe e está associado - LOGIN DIRETO
+            console.log("✅ Usuário Discord já registrado - Login direto:", discordUser.username);
+            
+            const token = jwt.sign(
+              { id: discordUser.userId, email: discordUser.email },
+              process.env.JWT_SECRET,
+              { expiresIn: "7d" }
+            );
 
-    if (!telefone) {
-      return res.status(400).json({
-        status: "error",
-        error: "Telefone é obrigatório",
-      });
-    }
+            console.log("🚀 Login direto realizado para usuário:", discordUser.userId);
+            return done(null, { userId: discordUser.userId, email: discordUser.email, token });
+          }
 
-    // Verificar se telefone já existe
-    const [existing] = await pool.query(
-      "SELECT Id FROM Utilizadores WHERE Telefone = ?",
-      [telefone]
+          // Usuário Discord não existe ou não está associado
+          if (!discordUser) {
+            // Registrar novo usuário Discord no JSON
+            discordUser = registerDiscordUser({
+              id: discordId,
+              username: username,
+              email: email,
+              avatar: avatar
+            });
+          }
+
+          // Verificar se usuário existe no banco de dados
+          const [rows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ?",
+            [email]
     );
 
     let userId;
-    if (existing.length > 0) {
-      userId = existing[0].Id;
+          if (rows.length > 0) {
+            // Usuário já existe no banco - ASSOCIAR DISCORD
+            console.log("👤 Usuário existente encontrado - Associando Discord:", rows[0].Nome);
+            userId = rows[0].Id;
+            
+            // Associar Discord com usuário do banco
+            linkDiscordUser(discordId, userId);
     } else {
-      // Criar novo usuário
+            // Criar novo usuário no banco
+            console.log("🆕 Criando novo usuário no banco:", username);
       const [result] = await pool.query(
-        "INSERT INTO Utilizadores (Nome, Telefone, Ativo) VALUES (?, ?, ?)",
-        [nome || "Usuário", telefone, 0]
+              "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
+              [username, email]
       );
       userId = result.insertId;
+            
+            // Buscar ID do plano FREE
+            const [planoFree] = await pool.query(
+              "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
+            );
+            
+            const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+
+            // Criar configuração do usuário com plano FREE
+            await pool.query(
+              "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?, ?)",
+              [userId, email, "discord", planoFreeId]
+            );
+            
+            console.log(`✅ Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
+            
+            // Associar Discord com novo usuário
+            linkDiscordUser(discordId, userId);
+          }
+
+          const token = jwt.sign(
+            { id: userId, email },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+          );
+
+          console.log("✅ Token JWT gerado para usuário:", userId);
+          return done(null, { userId, email, token });
+        } catch (error) {
+          console.error("❌ Erro na autenticação Discord:", error);
+          return done(error, null);
+        }
+      }
+    )
+  );
+} else {
+  // Discord OAuth não configurado - silencioso
+}
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+// ================== ROTAS DISCORD ==================
+
+// Verificar se usuário Discord já existe
+router.get('/discord/check/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    const discordUser = findDiscordUser(discordId);
+    
+    if (discordUser && discordUser.userId) {
+      // Usuário já existe - pode fazer login direto
+      res.json({ 
+        exists: true, 
+        message: "Usuário Discord já registrado - pode fazer login direto",
+        user: {
+          username: discordUser.username,
+          email: discordUser.email
+        }
+      });
+    } else {
+      // Usuário não existe - precisa registrar
+      res.json({ 
+        exists: false, 
+        message: "Usuário Discord não encontrado - precisa registrar primeiro"
+      });
     }
-
-    const codigo = gerarCodigo();
-    await pool.query(
-      "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
-      [codigo, userId]
-    );
-
-    // WhatsApp desabilitado
-    // const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-    // const resultadoWhatsApp = await enviarWhatsApp(
-    //   telefoneLimpo,
-    //   `Seu código PromoPing é: ${codigo}\n\nUse este código para ativar sua conta.\n\nSe não foi você, ignore esta mensagem.`
-    // );
-
-    res.json({
-      status: "ok",
-      message: "Código enviado!",
-      telefone: telefone
-    });
-  } catch (err) {
-    console.error("❌ Erro no registro SMS:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao enviar código",
-    });
+  } catch (error) {
+    console.error("❌ Erro ao verificar usuário Discord:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
 
-// Validar código SMS/WhatsApp
-router.post("/validar-sms", async (req, res) => {
+// Rota alternativa para Discord sem rate limiting
+router.get('/discord/direct/:discordId', async (req, res) => {
   try {
-    const { telefone, codigo } = req.body;
-
-    if (!telefone || !codigo) {
-      return res.status(400).json({
-        status: "error",
-        error: "Telefone e código são obrigatórios",
-      });
-    }
-
-    // Buscar usuário e verificar código
-    const [userRows] = await pool.query(
-      "SELECT * FROM Utilizadores WHERE Telefone = ? AND CodigoTelefone = ?",
-      [telefone, codigo]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Código inválido ou expirado",
-      });
-    }
-
-    const user = userRows[0];
-
-    // Ativar conta e limpar código
-    await pool.query(
-      "UPDATE Utilizadores SET Ativo = 1, CodigoTelefone = NULL WHERE Id = ?",
-      [user.Id]
-    );
-
-    // Criar configuração do usuário
-    await pool.query(
-      "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE CanalPreferido = 'whatsapp'",
-      [user.Id, user.Email || null, "whatsapp"]
-    );
-
-    // Gerar token JWT
+    const { discordId } = req.params;
+    const discordUser = findDiscordUser(discordId);
+    
+    if (discordUser && discordUser.userId) {
+      // Gerar token diretamente
     const token = jwt.sign(
-      { id: user.Id, telefone: user.Telefone },
+        { id: discordUser.userId, email: discordUser.email },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    console.log(`✅ Conta SMS ativada com sucesso para usuário ${user.Id}`);
-
-    res.json({
-      status: "ok",
-      message: "Conta criada e validada com sucesso!",
-      token,
-      user: { id: user.Id, telefone: user.Telefone, nome: user.Nome }
-    });
-  } catch (err) {
-    console.error("❌ Erro ao validar SMS:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao validar conta",
-    });
+      console.log("🚀 Login direto via rota alternativa para usuário:", discordUser.userId);
+      
+      // Criar página HTML que salva no localStorage e redireciona
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Discord Login - PromoPing</title>
+        </head>
+        <body>
+          <script>
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('user', JSON.stringify({
+              id: ${discordUser.userId},
+              email: '${discordUser.email}',
+              token: '${token}',
+              loginMethod: 'discord'
+            }));
+            
+            // Salvar token separadamente para compatibilidade com auth.js
+            localStorage.setItem('token', '${token}');
+            
+            // Redirecionar para o painel
+            window.location.href = '/dashboard';
+          </script>
+          <p>Redirecionando para o painel...</p>
+        </body>
+        </html>
+      `;
+      
+      res.send(html);
+    } else {
+      res.status(404).json({ error: "Usuário Discord não encontrado" });
+    }
+  } catch (error) {
+    console.error("❌ Erro no login direto Discord:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
+
+// ================== ROTAS SMS/WHATSAPP REMOVIDAS ==================
+// Serviços SMS e WhatsApp foram removidos - apenas Email e Discord disponíveis
 
 // ================== ROTAS EMAIL/SENHA ==================
 
@@ -329,10 +411,19 @@ router.post("/register", async (req, res) => {
 
     const userId = result.insertId;
 
-    await pool.query(
-      "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) VALUES (?, ?, ?)",
-      [userId, email, "email"]
+    // Buscar ID do plano FREE
+    const [planoFree] = await pool.query(
+      "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
     );
+    
+    const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+
+    await pool.query(
+      "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?, ?)",
+      [userId, email, "email", planoFreeId]
+    );
+    
+    console.log(`✅ Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
 
     const codigo = gerarCodigo();
     await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
@@ -414,6 +505,77 @@ router.get("/google/callback", (req, res) => {
     res.status(400).json({
       error:
         "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+    });
+  }
+});
+
+// ================== ROTAS DISCORD ==================
+
+router.get("/discord", (req, res) => {
+  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    passport.authenticate("discord", { scope: ['identify', 'email'] })(req, res);
+  } else {
+    res.status(400).json({
+      error:
+        "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
+    });
+  }
+});
+
+router.get("/discord/callback", (req, res) => {
+  console.log("🔄 Discord callback recebido:", JSON.stringify(req.query));
+  
+  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    passport.authenticate("discord", { 
+      failureRedirect: "/login?error=discord_auth_failed"
+    })(req, res, (err, user) => {
+      if (err) {
+        console.error("❌ Erro na autenticação Discord:", err);
+        return res.redirect("/login?error=discord_auth_failed");
+      }
+      
+      if (!user) {
+        console.error("❌ Usuário Discord não encontrado");
+        return res.redirect("/login?error=discord_auth_failed");
+      }
+      
+      console.log("✅ Usuário Discord autenticado:", user.email);
+      
+      // Criar página HTML que salva no localStorage e redireciona
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Discord Login - PromoPing</title>
+        </head>
+        <body>
+          <script>
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('user', JSON.stringify({
+              id: ${user.userId},
+              email: '${user.email}',
+              token: '${user.token}',
+              loginMethod: 'discord'
+            }));
+            
+            // Salvar token separadamente para compatibilidade com auth.js
+            localStorage.setItem('token', '${user.token}');
+            
+            // Redirecionar para o painel
+            window.location.href = '/dashboard';
+          </script>
+          <p>Redirecionando para o painel...</p>
+        </body>
+        </html>
+      `;
+      
+      res.send(html);
+    });
+  } else {
+    console.error("❌ Discord OAuth não configurado");
+    res.status(400).json({
+      error:
+        "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
     });
   }
 });
