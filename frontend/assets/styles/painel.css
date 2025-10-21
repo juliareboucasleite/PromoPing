@@ -1,5 +1,9 @@
 /* ===== DASHBOARD STYLES ===== */
-
+* {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
 /* ===== ESTATÍSTICAS ===== */
 .stats-grid {
     display: grid;

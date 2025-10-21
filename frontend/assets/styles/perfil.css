@@ -1,6 +1,12 @@
 /* ===== ESTILOS ESPECÍFICOS DO PERFIL ===== */
 
 /* ===== LAYOUT DO PERFIL ===== */
+* {
+    transform: none !important;
+    transition: none !important; 
+    animation: none !important;
+   
+}
 .profile-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -272,6 +278,11 @@ input:checked + .toggle-slider:before {
 }
 
 .discord-icon {
+    color: #5865F2;
+}
+
+/* ===== DISCORD PREFERENCE ICON ===== */
+.preference-icon.discord-icon {
     color: #5865F2;
 }
 
