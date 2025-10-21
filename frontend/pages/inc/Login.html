@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Entrar — PromoPing</title>
+  <link rel="stylesheet" href="../../assets/styles/header.css">
+  <link rel="stylesheet" href="../../assets/styles/login.css">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <script src="/inc/load-includes-login.js"></script>
+</head>
+<body class="login-page">
+
+  <!-- ===== HEADER ===== -->
+  <div id="header-login-include"></div>
+    <script>
+      fetch('/inc/header-login.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('header-login-include').innerHTML = html;
+        });
+    </script>
+  </div>
+
+  <!-- ===== MAIN ===== -->
+  <main class="login-main">
+    <div class="login-container">
+      <h1 class="login-title">Entrar com Email</h1>
+      <p class="login-subtitle">Digite suas credenciais para acessar sua conta</p>
+
+      <!-- Social Login Buttons -->
+      <div class="social-login">
+        <button class="social-btn google-btn" id="btnGoogle">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span>Continuar com Google</span>
+        </button>
+        
+        <button class="social-btn discord-btn" id="btnDiscord">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+          </svg>
+          <span>Continuar com Discord</span>
+        </button>
+      </div>
+
+      <!-- Formulário SMS -->
+      <div class="sms-login" id="smsLogin">
+        <h4>Entrar com SMS</h4>
+        <div class="form-group">
+          <label class="form-label">Número de telemóvel</label>
+          <input id="telefoneLogin" type="tel" class="form-input" placeholder="+351 912 345 678" />
+        </div>
+        <div class="form-group">
+          <button id="enviarCodigoSMSLogin" class="btn btn-primary">Enviar código</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de verificação</label>
+          <input id="codigoSMSLogin" type="text" class="form-input" placeholder="123456" />
+          <div class="resend-section" id="resendSectionLogin" style="display: none;">
+            <p class="resend-text">Não recebeu o código? <span id="timerLogin">30</span>s</p>
+            <button id="resendCodeLogin" class="btn btn-ghost" disabled>Reenviar código</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <button id="validarCodigoSMSLogin" class="btn btn-primary">Entrar</button>
+        </div>
+      </div>
+
+      <div class="divider" id="emailDivider">
+        <span class="or-text">ou entre com email</span>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="email" class="form-label">Endereço de email</label>
+          <input id="email" type="email" class="form-input" placeholder="seu@email.com" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Palavra-passe</label>
+          <div class="password-input">
+            <input id="password" type="password" class="form-input" placeholder="Mínimo 6 caracteres" required />
+            <button type="button" class="password-toggle" onclick="togglePassword()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" class="remember-me">
+            <span class="checkmark"></span>
+            <span class="remember-me">Lembrar-me</span>
+          </label>
+          <a href="inc/forgot-password.html" class="forgot-password">Esqueceu a palavra-passe?</a>
+        </div>
+
+        <div class="form-actions">
+          <a href="/pages/index.html" class="btn btn-ghost">Cancelar</a>
+          <button type="submit" class="btn btn-primary">Entrar</button>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p class="register-link">Não tem conta? <a href="inc/register.html">Registar</a></p>
+      </div>
+
+      <!-- Caixa de verificação de email -->
+      <div class="verify-box" id="verifyBox">
+        <h3>Verifique seu email</h3>
+        <p>Insira o código de 6 dígitos enviado para <span id="verifyEmail"></span></p>
+        <div class="code-inputs">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+          <input maxlength="1" class="code-digit">
+        </div>
+        <div class="verify-actions">
+          <button id="btnConfirmar" class="btn btn-primary">Confirmar</button>
+          <button id="btnReenviar" class="btn btn-ghost" disabled>Reenviar código</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <div id="footer-placeholder"></div>
+
+  <script>
+    // ===== NAVIGATION FUNCTIONS =====
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // ===== GOOGLE LOGIN =====
+    document.getElementById("btnGoogle").addEventListener("click", () => {
+      window.location.href = "http://127.0.0.1:3000/api/auth/google";
+    });
+
+    // ===== DISCORD LOGIN =====
+    document.getElementById("btnDiscord").addEventListener("click", async () => {
+      try {
+        // Verificar se usuário Discord já existe
+        const response = await fetch(`http://127.0.0.1:3000/api/auth/discord/check/916737425978589235`);
+        const data = await response.json();
+        
+        if (data.exists) {
+          // Usuário já existe - usar rota direta (sem rate limiting)
+          console.log("✅ Usuário Discord já registrado - login direto");
+          window.location.href = "http://127.0.0.1:3000/api/auth/discord/direct/916737425978589235";
+        } else {
+          // Usuário não existe - redirecionar para Discord OAuth
+          console.log("🆕 Usuário Discord não encontrado - redirecionando para OAuth");
+          window.location.href = "http://127.0.0.1:3000/auth/discord";
+        }
+      } catch (error) {
+        console.error("❌ Erro ao verificar usuário Discord:", error);
+        // Em caso de erro, tentar OAuth normal
+        window.location.href = "http://127.0.0.1:3000/auth/discord";
+      }
+    });
+
+    // ===== LOGIN NORMAL =====
+    async function loginUser(email, password) {
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        return await res.json();
+      } catch (err) {
+        console.error("Erro no login:", err);
+        return { status: "error", error: "Erro de ligação com o servidor" };
+      }
+    }
+
+
+    // ===== PASSWORD TOGGLE =====
+    function togglePassword() {
+      const passwordInput = document.getElementById("password");
+      const toggleBtn = document.querySelector(".password-toggle");
+      
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+          </svg>
+        `;
+      } else {
+        passwordInput.type = "password";
+        toggleBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+          </svg>
+        `;
+      }
+    }
+
+    // ===== SMS LOGIN =====
+    // Código SMS removido - não existe mais
+
+    // ===== SMS LOGIN FUNCTIONALITY =====
+    let smsTimerLogin = null;
+    let smsCountdownLogin = 0;
+
+    document.getElementById("enviarCodigoSMSLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      if (!telefone) {
+        alert("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("enviarCodigoSMSLogin");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          alert("Código enviado por SMS!");
+          startSMSTimerLogin();
+        } else {
+          alert(data.error || "Erro ao enviar código");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Enviar código";
+      }
+    });
+
+    document.getElementById("resendCodeLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      if (!telefone) {
+        alert("Por favor, insira o seu número de telemóvel");
+        return;
+      }
+
+      const btn = document.getElementById("resendCodeLogin");
+      btn.disabled = true;
+      btn.textContent = "A enviar...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok") {
+          alert("Código reenviado por SMS!");
+          startSMSTimerLogin();
+        } else {
+          alert(data.error || "Erro ao reenviar código");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Reenviar código";
+      }
+    });
+
+    function startSMSTimerLogin() {
+      const resendSection = document.getElementById("resendSectionLogin");
+      const timerSpan = document.getElementById("timerLogin");
+      const resendBtn = document.getElementById("resendCodeLogin");
+      
+      resendSection.style.display = "block";
+      smsCountdownLogin = 30;
+      timerSpan.textContent = smsCountdownLogin;
+      resendBtn.disabled = true;
+      
+      smsTimerLogin = setInterval(() => {
+        smsCountdownLogin--;
+        timerSpan.textContent = smsCountdownLogin;
+        
+        if (smsCountdownLogin <= 0) {
+          clearInterval(smsTimerLogin);
+          resendBtn.disabled = false;
+          timerSpan.textContent = "0";
+        }
+      }, 1000);
+    }
+
+    // ===== VERIFICATION CODE =====
+    document.getElementById("btnConfirmar").addEventListener("click", async () => {
+      const code = Array.from(document.querySelectorAll(".code-digit")).map(input => input.value).join("");
+      
+      if (code.length !== 6) {
+        alert("Por favor, insira o código completo de 6 dígitos");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "ok" && data.token) {
+          localStorage.setItem("token", data.token);
+          location.href = "Painel.html";
+        } else {
+          alert(data.error || "Código inválido");
+        }
+      } catch (err) {
+        console.error("Erro na verificação:", err);
+        alert("Erro de ligação com o servidor");
+      }
+    });
+
+    // ===== VALIDAR CÓDIGO SMS LOGIN =====
+    document.getElementById("validarCodigoSMSLogin").addEventListener("click", async () => {
+      const telefone = document.getElementById("telefoneLogin").value.trim();
+      const codigo = document.getElementById("codigoSMSLogin").value.trim();
+
+      if (!telefone || !codigo) {
+        alert("Por favor, preencha todos os campos");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telefone, codigo })
+        });
+        const data = await res.json();
+
+        if (data.status === "ok" && data.token) {
+          localStorage.setItem("token", data.token);
+          location.href = "Painel.html";
+        } else {
+          alert(data.error || "Código inválido");
+        }
+      } catch (error) {
+        alert("Erro de ligação ao servidor");
+      }
+    });
+
+    // ===== CODE INPUTS =====
+    document.querySelectorAll('.code-digit').forEach((input, index) => {
+      input.addEventListener('input', function(e) {
+        if (e.target.value.length === 1 && index < 5) {
+          document.querySelectorAll('.code-digit')[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+          document.querySelectorAll('.code-digit')[index - 1].focus();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    // Navigation functions
+    function openNavigation(button) {
+      const navLinks = button.nextElementSibling;
+      const isOpen = navLinks.style.display === 'block';
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+        link.style.display = 'none';
+      });
+      
+      // Toggle current dropdown
+      navLinks.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function toggleNavigation() {
+      const html = document.documentElement;
+      html.classList.toggle('opened-nav');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.pp-header-nav-wrapper')) {
+        document.querySelectorAll('.pp-header-nav-links').forEach(link => {
+          link.style.display = 'none';
+        });
+      }
+    });
+
+    // Language toggle function
+    function toggleLanguage() {
+      const langText = document.getElementById('lang-text');
+      const currentLang = langText.textContent;
+      
+      if (currentLang === 'PT') {
+        langText.textContent = 'EN';
+        translateToEnglish();
+      } else {
+        langText.textContent = 'PT';
+        translateToPortuguese();
+      }
+    }
+
+    function translateToEnglish() {
+      // Traduzir elementos específicos do login
+      const title = document.querySelector('.login-title');
+      if (title) title.textContent = 'Login with Email';
+      
+      const subtitle = document.querySelector('.login-subtitle');
+      if (subtitle) subtitle.textContent = 'Enter your credentials to access your account';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Email address';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Password';
+      
+      const loginBtn = document.querySelector('.btn-primary');
+      if (loginBtn) loginBtn.textContent = 'Login';
+      
+      const registerLink = document.querySelector('.register-link');
+      if (registerLink) registerLink.textContent = "Don't have an account? Register";
+
+      // Traduzir elementos adicionais
+      const googleBtn = document.querySelector('.google-btn span');
+      if (googleBtn) googleBtn.textContent = 'Continue with Google';
+      
+      const smsBtn = document.querySelector('.sms-btn span');
+      if (smsBtn) smsBtn.textContent = 'Continue with SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'or login with email';
+      
+      const forgotPassword = document.querySelector('.forgot-password');
+      if (forgotPassword) forgotPassword.textContent = 'Forgot password?';
+      
+      const rememberMe = document.querySelector('.remember-me');
+      if (rememberMe) rememberMe.textContent = 'Remember me';
+    }
+
+    function translateToPortuguese() {
+      // Traduzir de volta para português
+      const title = document.querySelector('.login-title');
+      if (title) title.textContent = 'Entrar com Email';
+      
+      const subtitle = document.querySelector('.login-subtitle');
+      if (subtitle) subtitle.textContent = 'Digite suas credenciais para acessar sua conta';
+      
+      const emailLabel = document.querySelector('label[for="email"]');
+      if (emailLabel) emailLabel.textContent = 'Endereço de email';
+      
+      const passwordLabel = document.querySelector('label[for="password"]');
+      if (passwordLabel) passwordLabel.textContent = 'Palavra-passe';
+      
+      const loginBtn = document.querySelector('.btn-primary');
+      if (loginBtn) loginBtn.textContent = 'Entrar';
+      
+      const registerLink = document.querySelector('.register-link');
+      if (registerLink) registerLink.textContent = 'Não tem conta? Registar';
+
+      // Traduzir elementos adicionais de volta para português
+      const googleBtn = document.querySelector('.google-btn span');
+      if (googleBtn) googleBtn.textContent = 'Continuar com Google';
+      
+      const smsBtn = document.querySelector('.sms-btn span');
+      if (smsBtn) smsBtn.textContent = 'Continuar com SMS';
+      
+      const orText = document.querySelector('.or-text');
+      if (orText) orText.textContent = 'ou entre com email';
+      
+      const forgotPassword = document.querySelector('.forgot-password');
+      if (forgotPassword) forgotPassword.textContent = 'Esqueceu a palavra-passe?';
+      
+      const rememberMe = document.querySelector('.remember-me');
+      if (rememberMe) rememberMe.textContent = 'Lembrar-me';
+    }
+  </script>
+
+  <script>
+    // Função de login direta
+    async function loginEmail(email, password) {
+      try {
+        const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if (data.status === "ok" && data.token) {
+          localStorage.setItem("token", data.token);
+          window.location.href = "/dashboard";
+        } else {
+          alert(data.error || "Erro no login");
+        }
+      } catch (err) {
+        console.error("Erro no login:", err);
+        alert("Erro de ligação com o servidor");
+      }
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      console.log('Tentando fazer login com:', email);
+      loginEmail(email, password);
+    });
+  </script>
+</body>
+</html>
