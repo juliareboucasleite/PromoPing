@@ -341,90 +341,14 @@
 
     <script src="../../assets/scripts/auth.js"></script>
     <script>
+        // Função para deslogar o usuário e redirecionar para login
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = "/login";
         }
-        async function selecionarPlano(planoId, planoNome, isCurrentPlan) {
-            if (isCurrentPlan) {
-                return; // Não fazer nada se for o plano atual
-            }
-            
-            const token = localStorage.getItem("token");
-            
-            try {
-                console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
-                
-                const response = await fetch("http://127.0.0.1:3000/api/user/change-plan", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: "Bearer " + token
-                        },
-                    body: JSON.stringify({ planId: planoId })
-                    });
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
 
-                    const data = await response.json();
-                console.log("Plano alterado:", data);
-                
-                alert(`Plano alterado para ${planoNome} com sucesso!`);
-                
-                // Recarregar a página para mostrar as mudanças
-                location.reload();
-                
-            } catch (error) {
-                console.error("Erro ao alterar plano:", error);
-                alert("Erro ao alterar plano. Tente novamente.");
-            }
-        }
-        function cancelarAssinatura() {
-            const modal = document.getElementById('cancelModal');
-            modal.classList.add('active');
-        }
-        
-        function fecharModalCancelamento() {
-            const modal = document.getElementById('cancelModal');
-            modal.classList.remove('active');
-        }
-        
-        async function confirmarCancelamento() {
-                const token = localStorage.getItem("token");
-            
-            try {
-                console.log("Cancelando assinatura...");
-                
-                const response = await fetch("http://127.0.0.1:3000/api/user/cancel-subscription", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log("Assinatura cancelada:", data);
-                // Fechar modal
-                fecharModalCancelamento();
-                
-                alert("Assinatura cancelada com sucesso! Você terá um período de graça de 30 dias antes que os serviços sejam limitados.");
-                
-                // Recarregar a página para mostrar as mudanças
-                location.reload();
-                
-            } catch (error) {
-                console.error("Erro ao cancelar assinatura:", error);
-                alert("Erro ao cancelar assinatura. Tente novamente.");
-            }
-        }
-
+        // Função para selecionar e mudar o plano do usuário
         async function selecionarPlano(planoId, planoNome, isCurrentPlan) {
             if (isCurrentPlan) {
                 return; // Não fazer nada se for o plano atual
@@ -432,7 +356,6 @@
             const token = localStorage.getItem("token");
             try {
                 console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
-                
                 const response = await fetch("http://127.0.0.1:3000/api/user/change-plan", {
                     method: "POST",
                     headers: {
@@ -441,96 +364,127 @@
                     },
                     body: JSON.stringify({ planId: planoId })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-
                 const data = await response.json();
                 console.log("Plano alterado:", data);
-                
+
                 alert(`Plano alterado para ${planoNome} com sucesso!`);
-                
                 // Recarregar a página para mostrar as mudanças
                 location.reload();
-                
+
             } catch (error) {
                 console.error("Erro ao alterar plano:", error);
                 alert("Erro ao alterar plano. Tente novamente.");
             }
         }
 
+        // Função para abrir modal para cancelar assinatura
+        function cancelarAssinatura() {
+            const modal = document.getElementById('cancelModal');
+            modal.classList.add('active');
+        }
+        
+        // Função para fechar o modal de cancelamento
+        function fecharModalCancelamento() {
+            const modal = document.getElementById('cancelModal');
+            modal.classList.remove('active');
+        }
+        
+        // Função para realmente cancelar a assinatura via backend
+        async function confirmarCancelamento() {
+            const token = localStorage.getItem("token");
+            try {
+                console.log("Cancelando assinatura...");
+                const response = await fetch("http://127.0.0.1:3000/api/user/cancel-subscription", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("Assinatura cancelada:", data);
+                // Fechar modal
+                fecharModalCancelamento();
+                alert("Assinatura cancelada com sucesso! Você terá um período de graça de 30 dias antes que os serviços sejam limitados.");
+                // Recarregar a página para mostrar as mudanças
+                location.reload();
+
+            } catch (error) {
+                console.error("Erro ao cancelar assinatura:", error);
+                alert("Erro ao cancelar assinatura. Tente novamente.");
+            }
+        }
+
+        // Função para carregar e mostrar dados do usuário na tela de planos
         async function carregarDadosUsuario() {
-                const token = localStorage.getItem("token");
-            
+            const token = localStorage.getItem("token");
             if (!token) {
                 alert("Precisa estar logado!");
                 window.location.href = "/login";
                 return;
             }
-
             try {
                 console.log("[PLANOS] Iniciando carregamento da página...");
-                
                 // Carregar perfil do usuário
                 const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
                     headers: { Authorization: "Bearer " + token }
                 });
-                
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-
                 const data = await response.json();
                 console.log("Dados do usuário carregados:", data);
-                
+
                 // Atualizar nome do usuário no header
                 const userNameElement = document.getElementById('userName');
                 if (userNameElement && data.user) {
                     userNameElement.textContent = data.user.Nome || 'Utilizador';
                 }
-                
+
                 // Carregar planos do banco de dados
                 await carregarPlanos();
-                
+
                 // Mostrar seção do plano atual
                 mostrarPlanoAtual(data);
-                
+
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
                 alert("Erro ao carregar dados do usuário");
             }
         }
 
+        // Função para buscar do backend o plano atual do usuário e destacar no UI
         async function carregarPlanos() {
-                const token = localStorage.getItem("token");
-
+            const token = localStorage.getItem("token");
             try {
                 console.log("Carregando plano atual do usuário...");
-                
                 const response = await fetch("http://127.0.0.1:3000/api/planos", {
                     headers: { Authorization: "Bearer " + token }
                 });
-                
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-
                 const data = await response.json();
                 console.log("Plano atual carregado:", data.userPlanId);
-                
-                // Destacar o plano atual
+                // Destacar o plano atual (botão) na tela
                 destacarPlanoAtual(data.userPlanId);
-                
+
             } catch (error) {
                 console.error("Erro ao carregar plano atual:", error);
                 // Manter planos estáticos em caso de erro
             }
         }
 
+        // Função para destacar o botão do plano atual do usuário
         function destacarPlanoAtual(userPlanId) {
             console.log(`Destacando plano atual: ID ${userPlanId}`);
-            
             // Resetar todos os botões para estado normal
             const allButtons = document.querySelectorAll('.plan-button');
             allButtons.forEach(button => {
@@ -542,11 +496,10 @@
                     button.textContent = `Escolher ${planName}`;
                 }
             });
-            
+
             // Destacar o plano atual baseado no ID
             let currentButton = null;
             let planName = '';
-            
             switch(userPlanId) {
                 case 1: // Free
                     currentButton = document.querySelector('button[onclick*="selecionarPlano(1"]');
@@ -565,46 +518,40 @@
                     planName = 'Standard';
                     break;
             }
-            
             if (currentButton) {
                 currentButton.className = 'plan-button current';
                 currentButton.textContent = 'Plano Atual';
                 console.log(`Plano atual destacado: ${planName} (ID: ${userPlanId})`);
-                } else {
+            } else {
                 console.log(`Plano atual não encontrado: ID ${userPlanId}`);
             }
         }
 
+        // Função que mostra a seção dos detalhes do plano atual e preenche com dados do usuário
         function mostrarPlanoAtual(data) {
             const currentPlanSection = document.getElementById('currentPlanSection');
             const currentPlanDetails = document.getElementById('currentPlanDetails');
             const planStatus = document.getElementById('planStatus');
             const gracePeriodInfo = document.getElementById('gracePeriodInfo');
-            
             if (!data.user) {
                 console.log("Dados do usuário não encontrados");
                 return;
             }
-            
             const user = data.user;
             const stats = data.stats || {};
-            
             // Determinar status do plano baseado no banco de dados
             let status = "Ativo";
             let statusClass = "active";
-                
-                // Verificar se está em período de graça
+            // Verificar se está em período de graça
             if (user.StatusAssinatura === 'PeriodoGraca') {
                 status = "Período de Graça";
                 statusClass = "grace-period";
                 gracePeriodInfo.style.display = "block";
-                
                 // Calcular tempo restante do período de graça
                 if (user.DataExpiracao) {
                     const endDate = new Date(user.DataExpiracao);
                     const now = new Date();
                     const timeLeft = endDate - now;
-                    
                     if (timeLeft > 0) {
                         const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -612,11 +559,10 @@
                             `${days} dias e ${hours} horas`;
                     }
                 }
-            }
-            
+            } 
             planStatus.textContent = status;
             planStatus.className = `status-badge ${statusClass}`;
-            
+
             // Preencher detalhes do plano atual com dados reais do banco
             currentPlanDetails.innerHTML = `
                 <div class="plan-detail">
@@ -636,38 +582,38 @@
                     <p>€${stats.dinheiro_poupado || '0,00'}</p>
                 </div>
             `;
-            
             currentPlanSection.style.display = "block";
         }
 
+        // Função para abrir o modal de Termos de Serviço
         function abrirModalTermos() {
             document.getElementById('termsModal').classList.add('active');
         }
-        
+
+        // Função para fechar o modal de Termos de Serviço e resetar estado
         function fecharModalTermos() {
             document.getElementById('termsModal').classList.remove('active');
             // Limpar checkbox
             document.getElementById('acceptTerms').checked = false;
             document.getElementById('proceedToStripeBtn').disabled = true;
         }
-        
+
+        // Função que habilita/desabilita botão de pagamento dependendo do aceite nos termos
         function toggleTermsAcceptance() {
             const checkbox = document.getElementById('acceptTerms');
             const button = document.getElementById('proceedToStripeBtn');
             button.disabled = !checkbox.checked;
         }
-        
+
+        // Função que leva para o checkout do Stripe ou ativa Free direto
         async function prosseguirParaStripe() {
             if (!window.selectedPlanData) {
                 alert('Erro: Dados do plano não encontrados');
                 return;
-            }
-            
+            }  
             const { id, name, price } = window.selectedPlanData;
-            
             try {
                 const token = localStorage.getItem('token');
-                
                 // Se for plano gratuito (Free), ativar diretamente
                 if (parseInt(id) === 1) {
                     const response = await fetch('http://127.0.0.1:3000/api/user/change-plan', {
@@ -678,17 +624,14 @@
                         },
                         body: JSON.stringify({ planId: parseInt(id) })
                     });
-                    
                     if (!response.ok) {
                         throw new Error('Erro ao ativar plano gratuito');
                     }
-                    
                     alert('Plano Free ativado com sucesso!');
                     fecharModalTermos();
                     carregarDadosUsuario();
                     return;
                 }
-                
                 // Para planos pagos, criar sessão de checkout
                 const response = await fetch('http://127.0.0.1:3000/api/payment/create-checkout-session', {
                     method: 'POST',
@@ -698,39 +641,35 @@
                     },
                     body: JSON.stringify({ planoId: parseInt(id) })
                 });
-                
                 if (!response.ok) {
                     throw new Error('Erro ao criar sessão de pagamento');
                 }
-
                 const data = await response.json();
-                
                 if (data.checkout_url) {
                     // Redirecionar para o Stripe
                     window.location.href = data.checkout_url;
                 } else {
                     alert('Erro: URL de checkout não recebida');
                 }
-                
             } catch (error) {
                 console.error('Erro ao prosseguir para pagamento:', error);
                 alert('Erro ao processar pagamento. Tente novamente.');
             }
         }
 
+        // Eventos para fechar os modais se clicar no overlay
         document.addEventListener('click', function(event) {
             const cancelModal = document.getElementById('cancelModal');
             const termsModal = document.getElementById('termsModal');
-            
             if (event.target === cancelModal) {
                 fecharModalCancelamento();
             }
-            
             if (event.target === termsModal) {
                 fecharModalTermos();
             }
         });
 
+        // Quando o DOM estiver pronto, carrega os dados iniciais do usuário/planos
         document.addEventListener('DOMContentLoaded', function() {
             carregarDadosUsuario();
         });
