@@ -1,6 +1,6 @@
-// Script para carregar includes (header e footer) - Versão para index.html
+// Script para carregar includes do header e footer na página principal (index.html)
 document.addEventListener('DOMContentLoaded', function() {
-    // Carregar header
+    // Carrega o header de forma assíncrona para o placeholder adequado
     fetch('/inc/header.html')
         .then(response => response.text())
         .then(data => {
@@ -11,40 +11,42 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Erro ao carregar header:', error));
 
-    // Carregar footer
+    // Carrega o footer de forma assíncrona e inicializa funcionalidades extras após inserir no DOM
     fetch('/inc/footer.html')
         .then(response => response.text())
         .then(data => {
             const footerPlaceholder = document.getElementById('footer-placeholder');
             if (footerPlaceholder) {
                 footerPlaceholder.innerHTML = data;
-                // Executar funcionalidades do footer após carregamento
+                // Chama funções adicionais depois do footer carregado
                 initializeFooterFunctionality();
             }
         })
         .catch(error => console.error('Erro ao carregar footer:', error));
 });
 
-// Navigation dropdown functions
+// Função para abrir o dropdown de navegação (menu)
+// Apenas um dropdown aberto por vez
 function openNavigation(button) {
   const navLinks = button.nextElementSibling;
   const isOpen = navLinks.style.display === 'block';
   
-  // Close all other dropdowns
+  // Fecha todos os outros dropdowns de navegação
   document.querySelectorAll('.pp-header-nav-links').forEach(link => {
     link.style.display = 'none';
   });
   
-  // Toggle current dropdown
+  // Alterna a exibição do dropdown atual
   navLinks.style.display = isOpen ? 'none' : 'block';
 }
 
+// Alterna o menu mobile (hamburguer)
 function toggleNavigation() {
   const html = document.documentElement;
   html.classList.toggle('opened-nav');
 }
 
-// Close dropdowns when clicking outside
+// Fecha os dropdowns do menu de navegação se clicar fora deles
 document.addEventListener('click', function(event) {
   if (!event.target.closest('.pp-header-nav-wrapper')) {
     document.querySelectorAll('.pp-header-nav-links').forEach(link => {
@@ -53,32 +55,32 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// Language toggle function
+// Função para alternar o idioma (PT/EN) - apenas simulação visual
 function toggleLanguage() {
   const langText = document.getElementById('lang-text');
   const currentLang = langText.textContent;
   
   if (currentLang === 'PT') {
     langText.textContent = 'EN';
-    // translateToEnglish(); // Função não implementada ainda
+    // Aqui poderia chamar uma função para traduzir o site para inglês (não implementada)
   } else {
     langText.textContent = 'PT';
-    // translateToPortuguese(); // Função não implementada ainda
+    // Aqui poderia chamar uma função para traduzir o site para português (não implementada)
   }
 }
 
-// Footer functionality initialization
+// Inicializa funcionalidades do footer: status, tooltips, versão, rolagem suave etc.
 function initializeFooterFunctionality() {
-  // Status indicator functionality
+  // Atualiza o status visual do serviço no rodapé
   updateServiceStatus();
   
-  // Tooltip positioning
+  // Ajusta as tooltips dos links do footer (visual)
   positionTooltips();
   
-  // Version check
+  // Atualiza e habilita o badge de versão
   checkVersion();
   
-  // Smooth scroll for footer links
+  // Aplica rolagem suave para links âncora do footer
   const footerLinks = document.querySelectorAll('.footer-link[href^="#"]');
   footerLinks.forEach(link => {
     link.addEventListener('click', function(e) {
@@ -94,12 +96,12 @@ function initializeFooterFunctionality() {
   });
 }
 
+// Simula atualização do status (online/manutenção) do serviço no rodapé
 function updateServiceStatus() {
-  // Simulate status check
   const statusIndicator = document.querySelector('.status-indicator');
   if (statusIndicator) {
-    // In a real application, this would check the actual service status
-    const isOnline = Math.random() > 0.1; // 90% chance of being online
+    // Aqui deveria ser feita uma verificação real do backend; agora é simulado
+    const isOnline = Math.random() > 0.1; // 90% de chance de mostrar "online"
     
     if (isOnline) {
       statusIndicator.className = 'status-indicator online';
@@ -109,32 +111,34 @@ function updateServiceStatus() {
   }
 }
 
+// Função para posicionar (simular) tooltips dos links do footer
 function positionTooltips() {
   const tooltipLinks = document.querySelectorAll('.footer-link[data-tooltip]');
   tooltipLinks.forEach(link => {
     link.addEventListener('mouseenter', function() {
-      // Add positioning logic if needed
+      // Poderia inserir posicionamento de tooltip aqui se necessário
     });
   });
 }
 
+// Atualiza o badge de versão e permite abrir modal com detalhes
 function checkVersion() {
-  // Simulate version check
   const versionBadge = document.querySelector('.version-badge span');
   if (versionBadge) {
-    // In a real application, this would check for updates
+    // Aqui seria feita uma consulta real a uma API de versões
     const currentVersion = 'v2.0.1';
     versionBadge.textContent = currentVersion;
     
-    // Add click handler for version info
+    // Ao clicar, mostra informações detalhadas da versão em um modal
     versionBadge.addEventListener('click', function() {
       showVersionInfo();
     });
   }
 }
 
+// Cria e exibe um modal simples com informações sobre a versão atual
 function showVersionInfo() {
-  // Create version info modal
+  // Cria o elemento do modal
   const modal = document.createElement('div');
   modal.className = 'version-modal';
   modal.innerHTML = `
@@ -147,7 +151,7 @@ function showVersionInfo() {
     </div>
   `;
   
-  // Add modal styles
+  // Adiciona estilos CSS diretamente para o modal (assim não depende de arquivos externos)
   const style = document.createElement('style');
   style.textContent = `
     .version-modal {

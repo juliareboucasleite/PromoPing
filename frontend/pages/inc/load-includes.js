@@ -1,6 +1,6 @@
 // Script para carregar includes (header e footer)
 document.addEventListener('DOMContentLoaded', function() {
-    // Carregar header
+    // Carrega o header
     fetch('/inc/header.html')
         .then(response => response.text())
         .then(data => {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Erro ao carregar header:', error));
 
-    // Carregar footer
+    // Carrega o footer
     fetch('/inc/footer.html')
         .then(response => response.text())
         .then(data => {
@@ -23,26 +23,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Erro ao carregar footer:', error));
 });
 
-// Navigation dropdown functions
+// Função para abrir o dropdown de navegação
 function openNavigation(button) {
   const navLinks = button.nextElementSibling;
   const isOpen = navLinks.style.display === 'block';
   
-  // Close all other dropdowns
+  // Fecha todos os outros dropdowns
   document.querySelectorAll('.pp-header-nav-links').forEach(link => {
     link.style.display = 'none';
   });
   
-  // Toggle current dropdown
+  // Alterna o dropdown atual
   navLinks.style.display = isOpen ? 'none' : 'block';
 }
 
+// Alterna o menu móvel
 function toggleNavigation() {
   const html = document.documentElement;
   html.classList.toggle('opened-nav');
 }
 
-// Close dropdowns when clicking outside
+// Fecha os dropdowns ao clicar fora
 document.addEventListener('click', function(event) {
   if (!event.target.closest('.pp-header-nav-wrapper')) {
     document.querySelectorAll('.pp-header-nav-links').forEach(link => {
@@ -51,16 +52,16 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// Language toggle function
+// Função de alternância de idioma
 function toggleLanguage() {
   const langText = document.getElementById('lang-text');
   const currentLang = langText.textContent;
   
   if (currentLang === 'PT') {
     langText.textContent = 'EN';
-    // translateToEnglish(); // Função não implementada ainda
+    // Função para traduzir para inglês não implementada ainda
   } else {
     langText.textContent = 'PT';
-    // translateToPortuguese(); // Função não implementada ainda
+    // Função para traduzir para português não implementada ainda
   }
 }
