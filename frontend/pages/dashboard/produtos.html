@@ -180,11 +180,13 @@
   </div>
 
   <script>
+    // Função: deslogar usuário e voltar para login
     function logout() {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
 
+    // Função principal: carregar lista de produtos do usuário, aplica filtros e monta cards
     async function carregarProdutos() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -416,6 +418,7 @@
       }
     }
 
+    // Função: remove produto do usuário através do id
     async function removerProduto(id) {
       const token = localStorage.getItem("token");
       if (!confirm("Tem certeza que deseja remover este produto?")) return;
@@ -434,6 +437,7 @@
 
     let lastSyncTime = Date.now();
     
+    // Função: verifica se há mudanças/sincronização dos produtos no backend
     async function verificarSincronizacao() {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -454,11 +458,12 @@
       }
     }
     
-    // Verificar sincronização a cada 10 segundos
+    // Sincroniza produtos a cada 10 segundos
     setInterval(verificarSincronizacao, 10000);
 
     let userPlan = "Free"; // Plano padrão
 
+    // Função: verifica o plano atual do usuário (Free, Basic, etc)
     async function verificarPlanoUsuario() {
       console.log("Verificando plano do usuário...");
       try {
@@ -494,6 +499,7 @@
       }
     }
 
+    // Função: exibe o modal para upgrade de plano
     function mostrarModalUpgrade(planoAtual) {
       const modal = document.getElementById("upgradeModal");
       const currentPlanSpan = document.getElementById("currentPlan");
@@ -507,12 +513,15 @@
       console.log("Modal de upgrade exibido");
     }
 
+    // Função: fecha o modal de upgrade de plano
     function fecharModalUpgrade() {
       const modal = document.getElementById("upgradeModal");
       modal.style.display = "none";
       document.body.style.overflow = "auto"; // Restaurar scroll
       console.log("Modal de upgrade fechado");
     }
+
+    // Fecha modal ao clicar no backdrop
     document.addEventListener('click', function(event) {
       const modal = document.getElementById("upgradeModal");
       const backdrop = document.querySelector('.upgrade-modal-backdrop');
@@ -521,12 +530,15 @@
         fecharModalUpgrade();
       }
     });
+
+    // Fecha modal ao pressionar ESC
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
         fecharModalUpgrade();
       }
     });
 
+    // Função: carrega o nome do usuário logado e mostra no header
     async function carregarNomeUsuario() {
       try {
         const token = localStorage.getItem("token");
@@ -547,6 +559,7 @@
       }
     }
 
+    // Executado ao carregar página: inicia fluxo painel (carrega usuário, verifica plano, exibe produtos e ativa filtros)
     window.onload = async () => {
       // Carregar nome do usuário
       await carregarNomeUsuario();
