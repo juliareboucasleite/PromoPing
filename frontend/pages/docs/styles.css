@@ -1357,3 +1357,165 @@ tr:hover {
     font-size: 0.8rem;
   }
 }
+
+/* ===== SISTEMA DE PESQUISA ===== */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  margin-top: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.search-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+  background: #222;
+  border-radius: 8px 8px 0 0;
+}
+
+.search-results-count {
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.search-results-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-results-close:hover {
+  background: #333;
+  color: #fff;
+}
+
+.search-results-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a2a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.search-result-item:hover {
+  background: #2a2a2a;
+}
+
+.search-result-item.current-page {
+  background: #1a2a1a;
+  border-left: 3px solid #ff9800;
+}
+
+.search-result-item.current-page:hover {
+  background: #1a3a1a;
+}
+
+.search-result-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.search-result-content {
+  font-size: 0.85rem;
+  color: #aaa;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.search-result-url {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
+.search-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+}
+
+.search-no-results p {
+  margin-bottom: 12px;
+}
+
+.search-no-results strong {
+  color: #ff9800;
+}
+
+.search-suggestions {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.search-no-results ul {
+  text-align: left;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.search-no-results li {
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+/* Destaque de texto pesquisado */
+mark {
+  background: #ff9800;
+  color: #000;
+  padding: 1px 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* Responsividade para pesquisa */
+@media (max-width: 768px) {
+  .search-results {
+    left: -10px;
+    right: -10px;
+    margin-top: 4px;
+  }
+  
+  .search-result-item {
+    padding: 10px 12px;
+  }
+  
+  .search-result-title {
+    font-size: 0.9rem;
+  }
+  
+  .search-result-content {
+    font-size: 0.8rem;
+  }
+}
