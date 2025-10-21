@@ -36,9 +36,9 @@ router.get("/api/status", async (req, res) => {
 
     res.json({
       status: "ok",
-      metricas: metricas[0] || {
-        UptimeGeral: 99.9,
-        TempoRespostaMedia: 45,
+      metricas: {
+        UptimeGeral: metricas[0]?.UptimeGeral || 99.9,
+        TempoRespostaMedia: metricas[0]?.TempoRespostaMedia || 45,
         UtilizadoresAtivos: utilizadoresCount[0]?.total || 0,
         ProdutosMonitorizados: produtosCount[0]?.total || 0,
         NotificacoesEnviadas: notificacoesCount[0]?.total || 0
@@ -845,9 +845,9 @@ router.get("/api/status/complete", async (req, res) => {
 
     res.json({
       status: "ok",
-      metricas: metricas[0] || {
-        UptimeGeral: 99.9,
-        TempoRespostaMedia: 45,
+      metricas: {
+        UptimeGeral: metricas[0]?.UptimeGeral || 99.9,
+        TempoRespostaMedia: metricas[0]?.TempoRespostaMedia || 45,
         UtilizadoresAtivos: utilizadoresCount[0]?.total || 0,
         ProdutosMonitorizados: produtosCount[0]?.total || 0,
         NotificacoesEnviadas: notificacoesCount[0]?.total || 0

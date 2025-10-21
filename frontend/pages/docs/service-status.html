@@ -85,6 +85,11 @@
             </a>
           </li>
           <li>
+            <a href="incident-history.html" class="sidebar-nav-link">
+              Histórico de Incidentes
+            </a>
+          </li>
+          <li>
             <a href="terms.html" class="sidebar-nav-link">
               Termos de Uso
             </a>
@@ -136,7 +141,7 @@
             <p><strong>Uptime:</strong> <span data-detail="uptime">99.9%</span> (últimos 30 dias)</p>
             <p><strong>Latência média:</strong> <span data-detail="latencia">45ms</span></p>
             <p><strong>Última verificação:</strong> <span data-detail="ultima-verificacao">2 minutos atrás</span></p>
-            <p><strong>Requisições por minuto:</strong> <span data-detail="requisicoes">1,241</span></p>
+            <p><strong>Requisições por minuto:</strong> <span data-detail="requisicoes">0</span></p>
           </div>
         </div>
 
@@ -146,7 +151,7 @@
             <span class="status-badge operational">Operacional</span>
           </div>
           <div class="component-details">
-            <p><strong>Produtos monitorados:</strong> <span data-detail="produtos">1.2M+</span></p>
+            <p><strong>Produtos monitorados:</strong> <span data-detail="produtos">0</span></p>
             <p><strong>Atualizações por hora:</strong> <span data-detail="atualizacoes-hora">15,420</span></p>
             <p><strong>Precisão:</strong> <span data-detail="precisao">99.7%</span></p>
             <p><strong>Verificações ativas:</strong> <span data-detail="verificacoes">1,247</span> por minuto</p>
@@ -159,10 +164,10 @@
             <span class="status-badge operational">Operacional</span>
           </div>
           <div class="component-details">
-            <p><strong>Emails enviados (24h):</strong> 8,542</p>
+            <p><strong>Emails enviados (24h):</strong> <span data-detail="emails-24h">0</span></p>
             <p><strong>WhatsApp (24h):</strong> 2,156</p>
             <p><strong>Discord (24h):</strong> 1,234</p>
-            <p><strong>Total notificações hoje:</strong> 8,542</p>
+            <p><strong>Total notificações hoje:</strong> <span data-detail="total-notificacoes">0</span></p>
           </div>
         </div>
 
@@ -187,7 +192,7 @@
             <p><strong>Logins (24h):</strong> 3,421</p>
             <p><strong>Tempo de resposta:</strong> 12ms</p>
             <p><strong>Taxa de sucesso:</strong> 99.8%</p>
-            <p><strong>Utilizadores online:</strong> 12,847</p>
+            <p><strong>Utilizadores online:</strong> <span id="users-online">0</span></p>
           </div>
         </div>
 
@@ -224,17 +229,6 @@
             <p><strong>Duração:</strong> 2 horas (09:30 - 11:30 UTC)</p>
             <p><strong>Impacto:</strong> Atraso nas notificações por email</p>
             <p><strong>Status:</strong> Resolvido</p>
-          </div>
-        </div>
-
-        <div class="incident-item resolved">
-          <div class="incident-date">3 Jan 2024</div>
-          <div class="incident-content">
-            <h4>Atualização de Segurança</h4>
-            <p><strong>Duração:</strong> 30 minutos (16:00 - 16:30 UTC)</p>
-            <p><strong>Impacto:</strong> Reinicialização dos serviços</p>
-            <p><strong>Status:</strong> Resolvido</p>
-          </div>
         </div>
       </div>
 
@@ -255,13 +249,13 @@
 
         <div class="metric-card">
           <h4>Usuários Ativos</h4>
-          <div class="metric-value" id="active-users-value">12,847</div>
+          <div class="metric-value" id="active-users-value">0</div>
           <div class="metric-trend positive" id="active-users-trend">+8.2% vs mês anterior</div>
         </div>
 
         <div class="metric-card">
           <h4>Produtos Monitorados</h4>
-          <div class="metric-value" id="monitored-products-value">1.2M+</div>
+          <div class="metric-value" id="monitored-products-value">0</div>
           <div class="metric-trend positive" id="monitored-products-trend">+15.3% vs mês anterior</div>
         </div>
       </div>
@@ -275,15 +269,15 @@
       <div class="realtime-stats">
         <div class="stat-item">
           <span class="stat-label">Requisições por minuto:</span>
-          <span class="stat-value" id="requests-per-minute">1,241</span>
+          <span class="stat-value" id="requests-per-minute">0</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Utilizadores online:</span>
-          <span class="stat-value" id="users-online">12,847</span>
+          <span class="stat-value" id="users-online">0</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Notificações enviadas (hoje):</span>
-          <span class="stat-value" id="notifications-today">8,542</span>
+          <span class="stat-value" id="notifications-today">0</span>
         </div>
       </div>
 
@@ -294,19 +288,13 @@
         <div class="notification-card">
           <h4>Email</h4>
           <p>Receba atualizações por email quando houver incidentes</p>
-          <button class="subscribe-btn">Inscrever-se</button>
-        </div>
-
-        <div class="notification-card">
-          <h4>SMS</h4>
-          <p>Alertas críticos via SMS</p>
-          <button class="subscribe-btn">Inscrever-se</button>
+          <button class="subscribe-btn" onclick="window.location.href='support.html#notifications'">Inscrever-se</button>
         </div>
 
         <div class="notification-card">
           <h4>Webhook</h4>
           <p>Integre com seus sistemas de monitoramento</p>
-          <button class="subscribe-btn">Configurar</button>
+          <button class="subscribe-btn" onclick="window.location.href='api-reference.html#webhooks'">Configurar</button>
         </div>
       </div>
 
@@ -326,6 +314,16 @@
           <h4>API Status</h4>
           <p>Status detalhado da API</p>
         </a>
+      </div>
+
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='incident-history.html'">
+        <div class="next-content">
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Histórico de Incidentes</span>
+        </div>
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
       </div>
 
       <footer>
@@ -349,15 +347,15 @@
           const notificationsElement = document.getElementById('notifications-today');
           
           if (requestsElement) {
-            requestsElement.textContent = data.metricas.requisicoesPorMinuto?.toLocaleString() || '1,241';
+            requestsElement.textContent = data.metricas.UtilizadoresAtivos?.toLocaleString() || '0';
           }
           
           if (usersElement) {
-            usersElement.textContent = data.metricas.utilizadoresOnline?.toLocaleString() || '12,847';
+            usersElement.textContent = data.metricas.UtilizadoresAtivos?.toLocaleString() || '0';
           }
           
           if (notificationsElement) {
-            notificationsElement.textContent = data.metricas.notificacoesHoje?.toLocaleString() || '8,542';
+            notificationsElement.textContent = data.metricas.NotificacoesEnviadas?.toLocaleString() || '0';
           }
 
           // Atualizar timestamp
@@ -605,23 +603,23 @@
 
     // ================== ATUALIZAR MÉTRICAS DE PERFORMANCE ==================
     function atualizarMetricasPerformance(metricas) {
-      if (metricas.uptime) {
-        atualizarElemento('uptime-value', `${metricas.uptime}%`);
+      if (metricas.UptimeGeral) {
+        atualizarElemento('uptime-value', `${metricas.UptimeGeral}%`);
         atualizarElemento('uptime-trend', `+${metricas.uptimeGrowth || 0.1}% vs mês anterior`);
       }
       
-      if (metricas.responseTime) {
-        atualizarElemento('response-time-value', `${metricas.responseTime}ms`);
+      if (metricas.TempoRespostaMedia) {
+        atualizarElemento('response-time-value', `${metricas.TempoRespostaMedia}ms`);
         atualizarElemento('response-time-trend', `${metricas.responseTimeChange || '-5'}ms vs mês anterior`);
       }
       
-      if (metricas.activeUsers) {
-        atualizarElemento('active-users-value', metricas.activeUsers.toLocaleString());
+      if (metricas.UtilizadoresAtivos) {
+        atualizarElemento('active-users-value', metricas.UtilizadoresAtivos.toLocaleString());
         atualizarElemento('active-users-trend', `+${metricas.activeUsersGrowth || 8.2}% vs mês anterior`);
       }
       
-      if (metricas.monitoredProducts) {
-        const formatted = formatarNumero(metricas.monitoredProducts);
+      if (metricas.ProdutosMonitorizados) {
+        const formatted = formatarNumero(metricas.ProdutosMonitorizados);
         atualizarElemento('monitored-products-value', formatted);
         atualizarElemento('monitored-products-trend', `+${metricas.monitoredProductsGrowth || 15.3}% vs mês anterior`);
       }
@@ -629,16 +627,16 @@
 
     // ================== ATUALIZAR ESTATÍSTICAS EM TEMPO REAL ==================
     function atualizarEstatisticasTempoReal(tempoReal) {
-      if (tempoReal.requestsPerMinute) {
-        atualizarElemento('requests-per-minute', tempoReal.requestsPerMinute.toLocaleString());
+      if (tempoReal.requisicoesPorMinuto) {
+        atualizarElemento('requests-per-minute', tempoReal.requisicoesPorMinuto.toLocaleString());
       }
       
-      if (tempoReal.usersOnline) {
-        atualizarElemento('users-online', tempoReal.usersOnline.toLocaleString());
+      if (tempoReal.utilizadoresOnline) {
+        atualizarElemento('users-online', tempoReal.utilizadoresOnline.toLocaleString());
       }
       
-      if (tempoReal.notificationsToday) {
-        atualizarElemento('notifications-today', tempoReal.notificationsToday.toLocaleString());
+      if (tempoReal.notificacoesHoje) {
+        atualizarElemento('notifications-today', tempoReal.notificacoesHoje.toLocaleString());
       }
     }
 

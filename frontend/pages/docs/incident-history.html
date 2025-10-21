@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>Histórico de Incidentes | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Pesquisar incidentes..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
+          </li>
+          <li>
+            <a href="api-reference.html" class="sidebar-nav-link inactive">
+              Referência da API
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
+                <polyline points="9,6 15,12 9,18"></polyline>
+              </svg>
+            </a>
+          </li>
+          <!-- Support -->
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" class="sidebar-nav-link">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="service-status.html" class="sidebar-nav-link">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="incident-history.html" class="sidebar-nav-link active">
+              Histórico de Incidentes
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" class="sidebar-nav-link">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Histórico de Incidentes</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <h2>Registo de Incidentes e Atualizações</h2>
+      <p>
+        Esta página mantém um registo completo de todos os incidentes, atualizações e melhorias do PromoPing. 
+        Aqui pode acompanhar o estado dos nossos serviços e as últimas correções implementadas.
+      </p>
+
+      <!-- Incident Status Summary -->
+      <div class="incident-summary">
+        <h3>Estado Atual do Sistema</h3>
+        <div class="status-overview">
+          <div class="status-item operational">
+            <span class="status-indicator"></span>
+            <span class="status-text">Todos os sistemas operacionais</span>
+          </div>
+          <div class="status-item">
+            <span class="status-text">Última atualização: <span id="last-update">Carregando...</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Incidents -->
+      <h3>Incidentes Recentes</h3>
+      <div id="incidents-container">
+        <!-- Incidents will be loaded dynamically -->
+        <div class="incident-card">
+          <div class="incident-date">12 Jan 2024</div>
+          <div class="incident-content">
+            <h4>Manutenção Programada - API</h4>
+            <div class="incident-details">
+              <p><strong>Duração:</strong> 15 minutos (14:00 - 14:15 UTC)</p>
+              <p><strong>Impacto:</strong> Interrupção temporária da API</p>
+              <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="incident-card">
+          <div class="incident-date">8 Jan 2024</div>
+          <div class="incident-content">
+            <h4>Problema de Latência - Notificações</h4>
+            <div class="incident-details">
+              <p><strong>Duração:</strong> 2 horas (09:30 - 11:30 UTC)</p>
+              <p><strong>Impacto:</strong> Atraso nas notificações por email</p>
+              <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- System Updates -->
+      <h3>Atualizações do Sistema</h3>
+      <div class="updates-container">
+        <div class="update-card">
+          <div class="update-date">15 Jan 2025</div>
+          <div class="update-content">
+            <h4>Integração Completa com Base de Dados</h4>
+            <div class="update-details">
+              <p><strong>Tipo:</strong> Melhoria</p>
+              <p><strong>Descrição:</strong> Sistema de status agora utiliza dados reais da base de dados em vez de dados simulados</p>
+              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="update-card">
+          <div class="update-date">14 Jan 2025</div>
+          <div class="update-content">
+            <h4>Refatoração de CSS</h4>
+            <div class="update-details">
+              <p><strong>Tipo:</strong> Melhoria</p>
+              <p><strong>Descrição:</strong> Remoção de estilos inline e consolidação em styles.css</p>
+              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="update-card">
+          <div class="update-date">13 Jan 2025</div>
+          <div class="update-content">
+            <h4>Tradução para Português de Portugal</h4>
+            <div class="update-details">
+              <p><strong>Tipo:</strong> Melhoria</p>
+              <p><strong>Descrição:</strong> Tradução completa de todas as páginas de documentação</p>
+              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='service-status.html'">
+        <div class="next-content">
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Status do Serviço</span>
+        </div>
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </div>
+
+      <footer>
+        <p>Última actualização: <span id="footer-update">15 de Janeiro, 2025 - 14:30 UTC</span></p>
+      </footer>
+    </main>
+
+  </div>
+  
+  <!-- FOOTER -->
+  <div id="footer-placeholder"></div>
+  
+  <script>
+    // ================== CARREGAR INCIDENTES DA API ==================
+    async function carregarIncidentes() {
+      try {
+        const response = await fetch("/api/incidentes");
+        const data = await response.json();
+
+        if (data.status === "ok" && data.incidentes && data.incidentes.length > 0) {
+          atualizarIncidentes(data.incidentes);
+          console.log("✅ Incidentes carregados da base de dados:", data.incidentes);
+        } else {
+          console.log("⚠️ Nenhum incidente encontrado na base de dados");
+        }
+      } catch (error) {
+        console.error("❌ Erro ao carregar incidentes:", error);
+      }
+    }
+
+    // ================== ATUALIZAR INCIDENTES ==================
+    function atualizarIncidentes(incidentes) {
+      const container = document.getElementById('incidents-container');
+      if (!container) return;
+
+      // Limpar incidentes existentes
+      container.innerHTML = '';
+
+      incidentes.forEach(incidente => {
+        const incidenteCard = criarIncidenteCard(incidente);
+        container.appendChild(incidenteCard);
+      });
+    }
+
+    // ================== CRIAR CARTÃO DE INCIDENTE ==================
+    function criarIncidenteCard(incidente) {
+      const card = document.createElement('div');
+      card.className = 'incident-card';
+      
+      const dataInicio = new Date(incidente.DataInicio);
+      const dataFim = incidente.DataFim ? new Date(incidente.DataFim) : null;
+      
+      const duracao = dataFim 
+        ? calcularDuracao(dataInicio, dataFim)
+        : 'Em andamento';
+      
+      const statusClass = incidente.Status === 'resolved' ? 'status-resolved' : 'status-investigating';
+      const statusText = incidente.Status === 'resolved' ? 'Resolvido' : 'Investigando';
+
+      card.innerHTML = `
+        <div class="incident-date">${formatarData(dataInicio)}</div>
+        <div class="incident-content">
+          <h4>${incidente.Titulo}</h4>
+          <div class="incident-details">
+            <p><strong>Duração:</strong> ${duracao}</p>
+            <p><strong>Impacto:</strong> ${incidente.Impacto || 'Não especificado'}</p>
+            <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
+            ${incidente.Descricao ? `<p><strong>Descrição:</strong> ${incidente.Descricao}</p>` : ''}
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ================== FUNÇÕES AUXILIARES ==================
+    function formatarData(data) {
+      return data.toLocaleDateString('pt-PT', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function calcularDuracao(inicio, fim) {
+      const diffMs = fim - inicio;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        return `${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+      } else if (diffHours > 0) {
+        return `${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+      } else {
+        return `${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+      }
+    }
+
+    // ================== ATUALIZAR TIMESTAMP ==================
+    function atualizarTimestamp() {
+      const now = new Date();
+      const lastUpdate = document.getElementById('last-update');
+      const footerUpdate = document.getElementById('footer-update');
+      
+      const timestamp = now.toLocaleString('pt-PT', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC'
+      }) + ' UTC';
+
+      if (lastUpdate) {
+        lastUpdate.textContent = timestamp;
+      }
+      
+      if (footerUpdate) {
+        footerUpdate.textContent = timestamp;
+      }
+    }
+
+    // ================== INICIALIZAÇÃO ==================
+    document.addEventListener('DOMContentLoaded', function() {
+      // Carregar incidentes da API
+      carregarIncidentes();
+      
+      // Atualizar timestamp
+      atualizarTimestamp();
+      
+      // Atualizar a cada 5 minutos
+      setInterval(carregarIncidentes, 5 * 60 * 1000);
+      setInterval(atualizarTimestamp, 60 * 1000);
+    });
+  </script>
+</body>
+</html>

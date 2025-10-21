@@ -1205,3 +1205,155 @@ tr:hover {
     padding: 0.7rem;
   }
 }
+
+/* ================== ESTILOS PARA PÁGINA DE INCIDENTES ================== */
+
+/* Incident Summary */
+.incident-summary {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.status-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-item.operational {
+  color: #4ade80;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Incident Cards */
+.incident-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-left: 4px solid #4ade80;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.incident-date {
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.incident-content {
+  flex: 1;
+}
+
+.incident-content h4 {
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.incident-details {
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.incident-details p {
+  margin: 0.25rem 0;
+}
+
+/* Status Badges */
+.status-resolved {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.status-investigating {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.status-completed {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+/* Update Cards */
+.updates-container {
+  margin: 2rem 0;
+}
+
+.update-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.update-date {
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.update-content {
+  flex: 1;
+}
+
+.update-content h4 {
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.update-details {
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.update-details p {
+  margin: 0.25rem 0;
+}
+
+/* Responsive Design for Incident Cards */
+@media (max-width: 768px) {
+  .incident-card,
+  .update-card {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .incident-date,
+  .update-date {
+    min-width: auto;
+    font-size: 0.8rem;
+  }
+}
