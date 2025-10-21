@@ -185,13 +185,7 @@ O PromoPing é um projeto open-source e aceita contribuições da comunidade. Se
 
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-A Licença MIT permite:
-- Uso comercial
-- Modificação
-- Distribuição
-- Uso privado
+Este projeto está licenciado sob a Licença . Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## Suporte
 
