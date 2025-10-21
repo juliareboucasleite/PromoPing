@@ -24,7 +24,6 @@ Sistema de monitoramento de preços para consumidores portugueses. O PromoPing p
 
 **Sistema de Notificações**
 - **Discord Bot** - Notificações em tempo real no Discord
-- **Telegram Bot** - Mensagens diretas no Telegram
 - **Email** - Notificações por correio eletrónico
 - Configuração personalizada de frequência de alertas
 - Histórico completo de notificações enviadas
