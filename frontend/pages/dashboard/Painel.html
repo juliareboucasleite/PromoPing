@@ -16,101 +16,45 @@
                 <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
                 <span class="nav-brand-name">PromoPing</span>
             </div>
-            
             <div class="nav-menu">
-                <a href="/dashboard" class="nav-item nav-item-active">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    Dashboard
-                </a>
-                <a href="/dashboard/produtos" class="nav-item">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                    Produtos
-                </a>
-                <a href="/dashboard/perfil" class="nav-item">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    Perfil
-                </a>
+                <a href="/dashboard" class="nav-item nav-item-active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>Dashboard</a>
+                <a href="/dashboard/produtos" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>Produtos</a>
+                <a href="/dashboard/perfil" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Perfil</a>
             </div>
-            
             <div class="nav-actions">
                 <span class="nav-user" id="userName">Utilizador</span>
-                <button class="nav-logout" onclick="logout()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16,17 21,12 16,7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Sair
-                </button>
+                <button class="nav-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16,17 21,12 16,7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Sair</button>
             </div>
         </div>
     </nav>
-
-    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
     <main class="dashboard-main">
         <div class="dashboard-container">
-            
-            <!-- ===== CABEÇALHO ===== -->
             <header class="page-header">
                 <h1 class="page-title">Dashboard</h1>
                 <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
             </header>
-
-
-            <!-- ===== ESTATÍSTICAS RÁPIDAS ===== -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                     </div>
                     <div class="stat-content">
                         <span class="stat-value" id="totalProdutos">0</span>
                         <span class="stat-label">Produtos</span>
                     </div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
                     </div>
                     <div class="stat-content">
                         <span class="stat-value" id="totalNotificacoes">0</span>
                         <span class="stat-label">Notificações</span>
                     </div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 1v6l3 3"></path>
-                            <path d="M12 1L9 4l3 3"></path>
-                            <path d="M12 1l3 3-3 3"></path>
-                            <path d="M12 1v6l-3 3"></path>
-                            <path d="M12 1L9 4l3 3"></path>
-                            <path d="M12 1l3 3-3 3"></path>
-                            <path d="M12 1v6l3 3"></path>
-                            <path d="M12 1L9 4l3 3"></path>
-                            <path d="M12 1l3 3-3 3"></path>
-                            <path d="M12 1v6l-3 3"></path>
-                            <path d="M12 1L9 4l3 3"></path>
-                            <path d="M12 1l3 3-3 3"></path>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6l3 3"></path><path d="M12 1L9 4l3 3"></path><path d="M12 1l3 3-3 3"></path><path d="M12 1v6l-3 3"></path><path d="M12 1L9 4l3 3"></path><path d="M12 1l3 3-3 3"></path><path d="M12 1v6l3 3"></path><path d="M12 1L9 4l3 3"></path><path d="M12 1l3 3-3 3"></path><path d="M12 1v6l-3 3"></path><path d="M12 1L9 4l3 3"></path><path d="M12 1l3 3-3 3"></path></svg>
                     </div>
                     <div class="stat-content">
                         <span class="stat-value" id="dinheiroPoupado">€0.00</span>
@@ -118,8 +62,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ===== FORM ADICIONAR ===== -->
             <div class="add-product-card">
                 <h2 class="card-title">+ Adicionar novo produto</h2>
                 <form id="formLink" class="add-product-form">
@@ -142,45 +84,40 @@
                     <button type="submit" class="add-product-btn">+ Adicionar produto</button>
                 </form>
             </div>
-
-
-            <!-- ===== LISTA DE PRODUTOS ===== -->
             <section class="products-section">
                 <h2 class="section-title">Produtos monitorizados (<span id="productCount">0</span>)</h2>
                 <div id="productsList" class="products-list"></div>
             </section>
-
         </div>
     </main>
-
     <script type="module">
       import { salvarToken, verificarSessao, logout } from "../../assets/scripts/auth.js";
       import { formatDateTime } from "../../assets/scripts/utils.js";
 
+      // Função que verifica se existe um token na URL (após login/cadastro) e salva no localStorage
       function checkTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
         if (token) {
-          salvarToken(token);   // guarda no localStorage
-          window.history.replaceState({}, document.title, "Painel.html"); // limpa ?token= da URL
+          salvarToken(token);
+          window.history.replaceState({}, document.title, "Painel.html");
         }
       }
 
+      // Inicializa o dashboard: verifica token na URL e carrega nome do usuário
       async function init() {
-        checkTokenFromURL(); // <- novo
+        checkTokenFromURL();
         await carregarNomeUsuario();
       }
 
-      // ===== CARREGAR NOME DO USUÁRIO =====
+      // Consulta o nome do usuário logado via API e atualiza no header
       async function carregarNomeUsuario() {
         try {
           const token = localStorage.getItem("token");
           if (!token) return;
-
           const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
             headers: { Authorization: "Bearer " + token }
           });
-
           if (response.ok) {
             const data = await response.json();
             if (data.user) {
@@ -191,33 +128,23 @@
           console.error("Erro ao carregar nome do usuário:", error);
         }
       }
-
-      // Tornar formatDateTime disponível globalmente
       window.formatDateTime = formatDateTime;
       window.logout = logout;
       init();
     </script>
-
     <script>
-
-      // Criar card de produto
+      // Cria card HTML de produto dinamicamente, dado o objeto do produto
       function createProductCard(p) {
         const nome = p.Nome || p.nome || "Sem nome";
         const loja = p.Loja || "Loja";
         console.log("Loja recebida:", loja);
-        const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null
-          ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}`
-          : "—";
-        const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) != null
-          ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}`
-          : "—";
-        const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em)
-          ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("pt-PT")
-          : "—";
-
+        const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : "—";
+        const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) != null ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : "—";
+        const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("pt-PT") : "—";
         let storeTagClass = "store-tag";
         if (loja) {
           const lojaLower = loja.toLowerCase();
+          // Aplica classe diferente para cada loja conhecida (para cor/tag visual)
           if (lojaLower.includes("fnac")) storeTagClass += " store-fnac";
           else if (lojaLower.includes("worten")) storeTagClass += " store-worten";
           else if (lojaLower.includes("ikea")) storeTagClass += " store-ikea";
@@ -232,7 +159,7 @@
           else if (lojaLower.includes("pingo doce")) storeTagClass += " store-pingodoce";
           else if (lojaLower.includes("continente")) storeTagClass += " store-continente";
           else if (lojaLower.includes("auchan")) storeTagClass += " store-auchan";
-          else if (lojaLower.includes("el corte inglés") || lojaLower.includes("elcorteingles")) storeTagClass += " store-elcorteingles";
+          else if (lojaLower.includes("el corte inglês") || lojaLower.includes("elcorteingles")) storeTagClass += " store-elcorteingles";
           else if (lojaLower.includes("primark")) storeTagClass += " store-primark";
           else if (lojaLower.includes("decathlon")) storeTagClass += " store-decathlon";
           else if (lojaLower.includes("sport zone")) storeTagClass += " store-sportzone";
@@ -244,7 +171,6 @@
           else if (lojaLower.includes("oysho")) storeTagClass += " store-oysho";
           else if (lojaLower.includes("lefties")) storeTagClass += " store-lefties";
         }
-
         return `
           <div class="product-card-new">
             <div class="product-header-new">
@@ -296,22 +222,19 @@
         `;
       }
 
-      // Carregar produtos
+      // Carrega todos os produtos do usuário por fetch e atualiza o DOM com a lista (refaz cards)
       async function carregarProdutos() {
         const productsList = document.getElementById("productsList");
         const token = localStorage.getItem("token");
         console.log("[FRONTEND] Token enviado:", token);
         console.log("[FRONTEND] localStorage completo:", localStorage);
-        
         try {
           console.log("[FRONTEND] Fazendo requisição para /api/produtos...");
           const res = await fetch("http://127.0.0.1:3000/api/produtos", {
             headers: { Authorization: "Bearer " + token }
           });
-          
           console.log("[FRONTEND] Status da resposta:", res.status);
           console.log("[FRONTEND] Headers da resposta:", res.headers);
-          
           const data = await res.json();
           console.log("[FRONTEND] Dados recebidos:", data);
           console.log("JSON cru recebido:", data);
@@ -319,7 +242,6 @@
             console.log("Primeiro produto:", data.produtos[0]);
             console.log("Loja do primeiro produto:", data.produtos[0].Loja);
           }
-
           productsList.innerHTML = "";
           if (data.produtos && data.produtos.length > 0) {
             document.getElementById("productCount").textContent = data.produtos.length;
@@ -336,7 +258,7 @@
         }
       }
 
-      // Adicionar produto
+      // Submissão do formulário de adicionar produto.
       document.getElementById("formLink").addEventListener("submit", async (e) => {
         e.preventDefault();
         const nome = document.getElementById("nome").value;
@@ -344,17 +266,12 @@
         const dataLimite = document.getElementById("dataLimite").value;
         const precoAlvo = document.getElementById("precoAlvo").value;
         const token = localStorage.getItem("token");
-
         try {
           const res = await fetch("http://127.0.0.1:3000/api/produtos", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + token
-            },
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
             body: JSON.stringify({ nome, link, data: dataLimite, precoAlvo: precoAlvo ? Number(precoAlvo) : null })
           });
-
           const data = await res.json();
           if (data.status === "ok") {
             document.getElementById("formLink").reset();
@@ -368,7 +285,7 @@
         }
       });
 
-      // Remover produto
+      // Remove produto pelo id (chama API de DELETE e recarrega)
       async function deleteProduct(id) {
         if (!confirm("Tem certeza que deseja remover este produto?")) return;
         const token = localStorage.getItem("token");
@@ -389,7 +306,7 @@
         }
       }
 
-      // Editar data limite
+      // Permite editar a data limite do produto (prompt simples -> PUT para API)
       async function editarData(id, atual) {
         const novaData = prompt('Nova data limite (AAAA-MM-DD):', (atual || '').split('T')[0] || '');
         if (novaData === null) return;
@@ -397,10 +314,7 @@
         try {
           const res = await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + token
-            },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
             body: JSON.stringify({ nome: undefined, link: undefined, data: novaData })
           });
           const data = await res.json();
@@ -411,35 +325,29 @@
         }
       }
 
-      // Carregar estatísticas
+      // Busca estatísticas do usuário e atualiza os cards (produtos, notificações, poupado)
       async function carregarEstatisticas() {
         const token = localStorage.getItem("token");
         console.log("Carregando estatísticas...");
         console.log("Token:", token ? "Presente" : "Ausente");
-        
         if (!token) {
           console.error("Token não encontrado no localStorage");
           return;
         }
-        
         try {
           console.log("Fazendo requisição para /api/user/stats...");
           const res = await fetch("http://127.0.0.1:3000/api/user/stats", {
             headers: { Authorization: "Bearer " + token }
           });
-          
           console.log("Status da resposta:", res.status);
           const data = await res.json();
           console.log("Dados recebidos:", data);
-          
           if (data.status === "ok") {
             const stats = data.stats;
             console.log("Estatísticas:", stats);
-            
             document.getElementById("totalProdutos").textContent = stats.produtos_total || 0;
             document.getElementById("totalNotificacoes").textContent = stats.notificacoes_total || 0;
             document.getElementById("dinheiroPoupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
-            
             console.log("Estatísticas atualizadas na UI");
           } else {
             console.error("Erro na resposta:", data.error);
@@ -449,21 +357,20 @@
         }
       }
 
-
+      // Variável global para marcar o timestamp da última sincronização de produtos
       let lastSyncTime = Date.now();
-      
+
+      // Verifica com o backend se há alterações nas listas de produtos desde a última sync (para auto refresh da interface)
       async function verificarSincronizacao() {
         const token = localStorage.getItem("token");
         if (!token) return;
-        
         try {
           const res = await fetch(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
             headers: { Authorization: "Bearer " + token }
           });
-          
           const data = await res.json();
+          // Se houver atualizações, recarrega dados atuais de produto e estatísticas
           if (data.status === "ok" && data.produtos.length > 0) {
-            // Há produtos atualizados, recarregar a lista
             carregarProdutos();
             carregarEstatisticas();
             lastSyncTime = data.timestamp;
@@ -472,22 +379,18 @@
           console.error("Erro na sincronização:", err);
         }
       }
-      
-      // Verificar sincronização a cada 10 segundos
-      setInterval(verificarSincronizacao, 10000);
 
-      // Iniciar
+      // Roda verificação a cada 10 segundos para manter dashboard sempre atualizado
+      setInterval(verificarSincronizacao, 10000);
       carregarProdutos();
       carregarEstatisticas();
     </script>
-
     <script>
+        // Logout simples: remove token do localStorage e volta para tela de login
         function logout() {
             localStorage.removeItem("token");
             window.location.href = "/login";
         }
     </script>
-
 </body>
 </html>
-
