@@ -1,0 +1,651 @@
+/* ===== GARANTIR QUE NÃO HÁ MOVIMENTO ===== */
+* {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* ===== DESIGN MODERNO PARA PLANOS ===== */
+.plans-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    /* Garantir que não há movimento */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.plans-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    /* Garantir que não há movimento */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.plans-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f1a86b 0%, #eea23f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.plans-header p {
+    font-size: 1.1rem;
+    color: #6b7280;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+    /* Garantir que não há movimento */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.plan-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.plan-card.featured {
+    border: 2px solid #ea9b66;
+}
+
+.plan-card.featured::before {
+    content: "MAIS POPULAR";
+    position: absolute;
+    top: 20px;
+    right: -30px;
+    background: linear-gradient(135deg, #f1a86b 0%, #eea23f 100%);
+    color: white;
+    padding: 0.5rem 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transform: rotate(45deg);
+}
+
+.plan-card.current {
+    border: 2px solid #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.plan-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ea9b66;
+    margin-bottom: 0.5rem;
+}
+
+.plan-price .currency {
+    font-size: 1.5rem;
+    vertical-align: top;
+}
+
+.plan-period {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.9rem;
+}
+
+.plan-features li:last-child {
+    border-bottom: none;
+}
+
+.feature-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.feature-icon.check {
+    color: #10b981;
+}
+
+.feature-icon.cross {
+    color: #ef4444;
+}
+
+.plan-button {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.plan-button.primary {
+    background: #f1a86b;
+    color: white;
+}
+
+.plan-button.primary:hover {
+    background: #ce8321;
+}
+
+.plan-button.current {
+    background: #10b981;
+    color: white;
+}
+
+.plan-button.current:hover {
+    background: #059669;
+}
+
+.plan-button.secondary {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.plan-button.secondary:hover {
+    background: #e5e7eb;
+}
+
+.current-plan-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    border: 2px solid #e2e8f0;
+}
+
+.current-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.current-plan-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-badge.grace-period {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.status-badge.active {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.current-plan-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.plan-detail {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.plan-detail h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plan-detail p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.plan-detail .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.plan-detail .feature-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.plan-detail .feature-list li svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+    color: #10b981;
+}
+
+.change-plan-btn {
+    background: linear-gradient(135deg, #e6761b 0%, #eebd72 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1.5rem;
+}
+
+.change-plan-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.cancel-subscription-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1.5rem;
+}
+
+.cancel-subscription-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* ===== MODAL DE CANCELAMENTO ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: #f8fafc;
+}
+
+.modal-header .warning-icon {
+    width: 60px;
+    height: 60px;
+    background: #fef3c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 3px solid #f59e0b;
+}
+
+.modal-header .warning-icon svg {
+    width: 30px;
+    height: 30px;
+    color: #f59e0b;
+}
+
+.modal-header .header-content {
+    flex: 1;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.modal-header p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 2rem;
+    background: white;
+}
+
+.modal-btn {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    min-width: 140px;
+}
+
+.modal-btn.cancel {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-btn.cancel:hover {
+    background: #f1f5f9;
+}
+
+.modal-btn.confirm {
+    background: #ef4444;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #dc2626;
+}
+
+/* ===== MODAL DE TERMOS E STRIPE ===== */
+.terms-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1002;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.terms-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.terms-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.terms-modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.terms-modal-header h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+}
+
+.terms-modal-header p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.terms-content {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.terms-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+}
+
+.terms-content p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+}
+
+.terms-content ul {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.terms-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.terms-checkbox label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.5;
+    cursor: pointer;
+    margin: 0;
+}
+
+.terms-checkbox label a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.terms-checkbox label a:hover {
+    text-decoration: underline;
+}
+
+.terms-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.terms-modal-btn {
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 160px;
+}
+
+.terms-modal-btn.cancel {
+    background: #f8fafc;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.terms-modal-btn.cancel:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.terms-modal-btn.confirm {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.terms-modal-btn.confirm:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+}
+
+.terms-modal-btn.confirm:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.grace-period-info {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.grace-period-info h4 {
+    color: #92400e;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.grace-period-info p {
+    color: #92400e;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.grace-period-info .countdown {
+    font-weight: 700;
+    color: #d97706;
+}
+
+@media (max-width: 1200px) {
+    .plans-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .plans-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plan-card.featured {
+        transform: none;
+    }
+    
+    .plans-header h1 {
+        font-size: 2rem;
+    }
+}

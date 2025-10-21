@@ -6,348 +6,10 @@
     <title>Planos — PromoPing</title>
     <link rel="stylesheet" href="../../assets/styles/painel.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
+    <link rel="stylesheet" href="../../assets/styles/planos.css">
     <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-    <style>
-        /* ===== DESIGN MODERNO PARA PLANOS ===== */
-        .plans-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .plans-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .plans-header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-        
-        .plans-header p {
-            font-size: 1.1rem;
-            color: #6b7280;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2.5rem;
-            margin-bottom: 3rem;
-        }
-        
-        .plan-card {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 2px solid #f3f4f6;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .plan-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        .plan-card.featured {
-            border: 2px solid #667eea;
-            transform: scale(1.02);
-        }
-        
-        .plan-card.featured::before {
-            content: "MAIS POPULAR";
-            position: absolute;
-            top: 20px;
-            right: -30px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 0.5rem 2rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transform: rotate(45deg);
-        }
-        
-        .plan-card.current {
-            border: 2px solid #10b981;
-            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-        }
-        
-        .plan-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .plan-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #1f2937;
-        }
-        
-        .plan-price {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-        
-        .plan-price .currency {
-            font-size: 1.5rem;
-            vertical-align: top;
-        }
-        
-        .plan-period {
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-        
-        .plan-features {
-            list-style: none;
-            padding: 0;
-            margin: 1.5rem 0;
-        }
-        
-        .plan-features li {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 0.9rem;
-        }
-        
-        .plan-features li:last-child {
-            border-bottom: none;
-        }
-        
-        .feature-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-        
-        .feature-icon.check {
-            color: #10b981;
-        }
-        
-        .feature-icon.cross {
-            color: #ef4444;
-        }
-        
-        .plan-button {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .plan-button.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .plan-button.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .plan-button.current {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-        
-        .plan-button.current:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-        }
-        
-        .plan-button.secondary {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-        
-        .plan-button.secondary:hover {
-            background: #e5e7eb;
-        }
-        
-        .current-plan-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            border: 2px solid #e2e8f0;
-        }
-        
-        .current-plan-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .current-plan-header h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-        }
-        
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .status-badge.grace-period {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-badge.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .current-plan-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .plan-detail {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .plan-detail h4 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #6b7280;
-            margin: 0 0 0.5rem 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .plan-detail p {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin: 0;
-        }
-        
-        .plan-detail .feature-list {
-            list-style: none;
-            padding: 0;
-            margin: 0.5rem 0 0 0;
-        }
-        
-        .plan-detail .feature-list li {
-            display: flex;
-            align-items: center;
-            padding: 0.25rem 0;
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-        
-        .plan-detail .feature-list li svg {
-            width: 16px;
-            height: 16px;
-            margin-right: 0.5rem;
-            color: #10b981;
-        }
-        
-        .change-plan-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1.5rem;
-        }
-        
-        .change-plan-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .grace-period-info {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 1px solid #f59e0b;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .grace-period-info h4 {
-            color: #92400e;
-            margin: 0 0 0.5rem 0;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .grace-period-info p {
-            color: #92400e;
-            margin: 0;
-            font-size: 0.9rem;
-        }
-        
-        .grace-period-info .countdown {
-            font-weight: 700;
-            color: #d97706;
-        }
-        
-        @media (max-width: 1200px) {
-            .plans-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .plans-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .plan-card.featured {
-                transform: none;
-            }
-            
-            .plans-header h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- ===== NAVEGAÇÃO SUPERIOR ===== -->
     <nav class="dashboard-nav">
         <div class="nav-container">
             <div class="nav-brand">
@@ -402,8 +64,7 @@
         </div>
     </nav>
 
-    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
-    <main class="dashboard-main">
+    <main class="dashboard-main" style="transform: none !important; transition: none !important; animation: none !important;">
             <div class="plans-container">
                 <!-- Header -->
                 <div class="plans-header">
@@ -411,14 +72,12 @@
                     <p>Selecione o plano que melhor se adequa às suas necessidades e comece a economizar hoje mesmo</p>
         </div>
             
-                <!-- Current Plan Section -->
             <div class="current-plan-section" id="currentPlanSection" style="display: none;">
                     <div class="current-plan-header">
                         <h3>Plano Atual</h3>
                             <span class="status-badge" id="planStatus">Ativo</span>
                         </div>
                     <div class="current-plan-details" id="currentPlanDetails">
-                        <!-- Será preenchido dinamicamente -->
                     </div>
                     <div class="grace-period-info" id="gracePeriodInfo" style="display: none;">
                         <h4>Período de Graça Ativo</h4>
@@ -426,40 +85,267 @@
                         </div>
                     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                         <button class="change-plan-btn" onclick="abrirModalPlanos()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
                                 <path d="M7 17L17 7"></path>
                                 <path d="M7 7h10v10"></path>
-                            </svg>
+                                </svg>
                             Alterar Plano
-                        </button>
-                        <button class="cancel-subscription-btn" onclick="cancelarAssinatura()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                                <path d="M18 6L6 18"></path>
-                                <path d="M6 6l12 12"></path>
-                            </svg>
-                            Cancelar Assinatura
-                        </button>
-                    </div>
+                            </button>
+                        <button class="cancel-subscription-btn" onclick="cancelarAssinatura()">
+                            Cancelar
+                            </button>
+                </div>
             </div>
-            
-                <!-- Plans Grid -->
+
                 <div class="plans-grid" id="plansGrid">
-                    <!-- Planos serão carregados dinamicamente do banco de dados -->
+                    <!-- Free Plan -->
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">Free</div>
+                            <div class="plan-price">€0<span class="currency">,00</span></div>
+                            <div class="plan-period">por mês</div>
+                </div>
+                        <ul class="plan-features">
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Até 5 produtos
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Verificação a cada 24h
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Apenas Email
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Histórico de 7 dias
+                            </li>
+                            <li>
+                                <svg class="feature-icon cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                                Sem relatórios
+                            </li>
+                        </ul>
+                        <button class="plan-button secondary" onclick="selecionarPlano(1, 'Free', false)">
+                            Escolher Free
+                        </button>
+                </div>
+
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">Basic</div>
+                            <div class="plan-price">€4<span class="currency">,99</span></div>
+                            <div class="plan-period">por mês</div>
+                    </div>
+                        <ul class="plan-features">
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Até 25 produtos
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Verificação a cada 4h
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Email + SMS
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Histórico de 30 dias
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Relatórios básicos
+                            </li>
+                        </ul>
+                        <button class="plan-button primary" onclick="selecionarPlano(2, 'Basic', false)">
+                            Escolher Basic
+                        </button>
+                </div>
+                    <div class="plan-card featured">
+                        <div class="plan-header">
+                            <div class="plan-name">Standard</div>
+                            <div class="plan-price">€12<span class="currency">,99</span></div>
+                            <div class="plan-period">por mês</div>
+                    </div>
+                        <ul class="plan-features">
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Produtos ilimitados
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Verificação a cada 0.5h
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Email + SMS + Discord
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Histórico completo
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Relatórios avançados
+                            </li>
+                        </ul>
+                        <button class="plan-button primary" onclick="selecionarPlano(4, 'Standard', false)">
+                            Escolher Standard
+                        </button>
+                </div>
+
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">Premium</div>
+                            <div class="plan-price">€15<span class="currency">,30</span></div>
+                            <div class="plan-period">por mês</div>
+                    </div>
+                        <ul class="plan-features">
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Produtos ilimitados
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Verificação contínua
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Todos os canais
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Histórico completo
+                            </li>
+                            <li>
+                                <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                Relatórios avançados
+                            </li>
+                        </ul>
+                        <button class="plan-button primary" onclick="selecionarPlano(3, 'Premium', false)">
+                            Escolher Premium
+                        </button>
+                </div>
+            </div>
+        </div>
+    </main>
+        </div>
+        <div class="modal-overlay" id="cancelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                    <div class="warning-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+            </div>
+                    <div class="header-content">
+                        <h3>Cancelar Assinatura</h3>
+                        <p>Tem certeza que deseja cancelar sua assinatura? Você terá um período de graça de 30 dias antes que os serviços sejam limitados.</p>
+                    </div>
+                    </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="fecharModalCancelamento()">
+                        Manter Assinatura
+                </button>
+                    <button class="modal-btn confirm" onclick="confirmarCancelamento()">
+                        Cancelar Assinatura
+                    </button>
                 </div>
                         </div>
-        </main>
+                    </div>
+        <div class="terms-modal-overlay" id="termsModal">
+            <div class="terms-modal-content">
+                <div class="terms-modal-header">
+                    <h3>Termos de Serviço</h3>
+                    <p>Antes de prosseguir com o pagamento, leia e aceite nossos termos</p>
+                        </div>
+                        
+                <div class="terms-content">
+                    <h4>Termos de Uso do PromoPing</h4>
+                    <p>Ao utilizar nossos serviços, você concorda com os seguintes termos:</p>
+                    
+                    <ul>
+                        <li>O pagamento será processado através do Stripe</li>
+                        <li>Você será cobrado mensalmente conforme o plano escolhido</li>
+                        <li>Pode cancelar sua assinatura a qualquer momento</li>
+                        <li>Os dados são processados de forma segura e criptografada</li>
+                        <li>Respeitamos sua privacidade conforme nossa política</li>
+                            </ul>
+                    
+                    <p><strong>Valor:</strong> <span id="selectedPlanPrice">€0.00</span> por mês</p>
+                    <p><strong>Plano:</strong> <span id="selectedPlanName">Free</span></p>
+                            </div>
+                
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="acceptTerms" onchange="toggleTermsAcceptance()">
+                    <label for="acceptTerms">
+                        Concordo com os <a href="/docs/terms" target="_blank">Termos de Serviço</a> e 
+                        <a href="/docs/privacy" target="_blank">Política de Privacidade</a>
+                        </label>
                     </div>
                     
+                <div class="terms-modal-actions">
+                    <button class="terms-modal-btn cancel" onclick="fecharModalTermos()">
+                        Cancelar
+                    </button>
+                    <button class="terms-modal-btn confirm" id="proceedToStripeBtn" onclick="prosseguirParaStripe()" disabled>
+                        Prosseguir para Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="../../assets/scripts/auth.js"></script>
     <script>
-        // ===== FUNÇÕES DE LOGOUT =====
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = "/login";
         }
-
-        // ===== FUNÇÕES DE PLANOS =====
         async function selecionarPlano(planoId, planoNome, isCurrentPlan) {
             if (isCurrentPlan) {
                 return; // Não fazer nada se for o plano atual
@@ -468,7 +354,84 @@
             const token = localStorage.getItem("token");
             
             try {
-                console.log(`🔄 Alterando para plano: ${planoNome} (ID: ${planoId})`);
+                console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
+                
+                const response = await fetch("http://127.0.0.1:3000/api/user/change-plan", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + token
+                        },
+                    body: JSON.stringify({ planId: planoId })
+                    });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                    const data = await response.json();
+                console.log("Plano alterado:", data);
+                
+                alert(`Plano alterado para ${planoNome} com sucesso!`);
+                
+                // Recarregar a página para mostrar as mudanças
+                location.reload();
+                
+            } catch (error) {
+                console.error("Erro ao alterar plano:", error);
+                alert("Erro ao alterar plano. Tente novamente.");
+            }
+        }
+        function cancelarAssinatura() {
+            const modal = document.getElementById('cancelModal');
+            modal.classList.add('active');
+        }
+        
+        function fecharModalCancelamento() {
+            const modal = document.getElementById('cancelModal');
+            modal.classList.remove('active');
+        }
+        
+        async function confirmarCancelamento() {
+                const token = localStorage.getItem("token");
+            
+            try {
+                console.log("Cancelando assinatura...");
+                
+                const response = await fetch("http://127.0.0.1:3000/api/user/cancel-subscription", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("Assinatura cancelada:", data);
+                // Fechar modal
+                fecharModalCancelamento();
+                
+                alert("Assinatura cancelada com sucesso! Você terá um período de graça de 30 dias antes que os serviços sejam limitados.");
+                
+                // Recarregar a página para mostrar as mudanças
+                location.reload();
+                
+            } catch (error) {
+                console.error("Erro ao cancelar assinatura:", error);
+                alert("Erro ao cancelar assinatura. Tente novamente.");
+            }
+        }
+
+        async function selecionarPlano(planoId, planoNome, isCurrentPlan) {
+            if (isCurrentPlan) {
+                return; // Não fazer nada se for o plano atual
+            }
+            const token = localStorage.getItem("token");
+            try {
+                console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
                 
                 const response = await fetch("http://127.0.0.1:3000/api/user/change-plan", {
                     method: "POST",
@@ -482,9 +445,9 @@
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                console.log("✅ Plano alterado:", data);
+                console.log("Plano alterado:", data);
                 
                 alert(`Plano alterado para ${planoNome} com sucesso!`);
                 
@@ -492,58 +455,13 @@
                 location.reload();
                 
             } catch (error) {
-                console.error("❌ Erro ao alterar plano:", error);
+                console.error("Erro ao alterar plano:", error);
                 alert("Erro ao alterar plano. Tente novamente.");
             }
         }
 
-        // ===== CANCELAR ASSINATURA =====
-        async function cancelarAssinatura() {
-            if (!confirm("Tem certeza que deseja cancelar sua assinatura? Você terá um período de graça antes que os serviços sejam limitados.")) {
-                return;
-            }
-            
-            const token = localStorage.getItem("token");
-            
-            try {
-                console.log("🔄 Cancelando assinatura...");
-                
-                const response = await fetch("http://127.0.0.1:3000/api/user/cancel-subscription", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log("✅ Assinatura cancelada:", data);
-                
-                alert("Assinatura cancelada com sucesso! Você terá um período de graça antes que os serviços sejam limitados.");
-                
-                // Recarregar a página para mostrar as mudanças
-                location.reload();
-                
-            } catch (error) {
-                console.error("❌ Erro ao cancelar assinatura:", error);
-                alert("Erro ao cancelar assinatura. Tente novamente.");
-            }
-        }
-
-        function abrirModalPlanos() {
-            // Scroll para a seção de planos
-            document.getElementById('plansGrid').scrollIntoView({ 
-                behavior: 'smooth' 
-            });
-        }
-
-        // ===== CARREGAR DADOS DO USUÁRIO =====
         async function carregarDadosUsuario() {
-            const token = localStorage.getItem("token");
+                const token = localStorage.getItem("token");
             
             if (!token) {
                 alert("Precisa estar logado!");
@@ -552,7 +470,7 @@
             }
 
             try {
-                console.log("🚀 [PLANOS] Iniciando carregamento da página...");
+                console.log("[PLANOS] Iniciando carregamento da página...");
                 
                 // Carregar perfil do usuário
                 const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
@@ -562,9 +480,9 @@
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                console.log("📊 Dados do usuário carregados:", data);
+                console.log("Dados do usuário carregados:", data);
                 
                 // Atualizar nome do usuário no header
                 const userNameElement = document.getElementById('userName');
@@ -579,17 +497,16 @@
                 mostrarPlanoAtual(data);
                 
             } catch (error) {
-                console.error("❌ Erro ao carregar dados:", error);
+                console.error("Erro ao carregar dados:", error);
                 alert("Erro ao carregar dados do usuário");
             }
         }
 
-        // ===== CARREGAR PLANOS DO BANCO =====
         async function carregarPlanos() {
-            const token = localStorage.getItem("token");
-            
+                const token = localStorage.getItem("token");
+
             try {
-                console.log("🔍 Carregando planos do banco de dados...");
+                console.log("Carregando plano atual do usuário...");
                 
                 const response = await fetch("http://127.0.0.1:3000/api/planos", {
                     headers: { Authorization: "Bearer " + token }
@@ -598,76 +515,64 @@
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                console.log("📋 Planos carregados:", data);
+                console.log("Plano atual carregado:", data.userPlanId);
                 
-                // Atualizar grid de planos com dados reais
-                atualizarGridPlanos(data.planos, data.userPlanId);
+                // Destacar o plano atual
+                destacarPlanoAtual(data.userPlanId);
                 
             } catch (error) {
-                console.error("❌ Erro ao carregar planos:", error);
+                console.error("Erro ao carregar plano atual:", error);
                 // Manter planos estáticos em caso de erro
             }
         }
 
-        // ===== ATUALIZAR GRID DE PLANOS =====
-        function atualizarGridPlanos(planos, userPlanId) {
-            const plansGrid = document.getElementById('plansGrid');
-            plansGrid.innerHTML = '';
+        function destacarPlanoAtual(userPlanId) {
+            console.log(`Destacando plano atual: ID ${userPlanId}`);
             
-            planos.forEach(plano => {
-                const isCurrentPlan = plano.Id === userPlanId;
-                const isFeatured = plano.Nome === "Standard";
-                
-                const planCard = document.createElement('div');
-                planCard.className = `plan-card ${isFeatured ? 'featured' : ''} ${isCurrentPlan ? 'current' : ''}`;
-                
-                planCard.innerHTML = `
-                    <div class="plan-header">
-                        <div class="plan-name">${plano.Nome}</div>
-                        <div class="plan-price">€${plano.Preco}<span class="currency">,00</span></div>
-                        <div class="plan-period">por mês</div>
-                    </div>
-                    <ul class="plan-features">
-                        <li>
-                            <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20,6 9,17 4,12"></polyline>
-                            </svg>
-                            ${plano.LimiteProdutos === 9999 ? 'Produtos ilimitados' : `Até ${plano.LimiteProdutos} produtos`}
-                        </li>
-                        <li>
-                            <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20,6 9,17 4,12"></polyline>
-                            </svg>
-                            Verificação a cada ${plano.IntervaloVerificacao}h
-                        </li>
-                        <li>
-                            <svg class="feature-icon ${plano.PermiteSMS ? 'check' : 'cross'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                ${plano.PermiteSMS ? '<polyline points="20,6 9,17 4,12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
-                            </svg>
-                            ${plano.PermiteSMS ? 'Email + SMS + Discord' : 'Apenas Email'}
-                        </li>
-                        <li>
-                            <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20,6 9,17 4,12"></polyline>
-                            </svg>
-                            Histórico de ${plano.HistoricoDias} dias
-                        </li>
-                        <li>
-                            <svg class="feature-icon ${plano.Relatorios !== 'nenhum' ? 'check' : 'cross'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                ${plano.Relatorios !== 'nenhum' ? '<polyline points="20,6 9,17 4,12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
-                            </svg>
-                            ${plano.Relatorios === 'avancado' ? 'Relatórios avançados' : plano.Relatorios === 'basico' ? 'Relatórios básicos' : 'Sem relatórios'}
-                        </li>
-                    </ul>
-                    <button class="plan-button ${isCurrentPlan ? 'current' : 'primary'}" onclick="selecionarPlano(${plano.Id}, '${plano.Nome}', ${isCurrentPlan})">
-                        ${isCurrentPlan ? 'Plano Atual' : 'Escolher ' + plano.Nome}
-                    </button>
-                `;
-                
-                plansGrid.appendChild(planCard);
+            // Resetar todos os botões para estado normal
+            const allButtons = document.querySelectorAll('.plan-button');
+            allButtons.forEach(button => {
+                button.className = 'plan-button primary';
+                const currentText = button.textContent;
+                if (currentText.includes('Plano Atual')) {
+                    // Extrair nome do plano do texto atual
+                    const planName = currentText.replace('Plano Atual', '').trim();
+                    button.textContent = `Escolher ${planName}`;
+                }
             });
+            
+            // Destacar o plano atual baseado no ID
+            let currentButton = null;
+            let planName = '';
+            
+            switch(userPlanId) {
+                case 1: // Free
+                    currentButton = document.querySelector('button[onclick*="selecionarPlano(1"]');
+                    planName = 'Free';
+                    break;
+                case 2: // Basic
+                    currentButton = document.querySelector('button[onclick*="selecionarPlano(2"]');
+                    planName = 'Basic';
+                    break;
+                case 3: // Premium
+                    currentButton = document.querySelector('button[onclick*="selecionarPlano(3"]');
+                    planName = 'Premium';
+                    break;
+                case 4: // Standard
+                    currentButton = document.querySelector('button[onclick*="selecionarPlano(4"]');
+                    planName = 'Standard';
+                    break;
+            }
+            
+            if (currentButton) {
+                currentButton.className = 'plan-button current';
+                currentButton.textContent = 'Plano Atual';
+                console.log(`Plano atual destacado: ${planName} (ID: ${userPlanId})`);
+                } else {
+                console.log(`Plano atual não encontrado: ID ${userPlanId}`);
+            }
         }
 
         function mostrarPlanoAtual(data) {
@@ -677,7 +582,7 @@
             const gracePeriodInfo = document.getElementById('gracePeriodInfo');
             
             if (!data.user) {
-                console.log("❌ Dados do usuário não encontrados");
+                console.log("Dados do usuário não encontrados");
                 return;
             }
             
@@ -687,8 +592,8 @@
             // Determinar status do plano baseado no banco de dados
             let status = "Ativo";
             let statusClass = "active";
-            
-            // Verificar se está em período de graça
+                
+                // Verificar se está em período de graça
             if (user.StatusAssinatura === 'PeriodoGraca') {
                 status = "Período de Graça";
                 statusClass = "grace-period";
@@ -735,7 +640,97 @@
             currentPlanSection.style.display = "block";
         }
 
-        // ===== INICIALIZAÇÃO =====
+        function abrirModalTermos() {
+            document.getElementById('termsModal').classList.add('active');
+        }
+        
+        function fecharModalTermos() {
+            document.getElementById('termsModal').classList.remove('active');
+            // Limpar checkbox
+            document.getElementById('acceptTerms').checked = false;
+            document.getElementById('proceedToStripeBtn').disabled = true;
+        }
+        
+        function toggleTermsAcceptance() {
+            const checkbox = document.getElementById('acceptTerms');
+            const button = document.getElementById('proceedToStripeBtn');
+            button.disabled = !checkbox.checked;
+        }
+        
+        async function prosseguirParaStripe() {
+            if (!window.selectedPlanData) {
+                alert('Erro: Dados do plano não encontrados');
+                return;
+            }
+            
+            const { id, name, price } = window.selectedPlanData;
+            
+            try {
+                const token = localStorage.getItem('token');
+                
+                // Se for plano gratuito (Free), ativar diretamente
+                if (parseInt(id) === 1) {
+                    const response = await fetch('http://127.0.0.1:3000/api/user/change-plan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ planId: parseInt(id) })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erro ao ativar plano gratuito');
+                    }
+                    
+                    alert('Plano Free ativado com sucesso!');
+                    fecharModalTermos();
+                    carregarDadosUsuario();
+                    return;
+                }
+                
+                // Para planos pagos, criar sessão de checkout
+                const response = await fetch('http://127.0.0.1:3000/api/payment/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ planoId: parseInt(id) })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao criar sessão de pagamento');
+                }
+
+                const data = await response.json();
+                
+                if (data.checkout_url) {
+                    // Redirecionar para o Stripe
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert('Erro: URL de checkout não recebida');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao prosseguir para pagamento:', error);
+                alert('Erro ao processar pagamento. Tente novamente.');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const cancelModal = document.getElementById('cancelModal');
+            const termsModal = document.getElementById('termsModal');
+            
+            if (event.target === cancelModal) {
+                fecharModalCancelamento();
+            }
+            
+            if (event.target === termsModal) {
+                fecharModalTermos();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             carregarDadosUsuario();
         });
