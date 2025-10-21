@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>PromoPing - Sempre ligado</title>
   <link rel="stylesheet" href="/assets/styles/style.css">
   <link rel="stylesheet" href="/assets/styles/dasboard.css">
@@ -11,396 +10,217 @@
   <link rel="stylesheet" href="/assets/styles/painel.css">
   <link rel="stylesheet" href="/assets/styles/register.css">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-
   <script src="inc/load-includes-index.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const heroTitle = document.querySelector('.pp-hero-left h1');
-      if (heroTitle) {
-        heroTitle.classList.add('blur-text');
-      }
+    // Adiciona blur ao título principal após o carregamento do DOM
+    document.addEventListener("DOMContentLoaded",function(){
+      const h=document.querySelector('.pp-hero-left h1');
+      if(h)h.classList.add('blur-text');
     });
 
-    // Navigation dropdown functions
-    function openNavigation(button) {
-      const navLinks = button.nextElementSibling;
-      const isOpen = navLinks.style.display === 'block';
-      
-      // Close all other dropdowns
-      document.querySelectorAll('.pp-header-nav-links').forEach(link => {
-        link.style.display = 'none';
+    // Abre/fecha dropdown do menu de navegação
+    function openNavigation(btn){
+      const l=btn.nextElementSibling,isOpen=l.style.display==='block';
+      document.querySelectorAll('.pp-header-nav-links').forEach(x=>x.style.display='none');
+      l.style.display=isOpen?'none':'block';
+    }
+
+    // Alterna o menu de navegação mobile
+    function toggleNavigation(){
+      document.documentElement.classList.toggle('opened-nav');
+    }
+
+    // Fecha dropdowns ao clicar fora dos menus
+    document.addEventListener('click',function(e){
+      if(!e.target.closest('.pp-header-nav-wrapper'))
+        document.querySelectorAll('.pp-header-nav-links').forEach(x=>x.style.display='none');
+    });
+
+    // Alterna idioma da página
+    function toggleLanguage(){
+      const lang=document.getElementById('lang-text'),cur=lang.textContent;
+      if(cur==='PT'){lang.textContent='EN';translateToEnglish();}
+      else{lang.textContent='PT';translateToPortuguese();}
+    }
+
+    // Tradução para inglês do header, menus e conteúdos da página
+    // Tabela de traduções dos elementos da página
+    const translations = {
+      en: {
+        '.pp-header-nav-button[aria-label="Soluções"]': 'Solutions',
+        '.pp-header-nav-button[aria-label="Recursos"]': 'Resources',
+        '.pp-header-cta-button': 'Get Started',
+        'a[href="/pages/monitoramento.html"]': 'Monitoring',
+        'a[href="/pages/alertas.html"]': 'Alerts',
+        'a[href="/pages/relatorios.html"]': 'Reports',
+        'a[href="/pages/docs.html"]': 'Documentation',
+        'a[href="/pages/casos-uso.html"]': 'Use Cases',
+        'a[href="/pages/blog.html"]': 'Blog',
+        '.pp-hero h1': 'Never Miss a Deal Again',
+        '.pp-hero p':
+          'Monitor prices from your favorite stores and get instant notifications when prices drop. Save money on every purchase!',
+        '.pp-hero .pp-btn-cta': 'Start Monitoring',
+        '.pp-hero .pp-btn-ghost': 'Learn More',
+        '.how-section h2': 'How It Works',
+        '.how-section p': 'Three simple steps to start saving money',
+        '.how-step:nth-child(1) h3': 'Add Products',
+        '.how-step:nth-child(1) p':
+          'Add products from your favorite stores to your monitoring list',
+        '.how-step:nth-child(2) h3': 'Set Alerts',
+        '.how-step:nth-child(2) p':
+          'Configure price alerts and notification preferences',
+        '.how-step:nth-child(3) h3': 'Save Money',
+        '.how-step:nth-child(3) p':
+          'Get notified when prices drop and buy at the best time',
+        '.pp-split-left h2': 'Connect to Your Favorite Platforms',
+        '.pp-split-left p':
+          'Integrate with WhatsApp, Telegram, Email and SMS to receive notifications wherever you are',
+        '.pp-split-right h2': 'Stay Connected',
+        '.pp-split-right p':
+          'Never miss a deal with instant notifications on all your devices',
+        '.pp-about h2': 'Why We Created PromoPing',
+        '.pp-about p':
+          'We believe that everyone deserves to save money on their purchases. PromoPing was created to democratize access to the best deals and help families save money on their daily purchases.',
+        '.pp-pricing h2': 'Choose Your Plan',
+        '.pp-pricing p':
+          'Start saving money today with our flexible plans',
+        '.pricing-card:first-child h3': 'Basic',
+        '.pricing-card:first-child .price': 'Free',
+        '.pricing-card:nth-child(2) h3': 'Pro',
+        '.pricing-card:nth-child(2) .price': '€4.99/month',
+        '.pricing-card:last-child h3': 'Premium',
+        '.pricing-card:last-child .price': '€9.99/month',
+        '.pp-cta h2': 'Ready to Start Saving?',
+        '.pp-cta p':
+          'Join thousands of users who are already saving money with PromoPing',
+        '.pp-cta .pp-btn-cta': 'Get Started Now',
+      },
+      pt: {
+        '.pp-header-nav-button[aria-label="Soluções"]': 'Soluções',
+        '.pp-header-nav-button[aria-label="Recursos"]': 'Recursos',
+        '.pp-header-cta-button': 'Começar Agora',
+        'a[href="/pages/monitoramento.html"]': 'Monitoramento',
+        'a[href="/pages/alertas.html"]': 'Alertas',
+        'a[href="/pages/relatorios.html"]': 'Relatórios',
+        'a[href="/pages/docs.html"]': 'Documentação',
+        'a[href="/pages/casos-uso.html"]': 'Casos de Uso',
+        'a[href="/pages/blog.html"]': 'Blog',
+        '.pp-hero h1': 'Nunca Mais Perca uma Promoção',
+        '.pp-hero p':
+          'Monitore preços das suas lojas favoritas e receba notificações instantâneas quando os preços baixam. Poupe dinheiro em cada compra!',
+        '.pp-hero .pp-btn-cta': 'Começar a Monitorizar',
+        '.pp-hero .pp-btn-ghost': 'Saber Mais',
+        '.how-section h2': 'Como Funciona',
+        '.how-section p': 'Três passos simples para começar a poupar dinheiro',
+        '.how-step:nth-child(1) h3': 'Adicionar Produtos',
+        '.how-step:nth-child(1) p':
+          'Adicione produtos das suas lojas favoritas à sua lista de monitorização',
+        '.how-step:nth-child(2) h3': 'Configurar Alertas',
+        '.how-step:nth-child(2) p':
+          'Configure alertas de preço e preferências de notificação',
+        '.how-step:nth-child(3) h3': 'Poupar Dinheiro',
+        '.how-step:nth-child(3) p':
+          'Receba notificações quando os preços baixam e compre no melhor momento',
+        '.pp-split-left h2': 'Conecte-se às suas plataformas favoritas',
+        '.pp-split-left p':
+          'Integre com WhatsApp, Telegram, Email e SMS para receber notificações onde quer que esteja',
+        '.pp-split-right h2': 'Mantenha o contacto',
+        '.pp-split-right p':
+          'Nunca perca uma promoção com notificações instantâneas em todos os seus dispositivos',
+        '.pp-about h2': 'Por que criámos o PromoPing',
+        '.pp-about p':
+          'Acreditamos que todos merecem poupar dinheiro nas suas compras. O PromoPing foi criado para democratizar o acesso às melhores promoções e ajudar as famílias a poupar dinheiro nas suas compras diárias.',
+        '.pp-pricing h2': 'Escolha o Seu Plano',
+        '.pp-pricing p':
+          'Comece a poupar dinheiro hoje com os nossos planos flexíveis',
+        '.pricing-card:first-child h3': 'Básico',
+        '.pricing-card:first-child .price': 'Grátis',
+        '.pricing-card:nth-child(2) h3': 'Pro',
+        '.pricing-card:nth-child(2) .price': '€4,99/mês',
+        '.pricing-card:last-child h3': 'Premium',
+        '.pricing-card:last-child .price': '€9,99/mês',
+        '.pp-cta h2': 'Pronto para Começar a Poupar?',
+        '.pp-cta p':
+          'Junte-se a milhares de utilizadores que já estão a poupar dinheiro com o PromoPing',
+        '.pp-cta .pp-btn-cta': 'Começar Agora',
+      },
+    };
+
+    /**
+     * Atualiza os textos dos elementos da página conforme o idioma
+     */
+    function setPageLanguage(lang) {
+      const dict = translations[lang];
+      if (!dict) return;
+      Object.entries(dict).forEach(([selector, text]) => {
+        const el = document.querySelector(selector);
+        if (el) el.textContent = text;
       });
-      
-      // Toggle current dropdown
-      navLinks.style.display = isOpen ? 'none' : 'block';
     }
 
-    function toggleNavigation() {
-      const html = document.documentElement;
-      html.classList.toggle('opened-nav');
-    }
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-      if (!event.target.closest('.pp-header-nav-wrapper')) {
-        document.querySelectorAll('.pp-header-nav-links').forEach(link => {
-          link.style.display = 'none';
-        });
-      }
-    });
-
-    // Language toggle function
-    function toggleLanguage() {
-      const langText = document.getElementById('lang-text');
-      const currentLang = langText.textContent;
-      
-      if (currentLang === 'PT') {
-        langText.textContent = 'EN';
-        translateToEnglish();
-      } else {
-        langText.textContent = 'PT';
-        translateToPortuguese();
-      }
-    }
-
+    // Traduz tudo para inglês
     function translateToEnglish() {
-      // Traduzir elementos do header
-      const solucoesBtn = document.querySelector('.pp-header-nav-button[aria-label="Soluções"]');
-      if (solucoesBtn) solucoesBtn.textContent = 'Solutions';
-      
-      const recursosBtn = document.querySelector('.pp-header-nav-button[aria-label="Recursos"]');
-      if (recursosBtn) recursosBtn.textContent = 'Resources';
-      
-      const headerCtaBtn = document.querySelector('.pp-header-cta-button');
-      if (headerCtaBtn) headerCtaBtn.textContent = 'Get Started';
-      
-      // Traduzir links do dropdown Soluções
-      const monitoramento = document.querySelector('a[href="/pages/monitoramento.html"]');
-      if (monitoramento) monitoramento.textContent = 'Monitoring';
-      
-      const alertas = document.querySelector('a[href="/pages/alertas.html"]');
-      if (alertas) alertas.textContent = 'Alerts';
-      
-      const relatorios = document.querySelector('a[href="/pages/relatorios.html"]');
-      if (relatorios) relatorios.textContent = 'Reports';
-      
-      // Traduzir links do dropdown Recursos
-      const docs = document.querySelector('a[href="/pages/docs.html"]');
-      if (docs) docs.textContent = 'Documentation';
-      
-      const casosUso = document.querySelector('a[href="/pages/casos-uso.html"]');
-      if (casosUso) casosUso.textContent = 'Use Cases';
-      
-      const blog = document.querySelector('a[href="/pages/blog.html"]');
-      if (blog) blog.textContent = 'Blog';
-
-      // Traduzir todo o conteúdo da página
-      const heroTitle = document.querySelector('.pp-hero h1');
-      if (heroTitle) heroTitle.textContent = 'Never Miss a Deal Again';
-      
-      const heroSubtitle = document.querySelector('.pp-hero p');
-      if (heroSubtitle) heroSubtitle.textContent = 'Monitor prices from your favorite stores and get instant notifications when prices drop. Save money on every purchase!';
-      
-      const heroBtn = document.querySelector('.pp-hero .pp-btn-cta');
-      if (heroBtn) heroBtn.textContent = 'Start Monitoring';
-      
-      const heroBtnGhost = document.querySelector('.pp-hero .pp-btn-ghost');
-      if (heroBtnGhost) heroBtnGhost.textContent = 'Learn More';
-
-      // Traduzir seção "Como Funciona"
-      const howTitle = document.querySelector('.how-section h2');
-      if (howTitle) howTitle.textContent = 'How It Works';
-      
-      const howSubtitle = document.querySelector('.how-section p');
-      if (howSubtitle) howSubtitle.textContent = 'Three simple steps to start saving money';
-      
-      const step1Title = document.querySelector('.how-step:nth-child(1) h3');
-      if (step1Title) step1Title.textContent = 'Add Products';
-      
-      const step1Desc = document.querySelector('.how-step:nth-child(1) p');
-      if (step1Desc) step1Desc.textContent = 'Add products from your favorite stores to your monitoring list';
-      
-      const step2Title = document.querySelector('.how-step:nth-child(2) h3');
-      if (step2Title) step2Title.textContent = 'Set Alerts';
-      
-      const step2Desc = document.querySelector('.how-step:nth-child(2) p');
-      if (step2Desc) step2Desc.textContent = 'Configure price alerts and notification preferences';
-      
-      const step3Title = document.querySelector('.how-step:nth-child(3) h3');
-      if (step3Title) step3Title.textContent = 'Save Money';
-      
-      const step3Desc = document.querySelector('.how-step:nth-child(3) p');
-      if (step3Desc) step3Desc.textContent = 'Get notified when prices drop and buy at the best time';
-
-      // Traduzir seções de conteúdo
-      const connectTitle = document.querySelector('.pp-split-left h2');
-      if (connectTitle) connectTitle.textContent = 'Connect to Your Favorite Platforms';
-      
-      const connectDesc = document.querySelector('.pp-split-left p');
-      if (connectDesc) connectDesc.textContent = 'Integrate with WhatsApp, Telegram, Email and SMS to receive notifications wherever you are';
-      
-      const contactTitle = document.querySelector('.pp-split-right h2');
-      if (contactTitle) contactTitle.textContent = 'Stay Connected';
-      
-      const contactDesc = document.querySelector('.pp-split-right p');
-      if (contactDesc) contactDesc.textContent = 'Never miss a deal with instant notifications on all your devices';
-
-      // Traduzir seção "Por que criámos"
-      const whyTitle = document.querySelector('.pp-about h2');
-      if (whyTitle) whyTitle.textContent = 'Why We Created PromoPing';
-      
-      const whyDesc = document.querySelector('.pp-about p');
-      if (whyDesc) whyDesc.textContent = 'We believe that everyone deserves to save money on their purchases. PromoPing was created to democratize access to the best deals and help families save money on their daily purchases.';
-
-      // Traduzir planos de preços
-      const pricingTitle = document.querySelector('.pp-pricing h2');
-      if (pricingTitle) pricingTitle.textContent = 'Choose Your Plan';
-      
-      const pricingSubtitle = document.querySelector('.pp-pricing p');
-      if (pricingSubtitle) pricingSubtitle.textContent = 'Start saving money today with our flexible plans';
-      
-      const basicTitle = document.querySelector('.pricing-card:first-child h3');
-      if (basicTitle) basicTitle.textContent = 'Basic';
-      
-      const basicPrice = document.querySelector('.pricing-card:first-child .price');
-      if (basicPrice) basicPrice.textContent = 'Free';
-      
-      const proTitle = document.querySelector('.pricing-card:nth-child(2) h3');
-      if (proTitle) proTitle.textContent = 'Pro';
-      
-      const proPrice = document.querySelector('.pricing-card:nth-child(2) .price');
-      if (proPrice) proPrice.textContent = '€4.99/month';
-      
-      const premiumTitle = document.querySelector('.pricing-card:last-child h3');
-      if (premiumTitle) premiumTitle.textContent = 'Premium';
-      
-      const premiumPrice = document.querySelector('.pricing-card:last-child .price');
-      if (premiumPrice) premiumPrice.textContent = '€9.99/month';
-
-      // Traduzir CTA final
-      const ctaTitle = document.querySelector('.pp-cta h2');
-      if (ctaTitle) ctaTitle.textContent = 'Ready to Start Saving?';
-      
-      const ctaDesc = document.querySelector('.pp-cta p');
-      if (ctaDesc) ctaDesc.textContent = 'Join thousands of users who are already saving money with PromoPing';
-      
-      const finalCtaBtn = document.querySelector('.pp-cta .pp-btn-cta');
-      if (finalCtaBtn) finalCtaBtn.textContent = 'Get Started Now';
+      setPageLanguage('en');
     }
 
+    // Traduz tudo para português
     function translateToPortuguese() {
-      // Traduzir de volta para português
-      const solucoesBtn = document.querySelector('.pp-header-nav-button[aria-label="Soluções"]');
-      if (solucoesBtn) solucoesBtn.textContent = 'Soluções';
-      
-      const recursosBtn = document.querySelector('.pp-header-nav-button[aria-label="Recursos"]');
-      if (recursosBtn) recursosBtn.textContent = 'Recursos';
-      
-      const headerCtaBtn = document.querySelector('.pp-header-cta-button');
-      if (headerCtaBtn) headerCtaBtn.textContent = 'Começar Agora';
-      
-      // Traduzir links do dropdown Soluções
-      const monitoramento = document.querySelector('a[href="/pages/monitoramento.html"]');
-      if (monitoramento) monitoramento.textContent = 'Monitoramento';
-      
-      const alertas = document.querySelector('a[href="/pages/alertas.html"]');
-      if (alertas) alertas.textContent = 'Alertas';
-      
-      const relatorios = document.querySelector('a[href="/pages/relatorios.html"]');
-      if (relatorios) relatorios.textContent = 'Relatórios';
-      
-      // Traduzir links do dropdown Recursos
-      const docs = document.querySelector('a[href="/pages/docs.html"]');
-      if (docs) docs.textContent = 'Documentação';
-      
-      const casosUso = document.querySelector('a[href="/pages/casos-uso.html"]');
-      if (casosUso) casosUso.textContent = 'Casos de Uso';
-      
-      const blog = document.querySelector('a[href="/pages/blog.html"]');
-      if (blog) blog.textContent = 'Blog';
-
-      // Traduzir todo o conteúdo da página de volta para português
-      const heroTitle = document.querySelector('.pp-hero h1');
-      if (heroTitle) heroTitle.textContent = 'Nunca Mais Perca uma Promoção';
-      
-      const heroSubtitle = document.querySelector('.pp-hero p');
-      if (heroSubtitle) heroSubtitle.textContent = 'Monitore preços das suas lojas favoritas e receba notificações instantâneas quando os preços baixam. Poupe dinheiro em cada compra!';
-      
-      const heroBtn = document.querySelector('.pp-hero .pp-btn-cta');
-      if (heroBtn) heroBtn.textContent = 'Começar a Monitorizar';
-      
-      const heroBtnGhost = document.querySelector('.pp-hero .pp-btn-ghost');
-      if (heroBtnGhost) heroBtnGhost.textContent = 'Saber Mais';
-
-      // Traduzir seção "Como Funciona"
-      const howTitle = document.querySelector('.how-section h2');
-      if (howTitle) howTitle.textContent = 'Como Funciona';
-      
-      const howSubtitle = document.querySelector('.how-section p');
-      if (howSubtitle) howSubtitle.textContent = 'Três passos simples para começar a poupar dinheiro';
-      
-      const step1Title = document.querySelector('.how-step:nth-child(1) h3');
-      if (step1Title) step1Title.textContent = 'Adicionar Produtos';
-      
-      const step1Desc = document.querySelector('.how-step:nth-child(1) p');
-      if (step1Desc) step1Desc.textContent = 'Adicione produtos das suas lojas favoritas à sua lista de monitorização';
-      
-      const step2Title = document.querySelector('.how-step:nth-child(2) h3');
-      if (step2Title) step2Title.textContent = 'Configurar Alertas';
-      
-      const step2Desc = document.querySelector('.how-step:nth-child(2) p');
-      if (step2Desc) step2Desc.textContent = 'Configure alertas de preço e preferências de notificação';
-      
-      const step3Title = document.querySelector('.how-step:nth-child(3) h3');
-      if (step3Title) step3Title.textContent = 'Poupar Dinheiro';
-      
-      const step3Desc = document.querySelector('.how-step:nth-child(3) p');
-      if (step3Desc) step3Desc.textContent = 'Receba notificações quando os preços baixam e compre no melhor momento';
-
-      // Traduzir seções de conteúdo
-      const connectTitle = document.querySelector('.pp-split-left h2');
-      if (connectTitle) connectTitle.textContent = 'Conecte-se às suas plataformas favoritas';
-      
-      const connectDesc = document.querySelector('.pp-split-left p');
-      if (connectDesc) connectDesc.textContent = 'Integre com WhatsApp, Telegram, Email e SMS para receber notificações onde quer que esteja';
-      
-      const contactTitle = document.querySelector('.pp-split-right h2');
-      if (contactTitle) contactTitle.textContent = 'Mantenha o contacto';
-      
-      const contactDesc = document.querySelector('.pp-split-right p');
-      if (contactDesc) contactDesc.textContent = 'Nunca perca uma promoção com notificações instantâneas em todos os seus dispositivos';
-
-      // Traduzir seção "Por que criámos"
-      const whyTitle = document.querySelector('.pp-about h2');
-      if (whyTitle) whyTitle.textContent = 'Por que criámos o PromoPing';
-      
-      const whyDesc = document.querySelector('.pp-about p');
-      if (whyDesc) whyDesc.textContent = 'Acreditamos que todos merecem poupar dinheiro nas suas compras. O PromoPing foi criado para democratizar o acesso às melhores promoções e ajudar as famílias a poupar dinheiro nas suas compras diárias.';
-
-      // Traduzir planos de preços
-      const pricingTitle = document.querySelector('.pp-pricing h2');
-      if (pricingTitle) pricingTitle.textContent = 'Escolha o Seu Plano';
-      
-      const pricingSubtitle = document.querySelector('.pp-pricing p');
-      if (pricingSubtitle) pricingSubtitle.textContent = 'Comece a poupar dinheiro hoje com os nossos planos flexíveis';
-      
-      const basicTitle = document.querySelector('.pricing-card:first-child h3');
-      if (basicTitle) basicTitle.textContent = 'Básico';
-      
-      const basicPrice = document.querySelector('.pricing-card:first-child .price');
-      if (basicPrice) basicPrice.textContent = 'Grátis';
-      
-      const proTitle = document.querySelector('.pricing-card:nth-child(2) h3');
-      if (proTitle) proTitle.textContent = 'Pro';
-      
-      const proPrice = document.querySelector('.pricing-card:nth-child(2) .price');
-      if (proPrice) proPrice.textContent = '€4,99/mês';
-      
-      const premiumTitle = document.querySelector('.pricing-card:last-child h3');
-      if (premiumTitle) premiumTitle.textContent = 'Premium';
-      
-      const premiumPrice = document.querySelector('.pricing-card:last-child .price');
-      if (premiumPrice) premiumPrice.textContent = '€9,99/mês';
-
-      // Traduzir CTA final
-      const ctaTitle = document.querySelector('.pp-cta h2');
-      if (ctaTitle) ctaTitle.textContent = 'Pronto para Começar a Poupar?';
-      
-      const ctaDesc = document.querySelector('.pp-cta p');
-      if (ctaDesc) ctaDesc.textContent = 'Junte-se a milhares de utilizadores que já estão a poupar dinheiro com o PromoPing';
-      
-      const finalCtaBtn = document.querySelector('.pp-cta .pp-btn-cta');
-      if (finalCtaBtn) finalCtaBtn.textContent = 'Começar Agora';
+      setPageLanguage('pt');
     }
-
-
   </script>
 </head>
-
 <body class="theme-promoping">
-  <!-- ===== HEADER ===== -->
+  <!-- HEADER DINÂMICO -->
   <div id="header-placeholder"></div>
-
   <main>
-    <!-- ===== HERO ===== -->
-    <section class="pp-hero">
-      <div class="pp-container pp-hero-grid">
-        <div class="pp-hero-left">
-          <h1>Sempre ligado</h1>
-          <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
-        </div>
-        <div class="pp-hero-right">
-          <img src="/assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
-        </div>
+    <!-- HERO principal -->
+    <section class="pp-hero"><div class="pp-container pp-hero-grid">
+      <div class="pp-hero-left">
+        <h1>Sempre ligado</h1>
+        <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
       </div>
-    </section>
-
-    
-
-    <!-- ===== BASE SOCIAL ===== -->
+      <div class="pp-hero-right">
+        <img src="/assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
+      </div>
+    </div></section>
+    <!-- SOCIAL BASE (explica conexões de plataformas) -->
     <section class="pp-section pp-section-split">
       <div class="pp-container pp-split-grid">
         <div class="pp-split-left">
           <h2><span class="highlight">Conecte-se às suas plataformas favoritas</span></h2>
-          <p>
-            Com a PromoPing, você pode ligar a sua conta social a diferentes plataformas, facilitando o acesso a
-            promoções e descontos exclusivos. Jovens e adultos podem aproveitar para nunca mais perder aquela oferta
-            especial, recebendo alertas a tempo de garantir o produto desejado antes que acabe.
-          </p>
+          <p>Com a PromoPing, você pode ligar a sua conta social a diferentes plataformas, facilitando o acesso a promoções e descontos exclusivos. Jovens e adultos podem aproveitar para nunca mais perder aquela oferta especial, recebendo alertas a tempo de garantir o produto desejado antes que acabe.</p>
         </div>
         <div class="pp-split-right">
           <img src="/assets/images/social-phone.png" alt="Conexão com plataformas" class="pp-split-img">
         </div>
       </div>
     </section>
-
-    <!-- ===== CONTACTO ===== -->
+    <!-- CONTACTO (sobre notificações) -->
     <section class="pp-section pp-section-split alt">
       <div class="pp-container pp-split-grid">
         <div class="pp-split-left order-2">
           <h2><span class="highlight">Mantenha o contacto</span></h2>
-          <p>
-            O nosso sistema de notificações mantém-no informado em tempo real sobre promoções relevantes. Além disso,
-            pode interagir em grupos temáticos e trocar dicas com outros utilizadores apaixonados por boas compras.
-          </p>
+          <p>O nosso sistema de notificações mantém-no informado em tempo real sobre promoções relevantes. Além disso, pode interagir em grupos temáticos e trocar dicas com outros utilizadores apaixonados por boas compras.</p>
         </div>
         <div class="pp-split-right order-1">
           <img src="/assets/images/contact-phone.png" alt="Mantenha o contacto" class="pp-split-img">
         </div>
       </div>
     </section>
-
-    <!-- ===== COMO FUNCIONA ===== -->
+    <!-- COMO FUNCIONA (passos do serviço) -->
     <section class="how-section">
       <h2>Como funciona</h2>
       <p>Em apenas 3 passos simples</p>
-
       <div class="how-steps">
-        <div class="how-step">
-          <div class="circle">1</div>
-          <h3>Adicione produtos</h3>
-          <p>Cole o link do produto que pretende monitorizar</p>
-        </div>
-
-        <div class="how-step">
-          <div class="circle">2</div>
-          <h3>Configure alertas</h3>
-          <p>Defina quando quer ser notificado</p>
-        </div>
-
-        <div class="how-step">
-          <div class="circle">3</div>
-          <h3>Receba notificações</h3>
-          <p>Seja alertado quando os preços baixarem</p>
-        </div>
+        <div class="how-step"><div class="circle">1</div><h3>Adicione produtos</h3><p>Cole o link do produto que pretende monitorizar</p></div>
+        <div class="how-step"><div class="circle">2</div><h3>Configure alertas</h3><p>Defina quando quer ser notificado</p></div>
+        <div class="how-step"><div class="circle">3</div><h3>Receba notificações</h3><p>Seja alertado quando os preços baixarem</p></div>
       </div>
     </section>
-
-    <!-- ===== PLANOS ===== -->
+    <!-- PLANOS DE PREÇOS -->
     <section class="pp-pricing">
       <h2>Escolha o seu plano</h2>
       <p>Diferentes níveis de acesso às notificações</p>
-
       <div class="pricing-grid">
         <!-- Free -->
         <div class="pricing-card">
@@ -414,8 +234,7 @@
           </ul>
           <a href="../register.html" class="pp-btn pp-btn-outline">Começar Grátis</a>
         </div>
-
-        <!-- Basic -->
+        <!-- Basic (Plano popular) -->
         <div class="pricing-card popular">
           <div class="tag">Mais Popular</div>
           <h3>Basic</h3>
@@ -429,7 +248,6 @@
           </ul>
           <a href="../register.html" class="pp-btn pp-btn-primary">Escolher Basic</a>
         </div>
-
         <!-- Premium -->
         <div class="pricing-card">
           <h3>Premium</h3>
@@ -446,26 +264,21 @@
         </div>
       </div>
     </section>
-
-    <!-- ===== CTA FINAL ===== -->
+    <!-- CHAMADA FINAL PARA REGISTO -->
     <section class="pp-cta">
       <div class="cta-box">
         <h2>Pronto para poupar dinheiro?</h2>
         <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
         <a href="../register.html">
           Começar agora grátis
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </a>
       </div>
     </section>
   </main>
-
-  <!-- ===== FOOTER ===== -->
+  <!-- FOOTER DINÂMICO -->
   <div id="footer-placeholder"></div>
-
 </body>
-
 </html>
