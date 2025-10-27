@@ -40,7 +40,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/auth/google/callback",
+        callbackURL: "http://127.0.0.1:3000/api/auth/google/callback",
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -482,29 +482,51 @@ router.post("/register", async (req, res) => {
 // ================== ROTAS GOOGLE ==================
 router.get("/google", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    console.log("🔑 Google OAuth configurado:");
+    console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
+    console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
     passport.authenticate("google", { scope: ["profile", "email"] })(req, res);
   } else {
+    console.error("❌ Google OAuth não configurado:");
+    console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
+    console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
     res.status(400).json({
-      error:
-        "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+      error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
     });
   }
 });
 
 router.get("/google/callback", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    passport.authenticate("google", { failureRedirect: "/" })(
-      req,
-      res,
-      () => {
-        const redirectUrl = process.env.AFTER_LOGIN_REDIRECT || "/pages/Painel.html";
-        res.redirect(redirectUrl);
+    const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+    passport.authenticate("google", { failureRedirect: loginUrl })(req, res, (err) => {
+      if (err) {
+        console.error("Erro na autenticação Google:", err);
+        return res.redirect(`${loginUrl}?error=auth_failed`);
       }
-    );
+
+      if (!req.user) {
+        console.error("req.user está undefined");
+        return res.redirect(`${loginUrl}?error=user_undefined`);
+      }
+
+      try {
+        const token = jwt.sign(
+          { id: req.user.id, email: req.user.email, nome: req.user.nome },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard/painel";
+        res.redirect(`${panelUrl}?token=${token}`);
+      } catch (tokenError) {
+        console.error("Erro ao gerar token:", tokenError);
+        res.redirect(`${loginUrl}?error=token_error`);
+      }
+    });
   } else {
     res.status(400).json({
-      error:
-        "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+      error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
     });
   }
 });

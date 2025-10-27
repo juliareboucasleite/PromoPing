@@ -27,7 +27,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/api/auth/google/callback",
+        callbackURL: "http://127.0.0.1:3000/api/auth/google/callback",
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -90,17 +90,17 @@ router.get("/google", (req, res, next) => {
 // Callback do Google
 router.get("/google/callback", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+    const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
     passport.authenticate("google", { failureRedirect: loginUrl })(req, res, (err) => {
       if (err) {
         console.error("Erro na autenticação Google:", err);
-        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
         return res.redirect(`${loginUrl}?error=auth_failed`);
       }
 
       if (!req.user) {
         console.error("req.user está undefined");
-        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
         return res.redirect(`${loginUrl}?error=user_undefined`);
       }
 
@@ -113,11 +113,11 @@ router.get("/google/callback", (req, res) => {
         );
 
         // Redireciona para o painel com token
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/pages/Painel.html";
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard/painel";
         res.redirect(`${panelUrl}?token=${token}`);
       } catch (tokenError) {
         console.error("Erro ao gerar token:", tokenError);
-        const loginUrl = process.env.LOGIN_URL || "/pages/Login.html";
+        const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
         res.redirect(`${loginUrl}?error=token_error`);
       }
     });
