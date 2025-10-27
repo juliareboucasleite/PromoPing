@@ -1,0 +1,116 @@
+# ================== CONFIGURAÇÕES DO SERVIDOR ==================
+PORT=3000
+NODE_ENV=production
+
+# ================== BASE DE DADOS ==================
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=***HIDDEN***
+DB_NAME=pap
+DB_PORT=3306
+
+# ================== JWT ==================
+JWT_SECRET=***HIDDEN***
+
+# ================== GOOGLE OAUTH ==================
+GOOGLE_CLIENT_ID=***HIDDEN***
+GOOGLE_CLIENT_SECRET=***HIDDEN***
+
+# ================== DISCORD OAUTH ==================
+DISCORD_CLIENT_ID=***HIDDEN***
+DISCORD_CLIENT_SECRET=***HIDDEN***
+
+# ================== REDIRECIONAMENTOS ==================
+LOGIN_URL=/inc/Login.html
+AFTER_LOGIN_REDIRECT=/dashboard/painel
+
+# ================== EMAIL ==================
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=***HIDDEN***
+EMAIL_PASS=***HIDDEN***
+
+# ================== STRIPE ==================
+STRIPE_SECRET_KEY=***HIDDEN***
+STRIPE_PUBLISHABLE_KEY=***HIDDEN***
+STRIPE_BASIC_PRICE_ID=***HIDDEN***
+STRIPE_STANDARD_PRICE_ID=***HIDDEN***
+STRIPE_PREMIUM_PRICE_ID=***HIDDEN***
+
+# ================== OUTRAS CONFIGURAÇÕES ==================
+SESSION_SECRET=seu_session_secret_aqui
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# ================== CONFIGURAÇÕES ADICIONAIS ==================
+CORS_ORIGIN=http://127.0.0.1:3000
+TRUST_PROXY=true
+COMPRESSION_ENABLED=true
+HELMET_ENABLED=true
+
+# ================== LOGS ==================
+LOG_LEVEL=info
+LOG_FILE=logs/app.log
+
+# ================== CACHE ==================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# ================== UPLOAD ==================
+UPLOAD_MAX_SIZE=10485760
+UPLOAD_PATH=uploads/
+
+# ================== SECURITY ==================
+BCRYPT_ROUNDS=12
+TOKEN_EXPIRES_IN=7d
+REFRESH_TOKEN_EXPIRES_IN=30d
+
+# ================== NOTIFICATIONS ==================
+PUSH_NOTIFICATIONS_ENABLED=true
+EMAIL_NOTIFICATIONS_ENABLED=true
+SMS_NOTIFICATIONS_ENABLED=false
+
+# ================== PYTHON SCRAPER OTIMIZADO ==================
+# Intervalos otimizados por plano
+CYCLE_INTERVAL=60
+
+# Configurações de performance
+HEADLESS=True
+MAX_WAIT=15
+USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+
+# Sistema de notificações avançado
+NOTIFICATION_ENABLED=true
+NOTIFICATION_WEBHOOK_URL=
+DISCORD_WEBHOOK_URL=
+SLACK_WEBHOOK_URL=
+
+# Configurações de email otimizadas
+EMAIL_ENABLED=true
+EMAIL_SMTP=smtp.gmail.com
+EMAIL_USER=***HIDDEN***
+EMAIL_PASSWORD=***HIDDEN***
+
+# Configurações de retry e fallback
+MAX_RETRIES=3
+RETRY_DELAY=5
+FALLBACK_ENABLED=true
+
+# Configurações de cache
+CACHE_ENABLED=true
+CACHE_TTL=300
+
+# Configurações de rate limiting
+RATE_LIMIT_ENABLED=true
+REQUESTS_PER_MINUTE=30
+
+# Configurações de monitoramento
+MONITORING_ENABLED=true
+HEALTH_CHECK_INTERVAL=60
+ALERT_THRESHOLD=5
+
+# Configurações de backup
+BACKUP_ENABLED=true
+BACKUP_INTERVAL=3600
+BACKUP_RETENTION_DAYS=7
