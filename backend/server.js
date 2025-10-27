@@ -20,6 +20,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 
 // ================== CARREGAR VARIÁVEIS DE AMBIENTE ==================
 const __filename = fileURLToPath(import.meta.url);
@@ -37,8 +38,7 @@ dotenv.config({
 // Debug de variáveis críticas removido para logs mais limpos
 
 // ================== IMPORTS DE ROTAS ==================
-import authGoogleRoutes from "./routes/auth-google.js";        // Google OAuth
-import authRoutes from "./routes/auth.js";                     // Login/Registro
+import authRoutes from "./routes/auth.js";                     // Login/Registro + Google OAuth
 import produtosRoutes from "./routes/produtos.js";            // Produtos
 import configRoutes from "./routes/config.js";                // Configurações
 import userRoutes from "./routes/user.js";                    // Usuários
@@ -56,7 +56,7 @@ import { verifyToken } from "./middleware/auth.js";            // JWT
 
 // ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js";        // Notificações
-import { atualizarPrecos } from "./services/atualizarPrecos.js"; // Atualização preços
+// import { atualizarPrecos } from "./services/atualizarPrecos.js"; // Atualização preços removida
 // WhatsApp desabilitado temporariamente
 
 // ================== CONFIGURAÇÃO DO EXPRESS ==================
@@ -64,8 +64,60 @@ const app = express();
 app.use(cookieParser());  // Cookies
 app.use(express.json());  // JSON parsing
 
+// ================== RATE LIMITING ==================
+// Rate limiting geral para todas as rotas
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 500, // máximo 500 requisições por IP por janela (aumentado)
+  message: {
+    error: "Muitas requisições deste IP, tente novamente em 15 minutos",
+    retryAfter: "15 minutos"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting mais restritivo para APIs de autenticação
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 50, // máximo 50 tentativas de login por IP por janela (aumentado para desenvolvimento)
+  message: {
+    error: "Muitas tentativas de login, tente novamente em 15 minutos",
+    retryAfter: "15 minutos"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting mais permissivo para OAuth (Google, Discord, etc.)
+const oauthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 tentativas OAuth por IP por janela
+  message: {
+    error: "Muitas tentativas de OAuth, tente novamente em 15 minutos",
+    retryAfter: "15 minutos"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting para APIs de produtos (mais permissivo para usuários autenticados)
+const productLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 100, // máximo 100 requisições por IP por minuto (aumentado)
+  message: {
+    error: "Muitas requisições de produtos, tente novamente em 1 minuto",
+    retryAfter: "1 minuto"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limiting geral
+app.use(generalLimiter);
+
 // ================== CONFIGURAÇÃO CORS ==================
-// CORS baseado no .env
+// CORS baseado no .env - SEGURO
 const allowedOrigins = [
   `http://localhost:${process.env.PORT || 3000}`,
   `http://127.0.0.1:${process.env.PORT || 3000}`,
@@ -73,7 +125,7 @@ const allowedOrigins = [
   `http://127.0.0.1:8080`,
   `http://localhost:5500`,
   `http://127.0.0.1:5500`,
-  "file://",
+  // file:// removido por segurança
 ];
 
 // Adicionar domínios do .env se existirem
@@ -85,18 +137,35 @@ if (process.env.ALLOWED_ORIGINS) {
   allowedOrigins.push(...customOrigins);
 }
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// Função para validar origem
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir requisições sem origem (ex: mobile apps, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Verificar se a origem está na lista permitida
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Log de tentativa de acesso não autorizado
+    console.warn(`Tentativa de acesso CORS de origem não autorizada: ${origin}`);
+    callback(new Error('Não permitido pelo CORS'));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // ================== ROTAS DE AUTENTICAÇÃO ==================
-app.use("/api/auth", authGoogleRoutes);      // Google OAuth
-app.use("/api/auth", authRoutes);            // Login/Registro
+// Aplicar rate limiting específico para cada tipo de autenticação
+app.use("/api/auth/google", oauthLimiter);   // Google OAuth - mais permissivo
+app.use("/api/auth/discord", oauthLimiter);  // Discord OAuth - mais permissivo
+app.use("/api/auth", authLimiter);           // Login/Registro tradicional - mais restritivo
+app.use("/api/auth", authRoutes);            // Login/Registro + Google OAuth
 app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 
 // ================== ROTAS ==================
@@ -104,6 +173,8 @@ app.get("/api/user/me", verifyToken, (req, res) => {
   res.json({ status: "ok", user: req.user });
 });
 
+// Aplicar rate limiting para produtos
+app.use("/api/produtos", productLimiter);
 app.use("/api/produtos", produtosRoutes);        // Produtos
 app.use("/api/config", configRoutes);            // Configurações
 app.use("/api/user", userRoutes);               // Usuários
@@ -198,6 +269,11 @@ app.get("/inc/load-includes-register.js", (req, res) => {
 // ================== FRONTEND ESTÁTICO ==================
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// Rota para ignorar requests do Chrome DevTools
+app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
 // ================== ROTAS DISCORD DIRETAS ==================
 // Discord OAuth - redirecionar para API
 app.get("/auth/discord", (req, res) => {
@@ -247,6 +323,15 @@ app.get("/register", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
 });
 
+// Rotas adicionais para compatibilidade com frontend
+app.get("/inc/Login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+});
+
+app.get("/inc/register.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+});
+
 // Páginas do dashboard
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
@@ -265,6 +350,23 @@ app.get("/dashboard/planos", (req, res) => {
 });
 
 app.get("/dashboard/produtos", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+});
+
+// Rotas adicionais para compatibilidade com frontend (com .html)
+app.get("/dashboard/Painel.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+});
+
+app.get("/dashboard/perfil.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+});
+
+app.get("/dashboard/planos.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+});
+
+app.get("/dashboard/produtos.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
 });
 
@@ -304,18 +406,13 @@ app.get("/redirect", (req, res) => {
 });
 
 // ================== AGENDAMENTO CRON ==================
-import cron from "node-cron";
+// Jobs cron removidos - preços não são mais atualizados automaticamente
 
-// A cada 6 horas (ajusta como quiser)
-// formato cron: "0 */6 * * *" = de 6h em 6h
-cron.schedule("0 */6 * * *", async () => {
-  console.log("Executando atualização automática de preços...");
-  try {
-    await atualizarPrecos();
-    console.log("Atualização automática concluída com sucesso");
-  } catch (error) {
-    console.error("Erro na atualização automática:", error);
-  }
+// ================== MIDDLEWARE 404 ==================
+// Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
+app.use((req, res) => {
+  console.log(`Página não encontrada: ${req.originalUrl}`);
+  res.status(404).sendFile(path.join(__dirname, "../frontend/pages/404.html"));
 });
 
 // ================== IMPORTAR SERVIÇOS ==================
@@ -337,6 +434,6 @@ app.listen(PORT, HOST, async () => {
   try {
     await GracePeriodManager.startAutomaticCheck();
   } catch (error) {
-    console.error('❌ Erro ao iniciar verificação automática de períodos de graça:', error);
+    console.error('Erro ao iniciar verificação automática de períodos de graça:', error);
   }
 });
