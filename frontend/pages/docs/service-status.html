@@ -690,17 +690,17 @@
     // Buscar dados reais da base de dados
     buscarDadosReais();
     
-    // Atualizar status geral a cada 30 segundos
-    setInterval(carregarStatus, 30000);
+    // Atualizar status geral a cada 5 minutos (reduzido para evitar rate limit)
+    setInterval(carregarStatus, 300000);
     
-    // Atualizar estatísticas em tempo real a cada 15 segundos
-    setInterval(carregarEstatisticasRealtime, 15000);
+    // Atualizar estatísticas em tempo real a cada 2 minutos (reduzido)
+    setInterval(carregarEstatisticasRealtime, 120000);
     
-    // Buscar dados reais da base de dados a cada 2 minutos
-    setInterval(buscarDadosReais, 120000);
+    // Buscar dados reais da base de dados a cada 10 minutos (reduzido)
+    setInterval(buscarDadosReais, 600000);
     
-    // Atualizar dados simulados a cada 30 segundos (fallback)
-    setInterval(updateRealtimeStatsFallback, 30000);
+    // Atualizar dados simulados a cada 5 minutos (reduzido)
+    setInterval(updateRealtimeStatsFallback, 300000);
 
     // ================== HEALTH CHECK ==================
     async function verificarSaudeAPI() {

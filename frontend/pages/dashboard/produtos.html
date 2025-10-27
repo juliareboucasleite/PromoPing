@@ -6,8 +6,8 @@
   <title>Produtos — PromoPing</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
-   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-  <script src="../../assets/scripts/auth.js"></script>
+   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <script src="../../assets/scripts/request-manager.js"></script>
 </head>
 <body class="dashboard-body">
   <nav class="dashboard-nav">
@@ -18,7 +18,7 @@
       </div>
       
       <div class="nav-menu">
-        <a href="/dashboard" class="nav-item">
+        <a href="Painel.html" class="nav-item">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
@@ -27,7 +27,7 @@
           </svg>
           Dashboard
         </a>
-        <a href="/dashboard/produtos" class="nav-item nav-item-active">
+        <a href="produtos.html" class="nav-item nav-item-active">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
             <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
@@ -35,7 +35,7 @@
           </svg>
           Produtos
         </a>
-        <a href="/dashboard/perfil" class="nav-item">
+        <a href="perfil.html" class="nav-item">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -183,7 +183,7 @@
     // Função: deslogar usuário e voltar para login
     function logout() {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/inc/Login.html";
     }
 
     // Função principal: carregar lista de produtos do usuário, aplica filtros e monta cards
@@ -200,7 +200,7 @@
       loadingState.style.display = "block";
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/produtos", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/produtos", {
           headers: { Authorization: "Bearer " + token }
         });
 
@@ -424,7 +424,7 @@
       if (!confirm("Tem certeza que deseja remover este produto?")) return;
 
       try {
-        await fetch(`http://127.0.0.1:3000/api/produtos/${id}`, {
+        await makeRequest(`http://127.0.0.1:3000/api/produtos/${id}`, {
           method: "DELETE",
           headers: { Authorization: "Bearer " + token }
         });
@@ -443,7 +443,7 @@
       if (!token) return;
       
       try {
-        const res = await fetch(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
+        const res = await makeRequest(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
           headers: { Authorization: "Bearer " + token }
         });
         
@@ -458,8 +458,8 @@
       }
     }
     
-    // Sincroniza produtos a cada 10 segundos
-    setInterval(verificarSincronizacao, 10000);
+    // Sincronização removida - página estática não precisa de atualizações automáticas
+    // setInterval(verificarSincronizacao, 120000);
 
     let userPlan = "Free"; // Plano padrão
 
@@ -473,7 +473,7 @@
           return;
         }
 
-        const response = await fetch("http://127.0.0.1:3000/api/exportar/user/plano", {
+        const response = await makeRequest("http://127.0.0.1:3000/api/exportar/user/plano", {
           headers: { Authorization: "Bearer " + token }
         });
 
@@ -541,21 +541,39 @@
     // Função: carrega o nome do usuário logado e mostra no header
     async function carregarNomeUsuario() {
       try {
+        console.log("🔍 [PRODUTOS] Carregando nome do usuário...");
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          console.error("❌ [PRODUTOS] Token não encontrado para carregar nome");
+          return;
+        }
 
-        const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+        const response = await makeRequest("http://127.0.0.1:3000/api/user/profile", {
           headers: { Authorization: "Bearer " + token }
         });
 
+        console.log("✅ [PRODUTOS] Resposta do perfil recebida:", response.status);
+
         if (response.ok) {
           const data = await response.json();
-          if (data.user) {
-            document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
+          console.log("✅ [PRODUTOS] Dados do perfil:", data);
+          
+          if (data.status === "ok" && data.profile) {
+            const userNameEl = document.getElementById("userName");
+            if (userNameEl) {
+              userNameEl.textContent = data.profile.nome || 'Utilizador';
+              console.log("✅ [PRODUTOS] Nome do usuário atualizado:", data.profile.nome);
+            } else {
+              console.error("❌ [PRODUTOS] Elemento userName não encontrado");
+            }
+          } else {
+            console.error("❌ [PRODUTOS] Estrutura de dados incorreta:", data);
           }
+        } else {
+          console.error("❌ [PRODUTOS] Erro na resposta:", response.status);
         }
       } catch (error) {
-        console.error("Erro ao carregar nome do usuário:", error);
+        console.error("❌ [PRODUTOS] Erro ao carregar nome do usuário:", error);
       }
     }
 

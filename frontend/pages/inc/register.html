@@ -7,20 +7,29 @@
   <link rel="stylesheet" href="../../assets/styles/header.css">
   <link rel="stylesheet" href="../../assets/styles/register.css">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-  <script src="/inc/load-includes-register.js"></script>
 </head>
 <body class="login-page">
 
   <!-- ===== HEADER ===== -->
-  <div id="header-register-include">
-    <script>
-      fetch('/inc/header-register.html')
+  <div id="header-register-include"></div>
+
+  <!-- Scripts -->
+  <script src="../../assets/scripts/request-manager.js"></script>
+  <script src="../../assets/scripts/notification-system.js"></script>
+  <script src="/inc/load-includes-register.js"></script>
+  <script>
+    // Carregar header após RequestManager estar disponível
+    document.addEventListener('DOMContentLoaded', function() {
+      makeRequest('../../inc/header-register.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('header-register-include').innerHTML = html;
+        })
+        .catch(error => {
+          console.error('Erro ao carregar header:', error);
         });
-    </script>
-  </div>
+    });
+  </script>
 
   <!-- ===== MAIN ===== -->
   <main class="login-main">
@@ -103,7 +112,7 @@
         </div>
 
         <div class="register-actions">
-          <a href="index.html" class="btn-register btn-cancel">Cancelar</a>
+          <a href="../../pages/index.html" class="btn-register btn-cancel">Cancelar</a>
           <button type="submit" class="btn-register btn-create" id="btnCriar">Criar Conta</button>
         </div>
       </form>
@@ -130,9 +139,7 @@
 
   <!-- ===== FOOTER ===== -->
   <div id="footer-placeholder"></div>
-
   <script>
-    // ===== FUNÇÃO GLOBAL PARA TOGGLE PASSWORD =====
     function togglePassword(fieldId) {
       const field = document.getElementById(fieldId);
       if (!field) {
@@ -191,7 +198,7 @@
 
     // ===== REGISTO NORMAL =====
     async function registarUtilizador(nome, email, password, telefone = null) {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, password, telefone }),
@@ -281,7 +288,7 @@
       const email = document.getElementById("verifyEmail").textContent;
       const codigo = getCodigoDigitado();
 
-        const res = await fetch("http://127.0.0.1:3000/api/auth/email/verify", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/email/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, codigo })
@@ -290,9 +297,9 @@
 
       if (data.status === "ok" && data.token) {
         guardarToken(data.token);
-        location.href = "Painel.html";
+        location.href = "/dashboard/painel";
       } else {
-        alert(data.error || "Código inválido");
+        showError("Erro", data.error || "Código inválido");
       }
     });
 
@@ -312,7 +319,7 @@
           btn.disabled = false;
           btn.textContent = "Reenviar código";
           btn.onclick = async () => {
-            await fetch("http://127.0.0.1:3000/api/auth/email/send", {
+            await makeRequest("http://127.0.0.1:3000/api/auth/email/send", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email })
@@ -332,13 +339,13 @@
     document.getElementById("btnDiscord").addEventListener("click", async () => {
       try {
         // Verificar se usuário Discord já existe
-        const response = await fetch(`http://127.0.0.1:3000/api/auth/discord/check/916737425978589235`);
+        const response = await makeRequest(`http://127.0.0.1:3000/api/auth/discord/check/916737425978589235`);
         const data = await response.json();
         
         if (data.exists) {
           // Usuário já existe - avisar para fazer login
-          alert("✅ Usuário Discord já registrado!\n\nPor favor, faça login usando o botão Discord na página de login.");
-          window.location.href = "/login";
+          showInfo("Usuário já registrado", "Usuário Discord já registrado! Por favor, faça login usando o botão Discord na página de login.");
+          window.location.href = "../inc/Login.html";
           return;
         } else {
           // Usuário não existe - redirecionar para Discord OAuth

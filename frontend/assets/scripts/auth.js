@@ -16,12 +16,12 @@ export async function verificarSessao() {
   const token = obterToken();
   if (!token) {
     alert("Precisa estar logado!");
-    window.location.href = "Login.html";
+    window.location.href = "/inc/Login.html";
     return null;
   }
 
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/user/me", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/user/me", {
       headers: { Authorization: "Bearer " + token },
     });
 
@@ -33,7 +33,7 @@ export async function verificarSessao() {
     } else {
       alert("Sessão inválida. Faça login novamente.");
       removerToken();
-      window.location.href = "Login.html";
+      window.location.href = "/inc/Login.html";
       return null;
     }
   } catch (err) {
@@ -46,7 +46,7 @@ export async function verificarSessao() {
 // ================== LOGIN COM EMAIL ==================
 export async function loginEmail(email, password) {
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -69,7 +69,7 @@ export async function loginEmail(email, password) {
 // ================== REGISTO COM EMAIL ==================
 export async function register(nome, email, password) {
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/auth/register", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nome, email, password }),
@@ -79,7 +79,7 @@ export async function register(nome, email, password) {
 
     if (data.status === "ok") {
       alert("Conta criada com sucesso! Verifique seu email.");
-      window.location.href = "Login.html";
+      window.location.href = "/inc/Login.html";
     } else {
       alert(data.error || "Erro no registo.");
     }

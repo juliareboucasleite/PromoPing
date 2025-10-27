@@ -4,18 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>PromoPing - Sempre ligado</title>
-  <link rel="stylesheet" href="/assets/styles/style.css">
-  <link rel="stylesheet" href="/assets/styles/dasboard.css">
-  <link rel="stylesheet" href="/assets/styles/header.css">
-  <link rel="stylesheet" href="/assets/styles/painel.css">
-  <link rel="stylesheet" href="/assets/styles/register.css">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-  <script src="inc/load-includes-index.js"></script>
+  <link rel="stylesheet" href="../assets/styles/style.css">
+  <link rel="stylesheet" href="../assets/styles/dasboard.css">
+  <link rel="stylesheet" href="../assets/styles/header.css">
+  <link rel="stylesheet" href="../assets/styles/painel.css">
+  <link rel="stylesheet" href="../assets/styles/register.css">
+  <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+  <script src="../../assets/scripts/request-manager.js"></script>
+  <script src="../inc/load-includes-index.js"></script>
   <script>
-    // Adiciona blur ao título principal após o carregamento do DOM
+    // Título principal sem animação JavaScript
     document.addEventListener("DOMContentLoaded",function(){
       const h=document.querySelector('.pp-hero-left h1');
-      if(h)h.classList.add('blur-text');
+      if(h) {
+        // Remove qualquer classe de animação e deixa o texto visível
+        h.classList.remove('blur-text');
+        h.style.opacity = '1';
+        h.style.filter = 'none';
+        h.style.transform = 'none';
+      }
     });
 
     // Abre/fecha dropdown do menu de navegação
@@ -47,102 +54,10 @@
     // Tabela de traduções dos elementos da página
     const translations = {
       en: {
-        '.pp-header-nav-button[aria-label="Soluções"]': 'Solutions',
-        '.pp-header-nav-button[aria-label="Recursos"]': 'Resources',
-        '.pp-header-cta-button': 'Get Started',
-        'a[href="/pages/monitoramento.html"]': 'Monitoring',
-        'a[href="/pages/alertas.html"]': 'Alerts',
-        'a[href="/pages/relatorios.html"]': 'Reports',
-        'a[href="/pages/docs.html"]': 'Documentation',
-        'a[href="/pages/casos-uso.html"]': 'Use Cases',
-        'a[href="/pages/blog.html"]': 'Blog',
-        '.pp-hero h1': 'Never Miss a Deal Again',
-        '.pp-hero p':
-          'Monitor prices from your favorite stores and get instant notifications when prices drop. Save money on every purchase!',
-        '.pp-hero .pp-btn-cta': 'Start Monitoring',
-        '.pp-hero .pp-btn-ghost': 'Learn More',
-        '.how-section h2': 'How It Works',
-        '.how-section p': 'Three simple steps to start saving money',
-        '.how-step:nth-child(1) h3': 'Add Products',
-        '.how-step:nth-child(1) p':
-          'Add products from your favorite stores to your monitoring list',
-        '.how-step:nth-child(2) h3': 'Set Alerts',
-        '.how-step:nth-child(2) p':
-          'Configure price alerts and notification preferences',
-        '.how-step:nth-child(3) h3': 'Save Money',
-        '.how-step:nth-child(3) p':
-          'Get notified when prices drop and buy at the best time',
-        '.pp-split-left h2': 'Connect to Your Favorite Platforms',
-        '.pp-split-left p':
-          'Integrate with WhatsApp, Telegram, Email and SMS to receive notifications wherever you are',
-        '.pp-split-right h2': 'Stay Connected',
-        '.pp-split-right p':
-          'Never miss a deal with instant notifications on all your devices',
-        '.pp-about h2': 'Why We Created PromoPing',
-        '.pp-about p':
-          'We believe that everyone deserves to save money on their purchases. PromoPing was created to democratize access to the best deals and help families save money on their daily purchases.',
-        '.pp-pricing h2': 'Choose Your Plan',
-        '.pp-pricing p':
-          'Start saving money today with our flexible plans',
-        '.pricing-card:first-child h3': 'Basic',
-        '.pricing-card:first-child .price': 'Free',
-        '.pricing-card:nth-child(2) h3': 'Pro',
-        '.pricing-card:nth-child(2) .price': '€4.99/month',
-        '.pricing-card:last-child h3': 'Premium',
-        '.pricing-card:last-child .price': '€9.99/month',
-        '.pp-cta h2': 'Ready to Start Saving?',
-        '.pp-cta p':
-          'Join thousands of users who are already saving money with PromoPing',
-        '.pp-cta .pp-btn-cta': 'Get Started Now',
+        // ...traduções...
       },
       pt: {
-        '.pp-header-nav-button[aria-label="Soluções"]': 'Soluções',
-        '.pp-header-nav-button[aria-label="Recursos"]': 'Recursos',
-        '.pp-header-cta-button': 'Começar Agora',
-        'a[href="/pages/monitoramento.html"]': 'Monitoramento',
-        'a[href="/pages/alertas.html"]': 'Alertas',
-        'a[href="/pages/relatorios.html"]': 'Relatórios',
-        'a[href="/pages/docs.html"]': 'Documentação',
-        'a[href="/pages/casos-uso.html"]': 'Casos de Uso',
-        'a[href="/pages/blog.html"]': 'Blog',
-        '.pp-hero h1': 'Nunca Mais Perca uma Promoção',
-        '.pp-hero p':
-          'Monitore preços das suas lojas favoritas e receba notificações instantâneas quando os preços baixam. Poupe dinheiro em cada compra!',
-        '.pp-hero .pp-btn-cta': 'Começar a Monitorizar',
-        '.pp-hero .pp-btn-ghost': 'Saber Mais',
-        '.how-section h2': 'Como Funciona',
-        '.how-section p': 'Três passos simples para começar a poupar dinheiro',
-        '.how-step:nth-child(1) h3': 'Adicionar Produtos',
-        '.how-step:nth-child(1) p':
-          'Adicione produtos das suas lojas favoritas à sua lista de monitorização',
-        '.how-step:nth-child(2) h3': 'Configurar Alertas',
-        '.how-step:nth-child(2) p':
-          'Configure alertas de preço e preferências de notificação',
-        '.how-step:nth-child(3) h3': 'Poupar Dinheiro',
-        '.how-step:nth-child(3) p':
-          'Receba notificações quando os preços baixam e compre no melhor momento',
-        '.pp-split-left h2': 'Conecte-se às suas plataformas favoritas',
-        '.pp-split-left p':
-          'Integre com WhatsApp, Telegram, Email e SMS para receber notificações onde quer que esteja',
-        '.pp-split-right h2': 'Mantenha o contacto',
-        '.pp-split-right p':
-          'Nunca perca uma promoção com notificações instantâneas em todos os seus dispositivos',
-        '.pp-about h2': 'Por que criámos o PromoPing',
-        '.pp-about p':
-          'Acreditamos que todos merecem poupar dinheiro nas suas compras. O PromoPing foi criado para democratizar o acesso às melhores promoções e ajudar as famílias a poupar dinheiro nas suas compras diárias.',
-        '.pp-pricing h2': 'Escolha o Seu Plano',
-        '.pp-pricing p':
-          'Comece a poupar dinheiro hoje com os nossos planos flexíveis',
-        '.pricing-card:first-child h3': 'Básico',
-        '.pricing-card:first-child .price': 'Grátis',
-        '.pricing-card:nth-child(2) h3': 'Pro',
-        '.pricing-card:nth-child(2) .price': '€4,99/mês',
-        '.pricing-card:last-child h3': 'Premium',
-        '.pricing-card:last-child .price': '€9,99/mês',
-        '.pp-cta h2': 'Pronto para Começar a Poupar?',
-        '.pp-cta p':
-          'Junte-se a milhares de utilizadores que já estão a poupar dinheiro com o PromoPing',
-        '.pp-cta .pp-btn-cta': 'Começar Agora',
+        // ...traduções...
       },
     };
 
@@ -176,91 +91,179 @@
     <!-- HERO principal -->
     <section class="pp-hero"><div class="pp-container pp-hero-grid">
       <div class="pp-hero-left">
-        <h1>Sempre ligado</h1>
+        <h1 style="opacity: 1 !important; filter: none !important; transform: none !important;">Sempre ligado</h1>
         <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
       </div>
       <div class="pp-hero-right">
-        <img src="/assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
+        <img src="../assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
       </div>
     </div></section>
     <!-- SOCIAL BASE (explica conexões de plataformas) -->
-    <section class="pp-section pp-section-split">
-      <div class="pp-container pp-split-grid">
-        <div class="pp-split-left">
+    <section id="sobre" class="pp-section pp-section-centered">
+      <div class="pp-container">
+        <div class="centered-content">
           <h2><span class="highlight">Conecte-se às suas plataformas favoritas</span></h2>
-          <p>Com a PromoPing, você pode ligar a sua conta social a diferentes plataformas, facilitando o acesso a promoções e descontos exclusivos. Jovens e adultos podem aproveitar para nunca mais perder aquela oferta especial, recebendo alertas a tempo de garantir o produto desejado antes que acabe.</p>
-        </div>
-        <div class="pp-split-right">
-          <img src="/assets/images/social-phone.png" alt="Conexão com plataformas" class="pp-split-img">
+          <div class="text-content justified">
+            <p>Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em oferta.</p>
+            <p>Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.</p>
+            <p>Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.</p>
+            <p><strong>PromoPing. O preço certo, na hora certa.</strong></p>
+          </div>
         </div>
       </div>
     </section>
     <!-- CONTACTO (sobre notificações) -->
-    <section class="pp-section pp-section-split alt">
-      <div class="pp-container pp-split-grid">
-        <div class="pp-split-left order-2">
-          <h2><span class="highlight">Mantenha o contacto</span></h2>
-          <p>O nosso sistema de notificações mantém-no informado em tempo real sobre promoções relevantes. Além disso, pode interagir em grupos temáticos e trocar dicas com outros utilizadores apaixonados por boas compras.</p>
-        </div>
-        <div class="pp-split-right order-1">
-          <img src="/assets/images/contact-phone.png" alt="Mantenha o contacto" class="pp-split-img">
-        </div>
-      </div>
-    </section>
+    
     <!-- COMO FUNCIONA (passos do serviço) -->
     <section class="how-section">
-      <h2>Como funciona</h2>
-      <p>Em apenas 3 passos simples</p>
-      <div class="how-steps">
-        <div class="how-step"><div class="circle">1</div><h3>Adicione produtos</h3><p>Cole o link do produto que pretende monitorizar</p></div>
-        <div class="how-step"><div class="circle">2</div><h3>Configure alertas</h3><p>Defina quando quer ser notificado</p></div>
-        <div class="how-step"><div class="circle">3</div><h3>Receba notificações</h3><p>Seja alertado quando os preços baixarem</p></div>
+      <div class="how-container">
+        <div class="how-header">
+          <h2>Como funciona</h2>
+          <p>Em apenas 3 passos simples</p>
+        </div>
+        <div class="how-steps">
+          <div class="how-step">
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Adicione produtos</h3>
+              <p>Cole o link do produto que pretende monitorizar</p>
+            </div>
+            <div class="step-number">01</div>
+          </div>
+          
+          <div class="how-step">
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4"/>
+                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
+                <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Configure alertas</h3>
+              <p>Defina quando quer ser notificado</p>
+            </div>
+            <div class="step-number">02</div>
+          </div>
+          
+          <div class="how-step">
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Receba notificações</h3>
+              <p>Seja alertado quando os preços baixarem</p>
+            </div>
+            <div class="step-number">03</div>
+          </div>
+        </div>
       </div>
     </section>
     <!-- PLANOS DE PREÇOS -->
     <section class="pp-pricing">
-      <h2>Escolha o seu plano</h2>
-      <p>Diferentes níveis de acesso às notificações</p>
-      <div class="pricing-grid">
-        <!-- Free -->
-        <div class="pricing-card">
-          <h3>Free</h3>
-          <div class="price">€0<span>/mês</span></div>
-          <ul>
-            <li>Até 5 produtos</li>
-            <li>Notificações por Email</li>
-            <li class="muted">Alertas básicos</li>
-            <li class="muted">Verificação diária</li>
-          </ul>
-          <a href="../register.html" class="pp-btn pp-btn-outline">Começar Grátis</a>
+      <div class="pricing-container">
+        <div class="pricing-header">
+          <h2>Escolha o seu plano</h2>
+          <p>Diferentes níveis de acesso às notificações</p>
         </div>
-        <!-- Basic (Plano popular) -->
-        <div class="pricing-card popular">
-          <div class="tag">Mais Popular</div>
-          <h3>Basic</h3>
-          <div class="price">€4.99<span>/mês</span></div>
-          <ul>
-            <li>Até 25 produtos</li>
-            <li>Email + SMS</li>
-            <li>Alertas personalizados</li>
-            <li>Verificação de 4h/4h</li>
-            <li>Histórico de preços</li>
-          </ul>
-          <a href="../register.html" class="pp-btn pp-btn-primary">Escolher Basic</a>
-        </div>
-        <!-- Premium -->
-        <div class="pricing-card">
-          <h3>Premium</h3>
-          <div class="price">€9.99<span>/mês</span></div>
-          <ul>
-            <li>Produtos ilimitados</li>
-            <li>Todas as notificações</li>
-            <li>Email, SMS, Discord, Telegram, WhatsApp</li>
-            <li>Verificação em tempo real</li>
-            <li>API de integração</li>
-            <li>Suporte prioritário</li>
-          </ul>
-          <a href="../register.html" class="pp-btn pp-btn-outline">Escolher Premium</a>
+        <div class="pricing-grid">
+          <!-- Free -->
+          <div class="pricing-card">
+            <div class="card-header">
+              <h3>Free</h3>
+              <div class="price">
+                <span class="currency">€</span>
+                <span class="amount">0</span>
+                <span class="period">/mês</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="features">
+                <li><span class="check">✓</span>Até 5 produtos</li>
+                <li><span class="check">✓</span>Notificações por Email</li>
+                <li><span class="check">✓</span>Alertas básicos</li>
+                <li><span class="check">✓</span>Verificação diária</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Basic -->
+          <div class="pricing-card">
+            <div class="card-header">
+              <h3>Basic</h3>
+              <div class="price">
+                <span class="currency">€</span>
+                <span class="amount">4.99</span>
+                <span class="period">/mês</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="features">
+                <li><span class="check">✓</span>Até 25 produtos</li>
+                <li><span class="check">✓</span>Email + SMS</li>
+                <li><span class="check">✓</span>Alertas personalizados</li>
+                <li><span class="check">✓</span>Verificação de 4h/4h</li>
+                <li><span class="check">✓</span>Histórico de preços</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Standard (Mais Popular) -->
+          <div class="pricing-card popular">
+            <div class="popular-badge">Mais Popular</div>
+            <div class="card-header">
+              <h3>Standard</h3>
+              <div class="price">
+                <span class="currency">€</span>
+                <span class="amount">12.99</span>
+                <span class="period">/mês</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="features">
+                <li><span class="check">✓</span>Até 100 produtos</li>
+                <li><span class="check">✓</span>Email, SMS + Discord</li>
+                <li><span class="check">✓</span>Alertas personalizados</li>
+                <li><span class="check">✓</span>Verificação de 2h/2h</li>
+                <li><span class="check">✓</span>Histórico completo</li>
+                <li><span class="check">✓</span>Relatórios avançados</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Premium -->
+          <div class="pricing-card">
+            <div class="card-header">
+              <h3>Premium</h3>
+              <div class="price">
+                <span class="currency">€</span>
+                <span class="amount">15.30</span>
+                <span class="period">/mês</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="features">
+                <li><span class="check">✓</span>Produtos ilimitados</li>
+                <li><span class="check">✓</span>Todas as notificações</li>
+                <li><span class="check">✓</span>Email, SMS, Discord, Telegram, WhatsApp</li>
+                <li><span class="check">✓</span>Verificação em tempo real</li>
+                <li><span class="check">✓</span>API de integração</li>
+                <li><span class="check">✓</span>Suporte prioritário</li>
+                <li><span class="check">✓</span>Relatórios personalizados</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -269,7 +272,7 @@
       <div class="cta-box">
         <h2>Pronto para poupar dinheiro?</h2>
         <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
-        <a href="../register.html">
+        <a href="inc/register.html">
           Começar agora grátis
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

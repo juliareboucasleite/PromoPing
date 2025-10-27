@@ -79,7 +79,7 @@ class DocumentationSearch {
 
     /* ---------- UTILITÁRIOS DE SEGURANÇA ---------- */
 
-    // Escapa HTML (usa textContent para evitar XSS)
+    // Escapa HTML de forma segura (usa textContent para evitar XSS)
     escapeHTML(str) {
         if (str == null) return '';
         const div = document.createElement('div');
@@ -87,23 +87,55 @@ class DocumentationSearch {
         return div.innerHTML;
     }
 
+    // Valida e sanitiza entrada de pesquisa
+    sanitizeQuery(query) {
+        if (!query) return '';
+        
+        // Converter para string e limitar comprimento
+        const str = String(query).trim();
+        if (str.length > 100) {
+            return str.substring(0, 100);
+        }
+        
+        // Remover caracteres perigosos
+        return str.replace(/[<>'"&]/g, '');
+    }
+
     // Gera uma versão "highlighted" segura:
-    // - escapa todo o texto primeiro
+    // - valida e sanitiza a query primeiro
+    // - escapa todo o texto
     // - aplica <mark> apenas aos termos correspondentes (usando regex seguro)
     highlightSafe(text, query) {
         if (!query) return this.escapeHTML(text);
+        
+        // Sanitizar query primeiro
+        const sanitizedQuery = this.sanitizeQuery(query);
+        if (!sanitizedQuery) return this.escapeHTML(text);
+        
         const escapedText = this.escapeHTML(text);
+        
         // Construir regex seguro para palavras (escape dos termos)
-        const terms = query.toString().toLowerCase().split(/\s+/).filter(t => t.length > 0);
+        const terms = sanitizedQuery.toLowerCase().split(/\s+/).filter(t => t.length > 0 && t.length <= 50);
         if (terms.length === 0) return escapedText;
 
-        // Escape para regex de cada termo
+        // Escape completo para regex de cada termo
         const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const pattern = terms.map(escapeRegex).join('|');
-        const regex = new RegExp(`(${pattern})`, 'ig');
-
-        // Substituir no texto escapado. Como o texto está escapado, a substituição é segura.
-        return escapedText.replace(regex, '<mark>$1</mark>');
+        
+        // Limitar tamanho do regex para prevenir ReDoS
+        if (pattern.length > 200) {
+            return escapedText;
+        }
+        
+        try {
+            const regex = new RegExp(`(${pattern})`, 'ig');
+            // Substituir no texto escapado. Como o texto está escapado, a substituição é segura.
+            return escapedText.replace(regex, '<mark>$1</mark>');
+        } catch (e) {
+            // Se regex falhar, retornar texto escapado sem highlight
+            console.warn('Regex inválido na pesquisa:', e);
+            return escapedText;
+        }
     }
 
   //Eventos e UI
@@ -150,12 +182,14 @@ class DocumentationSearch {
     }
 
     performSearch(query) {
-        if (!query || String(query).trim().length < 2) {
+        // Sanitizar query antes de processar
+        const sanitizedQuery = this.sanitizeQuery(query);
+        if (!sanitizedQuery || sanitizedQuery.length < 2) {
             this.hideSearchResults();
             return;
         }
-        const results = this.searchInIndex(query);
-        this.displaySearchResults(results, query);
+        const results = this.searchInIndex(sanitizedQuery);
+        this.displaySearchResults(results, sanitizedQuery);
     }
 
     searchInIndex(query) {

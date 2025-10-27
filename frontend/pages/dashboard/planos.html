@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../../assets/styles/painel.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
     <link rel="stylesheet" href="../../assets/styles/planos.css">
-    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
 <body>
     <nav class="dashboard-nav">
@@ -18,7 +18,7 @@
             </div>
             
             <div class="nav-menu">
-                <a href="/dashboard" class="nav-item">
+                <a href="Painel.html" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
@@ -27,7 +27,7 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="/dashboard/produtos" class="nav-item">
+                <a href="produtos.html" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                         <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
@@ -35,14 +35,14 @@
                     </svg>
                     Produtos
                 </a>
-                <a href="/dashboard/perfil" class="nav-item">
+                <a href="perfil.html" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     Perfil
                 </a>
-                <a href="/dashboard/planos" class="nav-item nav-item-active">
+                <a href="planos.html" class="nav-item nav-item-active">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                     </svg>
@@ -138,7 +138,7 @@
                                 Sem relatórios
                             </li>
                         </ul>
-                        <button class="plan-button secondary" onclick="selecionarPlano(1, 'Free', false)">
+                        <button class="plan-button secondary" onclick="abrirModalPlanos()">
                             Escolher Free
                         </button>
                 </div>
@@ -181,7 +181,7 @@
                                 Relatórios básicos
                             </li>
                         </ul>
-                        <button class="plan-button primary" onclick="selecionarPlano(2, 'Basic', false)">
+                        <button class="plan-button primary" onclick="abrirModalPlanos()">
                             Escolher Basic
                         </button>
                 </div>
@@ -223,7 +223,7 @@
                                 Relatórios avançados
                             </li>
                         </ul>
-                        <button class="plan-button primary" onclick="selecionarPlano(4, 'Standard', false)">
+                        <button class="plan-button primary" onclick="abrirModalPlanos()">
                             Escolher Standard
                         </button>
                 </div>
@@ -266,13 +266,35 @@
                                 Relatórios avançados
                             </li>
                         </ul>
-                        <button class="plan-button primary" onclick="selecionarPlano(3, 'Premium', false)">
+                        <button class="plan-button primary" onclick="abrirModalPlanos()">
                             Escolher Premium
                         </button>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Modal de Seleção de Planos -->
+    <div class="modal-overlay" id="plansModal" style="display: none;">
+        <div class="modal-content plans-modal-content">
+            <div class="modal-header">
+                <h3>Escolher Novo Plano</h3>
+                <button class="modal-close" onclick="fecharModalPlanos()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Selecione o plano que melhor se adequa às suas necessidades:</p>
+                <div class="modal-plans-grid" id="modalPlansGrid">
+                    <!-- Planos serão carregados dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
         </div>
         <div class="modal-overlay" id="cancelModal">
         <div class="modal-content">
@@ -339,13 +361,13 @@
         </div>
     </div>
 
-    <script src="../../assets/scripts/auth.js"></script>
+    <script src="../../assets/scripts/request-manager.js"></script>
     <script>
         // Função para deslogar o usuário e redirecionar para login
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = "/login";
+            window.location.href = "/inc/Login.html";
         }
 
         // Função para selecionar e mudar o plano do usuário
@@ -356,7 +378,7 @@
             const token = localStorage.getItem("token");
             try {
                 console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
-                const response = await fetch("http://127.0.0.1:3000/api/user/change-plan", {
+                const response = await makeRequest("http://127.0.0.1:3000/api/user/change-plan", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -381,6 +403,109 @@
             }
         }
 
+        // Função para abrir modal de seleção de planos
+        async function abrirModalPlanos() {
+            const modal = document.getElementById('plansModal');
+            const modalGrid = document.getElementById('modalPlansGrid');
+            
+            // Carregar planos disponíveis
+            await carregarPlanosParaModal();
+            
+            // Mostrar modal
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+        }
+
+        // Função para fechar modal de planos
+        function fecharModalPlanos() {
+            const modal = document.getElementById('plansModal');
+            modal.style.display = 'none';
+            modal.classList.remove('active');
+        }
+
+        // Função para carregar planos no modal
+        async function carregarPlanosParaModal() {
+            const token = localStorage.getItem("token");
+            const modalGrid = document.getElementById('modalPlansGrid');
+            
+            try {
+                const response = await makeRequest("http://127.0.0.1:3000/api/user/planos", {
+                    headers: { Authorization: "Bearer " + token }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const planos = data.planos || [];
+                
+                // Limpar grid
+                modalGrid.innerHTML = '';
+                
+                // Criar cards dos planos
+                planos.forEach(plano => {
+                    const planCard = document.createElement('div');
+                    planCard.className = 'modal-plan-card';
+                    planCard.innerHTML = `
+                        <div class="modal-plan-header">
+                            <div class="modal-plan-name">${plano.Nome}</div>
+                            <div class="modal-plan-price">€${parseFloat(plano.Preco).toFixed(2)}</div>
+                        </div>
+                        <ul class="modal-plan-features">
+                            <li>Até ${plano.LimiteProdutos} produtos</li>
+                            <li>${plano.PermiteSMS ? 'SMS incluído' : 'Apenas Email'}</li>
+                            <li>${plano.Relatorios ? 'Relatórios incluídos' : 'Sem relatórios'}</li>
+                        </ul>
+                        <button class="modal-plan-button" onclick="prosseguirParaPagamento(${plano.Id}, '${plano.Nome}')">
+                            Escolher ${plano.Nome}
+                        </button>
+                    `;
+                    modalGrid.appendChild(planCard);
+                });
+                
+            } catch (error) {
+                console.error("Erro ao carregar planos:", error);
+                modalGrid.innerHTML = '<p>Erro ao carregar planos. Tente novamente.</p>';
+            }
+        }
+
+        // Função para prosseguir para pagamento Stripe
+        async function prosseguirParaPagamento(planoId, planoNome) {
+            const token = localStorage.getItem("token");
+            
+            try {
+                console.log(`Iniciando pagamento para plano: ${planoNome} (ID: ${planoId})`);
+                
+                const response = await makeRequest("http://127.0.0.1:3000/api/payment/create-checkout-session", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    },
+                    body: JSON.stringify({ planId: planoId })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log("Sessão Stripe criada:", data);
+                
+                if (data.url) {
+                    // Redirecionar para Stripe
+                    window.location.href = data.url;
+                } else {
+                    throw new Error("URL de pagamento não recebida");
+                }
+                
+            } catch (error) {
+                console.error("Erro ao criar sessão de pagamento:", error);
+                alert("Erro ao processar pagamento. Tente novamente.");
+            }
+        }
+
         // Função para abrir modal para cancelar assinatura
         function cancelarAssinatura() {
             const modal = document.getElementById('cancelModal');
@@ -398,7 +523,7 @@
             const token = localStorage.getItem("token");
             try {
                 console.log("Cancelando assinatura...");
-                const response = await fetch("http://127.0.0.1:3000/api/user/cancel-subscription", {
+                const response = await makeRequest("http://127.0.0.1:3000/api/user/cancel-subscription", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -427,25 +552,28 @@
             const token = localStorage.getItem("token");
             if (!token) {
                 alert("Precisa estar logado!");
-                window.location.href = "/login";
+                window.location.href = "/inc/Login.html";
                 return;
             }
             try {
                 console.log("[PLANOS] Iniciando carregamento da página...");
                 // Carregar perfil do usuário
-                const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+                const response = await makeRequest("http://127.0.0.1:3000/api/user/profile", {
                     headers: { Authorization: "Bearer " + token }
                 });
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log("Dados do usuário carregados:", data);
+                console.log("✅ [PLANOS] Dados do usuário carregados:", data);
 
                 // Atualizar nome do usuário no header
                 const userNameElement = document.getElementById('userName');
-                if (userNameElement && data.user) {
-                    userNameElement.textContent = data.user.Nome || 'Utilizador';
+                if (userNameElement && data.status === "ok" && data.profile) {
+                    userNameElement.textContent = data.profile.nome || 'Utilizador';
+                    console.log("✅ [PLANOS] Nome do usuário atualizado:", data.profile.nome);
+                } else {
+                    console.error("❌ [PLANOS] Estrutura de dados incorreta ou elemento não encontrado:", data);
                 }
 
                 // Carregar planos do banco de dados
@@ -465,7 +593,7 @@
             const token = localStorage.getItem("token");
             try {
                 console.log("Carregando plano atual do usuário...");
-                const response = await fetch("http://127.0.0.1:3000/api/planos", {
+                const response = await makeRequest("http://127.0.0.1:3000/api/user/planos", {
                     headers: { Authorization: "Bearer " + token }
                 });
                 if (!response.ok) {
@@ -616,7 +744,7 @@
                 const token = localStorage.getItem('token');
                 // Se for plano gratuito (Free), ativar diretamente
                 if (parseInt(id) === 1) {
-                    const response = await fetch('http://127.0.0.1:3000/api/user/change-plan', {
+                    const response = await makeRequest('http://127.0.0.1:3000/api/user/change-plan', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -633,7 +761,7 @@
                     return;
                 }
                 // Para planos pagos, criar sessão de checkout
-                const response = await fetch('http://127.0.0.1:3000/api/payment/create-checkout-session', {
+                const response = await makeRequest('http://127.0.0.1:3000/api/payment/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="../../assets/styles/painel.css">
     <link rel="stylesheet" href="../../assets/styles/perfil.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
-    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-    <script type="module" src="../../assets/scripts/auth.js"></script>
+    <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+    <script src="../../assets/scripts/request-manager.js"></script>
 </head>
 <body class="dashboard-body">
     <nav class="dashboard-nav">
@@ -18,7 +18,7 @@
                 <span class="nav-brand-name">PromoPing</span>
             </div>
             <div class="nav-menu">
-                <a href="/dashboard" class="nav-item">
+                <a href="Painel.html" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
@@ -27,7 +27,7 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="/dashboard/produtos" class="nav-item">
+                <a href="produtos.html" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                         <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
@@ -35,7 +35,7 @@
                     </svg>
                     Produtos
                 </a>
-                <a href="/dashboard/perfil" class="nav-item nav-item-active">
+                <a href="perfil.html" class="nav-item nav-item-active">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -313,7 +313,7 @@
     <script>
 
   // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
-  window.onload = async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     // Verificar se há token na URL (do Google OAuth)
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = urlParams.get('token');
@@ -334,32 +334,57 @@
     
     if (!token) {
       alert("Precisa estar logado!");
-      window.location.href = "/login";
+      window.location.href = "/inc/Login.html";
       return;
     }
 
     try {
-      // Buscar perfil do usuário da API
-      const resProfile = await fetch("http://127.0.0.1:3000/api/user/profile", {
+      // Primeiro carregar nome do usuário no header
+      await carregarNomeUsuario();
+      
+      // Depois buscar perfil do usuário da API
+      const resProfile = await makeRequest("http://127.0.0.1:3000/api/user/profile", {
         headers: { Authorization: "Bearer " + token }
       });
       const dataProfile = await resProfile.json();
+      console.log("🔍 [FRONTEND] Dados do perfil recebidos:", dataProfile);
 
       if (dataProfile.status === "ok") {
         const profile = dataProfile.profile;
-        document.getElementById("fullName").value = profile.nome || "";
-        document.getElementById("email").value = profile.email || "";
-        document.getElementById("phone").value = profile.telefone || "";
+        console.log("🔍 [FRONTEND] Perfil do usuário:", profile);
+        
+        // Verificar se os elementos existem
+        const fullNameEl = document.getElementById("fullName");
+        const emailEl = document.getElementById("email");
+        const phoneEl = document.getElementById("phone");
+        
+        console.log("🔍 [FRONTEND] Elementos encontrados:", {
+          fullName: !!fullNameEl,
+          email: !!emailEl,
+          phone: !!phoneEl
+        });
+        
+        if (fullNameEl) fullNameEl.value = profile.nome || "";
+        if (emailEl) emailEl.value = profile.email || "";
+        if (phoneEl) phoneEl.value = profile.telefone || "";
+        
+        console.log("✅ [FRONTEND] Campos preenchidos:", {
+          nome: profile.nome,
+          email: profile.email,
+          telefone: profile.telefone
+        });
 
         updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
         updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
+      } else {
+        console.error("❌ [FRONTEND] Erro na resposta da API:", dataProfile);
       }
 
       // Carregar notificações históricas do usuário
       await carregarNotificacoes();
 
       // Buscar estatísticas da conta do usuário
-      const resStats = await fetch("http://127.0.0.1:3000/api/user/stats", {
+      const resStats = await makeRequest("http://127.0.0.1:3000/api/user/stats", {
         headers: { Authorization: "Bearer " + token }
       });
       const dataStats = await resStats.json();
@@ -377,12 +402,12 @@
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);
     }
-  };
+  });
 
   // Função para remover token da storage e sair
   function logout() {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.location.href = "../inc/Login.html";
   }
 
   // Evento de submit das informações pessoais
@@ -395,7 +420,7 @@
     };
     try {
       // Salvar perfil editado na API
-      const res = await fetch("http://127.0.0.1:3000/api/user/profile", {
+      const res = await makeRequest("http://127.0.0.1:3000/api/user/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -434,7 +459,7 @@
     }
     try {
       // Enviar senha nova para API
-      const res = await fetch("http://127.0.0.1:3000/api/user/set-password", {
+      const res = await makeRequest("http://127.0.0.1:3000/api/user/set-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -468,13 +493,24 @@
     let tipo = '';
     if (nome.includes('email')) tipo = 'email';
     else if (nome.includes('sms')) tipo = 'sms';
+    else if (nome.includes('discord')) tipo = 'discord';
 
     if (contasMap[tipo] === 1) {
       button.textContent = "Conectado";
       button.className = "account-status connected";
+      button.onclick = null; // Remove evento de clique se conectado
     } else {
       button.textContent = "Conectar";
       button.className = "account-status disconnected";
+      
+      // Adicionar evento de clique baseado no tipo
+      if (tipo === 'discord') {
+        button.onclick = () => conectarDiscord();
+      } else if (tipo === 'email') {
+        button.onclick = () => conectarEmail();
+      } else if (tipo === 'sms') {
+        button.onclick = () => conectarSMS();
+      }
     }
   });
 }
@@ -483,7 +519,7 @@
 async function carregarNotificacoes() {
   const token = localStorage.getItem("token");
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/user/me", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/user/me", {
       headers: { Authorization: "Bearer " + token }
     });
     const data = await res.json();
@@ -512,7 +548,7 @@ document.getElementById("resetHistory").addEventListener("click", async () => {
   const token = localStorage.getItem("token");
 
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/user/notificacoes/reset", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/user/notificacoes/reset", {
       method: "DELETE",
       headers: { Authorization: "Bearer " + token }
     });
@@ -548,7 +584,7 @@ function updateNotificationPreferences(preferencias) {
     // Adicionar evento para salvar a alteração no switch
     toggle.addEventListener("change", async (e) => {
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/user/preferences", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/user/preferences", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -574,7 +610,7 @@ async function carregarPlano() {
   const token = localStorage.getItem("token");
 
   try {
-    const res = await fetch("http://127.0.0.1:3000/api/user/plano", {
+    const res = await makeRequest("http://127.0.0.1:3000/api/user/plano", {
       headers: { Authorization: "Bearer " + token }
     });
 
@@ -628,31 +664,96 @@ async function carregarPlano() {
 
 // Abre página de planos para troca de plano
 function abrirModalPlanos() {
-  window.location.href = "/dashboard/planos";
+  window.location.href = "planos.html";
 }
 
 // Busca o nome do usuário e preenche no topo do painel (nav)
 async function carregarNomeUsuario() {
   try {
+    console.log("🔍 [PERFIL] Carregando nome do usuário...");
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      console.error("❌ [PERFIL] Token não encontrado para carregar nome");
+      return;
+    }
 
-    const response = await fetch("http://127.0.0.1:3000/api/user/profile", {
+    const response = await makeRequest("http://127.0.0.1:3000/api/user/profile", {
       headers: { Authorization: "Bearer " + token }
     });
 
+    console.log("✅ [PERFIL] Resposta do perfil recebida:", response.status);
+
     if (response.ok) {
       const data = await response.json();
-      if (data.user) {
-        document.getElementById("userName").textContent = data.user.Nome || 'Utilizador';
+      console.log("✅ [PERFIL] Dados do perfil:", data);
+      
+      if (data.status === "ok" && data.profile) {
+        const userNameEl = document.getElementById("userName");
+        if (userNameEl) {
+          userNameEl.textContent = data.profile.nome || 'Utilizador';
+          console.log("✅ [PERFIL] Nome do usuário atualizado:", data.profile.nome);
+        } else {
+          console.error("❌ [PERFIL] Elemento userName não encontrado");
+        }
+      } else {
+        console.error("❌ [PERFIL] Estrutura de dados incorreta:", data);
       }
+    } else {
+      console.error("❌ [PERFIL] Erro na resposta:", response.status);
     }
   } catch (error) {
-    console.error("Erro ao carregar nome do usuário:", error);
+    console.error("❌ [PERFIL] Erro ao carregar nome do usuário:", error);
   }
 }
-// Carregar nome do usuário ao iniciar (exibe na nav geral)
-carregarNomeUsuario();
+
+// Funções de conexão para diferentes serviços
+async function conectarDiscord() {
+  try {
+    console.log("🔗 Iniciando conexão com Discord...");
+    
+    // Redirecionar para Discord OAuth
+    const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
+    window.location.href = discordAuthUrl;
+    
+  } catch (error) {
+    console.error("❌ Erro ao conectar Discord:", error);
+    alert("Erro ao conectar com Discord. Tente novamente.");
+  }
+}
+
+async function conectarEmail() {
+  try {
+    console.log("📧 Configurando email...");
+    
+    // Mostrar modal ou redirecionar para configuração de email
+    const email = prompt("Digite seu email para configuração:");
+    if (email && email.includes("@")) {
+      // Aqui você pode implementar a lógica de configuração de email
+      alert("Configuração de email em desenvolvimento!");
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro ao configurar email:", error);
+    alert("Erro ao configurar email. Tente novamente.");
+  }
+}
+
+async function conectarSMS() {
+  try {
+    console.log("📱 Configurando SMS...");
+    
+    // Mostrar modal ou redirecionar para configuração de SMS
+    const telefone = prompt("Digite seu número de telefone (com código do país):");
+    if (telefone && telefone.length >= 10) {
+      // Aqui você pode implementar a lógica de configuração de SMS
+      alert("Configuração de SMS em desenvolvimento!");
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro ao configurar SMS:", error);
+    alert("Erro ao configurar SMS. Tente novamente.");
+  }
+}
 
     </script>
 </body>

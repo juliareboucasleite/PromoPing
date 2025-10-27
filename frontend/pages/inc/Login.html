@@ -7,20 +7,29 @@
   <link rel="stylesheet" href="../../assets/styles/header.css">
   <link rel="stylesheet" href="../../assets/styles/login.css">
   <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
-  <script src="/inc/load-includes-login.js"></script>
 </head>
 <body class="login-page">
 
   <!-- ===== HEADER ===== -->
   <div id="header-login-include"></div>
-    <script>
-      fetch('/inc/header-login.html')
+
+  <!-- Scripts -->
+  <script src="../../assets/scripts/request-manager.js"></script>
+  <script src="../../assets/scripts/notification-system.js"></script>
+  <script src="/inc/load-includes-login.js"></script>
+  <script>
+    // Carregar header após RequestManager estar disponível
+    document.addEventListener('DOMContentLoaded', function() {
+      makeRequest('../../inc/header-login.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('header-login-include').innerHTML = html;
+        })
+        .catch(error => {
+          console.error('Erro ao carregar header:', error);
         });
-    </script>
-  </div>
+    });
+  </script>
 
   <!-- ===== MAIN ===== -->
   <main class="login-main">
@@ -100,17 +109,17 @@
             <span class="checkmark"></span>
             <span class="remember-me">Lembrar-me</span>
           </label>
-          <a href="inc/forgot-password.html" class="forgot-password">Esqueceu a palavra-passe?</a>
+          <a href="../../pages/inc/forgot-password.html" class="forgot-password">Esqueceu a palavra-passe?</a>
         </div>
 
         <div class="form-actions">
-          <a href="/pages/index.html" class="btn btn-ghost">Cancelar</a>
+          <a href="../../pages/index.html" class="btn btn-ghost">Cancelar</a>
           <button type="submit" class="btn btn-primary">Entrar</button>
         </div>
       </form>
 
       <div class="login-footer">
-        <p class="register-link">Não tem conta? <a href="inc/register.html">Registar</a></p>
+        <p class="register-link">Não tem conta? <a href="register.html">Registar</a></p>
       </div>
 
       <!-- Caixa de verificação de email -->
@@ -135,7 +144,6 @@
 
   <!-- ===== FOOTER ===== -->
   <div id="footer-placeholder"></div>
-
   <script>
     // ===== NAVIGATION FUNCTIONS =====
     function toggleNavigation() {
@@ -152,7 +160,7 @@
     document.getElementById("btnDiscord").addEventListener("click", async () => {
       try {
         // Verificar se usuário Discord já existe
-        const response = await fetch(`http://127.0.0.1:3000/api/auth/discord/check/916737425978589235`);
+        const response = await makeRequest(`http://127.0.0.1:3000/api/auth/discord/check/916737425978589235`);
         const data = await response.json();
         
         if (data.exists) {
@@ -174,7 +182,7 @@
     // ===== LOGIN NORMAL =====
     async function loginUser(email, password) {
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password })
@@ -228,7 +236,7 @@
       btn.textContent = "A enviar...";
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/sms", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telefone })
@@ -261,7 +269,7 @@
       btn.textContent = "A enviar...";
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/sms", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/sms", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telefone })
@@ -314,7 +322,7 @@
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/verify", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code })
@@ -324,13 +332,16 @@
 
         if (data.status === "ok" && data.token) {
           localStorage.setItem("token", data.token);
-          location.href = "Painel.html";
+          showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
+          setTimeout(() => {
+            window.location.href = "/dashboard/painel";
+          }, 2000);
         } else {
           alert(data.error || "Código inválido");
         }
       } catch (err) {
         console.error("Erro na verificação:", err);
-        alert("Erro de ligação com o servidor");
+        showError("Erro", "Erro de ligação com o servidor");
       }
     });
 
@@ -345,7 +356,7 @@
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/sms/verify", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/sms/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telefone, codigo })
@@ -354,7 +365,10 @@
 
         if (data.status === "ok" && data.token) {
           localStorage.setItem("token", data.token);
-          location.href = "Painel.html";
+          showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
+          setTimeout(() => {
+            window.location.href = "/dashboard/painel";
+          }, 2000);
         } else {
           alert(data.error || "Código inválido");
         }
@@ -501,7 +515,7 @@
     // Função de login direta
     async function loginEmail(email, password) {
       try {
-        const res = await fetch("http://127.0.0.1:3000/api/auth/login", {
+        const res = await makeRequest("http://127.0.0.1:3000/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password })
@@ -510,13 +524,16 @@
         
         if (data.status === "ok" && data.token) {
           localStorage.setItem("token", data.token);
-          window.location.href = "/dashboard";
+          showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
+          setTimeout(() => {
+            window.location.href = "/dashboard/painel";
+          }, 2000);
         } else {
-          alert(data.error || "Erro no login");
+          showError("Erro de Login", data.error || "Email ou senha incorretos");
         }
       } catch (err) {
         console.error("Erro no login:", err);
-        alert("Erro de ligação com o servidor");
+        showError("Erro", "Erro de ligação com o servidor");
       }
     }
 

@@ -649,3 +649,162 @@
         font-size: 2rem;
     }
 }
+
+/* ===== MODAL DE PLANOS ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.plans-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1rem 2rem 2rem 2rem;
+}
+
+.modal-body p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.modal-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.modal-plan-card {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.modal-plan-card:hover {
+    border-color: #f1a86b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(241, 168, 107, 0.15);
+}
+
+.modal-plan-header {
+    margin-bottom: 1rem;
+}
+
+.modal-plan-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.modal-plan-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f1a86b;
+}
+
+.modal-plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.modal-plan-features li {
+    padding: 0.5rem 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.modal-plan-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f1a86b 0%, #eea23f 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-plan-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(241, 168, 107, 0.3);
+}
+
+@media (max-width: 768px) {
+    .modal-plans-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plans-modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-header {
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
+    }
+}
