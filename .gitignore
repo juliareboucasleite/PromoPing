@@ -1,3 +1,9 @@
-.env
+
 node_modules
 discord-users.json
+.env
+.env.local
+.env.*
+!env.example
+ANALISE_SEGURANCA.md
+*.md
