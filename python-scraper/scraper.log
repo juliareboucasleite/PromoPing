@@ -1,0 +1,62 @@
+2025-10-27 20:55:29,738 - scraper_test - ERROR - [DB] Erro ao buscar com JOIN: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 20:55:29,740 - scraper_test - INFO - [DB] Fallback: 4 produtos com plano Free padrão
+2025-10-27 20:55:35,727 - undetected_chromedriver.patcher - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 20:56:32,727 - undetected_chromedriver.patcher - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 20:56:51,534 - undetected_chromedriver.patcher - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 20:57:06,725 - scraper_test - INFO - [COOKIES] Cookies aceitos via botão genérico: configuração de cookies
+2025-10-27 20:57:44,131 - __main__ - INFO - ==================================================
+2025-10-27 20:57:44,162 - scraper_test - ERROR - [DB] Erro ao buscar com JOIN: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 20:57:44,163 - scraper_test - INFO - [DB] Fallback: 4 produtos com plano Free padrão
+2025-10-27 20:57:46,284 - undetected_chromedriver.patcher - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 20:57:57,908 - scraper_test - INFO - [COOKIES] Cookies aceitos via botão genérico: rejeitar cookies
+2025-10-27 20:57:57,962 - scraper_test - INFO - [DB] Updated produto 38 -> €1499.0
+2025-10-27 20:58:09,498 - scraper_test - INFO - [COOKIES] Cookies aceitos via botão genérico: configuração de cookies
+2025-10-27 20:58:11,543 - scraper_test - INFO - [DB] Updated produto 44 -> €181.2
+2025-10-27 20:58:11,549 - __main__ - INFO - 
+==================================================
+2025-10-27 20:58:11,550 - __main__ - INFO - ==================================================
+2025-10-27 21:25:16,579 - __main__ - INFO - TESTE DE ATUALIZAÇÃO DE PREÇOS
+2025-10-27 21:25:16,579 - __main__ - INFO - ==================================================
+2025-10-27 21:25:16,616 - scraper_test - ERROR - [DB] Erro ao buscar com JOIN: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 21:25:16,617 - scraper_test - INFO - [DB] Fallback: 4 produtos com plano Free padrão
+2025-10-27 21:25:16,617 - __main__ - INFO - Encontrados 4 produtos
+2025-10-27 21:25:18,529 - undetected_chromedriver.patcher - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 21:25:21,754 - __main__ - INFO - Driver Chrome criado
+2025-10-27 21:25:21,755 - __main__ - INFO - 
+Testando: iPhone 17 Pro Max APPLE (6.9'' - 256 GB - Prateado)
+2025-10-27 21:25:21,755 - __main__ - INFO - Link: https://www.worten.pt/produtos/iphone-17-pro-max-apple-6-9-256-gb-prateado-8600349
+2025-10-27 21:25:21,755 - __main__ - INFO - Preço alvo: €700.00
+2025-10-27 21:25:50,166 - __main__ - INFO - Worten: €1499.0
+2025-10-27 21:25:50,182 - scraper_test - INFO - [DB] Updated produto 38 -> €1499.0
+2025-10-27 21:25:50,188 - __main__ - INFO - 
+Testando: Cadeira de Escritório Urban Factory Ergo Ajustável ESC01UF
+2025-10-27 21:25:50,188 - __main__ - INFO - Link: https://www.fnac.pt/Cadeira-de-Escritorio-Urban-Factory-Ergo-Ajustavel-ESC01UF-Periferico-ou-Jogo-Cadeiras-gaming/a9374108?oref=60876c5d-d454-83a8-1a01-4fce696b7feb
+2025-10-27 21:25:50,189 - __main__ - INFO - Preço alvo: €500.00
+2025-10-27 21:26:03,908 - scraper_test - INFO - [COOKIES] Cookies aceitos via botão genérico: configuração de cookies
+2025-10-27 21:26:05,944 - __main__ - INFO - Fnac: €181.2
+2025-10-27 21:26:05,951 - scraper_test - INFO - [DB] Updated produto 44 -> €181.2
+2025-10-27 21:26:05,955 - __main__ - INFO - META ATINGIDA! €181.2 <= €500.00
+2025-10-27 21:26:05,955 - __main__ - INFO - 
+==================================================
+2025-10-27 21:26:05,955 - __main__ - INFO - RESUMO DO TESTE
+2025-10-27 21:26:05,955 - __main__ - INFO - ==================================================
+2025-10-27 21:26:05,955 - __main__ - INFO - Produtos atualizados: 2
+2025-10-27 21:26:05,955 - __main__ - INFO - Erros: 0
+2025-10-27 21:26:05,956 - __main__ - INFO - Total testado: 2
+2025-10-27 21:26:05,956 - __main__ - INFO - TESTE BEM-SUCEDIDO! Preços foram atualizados no banco.
+2025-10-27 21:26:06,227 - __main__ - INFO - Driver fechado
+2025-10-27 21:29:31,839 - WARNING - [DB] Fallback para estrutura simples: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 21:29:31,840 - INFO - [DB] 4 produtos com plano Free
+2025-10-27 21:48:35,791 - WARNING - [DB] Fallback para estrutura simples: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 21:48:35,792 - INFO - [DB] 4 produtos com plano Free
+2025-10-27 21:49:01,491 - INFO - patching driver executable C:\Users\julia\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-10-27 21:49:04,578 - INFO - PromoPing Monitor iniciado
+2025-10-27 21:49:04,622 - WARNING - [DB] Fallback para estrutura simples: 1054 (42S22): Unknown column 'p.UsuarioId' in 'field list'
+2025-10-27 21:49:04,624 - INFO - [DB] 4 produtos com plano Free
+2025-10-27 21:49:04,625 - INFO - [4 produtos] 21:49:04
+2025-10-27 21:49:17,712 - WARNING - [ERRO] Maybelline Rímel Lash Sensational Sky High lavável, volume, alongamento, definição, ondulação, multiplicação, fórmula montável, preto mais preto, 1 un: preço não encontrado
+2025-10-27 21:49:27,673 - INFO - [OK] iPhone 17 Pro Max APPLE (6.9'' - 256 GB - Prateado) (Worten): €1499.0 [8.96s]
+2025-10-27 21:49:27,682 - INFO - [UPDATE] Produto 56: €1499.0
+2025-10-27 21:49:28,683 - INFO - Resumo: 2 atualizados, 2 aguardando, 0 metas
+2025-10-27 21:49:28,684 - INFO - Aguardando 24h...
+

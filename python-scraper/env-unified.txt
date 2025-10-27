@@ -1,0 +1,97 @@
+# ================== CONFIGURAÇÕES DO SERVIDOR ==================
+PORT=3000
+NODE_ENV=development
+
+# ================== BASE DE DADOS ==================
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=pap
+DB_PORT=3306
+
+# ================== JWT ==================
+JWT_SECRET=84cb5323dfc407e099408883c567b60bfebadcf3241962ed92b10e0f9bab4f469767f45b6eac3ed9fc24aabea29619fd6502baffa7a7f926f73a5fb2997a3ed1
+
+# ================== GOOGLE OAUTH ==================
+GOOGLE_CLIENT_ID=928179391463-kkjun7plqvf61la74t0c975gjaleu51g.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+
+# ================== DISCORD OAUTH ==================
+DISCORD_CLIENT_ID=1417874318058328144
+DISCORD_CLIENT_SECRET=XozkYHBYlgxc5ElzrmcEsTligZ8qVV78
+
+# ================== REDIRECIONAMENTOS ==================
+LOGIN_URL=/inc/Login.html
+AFTER_LOGIN_REDIRECT=/dashboard/painel
+
+# ================== EMAIL ==================
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=juliareboucasleite@gmail.com
+EMAIL_PASS=atttloepbyaqrpw42n5bmz6wtkxgceg2
+
+# ================== STRIPE ==================
+STRIPE_SECRET_KEY=sk_test_51SDRWtGrMl3CuuWdzxMTyaKzJ3qz7miDJFUk6GjC4O6rvRSoGwhutHslHm2OSVrozeTv9MRiSShxT9GJbrnNoTYm0070tYricc
+STRIPE_PUBLISHABLE_KEY=pk_test_51SDRWtGrMl3CuuWdPYYkcV6brX4uV6IuHXZ4RrkDdKNvDMan4GujT5QMfZXLV9OFcYvzzG0qdsqlP8AUcNjBzvow00ITjRMa4u
+STRIPE_BASIC_PRICE_ID=price_1SDRf3GrMl3CuuWdZL5M3DIQ
+STRIPE_STANDARD_PRICE_ID=price_1SGJlHGrMl3CuuWdL4BcHr2e
+STRIPE_PREMIUM_PRICE_ID=price_1SKOwlGrMl3CuuWd6BzuUDqu
+
+# ================== OUTRAS CONFIGURAÇÕES ==================
+SESSION_SECRET=seu_session_secret_aqui
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# ================== CONFIGURAÇÕES ADICIONAIS ==================
+CORS_ORIGIN=http://127.0.0.1:3000
+TRUST_PROXY=true
+COMPRESSION_ENABLED=true
+HELMET_ENABLED=true
+
+# ================== LOGS ==================
+LOG_LEVEL=info
+LOG_FILE=logs/app.log
+
+# ================== CACHE ==================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# ================== UPLOAD ==================
+UPLOAD_MAX_SIZE=10485760
+UPLOAD_PATH=uploads/
+
+# ================== SECURITY ==================
+BCRYPT_ROUNDS=12
+TOKEN_EXPIRES_IN=7d
+REFRESH_TOKEN_EXPIRES_IN=30d
+
+# ================== NOTIFICATIONS ==================
+PUSH_NOTIFICATIONS_ENABLED=true
+EMAIL_NOTIFICATIONS_ENABLED=true
+SMS_NOTIFICATIONS_ENABLED=false
+
+# ================== PYTHON SCRAPER ==================
+# Tempo em segundos entre cada ciclo de verificação
+CYCLE_INTERVAL=120
+
+# Define se o Chrome roda oculto (headless)
+# False = mostra o navegador (recomendado para Amazon)
+# True = roda em segundo plano (pode causar bloqueio na Amazon)
+HEADLESS=False
+
+# Tempo máximo de espera para elementos (segundos)
+MAX_WAIT=10
+
+# User Agent para requests
+USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+
+# Configurações de notificações do scraper
+NOTIFICATION_ENABLED=false
+NOTIFICATION_WEBHOOK_URL=
+
+# Configurações de email do scraper (opcional)
+EMAIL_ENABLED=false
+EMAIL_SMTP=smtp.gmail.com
+EMAIL_USER=juliareboucasleite@gmail.com
+EMAIL_PASSWORD=atttloepbyaqrpw42n5bmz6wtkxgceg2
