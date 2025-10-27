@@ -7,105 +7,8 @@ import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 
 // ================== PERFIL DO UTILIZADOR ==================
-// Rota /profile (alias para /me)
-router.get("/profile", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    // Info do utilizador
-    const [users] = await pool.query(
-      "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
-      [userId]
-    );
-    const user = users[0];
-
-    // Verificar se é usuário Discord e buscar dados do JSON
-    let discordData = null;
-    try {
-      const fs = await import('fs');
-      const path = await import('path');
-      const filePath = path.join(process.cwd(), 'backend', 'data', 'discord-users.json');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      const discordUsers = JSON.parse(fileContent);
-      
-      // Buscar usuário Discord pelo userId
-      const discordUser = discordUsers.users.find(u => u.userId === userId);
-      if (discordUser) {
-        discordData = {
-          username: discordUser.username,
-          email: discordUser.email,
-          avatar: discordUser.avatar,
-          discordId: discordUser.discordId
-        };
-        console.log("Dados Discord encontrados:", discordData);
-      } else {
-        console.log("Usuário Discord não encontrado para userId:", userId);
-      }
-    } catch (discordError) {
-      console.log("ℹ️ Erro ao buscar dados Discord:", discordError.message);
-    }
-
-    // Buscar configuração do usuário (plano atual)
-    const [configRows] = await pool.query(
-      `SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.IntervaloVerificacao, p.PermiteSMS, p.Relatorios
-       FROM configutilizador c
-       LEFT JOIN planos p ON c.PlanoAtualId = p.Id
-       WHERE c.UserId = ?`,
-      [userId]
-    );
-
-    const userConfig = configRows.length > 0 ? configRows[0] : null;
-
-    // Estatísticas
-    const [statsRows] = await pool.query(
-      `SELECT 
-          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
-          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
-          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
-      [userId, userId, userId]
-    );
-
-    // Histórico notificações
-    const [notificacoesRows] = await pool.query(
-      "SELECT * FROM Notificacoes WHERE UserId = ? ORDER BY Data DESC LIMIT 5",
-      [userId]
-    );
-
-    // Se tem dados do Discord, usar eles, senão usar dados do banco
-    const finalUser = discordData ? {
-      ...user,
-      Nome: discordData.username,
-      Email: discordData.email,
-      DiscordData: discordData
-    } : user;
-    
-    // Adicionar dados do plano
-    if (userConfig) {
-      finalUser.plano_nome = userConfig.plano_nome || 'Free';
-      finalUser.LimiteProdutos = userConfig.LimiteProdutos;
-      finalUser.StatusAssinatura = userConfig.StatusAssinatura;
-      finalUser.DataExpiracao = userConfig.DataExpiracao;
-    }
-    
-    console.log("🔍 Dados finais do usuário:", finalUser);
-
-    res.json({
-      status: "success",
-      user: {
-        ...finalUser,
-        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' // 🔹 Data formatada
-      },
-      stats: statsRows[0],
-      notificacoes: notificacoesRows
-    });
-  } catch (error) {
-    console.error("❌ Erro ao buscar perfil:", error);
-    res.status(500).json({
-      status: "error",
-      error: "Erro interno do servidor"
-    });
-  }
-});
+// Rota /profile (alias para /me) - REMOVIDA (duplicada)
+// A rota principal está na linha 162
 
 router.get("/me", verifyToken, async (req, res) => {
   try {
@@ -162,6 +65,7 @@ router.get("/me", verifyToken, async (req, res) => {
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("🔍 [BACKEND] Buscando perfil para userId:", userId);
 
     // Dados pessoais
     const [userRows] = await pool.query(
@@ -169,7 +73,10 @@ router.get("/profile", verifyToken, async (req, res) => {
       [userId]
     );
 
+    console.log("🔍 [BACKEND] Dados do usuário encontrados:", userRows);
+
     if (userRows.length === 0) {
+      console.log("❌ [BACKEND] Usuário não encontrado para userId:", userId);
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
@@ -186,7 +93,7 @@ router.get("/profile", verifyToken, async (req, res) => {
       [userId]
     );
 
-    res.json({
+    const response = {
       status: "ok",
       profile: {
         nome: userRows[0]?.Nome,
@@ -195,9 +102,12 @@ router.get("/profile", verifyToken, async (req, res) => {
         contas_conectadas: contas,
         preferencias: prefs
       }
-    });
+    };
+
+    console.log("✅ [BACKEND] Resposta do perfil:", response);
+    res.json(response);
   } catch (err) {
-    console.error("Erro ao buscar perfil:", err);
+    console.error("❌ [BACKEND] Erro ao buscar perfil:", err);
     res.status(500).json({ status: "error", error: err.message });
   }
 });
