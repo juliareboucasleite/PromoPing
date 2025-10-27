@@ -4,31 +4,37 @@ import { formatDate } from "../utils/format.js";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
-import { atualizarPrecos } from "../services/atualizarPrecos.js";
+// import { atualizarPrecos } from "../services/atualizarPrecos.js"; // Removido - sem atualização automática
 // import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
 
 const router = express.Router();
 
-// Função auxiliar para salvar preço no histórico
-async function salvarPreco(produtoId, preco) {
-    await pool.query(
-        `INSERT INTO HistoricoPrecos (ProdutoId, Preco, DataRegisto) 
-         VALUES (?, ?, NOW())`,
-        [produtoId, preco]
-    );
-}
+// Função auxiliar para salvar preço no histórico - REMOVIDA
+// Não há mais atualização automática de preços
 
 // ➕ Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
     try {
         const { nome, link, data, precoAlvo } = req.body;
+        
+        console.log("📝 Dados recebidos:", { nome, link, data, precoAlvo });
+        console.log("🔍 Validação:", { 
+            nome: !!nome, 
+            link: !!link, 
+            precoAlvo: !!precoAlvo, 
+            isNumber: !isNaN(Number(precoAlvo)),
+            isPositive: Number(precoAlvo) > 0
+        });
 
-        if (!nome || !link || !data) {
+        if (!nome || !link || !precoAlvo || isNaN(Number(precoAlvo)) || Number(precoAlvo) <= 0) {
+            console.log("❌ Validação falhou");
             return res.status(400).json({ 
                 status: "error", 
-                message: "Preencha todos os campos obrigatórios" 
+                message: "Preencha os campos obrigatórios (nome, link e preço alvo válido)" 
             });
         }
+        
+        console.log("✅ Validação passou");
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
@@ -56,13 +62,17 @@ router.post("/", verifyToken, async (req, res) => {
         }
 
         // detectar loja pelo link
+        console.log("🔍 Detectando loja para:", link);
         const store = detectStore(link);
+        console.log("🏪 Loja detectada:", store);
 
-        // inserir produto com loja detectada
+        // inserir produto com loja detectada (apenas data é opcional)
+        console.log("💾 Inserindo produto no banco...");
         const [result] = await pool.query(
             "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo) VALUES (?, ?, ?, ?, ?, ?)",
-            [req.user.id, nome, link, data, store.name, precoAlvo ?? null]
+            [req.user.id, nome, link, data || null, store.name, Number(precoAlvo)]
         );
+        console.log("✅ Produto inserido com ID:", result.insertId);
 
         res.json({ 
             status: "ok", 
@@ -76,7 +86,13 @@ router.post("/", verifyToken, async (req, res) => {
             storeInfo: store
         });
     } catch (err) {
-        console.error("Erro ao adicionar produto:", err);
+        console.error("❌ Erro ao adicionar produto:", err);
+        console.error("📊 Detalhes do erro:", {
+            message: err.message,
+            code: err.code,
+            sqlState: err.sqlState,
+            sqlMessage: err.sqlMessage
+        });
         res.status(500).json({ 
             status: "error", 
             message: "Erro interno do servidor" 
@@ -87,6 +103,8 @@ router.post("/", verifyToken, async (req, res) => {
 // 📋 Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
+        console.log("🔍 [BACKEND] Buscando produtos para userId:", req.user.id);
+        
         // Buscar produtos com data criada e link
         const [produtos] = await pool.query(
             `SELECT Id, Nome, Link, PrecoAtual, PrecoAlvo, DataCriacao, DataLimite, Loja 
@@ -94,6 +112,8 @@ router.get("/", verifyToken, async (req, res) => {
              WHERE UserId = ?`,
             [req.user.id]
         );
+
+        console.log("🔍 [BACKEND] Produtos encontrados:", produtos.length);
 
         // Buscar histórico de preços separado
         let historicos = [];
@@ -132,9 +152,12 @@ router.get("/", verifyToken, async (req, res) => {
             };
         });
         
+        console.log("✅ [BACKEND] Produtos mapeados:", produtosMap.length);
+        console.log("✅ [BACKEND] Primeiro produto:", produtosMap[0]);
+        
         res.json({ status: "ok", produtos: produtosMap });
     } catch (err) {
-        console.error("Erro ao listar produtos:", err);
+        console.error("❌ [BACKEND] Erro ao listar produtos:", err);
         res.status(500).json({ 
             status: "error", 
             message: "Erro interno do servidor" 
@@ -221,117 +244,11 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// 🔄 Refresh manual
-router.post("/refresh", verifyToken, async (req, res) => {
-  try {
-    const result = await atualizarPrecos(req.user.id);
+// 🔄 Refresh manual - REMOVIDO
+// Funcionalidade de atualização automática de preços removida
 
-    if (result.error) {
-      return res.status(403).json({ 
-        status: "error", 
-        message: result.error 
-      });
-    }
-
-    res.json(result);
-  } catch (err) {
-    console.error("Erro no refresh manual:", err);
-    res.status(500).json({ 
-      status: "error", 
-      message: "Erro interno do servidor" 
-    });
-  }
-});
-
-// 🔄 Atualizar preço de produto específico
-router.post("/:id/refresh", verifyToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
-        
-        console.log(`🔄 Atualizando produto específico ${id} para usuário ${userId}`);
-        
-        // Verificar se o produto pertence ao usuário e buscar plano
-        const [produto] = await pool.query(
-            `SELECT p.*, c.PlanoAtualId, pl.Nome as PlanoNome
-             FROM Produtos p
-             JOIN ConfigUtilizador c ON c.UserId = p.UserId
-             JOIN Planos pl ON pl.Id = c.PlanoAtualId
-             WHERE p.Id = ? AND p.UserId = ?`,
-            [id, userId]
-        );
-        
-        if (produto.length === 0) {
-            return res.status(404).json({ 
-                status: "error", 
-                message: "Produto não encontrado" 
-            });
-        }
-        
-        const p = produto[0];
-        
-        // Verificar intervalo de verificação para produto específico
-        const ultimaAtualizacao = p.UpdatedAt || new Date(0);
-        const agora = new Date();
-        const diffHoras = (agora - ultimaAtualizacao) / (1000 * 60 * 60);
-        
-        // Checar regra de refresh individual
-        // Verificação de intervalo removida - coluna VerificacaoIntervalo não existe
-        
-        // Função temporária de scraping - substituir pela implementação real
-        async function fetchPreco(link) {
-            // TODO: Implementar scraping real ou integração com API
-            // Por enquanto retorna valor aleatório para testes
-            return (Math.random() * 1000).toFixed(2);
-        }
-        
-        const novoPreco = await fetchPreco(p.Link);
-        
-        // Atualiza PrecoAtual no produto
-        await pool.query(
-            "UPDATE Produtos SET PrecoAtual = ?, UpdatedAt = NOW() WHERE Id = ?",
-            [novoPreco, p.Id]
-        );
-        
-        // Salva no histórico
-        await salvarPreco(p.Id, novoPreco);
-        
-        // WhatsApp desabilitado
-        // try {
-        //     const [userData] = await pool.query(
-        //         "SELECT Telefone FROM Utilizadores WHERE Id = ?",
-        //         [userId]
-        //     );
-        //     
-        //     if (userData.length > 0 && userData[0].Telefone) {
-        //         await enviarWhatsApp(userData[0].Telefone, `${p.Nome}: €${novoPreco}`);
-        //         console.log(`WhatsApp enviado para ${userData[0].Telefone}`);
-        //     }
-        // } catch (whatsappError) {
-        //     console.error("Erro ao enviar WhatsApp:", whatsappError);
-        //     // Não falha a operação se o WhatsApp der erro
-        // }
-        
-        console.log(`✅ Produto ${p.Nome} atualizado para €${novoPreco} (Plano: ${p.PlanoNome})`);
-        
-        res.json({ 
-            status: "ok", 
-            message: "Preço atualizado com sucesso",
-            produto: {
-                id: p.Id,
-                nome: p.Nome,
-                novoPreco: novoPreco
-            },
-            plano: p.PlanoNome
-        });
-    } catch (err) {
-        console.error("Erro no refresh individual:", err);
-        res.status(500).json({ 
-            status: "error", 
-            message: "Erro ao atualizar preço do produto" 
-        });
-    }
-});
+// 🔄 Atualizar preço de produto específico - REMOVIDO
+// Funcionalidade de atualização automática de preços removida
 
 // 📊 Verificar se há produtos atualizados recentemente
 router.get("/sync", verifyToken, async (req, res) => {
@@ -346,10 +263,36 @@ router.get("/sync", verifyToken, async (req, res) => {
         `;
         let params = [userId];
         
-        // Se foi fornecido um timestamp, buscar apenas produtos atualizados depois dele
+        // Validar e sanitizar lastSync se fornecido
         if (lastSync) {
+            // Validar se lastSync é um número válido
+            const timestamp = parseInt(lastSync);
+            if (isNaN(timestamp) || timestamp < 0) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Timestamp inválido fornecido"
+                });
+            }
+            
+            // Validar se o timestamp não é muito antigo (máximo 1 ano)
+            const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
+            if (timestamp < oneYearAgo) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Timestamp muito antigo"
+                });
+            }
+            
+            // Validar se o timestamp não é no futuro
+            if (timestamp > Date.now()) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Timestamp no futuro não é permitido"
+                });
+            }
+            
             query += " AND UpdatedAt > ?";
-            params.push(new Date(parseInt(lastSync)));
+            params.push(new Date(timestamp));
         }
         
         const [produtos] = await pool.query(query, params);
