@@ -87,7 +87,7 @@ const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 // Rate limiting mais permissivo para OAuth (Google, Discord, etc.)
 const oauthLimiter = rateLimit({
@@ -281,7 +281,7 @@ app.get("/auth/discord", (req, res) => {
 });
 
 app.get("/auth/discord/callback", (req, res) => {
-  console.log("🔄 Redirecionando callback Discord para API com query:", JSON.stringify(req.query));
+  console.log("Redirecionando callback Discord para API com query:", JSON.stringify(req.query));
   // Preservar os parâmetros da query string
   const queryString = new URLSearchParams(req.query).toString();
   res.redirect(`/api/auth/discord/callback?${queryString}`);

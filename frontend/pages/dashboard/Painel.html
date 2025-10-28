@@ -527,50 +527,50 @@
 
       // Carrega todos os produtos do usuário por fetch e atualiza o DOM com a lista (refaz cards)
       async function carregarProdutos() {
-        console.log("🔍 [PAINEL] Iniciando carregamento de produtos...");
+        console.log("[PAINEL] Iniciando carregamento de produtos...");
         const productsList = document.getElementById("productsList");
         
         if (!productsList) {
-          console.error("❌ [PAINEL] Elemento productsList não encontrado!");
+          console.error("[PAINEL] Elemento productsList não encontrado!");
           return;
         }
         
         const token = localStorage.getItem("token");
-        console.log("🔍 [PAINEL] Token encontrado:", !!token);
+        console.log("[PAINEL] Token encontrado:", !!token);
         
         if (!token) {
-          console.error("❌ [PAINEL] Token não encontrado no localStorage!");
+          console.error("[PAINEL] Token não encontrado no localStorage!");
           productsList.innerHTML = "<p>Erro: Token não encontrado. Faça login novamente.</p>";
           return;
         }
         
         try {
-          console.log("🔍 [PAINEL] Fazendo requisição para API...");
+          console.log("[PAINEL] Fazendo requisição para API...");
           const res = await makeRequest("http://127.0.0.1:3000/api/produtos", {
             headers: { Authorization: "Bearer " + token }
           });
           
-          console.log("✅ [PAINEL] Resposta recebida, status:", res.status);
+          console.log("[PAINEL] Resposta recebida, status:", res.status);
           const data = await res.json();
-          console.log("✅ [PAINEL] Dados recebidos:", data);
+          console.log("[PAINEL] Dados recebidos:", data);
           
           productsList.innerHTML = "";
           
           if (data.status === "ok" && data.produtos && data.produtos.length > 0) {
-            console.log("✅ [PAINEL] Produtos encontrados:", data.produtos.length);
+            console.log("[PAINEL] Produtos encontrados:", data.produtos.length);
             document.getElementById("productCount").textContent = data.produtos.length;
             
             data.produtos.forEach((p, index) => {
-              console.log(`🔍 [PAINEL] Criando card para produto ${index + 1}:`, p.Nome);
+              console.log(`[PAINEL] Criando card para produto ${index + 1}:`, p.Nome);
               productsList.insertAdjacentHTML("beforeend", createProductCard(p));
             });
           } else {
-            console.log("ℹ️ [PAINEL] Nenhum produto encontrado");
+            console.log("[PAINEL] Nenhum produto encontrado");
             productsList.innerHTML = "<p>Nenhum produto encontrado.</p>";
             document.getElementById("productCount").textContent = 0;
           }
         } catch (err) {
-          console.error("❌ [PAINEL] Erro ao carregar produtos:", err);
+          console.error("[PAINEL] Erro ao carregar produtos:", err);
           if (err.message.includes('Rate limit')) {
             productsList.innerHTML = "<p>Muitas requisições. Aguarde alguns minutos.</p>";
           } else {
