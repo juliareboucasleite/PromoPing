@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>FAQ | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
+            </a>
+          </li>
+          <li>
+            <a href="installation.html" class="sidebar-nav-link">
+              Guia de Instalação
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
+          </li>
+          <li>
+            <a href="api-reference.html" class="sidebar-nav-link">
+              Referência da API
+            </a>
+          </li>
+          <!-- Support -->
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" class="sidebar-nav-link">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="faq.html" class="sidebar-nav-link active">
+              FAQ
+            </a>
+          </li>
+          <li>
+            <a href="service-status.html" class="sidebar-nav-link">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="incident-history.html" class="sidebar-nav-link">
+              Histórico de Incidentes
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" class="sidebar-nav-link">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Perguntas Frequentes (FAQ)</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <h2>Perguntas Gerais</h2>
+      
+      <div class="faq-item">
+        <h3>O que é o PromoPing?</h3>
+        <p>O PromoPing é uma plataforma de monitoramento de preços que permite acompanhar produtos em múltiplas lojas online portuguesas e receber notificações automáticas quando os preços baixam, ajudando os utilizadores a poupar dinheiro nas suas compras.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Como funciona o sistema de monitoramento?</h3>
+        <p>O PromoPing utiliza um sistema Python Scraper que verifica periodicamente os preços dos produtos nas lojas suportadas. Quando um preço atinge a meta definida pelo utilizador, o sistema envia notificações via Discord, email ou SMS.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Quais lojas são suportadas?</h3>
+        <p>O PromoPing suporta mais de 20 lojas, incluindo Worten, FNAC, Continente, Pingo Doce, IKEA, Radio Popular, Auchan, PcDiga, Amazon e muitas outras. O sistema detecta automaticamente a loja a partir da URL do produto.</p>
+      </div>
+
+      <h2>Conta e Autenticação</h2>
+      
+      <div class="faq-item">
+        <h3>Como criar uma conta?</h3>
+        <p>Pode criar uma conta através do registo tradicional com email e password, ou usar login social com Google OAuth. Acesse a página de registo e siga as instruções.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Esqueci-me da password. Como recuperar?</h3>
+        <p>Na página de login, clique em "Esqueci-me da password" e siga as instruções enviadas por email. Se não receber o email, verifique a pasta de spam.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Posso usar login social?</h3>
+        <p>Sim! O PromoPing suporta login com Google OAuth e Discord. Basta clicar no botão correspondente na página de login.</p>
+      </div>
+
+      <h2>Planos e Limites</h2>
+      
+      <div class="faq-item">
+        <h3>Quais são os planos disponíveis?</h3>
+        <p>O PromoPing oferece 4 planos:</p>
+        <ul>
+          <li><strong>Free:</strong> 5 produtos, verificação a cada 24h</li>
+          <li><strong>Basic:</strong> 25 produtos, verificação a cada 4h</li>
+          <li><strong>Standard:</strong> 100 produtos, verificação a cada 30min</li>
+          <li><strong>Premium:</strong> 500 produtos, verificação a cada 5min</li>
+        </ul>
+      </div>
+
+      <div class="faq-item">
+        <h3>Posso alterar o meu plano?</h3>
+        <p>Sim, pode alterar o seu plano a qualquer momento através da página de planos no dashboard. As alterações são aplicadas imediatamente.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>O que acontece se exceder o limite do meu plano?</h3>
+        <p>Se exceder o limite de produtos, será notificado e poderá fazer upgrade do plano ou remover alguns produtos. O sistema continuará a monitorizar os produtos dentro do limite.</p>
+      </div>
+
+      <h2>Notificações</h2>
+      
+      <div class="faq-item">
+        <h3>Como configurar notificações?</h3>
+        <p>No dashboard, vá para "Preferências" e configure os canais de notificação desejados (Discord, email, SMS). Pode personalizar a frequência e tipos de alertas.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Porque não estou a receber notificações?</h3>
+        <p>Verifique se:</p>
+        <ul>
+          <li>As notificações estão ativadas nas preferências</li>
+          <li>O email está correto e verificado</li>
+          <li>O bot do Discord está adicionado ao servidor</li>
+          <li>As notificações não estão na pasta de spam</li>
+        </ul>
+      </div>
+
+      <div class="faq-item">
+        <h3>Posso desativar notificações temporariamente?</h3>
+        <p>Sim, pode pausar as notificações nas preferências ou desativar notificações para produtos específicos.</p>
+      </div>
+
+      <h2>Problemas Técnicos</h2>
+      
+      <div class="faq-item">
+        <h3>O site não carrega. O que fazer?</h3>
+        <p>Verifique se:</p>
+        <ul>
+          <li>Tem ligação à internet</li>
+          <li>O servidor está online (verifique o status do serviço)</li>
+          <li>O seu navegador está atualizado</li>
+          <li>Desative temporariamente o antivírus/firewall</li>
+        </ul>
+      </div>
+
+      <div class="faq-item">
+        <h3>Os preços não estão a ser atualizados. Porquê?</h3>
+        <p>Isso pode acontecer por:</p>
+        <ul>
+          <li>Problemas temporários com as lojas</li>
+          <li>Alterações na estrutura das páginas das lojas</li>
+          <li>Limitações de rate limiting</li>
+          <li>Problemas de conectividade</li>
+        </ul>
+        <p>O sistema tenta automaticamente novamente no próximo ciclo.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Como reportar um bug?</h3>
+        <p>Pode reportar bugs através da página de suporte ou enviando um email para juliareboucasleite@gmail.com. Inclua detalhes sobre o problema e screenshots se possível.</p>
+      </div>
+
+      <h2>Privacidade e Segurança</h2>
+      
+      <div class="faq-item">
+        <h3>Os meus dados estão seguros?</h3>
+        <p>Sim, o PromoPing implementa medidas de segurança robustas incluindo:</p>
+        <ul>
+          <li>Autenticação JWT segura</li>
+          <li>Rate limiting para prevenir abuso</li>
+          <li>Sanitização de entradas</li>
+          <li>Prepared statements para prevenir SQL injection</li>
+          <li>Validação CORS segura</li>
+        </ul>
+      </div>
+
+      <div class="faq-item">
+        <h3>Posso eliminar a minha conta?</h3>
+        <p>Sim, pode eliminar a sua conta a qualquer momento através das configurações do perfil. Todos os dados serão removidos permanentemente.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>O PromoPing partilha os meus dados?</h3>
+        <p>Não, o PromoPing não partilha os seus dados pessoais com terceiros. Consulte a nossa política de privacidade para mais detalhes.</p>
+      </div>
+
+      <h2>Funcionalidades Avançadas</h2>
+      
+      <div class="faq-item">
+        <h3>Como funciona a detecção automática de loja?</h3>
+        <p>O sistema analisa a URL do produto e identifica automaticamente a loja correspondente, aplicando o scraper adequado para cada loja.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Posso exportar os meus dados?</h3>
+        <p>Sim, pode exportar os seus dados em formato Excel, PDF ou CSV através da página de exportação no dashboard.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Como funciona o sistema de períodos de graça?</h3>
+        <p>Os períodos de graça permitem testar funcionalidades premium temporariamente. São geridos automaticamente pelo sistema.</p>
+      </div>
+
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='support.html'">
+        <div class="next-content">
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Suporte</span>
+        </div>
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </div>
+
+      <footer>
+        <p>Última actualização há 1 dia</p>
+      </footer>
+    </main>
+
+  </div>
+  
+  <!-- FOOTER -->
+  <div id="footer-placeholder"></div>
+  
+  <!-- SCRIPT DE PESQUISA -->
+  <script src="search.js"></script>
+  
+  <style>
+    .faq-item {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: #18181a;
+      border-radius: 8px;
+      border: 1px solid #232326;
+    }
+    
+    .faq-item h3 {
+      color: #ffc72d;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    
+    .faq-item p {
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    
+    .faq-item ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .faq-item li {
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>Guia de Instalação | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
+            </a>
+          </li>
+          <li>
+            <a href="installation.html" class="sidebar-nav-link active">
+              Guia de Instalação
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
+          </li>
+          <li>
+            <a href="api-reference.html" class="sidebar-nav-link">
+              Referência da API
+            </a>
+          </li>
+          <!-- Support -->
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" class="sidebar-nav-link">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="service-status.html" class="sidebar-nav-link">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="incident-history.html" class="sidebar-nav-link">
+              Histórico de Incidentes
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" class="sidebar-nav-link">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Guia de Instalação</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <h2>Pré-requisitos</h2>
+      <p>Antes de instalar o PromoPing, certifique-se de que tem os seguintes requisitos instalados no seu sistema:</p>
+      
+      <div class="alert alert-info">
+        <strong>Requisitos Mínimos:</strong>
+        <ul>
+          <li><strong>Node.js 18+</strong> (recomendado LTS)</li>
+          <li><strong>MySQL 8.0+</strong> ou MariaDB 10.3+</li>
+          <li><strong>npm</strong> ou yarn</li>
+          <li><strong>Git</strong></li>
+          <li><strong>Python 3.8+</strong> (para o scraper)</li>
+        </ul>
+      </div>
+
+      <h2>Instalação Local</h2>
+      
+      <h3>1. Clonar o Repositório</h3>
+      <div class="code-block">
+        <pre><code>git clone https://github.com/juliareboucasleite/PromoPing.git
+cd PromoPing</code></pre>
+      </div>
+
+      <h3>2. Instalar Dependências</h3>
+      <div class="code-block">
+        <pre><code># Instalar dependências do Node.js
+npm install
+
+# Instalar dependências do Python Scraper
+cd python-scraper
+pip install -r requirements-simple.txt
+cd ..</code></pre>
+      </div>
+
+      <h3>3. Configurar Variáveis de Ambiente</h3>
+      <div class="code-block">
+        <pre><code># Copiar arquivo de configuração
+cp env-template.txt .env
+
+# Editar o arquivo .env com suas configurações
+nano .env</code></pre>
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>Importante:</strong> Configure todas as variáveis obrigatórias no arquivo <code>.env</code> antes de prosseguir.
+      </div>
+
+      <h3>4. Configurar Base de Dados</h3>
+      <div class="code-block">
+        <pre><code># Executar migrações da base de dados
+npm run migrate
+
+# Ou executar setup completo
+npm run setup</code></pre>
+      </div>
+
+      <h3>5. Iniciar o Servidor</h3>
+      <div class="code-block">
+        <pre><code># Iniciar em modo desenvolvimento
+npm run dev
+
+# Ou iniciar com execução automática
+npm start</code></pre>
+      </div>
+
+      <h2>Instalação com Docker</h2>
+      
+      <h3>Desenvolvimento</h3>
+      <div class="code-block">
+        <pre><code># Iniciar ambiente de desenvolvimento
+npm run docker:dev
+
+# Ou diretamente com Docker Compose
+docker-compose -f docker-files/docker-compose.dev.yml up --build</code></pre>
+      </div>
+
+      <h3>Produção</h3>
+      <div class="code-block">
+        <pre><code># Deploy em produção
+npm run docker:prod
+
+# Ou diretamente com Docker Compose
+docker-compose -f docker-files/docker-compose.yml up --build</code></pre>
+      </div>
+
+      <h2>Configuração do Python Scraper</h2>
+      
+      <h3>1. Configurar Ambiente Unificado</h3>
+      <div class="code-block">
+        <pre><code># Copiar configuração unificada
+copy python-scraper\env-unified.txt .env</code></pre>
+      </div>
+
+      <h3>2. Executar Scraper</h3>
+      <div class="code-block">
+        <pre><code>cd python-scraper
+
+# Teste rápido
+python start.py --test
+
+# Iniciar monitorização
+python start.py</code></pre>
+      </div>
+
+      <h2>Verificação da Instalação</h2>
+      
+      <h3>1. Verificar API</h3>
+      <div class="code-block">
+        <pre><code># Verificar se a API está funcionando
+curl http://localhost:3000/api/health</code></pre>
+      </div>
+
+      <h3>2. Verificar Frontend</h3>
+      <p>Abra o navegador e acesse: <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>
+
+      <h3>3. Verificar Base de Dados</h3>
+      <div class="code-block">
+        <pre><code># Verificar conexão com MySQL
+mysql -u root -p -e "USE promoping; SHOW TABLES;"</code></pre>
+      </div>
+
+      <h2>Configuração de Produção</h2>
+      
+      <h3>Variáveis de Ambiente Essenciais</h3>
+      <div class="code-block">
+        <pre><code># Base de Dados
+DB_HOST=localhost
+DB_USER=promoping_user
+DB_PASSWORD=sua_password_segura
+DB_NAME=promoping
+
+# Autenticação
+JWT_SECRET=sua_chave_jwt_muito_segura
+GOOGLE_CLIENT_ID=seu_google_client_id
+GOOGLE_CLIENT_SECRET=seu_google_client_secret
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASS=sua_senha_app
+
+# Stripe (opcional)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
+      </div>
+
+      <h2>Resolução de Problemas</h2>
+      
+      <h3>Erro de Conexão com Base de Dados</h3>
+      <div class="alert alert-error">
+        <strong>Solução:</strong> Verifique se o MySQL está a correr e se as credenciais no <code>.env</code> estão corretas.
+      </div>
+
+      <h3>Erro de Dependências</h3>
+      <div class="alert alert-error">
+        <strong>Solução:</strong> Execute <code>npm install</code> novamente e verifique se tem Node.js 18+ instalado.
+      </div>
+
+      <h3>Erro de Permissões</h3>
+      <div class="alert alert-error">
+        <strong>Solução:</strong> No Linux/Mac, execute <code>sudo npm install</code> ou configure permissões adequadas.
+      </div>
+
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='usage-guide.html'">
+        <div class="next-content">
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Guia de Utilização</span>
+        </div>
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </div>
+
+      <footer>
+        <p>Última actualização há 1 dia</p>
+      </footer>
+    </main>
+
+  </div>
+  
+  <!-- FOOTER -->
+  <div id="footer-placeholder"></div>
+  
+  <!-- SCRIPT DE PESQUISA -->
+  <script src="search.js"></script>
+</body>
+</html>

@@ -864,10 +864,10 @@ Este projeto está licenciado sob a Licença . Veja o arquivo [LICENSE](LICENSE)
 - **Discord**: [Servidor da comunidade](https://discord.gg/PXBXKXmfph)
 
 **Documentação**
-- [Guia de Instalação](docs/installation.md)
-- [API Reference](docs/api-reference.md)
-- [FAQ](docs/faq.md)
-- [Changelog](CHANGELOG.md)
+- [Guia de Instalação](frontend/pages/docs/installation.html)
+- [API Reference](frontend/pages/docs/api-reference.html)
+- [FAQ](frontend/pages/docs/faq.html)
+- [Changelog](frontend/pages/docs/changelog.html)
 
 **Roadmap**
 - Suporte a mais lojas online

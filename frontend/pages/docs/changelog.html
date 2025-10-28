@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>Changelog | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+          <div class="logo">
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+          </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- About Section -->
+          <li class="sidebar-nav-about">
+            <a href="docs.html">
+              Sobre o PromoPing
+            </a>
+          </li>
+          <!-- Getting Started -->
+          <li class="sidebar-nav-section">
+            <span>COMEÇAR</span>
+          </li>
+          <li>
+            <a href="FirstLaunch.html" class="sidebar-nav-link">
+              Primeiro Lançamento
+            </a>
+          </li>
+          <li>
+            <a href="installation.html" class="sidebar-nav-link">
+              Guia de Instalação
+            </a>
+          </li>
+          <li>
+            <a href="usage-guide.html" class="sidebar-nav-link">
+              Guia de Utilização
+            </a>
+          </li>
+          <!-- UI Scripting -->
+          <li class="sidebar-nav-item">
+            <span>SCRIPTING DA UI</span>
+          </li>
+          <li>
+            <a href="api-reference.html" class="sidebar-nav-link">
+              Referência da API
+            </a>
+          </li>
+          <!-- Support -->
+          <li class="sidebar-nav-item">
+            <span>SUPORTE</span>
+          </li>
+          <li>
+            <a href="support.html" class="sidebar-nav-link">
+              Suporte
+            </a>
+          </li>
+          <li>
+            <a href="faq.html" class="sidebar-nav-link">
+              FAQ
+            </a>
+          </li>
+          <li>
+            <a href="changelog.html" class="sidebar-nav-link active">
+              Changelog
+            </a>
+          </li>
+          <li>
+            <a href="service-status.html" class="sidebar-nav-link">
+              Status do Serviço
+            </a>
+          </li>
+          <li>
+            <a href="incident-history.html" class="sidebar-nav-link">
+              Histórico de Incidentes
+            </a>
+          </li>
+          <li>
+            <a href="terms.html" class="sidebar-nav-link">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="powered">
+        <p>Made by PromoPingg</p>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Changelog</h1>
+        <button class="copy-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="changelog-version">
+        <h2>v2.1.2 <span class="version-date">- 2024-12-19</span></h2>
+        <div class="version-badge major">MAJOR UPDATE</div>
+        
+        <h3>🚀 Novas Funcionalidades</h3>
+        <ul>
+          <li><strong>Sistema de Planos Completo</strong> - Free, Basic, Standard e Premium com limites diferenciados</li>
+          <li><strong>Períodos de Graça</strong> - Gestão automática de trial periods</li>
+          <li><strong>Rich Presence Discord</strong> - Integração avançada com Discord</li>
+          <li><strong>Exportação de Dados</strong> - Excel, PDF e CSV com relatórios detalhados</li>
+          <li><strong>Sistema de Notificações Multi-Canal</strong> - Discord, Email, SMS e WhatsApp</li>
+        </ul>
+
+        <h3>🔒 Melhorias de Segurança</h3>
+        <ul>
+          <li><strong>Auditoria de Segurança Completa</strong> - 5 vulnerabilidades críticas corrigidas</li>
+          <li><strong>Rate Limiting Avançado</strong> - Proteção contra DDoS e abuso</li>
+          <li><strong>Validação de Entradas</strong> - Sanitização robusta de dados</li>
+          <li><strong>CORS Seguro</strong> - Validação dinâmica de origens</li>
+          <li><strong>JWT Seguro</strong> - Autenticação sem fallbacks hardcoded</li>
+        </ul>
+
+        <h3>🐍 Python Scraper</h3>
+        <ul>
+          <li><strong>Arquitetura Modular</strong> - Sistema independente e escalável</li>
+          <li><strong>20+ Lojas Suportadas</strong> - Worten, FNAC, Amazon, Continente, etc.</li>
+          <li><strong>Bypass de Proteções</strong> - Sistema inteligente anti-detecção</li>
+          <li><strong>Logs Detalhados</strong> - Monitorização completa de operações</li>
+        </ul>
+
+        <h3>🐳 Docker e Deployment</h3>
+        <ul>
+          <li><strong>Containerização Completa</strong> - Desenvolvimento e produção</li>
+          <li><strong>Docker Compose</strong> - MySQL, Redis e aplicação</li>
+          <li><strong>Scripts de Deploy</strong> - Automação de deployment</li>
+          <li><strong>Health Checks</strong> - Monitorização automática</li>
+        </ul>
+
+        <h3>📊 Monitorização e Logs</h3>
+        <ul>
+          <li><strong>Sistema de Logging Estruturado</strong> - Níveis e categorias</li>
+          <li><strong>Métricas em Tempo Real</strong> - Performance e utilização</li>
+          <li><strong>Alertas Automáticos</strong> - Discord e email</li>
+          <li><strong>Dashboard de Monitorização</strong> - Interface de administração</li>
+        </ul>
+      </div>
+
+      <div class="changelog-version">
+        <h2>v2.0.1 <span class="version-date">- 2024-11-15</span></h2>
+        <div class="version-badge minor">MINOR UPDATE</div>
+        
+        <h3>✨ Melhorias</h3>
+        <ul>
+          <li>Interface web responsiva melhorada</li>
+          <li>Sistema de autenticação com Google OAuth</li>
+          <li>Notificações por email implementadas</li>
+          <li>Base de dados MySQL otimizada</li>
+        </ul>
+
+        <h3>🐛 Correções</h3>
+        <ul>
+          <li>Correção de bugs na interface de utilizador</li>
+          <li>Melhoria na performance do scraper</li>
+          <li>Correção de problemas de conectividade</li>
+        </ul>
+      </div>
+
+      <div class="changelog-version">
+        <h2>v2.0.0 <span class="version-date">- 2024-10-01</span></h2>
+        <div class="version-badge major">MAJOR RELEASE</div>
+        
+        <h3>🎉 Lançamento Principal</h3>
+        <ul>
+          <li><strong>Primeira versão pública</strong> do PromoPing</li>
+          <li><strong>Interface web completa</strong> com dashboard</li>
+          <li><strong>Sistema de scraping</strong> para lojas portuguesas</li>
+          <li><strong>Notificações básicas</strong> por email</li>
+          <li><strong>Base de dados</strong> para armazenamento de produtos</li>
+        </ul>
+
+        <h3>🏪 Lojas Iniciais</h3>
+        <ul>
+          <li>Worten</li>
+          <li>FNAC</li>
+          <li>Continente</li>
+          <li>Pingo Doce</li>
+          <li>Amazon</li>
+        </ul>
+      </div>
+
+      <div class="changelog-version">
+        <h2>v1.0.0 <span class="version-date">- 2024-08-15</span></h2>
+        <div class="version-badge initial">INITIAL RELEASE</div>
+        
+        <h3>🚀 Desenvolvimento Inicial</h3>
+        <ul>
+          <li>Conceção e planeamento do projeto</li>
+          <li>Desenvolvimento do backend Node.js</li>
+          <li>Implementação do sistema de scraping</li>
+          <li>Testes iniciais e validação</li>
+        </ul>
+      </div>
+
+      <h2>Próximas Versões</h2>
+      
+      <div class="changelog-version future">
+        <h2>v2.2.0 <span class="version-date">- Planeado para 2025-01-15</span></h2>
+        <div class="version-badge planned">PLANEADO</div>
+        
+        <h3>🎯 Funcionalidades Planeadas</h3>
+        <ul>
+          <li><strong>App Mobile</strong> - Aplicação nativa para iOS e Android</li>
+          <li><strong>API Pública</strong> - Endpoints para desenvolvedores</li>
+          <li><strong>Sistema de Recomendações</strong> - IA para sugestões de produtos</li>
+          <li><strong>Integração Social</strong> - Partilha de descontos</li>
+          <li><strong>Mais Lojas</strong> - Expansão para 50+ lojas</li>
+        </ul>
+      </div>
+
+      <div class="changelog-version future">
+        <h2>v3.0.0 <span class="version-date">- Planeado para 2025-06-01</span></h2>
+        <div class="version-badge planned">PLANEADO</div>
+        
+        <h3>🚀 Visão Futura</h3>
+        <ul>
+          <li><strong>Machine Learning</strong> - Previsão de preços com IA</li>
+          <li><strong>Marketplace</strong> - Plataforma de vendas integrada</li>
+          <li><strong>Internacionalização</strong> - Suporte a outros países</li>
+          <li><strong>Blockchain</strong> - Sistema de recompensas</li>
+        </ul>
+      </div>
+
+      <h2>Legenda</h2>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="version-badge major">MAJOR</span>
+          <span>Alterações significativas e novas funcionalidades</span>
+        </div>
+        <div class="legend-item">
+          <span class="version-badge minor">MINOR</span>
+          <span>Melhorias e correções menores</span>
+        </div>
+        <div class="legend-item">
+          <span class="version-badge patch">PATCH</span>
+          <span>Correções de bugs e pequenas melhorias</span>
+        </div>
+        <div class="legend-item">
+          <span class="version-badge planned">PLANEADO</span>
+          <span>Funcionalidades em desenvolvimento</span>
+        </div>
+      </div>
+
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='api-reference.html'">
+        <div class="next-content">
+          <span class="next-label">Seguinte</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
+        </div>
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </div>
+
+      <footer>
+        <p>Última actualização há 1 dia</p>
+      </footer>
+    </main>
+
+  </div>
+  
+  <!-- FOOTER -->
+  <div id="footer-placeholder"></div>
+  
+  <!-- SCRIPT DE PESQUISA -->
+  <script src="search.js"></script>
+  
+  <style>
+    .changelog-version {
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: #18181a;
+      border-radius: 12px;
+      border: 1px solid #232326;
+      position: relative;
+    }
+    
+    .changelog-version.future {
+      opacity: 0.7;
+      border-style: dashed;
+    }
+    
+    .changelog-version h2 {
+      color: #ffc72d;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .version-date {
+      color: #ccc;
+      font-weight: 400;
+      font-size: 1rem;
+    }
+    
+    .version-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .version-badge.major {
+      background: #ff4444;
+      color: white;
+    }
+    
+    .version-badge.minor {
+      background: #ff9800;
+      color: white;
+    }
+    
+    .version-badge.patch {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .version-badge.initial {
+      background: #2196f3;
+      color: white;
+    }
+    
+    .version-badge.planned {
+      background: #9c27b0;
+      color: white;
+    }
+    
+    .changelog-version h3 {
+      color: #e6e6e6;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    
+    .changelog-version ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .changelog-version li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+    
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: #18181a;
+      border-radius: 8px;
+      border: 1px solid #232326;
+    }
+    
+    .legend-item span:last-child {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+  </style>
+</body>
+</html>
