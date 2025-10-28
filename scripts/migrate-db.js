@@ -9,12 +9,12 @@ async function addColumnIfNotExists(table, column, definition) {
   );
   if (rows[0].count === 0) {
     await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
-    console.log(`✅ Coluna ${column} adicionada à tabela ${table}`);
+    console.log(` Coluna ${column} adicionada à tabela ${table}`);
   }
 }
 
 async function migrate() {
-  console.log('🔄 Iniciando migração...');
+  console.log(' Iniciando migração...');
 
   // Atualizar tabela utilizadores
   await addColumnIfNotExists('utilizadores', 'discord_id', 'VARCHAR(50) UNIQUE');
@@ -31,16 +31,16 @@ async function migrate() {
       FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id) ON DELETE CASCADE
     )
   `);
-  console.log('✅ Tabela HistoricoPrecos verificada/criada');
+  console.log(' Tabela HistoricoPrecos verificada/criada');
 
   // Adicionar coluna Loja à tabela Produtos
   await addColumnIfNotExists('Produtos', 'Loja', "VARCHAR(60) NULL");
-  console.log('✅ Coluna Loja verificada/criada em Produtos');
+  console.log(' Coluna Loja verificada/criada em Produtos');
 
   // Adicionar colunas de estatísticas à tabela utilizadores
   await addColumnIfNotExists('utilizadores', 'telefone', "VARCHAR(20) NULL");
   await addColumnIfNotExists('utilizadores', 'dinheiro_poupado', "DECIMAL(10,2) DEFAULT 0.00");
-  console.log('✅ Colunas de estatísticas verificadas/criadas em utilizadores');
+  console.log(' Colunas de estatísticas verificadas/criadas em utilizadores');
 
   // Criar tabela de contas conectadas
   await pool.query(`
@@ -55,7 +55,7 @@ async function migrate() {
       UNIQUE KEY unique_user_tipo (UserId, Tipo)
     )
   `);
-  console.log('✅ Tabela ContasConectadas verificada/criada');
+  console.log(' Tabela ContasConectadas verificada/criada');
 
   // Criar tabela de preferências de notificação
   await pool.query(`
@@ -68,7 +68,7 @@ async function migrate() {
       UNIQUE KEY unique_user_tipo (UserId, Tipo)
     )
   `);
-  console.log('✅ Tabela PreferenciasNotificacao verificada/criada');
+  console.log(' Tabela PreferenciasNotificacao verificada/criada');
 
   // Criar Notificacoes
   await pool.query(`
@@ -86,17 +86,17 @@ async function migrate() {
       FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id) ON DELETE CASCADE
     )
   `);
-  console.log('✅ Tabela Notificacoes verificada/criada');
+  console.log(' Tabela Notificacoes verificada/criada');
 
   // Adicionar coluna ValorPoupado se não existir (para tabelas já existentes)
   await addColumnIfNotExists('Notificacoes', 'ValorPoupado', 'DECIMAL(10,2) NULL');
-  console.log('✅ Coluna ValorPoupado verificada/criada em Notificacoes');
+  console.log(' Coluna ValorPoupado verificada/criada em Notificacoes');
 
   await pool.end();
-  console.log('🎉 Migração concluída!');
+  console.log(' Migração concluída!');
 }
 
 migrate().catch(err => {
-  console.error('❌ Erro na migração:', err.message);
+  console.error(' Erro na migração:', err.message);
   process.exit(1);
 });

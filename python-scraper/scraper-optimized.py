@@ -186,7 +186,7 @@ def send_notification(product_id, current_price, target_price):
     """Envia notificação via webhook"""
     try:
         message = {
-            "content": f"🎯 **META ATINGIDA!**\nProduto {product_id}: €{current_price} <= €{target_price}",
+            "content": f" **META ATINGIDA!**\nProduto {product_id}: €{current_price} <= €{target_price}",
             "embeds": [{
                 "title": "PromoPing - Meta Atingida",
                 "color": 0x00ff00,

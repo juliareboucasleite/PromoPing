@@ -105,7 +105,7 @@ class NotificationManager:
     
     def notify_price_target_reached(self, product_id, product_name, current_price, target_price, store):
         """Notifica quando meta de preço é atingida"""
-        title = "🎯 Meta de Preço Atingida!"
+        title = " Meta de Preço Atingida!"
         message = f"O produto **{product_name}** atingiu sua meta de preço!"
         
         fields = [
@@ -142,7 +142,7 @@ class NotificationManager:
     def notify_system_status(self, status, message):
         """Notifica status do sistema"""
         color = 0x00ff00 if status == "OK" else 0xff0000
-        emoji = "✅" if status == "OK" else "❌"
+        emoji = "" if status == "OK" else ""
         
         title = f"{emoji} Status do Sistema: {status}"
         
@@ -155,7 +155,7 @@ class NotificationManager:
     
     def notify_error(self, error_message, product_id=None):
         """Notifica erros do sistema"""
-        title = "⚠️ Erro no Sistema PromoPing"
+        title = " Erro no Sistema PromoPing"
         message = f"Erro detectado: {error_message}"
         
         fields = []
@@ -173,7 +173,7 @@ class NotificationManager:
     
     def notify_daily_summary(self, stats):
         """Envia resumo diário"""
-        title = "📊 Resumo Diário - PromoPing"
+        title = " Resumo Diário - PromoPing"
         
         message = f"""
         **Estatísticas do Dia:**

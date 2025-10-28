@@ -17,11 +17,11 @@ const pool = mysql.createPool({
 // Testar conexão inicial
 pool.getConnection()
   .then((connection) => {
-    console.log("✅ Conectado à base de dados MySQL");
+    console.log(" Conectado à base de dados MySQL");
     connection.release();
   })
   .catch((error) => {
-    console.error("❌ Erro ao conectar à base de dados MySQL:", error.message);
+    console.error(" Erro ao conectar à base de dados MySQL:", error.message);
     process.exit(1);
   });
 

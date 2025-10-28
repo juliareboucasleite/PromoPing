@@ -8,7 +8,7 @@ export function getCachedDiscordUser(discordId) {
   const cached = discordCache.get(discordId);
   
   if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-    console.log("📦 Usando cache Discord para:", discordId);
+    console.log(" Usando cache Discord para:", discordId);
     return cached.user;
   }
   
@@ -21,12 +21,12 @@ export function setCachedDiscordUser(discordId, user) {
     timestamp: Date.now()
   });
   
-  console.log("💾 Cache Discord salvo para:", discordId);
+  console.log(" Cache Discord salvo para:", discordId);
 }
 
 export function clearDiscordCache() {
   discordCache.clear();
-  console.log("🗑️ Cache Discord limpo");
+  console.log(" Cache Discord limpo");
 }
 
 // Limpar cache a cada 10 minutos

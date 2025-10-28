@@ -44,7 +44,7 @@ router.get("/me", verifyToken, async (req, res) => {
       status: "ok",
       user: {
         ...user,
-        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' // 🔹 Data formatada
+        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' //  Data formatada
       },
       stats: {
         ...statsRows[0],
@@ -52,7 +52,7 @@ router.get("/me", verifyToken, async (req, res) => {
       },
       notificacoes: notificacoes.map(n => ({
         ...n,
-        DataEnvio: formatDate(n.DataEnvio) // 🔹 Data formatada
+        DataEnvio: formatDate(n.DataEnvio) //  Data formatada
       }))
     });
   } catch (err) {
@@ -65,7 +65,7 @@ router.get("/me", verifyToken, async (req, res) => {
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log("🔍 [BACKEND] Buscando perfil para userId:", userId);
+    console.log(" [BACKEND] Buscando perfil para userId:", userId);
 
     // Dados pessoais
     const [userRows] = await pool.query(
@@ -73,10 +73,10 @@ router.get("/profile", verifyToken, async (req, res) => {
       [userId]
     );
 
-    console.log("🔍 [BACKEND] Dados do usuário encontrados:", userRows);
+    console.log(" [BACKEND] Dados do usuário encontrados:", userRows);
 
     if (userRows.length === 0) {
-      console.log("❌ [BACKEND] Usuário não encontrado para userId:", userId);
+      console.log(" [BACKEND] Usuário não encontrado para userId:", userId);
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
@@ -104,10 +104,10 @@ router.get("/profile", verifyToken, async (req, res) => {
       }
     };
 
-    console.log("✅ [BACKEND] Resposta do perfil:", response);
+    console.log(" [BACKEND] Resposta do perfil:", response);
     res.json(response);
   } catch (err) {
-    console.error("❌ [BACKEND] Erro ao buscar perfil:", err);
+    console.error(" [BACKEND] Erro ao buscar perfil:", err);
     res.status(500).json({ status: "error", error: err.message });
   }
 });
@@ -240,11 +240,11 @@ router.get("/plano", verifyToken, async (req, res) => {
       WHERE user_id = ? AND status = 'canceled' AND grace_period_end > NOW()
     `, [userId]);
 
-    console.log("🔍 [BACKEND] Verificando cancelamentos para userId:", userId);
-    console.log("🔍 [BACKEND] Stripe rows encontradas:", stripeRows.length);
+    console.log(" [BACKEND] Verificando cancelamentos para userId:", userId);
+    console.log(" [BACKEND] Stripe rows encontradas:", stripeRows.length);
 
     if (stripeRows.length > 0) {
-      console.log("✅ [BACKEND] Cancelamento ativo encontrado:", stripeRows[0]);
+      console.log(" [BACKEND] Cancelamento ativo encontrado:", stripeRows[0]);
       
       // Usuário em período de graça - mostrar plano original
       const stripeData = stripeRows[0];
@@ -261,10 +261,10 @@ router.get("/plano", verifyToken, async (req, res) => {
         WHERE p.Nome = ?
       `, [stripeData.grace_period_end, stripeData.plan_name]);
 
-      console.log("🔍 [BACKEND] Plano original encontrado:", originalPlanRows);
+      console.log(" [BACKEND] Plano original encontrado:", originalPlanRows);
 
       if (originalPlanRows.length > 0) {
-        console.log("✅ [BACKEND] Retornando período de graça");
+        console.log(" [BACKEND] Retornando período de graça");
         return res.json({
           status: "ok",
           plano: originalPlanRows[0],
@@ -275,7 +275,7 @@ router.get("/plano", verifyToken, async (req, res) => {
         });
       }
     } else {
-      console.log("❌ [BACKEND] Nenhum cancelamento ativo encontrado");
+      console.log(" [BACKEND] Nenhum cancelamento ativo encontrado");
     }
 
     // Se não está em período de graça, buscar plano atual
@@ -324,7 +324,7 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
     const userId = req.user.id;
     const { planoId, session_id } = req.body;
 
-    console.log("🔄 Alterando plano para userId:", userId, "planoId:", planoId);
+    console.log(" Alterando plano para userId:", userId, "planoId:", planoId);
 
     // Validar plano
     const [planoRows] = await pool.query(
@@ -388,7 +388,7 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
       [planoId, plano.LimiteProdutos, session.subscription, userId]
     );
 
-    console.log("✅ Plano alterado com sucesso");
+    console.log(" Plano alterado com sucesso");
 
     res.json({
       status: "ok",
@@ -426,8 +426,8 @@ router.get("/planos", verifyToken, async (req, res) => {
 
     const userPlanId = userConfig.length > 0 ? userConfig[0].PlanoAtualId : 1;
 
-    console.log("📋 Planos carregados:", planos.length);
-    console.log("👤 Plano atual do usuário:", userPlanId);
+    console.log(" Planos carregados:", planos.length);
+    console.log(" Plano atual do usuário:", userPlanId);
 
     res.json({
       status: "success",
@@ -435,7 +435,7 @@ router.get("/planos", verifyToken, async (req, res) => {
       userPlanId: userPlanId
     });
   } catch (error) {
-    console.error("❌ Erro ao buscar planos:", error);
+    console.error(" Erro ao buscar planos:", error);
     res.status(500).json({
       status: "error",
       error: "Erro interno do servidor"
@@ -477,7 +477,7 @@ router.post("/change-plan", verifyToken, async (req, res) => {
       [planId, plano.LimiteProdutos, userId]
     );
 
-    console.log(`✅ Plano alterado para ${plano.Nome} (ID: ${planId}) para usuário ${userId}`);
+    console.log(` Plano alterado para ${plano.Nome} (ID: ${planId}) para usuário ${userId}`);
 
     res.json({
       status: "success",
@@ -490,7 +490,7 @@ router.post("/change-plan", verifyToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("❌ Erro ao alterar plano:", error);
+    console.error(" Erro ao alterar plano:", error);
     res.status(500).json({
       status: "error",
       error: "Erro interno do servidor"
@@ -540,7 +540,7 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
       [gracePeriodEnd, userId]
     );
 
-    console.log(`✅ Assinatura cancelada para usuário ${userId}. Período de graça até: ${gracePeriodEnd}`);
+    console.log(` Assinatura cancelada para usuário ${userId}. Período de graça até: ${gracePeriodEnd}`);
 
     res.json({
       status: "success",
@@ -548,7 +548,7 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
       grace_period_end: gracePeriodEnd
     });
   } catch (error) {
-    console.error("❌ Erro ao cancelar assinatura:", error);
+    console.error(" Erro ao cancelar assinatura:", error);
     res.status(500).json({
       status: "error",
       error: "Erro interno do servidor"

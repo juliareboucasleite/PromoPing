@@ -347,18 +347,18 @@
         headers: { Authorization: "Bearer " + token }
       });
       const dataProfile = await resProfile.json();
-      console.log("🔍 [FRONTEND] Dados do perfil recebidos:", dataProfile);
+      console.log(" [FRONTEND] Dados do perfil recebidos:", dataProfile);
 
       if (dataProfile.status === "ok") {
         const profile = dataProfile.profile;
-        console.log("🔍 [FRONTEND] Perfil do usuário:", profile);
+        console.log(" [FRONTEND] Perfil do usuário:", profile);
         
         // Verificar se os elementos existem
         const fullNameEl = document.getElementById("fullName");
         const emailEl = document.getElementById("email");
         const phoneEl = document.getElementById("phone");
         
-        console.log("🔍 [FRONTEND] Elementos encontrados:", {
+        console.log(" [FRONTEND] Elementos encontrados:", {
           fullName: !!fullNameEl,
           email: !!emailEl,
           phone: !!phoneEl
@@ -368,7 +368,7 @@
         if (emailEl) emailEl.value = profile.email || "";
         if (phoneEl) phoneEl.value = profile.telefone || "";
         
-        console.log("✅ [FRONTEND] Campos preenchidos:", {
+        console.log(" [FRONTEND] Campos preenchidos:", {
           nome: profile.nome,
           email: profile.email,
           telefone: profile.telefone
@@ -377,7 +377,7 @@
         updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
         updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
       } else {
-        console.error("❌ [FRONTEND] Erro na resposta da API:", dataProfile);
+        console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
       }
 
       // Carregar notificações históricas do usuário
@@ -530,7 +530,7 @@ async function carregarNotificacoes() {
       if (data.notificacoes && data.notificacoes.length > 0) {
         data.notificacoes.forEach(n => {
           const li = document.createElement("li");
-          li.innerHTML = `[${n.Tipo}] ${n.Mensagem} (${n.DataEnvio || '—'})`; // 🔹 Backend já envia formatado
+          li.innerHTML = `[${n.Tipo}] ${n.Mensagem} (${n.DataEnvio || '—'})`; //  Backend já envia formatado
           list.appendChild(li);
         });
       } else {
@@ -670,10 +670,10 @@ function abrirModalPlanos() {
 // Busca o nome do usuário e preenche no topo do painel (nav)
 async function carregarNomeUsuario() {
   try {
-    console.log("🔍 [PERFIL] Carregando nome do usuário...");
+    console.log(" [PERFIL] Carregando nome do usuário...");
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("❌ [PERFIL] Token não encontrado para carregar nome");
+      console.error(" [PERFIL] Token não encontrado para carregar nome");
       return;
     }
 
@@ -681,49 +681,49 @@ async function carregarNomeUsuario() {
       headers: { Authorization: "Bearer " + token }
     });
 
-    console.log("✅ [PERFIL] Resposta do perfil recebida:", response.status);
+    console.log(" [PERFIL] Resposta do perfil recebida:", response.status);
 
     if (response.ok) {
       const data = await response.json();
-      console.log("✅ [PERFIL] Dados do perfil:", data);
+      console.log(" [PERFIL] Dados do perfil:", data);
       
       if (data.status === "ok" && data.profile) {
         const userNameEl = document.getElementById("userName");
         if (userNameEl) {
           userNameEl.textContent = data.profile.nome || 'Utilizador';
-          console.log("✅ [PERFIL] Nome do usuário atualizado:", data.profile.nome);
+          console.log(" [PERFIL] Nome do usuário atualizado:", data.profile.nome);
         } else {
-          console.error("❌ [PERFIL] Elemento userName não encontrado");
+          console.error(" [PERFIL] Elemento userName não encontrado");
         }
       } else {
-        console.error("❌ [PERFIL] Estrutura de dados incorreta:", data);
+        console.error(" [PERFIL] Estrutura de dados incorreta:", data);
       }
     } else {
-      console.error("❌ [PERFIL] Erro na resposta:", response.status);
+      console.error(" [PERFIL] Erro na resposta:", response.status);
     }
   } catch (error) {
-    console.error("❌ [PERFIL] Erro ao carregar nome do usuário:", error);
+    console.error(" [PERFIL] Erro ao carregar nome do usuário:", error);
   }
 }
 
 // Funções de conexão para diferentes serviços
 async function conectarDiscord() {
   try {
-    console.log("🔗 Iniciando conexão com Discord...");
+    console.log(" Iniciando conexão com Discord...");
     
     // Redirecionar para Discord OAuth
     const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
     window.location.href = discordAuthUrl;
     
   } catch (error) {
-    console.error("❌ Erro ao conectar Discord:", error);
+    console.error(" Erro ao conectar Discord:", error);
     alert("Erro ao conectar com Discord. Tente novamente.");
   }
 }
 
 async function conectarEmail() {
   try {
-    console.log("📧 Configurando email...");
+    console.log(" Configurando email...");
     
     // Mostrar modal ou redirecionar para configuração de email
     const email = prompt("Digite seu email para configuração:");
@@ -733,14 +733,14 @@ async function conectarEmail() {
     }
     
   } catch (error) {
-    console.error("❌ Erro ao configurar email:", error);
+    console.error(" Erro ao configurar email:", error);
     alert("Erro ao configurar email. Tente novamente.");
   }
 }
 
 async function conectarSMS() {
   try {
-    console.log("📱 Configurando SMS...");
+    console.log(" Configurando SMS...");
     
     // Mostrar modal ou redirecionar para configuração de SMS
     const telefone = prompt("Digite seu número de telefone (com código do país):");
@@ -750,7 +750,7 @@ async function conectarSMS() {
     }
     
   } catch (error) {
-    console.error("❌ Erro ao configurar SMS:", error);
+    console.error(" Erro ao configurar SMS:", error);
     alert("Erro ao configurar SMS. Tente novamente.");
   }
 }

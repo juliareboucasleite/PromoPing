@@ -6,12 +6,12 @@ const BASE_URL = 'http://localhost:3000/api';
 // ================== FUNÇÕES DE TESTE ==================
 
 async function testarSistemaProtecao() {
-  console.log('🔐 Testando: Sistema de Proteção de Planos');
+  console.log(' Testando: Sistema de Proteção de Planos');
   
   const planos = ['Free', 'Basic', 'Standard', 'Premium'];
   
   for (const plano of planos) {
-    console.log(`\n📋 Testando plano: ${plano}`);
+    console.log(`\n Testando plano: ${plano}`);
     
     // Simular token de autenticação (em produção seria um JWT real)
     const token = `mock_token_${plano.toLowerCase()}`;
@@ -28,7 +28,7 @@ async function testarSistemaProtecao() {
 
 async function testarEndpointPlano(token, plano) {
   try {
-    console.log(`   🔍 Testando: GET /api/exportar/user/plano`);
+    console.log(`    Testando: GET /api/exportar/user/plano`);
     
     const response = await fetch(`${BASE_URL}/exportar/user/plano`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -36,18 +36,18 @@ async function testarEndpointPlano(token, plano) {
     
     if (response.ok) {
       const data = await response.json();
-      console.log(`   ✅ Plano verificado: ${data.plano?.nome || 'N/A'}`);
+      console.log(`    Plano verificado: ${data.plano?.nome || 'N/A'}`);
     } else {
-      console.log(`   ❌ Erro: ${response.status} - ${response.statusText}`);
+      console.log(`    Erro: ${response.status} - ${response.statusText}`);
     }
   } catch (error) {
-    console.log(`   ❌ Erro na requisição: ${error.message}`);
+    console.log(`    Erro na requisição: ${error.message}`);
   }
 }
 
 async function testarExportacaoExcel(token, plano) {
   try {
-    console.log(`   📊 Testando: GET /api/exportar/produtos/excel`);
+    console.log(`    Testando: GET /api/exportar/produtos/excel`);
     
     const response = await fetch(`${BASE_URL}/exportar/produtos/excel`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -55,20 +55,20 @@ async function testarExportacaoExcel(token, plano) {
     
     if (response.status === 403) {
       const errorData = await response.json();
-      console.log(`   🔒 Acesso negado: ${errorData.message}`);
+      console.log(`    Acesso negado: ${errorData.message}`);
     } else if (response.ok) {
-      console.log(`   ✅ Exportação Excel permitida`);
+      console.log(`    Exportação Excel permitida`);
     } else {
-      console.log(`   ❌ Erro: ${response.status} - ${response.statusText}`);
+      console.log(`    Erro: ${response.status} - ${response.statusText}`);
     }
   } catch (error) {
-    console.log(`   ❌ Erro na requisição: ${error.message}`);
+    console.log(`    Erro na requisição: ${error.message}`);
   }
 }
 
 async function testarExportacaoPDF(token, plano) {
   try {
-    console.log(`   📄 Testando: GET /api/exportar/produtos/pdf`);
+    console.log(`    Testando: GET /api/exportar/produtos/pdf`);
     
     const response = await fetch(`${BASE_URL}/exportar/produtos/pdf`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -76,20 +76,20 @@ async function testarExportacaoPDF(token, plano) {
     
     if (response.status === 403) {
       const errorData = await response.json();
-      console.log(`   🔒 Acesso negado: ${errorData.message}`);
+      console.log(`    Acesso negado: ${errorData.message}`);
     } else if (response.ok) {
-      console.log(`   ✅ Exportação PDF permitida`);
+      console.log(`    Exportação PDF permitida`);
     } else {
-      console.log(`   ❌ Erro: ${response.status} - ${response.statusText}`);
+      console.log(`    Erro: ${response.status} - ${response.statusText}`);
     }
   } catch (error) {
-    console.log(`   ❌ Erro na requisição: ${error.message}`);
+    console.log(`    Erro na requisição: ${error.message}`);
   }
 }
 
 async function testarRelatorioCompleto(token, plano) {
   try {
-    console.log(`   📈 Testando: GET /api/exportar/relatorio/completo`);
+    console.log(`    Testando: GET /api/exportar/relatorio/completo`);
     
     const response = await fetch(`${BASE_URL}/exportar/relatorio/completo`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -97,19 +97,19 @@ async function testarRelatorioCompleto(token, plano) {
     
     if (response.status === 403) {
       const errorData = await response.json();
-      console.log(`   🔒 Acesso negado: ${errorData.message}`);
+      console.log(`    Acesso negado: ${errorData.message}`);
     } else if (response.ok) {
-      console.log(`   ✅ Relatório completo permitido`);
+      console.log(`    Relatório completo permitido`);
     } else {
-      console.log(`   ❌ Erro: ${response.status} - ${response.statusText}`);
+      console.log(`    Erro: ${response.status} - ${response.statusText}`);
     }
   } catch (error) {
-    console.log(`   ❌ Erro na requisição: ${error.message}`);
+    console.log(`    Erro na requisição: ${error.message}`);
   }
 }
 
 async function testarStatusExportacao() {
-  console.log('\n📊 Testando: Status das funcionalidades de exportação');
+  console.log('\n Testando: Status das funcionalidades de exportação');
   
   const planos = ['Free', 'Basic', 'Standard', 'Premium'];
   
@@ -123,22 +123,22 @@ async function testarStatusExportacao() {
       
       if (response.ok) {
         const data = await response.json();
-        console.log(`\n📋 Plano ${plano}:`);
-        console.log(`   📊 Excel: ${data.funcionalidades.exportar_excel ? '✅' : '❌'}`);
-        console.log(`   📄 PDF: ${data.funcionalidades.exportar_pdf ? '✅' : '❌'}`);
-        console.log(`   📈 Relatório Completo: ${data.funcionalidades.relatorio_completo ? '✅' : '❌'}`);
-        console.log(`   📊 Limites: ${JSON.stringify(data.funcionalidades.limites)}`);
+        console.log(`\n Plano ${plano}:`);
+        console.log(`    Excel: ${data.funcionalidades.exportar_excel ? '' : ''}`);
+        console.log(`    PDF: ${data.funcionalidades.exportar_pdf ? '' : ''}`);
+        console.log(`    Relatório Completo: ${data.funcionalidades.relatorio_completo ? '' : ''}`);
+        console.log(`    Limites: ${JSON.stringify(data.funcionalidades.limites)}`);
       } else {
-        console.log(`   ❌ Erro ao obter status para ${plano}: ${response.status}`);
+        console.log(`    Erro ao obter status para ${plano}: ${response.status}`);
       }
     } catch (error) {
-      console.log(`   ❌ Erro na requisição para ${plano}: ${error.message}`);
+      console.log(`    Erro na requisição para ${plano}: ${error.message}`);
     }
   }
 }
 
 async function testarMiddlewareProtecao() {
-  console.log('\n🛡️ Testando: Middleware de Proteção');
+  console.log('\n Testando: Middleware de Proteção');
   
   const testes = [
     {
@@ -162,7 +162,7 @@ async function testarMiddlewareProtecao() {
   ];
   
   for (const teste of testes) {
-    console.log(`\n🔍 ${teste.nome}:`);
+    console.log(`\n ${teste.nome}:`);
     
     // Testar planos permitidos
     for (const plano of teste.planosPermitidos) {
@@ -172,9 +172,9 @@ async function testarMiddlewareProtecao() {
       });
       
       if (response.status === 403) {
-        console.log(`   ❌ ${plano}: Acesso negado (deveria ser permitido)`);
+        console.log(`    ${plano}: Acesso negado (deveria ser permitido)`);
       } else {
-        console.log(`   ✅ ${plano}: Acesso permitido`);
+        console.log(`    ${plano}: Acesso permitido`);
       }
     }
     
@@ -186,16 +186,16 @@ async function testarMiddlewareProtecao() {
       });
       
       if (response.status === 403) {
-        console.log(`   ✅ ${plano}: Acesso negado (correto)`);
+        console.log(`    ${plano}: Acesso negado (correto)`);
       } else {
-        console.log(`   ❌ ${plano}: Acesso permitido (deveria ser negado)`);
+        console.log(`    ${plano}: Acesso permitido (deveria ser negado)`);
       }
     }
   }
 }
 
 async function testarFrontendProtecao() {
-  console.log('\n🎨 Testando: Proteção Frontend');
+  console.log('\n Testando: Proteção Frontend');
   
   const cenarios = [
     {
@@ -233,15 +233,15 @@ async function testarFrontendProtecao() {
   ];
   
   for (const cenario of cenarios) {
-    console.log(`\n📱 Plano ${cenario.plano}:`);
-    console.log(`   🔒 Exportação bloqueada: ${cenario.esperado.exportacaoBloqueada ? '✅' : '❌'}`);
-    console.log(`   💎 Aviso exibido: ${cenario.esperado.avisoExibido ? '✅' : '❌'}`);
-    console.log(`   🚫 Botão desabilitado: ${cenario.esperado.botaoDesabilitado ? '✅' : '❌'}`);
+    console.log(`\n Plano ${cenario.plano}:`);
+    console.log(`    Exportação bloqueada: ${cenario.esperado.exportacaoBloqueada ? '' : ''}`);
+    console.log(`    Aviso exibido: ${cenario.esperado.avisoExibido ? '' : ''}`);
+    console.log(`    Botão desabilitado: ${cenario.esperado.botaoDesabilitado ? '' : ''}`);
   }
 }
 
 async function executarTesteCompleto() {
-  console.log('🚀 Iniciando teste completo do sistema de proteção...\n');
+  console.log(' Iniciando teste completo do sistema de proteção...\n');
   
   try {
     await testarSistemaProtecao();
@@ -249,25 +249,25 @@ async function executarTesteCompleto() {
     await testarMiddlewareProtecao();
     await testarFrontendProtecao();
     
-    console.log('\n✅ Teste completo finalizado!');
-    console.log('🔐 Sistema de proteção de planos funcionando corretamente.');
+    console.log('\n Teste completo finalizado!');
+    console.log(' Sistema de proteção de planos funcionando corretamente.');
     
   } catch (error) {
-    console.log('\n❌ Erro durante o teste:', error.message);
+    console.log('\n Erro durante o teste:', error.message);
   }
 }
 
 async function executarTesteRapido() {
-  console.log('⚡ Executando teste rápido do sistema de proteção...\n');
+  console.log(' Executando teste rápido do sistema de proteção...\n');
   
   try {
     await testarSistemaProtecao();
     await testarStatusExportacao();
     
-    console.log('\n✅ Teste rápido concluído - sistema de proteção funcionando!');
+    console.log('\n Teste rápido concluído - sistema de proteção funcionando!');
     
   } catch (error) {
-    console.log('\n❌ Erro durante o teste rápido:', error.message);
+    console.log('\n Erro durante o teste rápido:', error.message);
   }
 }
 

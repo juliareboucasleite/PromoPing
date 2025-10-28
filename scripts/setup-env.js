@@ -31,25 +31,25 @@ EMAIL_PASS=your-email-password
 try {
   // Verificar se .env já existe
   if (fs.existsSync('.env')) {
-    console.log('✅ Ficheiro .env já existe');
+    console.log(' Ficheiro .env já existe');
   } else {
     // Criar ficheiro .env
     fs.writeFileSync('.env', envContent);
-    console.log('✅ Ficheiro .env criado com sucesso!');
+    console.log(' Ficheiro .env criado com sucesso!');
   }
   
-  console.log('\n📝 Configuração necessária:');
+  console.log('\n Configuração necessária:');
   console.log('1. Para Google OAuth, aceda a: https://console.developers.google.com/');
   console.log('2. Crie um projeto e ative a Google+ API');
   console.log('3. Configure as credenciais OAuth 2.0');
   console.log('4. Adicione http://localhost:3000/auth/google/callback como redirect URI');
   console.log('5. Copie o Client ID e Client Secret para o ficheiro .env');
   
-  console.log('\n🔧 Para testar sem Google OAuth:');
+  console.log('\n Para testar sem Google OAuth:');
   console.log('- Use o login normal com email/password');
   console.log('- Email: julia.admin@gmail.com');
   console.log('- Password: (a password que definiu)');
   
 } catch (error) {
-  console.error('❌ Erro ao criar ficheiro .env:', error);
+  console.error(' Erro ao criar ficheiro .env:', error);
 }

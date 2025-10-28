@@ -36,16 +36,16 @@ class ScraperScheduler:
     
     def run_scraping_job(self):
         """Executar job de scraping"""
-        logger.info("🔄 Iniciando job de scraping agendado...")
+        logger.info(" Iniciando job de scraping agendado...")
         try:
             self.scraper.scrape_all_products()
-            logger.info("✅ Job de scraping concluído com sucesso")
+            logger.info(" Job de scraping concluído com sucesso")
         except Exception as e:
-            logger.error(f"❌ Erro no job de scraping: {e}")
+            logger.error(f" Erro no job de scraping: {e}")
     
     def start_scheduler(self):
         """Iniciar o agendador"""
-        logger.info("🚀 Iniciando agendador do PromoPing Scraper...")
+        logger.info(" Iniciando agendador do PromoPing Scraper...")
         
         # Agendar execução a cada 30 minutos
         schedule.every(30).minutes.do(self.run_scraping_job)
@@ -54,7 +54,7 @@ class ScraperScheduler:
         schedule.every(2).hours.do(self.run_scraping_job)
         
         # Executar uma vez imediatamente
-        logger.info("🔄 Executando scraping inicial...")
+        logger.info(" Executando scraping inicial...")
         self.run_scraping_job()
         
         self.running = True
@@ -65,10 +65,10 @@ class ScraperScheduler:
                 schedule.run_pending()
                 time.sleep(60)  # Verificar a cada minuto
             except KeyboardInterrupt:
-                logger.info("🛑 Parando agendador...")
+                logger.info(" Parando agendador...")
                 self.running = False
             except Exception as e:
-                logger.error(f"❌ Erro no agendador: {e}")
+                logger.error(f" Erro no agendador: {e}")
                 time.sleep(60)
     
     def stop_scheduler(self):
@@ -90,10 +90,10 @@ def main():
     scheduler = ScraperScheduler()
     
     if args.mode == 'once':
-        logger.info("🔄 Executando scraping uma única vez...")
+        logger.info(" Executando scraping uma única vez...")
         scheduler.run_scraping_job()
     else:
-        logger.info(f"🔄 Iniciando modo agendado (intervalo: {args.interval} minutos)...")
+        logger.info(f" Iniciando modo agendado (intervalo: {args.interval} minutos)...")
         scheduler.start_scheduler()
 
 if __name__ == "__main__":

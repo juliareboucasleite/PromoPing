@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script de Deploy para PromoPing
-echo "🚀 Iniciando deploy do PromoPing..."
+echo " Iniciando deploy do PromoPing..."
 
 # Cores para output
 RED='\033[0;31m'
@@ -71,18 +71,18 @@ log "Testando endpoints..."
 sleep 5
 
 if curl -f http://localhost:3000 > /dev/null 2>&1; then
-    log "✅ Frontend funcionando"
+    log " Frontend funcionando"
 else
-    error "❌ Frontend não está respondendo"
+    error " Frontend não está respondendo"
 fi
 
 if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
-    log "✅ API funcionando"
+    log " API funcionando"
 else
-    warning "⚠️ API não está respondendo (pode ser normal se não implementado)"
+    warning " API não está respondendo (pode ser normal se não implementado)"
 fi
 
-log "🎉 Deploy concluído com sucesso!"
-log "📱 Frontend: http://localhost:3000"
-log "🔧 API: http://localhost:3000/api/"
-log "📊 Monitor: pm2 monit"
+log " Deploy concluído com sucesso!"
+log " Frontend: http://localhost:3000"
+log " API: http://localhost:3000/api/"
+log " Monitor: pm2 monit"

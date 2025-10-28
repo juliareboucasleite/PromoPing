@@ -1,10 +1,10 @@
 /**
- * 🛠️ Utilitários de formatação para preços e datas
+ *  Utilitários de formatação para preços e datas
  * Padroniza valores para consistência em todo o sistema
  */
 
 /**
- * 💰 Formata preço para número decimal
+ *  Formata preço para número decimal
  * @param {string|number} rawPrice - Preço em qualquer formato
  * @returns {number|null} - Preço como número decimal ou null se inválido
  */
@@ -32,13 +32,13 @@ export function formatPrice(rawPrice) {
     return isNaN(result) ? null : result;
     
   } catch (err) {
-    console.error("❌ Erro ao formatar preço:", rawPrice, err);
+    console.error(" Erro ao formatar preço:", rawPrice, err);
     return null;
   }
 }
 
 /**
- * 📅 Formata data para formato português (DD/MM/YYYY)
+ *  Formata data para formato português (DD/MM/YYYY)
  * @param {string|Date} dateString - Data em qualquer formato
  * @returns {string|null} - Data formatada como DD/MM/YYYY ou null se inválida
  */
@@ -55,13 +55,13 @@ export function formatDate(dateString) {
 
     return `${day}/${month}/${year}`;
   } catch (err) {
-    console.error("❌ Erro ao formatar data:", dateString, err);
+    console.error(" Erro ao formatar data:", dateString, err);
     return null;
   }
 }
 
 /**
- * 🕐 Formata data e hora para formato português
+ *  Formata data e hora para formato português
  * @param {string|Date} date - Data em qualquer formato
  * @returns {string} - Data e hora formatada como DD/MM/YYYY HH:MM ou "—" se inválida
  */
@@ -98,13 +98,13 @@ export function formatDateTime(date) {
     });
     
   } catch (error) {
-    console.error('❌ Erro ao formatar data e hora:', date, error);
+    console.error(' Erro ao formatar data e hora:', date, error);
     return "—";
   }
 }
 
 /**
- * 💱 Formata preço para exibição
+ *  Formata preço para exibição
  * @param {number} price - Preço como número
  * @returns {string} - Preço formatado como "€X,XX"
  */
@@ -118,7 +118,7 @@ export function formatPriceDisplay(price) {
 }
 
 /**
- * 📊 Formata percentual
+ *  Formata percentual
  * @param {number} value - Valor decimal (0.15 = 15%)
  * @returns {string} - Percentual formatado como "15%"
  */
@@ -133,7 +133,7 @@ export function formatPercentage(value) {
 }
 
 /**
- * 🔍 Valida se uma string é uma URL válida
+ *  Valida se uma string é uma URL válida
  * @param {string} url - URL para validar
  * @returns {boolean} - True se URL é válida
  */
@@ -147,7 +147,7 @@ export function isValidUrl(url) {
 }
 
 /**
- * 🏷️ Limpa e normaliza texto
+ *  Limpa e normaliza texto
  * @param {string} text - Texto para limpar
  * @returns {string} - Texto limpo e normalizado
  */
@@ -161,7 +161,7 @@ export function cleanText(text) {
 }
 
 /**
- * 📦 Formata dados do produto para consistência
+ *  Formata dados do produto para consistência
  * @param {Object} product - Dados do produto
  * @returns {Object} - Produto formatado
  */

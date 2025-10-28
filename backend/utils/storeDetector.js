@@ -16,7 +16,7 @@ export function detectStore(link) {
 
     // Mapeamento de lojas conhecidas (simplificado)
     const storeMap = {
-      // 🇵🇹 Lojas portuguesas
+      //  Lojas portuguesas
       'worten.pt': { name: 'Worten', domain: 'worten.pt', logo: 'https://www.google.com/s2/favicons?domain=worten.pt&sz=32' },
       'fnac.pt': { name: 'FNAC', domain: 'fnac.pt', logo: 'https://www.google.com/s2/favicons?domain=fnac.pt&sz=32' },
       'mediamarkt.pt': { name: 'MediaMarkt', domain: 'mediamarkt.pt', logo: 'https://www.google.com/s2/favicons?domain=mediamarkt.pt&sz=32' },
@@ -42,7 +42,7 @@ export function detectStore(link) {
       'oysho.pt': { name: 'Oysho', domain: 'oysho.pt', logo: 'https://www.google.com/s2/favicons?domain=oysho.pt&sz=32' },
       'lefties.pt': { name: 'Lefties', domain: 'lefties.pt', logo: 'https://www.google.com/s2/favicons?domain=lefties.pt&sz=32' },
       
-      // 🌍 Lojas internacionais
+      //  Lojas internacionais
       'amazon.pt': { name: 'Amazon', domain: 'amazon.pt', logo: 'https://www.google.com/s2/favicons?domain=amazon.pt&sz=32' },
       'amazon.es': { name: 'Amazon', domain: 'amazon.es', logo: 'https://www.google.com/s2/favicons?domain=amazon.es&sz=32' },
       'amazon.com': { name: 'Amazon', domain: 'amazon.com', logo: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
@@ -75,7 +75,7 @@ export function detectStore(link) {
       'remington.com': { name: 'Remington', domain: 'remington.com', logo: 'https://www.google.com/s2/favicons?domain=remington.com&sz=32' }
     };
 
-    // ✅ Correção: aceitar subdomínios (ex: super.continente.pt)
+    //  Correção: aceitar subdomínios (ex: super.continente.pt)
     for (const domain in storeMap) {
       if (hostname.endsWith(domain)) {
         return storeMap[domain];

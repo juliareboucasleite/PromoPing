@@ -31,7 +31,7 @@ class ScraperTester:
     
     def test_database_connection(self):
         """Testar conexão com banco de dados"""
-        logger.info("🔍 Testando conexão com banco de dados...")
+        logger.info(" Testando conexão com banco de dados...")
         
         try:
             conn = self.db.get_connection()
@@ -44,16 +44,16 @@ class ScraperTester:
             cursor.close()
             conn.close()
             
-            logger.info(f"✅ Conexão com banco OK - {count} produtos encontrados")
+            logger.info(f" Conexão com banco OK - {count} produtos encontrados")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro na conexão com banco: {e}")
+            logger.error(f" Erro na conexão com banco: {e}")
             return False
     
     def test_scraper_factory(self):
         """Testar factory de scrapers"""
-        logger.info("🔍 Testando factory de scrapers...")
+        logger.info(" Testando factory de scrapers...")
         
         try:
             # Testar diferentes lojas
@@ -69,19 +69,19 @@ class ScraperTester:
                 actual_type = type(scraper).__name__
                 
                 if actual_type == expected_type:
-                    logger.info(f"✅ {loja} -> {actual_type}")
+                    logger.info(f" {loja} -> {actual_type}")
                 else:
-                    logger.warning(f"⚠️ {loja} -> {actual_type} (esperado: {expected_type})")
+                    logger.warning(f" {loja} -> {actual_type} (esperado: {expected_type})")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro no factory: {e}")
+            logger.error(f" Erro no factory: {e}")
             return False
     
     def test_price_extraction(self):
         """Testar extração de preços"""
-        logger.info("🔍 Testando extração de preços...")
+        logger.info(" Testando extração de preços...")
         
         try:
             scraper = ScraperFactory.create_scraper("Worten")
@@ -99,52 +99,52 @@ class ScraperTester:
                 result = scraper.extract_price_from_text(text)
                 
                 if result == expected:
-                    logger.info(f"✅ '{text}' -> {result}")
+                    logger.info(f" '{text}' -> {result}")
                 else:
-                    logger.warning(f"⚠️ '{text}' -> {result} (esperado: {expected})")
+                    logger.warning(f" '{text}' -> {result} (esperado: {expected})")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro na extração de preços: {e}")
+            logger.error(f" Erro na extração de preços: {e}")
             return False
     
     def test_get_products(self):
         """Testar busca de produtos"""
-        logger.info("🔍 Testando busca de produtos...")
+        logger.info(" Testando busca de produtos...")
         
         try:
             products = self.db.get_products_to_scrape()
             
-            logger.info(f"✅ {len(products)} produtos encontrados para scraping")
+            logger.info(f" {len(products)} produtos encontrados para scraping")
             
             if products:
                 # Mostrar detalhes do primeiro produto
                 first_product = products[0]
-                logger.info(f"📦 Primeiro produto: {first_product.nome} ({first_product.loja})")
-                logger.info(f"🔗 Link: {first_product.link}")
-                logger.info(f"💰 Preço alvo: €{first_product.preco_alvo}")
+                logger.info(f" Primeiro produto: {first_product.nome} ({first_product.loja})")
+                logger.info(f" Link: {first_product.link}")
+                logger.info(f" Preço alvo: €{first_product.preco_alvo}")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro ao buscar produtos: {e}")
+            logger.error(f" Erro ao buscar produtos: {e}")
             return False
     
     def test_single_scraping(self):
         """Testar scraping de um produto específico"""
-        logger.info("🔍 Testando scraping de produto específico...")
+        logger.info(" Testando scraping de produto específico...")
         
         try:
             products = self.db.get_products_to_scrape()
             
             if not products:
-                logger.warning("⚠️ Nenhum produto encontrado para teste")
+                logger.warning(" Nenhum produto encontrado para teste")
                 return True
             
             # Testar com o primeiro produto
             test_product = products[0]
-            logger.info(f"🧪 Testando scraping para: {test_product.nome}")
+            logger.info(f" Testando scraping para: {test_product.nome}")
             
             scraper = ScraperFactory.create_scraper(test_product.loja)
             
@@ -152,26 +152,26 @@ class ScraperTester:
             scraped_price = scraper.scrape_price(test_product)
             
             if scraped_price:
-                logger.info(f"✅ Preço coletado: €{scraped_price.preco}")
-                logger.info(f"📅 Data: {scraped_price.data_coleta}")
+                logger.info(f" Preço coletado: €{scraped_price.preco}")
+                logger.info(f" Data: {scraped_price.data_coleta}")
                 
                 # Verificar se atingiu meta
                 if scraped_price.preco <= test_product.preco_alvo:
-                    logger.info(f"🎯 Meta atingida! €{scraped_price.preco} <= €{test_product.preco_alvo}")
+                    logger.info(f" Meta atingida! €{scraped_price.preco} <= €{test_product.preco_alvo}")
                 else:
-                    logger.info(f"📈 Meta não atingida: €{scraped_price.preco} > €{test_product.preco_alvo}")
+                    logger.info(f" Meta não atingida: €{scraped_price.preco} > €{test_product.preco_alvo}")
             else:
-                logger.warning("⚠️ Não foi possível coletar preço")
+                logger.warning(" Não foi possível coletar preço")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro no scraping de teste: {e}")
+            logger.error(f" Erro no scraping de teste: {e}")
             return False
     
     def run_all_tests(self):
         """Executar todos os testes"""
-        logger.info("🚀 Iniciando testes do PromoPing Python Scraper...")
+        logger.info(" Iniciando testes do PromoPing Python Scraper...")
         
         tests = [
             ("Conexão com Banco", self.test_database_connection),
@@ -185,7 +185,7 @@ class ScraperTester:
         
         for test_name, test_func in tests:
             logger.info(f"\n{'='*50}")
-            logger.info(f"🧪 Executando: {test_name}")
+            logger.info(f" Executando: {test_name}")
             logger.info(f"{'='*50}")
             
             try:
@@ -193,32 +193,32 @@ class ScraperTester:
                 results.append((test_name, result))
                 
                 if result:
-                    logger.info(f"✅ {test_name}: PASSOU")
+                    logger.info(f" {test_name}: PASSOU")
                 else:
-                    logger.error(f"❌ {test_name}: FALHOU")
+                    logger.error(f" {test_name}: FALHOU")
                     
             except Exception as e:
-                logger.error(f"❌ {test_name}: ERRO - {e}")
+                logger.error(f" {test_name}: ERRO - {e}")
                 results.append((test_name, False))
         
         # Resumo dos testes
         logger.info(f"\n{'='*50}")
-        logger.info("📊 RESUMO DOS TESTES")
+        logger.info(" RESUMO DOS TESTES")
         logger.info(f"{'='*50}")
         
         passed = sum(1 for _, result in results if result)
         total = len(results)
         
         for test_name, result in results:
-            status = "✅ PASSOU" if result else "❌ FALHOU"
+            status = " PASSOU" if result else " FALHOU"
             logger.info(f"{test_name}: {status}")
         
-        logger.info(f"\n🎯 Resultado: {passed}/{total} testes passaram")
+        logger.info(f"\n Resultado: {passed}/{total} testes passaram")
         
         if passed == total:
-            logger.info("🎉 Todos os testes passaram! Sistema pronto para uso.")
+            logger.info(" Todos os testes passaram! Sistema pronto para uso.")
         else:
-            logger.warning("⚠️ Alguns testes falharam. Verifique as configurações.")
+            logger.warning(" Alguns testes falharam. Verifique as configurações.")
         
         return passed == total
 

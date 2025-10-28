@@ -6,51 +6,51 @@ const BASE_URL = 'http://localhost:3000';
 // ================== FUNÇÕES DE TESTE ==================
 
 async function testarListarComponentes() {
-  console.log('🔍 Testando: Listar todos os componentes');
+  console.log(' Testando: Listar todos os componentes');
   try {
     const response = await fetch(`${BASE_URL}/api/componentes`);
     const data = await response.json();
     
     if (data.status === 'ok') {
-      console.log(`✅ Sucesso: ${data.total} componentes encontrados`);
+      console.log(` Sucesso: ${data.total} componentes encontrados`);
       data.componentes.forEach(comp => {
         console.log(`   - ${comp.Nome} (${comp.Status})`);
       });
       return data.componentes;
     } else {
-      console.log('❌ Erro:', data.erro);
+      console.log(' Erro:', data.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarObterComponente(id) {
-  console.log(`🔍 Testando: Obter componente ${id}`);
+  console.log(` Testando: Obter componente ${id}`);
   try {
     const response = await fetch(`${BASE_URL}/api/componentes/${id}`);
     const data = await response.json();
     
     if (data.status === 'ok') {
-      console.log(`✅ Sucesso: Componente encontrado`);
+      console.log(` Sucesso: Componente encontrado`);
       console.log(`   - Nome: ${data.componente.Nome}`);
       console.log(`   - Status: ${data.componente.Status}`);
       console.log(`   - Uptime: ${data.componente.Uptime}%`);
       return data.componente;
     } else {
-      console.log('❌ Erro:', data.erro);
+      console.log(' Erro:', data.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarAtualizarComponente(id, dados) {
-  console.log(`🔧 Testando: Atualizar componente ${id}`);
+  console.log(` Testando: Atualizar componente ${id}`);
   console.log(`   Dados:`, JSON.stringify(dados, null, 2));
   
   try {
@@ -65,24 +65,24 @@ async function testarAtualizarComponente(id, dados) {
     const data = await response.json();
     
     if (data.status === 'ok') {
-      console.log(`✅ Sucesso: Componente atualizado`);
+      console.log(` Sucesso: Componente atualizado`);
       console.log(`   - Novo status: ${data.componente.Status}`);
       if (data.componente.Notas) {
         console.log(`   - Notas: ${data.componente.Notas}`);
       }
       return data.componente;
     } else {
-      console.log('❌ Erro:', data.erro);
+      console.log(' Erro:', data.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarCriarComponente(dados) {
-  console.log(`➕ Testando: Criar novo componente`);
+  console.log(` Testando: Criar novo componente`);
   console.log(`   Dados:`, JSON.stringify(dados, null, 2));
   
   try {
@@ -97,38 +97,38 @@ async function testarCriarComponente(dados) {
     const data = await response.json();
     
     if (data.status === 'ok') {
-      console.log(`✅ Sucesso: Componente criado com ID ${data.componente.Id}`);
+      console.log(` Sucesso: Componente criado com ID ${data.componente.Id}`);
       console.log(`   - Nome: ${data.componente.Nome}`);
       console.log(`   - Status: ${data.componente.Status}`);
       return data.componente;
     } else {
-      console.log('❌ Erro:', data.erro);
+      console.log(' Erro:', data.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarStatusGeral() {
-  console.log('📊 Testando: Status geral do sistema');
+  console.log(' Testando: Status geral do sistema');
   try {
     const response = await fetch(`${BASE_URL}/api/status`);
     const data = await response.json();
     
     if (data.status === 'ok') {
-      console.log(`✅ Sucesso: Status obtido`);
+      console.log(` Sucesso: Status obtido`);
       console.log(`   - Componentes: ${data.componentes.length}`);
       console.log(`   - Incidentes: ${data.incidentes.length}`);
       console.log(`   - Última atualização: ${data.ultimaAtualizacao}`);
       return data;
     } else {
-      console.log('❌ Erro:', data.erro);
+      console.log(' Erro:', data.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
@@ -136,14 +136,14 @@ async function testarStatusGeral() {
 // ================== CENÁRIOS DE TESTE ==================
 
 async function executarCenarioCompleto() {
-  console.log('🚀 Iniciando teste completo da API de componentes...\n');
+  console.log(' Iniciando teste completo da API de componentes...\n');
   
   // 1. Listar componentes existentes
   const componentes = await testarListarComponentes();
   console.log('');
   
   if (!componentes || componentes.length === 0) {
-    console.log('❌ Nenhum componente encontrado. Execute primeiro: npm run status:setup');
+    console.log(' Nenhum componente encontrado. Execute primeiro: npm run status:setup');
     return;
   }
   
@@ -187,7 +187,7 @@ async function executarCenarioCompleto() {
   
   // 7. Restaurar status original (se necessário)
   if (novoComponente) {
-    console.log('🧹 Limpando componente de teste...');
+    console.log(' Limpando componente de teste...');
     // Nota: Não implementamos DELETE, mas podemos atualizar para "removido"
     await testarAtualizarComponente(novoComponente.Id, {
       status: 'outage',
@@ -195,11 +195,11 @@ async function executarCenarioCompleto() {
     });
   }
   
-  console.log('✅ Teste completo finalizado!');
+  console.log(' Teste completo finalizado!');
 }
 
 async function executarTesteRapido() {
-  console.log('⚡ Executando teste rápido...\n');
+  console.log(' Executando teste rápido...\n');
   
   // Teste básico de listagem
   const componentes = await testarListarComponentes();
@@ -212,7 +212,7 @@ async function executarTesteRapido() {
     });
   }
   
-  console.log('✅ Teste rápido finalizado!');
+  console.log(' Teste rápido finalizado!');
 }
 
 // ================== EXECUÇÃO ==================

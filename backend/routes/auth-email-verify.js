@@ -29,7 +29,7 @@ router.post("/email/send", async (req, res) => {
     // Envia email (se configurado)
     try {
       const messageHtml = `
-    Olá <b>${nome}</b> 👋,
+    Olá <b>${nome}</b> ,
     Obrigado por se registar no <b>PromoPing</b>.
     Use o código abaixo para verificar a sua conta: ${codigo}
     Este código expira em 10 minutos.
@@ -39,7 +39,7 @@ router.post("/email/send", async (req, res) => {
 `;
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
     } catch (emailError) {
-      console.log("⚠️ Email não configurado. Código salvo na base de dados:", codigo);
+      console.log(" Email não configurado. Código salvo na base de dados:", codigo);
     }
 
     res.json({ status: "ok", message: "Código enviado por email" });

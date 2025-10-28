@@ -125,7 +125,7 @@ function runLocal() {
             presenceProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim()
                   // Remove emojis comuns do início/fim/mensagens
-                  .replace(/[✅🎮❌⚠️🔄]/g, '')
+                  .replace(/[]/g, '')
                   .replace(/^\s+|\s+$/g, '');
 
                 if (message === '') return; // ignora linhas vazias (só emoji)

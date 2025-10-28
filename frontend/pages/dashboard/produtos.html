@@ -318,7 +318,7 @@
           // Gerar indicador de mudança de preço
           let priceChangeHtml = '';
           if (delta !== null) {
-            const arrow = delta < 0 ? '↘' : delta > 0 ? '↗' : '—';
+            const arrow = delta < 0 ? '' : delta > 0 ? '' : '—';
             const color = delta < 0 ? 'price-down' : delta > 0 ? 'price-up' : 'price-neutral';
             priceChangeHtml = `<div class="price-change-indicator ${color}">
               <span class="change-arrow">${arrow}</span>
@@ -541,10 +541,10 @@
     // Função: carrega o nome do usuário logado e mostra no header
     async function carregarNomeUsuario() {
       try {
-        console.log("🔍 [PRODUTOS] Carregando nome do usuário...");
+        console.log(" [PRODUTOS] Carregando nome do usuário...");
         const token = localStorage.getItem("token");
         if (!token) {
-          console.error("❌ [PRODUTOS] Token não encontrado para carregar nome");
+          console.error(" [PRODUTOS] Token não encontrado para carregar nome");
           return;
         }
 
@@ -552,28 +552,28 @@
           headers: { Authorization: "Bearer " + token }
         });
 
-        console.log("✅ [PRODUTOS] Resposta do perfil recebida:", response.status);
+        console.log(" [PRODUTOS] Resposta do perfil recebida:", response.status);
 
         if (response.ok) {
           const data = await response.json();
-          console.log("✅ [PRODUTOS] Dados do perfil:", data);
+          console.log(" [PRODUTOS] Dados do perfil:", data);
           
           if (data.status === "ok" && data.profile) {
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
               userNameEl.textContent = data.profile.nome || 'Utilizador';
-              console.log("✅ [PRODUTOS] Nome do usuário atualizado:", data.profile.nome);
+              console.log(" [PRODUTOS] Nome do usuário atualizado:", data.profile.nome);
             } else {
-              console.error("❌ [PRODUTOS] Elemento userName não encontrado");
+              console.error(" [PRODUTOS] Elemento userName não encontrado");
             }
           } else {
-            console.error("❌ [PRODUTOS] Estrutura de dados incorreta:", data);
+            console.error(" [PRODUTOS] Estrutura de dados incorreta:", data);
           }
         } else {
-          console.error("❌ [PRODUTOS] Erro na resposta:", response.status);
+          console.error(" [PRODUTOS] Erro na resposta:", response.status);
         }
       } catch (error) {
-        console.error("❌ [PRODUTOS] Erro ao carregar nome do usuário:", error);
+        console.error(" [PRODUTOS] Erro ao carregar nome do usuário:", error);
       }
     }
 

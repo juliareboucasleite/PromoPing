@@ -12,13 +12,13 @@ const router = express.Router();
 // Função auxiliar para salvar preço no histórico - REMOVIDA
 // Não há mais atualização automática de preços
 
-// ➕ Adicionar produto (com limite por plano)
+//  Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
     try {
         const { nome, link, data, precoAlvo } = req.body;
         
-        console.log("📝 Dados recebidos:", { nome, link, data, precoAlvo });
-        console.log("🔍 Validação:", { 
+        console.log(" Dados recebidos:", { nome, link, data, precoAlvo });
+        console.log(" Validação:", { 
             nome: !!nome, 
             link: !!link, 
             precoAlvo: !!precoAlvo, 
@@ -27,14 +27,14 @@ router.post("/", verifyToken, async (req, res) => {
         });
 
         if (!nome || !link || !precoAlvo || isNaN(Number(precoAlvo)) || Number(precoAlvo) <= 0) {
-            console.log("❌ Validação falhou");
+            console.log(" Validação falhou");
             return res.status(400).json({ 
                 status: "error", 
                 message: "Preencha os campos obrigatórios (nome, link e preço alvo válido)" 
             });
         }
         
-        console.log("✅ Validação passou");
+        console.log(" Validação passou");
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
@@ -62,17 +62,17 @@ router.post("/", verifyToken, async (req, res) => {
         }
 
         // detectar loja pelo link
-        console.log("🔍 Detectando loja para:", link);
+        console.log(" Detectando loja para:", link);
         const store = detectStore(link);
-        console.log("🏪 Loja detectada:", store);
+        console.log(" Loja detectada:", store);
 
         // inserir produto com loja detectada (apenas data é opcional)
-        console.log("💾 Inserindo produto no banco...");
+        console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
             "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo) VALUES (?, ?, ?, ?, ?, ?)",
             [req.user.id, nome, link, data || null, store.name, Number(precoAlvo)]
         );
-        console.log("✅ Produto inserido com ID:", result.insertId);
+        console.log(" Produto inserido com ID:", result.insertId);
 
         res.json({ 
             status: "ok", 
@@ -86,8 +86,8 @@ router.post("/", verifyToken, async (req, res) => {
             storeInfo: store
         });
     } catch (err) {
-        console.error("❌ Erro ao adicionar produto:", err);
-        console.error("📊 Detalhes do erro:", {
+        console.error(" Erro ao adicionar produto:", err);
+        console.error(" Detalhes do erro:", {
             message: err.message,
             code: err.code,
             sqlState: err.sqlState,
@@ -100,10 +100,10 @@ router.post("/", verifyToken, async (req, res) => {
     }
 });
 
-// 📋 Listar produtos do utilizador
+//  Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
-        console.log("🔍 [BACKEND] Buscando produtos para userId:", req.user.id);
+        console.log(" [BACKEND] Buscando produtos para userId:", req.user.id);
         
         // Buscar produtos com data criada e link
         const [produtos] = await pool.query(
@@ -113,7 +113,7 @@ router.get("/", verifyToken, async (req, res) => {
             [req.user.id]
         );
 
-        console.log("🔍 [BACKEND] Produtos encontrados:", produtos.length);
+        console.log(" [BACKEND] Produtos encontrados:", produtos.length);
 
         // Buscar histórico de preços separado
         let historicos = [];
@@ -152,12 +152,12 @@ router.get("/", verifyToken, async (req, res) => {
             };
         });
         
-        console.log("✅ [BACKEND] Produtos mapeados:", produtosMap.length);
-        console.log("✅ [BACKEND] Primeiro produto:", produtosMap[0]);
+        console.log(" [BACKEND] Produtos mapeados:", produtosMap.length);
+        console.log(" [BACKEND] Primeiro produto:", produtosMap[0]);
         
         res.json({ status: "ok", produtos: produtosMap });
     } catch (err) {
-        console.error("❌ [BACKEND] Erro ao listar produtos:", err);
+        console.error(" [BACKEND] Erro ao listar produtos:", err);
         res.status(500).json({ 
             status: "error", 
             message: "Erro interno do servidor" 
@@ -165,7 +165,7 @@ router.get("/", verifyToken, async (req, res) => {
     }
 });
 
-// 📊 Histórico de preços de um produto específico
+//  Histórico de preços de um produto específico
 router.get("/:id/historico", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -176,7 +176,7 @@ router.get("/:id/historico", verifyToken, async (req, res) => {
 
         const historico = rows.map(h => ({
             preco: h.Preco,
-            data: formatDate(h.DataRegisto)    // 🔹 Data formatada
+            data: formatDate(h.DataRegisto)    //  Data formatada
         }));
 
         res.json({ status: "ok", historico });
@@ -186,7 +186,7 @@ router.get("/:id/historico", verifyToken, async (req, res) => {
     }
 });
 
-// ✏️ Editar produto
+//  Editar produto
 router.put("/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -217,7 +217,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// ❌ Remover produto
+//  Remover produto
 router.delete("/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -244,13 +244,13 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// 🔄 Refresh manual - REMOVIDO
+//  Refresh manual - REMOVIDO
 // Funcionalidade de atualização automática de preços removida
 
-// 🔄 Atualizar preço de produto específico - REMOVIDO
+//  Atualizar preço de produto específico - REMOVIDO
 // Funcionalidade de atualização automática de preços removida
 
-// 📊 Verificar se há produtos atualizados recentemente
+//  Verificar se há produtos atualizados recentemente
 router.get("/sync", verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;

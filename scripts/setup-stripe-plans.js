@@ -33,7 +33,7 @@ function question(query) {
 
 async function criarProdutoStripe(plano) {
   try {
-    console.log(`\n🛍️  Criando produto para ${plano.nome}...`);
+    console.log(`\n  Criando produto para ${plano.nome}...`);
     
     const produto = await stripe.products.create({
       name: `PromoPing ${plano.nome}`,
@@ -44,17 +44,17 @@ async function criarProdutoStripe(plano) {
       }
     });
     
-    console.log(`✅ Produto criado: ${produto.id}`);
+    console.log(` Produto criado: ${produto.id}`);
     return produto;
   } catch (error) {
-    console.error(`❌ Erro ao criar produto:`, error.message);
+    console.error(` Erro ao criar produto:`, error.message);
     return null;
   }
 }
 
 async function criarPrecoStripe(produtoId, plano) {
   try {
-    console.log(`💰 Criando preço para ${plano.nome} (€${plano.preco})...`);
+    console.log(` Criando preço para ${plano.nome} (€${plano.preco})...`);
     
     const preco = await stripe.prices.create({
       product: produtoId,
@@ -69,17 +69,17 @@ async function criarPrecoStripe(produtoId, plano) {
       }
     });
     
-    console.log(`✅ Preço criado: ${preco.id}`);
+    console.log(` Preço criado: ${preco.id}`);
     return preco;
   } catch (error) {
-    console.error(`❌ Erro ao criar preço:`, error.message);
+    console.error(` Erro ao criar preço:`, error.message);
     return null;
   }
 }
 
 async function listarProdutosExistentes() {
   try {
-    console.log('\n📋 Produtos existentes no Stripe:');
+    console.log('\n Produtos existentes no Stripe:');
     const produtos = await stripe.products.list({ limit: 10 });
     
     produtos.data.forEach(produto => {
@@ -88,31 +88,31 @@ async function listarProdutosExistentes() {
     
     return produtos.data;
   } catch (error) {
-    console.error('❌ Erro ao listar produtos:', error.message);
+    console.error(' Erro ao listar produtos:', error.message);
     return [];
   }
 }
 
 async function main() {
-  console.log('🚀 Configuração dos Planos Stripe para PromoPing');
+  console.log(' Configuração dos Planos Stripe para PromoPing');
   console.log('================================================');
   
   // Verificar se a chave do Stripe está configurada
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe_secret_key_here')) {
-    console.log('❌ Configure primeiro STRIPE_SECRET_KEY no arquivo .env');
+    console.log(' Configure primeiro STRIPE_SECRET_KEY no arquivo .env');
     console.log('   Obtenha sua chave em: https://dashboard.stripe.com/apikeys');
     process.exit(1);
   }
   
-  console.log('\n📋 Planos configurados no sistema:');
+  console.log('\n Planos configurados no sistema:');
   Object.entries(PLANOS).forEach(([id, plano]) => {
     console.log(`  ${id}. ${plano.nome} - €${plano.preco}/mês`);
   });
   
-  const resposta = await question('\n❓ Deseja criar produtos e preços no Stripe? (s/n): ');
+  const resposta = await question('\n Deseja criar produtos e preços no Stripe? (s/n): ');
   
   if (resposta.toLowerCase() !== 's') {
-    console.log('👋 Operação cancelada.');
+    console.log(' Operação cancelada.');
     rl.close();
     return;
   }
@@ -120,16 +120,16 @@ async function main() {
   // Listar produtos existentes
   await listarProdutosExistentes();
   
-  const criarNovos = await question('\n❓ Deseja criar novos produtos? (s/n): ');
+  const criarNovos = await question('\n Deseja criar novos produtos? (s/n): ');
   
   if (criarNovos.toLowerCase() === 's') {
-    console.log('\n🔨 Criando produtos e preços...');
+    console.log('\n Criando produtos e preços...');
     
     const resultados = {};
     
     for (const [id, plano] of Object.entries(PLANOS)) {
       if (plano.preco === 0) {
-        console.log(`\n⏭️  Pulando ${plano.nome} (plano gratuito)`);
+        console.log(`\n  Pulando ${plano.nome} (plano gratuito)`);
         continue;
       }
       
@@ -145,7 +145,7 @@ async function main() {
       }
     }
     
-    console.log('\n📝 Configurações para o arquivo .env:');
+    console.log('\n Configurações para o arquivo .env:');
     console.log('=====================================');
     
     if (resultados.basic) {
@@ -158,15 +158,15 @@ async function main() {
       console.log(`STRIPE_PREMIUM_PRICE_ID=${resultados.premium.price_id}`);
     }
     
-    console.log('\n💡 Copie essas linhas para o seu arquivo .env');
+    console.log('\n Copie essas linhas para o seu arquivo .env');
   }
   
-  console.log('\n✅ Configuração concluída!');
+  console.log('\n Configuração concluída!');
   rl.close();
 }
 
 // Executar o script
 main().catch(error => {
-  console.error('❌ Erro fatal:', error);
+  console.error(' Erro fatal:', error);
   process.exit(1);
 });

@@ -354,10 +354,10 @@
       // Consulta o nome do usuário logado via API e atualiza no header
       async function carregarNomeUsuario() {
         try {
-          console.log("🔍 [PAINEL] Carregando nome do usuário...");
+          console.log(" [PAINEL] Carregando nome do usuário...");
           const token = localStorage.getItem("token");
           if (!token) {
-            console.error("❌ [PAINEL] Token não encontrado para carregar nome");
+            console.error(" [PAINEL] Token não encontrado para carregar nome");
             return;
           }
           
@@ -365,28 +365,28 @@
             headers: { Authorization: "Bearer " + token }
           });
           
-          console.log("✅ [PAINEL] Resposta do perfil recebida:", response.status);
+          console.log(" [PAINEL] Resposta do perfil recebida:", response.status);
           
           if (response.ok) {
             const data = await response.json();
-            console.log("✅ [PAINEL] Dados do perfil:", data);
+            console.log(" [PAINEL] Dados do perfil:", data);
             
             if (data.status === "ok" && data.profile) {
               const userNameEl = document.getElementById("userName");
               if (userNameEl) {
                 userNameEl.textContent = data.profile.nome || 'Utilizador';
-                console.log("✅ [PAINEL] Nome do usuário atualizado:", data.profile.nome);
+                console.log(" [PAINEL] Nome do usuário atualizado:", data.profile.nome);
               } else {
-                console.error("❌ [PAINEL] Elemento userName não encontrado");
+                console.error(" [PAINEL] Elemento userName não encontrado");
               }
             } else {
-              console.error("❌ [PAINEL] Estrutura de dados incorreta:", data);
+              console.error(" [PAINEL] Estrutura de dados incorreta:", data);
             }
           } else {
-            console.error("❌ [PAINEL] Erro na resposta:", response.status);
+            console.error(" [PAINEL] Erro na resposta:", response.status);
           }
         } catch (error) {
-          console.error("❌ [PAINEL] Erro ao carregar nome do usuário:", error);
+          console.error(" [PAINEL] Erro ao carregar nome do usuário:", error);
         }
       }
       window.formatDateTime = formatDateTime;
@@ -743,7 +743,7 @@
         notification.className = 'notification success';
         notification.innerHTML = `
           <div class="notification-content">
-            <span class="notification-icon">✓</span>
+            <span class="notification-icon"></span>
             <span class="notification-text">Scraping iniciado! Os preços serão atualizados em alguns minutos.</span>
           </div>
         `;
@@ -849,7 +849,7 @@
       
       // Função de inicialização completa
       async function inicializarPainel() {
-        console.log("🔍 [PAINEL] Inicializando painel completo...");
+        console.log(" [PAINEL] Inicializando painel completo...");
         try {
           // Primeiro carregar nome do usuário
           await carregarNomeUsuario();
@@ -858,9 +858,9 @@
           await carregarProdutos();
           await carregarEstatisticas();
           
-          console.log("✅ [PAINEL] Painel inicializado com sucesso");
+          console.log(" [PAINEL] Painel inicializado com sucesso");
         } catch (error) {
-          console.error("❌ [PAINEL] Erro na inicialização:", error);
+          console.error(" [PAINEL] Erro na inicialização:", error);
         }
       }
       

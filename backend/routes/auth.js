@@ -26,10 +26,10 @@ async function enviarEmail(to, subject, text) {
   try {
     const { sendEmail } = await import("../services/notify.js");
     await sendEmail(to, subject, text);
-    console.log(`📧 Email enviado para ${to}`);
+    console.log(` Email enviado para ${to}`);
     return { success: true };
   } catch (error) {
-    console.error("❌ Erro ao enviar email:", error);
+    console.error(" Erro ao enviar email:", error);
     return { success: false, error: error.message };
   }
 }
@@ -95,7 +95,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log("🔍 Discord profile recebido:", {
+          console.log(" Discord profile recebido:", {
             id: profile.id,
             username: profile.username,
             email: profile.email,
@@ -112,7 +112,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
           
           if (discordUser && discordUser.userId) {
             // Usuário Discord já existe e está associado - LOGIN DIRETO
-            console.log("✅ Usuário Discord já registrado - Login direto:", discordUser.username);
+            console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
             
             const token = jwt.sign(
               { id: discordUser.userId, email: discordUser.email },
@@ -120,7 +120,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
               { expiresIn: "7d" }
             );
 
-            console.log("🚀 Login direto realizado para usuário:", discordUser.userId);
+            console.log(" Login direto realizado para usuário:", discordUser.userId);
             return done(null, { userId: discordUser.userId, email: discordUser.email, token });
           }
 
@@ -144,7 +144,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
     let userId;
           if (rows.length > 0) {
             // Usuário já existe no banco - ASSOCIAR DISCORD
-            console.log("👤 Usuário existente encontrado - Associando Discord:", rows[0].Nome);
+            console.log(" Usuário existente encontrado - Associando Discord:", rows[0].Nome);
             userId = rows[0].Id;
             
             // Associar Discord com usuário do banco
@@ -171,7 +171,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
               [userId, email, "discord", planoFreeId]
             );
             
-            console.log(`✅ Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
+            console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
             
             // Associar Discord com novo usuário
             linkDiscordUser(discordId, userId);
@@ -183,10 +183,10 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
             { expiresIn: "7d" }
           );
 
-          console.log("✅ Token JWT gerado para usuário:", userId);
+          console.log(" Token JWT gerado para usuário:", userId);
           return done(null, { userId, email, token });
         } catch (error) {
-          console.error("❌ Erro na autenticação Discord:", error);
+          console.error(" Erro na autenticação Discord:", error);
           return done(error, null);
         }
       }
@@ -225,7 +225,7 @@ router.get('/discord/check/:discordId', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("❌ Erro ao verificar usuário Discord:", error);
+    console.error(" Erro ao verificar usuário Discord:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
@@ -244,7 +244,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
       { expiresIn: "7d" }
     );
 
-      console.log("🚀 Login direto via rota alternativa para usuário:", discordUser.userId);
+      console.log(" Login direto via rota alternativa para usuário:", discordUser.userId);
       
       // Criar página HTML que salva no localStorage e redireciona
       const html = `
@@ -279,7 +279,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
       res.status(404).json({ error: "Usuário Discord não encontrado" });
     }
   } catch (error) {
-    console.error("❌ Erro no login direto Discord:", error);
+    console.error(" Erro no login direto Discord:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
@@ -293,7 +293,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("📩 Login tentativa:", email);
+    console.log(" Login tentativa:", email);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -307,7 +307,7 @@ router.post("/login", async (req, res) => {
       "SELECT * FROM Utilizadores WHERE Email = ?",
       [email]
     );
-    console.log("🔍 Resultado SELECT:", rows);
+    console.log(" Resultado SELECT:", rows);
 
     if (rows.length === 0) {
       return res.status(400).json({
@@ -317,7 +317,7 @@ router.post("/login", async (req, res) => {
     }
 
     const user = rows[0];
-    console.log("👤 Usuário retornado:", user);
+    console.log(" Usuário retornado:", user);
 
     if (!user.SenhaHash) {
       return res.status(400).json({
@@ -329,7 +329,7 @@ router.post("/login", async (req, res) => {
 
     // Verifica senha
     const validPassword = await bcrypt.compare(password, user.SenhaHash);
-    console.log("🔑 Senha válida?:", validPassword);
+    console.log(" Senha válida?:", validPassword);
 
     if (!validPassword) {
       return res.status(400).json({
@@ -361,7 +361,7 @@ router.post("/login", async (req, res) => {
       user: { id: user.Id, email: user.Email, nome: user.Nome },
     });
   } catch (err) {
-    console.error("❌ Erro no login:", err);
+    console.error(" Erro no login:", err);
     res.status(500).json({
       status: "error",
       error: err.message || "Erro interno no servidor",
@@ -373,7 +373,7 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const { nome, email, password, telefone } = req.body;
-    console.log("📩 Registro tentativa:", email);
+    console.log(" Registro tentativa:", email);
 
     if (!nome || !email || !password) {
       return res.status(400).json({
@@ -423,7 +423,7 @@ router.post("/register", async (req, res) => {
       [userId, email, "email", planoFreeId]
     );
     
-    console.log(`✅ Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+    console.log(` Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
 
     const codigo = gerarCodigo();
     await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
@@ -435,8 +435,8 @@ router.post("/register", async (req, res) => {
     try {
       const { sendEmail } = await import("../services/notify.js");
       const messageHtml = `
-        <h2>🔐 Verificação de Conta</h2>
-        <p>Olá <b>${nome}</b> 👋,</p>
+        <h2> Verificação de Conta</h2>
+        <p>Olá <b>${nome}</b> ,</p>
         <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
         <p>Use o código abaixo para verificar sua conta:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
@@ -482,12 +482,12 @@ router.post("/register", async (req, res) => {
 // ================== ROTAS GOOGLE ==================
 router.get("/google", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    console.log("🔑 Google OAuth configurado:");
+    console.log(" Google OAuth configurado:");
     console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
     console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
     passport.authenticate("google", { scope: ["profile", "email"] })(req, res);
   } else {
-    console.error("❌ Google OAuth não configurado:");
+    console.error(" Google OAuth não configurado:");
     console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
     console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
     res.status(400).json({
@@ -545,23 +545,23 @@ router.get("/discord", (req, res) => {
 });
 
 router.get("/discord/callback", (req, res) => {
-  console.log("🔄 Discord callback recebido:", JSON.stringify(req.query));
+  console.log(" Discord callback recebido:", JSON.stringify(req.query));
   
   if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
     passport.authenticate("discord", { 
       failureRedirect: "/login?error=discord_auth_failed"
     })(req, res, (err, user) => {
       if (err) {
-        console.error("❌ Erro na autenticação Discord:", err);
+        console.error(" Erro na autenticação Discord:", err);
         return res.redirect("/login?error=discord_auth_failed");
       }
       
       if (!user) {
-        console.error("❌ Usuário Discord não encontrado");
+        console.error(" Usuário Discord não encontrado");
         return res.redirect("/login?error=discord_auth_failed");
       }
       
-      console.log("✅ Usuário Discord autenticado:", user.email);
+      console.log(" Usuário Discord autenticado:", user.email);
       
       // Criar página HTML que salva no localStorage e redireciona
       const html = `
@@ -594,7 +594,7 @@ router.get("/discord/callback", (req, res) => {
       res.send(html);
     });
   } else {
-    console.error("❌ Discord OAuth não configurado");
+    console.error(" Discord OAuth não configurado");
     res.status(400).json({
       error:
         "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
@@ -642,13 +642,13 @@ router.post("/verificar/telefone", verifyToken, async (req, res) => {
     const telefoneLimpo = user.Telefone.replace(/[^\d]/g, ''); // Remove caracteres não numéricos
     const resultadoWhatsApp = await enviarWhatsApp(
       telefoneLimpo,
-      `🔐 Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+      ` Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
     );
 
     if (resultadoWhatsApp.success) {
-      console.log(`📱 Código de verificação enviado para ${user.Telefone}: ${codigo}`);
+      console.log(` Código de verificação enviado para ${user.Telefone}: ${codigo}`);
     } else {
-      console.error(`❌ Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
+      console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
     }
 
     res.json({
@@ -695,8 +695,8 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
     try {
       const { sendEmail } = await import("../services/notify.js");
       const messageHtml = `
-        <h2>🔐 Verificação de Conta</h2>
-        <p>Olá <b>${user.Nome}</b> 👋,</p>
+        <h2> Verificação de Conta</h2>
+        <p>Olá <b>${user.Nome}</b> ,</p>
         <p>Use o código abaixo para verificar sua conta:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
         <p>Este código expira em 10 minutos.</p>
@@ -706,9 +706,9 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
       `;
       
       await sendEmail(user.Email, "PromoPing - Verificação de conta", messageHtml);
-      console.log(`📧 Código de verificação enviado para ${user.Email}: ${codigo}`);
+      console.log(` Código de verificação enviado para ${user.Email}: ${codigo}`);
     } catch (emailError) {
-      console.log("⚠️ Email não configurado, mas código salvo:", codigo);
+      console.log(" Email não configurado, mas código salvo:", codigo);
     }
 
     res.json({
@@ -716,7 +716,7 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
       message: "Código enviado por email!",
     });
   } catch (err) {
-    console.error("❌ Erro ao enviar código por email:", err);
+    console.error(" Erro ao enviar código por email:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao enviar código de verificação",
@@ -772,14 +772,14 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
       );
     }
 
-    console.log(`✅ ${tipo} verificado com sucesso para usuário ${userId}`);
+    console.log(` ${tipo} verificado com sucesso para usuário ${userId}`);
 
     res.json({
       status: "ok",
       message: `${tipo === 'email' ? 'Email' : 'Telefone'} verificado com sucesso!`,
     });
   } catch (err) {
-    console.error("❌ Erro ao validar código:", err);
+    console.error(" Erro ao validar código:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao validar código",
@@ -853,22 +853,22 @@ router.post("/esqueci-senha", async (req, res) => {
       );
       
       if (emailResult.success) {
-        console.log(`📧 Código de recuperação enviado para ${user.Email}: ${codigo}`);
+        console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
       } else {
-        console.log("⚠️ Email não configurado, mas código salvo:", codigo);
+        console.log(" Email não configurado, mas código salvo:", codigo);
       }
     } else {
       // Enviar por WhatsApp
       const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
       const resultadoWhatsApp = await enviarWhatsApp(
         telefoneLimpo,
-        `🔑 Seu código de recuperação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+        ` Seu código de recuperação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
       );
       
       if (resultadoWhatsApp.success) {
-        console.log(`📱 Código de recuperação enviado para ${user.Telefone}: ${codigo}`);
+        console.log(` Código de recuperação enviado para ${user.Telefone}: ${codigo}`);
       } else {
-        console.error(`❌ Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
+        console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
       }
     }
 
@@ -878,7 +878,7 @@ router.post("/esqueci-senha", async (req, res) => {
       canal: isEmail ? 'email' : 'whatsapp'
     });
   } catch (err) {
-    console.error("❌ Erro na recuperação de senha:", err);
+    console.error(" Erro na recuperação de senha:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao processar recuperação de senha",
@@ -942,14 +942,14 @@ router.post("/resetar-senha", async (req, res) => {
       [hashedPassword, user.Id]
     );
 
-    console.log(`✅ Senha redefinida com sucesso para usuário ${user.Id} via ${isEmail ? 'email' : 'WhatsApp'}`);
+    console.log(` Senha redefinida com sucesso para usuário ${user.Id} via ${isEmail ? 'email' : 'WhatsApp'}`);
 
     res.json({
       status: "ok",
       message: "Senha redefinida com sucesso!",
     });
   } catch (err) {
-    console.error("❌ Erro ao resetar senha:", err);
+    console.error(" Erro ao resetar senha:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao redefinir senha",
@@ -1004,8 +1004,8 @@ router.post("/reenviar-codigo", async (req, res) => {
     try {
       const { sendEmail } = await import("../services/notify.js");
       const messageHtml = `
-        <h2>🔐 Código de Verificação</h2>
-        <p>Olá <b>${user.Nome}</b> 👋,</p>
+        <h2> Código de Verificação</h2>
+        <p>Olá <b>${user.Nome}</b> ,</p>
         <p>Você solicitou um novo código de verificação:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
         <p>Este código expira em 10 minutos.</p>
@@ -1015,9 +1015,9 @@ router.post("/reenviar-codigo", async (req, res) => {
       `;
       
       await sendEmail(user.Email, "PromoPing - Novo código de verificação", messageHtml);
-      console.log(`📧 Novo código de verificação enviado para ${user.Email}: ${codigo}`);
+      console.log(` Novo código de verificação enviado para ${user.Email}: ${codigo}`);
     } catch (emailError) {
-      console.log("⚠️ Email não configurado, mas código salvo:", codigo);
+      console.log(" Email não configurado, mas código salvo:", codigo);
     }
 
     // Se tem telefone, também enviar por WhatsApp
@@ -1026,11 +1026,11 @@ router.post("/reenviar-codigo", async (req, res) => {
         const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
         await enviarWhatsApp(
           telefoneLimpo,
-          `🔐 Seu novo código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+          ` Seu novo código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
         );
-        console.log(`📱 Novo código de verificação enviado para ${user.Telefone}: ${codigo}`);
+        console.log(` Novo código de verificação enviado para ${user.Telefone}: ${codigo}`);
       } catch (whatsappError) {
-        console.log("⚠️ WhatsApp não configurado");
+        console.log(" WhatsApp não configurado");
       }
     }
 
@@ -1039,7 +1039,7 @@ router.post("/reenviar-codigo", async (req, res) => {
       message: "Código reenviado com sucesso!",
     });
   } catch (err) {
-    console.error("❌ Erro ao reenviar código:", err);
+    console.error(" Erro ao reenviar código:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao reenviar código",
@@ -1087,7 +1087,7 @@ router.post("/verificar-codigo", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    console.log(`✅ Email verificado com sucesso para usuário ${user.Id}`);
+    console.log(` Email verificado com sucesso para usuário ${user.Id}`);
 
     res.json({
       status: "ok",
@@ -1096,7 +1096,7 @@ router.post("/verificar-codigo", async (req, res) => {
       user: { id: user.Id, email: user.Email, nome: user.Nome },
     });
   } catch (err) {
-    console.error("❌ Erro ao verificar código:", err);
+    console.error(" Erro ao verificar código:", err);
     res.status(500).json({
       status: "error",
       error: "Erro ao verificar código",
@@ -1138,7 +1138,7 @@ router.put("/telefone", verifyToken, async (req, res) => {
       message: "Telefone atualizado com sucesso",
     });
   } catch (err) {
-    console.error("❌ Erro ao atualizar telefone:", err);
+    console.error(" Erro ao atualizar telefone:", err);
     res.status(500).json({
       status: "error",
       error: "Erro interno no servidor",
@@ -1175,7 +1175,7 @@ router.get("/profile", verifyToken, async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("❌ Erro ao buscar perfil:", err);
+    console.error(" Erro ao buscar perfil:", err);
     res.status(500).json({
       status: "error",
       error: "Erro interno no servidor",

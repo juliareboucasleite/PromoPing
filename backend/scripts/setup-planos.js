@@ -2,7 +2,7 @@ import { pool } from '../database/db.js';
 
 async function setupPlanos() {
   try {
-    console.log('🔍 Verificando tabela planos...');
+    console.log(' Verificando tabela planos...');
     
     // Verificar se a tabela existe
     const [tables] = await pool.query(`
@@ -12,7 +12,7 @@ async function setupPlanos() {
     `);
     
     if (tables[0].count === 0) {
-      console.log('📝 Criando tabela planos...');
+      console.log(' Criando tabela planos...');
       
       await pool.query(`
         CREATE TABLE planos (
@@ -26,16 +26,16 @@ async function setupPlanos() {
         )
       `);
       
-      console.log('✅ Tabela planos criada!');
+      console.log(' Tabela planos criada!');
     } else {
-      console.log('✅ Tabela planos já existe!');
+      console.log(' Tabela planos já existe!');
     }
     
     // Verificar se há dados
     const [planos] = await pool.query('SELECT COUNT(*) as count FROM planos');
     
     if (planos[0].count === 0) {
-      console.log('📝 Inserindo planos padrão...');
+      console.log(' Inserindo planos padrão...');
       
       await pool.query(`
         INSERT INTO planos (Nome, Preco, LimiteProdutos, PermiteSMS, Relatorios) VALUES
@@ -45,22 +45,22 @@ async function setupPlanos() {
         ('Premium', 39.99, 999, TRUE, TRUE)
       `);
       
-      console.log('✅ Planos inseridos!');
+      console.log(' Planos inseridos!');
     } else {
-      console.log('✅ Planos já existem!');
+      console.log(' Planos já existem!');
     }
     
     // Listar planos
     const [planosList] = await pool.query('SELECT * FROM planos');
-    console.log('📋 Planos disponíveis:');
+    console.log(' Planos disponíveis:');
     planosList.forEach(plano => {
       console.log(`  - ${plano.Nome}: €${plano.Preco} (${plano.LimiteProdutos} produtos)`);
     });
     
-    console.log('✅ Setup de planos concluído!');
+    console.log(' Setup de planos concluído!');
     
   } catch (error) {
-    console.error('❌ Erro no setup de planos:', error);
+    console.error(' Erro no setup de planos:', error);
   } finally {
     process.exit(0);
   }

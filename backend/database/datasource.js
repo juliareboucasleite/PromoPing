@@ -59,9 +59,9 @@ export default async (config) => {
     // Sincronizar com a base de dados
     try {
       await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
-      console.log('✅ Sequelize sincronizado com a base de dados');
+      console.log(' Sequelize sincronizado com a base de dados');
     } catch (error) {
-      console.error('❌ Erro ao sincronizar Sequelize:', error);
+      console.error(' Erro ao sincronizar Sequelize:', error);
       throw error;
     }
   }

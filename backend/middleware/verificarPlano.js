@@ -11,11 +11,11 @@ export function verificarPlanoPermitido(planosPermitidos = []) {
       // Obter plano do usuário (vem do middleware de autenticação)
       const userPlano = req.user?.plano?.nome || "Free";
       
-      console.log(`🔍 Verificando plano: ${userPlano} para recursos: [${planosPermitidos.join(", ")}]`);
+      console.log(` Verificando plano: ${userPlano} para recursos: [${planosPermitidos.join(", ")}]`);
 
       // Verificar se o plano está na lista de permitidos
       if (!planosPermitidos.includes(userPlano)) {
-        console.log(`❌ Acesso negado para plano: ${userPlano}`);
+        console.log(` Acesso negado para plano: ${userPlano}`);
         
         return res.status(403).json({
           status: "error",
@@ -27,11 +27,11 @@ export function verificarPlanoPermitido(planosPermitidos = []) {
         });
       }
 
-      console.log(`✅ Acesso permitido para plano: ${userPlano}`);
+      console.log(` Acesso permitido para plano: ${userPlano}`);
       next();
       
     } catch (error) {
-      console.error("❌ Erro no middleware de verificação de plano:", error);
+      console.error(" Erro no middleware de verificação de plano:", error);
       res.status(500).json({
         status: "error",
         message: "Erro interno na verificação de plano",
@@ -93,12 +93,12 @@ export function verificarLimiteUso(tipoRecurso) {
 
       // Verificar uso atual (implementar lógica de contagem baseada no tipoRecurso)
       // Por enquanto, vamos permitir (implementar contagem real depois)
-      console.log(`📊 Verificando limite de ${tipoRecurso} para plano ${userPlano}: ${limite}`);
+      console.log(` Verificando limite de ${tipoRecurso} para plano ${userPlano}: ${limite}`);
       
       next();
       
     } catch (error) {
-      console.error("❌ Erro na verificação de limite:", error);
+      console.error(" Erro na verificação de limite:", error);
       res.status(500).json({
         status: "error",
         message: "Erro na verificação de limite de uso"
@@ -136,7 +136,7 @@ export function obterInfoPlano() {
       next();
       
     } catch (error) {
-      console.error("❌ Erro ao obter informações do plano:", error);
+      console.error(" Erro ao obter informações do plano:", error);
       res.status(500).json({
         status: "error",
         message: "Erro ao obter informações do plano"

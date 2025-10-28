@@ -11,7 +11,7 @@ export class GracePeriodManager {
    */
   static async checkAndUpdateExpiredGracePeriods() {
     try {
-      console.log('🔍 [GRACE_PERIOD] Verificando períodos de graça expirados...');
+      console.log(' [GRACE_PERIOD] Verificando períodos de graça expirados...');
       
       // Buscar usuários com período de graça expirado
       const [expiredUsers] = await pool.query(`
@@ -29,17 +29,17 @@ export class GracePeriodManager {
       `);
       
       if (expiredUsers.length === 0) {
-        console.log('✅ [GRACE_PERIOD] Nenhum período de graça expirado encontrado');
+        console.log(' [GRACE_PERIOD] Nenhum período de graça expirado encontrado');
         return { updated: 0, users: [] };
       }
       
-      console.log(`📊 [GRACE_PERIOD] Encontrados ${expiredUsers.length} usuários com período expirado`);
+      console.log(` [GRACE_PERIOD] Encontrados ${expiredUsers.length} usuários com período expirado`);
       
       const updatedUsers = [];
       
       // Atualizar cada usuário para Free
       for (const user of expiredUsers) {
-        console.log(`🔧 [GRACE_PERIOD] Atualizando usuário ${user.user_id} (${user.plan_name})...`);
+        console.log(` [GRACE_PERIOD] Atualizando usuário ${user.user_id} (${user.plan_name})...`);
         
         // Atualizar configutilizador para Free
         await pool.query(`
@@ -68,15 +68,15 @@ export class GracePeriodManager {
           previousStatus: user.StatusAssinatura
         });
         
-        console.log(`✅ [GRACE_PERIOD] Usuário ${user.user_id} atualizado para Free`);
+        console.log(` [GRACE_PERIOD] Usuário ${user.user_id} atualizado para Free`);
       }
       
-      console.log(`🎉 [GRACE_PERIOD] ${updatedUsers.length} usuários atualizados para Free`);
+      console.log(` [GRACE_PERIOD] ${updatedUsers.length} usuários atualizados para Free`);
       
       return { updated: updatedUsers.length, users: updatedUsers };
       
     } catch (error) {
-      console.error('❌ [GRACE_PERIOD] Erro ao verificar períodos expirados:', error);
+      console.error(' [GRACE_PERIOD] Erro ao verificar períodos expirados:', error);
       throw error;
     }
   }
@@ -102,7 +102,7 @@ export class GracePeriodManager {
       return gracePeriod.length > 0 ? gracePeriod[0] : null;
       
     } catch (error) {
-      console.error('❌ [GRACE_PERIOD] Erro ao verificar período de graça do usuário:', error);
+      console.error(' [GRACE_PERIOD] Erro ao verificar período de graça do usuário:', error);
       throw error;
     }
   }
@@ -111,17 +111,17 @@ export class GracePeriodManager {
    * Inicia verificação automática (para ser chamada periodicamente)
    */
   static async startAutomaticCheck() {
-    console.log('🚀 [GRACE_PERIOD] Iniciando verificação automática de períodos de graça...');
+    console.log(' [GRACE_PERIOD] Iniciando verificação automática de períodos de graça...');
     
     // Verificar a cada 1 hora
     setInterval(async () => {
       try {
         await this.checkAndUpdateExpiredGracePeriods();
       } catch (error) {
-        console.error('❌ [GRACE_PERIOD] Erro na verificação automática:', error);
+        console.error(' [GRACE_PERIOD] Erro na verificação automática:', error);
       }
     }, 60 * 60 * 1000); // 1 hora em millisegundos
     
-    console.log('✅ [GRACE_PERIOD] Verificação automática iniciada (a cada 1 hora)');
+    console.log(' [GRACE_PERIOD] Verificação automática iniciada (a cada 1 hora)');
   }
 }

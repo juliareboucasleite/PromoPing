@@ -22,7 +22,7 @@ export async function gerarExcel(produtos, historico = [], userPlano = "Free") {
     return await gerarExcelProdutos(workbook, produtos, historico, userPlano);
     
   } catch (error) {
-    console.error("❌ Erro ao gerar Excel:", error);
+    console.error(" Erro ao gerar Excel:", error);
     throw error;
   }
 }
@@ -71,7 +71,7 @@ async function gerarExcelProdutos(workbook, produtos, historico, userPlano) {
       
       if (produto && registos.length > 0) {
         // Cabeçalho do produto
-        sheet.addRow([`📊 ${produto.Nome} (${totalRegistros} registros)`, "", "", "", "", "", ""]);
+        sheet.addRow([` ${produto.Nome} (${totalRegistros} registros)`, "", "", "", "", "", ""]);
         sheet.lastRow.font = { bold: true, color: { argb: "FF703F" } };
 
         // Cabeçalho da tabela de histórico

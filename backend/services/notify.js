@@ -22,9 +22,9 @@ export async function sendEmail(to, subject, message) {
       text: message,
     });
 
-    console.log(`📧 Email enviado para ${to}`);
+    console.log(` Email enviado para ${to}`);
   } catch (err) {
-    console.error("❌ Erro ao enviar email:", err.message);
+    console.error(" Erro ao enviar email:", err.message);
   }
 }
 
@@ -39,9 +39,9 @@ export async function sendSMS(to, message) {
       to, // número destino (+351... ou +55...)
     });
 
-    console.log(`📱 SMS enviado para ${to}`);
+    console.log(` SMS enviado para ${to}`);
   } catch (err) {
-    console.error("❌ Erro ao enviar SMS:", err.message);
+    console.error(" Erro ao enviar SMS:", err.message);
   }
 }
 
@@ -52,6 +52,6 @@ export async function sendNotification({ canal, email, telefone, mensagem }) {
   } else if (canal === "sms" && telefone) {
     await sendSMS(telefone, mensagem);
   } else {
-    console.warn("⚠️ Canal não suportado ou dados em falta:", canal);
+    console.warn(" Canal não suportado ou dados em falta:", canal);
   }
 }

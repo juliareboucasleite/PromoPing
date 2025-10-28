@@ -30,16 +30,16 @@ async function setupStatusSystem() {
   let connection;
   
   try {
-    console.log('🚀 Iniciando configuração do sistema de status...');
+    console.log(' Iniciando configuração do sistema de status...');
     
     // Conectar ao banco
     connection = await mysql.createConnection(dbConfig);
-    console.log('✅ Conectado ao banco de dados');
+    console.log(' Conectado ao banco de dados');
     
     // ================== CRIAR TABELAS ==================
     
     // 1. Tabela métricas_sistema
-    console.log('📊 Criando tabela metricas_sistema...');
+    console.log(' Criando tabela metricas_sistema...');
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS metricas_sistema (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,10 +52,10 @@ async function setupStatusSystem() {
         INDEX idx_data_atualizacao (DataAtualizacao)
       )
     `);
-    console.log('✅ Tabela metricas_sistema criada');
+    console.log(' Tabela metricas_sistema criada');
     
     // 2. Tabela status_componentes
-    console.log('🔧 Criando tabela status_componentes...');
+    console.log(' Criando tabela status_componentes...');
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS status_componentes (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,10 +70,10 @@ async function setupStatusSystem() {
         INDEX idx_ultima_verificacao (UltimaVerificacao)
       )
     `);
-    console.log('✅ Tabela status_componentes criada');
+    console.log(' Tabela status_componentes criada');
     
     // 3. Tabela incidentes
-    console.log('🚨 Criando tabela incidentes...');
+    console.log(' Criando tabela incidentes...');
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS incidentes (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -92,7 +92,7 @@ async function setupStatusSystem() {
         INDEX idx_componente (ComponenteAfetado)
       )
     `);
-    console.log('✅ Tabela incidentes criada');
+    console.log(' Tabela incidentes criada');
     
     // ================== INSERIR DADOS INICIAIS ==================
     
@@ -101,18 +101,18 @@ async function setupStatusSystem() {
     const [componentesCount] = await connection.execute("SELECT COUNT(*) as total FROM status_componentes");
     
     if (metricasCount[0].total === 0) {
-      console.log('📈 Inserindo métricas iniciais...');
+      console.log(' Inserindo métricas iniciais...');
       await connection.execute(`
         INSERT INTO metricas_sistema (UptimeGeral, TempoRespostaMedia, UtilizadoresAtivos, ProdutosMonitorizados, NotificacoesEnviadas) 
         VALUES (99.9, 45, 0, 0, 0)
       `);
-      console.log('✅ Métricas iniciais inseridas');
+      console.log(' Métricas iniciais inseridas');
     } else {
-      console.log('✅ Métricas já existem');
+      console.log(' Métricas já existem');
     }
     
     if (componentesCount[0].total === 0) {
-      console.log('🔧 Inserindo componentes do sistema...');
+      console.log(' Inserindo componentes do sistema...');
       
       const componentes = [
         ['API Principal', 'operational', 99.9, 45, '{"descricao": "API principal do PromoPing", "versao": "1.0.0"}'],
@@ -130,9 +130,9 @@ async function setupStatusSystem() {
         `, [nome, status, uptime, latencia, detalhes]);
       }
       
-      console.log('✅ Componentes do sistema inseridos');
+      console.log(' Componentes do sistema inseridos');
     } else {
-      console.log('✅ Componentes já existem');
+      console.log(' Componentes já existem');
     }
     
     // ================== VERIFICAR RESULTADO ==================
@@ -141,20 +141,20 @@ async function setupStatusSystem() {
     const [componentes] = await connection.execute("SELECT COUNT(*) as total FROM status_componentes");
     const [incidentes] = await connection.execute("SELECT COUNT(*) as total FROM incidentes");
     
-    console.log('\n📊 RESUMO DA CONFIGURAÇÃO:');
+    console.log('\n RESUMO DA CONFIGURAÇÃO:');
     console.log('===========================');
-    console.log(`✅ Métricas: ${metricas[0].total} registros`);
-    console.log(`✅ Componentes: ${componentes[0].total} registros`);
-    console.log(`✅ Incidentes: ${incidentes[0].total} registros`);
+    console.log(` Métricas: ${metricas[0].total} registros`);
+    console.log(` Componentes: ${componentes[0].total} registros`);
+    console.log(` Incidentes: ${incidentes[0].total} registros`);
     
-    console.log('\n🎉 Sistema de status configurado com sucesso!');
-    console.log('\n📝 PRÓXIMOS PASSOS:');
-    console.log('1. ✅ Sistema de status está pronto');
-    console.log('2. ✅ APIs de status funcionando');
-    console.log('3. ✅ Dashboard de status disponível');
+    console.log('\n Sistema de status configurado com sucesso!');
+    console.log('\n PRÓXIMOS PASSOS:');
+    console.log('1.  Sistema de status está pronto');
+    console.log('2.  APIs de status funcionando');
+    console.log('3.  Dashboard de status disponível');
     
   } catch (error) {
-    console.error('❌ Erro ao configurar sistema de status:', error.message);
+    console.error(' Erro ao configurar sistema de status:', error.message);
     throw error;
   } finally {
     if (connection) {
@@ -166,7 +166,7 @@ async function setupStatusSystem() {
 // Executar se chamado diretamente
 if (import.meta.url === `file://${process.argv[1]}`) {
   setupStatusSystem().catch(error => {
-    console.error('❌ Erro fatal:', error);
+    console.error(' Erro fatal:', error);
     process.exit(1);
   });
 }

@@ -25,7 +25,7 @@ const PLANOS_ESPERADOS = {
 };
 
 async function validarConfiguracao() {
-  console.log('🔍 Validando configuração dos planos...');
+  console.log(' Validando configuração dos planos...');
   console.log('=====================================');
   
   let erros = [];
@@ -33,41 +33,41 @@ async function validarConfiguracao() {
   
   // Verificar chave do Stripe
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe_secret_key_here')) {
-    erros.push('❌ STRIPE_SECRET_KEY não configurada no .env');
+    erros.push(' STRIPE_SECRET_KEY não configurada no .env');
   } else {
-    console.log('✅ STRIPE_SECRET_KEY configurada');
+    console.log(' STRIPE_SECRET_KEY configurada');
   }
   
   // Verificar Price IDs
-  console.log('\n📋 Verificando Price IDs dos planos:');
+  console.log('\n Verificando Price IDs dos planos:');
   
   for (const [plano, priceId] of Object.entries(PLANOS_ESPERADOS)) {
     if (!priceId || priceId.includes('your_') || priceId.includes('_here')) {
-      erros.push(`❌ STRIPE_${plano.toUpperCase()}_PRICE_ID não configurado`);
+      erros.push(` STRIPE_${plano.toUpperCase()}_PRICE_ID não configurado`);
     } else {
-      console.log(`✅ ${plano.toUpperCase()}: ${priceId}`);
+      console.log(` ${plano.toUpperCase()}: ${priceId}`);
       
       // Verificar se o Price ID existe no Stripe
       if (stripe) {
         try {
           const price = await stripe.prices.retrieve(priceId);
-          console.log(`   📊 Preço: €${(price.unit_amount / 100).toFixed(2)}/${price.recurring.interval}`);
+          console.log(`    Preço: €${(price.unit_amount / 100).toFixed(2)}/${price.recurring.interval}`);
           
           // Verificar produto associado
           const produto = await stripe.products.retrieve(price.product);
-          console.log(`   🛍️  Produto: ${produto.name}`);
+          console.log(`     Produto: ${produto.name}`);
           
         } catch (error) {
-          avisos.push(`⚠️  Price ID ${priceId} não encontrado no Stripe: ${error.message}`);
+          avisos.push(`  Price ID ${priceId} não encontrado no Stripe: ${error.message}`);
         }
       } else {
-        avisos.push(`⚠️  Stripe não configurado - não foi possível validar Price ID ${priceId}`);
+        avisos.push(`  Stripe não configurado - não foi possível validar Price ID ${priceId}`);
       }
     }
   }
   
   // Verificar outras configurações importantes
-  console.log('\n🔧 Verificando outras configurações:');
+  console.log('\n Verificando outras configurações:');
   
   const configs = [
     { key: 'JWT_SECRET', nome: 'JWT Secret' },
@@ -80,30 +80,30 @@ async function validarConfiguracao() {
   
   configs.forEach(config => {
     if (!process.env[config.key] || process.env[config.key].includes('your_') || process.env[config.key].includes('_here')) {
-      avisos.push(`⚠️  ${config.nome} não configurado (${config.key})`);
+      avisos.push(`  ${config.nome} não configurado (${config.key})`);
     } else {
-      console.log(`✅ ${config.nome}: configurado`);
+      console.log(` ${config.nome}: configurado`);
     }
   });
   
   // Resumo
-  console.log('\n📊 RESUMO DA VALIDAÇÃO:');
+  console.log('\n RESUMO DA VALIDAÇÃO:');
   console.log('======================');
   
   if (erros.length === 0) {
-    console.log('✅ Configuração básica dos planos está correta!');
+    console.log(' Configuração básica dos planos está correta!');
   } else {
-    console.log('❌ Problemas encontrados:');
+    console.log(' Problemas encontrados:');
     erros.forEach(erro => console.log(`   ${erro}`));
   }
   
   if (avisos.length > 0) {
-    console.log('\n⚠️  Avisos:');
+    console.log('\n  Avisos:');
     avisos.forEach(aviso => console.log(`   ${aviso}`));
   }
   
   // Instruções
-  console.log('\n📝 PRÓXIMOS PASSOS:');
+  console.log('\n PRÓXIMOS PASSOS:');
   console.log('===================');
   
   if (erros.length > 0) {
@@ -111,7 +111,7 @@ async function validarConfiguracao() {
     console.log('2. Execute: node scripts/setup-stripe-plans.js para criar produtos no Stripe');
     console.log('3. Execute novamente este script para validar');
   } else {
-    console.log('1. ✅ Configuração dos planos está pronta!');
+    console.log('1.  Configuração dos planos está pronta!');
     console.log('2. Execute: node backend/scripts/setup-planos.js para configurar o banco');
     console.log('3. Inicie o servidor: npm start');
   }
@@ -121,6 +121,6 @@ async function validarConfiguracao() {
 
 // Executar validação
 validarConfiguracao().catch(error => {
-  console.error('❌ Erro na validação:', error);
+  console.error(' Erro na validação:', error);
   process.exit(1);
 });

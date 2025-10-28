@@ -3,12 +3,12 @@ import { sendNotification } from "./notify.js";
 import { formatPriceDisplay, formatDate } from "../utils/format.js";
 
 /**
- * 🚨 Sistema de alertas inteligentes
+ *  Sistema de alertas inteligentes
  * Envia notificações quando preços atingem metas ou mudam significativamente
  */
 
 /**
- * 📧 Envia alerta de preço alvo atingido
+ *  Envia alerta de preço alvo atingido
  * @param {Object} product - Dados do produto
  * @param {number} novoPreco - Novo preço
  * @param {number} precoAlvo - Preço alvo
@@ -19,11 +19,11 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
     const savingsPercent = ((savings / precoAlvo) * 100).toFixed(1);
     
     const messageHtml = `
-    Olá <b>${product.Nome}</b> 👋,
+    Olá <b>${product.Nome}</b> ,
     O preço do produto ${product.Nome} atingiu o preço alvo de ${formatPriceDisplay(precoAlvo)}.
-    Aproveite antes que o preço volte a subir! ⏰
+    Aproveite antes que o preço volte a subir! 
     Atenciosamente, <br/>
-    <b>Equipe PromoPing 🚀</b><br/>
+    <b>Equipe PromoPing </b><br/>
     <small>Esta é uma notificação automática — não responda a este email.</small>
   `;
         
@@ -51,15 +51,15 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
       [product.UserId, product.Id, canal, messageHtml, true, savings]
     );
 
-    console.log(`📢 Alerta de preço alvo enviado para ${product.Nome} (${canal})`);
+    console.log(` Alerta de preço alvo enviado para ${product.Nome} (${canal})`);
 
   } catch (error) {
-    console.error("❌ Erro ao enviar alerta de preço alvo:", error.message);
+    console.error(" Erro ao enviar alerta de preço alvo:", error.message);
   }
 }
 
 /**
- * 📈 Envia alerta de mudança significativa de preço
+ *  Envia alerta de mudança significativa de preço
  * @param {Object} product - Dados do produto
  * @param {number} novoPreco - Novo preço
  * @param {number} precoAnterior - Preço anterior
@@ -85,21 +85,21 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
         </style>
 
         <h2 style="color: #1e90ff; text-align: center;">
-          ${isIncrease ? '📈' : '📉'} Preço ${isIncrease ? 'Subiu' : 'Desceu'}
+          ${isIncrease ? '' : ''} Preço ${isIncrease ? 'Subiu' : 'Desceu'}
         </h2>
         
         <div class="alert-box" style="padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin: 20px 0;">
-          <p><b>📌 Produto:</b> ${product.Nome}</p>
-          <p><b>🏪 Loja:</b> ${product.Loja}</p>
-          <p><b>💰 Preço anterior:</b> ${formatPriceDisplay(precoAnterior)}</p>
-          <p><b>💰 Preço atual:</b> <span class="${isIncrease ? 'price-up' : 'price-down'}">${formatPriceDisplay(novoPreco)}</span></p>
-          <p><b>📊 Mudança:</b> ${isIncrease ? '+' : ''}${formatPriceDisplay(Math.abs(diferenca))} (${isIncrease ? '+' : ''}${percentual}%)</p>
+          <p><b> Produto:</b> ${product.Nome}</p>
+          <p><b> Loja:</b> ${product.Loja}</p>
+          <p><b> Preço anterior:</b> ${formatPriceDisplay(precoAnterior)}</p>
+          <p><b> Preço atual:</b> <span class="${isIncrease ? 'price-up' : 'price-down'}">${formatPriceDisplay(novoPreco)}</span></p>
+          <p><b> Mudança:</b> ${isIncrease ? '+' : ''}${formatPriceDisplay(Math.abs(diferenca))} (${isIncrease ? '+' : ''}${percentual}%)</p>
         </div>
 
         <div style="text-align: center; margin: 20px 0;">
           <a class="btn" href="${product.Link}" target="_blank" 
              style="display: inline-block; padding: 12px 24px; background: #1e90ff; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            🔗 Ver produto
+             Ver produto
           </a>
         </div>
 
@@ -111,7 +111,7 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
 
         <p style="font-size: 13px; color: #666; text-align: center;">
           Atenciosamente, <br/>
-          <b>Equipe PromoPing 🚀</b><br/>
+          <b>Equipe PromoPing </b><br/>
           <small>Esta é uma notificação automática — não responda a este email.</small>
         </p>
       </div>
@@ -140,15 +140,15 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
       [product.UserId, product.Id, canal, messageHtml, true, Math.abs(diferenca)]
     );
 
-    console.log(`📢 Alerta de mudança de preço enviado para ${product.Nome} (${canal})`);
+    console.log(` Alerta de mudança de preço enviado para ${product.Nome} (${canal})`);
 
   } catch (error) {
-    console.error("❌ Erro ao enviar alerta de mudança de preço:", error.message);
+    console.error(" Erro ao enviar alerta de mudança de preço:", error.message);
   }
 }
 
 /**
- * 🎯 Processa alertas para um produto atualizado
+ *  Processa alertas para um produto atualizado
  * @param {Object} product - Dados do produto
  * @param {number} novoPreco - Novo preço
  * @param {number} precoAnterior - Preço anterior
@@ -166,12 +166,12 @@ export async function processAlerts(product, novoPreco, precoAnterior) {
     }
     
   } catch (error) {
-    console.error("❌ Erro ao processar alertas:", error.message);
+    console.error(" Erro ao processar alertas:", error.message);
   }
 }
 
 /**
- * 📊 Obtém estatísticas de alertas
+ *  Obtém estatísticas de alertas
  * @returns {Object} - Estatísticas dos alertas
  */
 export async function getAlertStats() {
@@ -188,7 +188,7 @@ export async function getAlertStats() {
     return stats[0];
     
   } catch (error) {
-    console.error("❌ Erro ao obter estatísticas de alertas:", error.message);
+    console.error(" Erro ao obter estatísticas de alertas:", error.message);
     return null;
   }
 }

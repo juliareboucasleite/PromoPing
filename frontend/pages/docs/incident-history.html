@@ -237,12 +237,12 @@
 
         if (data.status === "ok" && data.incidentes && data.incidentes.length > 0) {
           atualizarIncidentes(data.incidentes);
-          console.log("✅ Incidentes carregados da base de dados:", data.incidentes);
+          console.log(" Incidentes carregados da base de dados:", data.incidentes);
         } else {
-          console.log("⚠️ Nenhum incidente encontrado na base de dados");
+          console.log(" Nenhum incidente encontrado na base de dados");
         }
       } catch (error) {
-        console.error("❌ Erro ao carregar incidentes:", error);
+        console.error(" Erro ao carregar incidentes:", error);
       }
     }
 

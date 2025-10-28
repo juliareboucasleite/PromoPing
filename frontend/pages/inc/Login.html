@@ -165,7 +165,7 @@
         
         if (data.exists) {
           // Usuário já existe - usar rota direta (sem rate limiting)
-          console.log("✅ Usuário Discord já registrado - login direto");
+          console.log(" Usuário Discord já registrado - login direto");
           window.location.href = "http://127.0.0.1:3000/api/auth/discord/direct/916737425978589235";
         } else {
           // Usuário não existe - redirecionar para Discord OAuth
@@ -173,7 +173,7 @@
           window.location.href = "http://127.0.0.1:3000/auth/discord";
         }
       } catch (error) {
-        console.error("❌ Erro ao verificar usuário Discord:", error);
+        console.error(" Erro ao verificar usuário Discord:", error);
         // Em caso de erro, tentar OAuth normal
         window.location.href = "http://127.0.0.1:3000/auth/discord";
       }

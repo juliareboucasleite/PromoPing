@@ -27,7 +27,7 @@ function log(message, color = 'reset') {
 function createEnvFile() {
   const envPath = path.join(projectRoot, '.env');
   if (fs.existsSync(envPath)) {
-    log('✅ Arquivo .env já existe', 'green');
+    log(' Arquivo .env já existe', 'green');
     return;
   }
 
@@ -50,33 +50,33 @@ HOST=127.0.0.1
 PORT=3000
 `;
   fs.writeFileSync(envPath, envContent.trim());
-  log('✅ Arquivo .env criado com configurações padrão', 'green');
+  log(' Arquivo .env criado com configurações padrão', 'green');
 }
 
 function setupDatabase() {
-  log('\n🗄️ Configurando base de dados...', 'blue');
+  log('\n Configurando base de dados...', 'blue');
   const sqlFile = path.join(projectRoot, 'sql', 'promoping.sql');
 
   if (!fs.existsSync(sqlFile)) {
-    log('⚠️ Arquivo SQL não encontrado, pulando configuração da BD', 'yellow');
+    log(' Arquivo SQL não encontrado, pulando configuração da BD', 'yellow');
     return;
   }
 
   try {
     execSync(`mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS pap;"`, { stdio: 'inherit' });
     execSync(`mysql -u root -p pap < "${sqlFile}"`, { stdio: 'inherit' });
-    log('✅ Base de dados configurada com sucesso', 'green');
+    log(' Base de dados configurada com sucesso', 'green');
   } catch (error) {
-    log('⚠️ Erro ao configurar base de dados. Execute manualmente:', 'yellow');
+    log(' Erro ao configurar base de dados. Execute manualmente:', 'yellow');
     log(`   mysql -u root -p pap < ${sqlFile}`, 'cyan');
   }
 }
 
 function main() {
-  log('🚀 Setup PromoPing iniciado', 'bright');
+  log(' Setup PromoPing iniciado', 'bright');
   createEnvFile();
   setupDatabase();
-  log('\n🎉 Setup concluído!', 'green');
+  log('\n Setup concluído!', 'green');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

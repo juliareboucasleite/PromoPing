@@ -14,9 +14,9 @@ export async function exportarExcel(req, res) {
     const userId = req.user.id;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(`📊 Exportando Excel para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando Excel para usuário ${userId} (plano: ${userPlano})`);
 
-    // 🔹 Definir o intervalo do histórico conforme o plano
+    //  Definir o intervalo do histórico conforme o plano
     const dias = userPlano === "Basic" ? 30 : null;
     const incluirHistorico = ["Basic", "Standard", "Premium"].includes(userPlano);
 
@@ -46,7 +46,7 @@ export async function exportarExcel(req, res) {
     // Buscar histórico de preços se permitido pelo plano
     let historico = [];
     if (incluirHistorico) {
-      console.log(`📈 Buscando histórico de preços (${dias ? `últimos ${dias} dias` : 'completo'})`);
+      console.log(` Buscando histórico de preços (${dias ? `últimos ${dias} dias` : 'completo'})`);
       
       for (const produto of produtos) {
         const [hist] = await db.query(`
@@ -76,11 +76,11 @@ export async function exportarExcel(req, res) {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Length", buffer.length);
     
-    console.log(`✅ Excel gerado com sucesso: ${produtos.length} produtos, ${historico.reduce((acc, h) => acc + h.totalRegistros, 0)} registros de histórico`);
+    console.log(` Excel gerado com sucesso: ${produtos.length} produtos, ${historico.reduce((acc, h) => acc + h.totalRegistros, 0)} registros de histórico`);
     res.send(buffer);
     
   } catch (err) {
-    console.error("❌ Erro ao exportar Excel:", err);
+    console.error(" Erro ao exportar Excel:", err);
     res.status(500).json({ 
       status: "error", 
       message: "Erro ao gerar arquivo Excel",
@@ -99,9 +99,9 @@ export async function exportarPDF(req, res) {
     const userId = req.user.id;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(`📄 Exportando PDF para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando PDF para usuário ${userId} (plano: ${userPlano})`);
 
-    // 🔹 Definir o intervalo do histórico conforme o plano
+    //  Definir o intervalo do histórico conforme o plano
     const dias = userPlano === "Basic" ? 30 : null;
     const incluirHistorico = ["Basic", "Standard", "Premium"].includes(userPlano);
 
@@ -131,7 +131,7 @@ export async function exportarPDF(req, res) {
     // Buscar histórico de preços se permitido pelo plano
     let historico = [];
     if (incluirHistorico) {
-      console.log(`📈 Buscando histórico de preços (${dias ? `últimos ${dias} dias` : 'completo'})`);
+      console.log(` Buscando histórico de preços (${dias ? `últimos ${dias} dias` : 'completo'})`);
       
       for (const produto of produtos) {
         const [hist] = await db.query(`
@@ -161,11 +161,11 @@ export async function exportarPDF(req, res) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Length", buffer.length);
     
-    console.log(`✅ PDF gerado com sucesso: ${produtos.length} produtos, ${historico.reduce((acc, h) => acc + h.totalRegistros, 0)} registros de histórico`);
+    console.log(` PDF gerado com sucesso: ${produtos.length} produtos, ${historico.reduce((acc, h) => acc + h.totalRegistros, 0)} registros de histórico`);
     res.send(buffer);
     
   } catch (err) {
-    console.error("❌ Erro ao exportar PDF:", err);
+    console.error(" Erro ao exportar PDF:", err);
     res.status(500).json({ 
       status: "error", 
       message: "Erro ao gerar arquivo PDF",
@@ -184,7 +184,7 @@ export async function exportarIncidentesExcel(req, res) {
     const userId = req.user.id;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(`📊 Exportando incidentes Excel para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando incidentes Excel para usuário ${userId} (plano: ${userPlano})`);
 
     // Buscar incidentes (todos os incidentes do sistema para admin, ou apenas relacionados ao usuário)
     const [incidentes] = await db.query(`
@@ -220,11 +220,11 @@ export async function exportarIncidentesExcel(req, res) {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Length", buffer.length);
     
-    console.log(`✅ Excel de incidentes gerado com sucesso: ${incidentes.length} incidentes`);
+    console.log(` Excel de incidentes gerado com sucesso: ${incidentes.length} incidentes`);
     res.send(buffer);
     
   } catch (err) {
-    console.error("❌ Erro ao exportar incidentes Excel:", err);
+    console.error(" Erro ao exportar incidentes Excel:", err);
     res.status(500).json({ 
       status: "error", 
       message: "Erro ao gerar arquivo Excel de incidentes",
@@ -243,7 +243,7 @@ export async function exportarRelatorioCompleto(req, res) {
     const userId = req.user.id;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(`📈 Exportando relatório completo para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando relatório completo para usuário ${userId} (plano: ${userPlano})`);
 
     // Buscar dados completos
     const [produtos] = await db.query(`
@@ -279,11 +279,11 @@ export async function exportarRelatorioCompleto(req, res) {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Length", buffer.length);
     
-    console.log(`✅ Relatório completo gerado com sucesso`);
+    console.log(` Relatório completo gerado com sucesso`);
     res.send(buffer);
     
   } catch (err) {
-    console.error("❌ Erro ao exportar relatório completo:", err);
+    console.error(" Erro ao exportar relatório completo:", err);
     res.status(500).json({ 
       status: "error", 
       message: "Erro ao gerar relatório completo",
@@ -353,8 +353,8 @@ export async function obterPlanoUsuario(req, res) {
             isInGracePeriod = true;
             gracePeriodEnd = data.grace_period_end;
             originalPlan = data.plan_name; // Nome do plano original
-            console.log(`⏰ [PLANO] Usuário ${userId} em período de graça até ${graceEnd.toISOString()}`);
-            console.log(`📋 [PLANO] Plano original durante graça: ${originalPlan}`);
+            console.log(` [PLANO] Usuário ${userId} em período de graça até ${graceEnd.toISOString()}`);
+            console.log(` [PLANO] Plano original durante graça: ${originalPlan}`);
           }
         }
         
@@ -368,7 +368,7 @@ export async function obterPlanoUsuario(req, res) {
         };
       }
     } catch (stripeErr) {
-      console.log("ℹ️ Nenhuma informação do Stripe encontrada para o usuário");
+      console.log("ℹ Nenhuma informação do Stripe encontrada para o usuário");
     }
 
     // Se está em período de graça, usar o plano original
@@ -389,7 +389,7 @@ export async function obterPlanoUsuario(req, res) {
         plano.permite_sms = original.PermiteSMS;
         plano.relatorios = original.Relatorios;
         
-        console.log(`🔄 [PLANO] Usando plano original durante graça: ${original.Nome} (€${original.Preco})`);
+        console.log(` [PLANO] Usando plano original durante graça: ${original.Nome} (€${original.Preco})`);
       }
     }
 
@@ -410,7 +410,7 @@ export async function obterPlanoUsuario(req, res) {
     });
     
   } catch (err) {
-    console.error("❌ Erro ao obter plano do usuário:", err);
+    console.error(" Erro ao obter plano do usuário:", err);
     res.status(500).json({ 
       status: "error", 
       message: "Erro ao obter informações do plano",

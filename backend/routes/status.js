@@ -760,15 +760,15 @@ router.get("/api/incidentes/exportar", async (req, res) => {
       setTimeout(() => {
         try {
           fs.unlinkSync(filePath);
-          console.log(`✅ Arquivo temporário removido: ${fileName}`);
+          console.log(` Arquivo temporário removido: ${fileName}`);
         } catch (error) {
-          console.error(`❌ Erro ao remover arquivo temporário: ${error.message}`);
+          console.error(` Erro ao remover arquivo temporário: ${error.message}`);
         }
       }, 5000);
     });
 
   } catch (err) {
-    console.error("❌ Erro ao exportar incidentes:", err);
+    console.error(" Erro ao exportar incidentes:", err);
     res.status(500).json({ 
       status: "error",
       erro: "Erro ao gerar relatório Excel",

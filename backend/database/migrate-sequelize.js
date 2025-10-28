@@ -4,34 +4,34 @@ import datasource from './datasource.js';
 
 const migrateToSequelize = async () => {
   try {
-    console.log('🔄 Iniciando migração para Sequelize...');
+    console.log(' Iniciando migração para Sequelize...');
     
     // Inicializar o banco de dados
     const db = datasource(config);
     
     // Testar conexão
     await db.sequelize.authenticate();
-    console.log('✅ Conexão estabelecida');
+    console.log(' Conexão estabelecida');
     
     // Sincronizar models (criar/atualizar tabelas)
     await db.sequelize.sync({ alter: true });
-    console.log('✅ Models sincronizados');
+    console.log(' Models sincronizados');
     
     // Exemplo de migração de dados existentes
-    console.log('📊 Verificando dados existentes...');
+    console.log(' Verificando dados existentes...');
     
     const { models } = db;
     
     // Contar registros existentes
     const productCount = await models.produtos.count();
     
-    console.log(`🛍️ Produtos encontrados: ${productCount}`);
+    console.log(` Produtos encontrados: ${productCount}`);
   
     
     return db;
     
   } catch (error) {
-    console.error('❌ Erro durante a migração:', error);
+    console.error(' Erro durante a migração:', error);
     throw error;
   }
 };
@@ -40,11 +40,11 @@ const migrateToSequelize = async () => {
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrateToSequelize()
     .then(() => {
-      console.log('🎉 Migração finalizada');
+      console.log(' Migração finalizada');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('💥 Falha na migração:', error);
+      console.error(' Falha na migração:', error);
       process.exit(1);
     });
 }

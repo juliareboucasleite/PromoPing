@@ -30,13 +30,13 @@ EMAIL_PASS=your-email-password
 try {
   // Criar/atualizar ficheiro .env
   fs.writeFileSync('.env', envContent);
-  console.log('✅ Ficheiro .env atualizado com as credenciais do Google OAuth!');
+  console.log(' Ficheiro .env atualizado com as credenciais do Google OAuth!');
   
-  console.log('\n🔧 Próximos passos:');
+  console.log('\n Próximos passos:');
   console.log('1. Reinicie o servidor para aplicar as mudanças');
   console.log('2. Teste o login com Google em: http://127.0.0.1:3000/pages/Login.html');
   console.log('3. Ou use o login normal com: julia.admin@gmail.com');
   
 } catch (error) {
-  console.error('❌ Erro ao atualizar ficheiro .env:', error);
+  console.error(' Erro ao atualizar ficheiro .env:', error);
 }

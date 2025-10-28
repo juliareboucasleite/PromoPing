@@ -12,7 +12,7 @@ const router = express.Router();
  */
 router.get('/check', verifyToken, async (req, res) => {
   try {
-    console.log('🔍 [API] Verificação manual de períodos de graça solicitada');
+    console.log(' [API] Verificação manual de períodos de graça solicitada');
     
     const result = await GracePeriodManager.checkAndUpdateExpiredGracePeriods();
     
@@ -24,7 +24,7 @@ router.get('/check', verifyToken, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ [API] Erro ao verificar períodos de graça:', error);
+    console.error(' [API] Erro ao verificar períodos de graça:', error);
     res.status(500).json({
       status: 'erro',
       message: 'Erro ao verificar períodos de graça'
@@ -40,7 +40,7 @@ router.get('/status/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
     
-    console.log(`🔍 [API] Verificando período de graça do usuário ${userId}`);
+    console.log(` [API] Verificando período de graça do usuário ${userId}`);
     
     const gracePeriod = await GracePeriodManager.checkUserGracePeriod(parseInt(userId));
     
@@ -59,7 +59,7 @@ router.get('/status/:userId', verifyToken, async (req, res) => {
     }
     
   } catch (error) {
-    console.error('❌ [API] Erro ao verificar período de graça do usuário:', error);
+    console.error(' [API] Erro ao verificar período de graça do usuário:', error);
     res.status(500).json({
       status: 'erro',
       message: 'Erro ao verificar período de graça do usuário'

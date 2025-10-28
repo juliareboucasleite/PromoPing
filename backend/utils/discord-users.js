@@ -20,7 +20,7 @@ function loadDiscordUsers() {
     const data = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    console.error('❌ Erro ao carregar usuários Discord:', error);
+    console.error(' Erro ao carregar usuários Discord:', error);
     return { users: [] };
   }
 }
@@ -31,7 +31,7 @@ function saveDiscordUsers(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {
-    console.error('❌ Erro ao salvar usuários Discord:', error);
+    console.error(' Erro ao salvar usuários Discord:', error);
     return false;
   }
 }
@@ -55,7 +55,7 @@ export function registerDiscordUser(discordData) {
   // Verificar se já existe
   const existingUser = findDiscordUser(discordData.id);
   if (existingUser) {
-    console.log('👤 Usuário Discord já existe:', existingUser.username);
+    console.log(' Usuário Discord já existe:', existingUser.username);
     return existingUser;
   }
   
@@ -72,10 +72,10 @@ export function registerDiscordUser(discordData) {
   data.users.push(newUser);
   
   if (saveDiscordUsers(data)) {
-    console.log('✅ Novo usuário Discord registrado:', newUser.username);
+    console.log(' Novo usuário Discord registrado:', newUser.username);
     return newUser;
   } else {
-    console.error('❌ Erro ao registrar usuário Discord');
+    console.error(' Erro ao registrar usuário Discord');
     return null;
   }
 }
@@ -90,7 +90,7 @@ export function linkDiscordUser(discordId, userId) {
     user.linkedAt = new Date().toISOString();
     
     if (saveDiscordUsers(data)) {
-      console.log('✅ Usuário Discord associado com ID:', userId);
+      console.log(' Usuário Discord associado com ID:', userId);
       return true;
     }
   }
@@ -112,7 +112,7 @@ export function removeDiscordUser(discordId) {
   
   if (data.users.length < initialLength) {
     if (saveDiscordUsers(data)) {
-      console.log('✅ Usuário Discord removido:', discordId);
+      console.log(' Usuário Discord removido:', discordId);
       return true;
     }
   }

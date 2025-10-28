@@ -97,7 +97,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         
         const planoNome = planoData.length > 0 ? planoData[0].nome : 'Unknown';
         
-        console.log(`💾 [PAYMENT] Salvando assinatura para usuário ${userId}:`, {
+        console.log(` [PAYMENT] Salvando assinatura para usuário ${userId}:`, {
           subscription_id: resultado.session.subscription_id,
           customer_id: resultado.session.customer_id,
           plan_name: planoNome
@@ -133,10 +133,10 @@ router.post("/verify-session", verifyToken, async (req, res) => {
           WHERE UserId = ?
         `, [planoId, userId]);
         
-        console.log(`✅ [PAYMENT] Assinatura salva e usuário ${userId} atualizado para plano ${planoNome} (ID: ${planoId})`);
+        console.log(` [PAYMENT] Assinatura salva e usuário ${userId} atualizado para plano ${planoNome} (ID: ${planoId})`);
         
       } catch (saveError) {
-        console.error("❌ [PAYMENT] Erro ao salvar assinatura:", saveError);
+        console.error(" [PAYMENT] Erro ao salvar assinatura:", saveError);
         // Não falhar a resposta, apenas logar o erro
       }
     }
@@ -171,17 +171,17 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
       });
     }
 
-    console.log(`🔄 [CANCEL] Iniciando cancelamento para usuário ${userId}, subscription ${subscription_id}`);
+    console.log(` [CANCEL] Iniciando cancelamento para usuário ${userId}, subscription ${subscription_id}`);
 
     // 1. Cancelar no Stripe
     const resultado = await cancelarAssinatura(subscription_id);
-    console.log(`✅ [CANCEL] Assinatura cancelada no Stripe:`, resultado.subscription);
+    console.log(` [CANCEL] Assinatura cancelada no Stripe:`, resultado.subscription);
 
     // 2. Calcular período de graça (30 dias a partir de agora)
     const gracePeriodEnd = new Date();
     gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 30);
     
-    console.log(`📅 [CANCEL] Período de graça até: ${gracePeriodEnd.toISOString()}`);
+    console.log(` [CANCEL] Período de graça até: ${gracePeriodEnd.toISOString()}`);
 
     // 3. Atualizar status na base de dados
     await db.query(`
@@ -200,7 +200,7 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
       WHERE UserId = ?
     `, [userId]);
 
-    console.log(`🔄 [CANCEL] Usuário ${userId} movido para plano Free com período de graça até ${gracePeriodEnd.toISOString()}`);
+    console.log(` [CANCEL] Usuário ${userId} movido para plano Free com período de graça até ${gracePeriodEnd.toISOString()}`);
 
     res.json({
       status: "ok",

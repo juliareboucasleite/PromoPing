@@ -40,10 +40,10 @@ function checkEnvFile() {
 }
 
 function main() {
-  log('🔍 Verificador de dependências PromoPing', 'bright');
+  log(' Verificador de dependências PromoPing', 'bright');
 
-  if (!checkFile('package.json')) log('❌ package.json não encontrado', 'red');
-  if (!checkFile('node_modules')) log('⚠️ node_modules não encontrado. Execute npm install', 'yellow');
+  if (!checkFile('package.json')) log(' package.json não encontrado', 'red');
+  if (!checkFile('node_modules')) log(' node_modules não encontrado. Execute npm install', 'yellow');
   const envCheck = checkEnvFile();
   log(envCheck.message, envCheck.status ? 'green' : 'red');
 }

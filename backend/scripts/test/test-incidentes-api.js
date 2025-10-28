@@ -6,7 +6,7 @@ const BASE_URL = 'http://localhost:3000/api';
 // ================== FUNÇÕES DE TESTE ==================
 
 async function testarCriarIncidente() {
-  console.log('🚨 Testando: Criar novo incidente');
+  console.log(' Testando: Criar novo incidente');
   
   const dados = {
     titulo: 'Falha na API de notificações',
@@ -26,23 +26,23 @@ async function testarCriarIncidente() {
     const result = await response.json();
     
     if (result.status === 'ok') {
-      console.log(`✅ Sucesso: Incidente criado com ID ${result.incidente.Id}`);
+      console.log(` Sucesso: Incidente criado com ID ${result.incidente.Id}`);
       console.log(`   - Título: ${result.incidente.Titulo}`);
       console.log(`   - Status: ${result.incidente.Status}`);
       console.log(`   - Componente: ${result.incidente.ComponentesAfetados}`);
       return result.incidente.Id;
     } else {
-      console.log('❌ Erro:', result.erro);
+      console.log(' Erro:', result.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarEncerrarIncidente(id) {
-  console.log(`🔒 Testando: Encerrar incidente ${id}`);
+  console.log(` Testando: Encerrar incidente ${id}`);
   
   try {
     const response = await fetch(`${BASE_URL}/incidentes/${id}/encerrar`, {
@@ -53,22 +53,22 @@ async function testarEncerrarIncidente(id) {
     const result = await response.json();
     
     if (result.status === 'ok') {
-      console.log(`✅ Sucesso: Incidente encerrado`);
+      console.log(` Sucesso: Incidente encerrado`);
       console.log(`   - Status: ${result.incidente.Status}`);
       console.log(`   - Data Fim: ${result.incidente.DataFim}`);
       return true;
     } else {
-      console.log('❌ Erro:', result.erro);
+      console.log(' Erro:', result.erro);
       return false;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return false;
   }
 }
 
 async function testarAtualizarIncidente(id) {
-  console.log(`✏️ Testando: Atualizar incidente ${id}`);
+  console.log(` Testando: Atualizar incidente ${id}`);
   
   const dados = {
     titulo: 'Falha na API de notificações - ATUALIZADO',
@@ -87,62 +87,62 @@ async function testarAtualizarIncidente(id) {
     const result = await response.json();
     
     if (result.status === 'ok') {
-      console.log(`✅ Sucesso: Incidente atualizado`);
+      console.log(` Sucesso: Incidente atualizado`);
       console.log(`   - Novo título: ${result.incidente.Titulo}`);
       console.log(`   - Novo status: ${result.incidente.Status}`);
       return true;
     } else {
-      console.log('❌ Erro:', result.erro);
+      console.log(' Erro:', result.erro);
       return false;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return false;
   }
 }
 
 async function testarListarIncidentes() {
-  console.log('📋 Testando: Listar incidentes');
+  console.log(' Testando: Listar incidentes');
   
   try {
     const response = await fetch(`${BASE_URL}/incidentes`);
     const result = await response.json();
     
     if (Array.isArray(result)) {
-      console.log(`✅ Sucesso: ${result.length} incidentes encontrados`);
+      console.log(` Sucesso: ${result.length} incidentes encontrados`);
       result.forEach(inc => {
         console.log(`   - ${inc.Titulo} (${inc.Status}) - ${inc.DataInicio}`);
       });
       return result;
     } else {
-      console.log('❌ Erro: Resposta inválida');
+      console.log(' Erro: Resposta inválida');
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
 
 async function testarStatusGeral() {
-  console.log('📊 Testando: Status geral com incidentes');
+  console.log(' Testando: Status geral com incidentes');
   
   try {
     const response = await fetch(`${BASE_URL}/status`);
     const result = await response.json();
     
     if (result.status === 'ok') {
-      console.log(`✅ Sucesso: Status obtido`);
+      console.log(` Sucesso: Status obtido`);
       console.log(`   - Componentes: ${result.componentes.length}`);
       console.log(`   - Incidentes: ${result.incidentes.length}`);
       console.log(`   - Métricas: ${Object.keys(result.metricas).length} campos`);
       return result;
     } else {
-      console.log('❌ Erro:', result.erro);
+      console.log(' Erro:', result.erro);
       return null;
     }
   } catch (error) {
-    console.log('❌ Erro na requisição:', error.message);
+    console.log(' Erro na requisição:', error.message);
     return null;
   }
 }
@@ -150,7 +150,7 @@ async function testarStatusGeral() {
 // ================== CENÁRIOS DE TESTE ==================
 
 async function executarTesteCompleto() {
-  console.log('🚀 Iniciando teste completo da API de incidentes...\n');
+  console.log(' Iniciando teste completo da API de incidentes...\n');
   
   // 1. Status geral
   await testarStatusGeral();
@@ -178,12 +178,12 @@ async function executarTesteCompleto() {
   await testarStatusGeral();
   console.log('');
   
-  console.log('✅ Teste completo finalizado!');
-  console.log('🎯 A API de incidentes está funcionando corretamente.');
+  console.log(' Teste completo finalizado!');
+  console.log(' A API de incidentes está funcionando corretamente.');
 }
 
 async function executarTesteRapido() {
-  console.log('⚡ Executando teste rápido de incidentes...\n');
+  console.log(' Executando teste rápido de incidentes...\n');
   
   // Teste básico de listagem
   const incidentes = await testarListarIncidentes();
@@ -192,12 +192,12 @@ async function executarTesteRapido() {
     // Teste de encerramento do primeiro incidente ativo
     const incidenteAtivo = incidentes.find(inc => inc.Status !== 'resolved');
     if (incidenteAtivo) {
-      console.log(`\n🔒 Testando encerramento do incidente ${incidenteAtivo.Id}...`);
+      console.log(`\n Testando encerramento do incidente ${incidenteAtivo.Id}...`);
       await testarEncerrarIncidente(incidenteAtivo.Id);
     }
   }
   
-  console.log('\n✅ Teste rápido finalizado!');
+  console.log('\n Teste rápido finalizado!');
 }
 
 // ================== EXECUÇÃO ==================

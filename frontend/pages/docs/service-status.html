@@ -394,15 +394,15 @@
             atualizarIncidentes(data.incidentes);
           }
 
-          console.log("✅ Status atualizado com sucesso:", data);
+          console.log(" Status atualizado com sucesso:", data);
         } else {
-          console.error("❌ Erro na resposta da API:", data);
+          console.error(" Erro na resposta da API:", data);
         }
       } catch (error) {
-        console.error("❌ Erro ao carregar status:", error);
+        console.error(" Erro ao carregar status:", error);
         
         // Fallback para dados simulados em caso de erro
-        console.log("⚠️ Usando dados simulados devido a erro na API");
+        console.log(" Usando dados simulados devido a erro na API");
         updateRealtimeStatsFallback();
       }
     }
@@ -429,7 +429,7 @@
       atualizarElemento('active-users-trend', `+${dadosSimulados.utilizadoresGrowth}% vs mês anterior`);
       atualizarElemento('monitored-products-trend', `+${dadosSimulados.produtosGrowth}% vs mês anterior`);
       
-      console.log("📊 Dados simulados atualizados:", dadosSimulados);
+      console.log(" Dados simulados atualizados:", dadosSimulados);
     }
 
     // ================== GERAR DADOS SIMULADOS REALISTAS ==================
@@ -510,10 +510,10 @@
             notificationsElement.textContent = data.dados.notificationsToday?.toLocaleString() || '8,542';
           }
 
-          console.log("📈 Estatísticas em tempo real atualizadas:", data.dados);
+          console.log(" Estatísticas em tempo real atualizadas:", data.dados);
         }
       } catch (error) {
-        console.error("❌ Erro ao carregar estatísticas em tempo real:", error);
+        console.error(" Erro ao carregar estatísticas em tempo real:", error);
         // Usar fallback em caso de erro
         updateRealtimeStatsFallback();
       }
@@ -536,13 +536,13 @@
           // Atualizar componentes do sistema
           atualizarComponentesSistema(systemData.componentes);
           
-          console.log("✅ Dados completos carregados da base de dados:", systemData);
+          console.log(" Dados completos carregados da base de dados:", systemData);
         } else {
           // Fallback para APIs individuais
           await buscarDadosIndividuais();
         }
       } catch (error) {
-        console.error("❌ Erro ao buscar dados completos:", error);
+        console.error(" Erro ao buscar dados completos:", error);
         // Tentar APIs individuais como fallback
         await buscarDadosIndividuais();
       }
@@ -595,9 +595,9 @@
           atualizarElemento('uptime-trend', `+${uptimeData.growth || 0.1}% vs mês anterior`);
         }
         
-        console.log("✅ Dados individuais carregados da base de dados");
+        console.log(" Dados individuais carregados da base de dados");
       } catch (error) {
-        console.error("❌ Erro ao buscar dados individuais:", error);
+        console.error(" Erro ao buscar dados individuais:", error);
       }
     }
 
@@ -709,12 +709,12 @@
         const data = await response.json();
         
         if (data.status === "ok") {
-          console.log("💚 API saudável:", data.health);
+          console.log(" API saudável:", data.health);
         } else {
-          console.warn("⚠️ API com problemas:", data);
+          console.warn(" API com problemas:", data);
         }
       } catch (error) {
-        console.error("❌ Erro no health check:", error);
+        console.error(" Erro no health check:", error);
       }
     }
 

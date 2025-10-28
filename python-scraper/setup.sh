@@ -1,10 +1,10 @@
 # PromoPing Python Scraper - Setup Automático
 
-echo "🚀 Configurando PromoPing Python Scraper..."
+echo " Configurando PromoPing Python Scraper..."
 
 # Verificar Python
 if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3 não encontrado. Instalando..."
+    echo " Python 3 não encontrado. Instalando..."
     
     # Detectar sistema operacional
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -22,50 +22,50 @@ if ! command -v python3 &> /dev/null; then
         if command -v brew &> /dev/null; then
             brew install python3
         else
-            echo "❌ Homebrew não encontrado. Instale Python 3 manualmente."
+            echo " Homebrew não encontrado. Instale Python 3 manualmente."
             exit 1
         fi
     else
-        echo "❌ Sistema operacional não suportado. Instale Python 3 manualmente."
+        echo " Sistema operacional não suportado. Instale Python 3 manualmente."
         exit 1
     fi
 fi
 
-echo "✅ Python 3 instalado"
+echo " Python 3 instalado"
 
 # Verificar pip
 if ! command -v pip3 &> /dev/null; then
-    echo "❌ pip3 não encontrado. Instalando..."
+    echo " pip3 não encontrado. Instalando..."
     python3 -m ensurepip --upgrade
 fi
 
-echo "✅ pip3 instalado"
+echo " pip3 instalado"
 
 # Criar ambiente virtual
 if [ ! -d "venv" ]; then
-    echo "📦 Criando ambiente virtual..."
+    echo " Criando ambiente virtual..."
     python3 -m venv venv
 fi
 
-echo "✅ Ambiente virtual criado"
+echo " Ambiente virtual criado"
 
 # Ativar ambiente virtual
-echo "🔧 Ativando ambiente virtual..."
+echo " Ativando ambiente virtual..."
 source venv/bin/activate
 
 # Instalar dependências
-echo "📦 Instalando dependências..."
+echo " Instalando dependências..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-echo "✅ Dependências instaladas"
+echo " Dependências instaladas"
 
 # Configurar arquivo .env
 if [ ! -f ".env" ]; then
-    echo "⚙️ Configurando arquivo .env..."
+    echo " Configurando arquivo .env..."
     cp env.example .env
     
-    echo "📝 Por favor, edite o arquivo .env com suas configurações:"
+    echo " Por favor, edite o arquivo .env com suas configurações:"
     echo "   - DB_PASSWORD: Senha do banco de dados"
     echo "   - DB_USER: Usuário do banco de dados"
     echo "   - DB_HOST: Host do banco de dados"
@@ -77,33 +77,33 @@ if [ ! -f ".env" ]; then
     echo ""
     echo "   Depois execute: ./start.sh"
 else
-    echo "✅ Arquivo .env já existe"
+    echo " Arquivo .env já existe"
 fi
 
 # Tornar scripts executáveis
 chmod +x start.sh
 chmod +x test_scraper.py
 
-echo "✅ Scripts tornados executáveis"
+echo " Scripts tornados executáveis"
 
 # Executar teste básico
-echo "🧪 Executando teste básico..."
+echo " Executando teste básico..."
 python test_scraper.py --test db
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo "🎉 Setup concluído com sucesso!"
+    echo " Setup concluído com sucesso!"
     echo ""
-    echo "📋 Próximos passos:"
+    echo " Próximos passos:"
     echo "1. Edite o arquivo .env com suas configurações de banco"
     echo "2. Execute: ./start.sh (para modo agendado)"
     echo "3. Ou execute: python scraper.py --all (para uma execução)"
     echo "4. Execute: python test_scraper.py (para testes completos)"
     echo ""
-    echo "📚 Consulte o README.md para mais informações"
+    echo " Consulte o README.md para mais informações"
 else
     echo ""
-    echo "⚠️ Setup concluído, mas teste de banco falhou."
+    echo " Setup concluído, mas teste de banco falhou."
     echo "   Verifique suas configurações no arquivo .env"
     echo "   Execute: python test_scraper.py --test db"
 fi
