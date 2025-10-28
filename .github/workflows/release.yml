@@ -1,0 +1,48 @@
+name: Gerar Release Automática
+
+on:
+  push:
+    tags:
+      - 'v*.*.*-*'   # Ex: v2.1.2-correcao-e-estabilidade
+      - 'v*.*.*'     # Ex: v3.0.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # necessário para ler o histórico de tags corretamente
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Extrair notas do CHANGELOG.md
+        id: changelog
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Extraindo notas para ${TAG_NAME}..."
+          if [ ! -f CHANGELOG.md ]; then
+            echo "Arquivo CHANGELOG.md não encontrado."
+            exit 1
+          fi
+          RELEASE_NOTES=$(awk "/^## ${TAG_NAME}/{flag=1;next}/^## /{flag=0}flag" CHANGELOG.md)
+          if [ -z "$RELEASE_NOTES" ]; then
+            RELEASE_NOTES="Notas não encontradas no CHANGELOG.md."
+          fi
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Criar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.release_notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
