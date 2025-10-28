@@ -217,6 +217,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     }
 });
 
+
 //  Remover produto
 router.delete("/:id", verifyToken, async (req, res) => {
     try {
@@ -258,7 +259,7 @@ router.get("/sync", verifyToken, async (req, res) => {
         
         let query = `
             SELECT Id, Nome, PrecoAtual, UpdatedAt 
-            FROM Produtos 
+            FROM produtos 
             WHERE UserId = ?
         `;
         let params = [userId];

@@ -45,10 +45,10 @@ def fetch_products():
     try:
         # Tenta buscar com JOIN completo
         cur.execute("""
-            SELECT p.Id, p.Nome, p.Link, p.PrecoAlvo, p.PrecoAtual, p.UsuarioId, 
+            SELECT p.Id, p.Nome, p.Link, p.PrecoAlvo, p.PrecoAtual, p.UserId, 
                    u.PerfilId as PlanoId, pl.Nome as PlanoNome, pl.VerificacaoIntervalo
             FROM produtos p
-            JOIN utilizadores u ON p.UsuarioId = u.Id
+            JOIN utilizadores u ON p.UserId = u.Id
             JOIN planos pl ON u.PerfilId = pl.Id
             WHERE p.Link IS NOT NULL AND p.Link <> '' AND p.DeletedAt IS NULL
         """)
@@ -66,7 +66,7 @@ def fetch_products():
             rows = cur.fetchall()
             # Adiciona informações de plano padrão
             for row in rows:
-                row['UsuarioId'] = 1
+                row['UserId'] = 1
                 row['PlanoNome'] = 'Free'
                 row['VerificacaoIntervalo'] = 24
             logger.info(f"[DB] {len(rows)} produtos com plano Free")

@@ -475,13 +475,6 @@
                 <span class="${storeTagClass}">${loja}</span>
               </div>
               <div class="product-actions-new">
-                <button class="action-btn-new" title="Atualizar preço" onclick="atualizarPrecoProduto(${p.Id || p.id})" id="refresh-btn-${p.Id || p.id}">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23,4 23,10 17,10"></polyline>
-                    <polyline points="1,20 1,14 7,14"></polyline>
-                    <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"></path>
-                  </svg>
-                </button>
                 <button class="action-btn-new" title="Abrir produto" onclick="window.open('${p.Link || p.link}', '_blank')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -665,18 +658,9 @@
         }
       }
 
-      // Atualiza o preço de um produto específico com modal de status
-      async function atualizarPrecoProduto(produtoId) {
-        const refreshBtn = document.getElementById(`refresh-btn-${produtoId}`);
-        
-        // Verificar se já está em loading
-        if (refreshBtn.classList.contains('refresh-btn-loading')) {
-          return;
-        }
-        
-        // Mostrar modal de scraping
-        mostrarModalScraping(produtoId);
-      }
+      // Tornar função global para uso em onclick
+      window.deleteProduct = deleteProduct;
+
       
       // Modal para informar sobre o status do scraping
       function mostrarModalScraping(produtoId) {
@@ -736,6 +720,9 @@
           showSuccess("Scraping Iniciado", "O processo de atualização de preços foi iniciado. Os preços serão atualizados em alguns minutos.");
         }
       }
+
+      // Tornar função global para uso em onclick
+      window.fecharModalScraping = fecharModalScraping;
       
       // Mostrar notificação de sucesso
       function mostrarNotificacaoSucesso() {
@@ -779,6 +766,9 @@
           showError("Erro", 'Erro no servidor');
         }
       }
+
+      // Tornar função global para uso em onclick
+      window.editarData = editarData;
 
       // Busca estatísticas do usuário e atualiza os cards (produtos, notificações, poupado)
       async function carregarEstatisticas() {
