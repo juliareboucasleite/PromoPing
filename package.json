@@ -1,6 +1,6 @@
 {
   "name": "promoping",
-  "version": "2.2.0-planeada",
+  "version": "2.3.0-update",
   "type": "module",
   "description": "Projeto PromoPing - Backend + Frontend",
   "main": "backend/server.js",

@@ -1,6 +1,6 @@
 // scripts/release.js
-// Script de automação de versão e publicação de release no GitHub
-// Desenvolvido para o projeto PromoPing
+// Sistema automático de versionamento e publicação do PromoPing
+// Inclui criação automática de cabeçalho no CHANGELOG.md e remoção de tags duplicadas
 
 import fs from "fs";
 import { execSync } from "child_process";
@@ -11,17 +11,17 @@ dotenv.config({ path: ".env" });
 
 const versionArg = process.argv[2];
 if (!versionArg) {
-  console.error("\nUso correto: npm run release v2.2.0-planeada\n");
+  console.error("\nUso correto: npm run release v2.3.0-update\n");
   process.exit(1);
 }
 
-// Verifica se a versão está no formato correto
+// 1. Validar formato de versão
 if (!/^v\d+\.\d+\.\d+(-[\w-]+)?$/.test(versionArg)) {
-  console.error("\nFormato inválido. Use por exemplo: v2.2.0-planeada ou v2.1.3-hotfix-login\n");
+  console.error("\nFormato inválido. Use por exemplo: v2.3.0-update ou v2.1.3-hotfix-login\n");
   process.exit(1);
 }
 
-// Verifica se o token GitHub existe
+// 2. Verificar token GitHub
 const token = process.env.GITHUB_TOKEN;
 if (!token) {
   console.error("\nErro: variável GITHUB_TOKEN não encontrada no .env\n");
@@ -30,15 +30,32 @@ if (!token) {
 
 console.log(`\nIniciando processo de release para ${versionArg}...\n`);
 
-// 1. Atualizar versão no package.json
+// 3. Atualizar versão no package.json
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
-packageJson.version = versionArg.replace(/^v/, ""); // remove o "v" do início
+packageJson.version = versionArg.replace(/^v/, "");
 fs.writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
 console.log("package.json atualizado.\n");
 
-// 2. Criar commit apenas se houver alterações
-execSync("git add -A", { stdio: "inherit" });
+// 4. Atualizar CHANGELOG.md automaticamente
+const changelogPath = "CHANGELOG.md";
+if (!fs.existsSync(changelogPath)) {
+  console.log("Arquivo CHANGELOG.md não encontrado. Criando novo...");
+  fs.writeFileSync(changelogPath, "# Changelog — PromoPing\n\n");
+}
 
+let changelog = fs.readFileSync(changelogPath, "utf-8");
+const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+if (!changelog.includes(`## ${versionArg}`)) {
+  console.log("Nova versão não encontrada no CHANGELOG.md. Adicionando cabeçalho automaticamente...\n");
+  const newEntry = `## ${versionArg} (${currentDate})\n- Notas ainda não adicionadas.\n\n` + changelog;
+  fs.writeFileSync(changelogPath, newEntry);
+} else {
+  console.log("Versão já existe no CHANGELOG.md.\n");
+}
+
+// 5. Commit apenas se houver alterações
+execSync("git add -A", { stdio: "inherit" });
 try {
   execSync(`git diff --cached --quiet || git commit -m "chore(release): update to ${versionArg}"`, { stdio: "inherit", shell: true });
   console.log("Commit criado com sucesso.\n");
@@ -46,24 +63,34 @@ try {
   console.log("Nenhuma alteração a commitar. Continuando...\n");
 }
 
-// 3. Criar tag e enviar
+// 6. Remover tag existente (local e remota)
+try {
+  console.log(`Verificando se a tag ${versionArg} já existe...\n`);
+  execSync(`git tag -d ${versionArg}`, { stdio: "inherit" });
+  execSync(`git push origin :refs/tags/${versionArg}`, { stdio: "inherit" });
+  console.log(`Tag antiga ${versionArg} removida com sucesso.\n`);
+} catch {
+  console.log("Nenhuma tag anterior encontrada.\n");
+}
+
+// 7. Criar e enviar nova tag
 try {
   execSync(`git tag -a ${versionArg} -m "Release ${versionArg}"`, { stdio: "inherit" });
   execSync(`git push origin main --tags`, { stdio: "inherit" });
-  console.log(`Tag ${versionArg} criada e enviada.\n`);
+  console.log(`Tag ${versionArg} criada e enviada com sucesso.\n`);
 } catch (error) {
   console.error("Erro ao criar/enviar tag:", error.message);
   process.exit(1);
 }
 
-// 4. Extrair notas da versão do CHANGELOG.md
-const changelog = fs.readFileSync("CHANGELOG.md", "utf-8");
+// 8. Extrair notas da versão do CHANGELOG.md
+changelog = fs.readFileSync(changelogPath, "utf-8");
 const regex = new RegExp(`## ${versionArg}[\\s\\S]*?(?=\\n## |$)`, "m");
 const match = changelog.match(regex);
 const releaseNotes = match ? match[0].replace(`## ${versionArg}`, "").trim() : "Sem notas disponíveis.";
-console.log("Notas da release extraídas do CHANGELOG.md\n");
+console.log("Notas da release extraídas do CHANGELOG.md.\n");
 
-// 5. Criar release via API do GitHub
+// 9. Determinar o repositório GitHub
 const repoUrl = execSync("git config --get remote.origin.url").toString().trim();
 const repoMatch = repoUrl.match(/github\.com[:/](.+\/.+?)(?:\.git)?$/);
 if (!repoMatch) {
@@ -71,9 +98,9 @@ if (!repoMatch) {
   process.exit(1);
 }
 const repo = repoMatch[1];
-
 console.log(`Publicando release no repositório: ${repo}\n`);
 
+// 10. Criar release via API GitHub
 try {
   const response = await fetch(`https://api.github.com/repos/${repo}/releases`, {
     method: "POST",
@@ -92,7 +119,7 @@ try {
   });
 
   if (response.ok) {
-    console.log(`Release ${versionArg} criada com sucesso no GitHub.\n`);
+    console.log(`Release ${versionArg} publicada com sucesso no GitHub.\n`);
   } else {
     const error = await response.text();
     console.error("Erro ao criar release no GitHub:");
