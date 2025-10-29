@@ -1,0 +1,112 @@
+const { EmbedBuilder } = require('discord.js');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+
+module.exports = {
+    name: 'login',
+    aliases: ['entrar', 'signin', 'auth'],
+    description: 'Faz login na sua conta PromoPing usando email e senha.',
+    usage: '!login <email> <senha>',
+    execute: async (client, message, args, botInstance) => {
+        try {
+            const dbConfig = {
+                host: process.env.DB_HOST || 'localhost',
+                user: process.env.DB_USER || 'root',
+                password: process.env.DB_PASSWORD || '',
+                database: process.env.DB_NAME || 'pap',
+                port: parseInt(process.env.DB_PORT) || 3306
+            };
+
+            const connection = await mysql.createConnection(dbConfig);
+
+            // Verificar argumentos
+            if (args.length < 2) {
+                await connection.end();
+                return message.reply('❌ **Uso correto:** `!login <email> <senha>`\n**Exemplo:** `!login joao@email.com minhasenha123`');
+            }
+
+            const email = args[0].toLowerCase();
+            const senha = args[1];
+
+            // Buscar usuário
+            const [users] = await connection.execute(
+                'SELECT Id, Email, SenhaHash, discord_id FROM utilizadores WHERE Email = ?',
+                [email]
+            );
+
+            if (users.length === 0) {
+                await connection.end();
+                return message.reply('❌ **Email não encontrado!** Verifique o email ou use `!registar` para criar uma conta.');
+            }
+
+            const user = users[0];
+
+            // Verificar se já está vinculado a outro Discord
+            if (user.discord_id && user.discord_id !== message.author.id) {
+                await connection.end();
+                return message.reply('❌ **Este email já está vinculado a outro Discord!** Use outro email ou crie uma nova conta.');
+            }
+
+            // Verificar senha
+            const senhaValida = await bcrypt.compare(senha, user.SenhaHash);
+            if (!senhaValida) {
+                await connection.end();
+                return message.reply('❌ **Senha incorreta!** Verifique sua senha e tente novamente.');
+            }
+
+            // Atualizar Discord ID se necessário
+            if (!user.discord_id) {
+                await connection.execute(
+                    'UPDATE utilizadores SET discord_id = ?, ultimo_login = ? WHERE Id = ?',
+                    [message.author.id, new Date(), user.Id]
+                );
+            }
+
+            // Buscar estatísticas do usuário
+            const [produtos] = await connection.execute(
+                'SELECT COUNT(*) as total FROM produtos WHERE UserId = ? AND DeletedAt IS NULL',
+                [user.Id]
+            );
+
+            const [mudancasHoje] = await connection.execute(`
+                SELECT COUNT(*) as total 
+                FROM historicoprecos hp 
+                JOIN produtos p ON hp.ProdutoId = p.Id 
+                WHERE p.UserId = ? AND DATE(hp.DataRegisto) = CURDATE()
+            `, [user.Id]);
+
+            await connection.end();
+
+            const embed = new EmbedBuilder()
+                .setTitle('✅ Login Realizado!')
+                .setDescription(`**Bem-vindo de volta, ${message.author.username}!**`)
+                .addFields(
+                    {
+                        name: 'Sua Conta',
+                        value: `**Email:** ${user.Email}\n**Discord:** ${message.author.username}`,
+                        inline: true
+                    },
+                    {
+                        name: 'Seus Produtos',
+                        value: `**Monitorados:** ${produtos[0].total}\n**Mudanças hoje:** ${mudancasHoje[0].total}`,
+                        inline: true
+                    }
+                )
+                .addFields({
+                    name: 'Comandos Disponíveis',
+                    value: '• `!produtos` — Ver seus produtos\n• `!status` — Ver estatísticas\n• `!ajuda` — Lista de comandos',
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            await message.reply({ embeds: [embed] });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro no comando login:', error);
+            await message.reply('❌ **Erro interno!** Tente novamente em alguns minutos.');
+        }
+    }
+};

@@ -1,0 +1,32 @@
+{
+  "name": "promoping-discord-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord para notificações de mudanças de preços do PromoPing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "promoping",
+    "price-monitoring",
+    "notifications"
+  ],
+  "author": "PromoPing Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "mysql2": "^3.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

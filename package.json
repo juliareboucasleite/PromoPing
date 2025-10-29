@@ -35,6 +35,9 @@
     "security:test:rapido": "node backend/scripts/test/test-plans-security.js rapido",
     "historico:setup": "node backend/scripts/setup-historico-precos.js",
     "historico:test": "node backend/scripts/setup-historico-precos.js test",
+    "discord:start": "cd backend/discord-bot && npm start",
+    "discord:dev": "cd backend/discord-bot && npm run dev",
+    "discord:test": "cd backend/discord-bot && npm test",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
