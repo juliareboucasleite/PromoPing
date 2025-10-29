@@ -35,7 +35,6 @@ dotenv.config({
   quiet: true
 });
 
-// Debug de variáveis críticas removido para logs mais limpos
 
 // ================== IMPORTS DE ROTAS ==================
 import authRoutes from "./routes/auth.js";                     // Login/Registro + Google OAuth
@@ -56,8 +55,6 @@ import { verifyToken } from "./middleware/auth.js";            // JWT
 
 // ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js";        // Notificações
-// import { atualizarPrecos } from "./services/atualizarPrecos.js"; // Atualização preços removida
-// WhatsApp desabilitado temporariamente
 
 // ================== CONFIGURAÇÃO DO EXPRESS ==================
 const app = express();
@@ -148,8 +145,6 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    // Log de tentativa de acesso não autorizado
-    console.warn(`Tentativa de acesso CORS de origem não autorizada: ${origin}`);
     callback(new Error('Não permitido pelo CORS'));
   },
   credentials: true,
@@ -281,7 +276,6 @@ app.get("/auth/discord", (req, res) => {
 });
 
 app.get("/auth/discord/callback", (req, res) => {
-  console.log("Redirecionando callback Discord para API com query:", JSON.stringify(req.query));
   // Preservar os parâmetros da query string
   const queryString = new URLSearchParams(req.query).toString();
   res.redirect(`/api/auth/discord/callback?${queryString}`);
@@ -405,13 +399,10 @@ app.get("/redirect", (req, res) => {
   res.redirect(redirectUrl);
 });
 
-// ================== AGENDAMENTO CRON ==================
-// Jobs cron removidos - preços não são mais atualizados automaticamente
 
 // ================== MIDDLEWARE 404 ==================
 // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
 app.use((req, res) => {
-  console.log(`Página não encontrada: ${req.originalUrl}`);
   res.status(404).sendFile(path.join(__dirname, "../frontend/pages/404.html"));
 });
 

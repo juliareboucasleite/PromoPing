@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PromoPing Python Scraper - Versão Compacta
+PromoPing Python Scraper
 Sistema de monitorização de preços para e-commerce
 """
 

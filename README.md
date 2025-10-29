@@ -28,8 +28,6 @@ Sistema de monitoramento de preços para consumidores portugueses. O PromoPing p
 ### **Sistema de Notificações Multi-Canal**
 - **Discord Bot** - Notificações em tempo real com Rich Presence
 - **Email Transacional** - Notificações por correio eletrónico com templates
-- **SMS (Opcional)** - Integração com Twilio para notificações móveis
-- **WhatsApp (Futuro)** - Suporte planeado para WhatsApp Business
 - **Configuração Personalizada** - Frequência e tipos de alertas personalizáveis
 - **Histórico Completo** - Log detalhado de todas as notificações enviadas
 
