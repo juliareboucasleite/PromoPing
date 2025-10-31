@@ -5,7 +5,7 @@
   <title>Histórico de Incidentes | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
 <body>
   <!-- HEADER -->
@@ -13,8 +13,8 @@
     <div class="header-content">
       <div class="header-left">
           <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" onerror="this.onerror=null; this.src='../../assets/images/PromoPing.png';" />
+            <a href="docs.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
           </div>
       </div>
       <div class="header-right">
@@ -34,72 +34,8 @@
 
   <div class="docs-container">
     
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <nav>
-        <ul>
-          <!-- About Section -->
-          <li class="sidebar-nav-about">
-            <a href="docs.html">
-              Sobre o PromoPing
-            </a>
-          </li>
-          <!-- Getting Started -->
-          <li class="sidebar-nav-section">
-            <span>COMEÇAR</span>
-          </li>
-          <li>
-            <a href="FirstLaunch.html" class="sidebar-nav-link">
-              Primeiro Lançamento
-            </a>
-          </li>
-          <li>
-            <a href="usage-guide.html" class="sidebar-nav-link">
-              Guia de Utilização
-            </a>
-          </li>
-          <!-- UI Scripting -->
-          <li class="sidebar-nav-item">
-            <span>SCRIPTING DA UI</span>
-          </li>
-          <li>
-            <a href="api-reference.html" class="sidebar-nav-link inactive">
-              Referência da API
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
-                <polyline points="9,6 15,12 9,18"></polyline>
-              </svg>
-            </a>
-          </li>
-          <!-- Support -->
-          <li class="sidebar-nav-item">
-            <span>SUPORTE</span>
-          </li>
-          <li>
-            <a href="support.html" class="sidebar-nav-link">
-              Suporte
-            </a>
-          </li>
-          <li>
-            <a href="service-status.html" class="sidebar-nav-link">
-              Status do Serviço
-            </a>
-          </li>
-          <li>
-            <a href="incident-history.html" class="sidebar-nav-link active">
-              Histórico de Incidentes
-            </a>
-          </li>
-          <li>
-            <a href="terms.html" class="sidebar-nav-link">
-              Termos de Uso
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <div class="powered">
-        <p>Made by PromoPingg</p>
-      </div>
-    </aside>
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
@@ -169,42 +105,8 @@
 
       <!-- System Updates -->
       <h3>Atualizações do Sistema</h3>
-      <div class="updates-container">
-        <div class="update-card">
-          <div class="update-date">15 Jan 2025</div>
-          <div class="update-content">
-            <h4>Integração Completa com Base de Dados</h4>
-            <div class="update-details">
-              <p><strong>Tipo:</strong> Melhoria</p>
-              <p><strong>Descrição:</strong> Sistema de status agora utiliza dados reais da base de dados em vez de dados simulados</p>
-              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="update-card">
-          <div class="update-date">14 Jan 2025</div>
-          <div class="update-content">
-            <h4>Refatoração de CSS</h4>
-            <div class="update-details">
-              <p><strong>Tipo:</strong> Melhoria</p>
-              <p><strong>Descrição:</strong> Remoção de estilos inline e consolidação em styles.css</p>
-              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="update-card">
-          <div class="update-date">13 Jan 2025</div>
-          <div class="update-content">
-            <h4>Tradução para Português de Portugal</h4>
-            <div class="update-details">
-              <p><strong>Tipo:</strong> Melhoria</p>
-              <p><strong>Descrição:</strong> Tradução completa de todas as páginas de documentação</p>
-              <p><strong>Status:</strong> <span class="status-completed">Implementado</span></p>
-            </div>
-          </div>
-        </div>
+      <div id="updates-container" class="updates-container">
+        <!-- Updates will be loaded dynamically -->
       </div>
 
       <!-- Navigation -->
@@ -232,7 +134,14 @@
     // ================== CARREGAR INCIDENTES DA API ==================
     async function carregarIncidentes() {
       try {
-        const response = await fetch("/api/incidentes");
+        // Usar URL completa do servidor Node.js
+        const apiUrl = 'http://127.0.0.1:3000/api/incidentes';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
 
         if (data.status === "ok" && data.incidentes && data.incidentes.length > 0) {
@@ -243,6 +152,11 @@
         }
       } catch (error) {
         console.error(" Erro ao carregar incidentes:", error);
+        // Mostrar mensagem ao usuário se houver erro
+        const container = document.getElementById('incidents-container');
+        if (container && container.children.length === 0) {
+          container.innerHTML = '<div class="incident-card"><div class="incident-content"><p class="text-secondary">Erro ao carregar incidentes. Verifique se o servidor está rodando.</p></div></div>';
+        }
       }
     }
 
@@ -272,8 +186,10 @@
         ? calcularDuracao(dataInicio, dataFim)
         : 'Em andamento';
       
-      const statusClass = incidente.Status === 'resolved' ? 'status-resolved' : 'status-investigating';
-      const statusText = incidente.Status === 'resolved' ? 'Resolvido' : 'Investigando';
+      // Mapear Estado do banco para status (Estado pode ser 'Resolvido', 'Em Andamento', etc.)
+      const estado = incidente.Estado || incidente.Status || 'Desconhecido';
+      const statusClass = estado.toLowerCase().includes('resolvido') || estado.toLowerCase() === 'resolved' ? 'status-resolved' : 'status-investigating';
+      const statusText = estado.toLowerCase().includes('resolvido') || estado.toLowerCase() === 'resolved' ? 'Resolvido' : 'Em Andamento';
 
       card.innerHTML = `
         <div class="incident-date">${formatarData(dataInicio)}</div>
@@ -339,19 +255,148 @@
       }
     }
 
+    // ================== CARREGAR ATUALIZAÇÕES DA API ==================
+    async function carregarAtualizacoes() {
+      try {
+        const apiUrl = 'http://127.0.0.1:3000/api/atualizacoes';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+
+        if (data.status === "ok" && data.atualizacoes && data.atualizacoes.length > 0) {
+          atualizarAtualizacoes(data.atualizacoes);
+          console.log(" Atualizações carregadas da base de dados:", data.atualizacoes);
+        } else {
+          console.log(" Nenhuma atualização encontrada na base de dados");
+          const container = document.getElementById('updates-container');
+          if (container && container.children.length === 0) {
+            container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">Nenhuma atualização encontrada.</p></div></div>';
+          }
+        }
+      } catch (error) {
+        console.error(" Erro ao carregar atualizações:", error);
+        const container = document.getElementById('updates-container');
+        if (container && container.children.length === 0) {
+          container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">Erro ao carregar atualizações. Verifique se o servidor está rodando.</p></div></div>';
+        }
+      }
+    }
+
+    // ================== ATUALIZAR ATUALIZAÇÕES ==================
+    function atualizarAtualizacoes(atualizacoes) {
+      const container = document.getElementById('updates-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      atualizacoes.forEach(atualizacao => {
+        const updateCard = criarAtualizacaoCard(atualizacao);
+        container.appendChild(updateCard);
+      });
+    }
+
+    // ================== CRIAR CARTÃO DE ATUALIZAÇÃO ==================
+    function criarAtualizacaoCard(atualizacao) {
+      const card = document.createElement('div');
+      card.className = 'update-card';
+      
+      const dataPublicacao = new Date(atualizacao.DataPublicacao);
+      const tipo = atualizacao.Tipo || 'Melhoria';
+      const status = atualizacao.Status || 'Implementado';
+      const statusClass = status === 'Implementado' ? 'status-completed' : 
+                         status === 'Em Desenvolvimento' ? 'status-investigating' : 
+                         'status-planned';
+
+      card.innerHTML = `
+        <div class="update-date">${formatarData(dataPublicacao)}</div>
+        <div class="update-content">
+          <h4>${atualizacao.Titulo || '—'}</h4>
+          <div class="update-details">
+            <p><strong>Tipo:</strong> ${tipo}</p>
+            <p><strong>Descrição:</strong> ${atualizacao.Descricao || 'Sem descrição'}</p>
+            <p><strong>Status:</strong> <span class="${statusClass}">${status}</span></p>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ================== LISTENERS PARA ATUALIZAÇÃO ==================
+    // Escutar evento de storage para atualizar quando houver mudanças
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'incidentes_updated') {
+        console.log('Atualização de incidentes detectada, recarregando...');
+        carregarIncidentes();
+        atualizarTimestamp();
+      }
+      if (e.key === 'atualizacoes_updated') {
+        console.log('Atualização de atualizações detectada, recarregando...');
+        carregarAtualizacoes();
+        atualizarTimestamp();
+      }
+    });
+    
+    // Também escutar evento customizado (para mesma janela)
+    window.addEventListener('incidentes_updated', function() {
+      console.log('Atualização de incidentes detectada, recarregando...');
+      carregarIncidentes();
+      atualizarTimestamp();
+    });
+    
+    window.addEventListener('atualizacoes_updated', function() {
+      console.log('Atualização de atualizações detectada, recarregando...');
+      carregarAtualizacoes();
+      atualizarTimestamp();
+    });
+    
     // ================== INICIALIZAÇÃO ==================
     document.addEventListener('DOMContentLoaded', function() {
       // Carregar incidentes da API
       carregarIncidentes();
+      
+      // Carregar atualizações da API
+      carregarAtualizacoes();
       
       // Atualizar timestamp
       atualizarTimestamp();
       
       // Atualizar a cada 10 minutos (reduzido para evitar rate limit)
       setInterval(carregarIncidentes, 10 * 60 * 1000);
+      setInterval(carregarAtualizacoes, 10 * 60 * 1000);
       setInterval(atualizarTimestamp, 5 * 60 * 1000);
+      
+      // Adicionar botão de atualização manual
+      const contentHeader = document.querySelector('.content-header');
+      if (contentHeader) {
+      }
     });
   </script>
+  <script src="script.js"></script>
   <script src="search.js"></script>
+  
+  <style>
+    /* Esconder scrollbar da área de conteúdo principal (main.content) */
+    main.content {
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* IE e Edge */
+    }
+    
+    main.content::-webkit-scrollbar {
+      display: none !important; /* Chrome, Safari, Opera */
+      width: 0 !important;
+      background: transparent !important;
+    }
+    
+    /* Manter funcionalidade de scroll */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+  </style>
 </body>
 </html>

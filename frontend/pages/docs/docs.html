@@ -5,7 +5,7 @@
   <title>Sobre o PromoPing | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
 <body>
   <!-- HEADER -->
@@ -34,87 +34,8 @@
 
   <div class="docs-container">
     
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <nav>
-        <ul>
-          <!-- About Section -->
-          <li class="sidebar-nav-about">
-            <a href="#" class="active">
-              Sobre o PromoPing
-            </a>
-          </li>
-          <!-- Getting Started -->
-          <li class="sidebar-nav-section">
-            <span>COMEÇAR</span>
-          </li>
-          <li>
-            <a href="FirstLaunch.html" class="sidebar-nav-link">
-              Primeiro Lançamento
-            </a>
-          </li>
-          <li>
-            <a href="installation.html" class="sidebar-nav-link">
-              Guia de Instalação
-            </a>
-          </li>
-          <li>
-            <a href="usage-guide.html" class="sidebar-nav-link">
-              Guia de Utilização
-            </a>
-          </li>
-          <!-- UI Scripting -->
-          <li class="sidebar-nav-item">
-            <span>SCRIPTING DA UI</span>
-          </li>
-          <li>
-            <a href="api-reference.html" class="sidebar-nav-link inactive">
-              Referência da API
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
-                <polyline points="9,6 15,12 9,18"></polyline>
-              </svg>
-            </a>
-          </li>
-          <!-- Support -->
-          <li class="sidebar-nav-item">
-            <span>SUPORTE</span>
-          </li>
-          <li>
-            <a href="support.html" class="sidebar-nav-link">
-              Suporte
-            </a>
-          </li>
-          <li>
-            <a href="faq.html" class="sidebar-nav-link">
-              FAQ
-            </a>
-          </li>
-          <li>
-            <a href="changelog.html" class="sidebar-nav-link">
-              Changelog
-            </a>
-          </li>
-          <li>
-            <a href="service-status.html" class="sidebar-nav-link">
-              Status do Serviço
-            </a>
-          </li>
-          <li>
-            <a href="incident-history.html" class="sidebar-nav-link">
-              Histórico de Incidentes
-            </a>
-          </li>
-          <li>
-            <a href="terms.html" class="sidebar-nav-link">
-              Termos de Uso
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <div class="powered">
-        <p>Made by PromoPingg</p>
-      </div>
-    </aside>
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
@@ -169,7 +90,28 @@
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
   
-  <!-- SCRIPT DE PESQUISA -->
+  <!-- SCRIPTS -->
+  <script src="script.js"></script>
   <script src="search.js"></script>
+  
+  <style>
+    /* Esconder scrollbar da área de conteúdo principal (main.content) */
+    main.content {
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* IE e Edge */
+    }
+    
+    main.content::-webkit-scrollbar {
+      display: none !important; /* Chrome, Safari, Opera */
+      width: 0 !important;
+      background: transparent !important;
+    }
+    
+    /* Manter funcionalidade de scroll */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+  </style>
 </body>
 </html>

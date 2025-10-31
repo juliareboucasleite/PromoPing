@@ -5,7 +5,7 @@
   <title>Status do Serviço | PromoPing Docs</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
 <body>
   <!-- HEADER -->
@@ -34,72 +34,8 @@
 
   <div class="docs-container">
     
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <nav>
-        <ul>
-          <!-- About Section -->
-          <li class="sidebar-nav-about">
-            <a href="docs.html">
-              About PromoPing
-            </a>
-          </li>
-          <!-- Getting Started -->
-          <li class="sidebar-nav-section">
-            <span>GETTING STARTED</span>
-          </li>
-          <li>
-            <a href="FirstLaunch.html" class="sidebar-nav-link">
-              First Launch
-            </a>
-          </li>
-          <li>
-            <a href="usage-guide.html" class="sidebar-nav-link">
-              Usage Guide
-            </a>
-          </li>
-          <!-- UI Scripting -->
-          <li class="sidebar-nav-item">
-            <span>UI SCRIPTING</span>
-          </li>
-          <li>
-            <a href="api-reference.html" class="sidebar-nav-link inactive">
-              API Reference
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2">
-                <polyline points="9,6 15,12 9,18"></polyline>
-              </svg>
-            </a>
-          </li>
-          <!-- Support -->
-          <li class="sidebar-nav-item">
-            <span>SUPORTE</span>
-          </li>
-          <li>
-            <a href="support.html" class="sidebar-nav-link">
-              Suporte
-            </a>
-          </li>
-          <li>
-            <a href="#" class="sidebar-nav-link active">
-              Status do Serviço
-            </a>
-          </li>
-          <li>
-            <a href="incident-history.html" class="sidebar-nav-link">
-              Histórico de Incidentes
-            </a>
-          </li>
-          <li>
-            <a href="terms.html" class="sidebar-nav-link">
-              Termos de Uso
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <div class="powered">
-        <p>Made by PromoPingg</p>
-      </div>
-    </aside>
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
@@ -337,7 +273,13 @@
     // ================== CARREGAR STATUS REAL DA API ==================
     async function carregarStatus() {
       try {
-        const response = await fetch("/api/status");
+        const apiUrl = 'http://127.0.0.1:3000/api/status';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
 
         if (data.status === "ok") {
@@ -490,7 +432,13 @@
     // ================== CARREGAR ESTATÍSTICAS EM TEMPO REAL ==================
     async function carregarEstatisticasRealtime() {
       try {
-        const response = await fetch("/api/status/realtime");
+        const apiUrl = 'http://127.0.0.1:3000/api/status/realtime';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
 
         if (data.status === "ok") {
@@ -522,19 +470,26 @@
     // ================== BUSCAR DADOS REAIS DA BASE DE DADOS ==================
     async function buscarDadosReais() {
       try {
-        // Buscar dados completos do sistema
-        const systemResponse = await fetch("/api/status/complete");
+        // Usar rota /api/status que existe (não /api/status/complete que não existe)
+        const apiUrl = 'http://127.0.0.1:3000/api/status';
+        const systemResponse = await fetch(apiUrl);
+        
+        if (!systemResponse.ok) {
+          throw new Error(`HTTP error! status: ${systemResponse.status}`);
+        }
+        
         const systemData = await systemResponse.json();
         
         if (systemData.status === "ok") {
           // Atualizar métricas de performance
-          atualizarMetricasPerformance(systemData.metricas);
-          
-          // Atualizar estatísticas em tempo real
-          atualizarEstatisticasTempoReal(systemData.tempoReal);
+          if (systemData.metricas) {
+            atualizarMetricasPerformance(systemData.metricas);
+          }
           
           // Atualizar componentes do sistema
-          atualizarComponentesSistema(systemData.componentes);
+          if (systemData.componentes) {
+            atualizarComponentesSistema(systemData.componentes);
+          }
           
           console.log(" Dados completos carregados da base de dados:", systemData);
         } else {
@@ -551,21 +506,28 @@
     // ================== BUSCAR DADOS INDIVIDUAIS (FALLBACK) ==================
     async function buscarDadosIndividuais() {
       try {
-        // Buscar dados de utilizadores ativos
-        const usersResponse = await fetch("/api/stats/users");
-        const usersData = await usersResponse.json();
+        // Usar rota /api/status que existe (em vez de rotas que não existem)
+        const apiUrl = 'http://127.0.0.1:3000/api/status';
+        const response = await fetch(apiUrl);
         
-        // Buscar dados de produtos monitorizados
-        const productsResponse = await fetch("/api/stats/products");
-        const productsData = await productsResponse.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
-        // Buscar dados de notificações
-        const notificationsResponse = await fetch("/api/stats/notifications");
-        const notificationsData = await notificationsResponse.json();
+        const data = await response.json();
         
-        // Buscar dados de uptime
-        const uptimeResponse = await fetch("/api/stats/uptime");
-        const uptimeData = await uptimeResponse.json();
+        // Usar dados da resposta para simular formato individual
+        let usersData = { status: "error", total: 0 };
+        let productsData = { status: "error", total: 0 };
+        let notificationsData = { status: "error", today: 0 };
+        let uptimeData = { status: "error", percentage: 99.9 };
+        
+        if (data.status === "ok" && data.metricas) {
+          usersData = { status: "ok", total: data.metricas.UtilizadoresAtivos || 0 };
+          productsData = { status: "ok", total: data.metricas.ProdutosMonitorizados || 0 };
+          notificationsData = { status: "ok", today: data.metricas.NotificacoesEnviadas || 0 };
+          uptimeData = { status: "ok", percentage: data.metricas.UptimeGeral || 99.9 };
+        }
         
         // Atualizar métricas com dados reais
         if (usersData.status === "ok") {
@@ -683,6 +645,102 @@
       return numero.toLocaleString();
     }
 
+    // ================== ATUALIZAR MÉTRICAS DA BASE DE DADOS ==================
+    async function atualizarMetricasBaseDados() {
+      try {
+        const apiUrl = 'http://127.0.0.1:3000/api/status';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+
+        if (data.status === "ok" && data.metricas) {
+          // Atualizar métricas de performance com dados reais da base de dados
+          const metricas = data.metricas;
+          
+          // Uptime (30 dias) - verificar se é número antes de usar toFixed e arredondar para inteiro
+          if (metricas.UptimeGeral !== undefined && metricas.UptimeGeral !== null) {
+            const uptime = typeof metricas.UptimeGeral === 'number' ? metricas.UptimeGeral : parseFloat(metricas.UptimeGeral) || 99.9;
+            atualizarElemento('uptime-value', `${Math.round(uptime)}%`);
+          }
+          
+          // Tempo de Resposta - verificar se é número antes de usar toFixed e arredondar para inteiro
+          if (metricas.TempoRespostaMedia !== undefined && metricas.TempoRespostaMedia !== null) {
+            const tempoResposta = typeof metricas.TempoRespostaMedia === 'number' ? metricas.TempoRespostaMedia : parseFloat(metricas.TempoRespostaMedia) || 45;
+            atualizarElemento('response-time-value', `${Math.round(tempoResposta)}ms`);
+          }
+          
+          // Usuários Ativos (atualizar em tempo real)
+          if (metricas.UtilizadoresAtivos !== undefined) {
+            const totalUsuarios = metricas.UtilizadoresAtivos;
+            atualizarElemento('active-users-value', totalUsuarios.toLocaleString('pt-BR'));
+            atualizarElemento('users-online', totalUsuarios.toLocaleString('pt-BR'));
+            
+            // Calcular crescimento (comparar com mês anterior - usar valor fixo por enquanto)
+            const crescimentoUsuarios = ((totalUsuarios - 12847) / 12847 * 100).toFixed(2);
+            const tendenciaUsuarios = crescimentoUsuarios >= 0 ? '+' : '';
+            atualizarElemento('active-users-trend', `${tendenciaUsuarios}${crescimentoUsuarios}% vs mês anterior`);
+          }
+          
+          // Produtos Monitorizados (atualizar em tempo real)
+          if (metricas.ProdutosMonitorizados !== undefined) {
+            const totalProdutos = metricas.ProdutosMonitorizados;
+            const formattedProducts = formatarNumero(totalProdutos);
+            atualizarElemento('monitored-products-value', formattedProducts);
+            
+            // Calcular crescimento (comparar com mês anterior)
+            const crescimentoProdutos = ((totalProdutos - 1200000) / 1200000 * 100).toFixed(2);
+            const tendenciaProdutos = crescimentoProdutos >= 0 ? '+' : '';
+            atualizarElemento('monitored-products-trend', `${tendenciaProdutos}${crescimentoProdutos}% vs mês anterior`);
+            
+            // Atualizar componente de monitoramento
+            const produtoElement = document.querySelector('[data-detail="produtos"]');
+            if (produtoElement) {
+              produtoElement.textContent = totalProdutos.toLocaleString('pt-BR');
+            }
+          }
+          
+          // Notificações enviadas hoje
+          if (metricas.NotificacoesEnviadas !== undefined) {
+            atualizarElemento('notifications-today', metricas.NotificacoesEnviadas.toLocaleString('pt-BR'));
+            const notificacoesElement = document.querySelector('[data-detail="total-notificacoes"]');
+            if (notificacoesElement) {
+              notificacoesElement.textContent = metricas.NotificacoesEnviadas.toLocaleString('pt-BR');
+            }
+          }
+          
+          // Atualizar timestamp
+          const footer = document.getElementById('footer-update');
+          const lastUpdate = document.getElementById('last-update');
+          if (footer) {
+            footer.textContent = new Date().toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+          if (lastUpdate) {
+            lastUpdate.textContent = new Date().toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+          
+          console.log(" Métricas atualizadas da base de dados:", metricas);
+        }
+      } catch (error) {
+        console.error(" Erro ao atualizar métricas da base de dados:", error);
+      }
+    }
+
     // ================== INICIALIZAÇÃO ==================
     // Carregar status inicial
     carregarStatus();
@@ -690,22 +748,31 @@
     // Buscar dados reais da base de dados
     buscarDadosReais();
     
-    // Atualizar status geral a cada 5 minutos (reduzido para evitar rate limit)
+    // Atualizar métricas da base de dados imediatamente e em tempo real
+    atualizarMetricasBaseDados();
+    
+    // Atualizar métricas da base de dados a cada 30 segundos (tempo real)
+    setInterval(atualizarMetricasBaseDados, 30000);
+    
+    // Atualizar status geral a cada 5 minutos
     setInterval(carregarStatus, 300000);
     
-    // Atualizar estatísticas em tempo real a cada 2 minutos (reduzido)
+    // Atualizar estatísticas em tempo real a cada 2 minutos
     setInterval(carregarEstatisticasRealtime, 120000);
     
-    // Buscar dados reais da base de dados a cada 10 minutos (reduzido)
+    // Buscar dados reais da base de dados a cada 10 minutos
     setInterval(buscarDadosReais, 600000);
-    
-    // Atualizar dados simulados a cada 5 minutos (reduzido)
-    setInterval(updateRealtimeStatsFallback, 300000);
 
     // ================== HEALTH CHECK ==================
     async function verificarSaudeAPI() {
       try {
-        const response = await fetch("/api/status/health");
+        const apiUrl = 'http://127.0.0.1:3000/api/status/health';
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.status === "ok") {
@@ -725,7 +792,28 @@
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
   
-  <!-- SCRIPT DE PESQUISA -->
+  <!-- SCRIPTS -->
+  <script src="script.js"></script>
   <script src="search.js"></script>
+  
+  <style>
+    /* Esconder scrollbar da área de conteúdo principal (main.content) */
+    main.content {
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* IE e Edge */
+    }
+    
+    main.content::-webkit-scrollbar {
+      display: none !important; /* Chrome, Safari, Opera */
+      width: 0 !important;
+      background: transparent !important;
+    }
+    
+    /* Manter funcionalidade de scroll */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+  </style>
 </body>
 </html>

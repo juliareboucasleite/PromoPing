@@ -1,16 +1,117 @@
 // script.js
 
-document.addEventListener("DOMContentLoaded", () => {
-  // === Highlight active link ===
-  const links = document.querySelectorAll(".sidebar nav ul li a");
-  const current = window.location.pathname.split("/").pop();
+// Navegação completa (fallback)
+const NAVIGATION_HTML = `
+  <aside class="sidebar">
+    <nav>
+      <ul>
+        <li class="sidebar-nav-about">
+          <a href="docs.html">Sobre o PromoPing</a>
+        </li>
+        <li class="sidebar-nav-section"><span>COMEÇAR</span></li>
+        <li><a href="FirstLaunch.html" class="sidebar-nav-link">Primeiro Lançamento</a></li>
+        <li><a href="installation.html" class="sidebar-nav-link">Guia de Instalação</a></li>
+        <li><a href="usage-guide.html" class="sidebar-nav-link">Guia de Utilização</a></li>
+        <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
+        <li><a href="api-reference.html" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
+        <li class="sidebar-nav-item"><span>SUPORTE</span></li>
+        <li><a href="support.html" class="sidebar-nav-link">Suporte</a></li>
+        <li><a href="faq.html" class="sidebar-nav-link">FAQ</a></li>
+        <li><a href="changelog.html" class="sidebar-nav-link">Changelog</a></li>
+        <li><a href="service-status.html" class="sidebar-nav-link">Status do Serviço</a></li>
+        <li><a href="incident-history.html" class="sidebar-nav-link">Histórico de Incidentes</a></li>
+        <li><a href="terms.html" class="sidebar-nav-link">Termos de Uso</a></li>
+      </ul>
+    </nav>
+    <div class="powered"><p>Made by PromoPingg</p></div>
+  </aside>
+`;
 
+// Função para carregar navegação dinamicamente
+async function loadNavigation() {
+  const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+  if (!sidebarPlaceholder) {
+    // Tentar novamente após um pequeno delay
+    setTimeout(() => {
+      loadNavigation();
+    }, 100);
+    return;
+  }
+  
+  // Se já tiver conteúdo, não recarregar
+  if (sidebarPlaceholder.innerHTML.trim() !== '') {
+    highlightActiveLink();
+    return;
+  }
+  
+  try {
+    // Tentar carregar nav.html - sempre do mesmo diretório
+    const navPath = 'nav.html';
+    const response = await fetch(`${navPath}?t=${Date.now()}`, {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load navigation: ${response.status} ${response.statusText}`);
+    }
+    
+    const html = await response.text();
+    if (!html || html.trim() === '') {
+      throw new Error('Navegação está vazia');
+    }
+    
+    sidebarPlaceholder.innerHTML = html;
+    
+    // Após carregar, marcar link ativo
+    setTimeout(() => {
+      highlightActiveLink();
+    }, 150);
+  } catch (error) {
+    console.error('Erro ao carregar navegação:', error);
+    // Fallback: usar navegação embutida
+    sidebarPlaceholder.innerHTML = NAVIGATION_HTML;
+    setTimeout(() => {
+      highlightActiveLink();
+    }, 150);
+  }
+}
+
+// Função para marcar link ativo
+function highlightActiveLink() {
+  const links = document.querySelectorAll(".sidebar nav ul li a");
+  const currentPath = window.location.pathname;
+  const currentFile = currentPath.split("/").pop() || window.location.href.split("/").pop() || "docs.html";
+  
   links.forEach(link => {
-    if (link.getAttribute("href") === current) {
+    const href = link.getAttribute("href");
+    // Remover classe active de todos os links
+    link.classList.remove("active");
+    
+    // Verificar se é a página atual
+    if (href === currentFile || 
+        href === currentPath ||
+        (currentFile === "" && (href === "docs.html" || href === "#")) ||
+        (href && (href === currentFile || href.includes(currentFile)) && currentFile !== "" && href !== "#")) {
       link.classList.add("active");
+      // Remover classe inactive se presente
+      link.classList.remove("inactive");
+    } else if (href && href !== "#" && href !== currentFile) {
+      // Adicionar inactive se não for a página atual e não for um link genérico
+      if (!link.classList.contains("inactive") && link.closest("li").querySelector("svg")) {
+        link.classList.add("inactive");
+      }
     }
   });
+}
 
+// Função de inicialização
+function init() {
+  // Carregar navegação imediatamente
+  loadNavigation();
+  
   // === Smooth scroll for internal anchors ===
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener("click", function (e) {
@@ -67,12 +168,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const emoji = button.getAttribute('data-emoji');
       
       // Show "Thank you!" message
-      thankYouMessage.style.display = 'block';
+      if (thankYouMessage) {
+        thankYouMessage.style.display = 'block';
+      }
       
       // Show comment section after a short delay
-      setTimeout(() => {
-        commentSection.style.display = 'block';
-      }, 500);
+      if (commentSection) {
+        setTimeout(() => {
+          commentSection.style.display = 'block';
+        }, 500);
+      }
       
       // Log feedback
       console.log(`User feedback: ${emoji}`);
@@ -88,25 +193,27 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if (submitButton) {
     submitButton.addEventListener('click', () => {
-      const comment = textarea.value.trim();
-      const selectedEmoji = document.querySelector('.emoji-btn.active').getAttribute('data-emoji');
+      const comment = textarea ? textarea.value.trim() : '';
+      const selectedEmoji = document.querySelector('.emoji-btn.active');
       
       if (comment) {
-        console.log(`Feedback submitted: ${selectedEmoji} - ${comment}`);
+        console.log(`Feedback submitted: ${selectedEmoji?.getAttribute('data-emoji')} - ${comment}`);
         
         // Show success message
         submitButton.textContent = 'Submitted!';
         submitButton.style.background = '#10b981';
         
         // Disable form
-        textarea.disabled = true;
+        if (textarea) {
+          textarea.disabled = true;
+        }
         submitButton.disabled = true;
         
         // Optional: Send to server
         // sendFeedbackWithComment(selectedEmoji, comment);
-      } else {
+      } else if (selectedEmoji) {
         // Just submit emoji feedback
-        console.log(`Emoji feedback submitted: ${selectedEmoji}`);
+        console.log(`Emoji feedback submitted: ${selectedEmoji.getAttribute('data-emoji')}`);
         submitButton.textContent = 'Submitted!';
         submitButton.style.background = '#10b981';
         submitButton.disabled = true;
@@ -184,7 +291,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize scroll to top button
   addScrollToTopButton();
-});
+  
+  // Garantir que a navegação foi carregada após 500ms
+  setTimeout(() => {
+    const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+    if (sidebarPlaceholder && !sidebarPlaceholder.innerHTML.trim()) {
+      console.warn('Navegação não carregada, tentando novamente...');
+      loadNavigation();
+    }
+  }, 500);
+}
+
+// Carregar assim que o script for executado
+if (document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  // DOM já carregado
+  init();
+}
 
 // === Optional: Send feedback to server ===
 function sendFeedback(emoji) {
