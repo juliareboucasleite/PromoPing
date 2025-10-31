@@ -29,17 +29,23 @@ const NAVIGATION_HTML = `
 
 // Função para carregar navegação dinamicamente
 async function loadNavigation() {
-  const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+  let sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+  
+  // Tentar encontrar o placeholder até 10 vezes (1 segundo)
+  let attempts = 0;
+  while (!sidebarPlaceholder && attempts < 10) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+    attempts++;
+  }
+  
   if (!sidebarPlaceholder) {
-    // Tentar novamente após um pequeno delay
-    setTimeout(() => {
-      loadNavigation();
-    }, 100);
+    console.error('Placeholder de navegação não encontrado após 1 segundo');
     return;
   }
   
-  // Se já tiver conteúdo, não recarregar
-  if (sidebarPlaceholder.innerHTML.trim() !== '') {
+  // Se já tiver conteúdo completo (mais de 100 caracteres), apenas atualizar link ativo
+  if (sidebarPlaceholder.innerHTML.trim().length > 100) {
     highlightActiveLink();
     return;
   }
@@ -50,7 +56,8 @@ async function loadNavigation() {
     const response = await fetch(`${navPath}?t=${Date.now()}`, {
       cache: 'no-cache',
       headers: {
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       }
     });
     
@@ -63,19 +70,38 @@ async function loadNavigation() {
       throw new Error('Navegação está vazia');
     }
     
+    // Limpar placeholder antes de inserir novo conteúdo
+    sidebarPlaceholder.innerHTML = '';
     sidebarPlaceholder.innerHTML = html;
     
-    // Após carregar, marcar link ativo
+    // Forçar re-renderização
+    sidebarPlaceholder.offsetHeight;
+    
+    // Após carregar, marcar link ativo com múltiplas tentativas
     setTimeout(() => {
       highlightActiveLink();
-    }, 150);
+    }, 50);
+    
+    setTimeout(() => {
+      highlightActiveLink();
+    }, 200);
+    
   } catch (error) {
     console.error('Erro ao carregar navegação:', error);
     // Fallback: usar navegação embutida
+    sidebarPlaceholder.innerHTML = '';
     sidebarPlaceholder.innerHTML = NAVIGATION_HTML;
+    
+    // Forçar re-renderização
+    sidebarPlaceholder.offsetHeight;
+    
     setTimeout(() => {
       highlightActiveLink();
-    }, 150);
+    }, 50);
+    
+    setTimeout(() => {
+      highlightActiveLink();
+    }, 200);
   }
 }
 
@@ -302,12 +328,26 @@ function init() {
   }, 500);
 }
 
+// Carregar navegação IMEDIATAMENTE (antes mesmo do DOMContentLoaded)
+loadNavigation();
+
 // Carregar assim que o script for executado
 if (document.readyState === 'loading') {
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => {
+    // Carregar navegação novamente caso não tenha carregado
+    setTimeout(() => {
+      const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
+      if (sidebarPlaceholder && sidebarPlaceholder.innerHTML.trim().length < 100) {
+        loadNavigation();
+      }
+      init();
+    }, 100);
+  });
 } else {
   // DOM já carregado
-  init();
+  setTimeout(() => {
+    init();
+  }, 100);
 }
 
 // === Optional: Send feedback to server ===
