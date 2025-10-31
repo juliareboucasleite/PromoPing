@@ -302,6 +302,12 @@
 
         </div>
     </main>
+  <script src="../../assets/scripts/support-widget.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      if (window.initSupportWidgetFront) window.initSupportWidgetFront();
+    });
+  </script>
 
     <script type="module">
       import { formatDateTime } from "../../assets/scripts/utils.js";
@@ -334,7 +340,7 @@
     
     if (!token) {
       alert("Precisa estar logado!");
-      window.location.href = "/inc/Login.html";
+      window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
       return;
     }
 
@@ -407,7 +413,7 @@
   // Função para remover token da storage e sair
   function logout() {
     localStorage.removeItem("token");
-    window.location.href = "../inc/Login.html";
+      window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
   }
 
   // Evento de submit das informações pessoais

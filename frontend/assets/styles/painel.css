@@ -184,12 +184,18 @@
 }
 
 .nav-item:hover {
-    background: #f8f9fa;
+    background: transparent;
     color: #495057;
 }
 
 .nav-item-active {
-    background: linear-gradient(135deg, #f4af55, #ed9a6c, #dc7c35);
+    background: linear-gradient(135deg, #f4af55, #ed9a6c, #dc7c35) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(220, 124, 53, 0.3);
+}
+
+.nav-item-active:hover {
+    background: linear-gradient(135deg, #f4af55, #ed9a6c, #dc7c35) !important;
     color: #fff !important;
     box-shadow: 0 4px 15px rgba(220, 124, 53, 0.3);
 }

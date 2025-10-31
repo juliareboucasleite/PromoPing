@@ -1,7 +1,7 @@
 // Script para carregar includes do header e footer na página principal (index.html)
 document.addEventListener('DOMContentLoaded', function() {
     // Carrega o header de forma assíncrona para o placeholder adequado
-    makeRequest('../../inc/header.html')
+    makeRequest('pages/inc/header.html')
         .then(response => {
             // Clonar a resposta para evitar problemas de stream já lido
             return response.clone().text();
@@ -9,7 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const headerPlaceholder = document.getElementById('header-placeholder');
             if (headerPlaceholder) {
-                headerPlaceholder.innerHTML = data;
+                // Corrige os caminhos das imagens ANTES de inserir o HTML
+                const baseTag = document.querySelector('base');
+                const baseHref = baseTag ? baseTag.getAttribute('href') : '/PromoPing/frontend/';
+                // Substitui todos os caminhos relativos de imagens no HTML antes de inserir
+                let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
+                headerPlaceholder.innerHTML = correctedData;
             }
         })
         .catch(error => {
@@ -20,12 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <header class="pp-header">
                         <div class="pp-container">
                             <div class="pp-header-brand">
-                                <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="pp-header-logo">
+                                <img src="assets/images/PromoPing.png" alt="PromoPing" class="pp-header-logo">
                                 <span class="pp-header-title">PromoPing</span>
                             </div>
                             <nav class="pp-header-nav">
-                                <a href="/inc/Login.html" class="pp-header-nav-link">Entrar</a>
-                                <a href="../../pages/inc/register.html" class="pp-btn pp-btn-primary">Registar</a>
+                                <a href="pages/inc/Login.html" class="pp-header-nav-link">Entrar</a>
+                                <a href="pages/inc/register.html" class="pp-btn pp-btn-primary">Registar</a>
                             </nav>
                         </div>
                     </header>
@@ -34,45 +39,73 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Carrega o footer de forma assíncrona e inicializa funcionalidades extras após inserir no DOM
-    makeRequest('../../inc/footer.html')
-        .then(response => {
-            // Clonar a resposta para evitar problemas de stream já lido
-            return response.clone().text();
-        })
-        .then(data => {
-            const footerPlaceholder = document.getElementById('footer-placeholder');
-            if (footerPlaceholder) {
-                footerPlaceholder.innerHTML = data;
-                // Chama funções adicionais depois do footer carregado
-                initializeFooterFunctionality();
-            }
-        })
-        .catch(error => {
-            console.warn('Footer não encontrado, usando conteúdo estático');
-            const footerPlaceholder = document.getElementById('footer-placeholder');
-            if (footerPlaceholder) {
-                footerPlaceholder.innerHTML = `
-                    <footer class="pp-footer">
-                        <div class="pp-container">
-                            <div class="pp-footer-content">
-                                <div class="pp-footer-brand">
-                                    <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="pp-footer-logo">
-                                    <span class="pp-footer-title">PromoPing</span>
+    function loadFooter() {
+        const baseTag = document.querySelector('base');
+        const baseHref = baseTag ? baseTag.getAttribute('href') : '/PromoPing/frontend/';
+        const footerPath = baseHref + 'pages/inc/footer.html';
+        
+        makeRequest(footerPath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.clone().text();
+            })
+            .then(data => {
+                const footerPlaceholder = document.getElementById('footer-placeholder');
+                if (footerPlaceholder) {
+                    // Corrige os caminhos das imagens e links ANTES de inserir o HTML
+                    let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
+                    correctedData = correctedData.replace(/href="pages\//g, `href="${baseHref}pages/`);
+                    correctedData = correctedData.replace(/href="#/g, `href="${baseHref}#`);
+                    footerPlaceholder.innerHTML = correctedData;
+                    // Chama funções adicionais depois do footer carregado
+                    if (typeof initializeFooterFunctionality === 'function') {
+                        initializeFooterFunctionality();
+                    }
+                }
+            })
+            .catch(error => {
+                console.warn('Footer não encontrado, usando conteúdo estático:', error);
+                const footerPlaceholder = document.getElementById('footer-placeholder');
+                if (footerPlaceholder) {
+                    footerPlaceholder.innerHTML = `
+                        <footer class="pp-footer">
+                            <div class="pp-container">
+                                <div class="pp-footer-content">
+                                    <div class="pp-footer-brand">
+                                        <img src="assets/images/PromoPing.png" alt="PromoPing" class="pp-footer-logo">
+                                        <span class="pp-footer-title">PromoPing</span>
+                                    </div>
+                                    <div class="pp-footer-links">
+                                        <a href="#sobre" class="pp-footer-link">Sobre</a>
+                                        <a href="#contato" class="pp-footer-link">Contato</a>
+                                        <a href="#privacidade" class="pp-footer-link">Privacidade</a>
+                                    </div>
                                 </div>
-                                <div class="pp-footer-links">
-                                    <a href="#sobre" class="pp-footer-link">Sobre</a>
-                                    <a href="#contato" class="pp-footer-link">Contato</a>
-                                    <a href="#privacidade" class="pp-footer-link">Privacidade</a>
+                                <div class="pp-footer-bottom">
+                                    <p>&copy; 2024 PromoPing. Todos os direitos reservados.</p>
                                 </div>
                             </div>
-                            <div class="pp-footer-bottom">
-                                <p>&copy; 2024 PromoPing. Todos os direitos reservados.</p>
-                            </div>
-                        </div>
-                    </footer>
-                `;
+                        </footer>
+                    `;
+                }
+            });
+    }
+    
+    // Aguarda um pouco para garantir que o RequestManager está disponível
+    if (typeof makeRequest === 'function') {
+        loadFooter();
+    } else {
+        // Se makeRequest não estiver disponível, tenta novamente após um delay
+        setTimeout(function() {
+            if (typeof makeRequest === 'function') {
+                loadFooter();
+            } else {
+                console.error('makeRequest não está disponível para carregar footer');
             }
-        });
+        }, 100);
+    }
 });
 
 // Função para abrir o dropdown de navegação (menu)
@@ -171,30 +204,55 @@ function positionTooltips() {
   });
 }
 
-// Atualiza o badge de versão e permite abrir modal com detalhes
-function checkVersion() {
+// Busca a versão mais recente do GitHub Releases API
+async function fetchGitHubVersion() {
+  const githubOwner = 'juliareboucasleite';
+  const githubRepo = 'PromoPing';
+  const apiUrl = `https://api.github.com/repos/${githubOwner}/${githubRepo}/releases/latest`;
+  
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+    const data = await response.json();
+    // Extrai a versão do tag_name (remove o 'v' se existir)
+    const version = data.tag_name || data.name || 'v2.3.3';
+    return version.startsWith('v') ? version : `v${version}`;
+  } catch (error) {
+    console.warn('Erro ao buscar versão do GitHub:', error);
+    // Retorna versão padrão em caso de erro
+    return 'v2.3.3';
+  }
+}
+
+// Atualiza o badge de versão com a versão do GitHub e permite abrir modal com detalhes
+async function checkVersion() {
   const versionBadge = document.querySelector('.version-badge span');
   if (versionBadge) {
-    // Aqui seria feita uma consulta real a uma API de versões
-    const currentVersion = 'v2.0.1';
-    versionBadge.textContent = currentVersion;
+    // Busca a versão mais recente do GitHub
+    const latestVersion = await fetchGitHubVersion();
+    versionBadge.textContent = latestVersion;
+    
+    // Armazena a versão para uso no modal
+    versionBadge.dataset.version = latestVersion;
     
     // Ao clicar, mostra informações detalhadas da versão em um modal
     versionBadge.addEventListener('click', function() {
-      showVersionInfo();
+      showVersionInfo(latestVersion);
     });
   }
 }
 
 // Cria e exibe um modal simples com informações sobre a versão atual
-function showVersionInfo() {
+function showVersionInfo(version = 'v2.3.3') {
   // Cria o elemento do modal
   const modal = document.createElement('div');
   modal.className = 'version-modal';
   modal.innerHTML = `
     <div class="modal-content">
       <h3>Informações da Versão</h3>
-      <p><strong>Versão Atual:</strong> v2.0.1</p>
+      <p><strong>Versão Atual:</strong> ${version}</p>
       <p><strong>Última Atualização:</strong> ${new Date().toLocaleDateString('pt-PT')}</p>
       <p><strong>Status:</strong> <span class="status-online">Online</span></p>
       <button onclick="this.parentElement.parentElement.remove()">Fechar</button>

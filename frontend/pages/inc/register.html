@@ -4,9 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Registar — PromoPing</title>
-  <link rel="stylesheet" href="../../assets/styles/header.css">
-  <link rel="stylesheet" href="../../assets/styles/register.css">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <base href="/PromoPing/frontend/">
+  <link rel="stylesheet" href="assets/styles/header.css">
+  <link rel="stylesheet" href="assets/styles/register.css">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
 </head>
 <body class="login-page">
 
@@ -14,22 +15,9 @@
   <div id="header-register-include"></div>
 
   <!-- Scripts -->
-  <script src="../../assets/scripts/request-manager.js"></script>
-  <script src="../../assets/scripts/notification-system.js"></script>
-  <script src="/inc/load-includes-register.js"></script>
-  <script>
-    // Carregar header após RequestManager estar disponível
-    document.addEventListener('DOMContentLoaded', function() {
-      makeRequest('../../inc/header-register.html')
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('header-register-include').innerHTML = html;
-        })
-        .catch(error => {
-          console.error('Erro ao carregar header:', error);
-        });
-    });
-  </script>
+  <script src="assets/scripts/request-manager.js"></script>
+  <script src="assets/scripts/notification-system.js"></script>
+  <script src="pages/inc/load-includes-register.js"></script>
 
   <!-- ===== MAIN ===== -->
   <main class="login-main">
@@ -297,7 +285,7 @@
 
       if (data.status === "ok" && data.token) {
         guardarToken(data.token);
-        location.href = "/dashboard/painel";
+        location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
       } else {
         showError("Erro", data.error || "Código inválido");
       }
@@ -345,7 +333,7 @@
         if (data.exists) {
           // Usuário já existe - avisar para fazer login
           showInfo("Usuário já registrado", "Usuário Discord já registrado! Por favor, faça login usando o botão Discord na página de login.");
-          window.location.href = "../inc/Login.html";
+          window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
           return;
         } else {
           // Usuário não existe - redirecionar para Discord OAuth

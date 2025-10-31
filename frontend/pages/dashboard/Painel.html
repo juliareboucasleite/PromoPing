@@ -331,6 +331,12 @@
             </section>
         </div>
     </main>
+  <script src="../../assets/scripts/support-widget.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      if (window.initSupportWidgetFront) window.initSupportWidgetFront();
+    });
+  </script>
     <script type="module">
       import { salvarToken, verificarSessao, logout } from "../../assets/scripts/auth.js";
       import { formatDateTime } from "../../assets/scripts/utils.js";
@@ -408,14 +414,14 @@
             }
 
             // Defina caminhos possíveis para login (corrija caso esteja em pasta dashboard ou não)
-            let loginPath = "../inc/Login.html";
+            let loginPath = "/PromoPing/frontend/pages/inc/Login.html";
             // Caso esteja em ambiente que serve do root, cheque se arquivo existe via fetch
             try {
               // Faz um fetch para ver se o arquivo existe
               const r = await makeRequest(loginPath, { method: "HEAD" });
               if (!r.ok) {
                 // Se não existe, tenta pelo raiz
-                loginPath = "/inc/Login.html";
+                loginPath = "/PromoPing/frontend/pages/inc/Login.html";
               }
             } catch { /* fallback sem fetch suportado */ }
 
@@ -424,7 +430,7 @@
           } catch (err) {
             showError("Erro", "Erro ao sair: " + (err && err.message ? err.message : err));
             // fallback
-            window.location.href = "/inc/Login.html";
+            window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
           }
         });
       }

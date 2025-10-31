@@ -4,9 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Entrar — PromoPing</title>
-  <link rel="stylesheet" href="../../assets/styles/header.css">
-  <link rel="stylesheet" href="../../assets/styles/login.css">
-  <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+  <base href="/PromoPing/frontend/">
+  <link rel="stylesheet" href="assets/styles/header.css">
+  <link rel="stylesheet" href="assets/styles/login.css">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
 </head>
 <body class="login-page">
 
@@ -14,16 +15,21 @@
   <div id="header-login-include"></div>
 
   <!-- Scripts -->
-  <script src="../../assets/scripts/request-manager.js"></script>
-  <script src="../../assets/scripts/notification-system.js"></script>
-  <script src="/inc/load-includes-login.js"></script>
+  <script src="assets/scripts/request-manager.js"></script>
+  <script src="assets/scripts/notification-system.js"></script>
+  <script src="pages/inc/load-includes-login.js"></script>
   <script>
     // Carregar header após RequestManager estar disponível
     document.addEventListener('DOMContentLoaded', function() {
-      makeRequest('../../inc/header-login.html')
+      makeRequest('pages/inc/header-login.html')
         .then(response => response.text())
         .then(html => {
-          document.getElementById('header-login-include').innerHTML = html;
+          // Corrige os caminhos das imagens ANTES de inserir o HTML
+          const baseTag = document.querySelector('base');
+          const baseHref = baseTag ? baseTag.getAttribute('href') : '/PromoPing/frontend/';
+          // Substitui todos os caminhos relativos de imagens no HTML antes de inserir
+          let correctedHtml = html.replace(/src="assets\//g, `src="${baseHref}assets/`);
+          document.getElementById('header-login-include').innerHTML = correctedHtml;
         })
         .catch(error => {
           console.error('Erro ao carregar header:', error);
@@ -119,7 +125,7 @@
       </form>
 
       <div class="login-footer">
-        <p class="register-link">Não tem conta? <a href="register.html">Registar</a></p>
+        <p class="register-link">Não tem conta? <a href="pages/inc/register.html">Registar</a></p>
       </div>
 
       <!-- Caixa de verificação de email -->
@@ -334,7 +340,7 @@
           localStorage.setItem("token", data.token);
           showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
           setTimeout(() => {
-            window.location.href = "/dashboard/painel";
+            window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
           }, 2000);
         } else {
           alert(data.error || "Código inválido");
@@ -367,7 +373,7 @@
           localStorage.setItem("token", data.token);
           showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
           setTimeout(() => {
-            window.location.href = "/dashboard/painel";
+            window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
           }, 2000);
         } else {
           alert(data.error || "Código inválido");
@@ -526,7 +532,7 @@
           localStorage.setItem("token", data.token);
           showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
           setTimeout(() => {
-            window.location.href = "/dashboard/painel";
+            window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
           }, 2000);
         } else {
           showError("Erro de Login", data.error || "Email ou senha incorretos");

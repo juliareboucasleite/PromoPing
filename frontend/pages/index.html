@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>PromoPing - Sempre ligado</title>
-  <link rel="stylesheet" href="../assets/styles/style.css">
-  <link rel="stylesheet" href="../assets/styles/dasboard.css">
-  <link rel="stylesheet" href="../assets/styles/header.css">
-  <link rel="stylesheet" href="../assets/styles/painel.css">
-  <link rel="stylesheet" href="../assets/styles/register.css">
-  <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
-  <script src="../../assets/scripts/request-manager.js"></script>
-  <script src="../inc/load-includes-index.js"></script>
+  <base href="/PromoPing/frontend/">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/styles/style.css">
+  <link rel="stylesheet" href="assets/styles/dasboard.css">
+  <link rel="stylesheet" href="assets/styles/header.css">
+  <link rel="stylesheet" href="assets/styles/painel.css">
+  <link rel="stylesheet" href="assets/styles/register.css">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
+  <script src="assets/scripts/request-manager.js"></script>
+  <script src="pages/inc/load-includes-index.js"></script>
   <script>
-    // Título principal sem animação JavaScript
     document.addEventListener("DOMContentLoaded",function(){
       const h=document.querySelector('.pp-hero-left h1');
       if(h) {
@@ -22,6 +23,26 @@
         h.style.opacity = '1';
         h.style.filter = 'none';
         h.style.transform = 'none';
+      }
+
+      // Scroll customizado para centralizar a seção "sobre" verticalmente ao clicar em "Saber mais"
+      const saberMaisBtn = document.querySelector('a[href="#sobre"]');
+      if(saberMaisBtn) {
+        saberMaisBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector('#sobre');
+          if(target) {
+            // Calcula o topo do elemento e ajusta para centralizar na viewport
+            const rect = target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const elementCenter = rect.top + scrollTop + rect.height / 2;
+            const viewportCenter = window.innerHeight / 2;
+            window.scrollTo({
+              top: elementCenter - viewportCenter,
+              behavior: 'smooth'
+            });
+          }
+        });
       }
     });
 
@@ -85,36 +106,82 @@
   </script>
 </head>
 <body class="theme-promoping">
-  <!-- HEADER DINÂMICO -->
   <div id="header-placeholder"></div>
   <main>
-    <!-- HERO principal -->
     <section class="pp-hero"><div class="pp-container pp-hero-grid">
       <div class="pp-hero-left">
         <h1 style="opacity: 1 !important; filter: none !important; transform: none !important;">Sempre ligado</h1>
         <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
       </div>
       <div class="pp-hero-right">
-        <img src="../assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
+        <img src="assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
       </div>
     </div></section>
-    <!-- SOCIAL BASE (explica conexões de plataformas) -->
-    <section id="sobre" class="pp-section pp-section-centered">
-      <div class="pp-container">
+    <section id="sobre" class="pp-section pp-section-centered py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+      <div class="pp-container max-w-5xl mx-auto">
         <div class="centered-content">
-          <h2><span class="highlight">Conecte-se às suas plataformas favoritas</span></h2>
-          <div class="text-content justified">
-            <p>Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em oferta.</p>
-            <p>Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.</p>
-            <p>Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.</p>
-            <p><strong>PromoPing. O preço certo, na hora certa.</strong></p>
+          <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-8 md:mb-10 lg:mb-12 text-center tracking-tight leading-tight">
+            <span class="highlight drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]">Conecte-se às suas plataformas favoritas</span>
+          </h2>
+          <div class="text-content justified max-w-4xl mx-auto space-y-3 md:space-y-4">
+            <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
+              Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em oferta.
+            </p>
+            <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
+              Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.
+            </p>
+            <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
+              Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.
+            </p>
+            <p class="text-lg md:text-xl lg:text-2xl font-bold text-white text-center mt-10 md:mt-12 lg:mt-14">
+              <strong>PromoPing. O preço certo, na hora certa.</strong>
+            </p>
+            <p class="text-lg md:text-xl lg:text-2xl font-bold text-white text-center mt-10 md:mt-12 lg:mt-14"></p>
+          <div style="height: 45px;"></div>
           </div>
         </div>
       </div>
     </section>
-    <!-- CONTACTO (sobre notificações) -->
-    
-    <!-- COMO FUNCIONA (passos do serviço) -->
+    <section id="parceiros" class="pp-partners relative py-16 md:py-20 px-4 sm:px-5 overflow-hidden" style="background: linear-gradient(115deg, #ffffff00 85%, #ffa54b00 100%);">
+      <div class="max-w-6xl mx-auto text-center relative z-20 px-6">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-10 md:mb-12 tracking-tight drop-shadow-lg"
+              style="background: linear-gradient(90deg, #fff 60%, #FFA54B 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+            <span class="inline-block align-middle">
+              <svg class="inline-block mr-2 -mt-1 w-7 h-7 text-[#FFA54B] drop-shadow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.22"/>
+                <path d="M8 12l2 2l4 -4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+              Mais de <span class="text-[#FFA54B] drop-shadow font-black">50 marcas</span> confiam no PromoPing.
+            </span>
+          </h2>
+        <div class="partner-grid max-w-[1100px] mx-auto">
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            Pingo Doce
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            Continente
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            Auchan
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            Worten
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            FNAC
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            IKEA
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            Radio Popular
+          </h3>
+          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+            PcDiga
+          </h3>
+        </div>
+      </div>
+    </section>
     <section class="how-section">
       <div class="how-container">
         <div class="how-header">
@@ -170,7 +237,6 @@
         </div>
       </div>
     </section>
-    <!-- PLANOS DE PREÇOS -->
     <section class="pp-pricing">
       <div class="pricing-container">
         <div class="pricing-header">
@@ -178,7 +244,6 @@
           <p>Diferentes níveis de acesso às notificações</p>
         </div>
         <div class="pricing-grid">
-          <!-- Free -->
           <div class="pricing-card">
             <div class="card-header">
               <h3>Free</h3>
@@ -198,7 +263,6 @@
             </div>
           </div>
 
-          <!-- Basic -->
           <div class="pricing-card">
             <div class="card-header">
               <h3>Basic</h3>
@@ -219,7 +283,6 @@
             </div>
           </div>
 
-          <!-- Standard (Mais Popular) -->
           <div class="pricing-card popular">
             <div class="popular-badge">Mais Popular</div>
             <div class="card-header">
@@ -242,7 +305,6 @@
             </div>
           </div>
 
-          <!-- Premium -->
           <div class="pricing-card">
             <div class="card-header">
               <h3>Premium</h3>
@@ -267,12 +329,11 @@
         </div>
       </div>
     </section>
-    <!-- CHAMADA FINAL PARA REGISTO -->
     <section class="pp-cta">
       <div class="cta-box">
         <h2>Pronto para poupar dinheiro?</h2>
         <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
-        <a href="inc/register.html">
+        <a href="pages/inc/register.html">
           Começar agora grátis
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -281,7 +342,6 @@
       </div>
     </section>
   </main>
-  <!-- FOOTER DINÂMICO -->
   <div id="footer-placeholder"></div>
 </body>
 </html>
