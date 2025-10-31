@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
 module.exports = {
     name: 'registar',
-    aliases: ['register', 'criar', 'signup'],
+    aliases: ['register', 'criar', 'signup', 'registrar', 'registar'],
     description: 'Regista uma nova conta PromoPing e vincula ao Discord.',
     usage: '!registar <email> <senha>',
     execute: async (client, message, args, botInstance) => {
@@ -130,9 +130,22 @@ module.exports = {
             const hashedPassword = await bcrypt.hash(senha, 10);
             const now = new Date();
 
+            // PERFIL DE USUÁRIO COMUM: busca o id correto do perfil na tabela perfis
+            // Consulta pelo nome do perfil "Usuario" OU "Utilizador"
+            let userPerfilId = 2; // Valor padrão, em caso de não encontrar na consulta, assume 2
+            try {
+                // buscar qualquer um: "Usuario" ou "Utilizador" (case insensitive)
+                const [perfis] = await connection.execute(
+                    "SELECT Id, Nome FROM perfis WHERE LOWER(Nome) IN ('usuario', 'utilizador', 'user') LIMIT 1"
+                );
+                if (perfis.length > 0) {
+                    userPerfilId = perfis[0].Id;
+                }
+            } catch { /* ignora erro, cai pro valor padrão */ }
+
             await connection.execute(
                 'INSERT INTO utilizadores (Email, SenhaHash, discord_id, Data_Registo, Nome, Ativo, PerfilId) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [email, hashedPassword, message.author.id, now, message.author.username, 1, 1]
+                [email, hashedPassword, message.author.id, now, message.author.username, 1, userPerfilId]
             );
 
             await connection.end();

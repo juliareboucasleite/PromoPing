@@ -148,6 +148,98 @@ router.put("/me", verifyToken, async (req, res) => {
   }
 });
 
+// ================== ATUALIZAR USUÁRIO POR ID (ADMIN) ==================
+// IMPORTANTE: Esta rota deve vir ANTES de rotas paramétricas genéricas
+// mas DEPOIS de rotas específicas como /admins, /profile, etc.
+router.put("/admin/:id", verifyToken, async (req, res) => {
+  try {
+    const targetUserId = parseInt(req.params.id);
+    const currentUserId = req.user.id;
+    
+    // Verificar se o usuário atual é admin
+    const [currentUser] = await pool.query(
+      "SELECT PerfilId FROM Utilizadores WHERE Id = ?",
+      [currentUserId]
+    );
+    
+    if (currentUser.length === 0 || currentUser[0].PerfilId !== 1) {
+      return res.status(403).json({
+        status: "error",
+        error: "Apenas administradores podem atualizar outros usuários"
+      });
+    }
+    
+    // Verificar se o usuário alvo existe
+    const [targetUser] = await pool.query(
+      "SELECT Id FROM Utilizadores WHERE Id = ?",
+      [targetUserId]
+    );
+    
+    if (targetUser.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuário não encontrado"
+      });
+    }
+    
+    const { nome, email, telefone } = req.body;
+    
+    // Validar campos
+    if (!nome || !email) {
+      return res.status(400).json({
+        status: "error",
+        error: "Nome e email são obrigatórios"
+      });
+    }
+    
+    // Verificar se o email já está em uso por outro usuário
+    const [emailCheck] = await pool.query(
+      "SELECT Id FROM Utilizadores WHERE Email = ? AND Id != ?",
+      [email, targetUserId]
+    );
+    
+    if (emailCheck.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        error: "Este email já está em uso por outro usuário"
+      });
+    }
+    
+    // Atualizar usuário
+    await pool.query(
+      "UPDATE Utilizadores SET Nome = ?, Email = ?, Telefone = ? WHERE Id = ?",
+      [nome, email, telefone || null, targetUserId]
+    );
+    
+    // Buscar usuário atualizado
+    const [updatedUser] = await pool.query(
+      `SELECT 
+         u.Id,
+         u.Nome,
+         u.Email,
+         u.Data_Registo AS DataRegisto,
+         p.Nome AS Perfil
+       FROM Utilizadores u
+       LEFT JOIN perfis p ON p.Id = u.PerfilId
+       WHERE u.Id = ?`,
+      [targetUserId]
+    );
+    
+    res.json({
+      status: "ok",
+      message: "Usuário atualizado com sucesso",
+      user: updatedUser[0]
+    });
+  } catch (err) {
+    console.error("Erro ao atualizar usuário:", err);
+    res.status(500).json({
+      status: "error",
+      error: "Erro ao atualizar usuário",
+      message: err.message
+    });
+  }
+});
+
 // GET estatísticas do utilizador
 router.get("/stats", verifyToken, async (req, res) => {
   try {
@@ -184,6 +276,8 @@ router.get("/admins", async (_req, res) => {
          u.Nome,
          u.Email,
          u.Data_Registo AS DataRegisto,
+         u.FotoPerfil,
+         u.discord_id,
          p.Nome AS Perfil
        FROM Utilizadores u
        LEFT JOIN perfis p ON p.Id = u.PerfilId

@@ -9,6 +9,51 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const router = express.Router();
 
+// ================== FUNÇÃO: ATUALIZAR MÉTRICAS AUTOMATICAMENTE ==================
+async function atualizarMetricasAutomaticamente() {
+  try {
+    // Contar utilizadores ativos (total de utilizadores com Ativo = 1)
+    const [utilizadoresCount] = await db.query(
+      "SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1"
+    );
+    
+    // Contar produtos monitorizados (ativos, não deletados)
+    const [produtosCount] = await db.query(
+      "SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL"
+    );
+    
+    // Contar notificações enviadas hoje
+    const [notificacoesCount] = await db.query(
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+    );
+    
+    // Buscar métricas existentes para calcular média de uptime e tempo de resposta
+    const [metricasAnteriores] = await db.query(
+      "SELECT AVG(UptimeGeral) as uptimeMedio, AVG(TempoRespostaMedia) as tempoRespostaMedio FROM metricas_sistema WHERE AtualizadoEm >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    );
+    
+    const uptimeGeral = metricasAnteriores[0]?.uptimeMedio || 99.90;
+    const tempoRespostaMedia = metricasAnteriores[0]?.tempoRespostaMedio || 45;
+    const utilizadoresAtivos = utilizadoresCount[0]?.total || 0;
+    const produtosMonitorizados = produtosCount[0]?.total || 0;
+    const notificacoesEnviadas = notificacoesCount[0]?.total || 0;
+    
+    // Inserir nova métrica (sempre criar novo registro para histórico)
+    await db.query(
+      `INSERT INTO metricas_sistema (UptimeGeral, TempoRespostaMedia, UtilizadoresAtivos, ProdutosMonitorizados, NotificacoesEnviadas, AtualizadoEm) 
+       VALUES (?, ?, ?, ?, ?, NOW())`,
+      [uptimeGeral, tempoRespostaMedia, utilizadoresAtivos, produtosMonitorizados, notificacoesEnviadas]
+    );
+    
+    console.log(` Métricas atualizadas automaticamente: ${utilizadoresAtivos} utilizadores, ${produtosMonitorizados} produtos`);
+  } catch (err) {
+    console.error(" Erro ao atualizar métricas automaticamente:", err);
+  }
+}
+
+// Exportar função para uso em outras rotas
+export { atualizarMetricasAutomaticamente };
+
 // ================== ROTA: STATUS GERAL DO SISTEMA ==================
 router.get("/api/status", async (req, res) => {
   try {
@@ -27,21 +72,26 @@ router.get("/api/status", async (req, res) => {
       "SELECT * FROM incidentes ORDER BY DataInicio DESC LIMIT 5"
     );
 
-    // Buscar estatísticas em tempo real
-    const [produtosCount] = await db.query("SELECT COUNT(*) as total FROM produtos");
-    const [utilizadoresCount] = await db.query("SELECT COUNT(*) as total FROM utilizadores");
+    // Buscar estatísticas em tempo real (usar dados mais recentes ou contar diretamente)
+    const [produtosCount] = await db.query("SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL");
+    const [utilizadoresCount] = await db.query("SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1");
     const [notificacoesCount] = await db.query(
       "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
     );
+    
+    // Usar contagem direta se métricas não existirem ou se forem desatualizadas
+    const utilizadoresAtivos = utilizadoresCount[0]?.total || 0;
+    const produtosMonitorizados = produtosCount[0]?.total || 0;
+    const notificacoesEnviadas = notificacoesCount[0]?.total || 0;
 
     res.json({
       status: "ok",
       metricas: {
         UptimeGeral: metricas[0]?.UptimeGeral || 99.9,
         TempoRespostaMedia: metricas[0]?.TempoRespostaMedia || 45,
-        UtilizadoresAtivos: utilizadoresCount[0]?.total || 0,
-        ProdutosMonitorizados: produtosCount[0]?.total || 0,
-        NotificacoesEnviadas: notificacoesCount[0]?.total || 0
+        UtilizadoresAtivos: utilizadoresAtivos,
+        ProdutosMonitorizados: produtosMonitorizados,
+        NotificacoesEnviadas: notificacoesEnviadas
       },
       componentes: componentes.length > 0 ? componentes : [
         {
@@ -428,27 +478,57 @@ router.post("/api/componentes", async (req, res) => {
 // ================== ROTA: CRIAR NOVO INCIDENTE ==================
 router.post("/api/incidentes", async (req, res) => {
   try {
-    const { titulo, descricao, impacto, estado, componenteId } = req.body;
+    const { Titulo, titulo, Descricao, descricao, Impacto, impacto, Estado, estado, Status, status, DataInicio, dataInicio, DataFim, dataFFim, ComponenteId, componenteId } = req.body;
 
-    if (!titulo) {
+    const tituloFinal = (Titulo || titulo || '').trim();
+    const descricaoFinal = (Descricao || descricao || '').trim();
+    const impactoFinal = (Impacto || impacto || '').trim() || null;
+    const estadoFinal = Estado || estado || Status || status || 'Resolvido';
+    
+    // Converter formato datetime-local para MySQL (YYYY-MM-DD HH:mm:ss)
+    let dataInicioFinal = DataInicio || dataInicio;
+    if (dataInicioFinal) {
+      dataInicioFinal = dataInicioFinal.replace('T', ' ');
+      if (!dataInicioFinal.includes(':')) {
+        dataInicioFinal += ':00:00';
+      } else if (dataInicioFinal.split(':').length === 2) {
+        dataInicioFinal += ':00';
+      }
+    } else {
+      dataInicioFinal = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
+    let dataFimFinal = DataFim || dataFFim || null;
+    if (dataFimFinal && dataFimFinal.trim() !== '') {
+      dataFimFinal = dataFimFinal.replace('T', ' ');
+      if (!dataFimFinal.includes(':')) {
+        dataFimFinal += ':00:00';
+      } else if (dataFimFinal.split(':').length === 2) {
+        dataFimFinal += ':00';
+      }
+    } else {
+      dataFimFinal = null;
+    }
+    
+    const componenteIdFinal = ComponenteId || componenteId || null;
+
+    if (!tituloFinal) {
       return res.status(400).json({
         status: "error",
         erro: "Título do incidente é obrigatório"
       });
     }
 
-    const statusValidos = ['investigating', 'identified', 'monitoring', 'resolved'];
-    if (estado && !statusValidos.includes(estado)) {
+    if (!descricaoFinal) {
       return res.status(400).json({
         status: "error",
-        erro: "Status inválido. Use: investigating, identified, monitoring ou resolved",
-        statusValidos: statusValidos
+        erro: "Descrição do incidente é obrigatória"
       });
     }
 
     const [resultado] = await db.query(
-      "INSERT INTO incidentes (Titulo, Descricao, Impacto, Status, DataInicio, ComponentesAfetados) VALUES (?, ?, ?, ?, NOW(), ?)",
-      [titulo, descricao, impacto, estado || 'investigating', componenteId]
+      "INSERT INTO incidentes (Titulo, Descricao, Impacto, Estado, DataInicio, DataFim, ComponenteId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [tituloFinal, descricaoFinal, impactoFinal, estadoFinal, dataInicioFinal, dataFimFinal, componenteIdFinal]
     );
 
     const [novoIncidente] = await db.query(
@@ -529,11 +609,53 @@ router.put("/api/incidentes/:id/encerrar", async (req, res) => {
   }
 });
 
+// ================== ROTA: OBTER INCIDENTE ESPECÍFICO ==================
+router.get("/api/incidentes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [incidente] = await db.query(
+      "SELECT * FROM incidentes WHERE Id = ?",
+      [id]
+    );
+
+    if (incidente.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        erro: "Incidente não encontrado",
+        id: id
+      });
+    }
+
+    res.json({
+      status: "ok",
+      incidente: incidente[0],
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("Erro ao buscar incidente:", err);
+    res.status(500).json({
+      status: "error",
+      erro: "Erro ao buscar incidente",
+      message: err.message
+    });
+  }
+});
+
 // ================== ROTA: ATUALIZAR INCIDENTE ==================
 router.put("/api/incidentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, descricao, impacto, estado, componenteId } = req.body;
+    // Aceitar campos em minúsculas ou maiúsculas
+    const { 
+      Titulo, titulo, 
+      Descricao, descricao, 
+      Impacto, impacto, 
+      Estado, estado, 
+      Status, status,
+      DataInicio, dataInicio,
+      DataFim, dataFim,
+      componenteId, ComponenteId 
+    } = req.body;
 
     // Verificar se o incidente existe
     const [verificar] = await db.query(
@@ -549,40 +671,59 @@ router.put("/api/incidentes/:id", async (req, res) => {
       });
     }
 
-    // Construir query dinamicamente
+    // Construir query dinamicamente (usar maiúsculas para corresponder ao banco)
     const updates = [];
     const values = [];
 
-    if (titulo !== undefined) {
+    const tituloFinal = Titulo || titulo;
+    if (tituloFinal !== undefined) {
       updates.push("Titulo = ?");
-      values.push(titulo);
+      values.push(tituloFinal);
     }
 
-    if (descricao !== undefined) {
+    const descricaoFinal = Descricao || descricao;
+    if (descricaoFinal !== undefined) {
       updates.push("Descricao = ?");
-      values.push(descricao);
+      values.push(descricaoFinal);
     }
 
-    if (impacto !== undefined) {
+    const impactoFinal = Impacto || impacto;
+    if (impactoFinal !== undefined) {
       updates.push("Impacto = ?");
-      values.push(impacto);
+      values.push(impactoFinal);
     }
 
-    if (estado !== undefined) {
-      updates.push("Status = ?");
-      values.push(estado);
+    const estadoFinal = Estado || estado || Status || status;
+    if (estadoFinal !== undefined) {
+      updates.push("Estado = ?");
+      values.push(estadoFinal);
     }
 
-    if (componenteId !== undefined) {
-      updates.push("ComponentesAfetados = ?");
-      values.push(componenteId);
+    const dataInicioFinal = DataInicio || dataInicio;
+    if (dataInicioFinal !== undefined) {
+      updates.push("DataInicio = ?");
+      values.push(dataInicioFinal);
+    }
+
+    const dataFimFinal = DataFim || dataFim;
+    if (dataFimFinal !== undefined && dataFimFinal !== null) {
+      updates.push("DataFim = ?");
+      values.push(dataFimFinal);
+    } else if (dataFimFinal === null) {
+      updates.push("DataFim = NULL");
+    }
+
+    const componenteIdFinal = ComponenteId || componenteId;
+    if (componenteIdFinal !== undefined) {
+      updates.push("ComponenteId = ?");
+      values.push(componenteIdFinal);
     }
 
     if (updates.length === 0) {
       return res.status(400).json({
         status: "error",
         erro: "Nenhum campo para atualizar foi fornecido",
-        camposValidos: ["titulo", "descricao", "impacto", "estado", "componenteId"]
+        camposValidos: ["Titulo", "Descricao", "Impacto", "Estado", "DataInicio", "DataFim", "ComponenteId"]
       });
     }
 
@@ -1101,6 +1242,233 @@ router.get("/api/stats/uptime", async (req, res) => {
       status: "error",
       erro: "Erro ao buscar estatísticas de uptime",
       message: err.message 
+    });
+  }
+});
+
+// ================== ROTAS: ATUALIZAÇÕES DO SISTEMA ==================
+
+// Criar tabela atualizacoes se não existir
+async function ensureAtualizacoesTable() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS atualizacoes (
+        Id INT AUTO_INCREMENT PRIMARY KEY,
+        Titulo VARCHAR(200) NOT NULL,
+        Descricao TEXT NOT NULL,
+        Tipo ENUM('Melhoria', 'Correção', 'Nova Funcionalidade', 'Manutenção') DEFAULT 'Melhoria',
+        DataPublicacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        Status ENUM('Implementado', 'Em Desenvolvimento', 'Planeado') DEFAULT 'Implementado',
+        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_data_publicacao (DataPublicacao),
+        INDEX idx_tipo (Tipo),
+        INDEX idx_status (Status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+  } catch (err) {
+    console.error('Erro ao criar tabela atualizacoes:', err);
+  }
+}
+
+// Inicializar tabela na primeira chamada
+let tabelaInicializada = false;
+async function initAtualizacoesTable() {
+  if (!tabelaInicializada) {
+    await ensureAtualizacoesTable();
+    tabelaInicializada = true;
+  }
+}
+
+// ================== ROTA: LISTAR ATUALIZAÇÕES ==================
+router.get("/api/atualizacoes", async (req, res) => {
+  try {
+    await initAtualizacoesTable();
+    const [rows] = await db.query(
+      "SELECT * FROM atualizacoes ORDER BY DataPublicacao DESC"
+    );
+    res.json({
+      status: "ok",
+      atualizacoes: rows,
+      total: rows.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("Erro ao buscar atualizações:", err);
+    res.status(500).json({ 
+      status: "error",
+      erro: "Erro ao buscar atualizações",
+      message: err.message 
+    });
+  }
+});
+
+// ================== ROTA: OBTER ATUALIZAÇÃO ESPECÍFICA ==================
+router.get("/api/atualizacoes/:id", async (req, res) => {
+  try {
+    await initAtualizacoesTable();
+    const { id } = req.params;
+    const [rows] = await db.query(
+      "SELECT * FROM atualizacoes WHERE Id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        erro: "Atualização não encontrada",
+        id: id
+      });
+    }
+
+    res.json({
+      status: "ok",
+      atualizacao: rows[0],
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("Erro ao buscar atualização:", err);
+    res.status(500).json({
+      status: "error",
+      erro: "Erro ao buscar atualização",
+      message: err.message
+    });
+  }
+});
+
+// ================== ROTA: CRIAR NOVA ATUALIZAÇÃO ==================
+router.post("/api/atualizacoes", async (req, res) => {
+  try {
+    await initAtualizacoesTable();
+    const { Titulo, titulo, Descricao, descricao, Tipo, tipo, DataPublicacao, dataPublicacao, Status, status } = req.body;
+
+    const tituloFinal = Titulo || titulo;
+    const descricaoFinal = Descricao || descricao;
+    const tipoFinal = Tipo || tipo || 'Melhoria';
+    const dataPublicacaoFinal = DataPublicacao || dataPublicacao || new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const statusFinal = Status || status || 'Implementado';
+
+    if (!tituloFinal || !descricaoFinal) {
+      return res.status(400).json({
+        status: "error",
+        erro: "Título e descrição são obrigatórios"
+      });
+    }
+
+    const [result] = await db.query(
+      "INSERT INTO atualizacoes (Titulo, Descricao, Tipo, DataPublicacao, Status) VALUES (?, ?, ?, ?, ?)",
+      [tituloFinal, descricaoFinal, tipoFinal, dataPublicacaoFinal, statusFinal]
+    );
+
+    const [novaAtualizacao] = await db.query(
+      "SELECT * FROM atualizacoes WHERE Id = ?",
+      [result.insertId]
+    );
+
+    res.json({
+      status: "ok",
+      mensagem: "Atualização criada com sucesso",
+      atualizacao: novaAtualizacao[0],
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("Erro ao criar atualização:", err);
+    res.status(500).json({
+      status: "error",
+      erro: "Erro ao criar atualização",
+      message: err.message
+    });
+  }
+});
+
+// ================== ROTA: ATUALIZAR ATUALIZAÇÃO ==================
+router.put("/api/atualizacoes/:id", async (req, res) => {
+  try {
+    await initAtualizacoesTable();
+    const { id } = req.params;
+    const { Titulo, titulo, Descricao, descricao, Tipo, tipo, DataPublicacao, dataPublicacao, Status, status } = req.body;
+
+    // Verificar se a atualização existe
+    const [verificar] = await db.query(
+      "SELECT * FROM atualizacoes WHERE Id = ?",
+      [id]
+    );
+
+    if (verificar.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        erro: "Atualização não encontrada",
+        id: id
+      });
+    }
+
+    // Construir query dinamicamente
+    const updates = [];
+    const values = [];
+
+    const tituloFinal = Titulo || titulo;
+    if (tituloFinal !== undefined) {
+      updates.push("Titulo = ?");
+      values.push(tituloFinal);
+    }
+
+    const descricaoFinal = Descricao || descricao;
+    if (descricaoFinal !== undefined) {
+      updates.push("Descricao = ?");
+      values.push(descricaoFinal);
+    }
+
+    const tipoFinal = Tipo || tipo;
+    if (tipoFinal !== undefined) {
+      updates.push("Tipo = ?");
+      values.push(tipoFinal);
+    }
+
+    const dataPublicacaoFinal = DataPublicacao || dataPublicacao;
+    if (dataPublicacaoFinal !== undefined) {
+      updates.push("DataPublicacao = ?");
+      values.push(dataPublicacaoFinal);
+    }
+
+    const statusFinal = Status || status;
+    if (statusFinal !== undefined) {
+      updates.push("Status = ?");
+      values.push(statusFinal);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        status: "error",
+        erro: "Nenhum campo para atualizar foi fornecido",
+        camposValidos: ["Titulo", "Descricao", "Tipo", "DataPublicacao", "Status"]
+      });
+    }
+
+    values.push(id);
+
+    // Executar atualização
+    const query = `UPDATE atualizacoes SET ${updates.join(", ")} WHERE Id = ?`;
+    await db.query(query, values);
+
+    // Buscar atualização atualizada
+    const [atualizacaoAtualizada] = await db.query(
+      "SELECT * FROM atualizacoes WHERE Id = ?",
+      [id]
+    );
+
+    res.json({
+      status: "ok",
+      mensagem: `Atualização ${id} atualizada com sucesso`,
+      atualizacao: atualizacaoAtualizada[0],
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (err) {
+    console.error("Erro ao atualizar atualização:", err);
+    res.status(500).json({
+      status: "error",
+      erro: "Erro ao atualizar atualização",
+      message: err.message
     });
   }
 });

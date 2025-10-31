@@ -3,10 +3,12 @@ import express from "express";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as DiscordStrategy } from "passport-discord";
+import { Strategy as GitHubStrategy } from "passport-github2";
 import { pool } from "../database/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { verifyToken } from "../middleware/auth.js";
+import { atualizarMetricasAutomaticamente } from "./status.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -46,6 +48,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         try {
           const email = profile.emails[0].value;
           const googleId = profile.id;
+          const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+          const nome = profile.displayName || profile.name?.givenName || 'Usuário Google';
 
           const [rows] = await pool.query(
             "SELECT * FROM Utilizadores WHERE Email = ?",
@@ -55,14 +59,34 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           let userId;
           if (rows.length > 0) {
             userId = rows[0].Id;
-            // Usuário já existe, apenas atualizar dados se necessário
+            // Atualizar foto de perfil se fornecida
+            if (fotoPerfil) {
+              try {
+                await pool.query(
+                  "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                  [fotoPerfil, userId]
+                );
+              } catch (updateErr) {
+                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+              }
+            }
             console.log("Usuário Google já existe:", email);
           } else {
-            const [result] = await pool.query(
-              "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-              [profile.displayName, email, null]
-            );
-            userId = result.insertId;
+            // Inserir novo usuário com foto de perfil se disponível
+            try {
+              const [result] = await pool.query(
+                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
+                [nome, email, null, fotoPerfil]
+              );
+              userId = result.insertId;
+            } catch (insertErr) {
+              // Se campo FotoPerfil não existe, inserir sem ele
+              const [result] = await pool.query(
+                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
+                [nome, email, null]
+              );
+              userId = result.insertId;
+            }
           }
 
           await pool.query(
@@ -72,7 +96,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             [userId, email, "email"]
           );
 
-          return done(null, { id: userId, email });
+          return done(null, { id: userId, email, nome, fotoPerfil });
         } catch (err) {
           return done(err, null);
         }
@@ -81,6 +105,123 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 } else {
   // Google OAuth não configurado - silencioso
+}
+
+// ================== GITHUB STRATEGY ==================
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: "http://127.0.0.1:3000/api/auth/github/callback",
+        scope: ['user:email']
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          // GitHub pode não ter email público, então precisamos buscar da API
+          let email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+          
+          // Se não houver email no perfil, tentar buscar da API do GitHub
+          if (!email) {
+            try {
+              const response = await fetch('https://api.github.com/user/emails', {
+                headers: {
+                  'Authorization': `token ${accessToken}`,
+                  'User-Agent': 'PromoPing'
+                }
+              });
+              const emails = await response.json();
+              if (Array.isArray(emails) && emails.length > 0) {
+                const primaryEmail = emails.find(e => e.primary) || emails[0];
+                email = primaryEmail.email;
+              }
+            } catch (emailErr) {
+              console.log("Erro ao buscar email do GitHub:", emailErr.message);
+            }
+          }
+
+          // Usar email do GitHub ou criar um email baseado no username
+          if (!email) {
+            email = `${profile.username}@github.local`;
+          }
+
+          const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : 
+                            profile._json?.avatar_url || null;
+          const nome = profile.displayName || profile.username || 'Usuário GitHub';
+
+          const [rows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ?",
+            [email]
+          );
+
+          let userId;
+          if (rows.length > 0) {
+            userId = rows[0].Id;
+            // Atualizar foto de perfil se fornecida
+            if (fotoPerfil) {
+              try {
+                await pool.query(
+                  "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                  [fotoPerfil, userId]
+                );
+              } catch (updateErr) {
+                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+              }
+            }
+            console.log("Usuário GitHub já existe:", email);
+          } else {
+            // Inserir novo usuário com foto de perfil se disponível
+            try {
+              const [result] = await pool.query(
+                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
+                [nome, email, null, fotoPerfil]
+              );
+              userId = result.insertId;
+              
+              // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+              try {
+                await atualizarMetricasAutomaticamente();
+                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+              } catch (metricError) {
+                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                // Não bloquear resposta em caso de erro nas métricas
+              }
+            } catch (insertErr) {
+              // Se campo FotoPerfil não existe, inserir sem ele
+              const [result] = await pool.query(
+                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
+                [nome, email, null]
+              );
+              userId = result.insertId;
+              
+              // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+              try {
+                await atualizarMetricasAutomaticamente();
+                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+              } catch (metricError) {
+                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                // Não bloquear resposta em caso de erro nas métricas
+              }
+            }
+          }
+
+          await pool.query(
+            `INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) 
+             VALUES (?, ?, ?) 
+             ON DUPLICATE KEY UPDATE Email = VALUES(Email)`,
+            [userId, email, "email"]
+          );
+
+          return done(null, { id: userId, email, nome, fotoPerfil });
+        } catch (err) {
+          return done(err, null);
+        }
+      }
+    )
+  );
+} else {
+  // GitHub OAuth não configurado - silencioso
 }
 
 // ================== DISCORD STRATEGY ==================
@@ -175,6 +316,15 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
             
             // Associar Discord com novo usuário
             linkDiscordUser(discordId, userId);
+            
+            // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
+            try {
+              await atualizarMetricasAutomaticamente();
+              console.log(" Métricas atualizadas após criação de novo utilizador via Discord");
+            } catch (metricError) {
+              console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+              // Não bloquear resposta em caso de erro nas métricas
+            }
           }
 
           const token = jwt.sign(
@@ -471,6 +621,15 @@ router.post("/register", async (req, res) => {
     //   }
     // }
 
+    // Atualizar métricas automaticamente quando novo utilizador é criado
+    try {
+      await atualizarMetricasAutomaticamente();
+      console.log(" Métricas atualizadas após criação de novo utilizador");
+    } catch (metricError) {
+      console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+      // Não bloquear resposta em caso de erro nas métricas
+    }
+
     res.json({
       status: "ok",
       message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
@@ -518,13 +677,19 @@ router.get("/google/callback", (req, res) => {
 
       try {
         const token = jwt.sign(
-          { id: req.user.id, email: req.user.email, nome: req.user.nome },
+          { id: req.user.id, email: req.user.email, nome: req.user.nome || req.user.name },
           process.env.JWT_SECRET,
           { expiresIn: "7d" }
         );
 
         const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/PromoPing/frontend/pages/dashboard/Painel.html";
-        res.redirect(`${panelUrl}?token=${token}`);
+        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/PromoPing/Painel_Administrativo_Php/pages/profile.html";
+        
+        // Verificar se veio do sign-up ou login
+        const fromSignUp = req.query.from === 'signup';
+        const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
+        
+        res.redirect(`${redirectUrl}?token=${token}`);
       } catch (tokenError) {
         console.error("Erro ao gerar token:", tokenError);
         res.redirect(`${loginUrl}?error=token_error`);
@@ -537,11 +702,72 @@ router.get("/google/callback", (req, res) => {
   }
 });
 
+// ================== ROTAS GITHUB ==================
+router.get("/github", (req, res) => {
+  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    console.log(" GitHub OAuth configurado:");
+    console.log("   Client ID:", process.env.GITHUB_CLIENT_ID.substring(0, 20) + "...");
+    console.log("   Client Secret:", process.env.GITHUB_CLIENT_SECRET.substring(0, 10) + "...");
+    passport.authenticate("github", { scope: ["user:email"] })(req, res);
+  } else {
+    console.error(" GitHub OAuth não configurado:");
+    console.log("   GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID ? "Presente" : "Ausente");
+    console.log("   GITHUB_CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "Presente" : "Ausente");
+    res.status(400).json({
+      error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+    });
+  }
+});
+
+router.get("/github/callback", (req, res) => {
+  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+    passport.authenticate("github", { failureRedirect: loginUrl })(req, res, (err) => {
+      if (err) {
+        console.error("Erro na autenticação GitHub:", err);
+        return res.redirect(`${loginUrl}?error=auth_failed`);
+      }
+
+      if (!req.user) {
+        console.error("req.user está undefined");
+        return res.redirect(`${loginUrl}?error=user_undefined`);
+      }
+
+      try {
+        const token = jwt.sign(
+          { id: req.user.id, email: req.user.email, nome: req.user.nome || req.user.name },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/PromoPing/frontend/pages/dashboard/Painel.html";
+        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/PromoPing/Painel_Administrativo_Php/pages/profile.html";
+        
+        // Verificar se veio do sign-up ou login
+        const fromSignUp = req.query.from === 'signup';
+        const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
+        
+        res.redirect(`${redirectUrl}?token=${token}`);
+      } catch (tokenError) {
+        console.error("Erro ao gerar token:", tokenError);
+        res.redirect(`${loginUrl}?error=token_error`);
+      }
+    });
+  } else {
+    res.status(400).json({
+      error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+    });
+  }
+});
+
 // ================== ROTAS DISCORD ==================
 
 router.get("/discord", (req, res) => {
   if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-    passport.authenticate("discord", { scope: ['identify', 'email'] })(req, res);
+    passport.authenticate("discord", { 
+      session: false,
+      scope: ['identify', 'email'] 
+    })(req, res);
   } else {
     res.status(400).json({
       error:
@@ -555,6 +781,7 @@ router.get("/discord/callback", (req, res) => {
   
   if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
     passport.authenticate("discord", { 
+      session: false,
       failureRedirect: "/login?error=discord_auth_failed"
     })(req, res, (err, user) => {
       if (err) {

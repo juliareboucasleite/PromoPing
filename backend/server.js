@@ -55,6 +55,9 @@ import supportRoutes from "./routes/support.js";             // Suporte
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";            // JWT
 
+// ================== DATABASE ==================
+import { pool } from "./database/db.js";                       // Pool de conexão
+
 // ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js";        // Notificações
 
@@ -169,8 +172,63 @@ app.use("/api/auth", authRoutes);            // Login/Registro + Google OAuth
 app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 
 // ================== ROTAS ==================
-app.get("/api/user/me", verifyToken, (req, res) => {
-  res.json({ status: "ok", user: req.user });
+app.get("/api/user/me", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Buscar dados completos do usuário incluindo foto de perfil
+    try {
+      const [rows] = await pool.query(
+        "SELECT Id, Nome, Email, Telefone, FotoPerfil, Data_Registo, cidade, location FROM Utilizadores WHERE Id = ?",
+        [userId]
+      );
+      
+      if (rows.length > 0) {
+        const user = rows[0];
+        return res.json({ 
+          status: "ok", 
+          user: {
+            id: user.Id,
+            nome: user.Nome || user.name,
+            name: user.Nome || user.name,
+            email: user.Email || user.email,
+            telefone: user.Telefone || user.phone,
+            phone: user.Telefone || user.phone,
+            fotoPerfil: user.FotoPerfil || user.fotoPerfil,
+            cidade: user.cidade || user.location,
+            location: user.cidade || user.location
+          }
+        });
+      }
+    } catch (dbErr) {
+      // Se campo FotoPerfil não existe, buscar sem ele
+      const [rows] = await pool.query(
+        "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
+        [userId]
+      );
+      
+      if (rows.length > 0) {
+        const user = rows[0];
+        return res.json({ 
+          status: "ok", 
+          user: {
+            id: user.Id,
+            nome: user.Nome || user.name,
+            name: user.Nome || user.name,
+            email: user.Email || user.email,
+            telefone: user.Telefone || user.phone,
+            phone: user.Telefone || user.phone
+          }
+        });
+      }
+    }
+    
+    // Fallback para dados do token
+    res.json({ status: "ok", user: req.user });
+  } catch (err) {
+    console.error("Erro ao buscar dados do usuário:", err);
+    res.json({ status: "ok", user: req.user });
+  }
 });
 
 // Aplicar rate limiting para produtos
