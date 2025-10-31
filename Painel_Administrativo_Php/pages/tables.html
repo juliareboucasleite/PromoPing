@@ -281,15 +281,18 @@
       <div class="row">
         <div class="col-12">
           <div class="card mb-4">
-            <div class="card-header pb-0">
-              <h6>Incidentes</h6>
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Incidentes</h6>
+              <button type="button" class="btn btn-sm btn-primary mb-0" onclick="PromoPingAdmin.createNewIncident()" title="Criar novo incidente">
+                <i class="fas fa-plus me-1"></i> Novo
+              </button>
             </div>
             <div class="card-body px-0 pt-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="padding-left: 1rem; text-align: left;">ID</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Título</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Início</th>
@@ -297,6 +300,34 @@
                     </tr>
                   </thead>
                   <tbody id="incidentes-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Atualizações</h6>
+              <button type="button" class="btn btn-sm btn-primary mb-0" onclick="PromoPingAdmin.createNewUpdate()" title="Criar nova atualização">
+                <i class="fas fa-plus me-1"></i> Nova
+              </button>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="padding-left: 1rem; text-align: left;">ID</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Título</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tipo</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
+                      <th class="text-secondary opacity-7"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="atualizacoes-body"></tbody>
                 </table>
               </div>
             </div>
@@ -751,6 +782,7 @@
   <script>
     if (PromoPingAdmin.requireAuth()) {
       PromoPingAdmin.initTables();
+      PromoPingAdmin.initAtualizacoes();
       PromoPingAdmin.initAuthors();
     }
   </script>
