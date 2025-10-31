@@ -175,6 +175,30 @@ router.get("/stats", verifyToken, async (req, res) => {
   }
 });
 
+// ================== LISTAR ADMINISTRADORES ==================
+router.get("/admins", async (_req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT 
+         u.Id,
+         u.Nome,
+         u.Email,
+         u.Data_Registo AS DataRegisto,
+         p.Nome AS Perfil
+       FROM Utilizadores u
+       LEFT JOIN perfis p ON p.Id = u.PerfilId
+       WHERE (p.Nome LIKE 'Admin%' OR u.PerfilId = 1) AND u.Ativo = 1
+       ORDER BY COALESCE(u.Data_Registo, NOW()) DESC
+       LIMIT 200`
+    );
+
+    res.json({ status: "ok", admins: rows, total: rows.length });
+  } catch (err) {
+    console.error("Erro ao listar admins:", err);
+    res.status(500).json({ status: "error", error: "Erro ao listar admins" });
+  }
+});
+
 // POST configurar senha para utilizador
 router.post("/set-password", verifyToken, async (req, res) => {
   try {

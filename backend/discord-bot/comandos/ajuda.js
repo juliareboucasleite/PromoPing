@@ -88,7 +88,7 @@ module.exports = {
                 ].join('\n')
             },
             {
-                titulo: '🔧 Comandos Básicos',
+                titulo: 'Comandos Básicos',
                 conteudo: comandosArray
                     .filter(cmd => ['ping', 'status', 'ajuda'].includes(cmd.name))
                     .map(cmd => {
@@ -100,7 +100,7 @@ module.exports = {
                     .join('\n') || 'Nenhum comando básico disponível'
             },
             {
-                titulo: '🔐 Comandos de Autenticação',
+                titulo: 'Comandos de Autenticação',
                 conteudo: comandosArray
                     .filter(cmd => ['registar', 'login', 'sair'].includes(cmd.name))
                     .map(cmd => {
@@ -112,7 +112,7 @@ module.exports = {
                     .join('\n') || 'Nenhum comando de autenticação disponível'
             },
             {
-                titulo: '📦 Comandos de Produtos',
+                titulo: 'Comandos de Produtos',
                 conteudo: comandosArray
                     .filter(cmd => ['produtos', 'iniciar', 'parar'].includes(cmd.name))
                     .map(cmd => {

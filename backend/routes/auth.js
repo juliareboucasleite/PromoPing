@@ -404,9 +404,15 @@ router.post("/register", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+    const [adminCountRows] = await pool.query(
+      "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
+    );
+    const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
+
     const [result] = await pool.query(
-      "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone) VALUES (?, ?, ?, ?, ?)",
-      [nome, email, hashedPassword, 0, telefone || null]
+      "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
+      [nome, email, hashedPassword, 0, telefone || null, perfilId]
     );
 
     const userId = result.insertId;
@@ -517,7 +523,7 @@ router.get("/google/callback", (req, res) => {
           { expiresIn: "7d" }
         );
 
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard/painel";
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/PromoPing/frontend/pages/dashboard/Painel.html";
         res.redirect(`${panelUrl}?token=${token}`);
       } catch (tokenError) {
         console.error("Erro ao gerar token:", tokenError);

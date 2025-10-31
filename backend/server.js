@@ -47,8 +47,10 @@ import preferencesRoutes from "./routes/preferences.js";      // Preferências
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js"; // Verificação email
 import paymentRoutes from "./routes/payment.js";              // Pagamentos
 import statusRoutes from "./routes/status.js";                // Status
+import chartsRoutes from "./routes/charts.js";                // Gráficos/series
 import exportRoutes from "./routes/exportRoutes.js";         // Exportação
 import gracePeriodRoutes from "./routes/grace-period.js";    // Períodos de graça
+import supportRoutes from "./routes/support.js";             // Suporte
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";            // JWT
@@ -122,6 +124,9 @@ const allowedOrigins = [
   `http://127.0.0.1:8080`,
   `http://localhost:5500`,
   `http://127.0.0.1:5500`,
+  // Suporte para páginas servidas via Apache/XAMPP sem porta explícita
+  `http://localhost`,
+  `http://127.0.0.1`,
   // file:// removido por segurança
 ];
 
@@ -179,7 +184,9 @@ app.use("/api/user/accounts", contasRoutes);      // Contas
 app.use("/api/user/preferences", preferencesRoutes); // Preferências
 app.use("/api/payment", paymentRoutes);          // Pagamentos
 app.use("/api/exportar", exportRoutes);         // Exportação
+app.use("/api/support", supportRoutes);         // Suporte (GET/POST) - caminho específico
 app.use("/", statusRoutes);                      // Status
+app.use("/", chartsRoutes);                      // Charts
 
 // ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {
