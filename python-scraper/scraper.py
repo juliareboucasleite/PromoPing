@@ -20,9 +20,26 @@ import logging
 # Importar configurações
 from config import DB_CONFIG, SCRAPER_CONFIG, NOTIFICATION_CONFIG, LOGGING_CONFIG
 
+# Garantir que o diretório do arquivo de log existe
+log_file_path = LOGGING_CONFIG['file']
+log_dir = os.path.dirname(log_file_path)
+if log_dir and not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True)
+
+# Converter nível de log de string para constante numérica
+log_level_str = LOGGING_CONFIG['level'].upper()
+log_level_map = {
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
+    'WARNING': logging.WARNING,
+    'ERROR': logging.ERROR,
+    'CRITICAL': logging.CRITICAL
+}
+log_level = log_level_map.get(log_level_str, logging.INFO)
+
 # Configurar logging simples
 logging.basicConfig(
-    level=getattr(logging, LOGGING_CONFIG['level']),
+    level=log_level,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler(LOGGING_CONFIG['file']),

@@ -16,12 +16,18 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from scraper import PriceScraper
 
+# Garantir que o diretório do arquivo de log existe
+log_file = 'scraper_scheduler.log'
+log_dir = os.path.dirname(log_file)
+if log_dir and not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True)
+
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('scraper_scheduler.log'),
+        logging.FileHandler(log_file),
         logging.StreamHandler()
     ]
 )
