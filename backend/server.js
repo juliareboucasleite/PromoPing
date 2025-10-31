@@ -51,6 +51,7 @@ import chartsRoutes from "./routes/charts.js";                // Gráficos/serie
 import exportRoutes from "./routes/exportRoutes.js";         // Exportação
 import gracePeriodRoutes from "./routes/grace-period.js";    // Períodos de graça
 import supportRoutes from "./routes/support.js";             // Suporte
+import githubRoutes from "./routes/github.js";               // GitHub API
 
 // ================== MIDDLEWARE ==================
 import { verifyToken } from "./middleware/auth.js";            // JWT
@@ -243,6 +244,7 @@ app.use("/api/user/preferences", preferencesRoutes); // Preferências
 app.use("/api/payment", paymentRoutes);          // Pagamentos
 app.use("/api/exportar", exportRoutes);         // Exportação
 app.use("/api/support", supportRoutes);         // Suporte (GET/POST) - caminho específico
+app.use("/", githubRoutes);                     // GitHub API (releases)
 app.use("/", statusRoutes);                      // Status
 app.use("/", chartsRoutes);                      // Charts
 
