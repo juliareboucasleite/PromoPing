@@ -56,7 +56,7 @@ export async function loginEmail(email, password) {
 
     if (data.status === "ok" && data.token) {
       salvarToken(data.token);
-      window.location.href = "Painel.html";
+      window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
     } else {
       alert(data.error || "Erro ao entrar.");
     }

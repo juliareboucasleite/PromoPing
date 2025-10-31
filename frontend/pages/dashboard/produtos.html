@@ -120,6 +120,12 @@
 
     </div>
   </main>
+  <script src="../../assets/scripts/support-widget.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      if (window.initSupportWidgetFront) window.initSupportWidgetFront();
+    });
+  </script>
 
   <div id="upgradeModal" class="upgrade-modal" style="display: none;">
     <div class="upgrade-modal-backdrop"></div>
@@ -162,7 +168,7 @@
             Histórico completo
           </span>
         </div>
-        <button class="upgrade-btn" onclick="window.open('/dashboard/planos', '_blank')">
+        <button class="upgrade-btn" onclick="window.open('/PromoPing/frontend/pages/dashboard/planos.html', '_blank')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M7 17L17 7"></path>
             <path d="M7 7h10v10"></path>
@@ -183,7 +189,7 @@
     // Função: deslogar usuário e voltar para login
     function logout() {
       localStorage.removeItem("token");
-      window.location.href = "/inc/Login.html";
+      window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
     }
 
     // Função principal: carregar lista de produtos do usuário, aplica filtros e monta cards
@@ -191,7 +197,7 @@
       const token = localStorage.getItem("token");
       if (!token) {
         alert("Precisa estar logado!");
-        return (window.location.href = "/login");
+        return (window.location.href = "/PromoPing/frontend/pages/inc/Login.html");
       }
 
       const productsList = document.getElementById("productsList");
@@ -222,14 +228,14 @@
               <h3>Nenhum produto encontrado</h3>
               <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
               <div class="empty-state-actions">
-                <a href="/dashboard" class="pp-btn">
+                <a href="/PromoPing/frontend/pages/dashboard/Painel.html" class="pp-btn">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                   Adicionar primeiro produto
                 </a>
-                <a href="/dashboard" class="btn-ghost">Ver Dashboard</a>
+                <a href="/PromoPing/frontend/pages/dashboard/Painel.html" class="btn-ghost">Ver Dashboard</a>
               </div>
             </div>`;
           document.getElementById("productCount").textContent = 0;
@@ -333,7 +339,7 @@
             <div class="product-upgrade-overlay">
               <h4>Produto Bloqueado</h4>
               <p>Upgrade para <strong>Basic</strong> ou superior para ver todos os produtos.</p>
-              <button class="upgrade-btn-small" onclick="window.open('/dashboard/planos', '_blank')">
+              <button class="upgrade-btn-small" onclick="window.open('/PromoPing/frontend/pages/dashboard/planos.html', '_blank')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M7 17L17 7"></path>
                   <path d="M7 7h10v10"></path>

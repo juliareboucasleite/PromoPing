@@ -273,6 +273,12 @@
             </div>
         </div>
     </main>
+    <script src="../../assets/scripts/support-widget.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        if (window.initSupportWidgetFront) window.initSupportWidgetFront();
+      });
+    </script>
 
     <!-- Modal de Seleção de Planos -->
     <div class="modal-overlay" id="plansModal" style="display: none;">
@@ -367,7 +373,7 @@
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = "/inc/Login.html";
+            window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
         }
 
         // Função para selecionar e mudar o plano do usuário
@@ -552,7 +558,7 @@
             const token = localStorage.getItem("token");
             if (!token) {
                 alert("Precisa estar logado!");
-                window.location.href = "/inc/Login.html";
+                window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
                 return;
             }
             try {
