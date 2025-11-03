@@ -121,6 +121,7 @@ app.use(generalLimiter);
 
 // ================== CONFIGURAÇÃO CORS ==================
 // CORS baseado no .env - SEGURO
+const isDevelopment = process.env.NODE_ENV !== 'production';
 const allowedOrigins = [
   `http://localhost:${process.env.PORT || 3000}`,
   `http://127.0.0.1:${process.env.PORT || 3000}`,
@@ -131,6 +132,9 @@ const allowedOrigins = [
   // Suporte para páginas servidas via Apache/XAMPP sem porta explícita
   `http://localhost`,
   `http://127.0.0.1`,
+  // Adicionar variações comuns do XAMPP
+  `http://localhost:80`,
+  `http://127.0.0.1:80`,
   // file:// removido por segurança
 ];
 
@@ -146,19 +150,55 @@ if (process.env.ALLOWED_ORIGINS) {
 // Função para validar origem
 const corsOptions = {
   origin: function (origin, callback) {
-    // Permitir requisições sem origem (ex: mobile apps, Postman)
-    if (!origin) return callback(null, true);
+    // Permitir requisições sem origem (ex: mobile apps, Postman, mesma origem, requisições diretas)
+    // Verificação mais robusta para null, undefined, string "null" ou string vazia
+    // Requisições sem origem são sempre permitidas (mesma origem, Postman, etc)
+    if (!origin || origin === 'null' || origin === '' || origin === 'undefined') {
+      // Permite silenciosamente - não precisa log
+      return callback(null, true);
+    }
     
     // Verificar se a origem está na lista permitida
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
+    // Em desenvolvimento, permitir qualquer origem localhost/127.0.0.1
+    if (isDevelopment) {
+      try {
+        const url = new URL(origin);
+        const hostname = url.hostname.toLowerCase();
+        
+        // Permitir localhost, 127.0.0.1 e 0.0.0.0 em qualquer porta em desenvolvimento
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '::1') {
+          // Permite silenciosamente em desenvolvimento
+          return callback(null, true);
+        }
+        
+        // Permitir IPs locais em desenvolvimento (192.168.x.x, 10.x.x.x, etc)
+        const ipParts = hostname.split('.');
+        if (ipParts.length === 4) {
+          const firstOctet = parseInt(ipParts[0]);
+          if (firstOctet === 192 || firstOctet === 10 || (firstOctet === 172 && parseInt(ipParts[1]) >= 16 && parseInt(ipParts[1]) <= 31)) {
+            // Permite silenciosamente em desenvolvimento
+            return callback(null, true);
+          }
+        }
+      } catch (e) {
+        // URL inválida - continuar para verificar outras condições
+      }
+    }
+    
+    // Log da origem bloqueada para debug (apenas em desenvolvimento)
+    if (isDevelopment) {
+      console.warn(`[CORS] Origem bloqueada: ${origin} (Ambiente: ${process.env.NODE_ENV || 'development'})`);
+    }
+    
     callback(new Error('Não permitido pelo CORS'));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   optionsSuccessStatus: 200
 };
 
