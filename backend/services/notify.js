@@ -7,24 +7,119 @@ dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 // ===== EMAIL =====
 export async function sendEmail(to, subject, message) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // podes trocar por "outlook" ou SMTP custom
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    console.log(`📧 [EMAIL] Iniciando envio de email para: ${to}`);
+    console.log(`📧 [EMAIL] Assunto: ${subject}`);
+    
+    // Verificar se as credenciais de email estão configuradas
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      const errorMsg = "Credenciais de email não configuradas (EMAIL_USER e EMAIL_PASS)";
+      console.error(`❌ [EMAIL] ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
 
-    await transporter.sendMail({
+    console.log(`📧 [EMAIL] Credenciais encontradas: EMAIL_USER=${process.env.EMAIL_USER}`);
+    console.log(`📧 [EMAIL] EMAIL_HOST: ${process.env.EMAIL_HOST || 'não configurado (usando serviço padrão)'}`);
+    console.log(`📧 [EMAIL] EMAIL_PORT: ${process.env.EMAIL_PORT || 'não configurado (usando serviço padrão)'}`);
+
+    // Configurar transporter - usar SMTP customizado se EMAIL_HOST estiver configurado
+    let transporterConfig;
+    
+    if (process.env.EMAIL_HOST && process.env.EMAIL_PORT) {
+      console.log(`📧 [EMAIL] Usando configuração SMTP customizada: ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
+      // Usar configuração SMTP customizada
+      const port = parseInt(process.env.EMAIL_PORT, 10);
+      const isSecure = port === 465 || process.env.EMAIL_SECURE === 'true';
+      
+      transporterConfig = {
+        host: process.env.EMAIL_HOST,
+        port: port,
+        secure: isSecure, // SSL para porta 465
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+        // Configurações adicionais para melhor compatibilidade
+        tls: {
+          rejectUnauthorized: process.env.NODE_ENV === 'production', // Em produção, verificar certificado
+        },
+      };
+      
+      // Se não for SSL (porta 465), usar STARTTLS
+      if (port === 587) {
+        transporterConfig.requireTLS = true;
+        console.log(`📧 [EMAIL] STARTTLS habilitado para porta 587`);
+      }
+      
+      if (isSecure) {
+        console.log(`📧 [EMAIL] SSL habilitado para porta ${port}`);
+      }
+    } else {
+      // Usar serviço pré-configurado (Gmail, Outlook, etc.)
+      const emailDomain = process.env.EMAIL_USER.split('@')[1]?.toLowerCase();
+      const serviceMap = {
+        'gmail.com': 'gmail',
+        'outlook.com': 'outlook',
+        'hotmail.com': 'outlook',
+        'live.com': 'outlook',
+        'yahoo.com': 'yahoo',
+      };
+      
+      const service = serviceMap[emailDomain] || 'gmail';
+      console.log(`📧 [EMAIL] Usando serviço pré-configurado: ${service} (detectado de ${emailDomain || 'não detectado'})`);
+      
+      transporterConfig = {
+        service: service,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      };
+    }
+
+    console.log(`📧 [EMAIL] Criando transporter...`);
+    const transporter = nodemailer.createTransport(transporterConfig);
+    
+    // Verificar conexão antes de enviar
+    console.log(`📧 [EMAIL] Verificando conexão com servidor de email...`);
+    await transporter.verify();
+    console.log(`✅ [EMAIL] Conexão com servidor de email verificada com sucesso`);
+
+    // Detectar se a mensagem é HTML (contém tags HTML)
+    const isHtml = /<[a-z][\s\S]*>/i.test(message);
+    console.log(`📧 [EMAIL] Tipo de mensagem: ${isHtml ? 'HTML' : 'Texto'}`);
+
+    console.log(`📧 [EMAIL] Enviando email...`);
+    const info = await transporter.sendMail({
       from: `"PromoPing" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      text: message,
+      text: isHtml ? message.replace(/<[^>]*>/g, '') : message, // Converter HTML para texto se necessário
+      html: isHtml ? message : undefined, // Enviar como HTML se detectado
     });
 
-    console.log(` Email enviado para ${to}`);
+    console.log(`✅ [EMAIL] Email enviado com sucesso!`);
+    console.log(`✅ [EMAIL] Message ID: ${info.messageId}`);
+    console.log(`✅ [EMAIL] Enviado para: ${to} via ${process.env.EMAIL_HOST || 'serviço pré-configurado'}`);
+    
+    return info;
   } catch (err) {
-    console.error(" Erro ao enviar email:", err.message);
+    console.error(`❌ [EMAIL] ========== ERRO DETALHADO ==========`);
+    console.error(`❌ [EMAIL] Tipo: ${err.name}`);
+    console.error(`❌ [EMAIL] Mensagem: ${err.message}`);
+    console.error(`❌ [EMAIL] Código: ${err.code || 'N/A'}`);
+    if (err.response) {
+      console.error(`❌ [EMAIL] Resposta do servidor:`, err.response);
+    }
+    if (err.responseCode) {
+      console.error(`❌ [EMAIL] Código de resposta: ${err.responseCode}`);
+    }
+    if (err.command) {
+      console.error(`❌ [EMAIL] Comando: ${err.command}`);
+    }
+    console.error(`❌ [EMAIL] Stack trace:`);
+    console.error(err.stack);
+    console.error(`❌ [EMAIL] ===================================`);
+    throw err; // Re-lançar o erro para que o chamador possa tratá-lo
   }
 }
 

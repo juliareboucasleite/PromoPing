@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT Nome, Email, Telefone FROM ConfigUtilizador WHERE UserId=?",
+      "SELECT Nome, Email, Telefone FROM Utilizadores WHERE Id=?",
       [req.user.id]
     );
     res.json({ status: "ok", profile: rows[0] || {} });
@@ -30,10 +30,8 @@ router.put("/profile", verifyToken, async (req, res) => {
   try {
     const { nome, email, telefone } = req.body;
     await pool.query(
-      `INSERT INTO ConfigUtilizador (UserId, Nome, Email, Telefone) 
-       VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE Nome=VALUES(Nome), Email=VALUES(Email), Telefone=VALUES(Telefone)`,
-      [req.user.id, nome, email, telefone]
+      `UPDATE Utilizadores SET Nome=?, Email=?, Telefone=? WHERE Id=?`,
+      [nome, email, telefone, req.user.id]
     );
     res.json({ status: "ok" });
   } catch (err) {

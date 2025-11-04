@@ -17,6 +17,19 @@ router.post("/email/send", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email é obrigatório" });
 
+    // Buscar dados do usuário
+    const [userRows] = await pool.query(
+      "SELECT Nome, Email FROM Utilizadores WHERE Email = ?",
+      [email]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    const user = userRows[0];
+    const nome = user.Nome || "Usuário";
+
     // Gera código
     const codigo = gerarCodigo();
 
@@ -29,23 +42,27 @@ router.post("/email/send", async (req, res) => {
     // Envia email (se configurado)
     try {
       const messageHtml = `
-    Olá <b>${nome}</b> ,
-    Obrigado por se registar no <b>PromoPing</b>.
-    Use o código abaixo para verificar a sua conta: ${codigo}
-    Este código expira em 10 minutos.
-    Se não foi você, ignore este e-mail.
-    ${new Date().getFullYear()} PromoPing
- 
-`;
+        <h2>Verificação de Conta</h2>
+        <p>Olá <b>${nome}</b>,</p>
+        <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
+        <p>Use o código abaixo para verificar sua conta:</p>
+        <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
+        <p>Este código expira em 10 minutos.</p>
+        <p>Se não foi você, ignore este e-mail.</p>
+        <hr>
+        <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
+      `;
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
+      console.log(`Código de verificação enviado para ${email}: ${codigo}`);
     } catch (emailError) {
-      console.log(" Email não configurado. Código salvo na base de dados:", codigo);
+      console.error("Erro ao enviar email:", emailError);
+      console.log("Email não configurado. Código salvo na base de dados:", codigo);
     }
 
     res.json({ status: "ok", message: "Código enviado por email" });
   } catch (err) {
-    console.error("Erro envio email:", err);
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao enviar código de verificação:", err);
+    res.status(500).json({ error: err.message || "Erro interno do servidor" });
   }
 });
 

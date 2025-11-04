@@ -30,18 +30,25 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
 
     // Buscar configurações de notificação do utilizador
     const [configRows] = await pool.query(
-      "SELECT CanalPreferido, Email, Telefone FROM ConfigUtilizador WHERE UserId = ?",
+      "SELECT CanalPreferido FROM ConfigUtilizador WHERE UserId = ?",
+      [product.UserId]
+    );
+
+    // Buscar email e telefone da tabela Utilizadores
+    const [userRows] = await pool.query(
+      "SELECT Email, Telefone FROM Utilizadores WHERE Id = ?",
       [product.UserId]
     );
 
     const config = configRows[0] || {};
+    const user = userRows[0] || {};
     const canal = config.CanalPreferido || "email";
 
     // Enviar notificação
     await sendNotification({
       canal,
-      email: config.Email || process.env.EMAIL_USER,
-      telefone: config.Telefone || null,
+      email: user.Email || process.env.EMAIL_USER,
+      telefone: user.Telefone || null,
       mensagem: messageHtml,
     });
 
@@ -119,18 +126,25 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
 
     // Buscar configurações de notificação do utilizador
     const [configRows] = await pool.query(
-      "SELECT CanalPreferido, Email, Telefone FROM ConfigUtilizador WHERE UserId = ?",
+      "SELECT CanalPreferido FROM ConfigUtilizador WHERE UserId = ?",
+      [product.UserId]
+    );
+
+    // Buscar email e telefone da tabela Utilizadores
+    const [userRows] = await pool.query(
+      "SELECT Email, Telefone FROM Utilizadores WHERE Id = ?",
       [product.UserId]
     );
 
     const config = configRows[0] || {};
+    const user = userRows[0] || {};
     const canal = config.CanalPreferido || "email";
 
     // Enviar notificação
     await sendNotification({
       canal,
-      email: config.Email || process.env.EMAIL_USER,
-      telefone: config.Telefone || null,
+      email: user.Email || process.env.EMAIL_USER,
+      telefone: user.Telefone || null,
       mensagem: messageHtml,
     });
 

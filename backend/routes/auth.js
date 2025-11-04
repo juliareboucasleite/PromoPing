@@ -90,10 +90,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           }
 
           await pool.query(
-            `INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) 
-             VALUES (?, ?, ?) 
-             ON DUPLICATE KEY UPDATE Email = VALUES(Email)`,
-            [userId, email, "email"]
+            `INSERT INTO configutilizador (UserId, CanalPreferido) 
+             VALUES (?, ?) 
+             ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
+            [userId, "email"]
           );
 
           return done(null, { id: userId, email, nome, fotoPerfil });
@@ -207,10 +207,10 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
           }
 
           await pool.query(
-            `INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido) 
-             VALUES (?, ?, ?) 
-             ON DUPLICATE KEY UPDATE Email = VALUES(Email)`,
-            [userId, email, "email"]
+            `INSERT INTO configutilizador (UserId, CanalPreferido) 
+             VALUES (?, ?) 
+             ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
+            [userId, "email"]
           );
 
           return done(null, { id: userId, email, nome, fotoPerfil });
@@ -308,8 +308,8 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
             // Criar configuração do usuário com plano FREE
             await pool.query(
-              "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?, ?)",
-              [userId, email, "discord", planoFreeId]
+              "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+              [userId, "discord", planoFreeId]
             );
             
             console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
@@ -523,9 +523,10 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const { nome, email, password, telefone } = req.body;
-    console.log(" Registro tentativa:", email);
+    console.log("📝 [REGISTRO] Tentativa de registro:", { nome, email, telefone: telefone ? "fornecido" : "não fornecido" });
 
     if (!nome || !email || !password) {
+      console.log("❌ [REGISTRO] Campos obrigatórios faltando");
       return res.status(400).json({
         status: "error",
         error: "Nome, email e senha são obrigatórios",
@@ -533,78 +534,158 @@ router.post("/register", async (req, res) => {
     }
 
     if (password.length < 6) {
+      console.log("❌ [REGISTRO] Senha muito curta");
       return res.status(400).json({
         status: "error",
         error: "A senha deve ter pelo menos 6 caracteres",
       });
     }
 
+    console.log("🔍 [REGISTRO] Verificando se email já existe...");
     const [existing] = await pool.query(
       "SELECT Id FROM Utilizadores WHERE Email = ?",
       [email]
     );
 
     if (existing.length > 0) {
+      console.log("❌ [REGISTRO] Email já em uso");
       return res.status(400).json({
         status: "error",
         error: "Email já está em uso",
       });
     }
 
+    console.log("🔐 [REGISTRO] Gerando hash da senha...");
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+    console.log("👤 [REGISTRO] Verificando perfil do usuário...");
     const [adminCountRows] = await pool.query(
       "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
     );
     const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
+    console.log(`👤 [REGISTRO] PerfilId determinado: ${perfilId}`);
 
+    console.log("💾 [REGISTRO] Inserindo usuário na tabela Utilizadores...");
     const [result] = await pool.query(
       "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
       [nome, email, hashedPassword, 0, telefone || null, perfilId]
     );
 
     const userId = result.insertId;
+    console.log(`✅ [REGISTRO] Usuário criado com ID: ${userId}`);
 
     // Buscar ID do plano FREE
+    console.log("📋 [REGISTRO] Buscando plano FREE...");
     const [planoFree] = await pool.query(
       "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
     );
     
     const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+    console.log(`📋 [REGISTRO] Plano FREE ID: ${planoFreeId}`);
 
-    await pool.query(
-      "INSERT INTO ConfigUtilizador (UserId, Email, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?, ?)",
-      [userId, email, "email", planoFreeId]
-    );
+    // Criar configuração do usuário
+    console.log("⚙️ [REGISTRO] Criando configuração do usuário...");
+    try {
+      // Verificar se já existe configuração para este usuário
+      const [existingConfig] = await pool.query(
+        "SELECT Id FROM configutilizador WHERE UserId = ?",
+        [userId]
+      );
+      
+      if (existingConfig.length > 0) {
+        // Atualizar configuração existente
+        console.log("⚙️ [REGISTRO] Configuração já existe, atualizando...");
+        await pool.query(
+          "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE UserId = ?",
+          ["email", planoFreeId, userId]
+        );
+        console.log("✅ [REGISTRO] Configuração do usuário atualizada");
+      } else {
+        // Inserir nova configuração
+        console.log("⚙️ [REGISTRO] Inserindo nova configuração...");
+        await pool.query(
+          "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+          [userId, "email", planoFreeId]
+        );
+        console.log("✅ [REGISTRO] Configuração do usuário criada");
+      }
+    } catch (configError) {
+      console.error("⚠️ [REGISTRO] Erro ao criar configuração do usuário:", configError.message);
+      console.error("⚠️ [REGISTRO] Código SQL:", configError.code);
+      console.error("⚠️ [REGISTRO] SQL State:", configError.sqlState);
+      console.error("⚠️ [REGISTRO] Stack trace:", configError.stack);
+      // Não falhar o registro se a configuração falhar - pode ser criada depois
+    }
     
-    console.log(` Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+    console.log(`✅ [REGISTRO] Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
 
+    console.log("🔢 [REGISTRO] Gerando código de verificação...");
     const codigo = gerarCodigo();
+    console.log(`🔢 [REGISTRO] Código gerado: ${codigo}`);
+    
+    console.log("💾 [REGISTRO] Salvando código no banco de dados...");
     await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
       codigo,
       userId,
     ]);
+    console.log("✅ [REGISTRO] Código salvo no banco de dados");
 
     // Enviar código por email
+    console.log("📧 [REGISTRO] Preparando envio de email...");
+    console.log(`📧 [REGISTRO] Destinatário: ${email}`);
+    console.log(`📧 [REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : '❌ NÃO'}`);
+    console.log(`📧 [REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : '❌ NÃO'}`);
+    console.log(`📧 [REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
+    console.log(`📧 [REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
+    
     try {
       const { sendEmail } = await import("../services/notify.js");
+      console.log("✅ [REGISTRO] Função sendEmail importada com sucesso");
+      
       const messageHtml = `
-        <h2> Verificação de Conta</h2>
-        <p>Olá <b>${nome}</b> ,</p>
-        <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
-        <p>Use o código abaixo para verificar sua conta:</p>
-        <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
-        <p>Este código expira em 10 minutos.</p>
-        <p>Se não foi você, ignore este e-mail.</p>
-        <hr>
-        <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+          <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
+          <p>Olá <b>${nome}</b>,</p>
+          <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
+          <p>Use o código abaixo para verificar sua conta:</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px solid #ff6b35;">
+            <h1 style="color: #ff6b35; font-size: 2.5em; margin: 0; letter-spacing: 5px;">${codigo}</h1>
+          </div>
+          <p style="color: #666; font-size: 14px;">Este código expira em 10 minutos.</p>
+          <p style="color: #666; font-size: 14px;">Se não foi você, ignore este e-mail.</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados</p>
+        </div>
       `;
+      
+      console.log(`📧 [REGISTRO] Tentando enviar email para: ${email}`);
+      console.log(`📧 [REGISTRO] Código a ser enviado: ${codigo}`);
+      
       await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
-      console.log(`Código de verificação enviado para ${email}: ${codigo}`);
+      
+      console.log(`✅ [REGISTRO] Email enviado com SUCESSO para ${email}`);
+      console.log(`✅ [REGISTRO] Código de verificação: ${codigo}`);
     } catch (emailError) {
-      console.log("Email não configurado, mas conta criada com sucesso");
+      console.error("❌ [REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
+      console.error("❌ [REGISTRO] Tipo do erro:", emailError.name);
+      console.error("❌ [REGISTRO] Mensagem:", emailError.message);
+      console.error("❌ [REGISTRO] Código:", emailError.code);
+      if (emailError.response) {
+        console.error("❌ [REGISTRO] Resposta do servidor:", emailError.response);
+      }
+      if (emailError.command) {
+        console.error("❌ [REGISTRO] Comando:", emailError.command);
+      }
+      console.error("❌ [REGISTRO] Stack trace completo:");
+      console.error(emailError.stack);
+      console.error("❌ [REGISTRO] ==========================================");
+      
+      // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
+      console.log("⚠️ [REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
+      console.log("⚠️ [REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+      console.log(`⚠️ [REGISTRO] Código de verificação para ${email}: ${codigo}`);
     }
 
     // WhatsApp desabilitado
@@ -622,24 +703,35 @@ router.post("/register", async (req, res) => {
     // }
 
     // Atualizar métricas automaticamente quando novo utilizador é criado
+    console.log("📊 [REGISTRO] Atualizando métricas...");
     try {
       await atualizarMetricasAutomaticamente();
-      console.log(" Métricas atualizadas após criação de novo utilizador");
+      console.log("✅ [REGISTRO] Métricas atualizadas após criação de novo utilizador");
     } catch (metricError) {
-      console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+      console.error("⚠️ [REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
+      console.error("⚠️ [REGISTRO] Stack trace das métricas:", metricError.stack);
       // Não bloquear resposta em caso de erro nas métricas
     }
 
+    console.log("✅ [REGISTRO] Registro concluído com sucesso!");
+    console.log("📤 [REGISTRO] Enviando resposta ao cliente...");
+    
     res.json({
       status: "ok",
       message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
       codigo: codigo // Para desenvolvimento - remover em produção
     });
+    
+    console.log("✅ [REGISTRO] Resposta enviada ao cliente");
   } catch (err) {
-    console.error("Erro no registo:", err);
+    console.error("❌ [REGISTRO] ERRO CRÍTICO no registro:", err);
+    console.error("❌ [REGISTRO] Mensagem de erro:", err.message);
+    console.error("❌ [REGISTRO] Stack trace completo:", err.stack);
+    
     res.status(500).json({
       status: "error",
       error: err.message || "Erro interno no servidor",
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 });
