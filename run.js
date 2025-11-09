@@ -110,6 +110,9 @@ function runLocal() {
         }
     }
     
+    // Array para armazenar todos os processos
+    const processes = [];
+    
     // Iniciar Rich Presence (se disponível)
     let presenceProcess = null;
     if (checkFile('presence.js')) {
@@ -121,6 +124,7 @@ function runLocal() {
                 stdio: 'pipe', 
                 cwd: __dirname 
             });
+            processes.push(presenceProcess);
             
             presenceProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim()
@@ -150,9 +154,130 @@ function runLocal() {
                 }
             });
             
+            presenceProcess.on('error', (error) => {
+                log(`Erro no Rich Presence: ${error.message}`, 'red');
+            });
+            
         } catch (error) {
             log('Não foi possível iniciar Rich Presence', 'yellow');
         }
+    }
+    
+    // Iniciar Bot do Discord
+    let discordBotProcess = null;
+    if (checkFile('backend/discord-bot/package.json')) {
+        log('Iniciando Bot do Discord...', 'cyan');
+        try {
+            // Verificar se as dependências do bot estão instaladas
+            const botNodeModules = path.join(__dirname, 'backend', 'discord-bot', 'node_modules');
+            if (!fs.existsSync(botNodeModules)) {
+                log('Instalando dependências do bot do Discord...', 'yellow');
+                try {
+                    execSync('npm install', { 
+                        stdio: 'inherit', 
+                        cwd: path.join(__dirname, 'backend', 'discord-bot') 
+                    });
+                } catch (error) {
+                    log('Aviso: Erro ao instalar dependências do bot, continuando...', 'yellow');
+                }
+            }
+            
+            discordBotProcess = spawn('node', ['index.js'], {
+                cwd: path.join(__dirname, 'backend', 'discord-bot'),
+                stdio: 'pipe'
+            });
+            processes.push(discordBotProcess);
+            
+            discordBotProcess.stdout.on('data', (data) => {
+                const message = data.toString().trim();
+                if (message) {
+                    log(`🤖 Bot Discord: ${message}`, 'magenta');
+                }
+            });
+            
+            discordBotProcess.stderr.on('data', (data) => {
+                const message = data.toString().trim();
+                if (message && !message.includes('Client ID')) {
+                    log(`🤖 Bot Discord: ${message}`, 'red');
+                }
+            });
+            
+            discordBotProcess.on('error', (error) => {
+                log(`Erro no Bot do Discord: ${error.message}`, 'red');
+            });
+            
+            // Aguardar um pouco para o bot conectar
+            setTimeout(() => {
+                log('Bot do Discord iniciado', 'green');
+            }, 2000);
+            
+        } catch (error) {
+            log(`Não foi possível iniciar Bot do Discord: ${error.message}`, 'yellow');
+        }
+    } else {
+        log('Bot do Discord não encontrado, pulando...', 'yellow');
+    }
+    
+    // Iniciar Scraper Python
+    let scraperProcess = null;
+    if (checkCommand('python') || checkCommand('python3')) {
+        const pythonCmd = checkCommand('python3') ? 'python3' : 'python';
+        const scraperPath = path.join(__dirname, 'python-scraper', 'scheduler.py');
+        
+        if (fs.existsSync(scraperPath)) {
+            log('Iniciando Scraper Python...', 'cyan');
+            try {
+                // Verificar se as dependências Python estão instaladas
+                const requirementsPath = path.join(__dirname, 'python-scraper', 'requirements.txt');
+                if (fs.existsSync(requirementsPath)) {
+                    log('Verificando dependências Python...', 'yellow');
+                    try {
+                        execSync(`${pythonCmd} -m pip install -q -r ${requirementsPath}`, {
+                            stdio: 'ignore',
+                            cwd: path.join(__dirname, 'python-scraper')
+                        });
+                    } catch (error) {
+                        log('Aviso: Erro ao verificar dependências Python, continuando...', 'yellow');
+                    }
+                }
+                
+                scraperProcess = spawn(pythonCmd, ['scheduler.py', '--mode', 'schedule'], {
+                    cwd: path.join(__dirname, 'python-scraper'),
+                    stdio: 'pipe'
+                });
+                processes.push(scraperProcess);
+                
+                scraperProcess.stdout.on('data', (data) => {
+                    const message = data.toString().trim();
+                    if (message) {
+                        log(`🐍 Scraper: ${message}`, 'blue');
+                    }
+                });
+                
+                scraperProcess.stderr.on('data', (data) => {
+                    const message = data.toString().trim();
+                    if (message) {
+                        log(`🐍 Scraper: ${message}`, 'yellow');
+                    }
+                });
+                
+                scraperProcess.on('error', (error) => {
+                    log(`Erro no Scraper Python: ${error.message}`, 'red');
+                });
+                
+                // Aguardar um pouco para o scraper iniciar
+                setTimeout(() => {
+                    log('Scraper Python iniciado', 'green');
+                }, 2000);
+                
+            } catch (error) {
+                log(`Não foi possível iniciar Scraper Python: ${error.message}`, 'yellow');
+            }
+        } else {
+            log('Scraper Python não encontrado, pulando...', 'yellow');
+        }
+    } else {
+        log('Python não encontrado, pulando Scraper...', 'yellow');
     }
     
     // Iniciar servidor
@@ -164,25 +289,65 @@ function runLocal() {
             stdio: 'inherit', 
             cwd: __dirname 
         });
+        processes.push(server);
         
         server.on('error', (error) => {
             log(`Erro no servidor: ${error.message}`, 'red');
+            // Parar todos os processos
+            processes.forEach(proc => {
+                if (proc && !proc.killed) {
+                    proc.kill('SIGTERM');
+                }
+            });
             process.exit(1);
         });
         
         // Graceful shutdown
-        process.on('SIGINT', () => {
-            log('\nParando servidor...', 'yellow');
-            if (presenceProcess) {
-                log('Parando Rich Presence...', 'yellow');
-                presenceProcess.kill('SIGINT');
-            }
-            server.kill('SIGINT');
-            process.exit(0);
-        });
+        const shutdown = (signal) => {
+            log(`\n${signal} recebido. Parando todos os serviços...`, 'yellow');
+            
+            // Parar todos os processos
+            processes.forEach((proc, index) => {
+                if (proc && !proc.killed) {
+                    const names = ['Rich Presence', 'Bot Discord', 'Scraper Python', 'Servidor'];
+                    const name = names[index] || `Processo ${index + 1}`;
+                    log(`Parando ${name}...`, 'yellow');
+                    proc.kill(signal);
+                }
+            });
+            
+            // Aguardar um pouco e forçar encerramento se necessário
+            setTimeout(() => {
+                processes.forEach(proc => {
+                    if (proc && !proc.killed) {
+                        proc.kill('SIGKILL');
+                    }
+                });
+                process.exit(0);
+            }, 5000);
+        };
+        
+        process.on('SIGINT', () => shutdown('SIGINT'));
+        process.on('SIGTERM', () => shutdown('SIGTERM'));
+        
+        log('✅ Todos os serviços iniciados!', 'green');
+        log('📊 Servidor rodando em http://127.0.0.1:3000', 'cyan');
+        if (discordBotProcess) {
+            log('🤖 Bot do Discord: Online', 'magenta');
+        }
+        if (scraperProcess) {
+            log('🐍 Scraper Python: Ativo', 'blue');
+        }
+        log('Pressione Ctrl+C para parar todos os serviços', 'yellow');
         
     } catch (error) {
         log(`Erro ao iniciar servidor: ${error.message}`, 'red');
+        // Parar todos os processos em caso de erro
+        processes.forEach(proc => {
+            if (proc && !proc.killed) {
+                proc.kill('SIGTERM');
+            }
+        });
         process.exit(1);
     }
 }

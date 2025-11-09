@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 31/10/2025 às 21:53
--- Versão do servidor: 10.4.28-MariaDB
--- Versão do PHP: 8.2.4
+-- Tempo de geração: 04/11/2025 às 20:57
+-- Versão do servidor: 10.4.32-MariaDB
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,30 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `pap`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `atualizacoes`
+--
+
+CREATE TABLE `atualizacoes` (
+  `Id` int(11) NOT NULL,
+  `Titulo` varchar(200) NOT NULL,
+  `Descricao` text NOT NULL,
+  `Tipo` enum('Melhoria','Correção','Nova Funcionalidade','Manutenção') DEFAULT 'Melhoria',
+  `DataPublicacao` datetime NOT NULL DEFAULT current_timestamp(),
+  `Status` enum('Implementado','Em Desenvolvimento','Planeado') DEFAULT 'Implementado',
+  `DataCriacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `DataAtualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `atualizacoes`
+--
+
+INSERT INTO `atualizacoes` (`Id`, `Titulo`, `Descricao`, `Tipo`, `DataPublicacao`, `Status`, `DataCriacao`, `DataAtualizacao`) VALUES
+(1, 'Atualização v2.3.3', 'Painel com Base de dados funcionando!', 'Nova Funcionalidade', '2025-10-31 22:12:00', 'Em Desenvolvimento', '2025-10-31 22:12:35', '2025-10-31 22:12:35');
 
 -- --------------------------------------------------------
 
@@ -68,12 +92,13 @@ CREATE TABLE `configutilizador` (
 --
 
 INSERT INTO `configutilizador` (`Id`, `UserId`, `PlanoAtualId`, `PlanoAtivoId`, `DataInicio`, `DataCancelamento`, `DataExpiracao`, `StatusAssinatura`, `LimiteProdutos`, `CanalPreferido`, `NotificacoesEnviadas`, `HistoricoAtivo`, `UltimoLogin`, `HistoricoDias`) VALUES
-(1, 6, 3, 2, '2025-10-20 22:36:57', NULL, NULL, 'Ativa', 25, 'email', 0, 1, NULL, 30),
 (2, 4, 1, 2, '2025-10-20 22:46:06', '2025-10-20 23:43:29', NULL, 'Gratuita', 25, 'email', 0, 1, NULL, 30),
 (3, 5, 3, 1, '2025-10-20 22:46:06', NULL, NULL, 'Ativa', 9999, 'email', 0, 1, NULL, 30),
 (4, 16, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
 (5, 17, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
-(6, 18, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30);
+(6, 18, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
+(8, 37, 1, 1, '2025-11-04 15:04:43', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0),
+(9, 38, 1, 1, '2025-11-04 19:38:42', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -116,17 +141,6 @@ CREATE TABLE `historicoprecos` (
 
 INSERT INTO `historicoprecos` (`Id`, `ProdutoId`, `Preco`, `DataRegisto`) VALUES
 (164, 60, 1499.00, '2025-10-27 22:55:09'),
-(165, 60, 287.08, '2025-10-28 22:06:12'),
-(166, 60, 262.77, '2025-10-28 22:10:06'),
-(167, 60, 82.17, '2025-10-28 22:14:53'),
-(168, 60, 540.40, '2025-10-28 22:14:55'),
-(169, 60, 426.69, '2025-10-28 22:14:56'),
-(170, 60, 391.43, '2025-10-28 22:14:57'),
-(171, 60, 798.66, '2025-10-28 22:14:58'),
-(172, 60, 566.74, '2025-10-28 22:14:59'),
-(173, 60, 198.49, '2025-10-28 22:14:59'),
-(174, 60, 795.05, '2025-10-28 22:14:59'),
-(175, 60, 261.27, '2025-10-28 22:23:54'),
 (177, 60, 1499.00, '2025-10-31 20:50:59');
 
 -- --------------------------------------------------------
@@ -151,8 +165,10 @@ CREATE TABLE `incidentes` (
 --
 
 INSERT INTO `incidentes` (`Id`, `Titulo`, `Descricao`, `DataInicio`, `DataFim`, `Impacto`, `Estado`, `ComponenteId`) VALUES
-(1, 'Manutenção Programada - API', 'Atualização de segurança e otimização de performance.', '2025-01-12 14:00:00', '2025-01-12 14:15:00', 'Interrupção temporária da API', 'Resolvido', 1),
-(2, 'Problema de Latência - Notificações', 'Atrasos no envio de emails e mensagens.', '2025-01-08 09:30:00', '2025-01-08 11:30:00', 'Atraso nas notificações', 'Resolvido', 3);
+(1, 'Manutenção Programada - API 2', 'Atualização de segurança e otimização de performance.', '2025-01-12 14:00:00', '2025-01-12 14:15:00', 'Interrupção temporária da API', 'Resolvido', 1),
+(2, 'Problema de Latência - Notificações', 'Atrasos no envio de emails e mensagens.', '2025-01-08 09:30:00', '2025-01-08 11:30:00', 'Atraso nas notificações', 'Ativo', 3),
+(3, 'painel', 'administracao teste', '2025-11-01 22:10:00', NULL, 'nenhum', 'Resolvido', NULL),
+(4, 'teste', 'kdjasijdaos', '2025-11-06 12:07:00', NULL, 'nenhum apenas teste', 'Resolvido', NULL);
 
 -- --------------------------------------------------------
 
@@ -208,7 +224,10 @@ CREATE TABLE `metricas_sistema` (
 --
 
 INSERT INTO `metricas_sistema` (`Id`, `UptimeGeral`, `TempoRespostaMedia`, `UtilizadoresAtivos`, `ProdutosMonitorizados`, `NotificacoesEnviadas`, `AtualizadoEm`) VALUES
-(1, 99.90, 45, 12847, 1200000, 8542, '2025-10-08 17:27:47');
+(1, 99.90, 45, 12847, 1200000, 8542, '2025-10-08 17:27:47'),
+(2, 99.90, 45, 7, 2, 0, '2025-11-04 14:48:50'),
+(3, 99.90, 45, 7, 2, 0, '2025-11-04 15:04:46'),
+(4, 99.90, 45, 8, 1, 0, '2025-11-04 19:38:44');
 
 -- --------------------------------------------------------
 
@@ -329,21 +348,16 @@ CREATE TABLE `preferenciasnotificacao` (
 INSERT INTO `preferenciasnotificacao` (`Id`, `UserId`, `Tipo`, `Ativo`) VALUES
 (114, 5, 'email', 1),
 (115, 5, 'telefone', 0),
-(116, 6, 'email', 1),
-(117, 6, 'telefone', 0),
 (118, 18, 'email', 1),
 (120, 18, 'email', 1),
 (121, 18, 'telefone', 1),
-(122, 6, 'email', 1),
-(123, 6, 'telefone', 0),
 (124, 18, 'email', 1),
 (125, 18, 'telefone', 1),
 (126, 5, 'email', 1),
 (127, 5, 'telefone', 0),
-(128, 6, 'email', 1),
-(129, 6, 'telefone', 0),
-(130, 6, 'email', 1),
-(131, 6, 'telefone', 0);
+(132, 5, 'discord', 1),
+(133, 37, 'email', 0),
+(134, 37, 'telefone', 0);
 
 -- --------------------------------------------------------
 
@@ -372,7 +386,7 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`Id`, `UserId`, `Nome`, `Link`, `PrecoAtual`, `Shipping`, `PrecoAlvo`, `DataLimite`, `DataCriacao`, `UpdatedAt`, `DeletedAt`, `LojaId`, `Loja`) VALUES
-(60, 5, 'iPhone 17 Pro Max APPLE (6.9\'\' - 256 GB - Prateado)', 'https://www.worten.pt/produtos/iphone-17-pro-max-apple-6-9-256-gb-prateado-8600349', 1499.00, '', 1500.00, NULL, '2025-10-27 22:54:28', '2025-10-31 20:50:59', NULL, 3, 'Worten');
+(60, 5, 'iPhone 17 Pro Max APPLE (6.9\'\' - 256 GB - Prateado)', 'https://www.worten.pt/produtos/iphone-17-pro-max-apple-6-9-256-gb-prateado-8600349', 1499.00, '', 1500.00, NULL, '2025-10-27 22:54:28', '2025-11-04 14:01:21', NULL, 3, 'Worten');
 
 --
 -- Acionadores `produtos`
@@ -613,7 +627,67 @@ INSERT INTO `supportmessages` (`id`, `userId`, `message`, `createdAt`, `senderTy
 (3, 5, 'Suporte?', '2025-10-30 22:08:18', 'user', 2, 1),
 (4, 5, 'sim', '2025-10-30 22:11:12', 'support', 3, 1),
 (5, 5, 'A atualizacoes constantes no github!', '2025-10-30 22:24:50', 'support', 4, 1),
-(6, 5, 'Outra atualizacao disponivel!', '2025-10-30 23:50:13', 'support', 5, 1);
+(6, 5, 'Outra atualizacao disponivel!', '2025-10-30 23:50:13', 'support', 5, 1),
+(7, 5, 'oi?', '2025-10-31 21:12:26', 'user', 6, 1),
+(8, 5, 'ta dando erro de scraping', '2025-11-03 12:12:56', 'user', 7, 1),
+(9, 37, 'Ola', '2025-11-04 15:14:34', 'user', NULL, 9),
+(10, 37, 'a', '2025-11-04 15:17:40', 'user', 9, 9),
+(11, 37, 'a', '2025-11-04 15:18:37', 'user', 10, 9),
+(12, 37, 'a', '2025-11-04 15:19:33', 'user', 11, 9),
+(13, 37, 'ASDAS', '2025-11-04 15:21:02', 'user', 12, 9),
+(14, 37, 'teste', '2025-11-04 15:25:49', 'user', 13, 9),
+(15, 37, 'teste', '2025-11-04 15:30:06', 'user', 14, 9),
+(16, 37, 'teste', '2025-11-04 15:31:19', 'user', 15, 9),
+(17, 37, 'teste', '2025-11-04 15:33:37', 'user', 16, 9),
+(18, 37, 'teste', '2025-11-04 15:33:53', 'user', 17, 9),
+(19, 37, 'teste', '2025-11-04 15:34:36', 'user', 18, 9),
+(20, 5, 'teste', '2025-11-04 15:35:37', 'user', 8, 1),
+(21, 5, 'teste', '2025-11-04 15:37:07', 'user', 20, 1),
+(22, 5, 'teste', '2025-11-04 15:37:16', 'support', 21, 1),
+(23, 37, 'teste', '2025-11-04 15:37:43', 'user', 19, 9),
+(24, 37, 'teste', '2025-11-04 15:38:55', 'user', 23, 9),
+(25, 5, 'teste', '2025-11-04 15:39:09', 'user', 22, 1),
+(26, 5, 'teste', '2025-11-04 15:39:17', 'support', 25, 1),
+(27, 37, 'teste', '2025-11-04 15:39:29', 'user', 24, 9),
+(28, 37, 'teste', '2025-11-04 15:42:48', 'user', 27, 9),
+(29, 37, 'bomdia', '2025-11-04 15:43:23', 'user', 28, 9),
+(30, 37, 'aaaaaaaaaa', '2025-11-04 15:44:49', 'user', 29, 9),
+(31, 5, 'bomdia', '2025-11-04 15:49:15', 'user', 26, 1),
+(32, 37, 'bomdia', '2025-11-04 15:55:58', 'user', 30, 9),
+(33, 37, 'a', '2025-11-04 15:56:59', 'user', 32, 9),
+(34, 37, 'a', '2025-11-04 15:59:46', 'user', 33, 9),
+(35, 37, 'asdasdas', '2025-11-04 16:00:05', 'user', 34, 9),
+(36, 37, 'teste', '2025-11-04 16:09:14', 'user', 35, 9),
+(37, 37, 'teste', '2025-11-04 16:10:18', 'user', 36, 9),
+(38, 37, 'teste', '2025-11-04 16:12:47', 'user', 37, 9),
+(39, 37, 'Suporte', '2025-11-04 16:12:58', 'user', NULL, 39),
+(40, 37, 'teste', '2025-11-04 16:19:39', 'user', 39, 39),
+(41, 5, 'Teste nova conversa', '2025-11-04 16:20:15', 'user', NULL, 41),
+(42, 37, 'teste', '2025-11-04 16:20:51', 'user', NULL, 42),
+(43, 37, 'jygkhkhjnjguy', '2025-11-04 16:31:33', 'user', 42, 42),
+(44, 37, 'teste', '2025-11-04 16:32:33', 'user', 43, 42),
+(45, 5, 'teste', '2025-11-04 16:39:10', 'user', 41, 41),
+(46, 37, 'teste', '2025-11-04 16:40:25', 'user', 44, 42),
+(47, 37, 'teste painel', '2025-11-04 16:43:45', 'user', 46, 42),
+(48, 37, 'teste', '2025-11-04 16:46:46', 'user', 47, 42),
+(49, 5, 'nao ta indo', '2025-11-04 16:47:04', 'support', 45, 41),
+(50, 5, 'bomdia', '2025-11-04 16:48:20', 'support', 31, 1),
+(51, 5, 'teste', '2025-11-04 17:02:48', 'user', 50, 1),
+(52, 37, 'teste2', '2025-11-04 17:30:07', 'user', 48, 42),
+(53, 5, 'a', '2025-11-04 17:30:15', 'support', 51, 1),
+(54, 37, 'teste', '2025-11-04 17:32:42', 'support', 38, 9),
+(55, 37, 'teste', '2025-11-04 17:32:45', 'support', 52, 42),
+(56, 37, 'teste', '2025-11-04 17:32:49', 'support', 40, 39),
+(57, 37, 'teste', '2025-11-04 18:35:50', 'user', 55, 42),
+(58, 37, 'teste', '2025-11-04 18:40:49', 'user', 57, 42),
+(59, 37, 'teste', '2025-11-04 19:28:30', 'user', 58, 42),
+(60, 5, 'Teste novamente', '2025-11-04 19:35:18', 'user', NULL, 60),
+(61, 38, 'teste', '2025-11-04 19:39:49', 'user', NULL, 61),
+(62, 5, 'teste', '2025-11-04 19:43:01', 'user', 60, 60),
+(63, 37, 'teste', '2025-11-04 19:43:16', 'user', 59, 42),
+(64, 5, 'a', '2025-11-04 19:43:22', 'support', 62, 60),
+(65, 37, 'base de dados', '2025-11-04 19:47:04', 'user', 63, 42),
+(66, 5, 'base de dados2', '2025-11-04 19:47:29', 'user', 64, 60);
 
 -- --------------------------------------------------------
 
@@ -645,13 +719,13 @@ CREATE TABLE `utilizadores` (
 
 INSERT INTO `utilizadores` (`Id`, `Nome`, `Email`, `SenhaHash`, `Telefone`, `CodigoTelefone`, `Ativo`, `Data_Registo`, `PerfilId`, `EmailVerificado`, `CodigoEmail`, `ultimo_login`, `dinheiro_poupado`, `discord_id`, `FotoPerfil`) VALUES
 (4, 'julia_admin', 'julia.admin@gmail.com', '$2a$11$EBuekNdjZ6.8BSB4nOXdKOD/ezP1flxjPejPZ1CHHE7.d/D5/xN6q', NULL, NULL, 1, '2025-09-30 15:26:07', 1, 1, NULL, NULL, 0.00, NULL, NULL),
-(5, 'Julia Rebouças', 'juliareboucasleite@gmail.com', '$2b$10$8S7l1v4v0iiLr52noJBnE.cfy01PyiNH..A8jQ/U6gyFnBqJ6bYoi', '', NULL, 1, '2025-09-30 19:19:05', 1, 1, '137468', NULL, 0.00, NULL, NULL),
-(6, 'Gustavo Mateus', 'gustavovyski@gmail.com', '$2b$10$ULwfdij7cBcAWCDbsWahcu2ESPzpSk8mDjFl7bdN8DDXruZoj7Uki', '933992199', NULL, 1, '2025-09-30 19:21:30', 2, 1, NULL, NULL, 0.00, NULL, NULL),
+(5, 'Julia Rebouças', 'juliareboucasleite@gmail.com', '$2b$10$8S7l1v4v0iiLr52noJBnE.cfy01PyiNH..A8jQ/U6gyFnBqJ6bYoi', '933992199', NULL, 1, '2025-09-30 19:19:05', 1, 1, '137468', NULL, 0.00, NULL, NULL),
 (16, 'professor1', 'professor1@exemple.com', '$2a$11$AML2/kWSYcJXmPlQoi15ueElz8FgVjpbrk7y.O/AktehJTcPbyuXy', NULL, NULL, 1, '2025-10-09 21:23:15', 1, 0, NULL, NULL, 0.00, NULL, NULL),
 (17, 'professor2', 'professor2@example.com', '$2a$11$A24Ry.zamf6Iym5gFtNFoOhJi4//e9YZTs2G.cAQ7.tpmz6q6rmbC', NULL, NULL, 1, '2025-10-09 21:38:12', 1, 0, NULL, NULL, 0.00, NULL, NULL),
 (18, 'Luncks', 'luncks@exemple.com', '$2a$11$jQ.M2K6Oou8PuKH/wyA9Dec8ZRaMyQMu34tGZ/EdsMWp3HBWMtNTu', '', NULL, 1, '2025-10-09 22:01:53', 2, 1, '0', NULL, 0.00, NULL, NULL),
-(20, 'Alexandre Smigon', 'alexandre.smigon@gmail.com', '$2b$10$aRN3hTwjpB9WJspXGpKSj.I51GO7u3I.1le1FLZyiMSMp4yJi7Vge', NULL, NULL, 1, '2025-10-21 17:50:15', 2, 0, NULL, NULL, 0.00, NULL, NULL),
-(22, 'leeksxy', 'julia.exemple@gmail.com', '$2b$10$c7v5LG56Ds3Lmr0nlxqTteXAd7P7c8ORrdN5BsX6cA7SSGSo6fh22', NULL, NULL, 1, '2025-10-29 00:06:08', 1, 0, NULL, '2025-10-29 00:17:54', 0.00, '916737425978589235', NULL);
+(28, 'luncks2', 'luncksbobo@gmail.com', '$2b$10$5qadddx.FKxuGQKY5HAoAOKGQjCoU3btbeL12Gv6vY2y81CMp2Ek.', NULL, NULL, 1, '2025-10-31 21:52:45', 2, 0, NULL, NULL, 0.00, '395321959036223488', NULL),
+(37, 'luquinhas', 'lucaksdecastro@gmail.com', '$2b$10$pNwuAA2M1KjwVSNMGC8vK.vNaDLwlFLkGFzII.OG2cqaxDQ5GzULi', '', NULL, 1, '2025-11-04 15:04:42', 2, 1, NULL, NULL, 0.00, NULL, NULL),
+(38, 'Gustavo Mateus', 'gustavovyski@gmail.com', '$2b$10$9vzNk7TOD/StOJmGUsyr..OGFgQ9MkvlZsVAoHZbWQ65jvJZhDAqu', NULL, NULL, 1, '2025-11-04 19:38:42', 2, 1, NULL, NULL, 0.00, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -689,6 +763,15 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 -- Índices para tabelas despejadas
 --
+
+--
+-- Índices de tabela `atualizacoes`
+--
+ALTER TABLE `atualizacoes`
+  ADD PRIMARY KEY (`Id`),
+  ADD KEY `idx_data_publicacao` (`DataPublicacao`),
+  ADD KEY `idx_tipo` (`Tipo`),
+  ADD KEY `idx_status` (`Status`);
 
 --
 -- Índices de tabela `codigossms`
@@ -826,10 +909,16 @@ ALTER TABLE `utilizadores`
 --
 
 --
+-- AUTO_INCREMENT de tabela `atualizacoes`
+--
+ALTER TABLE `atualizacoes`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT de tabela `configutilizador`
 --
 ALTER TABLE `configutilizador`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `contasconectadas`
@@ -841,13 +930,13 @@ ALTER TABLE `contasconectadas`
 -- AUTO_INCREMENT de tabela `historicoprecos`
 --
 ALTER TABLE `historicoprecos`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=179;
 
 --
 -- AUTO_INCREMENT de tabela `incidentes`
 --
 ALTER TABLE `incidentes`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `lojas`
@@ -859,7 +948,7 @@ ALTER TABLE `lojas`
 -- AUTO_INCREMENT de tabela `metricas_sistema`
 --
 ALTER TABLE `metricas_sistema`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `notificacoes`
@@ -889,13 +978,13 @@ ALTER TABLE `planos`
 -- AUTO_INCREMENT de tabela `preferenciasnotificacao`
 --
 ALTER TABLE `preferenciasnotificacao`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=135;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT de tabela `recuperar_senha`
@@ -919,13 +1008,13 @@ ALTER TABLE `stripe_subscriptions`
 -- AUTO_INCREMENT de tabela `supportmessages`
 --
 ALTER TABLE `supportmessages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT de tabela `utilizadores`
 --
 ALTER TABLE `utilizadores`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- Restrições para tabelas despejadas

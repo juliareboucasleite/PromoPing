@@ -498,6 +498,24 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
+    // Se a requisição vier do Painel Administrativo, apenas administradores podem fazer login
+    const isAdminPanel = req.headers['referer']?.includes('Painel_Administrativo') || 
+                        req.headers['origin']?.includes('Painel_Administrativo') ||
+                        req.headers['x-admin-panel'] === 'true';
+    
+    if (isAdminPanel) {
+      const perfilId = user.PerfilId || user.perfilId;
+      if (perfilId !== 1) {
+        console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} não é admin (PerfilId=${perfilId})`);
+        return res.status(403).json({
+          status: "error",
+          error: "Acesso negado. Apenas administradores podem acessar o painel administrativo.",
+          accessDenied: true
+        });
+      }
+    }
+
     // Gera token JWT
     const token = jwt.sign(
       { id: user.Id, email: user.Email },
@@ -508,7 +526,7 @@ router.post("/login", async (req, res) => {
     res.json({
       status: "ok",
       token,
-      user: { id: user.Id, email: user.Email, nome: user.Nome },
+      user: { id: user.Id, email: user.Email, nome: user.Nome, perfilId: user.PerfilId || user.perfilId },
     });
   } catch (err) {
     console.error(" Erro no login:", err);

@@ -456,5 +456,78 @@ def monitor_loop():
         safe_quit(driver)
         logger.info("Driver fechado")
 
+# ==================== CLASSE WRAPPER PARA SCHEDULER ====================
+
+class PriceScraper:
+    """Wrapper class para o scraper, compatível com scheduler"""
+    
+    def __init__(self):
+        """Inicializar scraper"""
+        self.driver = None
+        logger.info("PriceScraper inicializado")
+    
+    def scrape_all_products(self):
+        """Executar scraping de todos os produtos uma vez"""
+        driver = None
+        try:
+            driver = create_driver()
+            logger.info("Executando scraping de todos os produtos...")
+            
+            produtos = fetch_products()
+            logger.info(f"[{len(produtos)} produtos] {datetime.now().strftime('%H:%M:%S')}")
+            
+            atualizados = 0
+            aguardando = 0
+            metas = 0
+            
+            for p in produtos:
+                pid = p["Id"]
+                nome = p["Nome"]
+                link = p["Link"]
+                plano_intervalo = p.get("VerificacaoIntervalo", 24)
+                preco_alvo = p.get("PrecoAlvo")
+                
+                # Verifica se deve atualizar
+                if not should_update_product(pid, plano_intervalo):
+                    aguardando += 1
+                    continue
+                
+                atualizados += 1
+                started = time()
+                
+                try:
+                    loja, preco, flag = extract_price(driver, link)
+                    
+                    if preco is not None:
+                        preco = round(float(preco), 2)
+                        logger.info(f"[OK] {nome} ({loja}): €{preco} [{round(time()-started,2)}s]")
+                        update_price_and_history(pid, preco)
+                        
+                        if preco_alvo and check_target_reached(pid, preco, preco_alvo):
+                            metas += 1
+                    else:
+                        logger.warning(f"[ERRO] {nome}: preço não encontrado")
+                        
+                except Exception as e:
+                    logger.error(f"[ERRO] {nome}: {e}")
+                    # Reinicia driver se necessário
+                    try:
+                        safe_quit(driver)
+                        driver = create_driver()
+                    except:
+                        pass
+                
+                sleep(1.0)  # Pausa entre produtos
+            
+            logger.info(f"Resumo: {atualizados} atualizados, {aguardando} aguardando, {metas} metas")
+            
+        except Exception as e:
+            logger.error(f"Erro no scraping: {e}")
+            traceback.print_exc()
+        finally:
+            if driver:
+                safe_quit(driver)
+                logger.info("Driver fechado")
+
 if __name__ == "__main__":
     monitor_loop()

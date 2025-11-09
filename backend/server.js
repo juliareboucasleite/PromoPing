@@ -198,7 +198,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-admin-panel", "X-Admin-Panel"],
   optionsSuccessStatus: 200
 };
 
@@ -217,10 +217,10 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Buscar dados completos do usuário incluindo foto de perfil
+    // Buscar dados completos do usuário incluindo foto de perfil e PerfilId
     try {
       const [rows] = await pool.query(
-        "SELECT Id, Nome, Email, Telefone, FotoPerfil, Data_Registo, cidade, location FROM Utilizadores WHERE Id = ?",
+        "SELECT Id, Nome, Email, Telefone, FotoPerfil, Data_Registo, cidade, location, PerfilId FROM Utilizadores WHERE Id = ?",
         [userId]
       );
       
@@ -237,30 +237,38 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
             phone: user.Telefone || user.phone,
             fotoPerfil: user.FotoPerfil || user.fotoPerfil,
             cidade: user.cidade || user.location,
-            location: user.cidade || user.location
+            location: user.cidade || user.location,
+            perfilId: user.PerfilId || user.perfilId || null,
+            PerfilId: user.PerfilId || user.perfilId || null
           }
         });
       }
     } catch (dbErr) {
-      // Se campo FotoPerfil não existe, buscar sem ele
-      const [rows] = await pool.query(
-        "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
-        [userId]
-      );
-      
-      if (rows.length > 0) {
-        const user = rows[0];
-        return res.json({ 
-          status: "ok", 
-          user: {
-            id: user.Id,
-            nome: user.Nome || user.name,
-            name: user.Nome || user.name,
-            email: user.Email || user.email,
-            telefone: user.Telefone || user.phone,
-            phone: user.Telefone || user.phone
-          }
-        });
+      // Se campo FotoPerfil não existe, buscar sem ele mas com PerfilId
+      try {
+        const [rows] = await pool.query(
+          "SELECT Id, Nome, Email, Telefone, Data_Registo, PerfilId FROM Utilizadores WHERE Id = ?",
+          [userId]
+        );
+        
+        if (rows.length > 0) {
+          const user = rows[0];
+          return res.json({ 
+            status: "ok", 
+            user: {
+              id: user.Id,
+              nome: user.Nome || user.name,
+              name: user.Nome || user.name,
+              email: user.Email || user.email,
+              telefone: user.Telefone || user.phone,
+              phone: user.Telefone || user.phone,
+              perfilId: user.PerfilId || user.perfilId || null,
+              PerfilId: user.PerfilId || user.perfilId || null
+            }
+          });
+        }
+      } catch (dbErr2) {
+        console.error("Erro ao buscar dados do usuário:", dbErr2);
       }
     }
     
