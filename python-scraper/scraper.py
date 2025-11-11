@@ -52,7 +52,22 @@ logger = logging.getLogger(__name__)
 
 def connect_db():
     """Conectar ao banco de dados"""
-    return mysql.connector.connect(**DB_CONFIG)
+    try:
+        return mysql.connector.connect(**DB_CONFIG)
+    except mysql.connector.errors.InterfaceError as e:
+        if "Can't connect to MySQL server" in str(e):
+            logger.error("=" * 60)
+            logger.error("ERRO: MySQL não está rodando ou não está acessível!")
+            logger.error("=" * 60)
+            logger.error(f"Tentando conectar em: {DB_CONFIG['host']}:{DB_CONFIG['port']}")
+            logger.error("")
+            logger.error("SOLUÇÕES:")
+            logger.error("1. Inicie o MySQL no XAMPP Control Panel")
+            logger.error("2. Verifique se a porta 3306 está correta")
+            logger.error("3. Verifique as credenciais no arquivo .env")
+            logger.error("4. Certifique-se de que o MySQL está instalado e rodando")
+            logger.error("=" * 60)
+        raise
 
 def fetch_products():
     """Buscar produtos para monitorização"""
