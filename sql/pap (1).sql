@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 04/11/2025 às 20:57
+-- Tempo de geração: 11/11/2025 às 17:07
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -97,8 +97,9 @@ INSERT INTO `configutilizador` (`Id`, `UserId`, `PlanoAtualId`, `PlanoAtivoId`, 
 (4, 16, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
 (5, 17, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
 (6, 18, 1, 1, '2025-10-20 22:46:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 30),
-(8, 37, 1, 1, '2025-11-04 15:04:43', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0),
-(9, 38, 1, 1, '2025-11-04 19:38:42', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0);
+(9, 38, 1, 1, '2025-11-04 19:38:42', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0),
+(10, 39, 1, 1, '2025-11-09 22:55:48', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0),
+(11, 40, 1, 1, '2025-11-11 15:56:06', NULL, NULL, 'Gratuita', 5, 'email', 0, 1, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -227,7 +228,9 @@ INSERT INTO `metricas_sistema` (`Id`, `UptimeGeral`, `TempoRespostaMedia`, `Util
 (1, 99.90, 45, 12847, 1200000, 8542, '2025-10-08 17:27:47'),
 (2, 99.90, 45, 7, 2, 0, '2025-11-04 14:48:50'),
 (3, 99.90, 45, 7, 2, 0, '2025-11-04 15:04:46'),
-(4, 99.90, 45, 8, 1, 0, '2025-11-04 19:38:44');
+(4, 99.90, 45, 8, 1, 0, '2025-11-04 19:38:44'),
+(5, 99.90, 45, 9, 1, 0, '2025-11-09 22:55:50'),
+(6, 99.90, 45, 9, 1, 0, '2025-11-11 15:56:08');
 
 -- --------------------------------------------------------
 
@@ -355,9 +358,7 @@ INSERT INTO `preferenciasnotificacao` (`Id`, `UserId`, `Tipo`, `Ativo`) VALUES
 (125, 18, 'telefone', 1),
 (126, 5, 'email', 1),
 (127, 5, 'telefone', 0),
-(132, 5, 'discord', 1),
-(133, 37, 'email', 0),
-(134, 37, 'telefone', 0);
+(132, 5, 'discord', 1);
 
 -- --------------------------------------------------------
 
@@ -386,7 +387,7 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`Id`, `UserId`, `Nome`, `Link`, `PrecoAtual`, `Shipping`, `PrecoAlvo`, `DataLimite`, `DataCriacao`, `UpdatedAt`, `DeletedAt`, `LojaId`, `Loja`) VALUES
-(60, 5, 'iPhone 17 Pro Max APPLE (6.9\'\' - 256 GB - Prateado)', 'https://www.worten.pt/produtos/iphone-17-pro-max-apple-6-9-256-gb-prateado-8600349', 1499.00, '', 1500.00, NULL, '2025-10-27 22:54:28', '2025-11-04 14:01:21', NULL, 3, 'Worten');
+(60, 5, 'iPhone 17 Pro Max APPLE (6.9\'\' - 256 GB - Prateado)', 'https://www.worten.pt/produtos/iphone-17-pro-max-apple-6-9-256-gb-prateado-8600349', 1499.00, '', 1500.00, NULL, '2025-10-27 22:54:28', '2025-11-09 22:51:50', NULL, 3, 'Worten');
 
 --
 -- Acionadores `produtos`
@@ -622,72 +623,9 @@ CREATE TABLE `supportmessages` (
 --
 
 INSERT INTO `supportmessages` (`id`, `userId`, `message`, `createdAt`, `senderType`, `replyTo`, `threadId`) VALUES
-(1, 5, 'a', '2025-10-30 21:57:40', 'user', NULL, NULL),
-(2, 5, 'Vai haver testes?', '2025-10-30 22:08:07', 'user', 1, 1),
-(3, 5, 'Suporte?', '2025-10-30 22:08:18', 'user', 2, 1),
-(4, 5, 'sim', '2025-10-30 22:11:12', 'support', 3, 1),
-(5, 5, 'A atualizacoes constantes no github!', '2025-10-30 22:24:50', 'support', 4, 1),
-(6, 5, 'Outra atualizacao disponivel!', '2025-10-30 23:50:13', 'support', 5, 1),
-(7, 5, 'oi?', '2025-10-31 21:12:26', 'user', 6, 1),
-(8, 5, 'ta dando erro de scraping', '2025-11-03 12:12:56', 'user', 7, 1),
-(9, 37, 'Ola', '2025-11-04 15:14:34', 'user', NULL, 9),
-(10, 37, 'a', '2025-11-04 15:17:40', 'user', 9, 9),
-(11, 37, 'a', '2025-11-04 15:18:37', 'user', 10, 9),
-(12, 37, 'a', '2025-11-04 15:19:33', 'user', 11, 9),
-(13, 37, 'ASDAS', '2025-11-04 15:21:02', 'user', 12, 9),
-(14, 37, 'teste', '2025-11-04 15:25:49', 'user', 13, 9),
-(15, 37, 'teste', '2025-11-04 15:30:06', 'user', 14, 9),
-(16, 37, 'teste', '2025-11-04 15:31:19', 'user', 15, 9),
-(17, 37, 'teste', '2025-11-04 15:33:37', 'user', 16, 9),
-(18, 37, 'teste', '2025-11-04 15:33:53', 'user', 17, 9),
-(19, 37, 'teste', '2025-11-04 15:34:36', 'user', 18, 9),
-(20, 5, 'teste', '2025-11-04 15:35:37', 'user', 8, 1),
-(21, 5, 'teste', '2025-11-04 15:37:07', 'user', 20, 1),
-(22, 5, 'teste', '2025-11-04 15:37:16', 'support', 21, 1),
-(23, 37, 'teste', '2025-11-04 15:37:43', 'user', 19, 9),
-(24, 37, 'teste', '2025-11-04 15:38:55', 'user', 23, 9),
-(25, 5, 'teste', '2025-11-04 15:39:09', 'user', 22, 1),
-(26, 5, 'teste', '2025-11-04 15:39:17', 'support', 25, 1),
-(27, 37, 'teste', '2025-11-04 15:39:29', 'user', 24, 9),
-(28, 37, 'teste', '2025-11-04 15:42:48', 'user', 27, 9),
-(29, 37, 'bomdia', '2025-11-04 15:43:23', 'user', 28, 9),
-(30, 37, 'aaaaaaaaaa', '2025-11-04 15:44:49', 'user', 29, 9),
-(31, 5, 'bomdia', '2025-11-04 15:49:15', 'user', 26, 1),
-(32, 37, 'bomdia', '2025-11-04 15:55:58', 'user', 30, 9),
-(33, 37, 'a', '2025-11-04 15:56:59', 'user', 32, 9),
-(34, 37, 'a', '2025-11-04 15:59:46', 'user', 33, 9),
-(35, 37, 'asdasdas', '2025-11-04 16:00:05', 'user', 34, 9),
-(36, 37, 'teste', '2025-11-04 16:09:14', 'user', 35, 9),
-(37, 37, 'teste', '2025-11-04 16:10:18', 'user', 36, 9),
-(38, 37, 'teste', '2025-11-04 16:12:47', 'user', 37, 9),
-(39, 37, 'Suporte', '2025-11-04 16:12:58', 'user', NULL, 39),
-(40, 37, 'teste', '2025-11-04 16:19:39', 'user', 39, 39),
-(41, 5, 'Teste nova conversa', '2025-11-04 16:20:15', 'user', NULL, 41),
-(42, 37, 'teste', '2025-11-04 16:20:51', 'user', NULL, 42),
-(43, 37, 'jygkhkhjnjguy', '2025-11-04 16:31:33', 'user', 42, 42),
-(44, 37, 'teste', '2025-11-04 16:32:33', 'user', 43, 42),
-(45, 5, 'teste', '2025-11-04 16:39:10', 'user', 41, 41),
-(46, 37, 'teste', '2025-11-04 16:40:25', 'user', 44, 42),
-(47, 37, 'teste painel', '2025-11-04 16:43:45', 'user', 46, 42),
-(48, 37, 'teste', '2025-11-04 16:46:46', 'user', 47, 42),
-(49, 5, 'nao ta indo', '2025-11-04 16:47:04', 'support', 45, 41),
-(50, 5, 'bomdia', '2025-11-04 16:48:20', 'support', 31, 1),
-(51, 5, 'teste', '2025-11-04 17:02:48', 'user', 50, 1),
-(52, 37, 'teste2', '2025-11-04 17:30:07', 'user', 48, 42),
-(53, 5, 'a', '2025-11-04 17:30:15', 'support', 51, 1),
-(54, 37, 'teste', '2025-11-04 17:32:42', 'support', 38, 9),
-(55, 37, 'teste', '2025-11-04 17:32:45', 'support', 52, 42),
-(56, 37, 'teste', '2025-11-04 17:32:49', 'support', 40, 39),
-(57, 37, 'teste', '2025-11-04 18:35:50', 'user', 55, 42),
-(58, 37, 'teste', '2025-11-04 18:40:49', 'user', 57, 42),
-(59, 37, 'teste', '2025-11-04 19:28:30', 'user', 58, 42),
-(60, 5, 'Teste novamente', '2025-11-04 19:35:18', 'user', NULL, 60),
-(61, 38, 'teste', '2025-11-04 19:39:49', 'user', NULL, 61),
-(62, 5, 'teste', '2025-11-04 19:43:01', 'user', 60, 60),
-(63, 37, 'teste', '2025-11-04 19:43:16', 'user', 59, 42),
-(64, 5, 'a', '2025-11-04 19:43:22', 'support', 62, 60),
-(65, 37, 'base de dados', '2025-11-04 19:47:04', 'user', 63, 42),
-(66, 5, 'base de dados2', '2025-11-04 19:47:29', 'user', 64, 60);
+(1, 37, 'Bom dia', '2025-11-04 20:11:40', 'user', NULL, 1),
+(2, 5, 'Bom dia', '2025-11-04 20:12:26', 'user', NULL, 2),
+(3, 5, 'Bom dia', '2025-11-04 20:13:12', 'support', 2, 2);
 
 -- --------------------------------------------------------
 
@@ -724,8 +662,9 @@ INSERT INTO `utilizadores` (`Id`, `Nome`, `Email`, `SenhaHash`, `Telefone`, `Cod
 (17, 'professor2', 'professor2@example.com', '$2a$11$A24Ry.zamf6Iym5gFtNFoOhJi4//e9YZTs2G.cAQ7.tpmz6q6rmbC', NULL, NULL, 1, '2025-10-09 21:38:12', 1, 0, NULL, NULL, 0.00, NULL, NULL),
 (18, 'Luncks', 'luncks@exemple.com', '$2a$11$jQ.M2K6Oou8PuKH/wyA9Dec8ZRaMyQMu34tGZ/EdsMWp3HBWMtNTu', '', NULL, 1, '2025-10-09 22:01:53', 2, 1, '0', NULL, 0.00, NULL, NULL),
 (28, 'luncks2', 'luncksbobo@gmail.com', '$2b$10$5qadddx.FKxuGQKY5HAoAOKGQjCoU3btbeL12Gv6vY2y81CMp2Ek.', NULL, NULL, 1, '2025-10-31 21:52:45', 2, 0, NULL, NULL, 0.00, '395321959036223488', NULL),
-(37, 'luquinhas', 'lucaksdecastro@gmail.com', '$2b$10$pNwuAA2M1KjwVSNMGC8vK.vNaDLwlFLkGFzII.OG2cqaxDQ5GzULi', '', NULL, 1, '2025-11-04 15:04:42', 2, 1, NULL, NULL, 0.00, NULL, NULL),
-(38, 'Gustavo Mateus', 'gustavovyski@gmail.com', '$2b$10$9vzNk7TOD/StOJmGUsyr..OGFgQ9MkvlZsVAoHZbWQ65jvJZhDAqu', NULL, NULL, 1, '2025-11-04 19:38:42', 2, 1, NULL, NULL, 0.00, NULL, NULL);
+(38, 'Gustavo Mateus', 'gustavovyski@gmail.com', '$2b$10$9vzNk7TOD/StOJmGUsyr..OGFgQ9MkvlZsVAoHZbWQ65jvJZhDAqu', NULL, NULL, 1, '2025-11-04 19:38:42', 2, 1, NULL, NULL, 0.00, NULL, NULL),
+(39, 'Dznr', 'freefiredznr@gmail.com', '$2b$10$Ln2f43h46uIgCZNAsgmFdeXxvLpcUA9o8z9xZd6qL5q/kC4FeWv8W', NULL, NULL, 1, '2025-11-09 22:55:48', 2, 1, NULL, NULL, 0.00, NULL, NULL),
+(40, 'luquinhas', 'lucaksdecastro@gmail.com', '$2b$10$Lq.Ua363ygL2PNMTqY361uJ8nP4Lmp4VQBc/DYZStP4BL9O1My8jy', NULL, NULL, 1, '2025-11-11 15:56:06', 2, 1, NULL, NULL, 0.00, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -918,7 +857,7 @@ ALTER TABLE `atualizacoes`
 -- AUTO_INCREMENT de tabela `configutilizador`
 --
 ALTER TABLE `configutilizador`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `contasconectadas`
@@ -948,7 +887,7 @@ ALTER TABLE `lojas`
 -- AUTO_INCREMENT de tabela `metricas_sistema`
 --
 ALTER TABLE `metricas_sistema`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `notificacoes`
@@ -1008,13 +947,13 @@ ALTER TABLE `stripe_subscriptions`
 -- AUTO_INCREMENT de tabela `supportmessages`
 --
 ALTER TABLE `supportmessages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `utilizadores`
 --
 ALTER TABLE `utilizadores`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- Restrições para tabelas despejadas

@@ -857,7 +857,7 @@ Este projeto está licenciado sob a Licença . Veja o arquivo [LICENSE](LICENSE)
 ## Suporte
 
 **Canais de Suporte**
-- **Email**: juliareboucasleite@gmail.com
+- **Email**: corporation.promoping@gmail.com
 - **GitHub Issues**: Para reportar bugs e solicitar funcionalidades
 - **Discord**: [Servidor da comunidade](https://discord.gg/PXBXKXmfph)
 
