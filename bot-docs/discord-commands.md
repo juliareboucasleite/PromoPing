@@ -1,8 +1,8 @@
-# 🤖 Comandos Discord - PromoPing
+#  Comandos Discord - PromoPing
 
-## 📋 Lista de Comandos
+##  Lista de Comandos
 
-### 🔐 **Autenticação**
+###  **Autenticação**
 
 #### `/registrar`
 Registra uma nova conta no PromoPing usando seu Discord.
@@ -61,7 +61,7 @@ Sincroniza sua conta Discord com uma conta existente no site.
 
 ---
 
-### 📦 **Gestão de Produtos**
+###  **Gestão de Produtos**
 
 #### `/meus-produtos`
 Lista todos os seus produtos monitorados.
@@ -104,7 +104,7 @@ Adiciona um novo produto para monitorar preços.
 
 ---
 
-### ⚙️ **Configurações**
+###  **Configurações**
 
 #### `/configuracoes`
 Gerencia suas configurações de notificação.
@@ -126,7 +126,7 @@ Gerencia suas configurações de notificação.
 
 ---
 
-## 🔄 **Sincronização com o Site**
+##  **Sincronização com o Site**
 
 ### **Como Funciona:**
 1. **Registre-se no Discord** usando `/registrar`
@@ -135,14 +135,14 @@ Gerencia suas configurações de notificação.
 4. **Tudo fica sincronizado** automaticamente!
 
 ### **Vantagens:**
-- ✅ **Acesso duplo**: Discord + Site
-- ✅ **Sincronização automática**: Mudanças em um refletem no outro
-- ✅ **Notificações**: Receba alertas no Discord
-- ✅ **Gestão completa**: Adicione produtos em qualquer lugar
+-  **Acesso duplo**: Discord + Site
+-  **Sincronização automática**: Mudanças em um refletem no outro
+-  **Notificações**: Receba alertas no Discord
+-  **Gestão completa**: Adicione produtos em qualquer lugar
 
 ---
 
-## 🚀 **Fluxo de Uso Recomendado**
+##  **Fluxo de Uso Recomendado**
 
 ### **Para Novos Usuários:**
 1. `/registrar` - Crie sua conta
@@ -186,14 +186,14 @@ Gerencia suas configurações de notificação.
 4. Pronto! Tudo sincronizado
 
 ### **Funcionalidades Sincronizadas:**
-- ✅ Lista de produtos
-- ✅ Configurações de notificação
-- ✅ Histórico de preços
-- ✅ Preferências de usuário
+-  Lista de produtos
+-  Configurações de notificação
+-  Histórico de preços
+-  Preferências de usuário
 
 ---
 
-## 🎯 **Dicas de Uso**
+##  **Dicas de Uso**
 
 ### **Organização:**
 - Use nomes descritivos para produtos
@@ -212,4 +212,4 @@ Gerencia suas configurações de notificação.
 
 ---
 
-**🎉 Agora você pode gerenciar seus produtos diretamente do Discord!**
+** Agora você pode gerenciar seus produtos diretamente do Discord!**

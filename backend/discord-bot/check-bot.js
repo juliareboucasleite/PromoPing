@@ -8,12 +8,12 @@ async function checkBotStatus() {
     
     // Verificar configurações
     console.log('📋 Configurações:');
-    console.log(`Token: ${process.env.DISCORD_BOT_TOKEN ? '✅ Configurado' : '❌ Não configurado'}`);
-    console.log(`Client ID: ${process.env.DISCORD_CLIENT_ID || '❌ Não configurado'}`);
-    console.log(`Guild ID: ${process.env.DISCORD_GUILD_ID || '❌ Não configurado'}`);
+    console.log(`Token: ${process.env.DISCORD_BOT_TOKEN ? ' Configurado' : ' Não configurado'}`);
+    console.log(`Client ID: ${process.env.DISCORD_CLIENT_ID || ' Não configurado'}`);
+    console.log(`Guild ID: ${process.env.DISCORD_GUILD_ID || ' Não configurado'}`);
     
     // Verificar banco de dados
-    console.log('\n🗄️ Banco de dados:');
+    console.log('\n Banco de dados:');
     try {
         const connection = await mysql.createConnection({
             host: process.env.DB_HOST || 'localhost',
@@ -48,10 +48,10 @@ async function checkBotStatus() {
         console.log(`Mudanças nas últimas 24h: ${history[0].total}`);
         
         await connection.end();
-        console.log('✅ Conexão com banco OK');
+        console.log(' Conexão com banco OK');
         
     } catch (error) {
-        console.error('❌ Erro no banco:', error.message);
+        console.error(' Erro no banco:', error.message);
     }
     
     console.log('\n📱 Para testar o bot no Discord:');
@@ -60,7 +60,7 @@ async function checkBotStatus() {
     console.log('3. Digite: !status');
     console.log('4. Digite: !iniciar (para começar monitoramento)');
     
-    console.log('\n🎯 O bot deve aparecer como online no Discord!');
+    console.log('\nO bot deve aparecer como online no Discord!');
 }
 
 checkBotStatus().catch(console.error);

@@ -54,7 +54,7 @@
       ? path 
       : apiBase + (path.startsWith('/') ? path : '/' + path);
     
-    console.log('📤 [Support Widget] Requisição:', opts.method || 'GET', fullPath);
+    console.log(' [Support Widget] Requisição:', opts.method || 'GET', fullPath);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -78,7 +78,7 @@
 
       return JSON.parse(responseText);
     } catch (error) {
-      console.error('❌ [Support Widget] Erro na requisição:', error.message);
+      console.error(' [Support Widget] Erro na requisição:', error.message);
       throw error;
     }
   }
@@ -97,7 +97,7 @@
       const res = await fetchJSON(`/api/support/messages?threadId=${threadId}`);
       return res.items || [];
     } catch (error) {
-      console.error('❌ [Support Widget] Erro ao carregar conversa:', error);
+      console.error(' [Support Widget] Erro ao carregar conversa:', error);
       return [];
     }
   }
@@ -212,7 +212,7 @@
         : '<div style="text-align:center;color:#999;padding:20px;">Nenhuma mensagem nesta conversa.</div>';
       container.scrollTop = container.scrollHeight;
     } catch (error) {
-      console.error('❌ [Support Widget] Erro ao atualizar mensagens:', error);
+      console.error(' [Support Widget] Erro ao atualizar mensagens:', error);
       container.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Erro ao carregar mensagens.</div>';
     }
   }
@@ -228,7 +228,7 @@
   function initSupportWidgetFront() {
     // Evitar múltiplas inicializações
     if (document.getElementById('pp-support-btn')) {
-      console.warn('⚠️ [Support Widget] Widget já inicializado');
+      console.warn(' [Support Widget] Widget já inicializado');
       return;
     }
 
@@ -290,7 +290,7 @@
       textEl.value = '';
       textEl.focus();
       updateThreadInfo();
-      console.log('📝 [Support Widget] Nova conversa iniciada');
+      console.log(' [Support Widget] Nova conversa iniciada');
     }
 
     /**
@@ -308,7 +308,7 @@
         renderThreadsList();
         updatePaginationControls();
       } catch (error) {
-        console.error('❌ [Support Widget] Erro ao carregar threads:', error);
+        console.error(' [Support Widget] Erro ao carregar threads:', error);
         threadsList.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;font-size:12px;">Erro ao carregar conversas.</div>';
       }
     }
@@ -400,7 +400,7 @@
           updateThreadInfo();
         }
       } catch (error) {
-        console.error('❌ [Support Widget] Erro ao carregar thread:', error);
+        console.error(' [Support Widget] Erro ao carregar thread:', error);
         messagesContainer.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Erro ao carregar conversas.</div>';
         currentThreadId = null;
         updateThreadInfo();
@@ -435,7 +435,7 @@
           // ============================================================
           // RESPOSTA À THREAD EXISTENTE
           // ============================================================
-          console.log('📝 [Support Widget] Respondendo à thread:', currentThreadId);
+          console.log(' [Support Widget] Respondendo à thread:', currentThreadId);
           
           // Carrega a thread completa para obter a última mensagem
           const threadMessages = await loadConversation(currentThreadId);
@@ -452,12 +452,12 @@
             })
           });
 
-          console.log('✅ [Support Widget] Resposta enviada à thread:', currentThreadId);
+          console.log(' [Support Widget] Resposta enviada à thread:', currentThreadId);
         } else {
           // ============================================================
           // CRIAR NOVA THREAD (NOVA CONVERSA)
           // ============================================================
-          console.log('📝 [Support Widget] Criando nova thread');
+          console.log(' [Support Widget] Criando nova thread');
           
           result = await fetchJSON('/api/support/messages', {
             method: 'POST',
@@ -467,7 +467,7 @@
           // Atualiza o currentThreadId com a nova thread criada
           // IMPORTANTE: threadId pode ser o próprio ID da mensagem (primeira mensagem = thread)
           currentThreadId = result.threadId || result.id;
-          console.log('✅ [Support Widget] Nova thread criada:', currentThreadId);
+          console.log(' [Support Widget] Nova thread criada:', currentThreadId);
           updateThreadInfo();
         }
 
@@ -483,7 +483,7 @@
         // Recarregar lista de threads para atualizar contadores
         await loadAllThreads();
       } catch (error) {
-        console.error('❌ [Support Widget] Erro ao enviar mensagem:', error);
+        console.error(' [Support Widget] Erro ao enviar mensagem:', error);
         fb.textContent = `Falha ao enviar: ${error.message}`;
         fb.style.color = '#c62828';
       }
@@ -616,7 +616,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#fff;border-bottom:1px solid #eee;flex-shrink:0;">
         <strong style="font-size:16px;">Contato de Suporte</strong>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button id="pp-support-toggle-threads" style="border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;transition:all 0.2s;" title="Mostrar/Ocultar conversas">💬</button>
+          <button id="pp-support-toggle-threads" style="border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;transition:all 0.2s;" title="Mostrar/Ocultar conversas">Conversas</button>
           <button id="pp-support-new" style="border:1px solid #f17603;background:#fff;color:#f17603;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s;">Nova Conversa</button>
           <button id="pp-support-close" style="border:none;background:none;color:#777;font-size:20px;cursor:pointer;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;">✕</button>
         </div>

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('🤖 Iniciando PromoPing Discord Bot...');
+console.log('Iniciando PromoPing Discord Bot...');
 console.log('=====================================');
 
 // Caminho para o bot
@@ -18,25 +18,25 @@ const bot = spawn('node', ['start-bot.js'], {
 });
 
 bot.on('error', (error) => {
-    console.error('❌ Erro ao iniciar bot:', error);
+    console.error('Erro ao iniciar bot:', error);
 });
 
 bot.on('close', (code) => {
-    console.log(`🛑 Bot encerrado com código: ${code}`);
+    console.log(`Bot encerrado com código: ${code}`);
 });
 
 // Tratamento de sinais
 process.on('SIGINT', () => {
-    console.log('\n🛑 Parando bot...');
+    console.log('\nParando bot...');
     bot.kill('SIGINT');
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log('\n🛑 Parando bot...');
+    console.log('\nParando bot...');
     bot.kill('SIGTERM');
     process.exit(0);
 });
 
-console.log('✅ Bot iniciado! Verifique o Discord.');
-console.log('💬 Comandos: !ping, !status, !iniciar, !parar');
+console.log('Bot iniciado! Verifique o Discord.');
+console.log('Comandos: !ping, !status, !iniciar, !parar');

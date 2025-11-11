@@ -9,7 +9,7 @@ O sistema de status permite monitorar em tempo real:
 - **Componentes** (API, banco de dados, notificações)
 - **Incidentes** (manutenções, problemas, resoluções)
 
-## 🗄️ Estrutura do Banco de Dados
+##  Estrutura do Banco de Dados
 
 ### Tabelas Principais
 
@@ -118,7 +118,7 @@ Content-Type: application/json
 }
 ```
 
-## 📊 Views e Procedures
+##  Views e Procedures
 
 ### Views
 - `v_status_geral`: Status consolidado do sistema
@@ -129,7 +129,7 @@ Content-Type: application/json
 - `sp_criar_incidente()`: Cria novo incidente
 - `sp_resolver_incidente()`: Resolve incidente existente
 
-## 🔄 Integração com Frontend
+##  Integração com Frontend
 
 O frontend (`service-status.html`) consome automaticamente:
 - Dados reais da API a cada 30 segundos
@@ -139,7 +139,7 @@ O frontend (`service-status.html`) consome automaticamente:
 ### Fallback
 Em caso de erro na API, o sistema usa dados simulados para manter a funcionalidade.
 
-## 📈 Monitoramento Automático
+##  Monitoramento Automático
 
 ### Cron Jobs Recomendados
 ```bash
@@ -172,7 +172,7 @@ const atualizarMetricas = async () => {
 };
 ```
 
-## 🛠️ Manutenção
+##  Manutenção
 
 ### Limpeza de Dados Antigos
 ```sql

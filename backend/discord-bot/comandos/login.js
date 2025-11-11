@@ -24,7 +24,7 @@ module.exports = {
             // Verificar argumentos
             if (args.length < 2) {
                 await connection.end();
-                return message.reply('❌ **Uso correto:** `!login <email> <senha>`\n**Exemplo:** `!login joao@email.com minhasenha123`');
+                return message.reply(' **Uso correto:** `!login <email> <senha>`\n**Exemplo:** `!login joao@email.com minhasenha123`');
             }
 
             const email = args[0].toLowerCase();
@@ -38,7 +38,7 @@ module.exports = {
 
             if (users.length === 0) {
                 await connection.end();
-                return message.reply('❌ **Email não encontrado!** Verifique o email ou use `!registar` para criar uma conta.');
+                return message.reply(' **Email não encontrado!** Verifique o email ou use `!registar` para criar uma conta.');
             }
 
             const user = users[0];
@@ -46,14 +46,14 @@ module.exports = {
             // Verificar se já está vinculado a outro Discord
             if (user.discord_id && user.discord_id !== message.author.id) {
                 await connection.end();
-                return message.reply('❌ **Este email já está vinculado a outro Discord!** Use outro email ou crie uma nova conta.');
+                return message.reply(' **Este email já está vinculado a outro Discord!** Use outro email ou crie uma nova conta.');
             }
 
             // Verificar senha
             const senhaValida = await bcrypt.compare(senha, user.SenhaHash);
             if (!senhaValida) {
                 await connection.end();
-                return message.reply('❌ **Senha incorreta!** Verifique sua senha e tente novamente.');
+                return message.reply(' **Senha incorreta!** Verifique sua senha e tente novamente.');
             }
 
             // Atualizar Discord ID se necessário
@@ -80,7 +80,7 @@ module.exports = {
             await connection.end();
 
             const embed = new EmbedBuilder()
-                .setTitle('✅ Login Realizado!')
+                .setTitle('Login Realizado!')
                 .setDescription(`**Bem-vindo de volta, ${message.author.username}!**`)
                 .addFields(
                     {
@@ -106,7 +106,7 @@ module.exports = {
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando login:', error);
-            await message.reply('❌ **Erro interno!** Tente novamente em alguns minutos.');
+            await message.reply(' **Erro interno!** Tente novamente em alguns minutos.');
         }
     }
 };

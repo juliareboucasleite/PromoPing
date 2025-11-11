@@ -94,9 +94,9 @@ router.get("/messages/admin", async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const threadId = req.query.threadId;
     
-    console.log("📋 [SUPPORT ADMIN] Buscando mensagens (admin)");
-    console.log("📋 [SUPPORT ADMIN] Thread ID:", threadId || "Todas");
-    console.log("📋 [SUPPORT ADMIN] Limit:", limit);
+    console.log("[SUPPORT ADMIN] Buscando mensagens (admin)");
+    console.log("[SUPPORT ADMIN] Thread ID:", threadId || "Todas");
+    console.log("[SUPPORT ADMIN] Limit:", limit);
     
     if (threadId) {
       // Buscar mensagens de uma thread específica
@@ -132,7 +132,7 @@ router.get("/messages/admin", async (req, res) => {
         timestamp: new Date(msg.createdAt).getTime() / 1000
       }));
       
-      console.log(`✅ [SUPPORT ADMIN] Retornando ${formattedMessages.length} mensagens da thread ${threadId}`);
+      console.log(`[SUPPORT ADMIN] Retornando ${formattedMessages.length} mensagens da thread ${threadId}`);
       return res.json(formattedMessages);
     }
     
@@ -176,10 +176,10 @@ router.get("/messages/admin", async (req, res) => {
     const adminCount = threads.filter(t => t.userPerfilId === 1).length;
     const userCount = threads.filter(t => t.userPerfilId === 2).length;
     
-    console.log(`✅ [SUPPORT ADMIN] Retornando ${formattedThreads.length} threads (Admin: ${adminCount}, User: ${userCount})`);
+    console.log(`[SUPPORT ADMIN] Retornando ${formattedThreads.length} threads (Admin: ${adminCount}, User: ${userCount})`);
     res.json({ items: formattedThreads, total: formattedThreads.length });
   } catch (error) {
-    console.error("❌ [SUPPORT ADMIN] Erro:", error.message);
+    console.error("[SUPPORT ADMIN] Erro:", error.message);
     res.status(500).json({ error: "Erro ao listar mensagens", details: error.message });
   }
 });
@@ -207,7 +207,7 @@ router.get("/messages", verifyToken, async (req, res) => {
     const offset = (page - 1) * limit;
     const threadId = req.query.threadId;
     
-    console.log("📨 [SUPPORT] Listando mensagens para userId:", userId, "page:", page);
+    console.log(" [SUPPORT] Listando mensagens para userId:", userId, "page:", page);
     
     if (threadId) {
       // Buscar mensagens de uma thread específica do utilizador
@@ -265,7 +265,7 @@ router.get("/messages", verifyToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("❌ [SUPPORT] Erro ao listar mensagens:", error);
+    console.error(" [SUPPORT] Erro ao listar mensagens:", error);
     res.status(500).json({ error: "Erro ao listar mensagens" });
   }
 });
@@ -311,7 +311,7 @@ router.get("/messages/:id", verifyToken, async (req, res) => {
       replies: replies 
     });
   } catch (error) {
-    console.error("❌ [SUPPORT] Erro ao obter mensagem:", error);
+    console.error(" [SUPPORT] Erro ao obter mensagem:", error);
     res.status(500).json({ error: "Erro ao obter mensagem" });
   }
 });
@@ -332,7 +332,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
     const messageId = parseInt(req.params.id);
     const { message, senderType = 'user' } = req.body || {};
     
-    console.log("📨 [SUPPORT] Resposta de mensagem:", { messageId, userId, senderType });
+    console.log(" [SUPPORT] Resposta de mensagem:", { messageId, userId, senderType });
     
     // Validações
     if (!message || typeof message !== "string" || !message.trim()) {
@@ -375,7 +375,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
       [userIdParaResposta, message.trim(), senderType, messageId, threadId]
     );
     
-    console.log("✅ [SUPPORT] Resposta inserida:", result.insertId);
+    console.log(" [SUPPORT] Resposta inserida:", result.insertId);
     
     res.status(201).json({ 
       id: result.insertId, 
@@ -386,7 +386,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
       userId: userIdParaResposta
     });
   } catch (error) {
-    console.error("❌ [SUPPORT] Erro ao criar resposta:", error);
+    console.error(" [SUPPORT] Erro ao criar resposta:", error);
     res.status(500).json({ error: "Erro ao enviar resposta", details: error.message });
   }
 });
@@ -407,7 +407,7 @@ router.post("/messages", verifyToken, async (req, res) => {
     const userId = req.user.id;
     const { message } = req.body || {};
     
-    console.log("📨 [SUPPORT] Nova mensagem de userId:", userId);
+    console.log(" [SUPPORT] Nova mensagem de userId:", userId);
     
     // Validações
     if (!message || typeof message !== "string" || !message.trim()) {
@@ -422,7 +422,7 @@ router.post("/messages", verifyToken, async (req, res) => {
     
     if (userInfo.length > 0) {
       const perfil = userInfo[0].PerfilId === 1 ? 'Admin' : userInfo[0].PerfilId === 2 ? 'User' : 'Desconhecido';
-      console.log("📨 [SUPPORT] Utilizador:", { 
+      console.log(" [SUPPORT] Utilizador:", { 
         id: userInfo[0].Id, 
         nome: userInfo[0].Nome, 
         perfil 
@@ -444,7 +444,7 @@ router.post("/messages", verifyToken, async (req, res) => {
       [newMessageId, newMessageId]
     );
     
-    console.log("✅ [SUPPORT] Nova thread criada:", newMessageId);
+    console.log(" [SUPPORT] Nova thread criada:", newMessageId);
     
     res.status(201).json({ 
       id: newMessageId, 
@@ -454,7 +454,7 @@ router.post("/messages", verifyToken, async (req, res) => {
       userId: userId
     });
   } catch (error) {
-    console.error("❌ [SUPPORT] Erro ao criar mensagem:", error);
+    console.error(" [SUPPORT] Erro ao criar mensagem:", error);
     res.status(500).json({ error: "Erro ao enviar mensagem", details: error.message });
   }
 });

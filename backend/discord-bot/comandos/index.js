@@ -18,12 +18,12 @@ try {
             const comando = require(path.join(__dirname, file));
 
             if (!comando.name || typeof comando.execute !== 'function') {
-                console.warn(`⚠️ Comando inválido em ${file} (faltando 'name' ou 'execute')`);
+                console.warn(` Comando inválido em ${file} (faltando 'name' ou 'execute')`);
                 continue;
             }
 
             if (comandos.has(comando.name)) {
-                console.warn(`⚠️ Nome duplicado ignorado: ${comando.name}`);
+                console.warn(` Nome duplicado ignorado: ${comando.name}`);
                 continue;
             }
 
@@ -34,27 +34,27 @@ try {
             if (Array.isArray(comando.aliases)) {
                 for (const alias of comando.aliases) {
                     if (comandos.has(alias)) {
-                        console.warn(`⚠️ Alias duplicado ignorado: ${alias}`);
+                        console.warn(` Alias duplicado ignorado: ${alias}`);
                         continue;
                     }
                     comandos.set(alias, comando);
                 }
             }
 
-            console.log(`✅ Carregado: !${comando.name}${comando.aliases ? ` (${comando.aliases.join(', ')})` : ''}`);
+            console.log(` Carregado: !${comando.name}${comando.aliases ? ` (${comando.aliases.join(', ')})` : ''}`);
 
         } catch (error) {
-            console.error(`❌ Erro ao carregar comando ${file}:`, error.message);
+            console.error(` Erro ao carregar comando ${file}:`, error.message);
         }
     }
 
-    console.log(`🎉 ${count} comandos carregados com sucesso!`);
-    console.log('💬 Comandos disponíveis:', 
+    console.log(`${count} comandos carregados com sucesso!`);
+    console.log('Comandos disponíveis:', 
         Array.from(new Set(comandos.keys())).join(', ')
     );
 
 } catch (error) {
-    console.error('❌ Erro ao carregar comandos:', error);
+    console.error(' Erro ao carregar comandos:', error);
 }
 
 module.exports = comandos;

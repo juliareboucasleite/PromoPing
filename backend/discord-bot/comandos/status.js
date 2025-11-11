@@ -51,7 +51,7 @@ module.exports = {
 
         } catch (error) {
             console.error('[DISCORD] Erro ao obter status:', error);
-            await message.reply('❌ Erro ao obter status do bot.');
+            await message.reply(' Erro ao obter status do bot.');
         }
     }
 };

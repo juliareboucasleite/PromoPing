@@ -1,5 +1,3 @@
-// Discord Rich Presence para PromoPing
-// Silenciar dotenv globalmente
 process.env.DOTENV_CONFIG_SILENT = 'true';
 process.env.DOTENV_CONFIG_DEBUG = 'false';
 
@@ -145,5 +143,4 @@ process.on("SIGTERM", () => {
   }
   connectToDiscord();
 }
-
 initPresence();

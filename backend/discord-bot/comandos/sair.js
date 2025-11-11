@@ -27,7 +27,7 @@ module.exports = {
 
             if (users.length === 0) {
                 await connection.end();
-                return message.reply('❌ **Você não está registado!** Use `!registar <email> <senha>` para criar uma conta.');
+                return message.reply(' **Você não está registado!** Use `!registar <email> <senha>` para criar uma conta.');
             }
 
             const user = users[0];
@@ -68,7 +68,7 @@ module.exports = {
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando sair:', error);
-            await message.reply('❌ **Erro interno!** Tente novamente em alguns minutos.');
+            await message.reply(' **Erro interno!** Tente novamente em alguns minutos.');
         }
     }
 };

@@ -191,14 +191,14 @@ function runLocal() {
             discordBotProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim();
                 if (message) {
-                    log(`🤖 Bot Discord: ${message}`, 'magenta');
+                    log(`Bot Discord: ${message}`, 'magenta');
                 }
             });
             
             discordBotProcess.stderr.on('data', (data) => {
                 const message = data.toString().trim();
                 if (message && !message.includes('Client ID')) {
-                    log(`🤖 Bot Discord: ${message}`, 'red');
+                    log(`Bot Discord: ${message}`, 'red');
                 }
             });
             
@@ -268,10 +268,10 @@ function runLocal() {
         process.on('SIGINT', () => shutdown('SIGINT'));
         process.on('SIGTERM', () => shutdown('SIGTERM'));
         
-        log('✅ Todos os serviços iniciados!', 'green');
-        log('📊 Servidor rodando em http://127.0.0.1:3000', 'cyan');
+        log('Todos os serviços iniciados!', 'green');
+        log('Servidor rodando em http://127.0.0.1:3000', 'cyan');
         if (discordBotProcess) {
-            log('🤖 Bot do Discord: Online', 'magenta');
+            log('Bot do Discord: Online', 'magenta');
         }
         log('Pressione Ctrl+C para parar todos os serviços', 'yellow');
         

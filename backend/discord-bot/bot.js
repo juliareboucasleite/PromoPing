@@ -134,19 +134,19 @@ class PromoPingBot {
             const percentageChange = ((priceChange / product.PrecoAnterior) * 100).toFixed(2);
             
             let color = 0x00ff00; // Verde para diminuição
-            let emoji = '📉';
+            let emoji = '';
             let status = 'diminuiu';
 
             if (priceChange > 0) {
                 color = 0xff0000; // Vermelho para aumento
-                emoji = '📈';
+                emoji = '[+]';
                 status = 'aumentou';
             }
 
             // Verificar se atingiu o preço alvo
             if (product.PrecoAtual <= product.PrecoAlvo) {
                 color = 0x00bfff; // Azul para meta atingida
-                emoji = '🎯';
+                emoji = '[META]';
                 status = 'atingiu o preço alvo';
             }
 
@@ -176,17 +176,14 @@ class PromoPingBot {
                         .setCustomId(`parar_notificacoes_${product.Id}`)
                         .setLabel('Parar Notificações')
                         .setStyle(ButtonStyle.Danger)
-                        .setEmoji('🔕'),
                     new ButtonBuilder()
                         .setCustomId(`ver_produto_${product.Id}`)
                         .setLabel('Ver Produto')
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji('👁️'),
                     new ButtonBuilder()
                         .setCustomId(`configurar_${product.Id}`)
                         .setLabel('Configurar')
                         .setStyle(ButtonStyle.Secondary)
-                        .setEmoji('⚙️')
                 );
 
             const message = await user.send({ 
@@ -229,7 +226,7 @@ class PromoPingBot {
             } catch (error) {
                 console.error('[DISCORD] Erro ao processar interação:', error);
                 await interaction.reply({ 
-                    content: '❌ Ocorreu um erro ao processar sua solicitação.', 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
                     ephemeral: true 
                 });
             }
@@ -243,19 +240,16 @@ class PromoPingBot {
                         .setCustomId(`parar_notificacoes_${product.Id}_disabled`)
                         .setLabel('Parar Notificações')
                         .setStyle(ButtonStyle.Danger)
-                        .setEmoji('🔕')
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`ver_produto_${product.Id}_disabled`)
                         .setLabel('Ver Produto')
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji('👁️')
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`configurar_${product.Id}_disabled`)
                         .setLabel('Configurar')
                         .setStyle(ButtonStyle.Secondary)
-                        .setEmoji('⚙️')
                         .setDisabled(true)
                 );
 
@@ -276,7 +270,7 @@ class PromoPingBot {
             await connection.end();
 
             const embed = new EmbedBuilder()
-                .setTitle('🔕 Notificações Paradas')
+                .setTitle('Notificações Paradas')
                 .setDescription(`**${product.Nome}**\n\nVocê não receberá mais notificações sobre este produto.`)
                 .addFields({
                     name: 'Como reativar?',
@@ -296,7 +290,7 @@ class PromoPingBot {
         } catch (error) {
             console.error('[DISCORD] Erro ao parar notificações:', error);
             await interaction.reply({ 
-                content: '❌ Erro ao parar notificações. Tente novamente.', 
+                content: 'Erro ao parar notificações. Tente novamente.', 
                 ephemeral: true 
             });
         }
@@ -304,7 +298,7 @@ class PromoPingBot {
 
     async handleViewProduct(interaction, product) {
         const embed = new EmbedBuilder()
-            .setTitle('👁️ Detalhes do Produto')
+            .setTitle('Detalhes do Produto')
             .setDescription(`**${product.Nome}**`)
             .addFields(
                 { name: 'Preço Atual', value: `€${product.PrecoAtual.toFixed(2)}`, inline: true },
@@ -323,7 +317,7 @@ class PromoPingBot {
 
     async handleConfigure(interaction, product, user) {
         const embed = new EmbedBuilder()
-            .setTitle('⚙️ Configurações do Produto')
+            .setTitle('Configurações do Produto')
             .setDescription(`**${product.Nome}**`)
             .addFields(
                 { name: 'Preço Alvo Atual', value: `€${product.PrecoAlvo.toFixed(2)}`, inline: true },

@@ -4,12 +4,12 @@ module.exports = {
     description: 'Para o monitoramento automático de preços.',
     execute: async (client, message, args, botInstance) => {
         if (!botInstance.isMonitoring) {
-            await message.reply('⚠️ O monitoramento já está parado!');
+            await message.reply(' O monitoramento já está parado!');
             return;
         }
         
         botInstance.isMonitoring = false;
-        await message.reply('🛑 **Monitoramento parado!**\n📊 O bot não verificará mais mudanças de preços automaticamente.\n💡 Use `!iniciar` para reativar.');
+        await message.reply('**Monitoramento parado!**\nO bot não verificará mais mudanças de preços automaticamente.\nUse `!iniciar` para reativar.');
         
         console.log(`[DISCORD] Monitoramento parado por ${message.author.username}`);
     }

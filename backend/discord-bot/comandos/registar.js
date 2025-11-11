@@ -12,11 +12,11 @@ module.exports = {
     execute: async (client, message, args, botInstance) => {
         // Event listener unica para cada mensagem de cadastro enviada
         async function adicionarBotaoDeletar(mensagemEnviada) {
-            // Cria o botão "🎉 Festejar" (clique para apagar)
+            // Cria o botão "Festejar" (clique para apagar)
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId(`delete_celebrate_${mensagemEnviada.id}`)
-                    .setLabel('🎉 Festejar')
+                    .setLabel('Festejar')
                     .setStyle(ButtonStyle.Success)
             );
 
@@ -66,13 +66,13 @@ module.exports = {
 
             if (existingDiscord.length > 0) {
                 await connection.end();
-                return message.reply('❌ **Você já está registado!** Use `!login` para fazer login ou `!produtos` para ver seus produtos.');
+                return message.reply(' **Você já está registado!** Use `!login` para fazer login ou `!produtos` para ver seus produtos.');
             }
 
             // Verificar argumentos
             if (args.length < 2) {
                 await connection.end();
-                return message.reply('❌ **Uso correto:** `!registar <email> <senha>`\n**Exemplo:** `!registar joao@email.com minhasenha123`');
+                return message.reply(' **Uso correto:** `!registar <email> <senha>`\n**Exemplo:** `!registar joao@email.com minhasenha123`');
             }
 
             const email = args[0].toLowerCase();
@@ -82,13 +82,13 @@ module.exports = {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 await connection.end();
-                return message.reply('❌ **Email inválido!** Use um formato válido como: `joao@email.com`');
+                return message.reply(' **Email inválido!** Use um formato válido como: `joao@email.com`');
             }
 
             // Validar senha
             if (senha.length < 6) {
                 await connection.end();
-                return message.reply('❌ **Senha muito curta!** Use pelo menos 6 caracteres.');
+                return message.reply(' **Senha muito curta!** Use pelo menos 6 caracteres.');
             }
 
             // Verificar se email já existe
@@ -100,7 +100,7 @@ module.exports = {
             if (existingEmail.length > 0) {
                 if (existingEmail[0].discord_id) {
                     await connection.end();
-                    return message.reply('❌ **Este email já está vinculado a outro Discord!** Use outro email ou faça login.');
+                    return message.reply(' **Este email já está vinculado a outro Discord!** Use outro email ou faça login.');
                 } else {
                     // Atualizar conta existente com Discord ID
                     await connection.execute(
@@ -110,7 +110,7 @@ module.exports = {
                     await connection.end();
                     
                     const embed = new EmbedBuilder()
-                        .setTitle('✅ Conta Vinculada!')
+                        .setTitle('Conta Vinculada!')
                         .setDescription(`**Email:** ${email}\n**Discord:** ${message.author.username}`)
                         .addFields({
                             name: 'Próximos Passos',
@@ -151,7 +151,7 @@ module.exports = {
             await connection.end();
 
             const embed = new EmbedBuilder()
-                .setTitle('🎉 Conta Criada com Sucesso!')
+                .setTitle('Conta Criada com Sucesso!')
                 .setDescription(`**Email:** ${email}\n**Discord:** ${message.author.username}`)
                 .addFields({
                     name: 'Bem-vindo ao PromoPing!',
@@ -166,7 +166,7 @@ module.exports = {
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando registar:', error);
-            await message.reply('❌ **Erro interno!** Tente novamente em alguns minutos.');
+            await message.reply(' **Erro interno!** Tente novamente em alguns minutos.');
         }
     }
 };

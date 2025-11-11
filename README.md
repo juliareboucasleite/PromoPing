@@ -269,11 +269,11 @@ O PromoPing 2.1.2 passou por uma auditoria de segurança completa, identificando
 
 | Vulnerabilidade | Status | Severidade | Correção |
 |----------------|--------|------------|----------|
-| JWT Secret Hardcoded | ✅ **CORRIGIDO** | Crítica | Variáveis de ambiente obrigatórias |
-| XSS na Barra de Pesquisa | ✅ **CORRIGIDO** | Alta | Sanitização robusta de entradas |
-| CORS Mal Configurado | ✅ **CORRIGIDO** | Alta | Validação dinâmica de origens |
-| SQL Injection Potencial | ✅ **CORRIGIDO** | Média | Validação completa de timestamps |
-| Falta de Rate Limiting | ✅ **CORRIGIDO** | Média | Rate limiting em todas as APIs |
+| JWT Secret Hardcoded | OK **CORRIGIDO** | Crítica | Variáveis de ambiente obrigatórias |
+| XSS na Barra de Pesquisa | OK **CORRIGIDO** | Alta | Sanitização robusta de entradas |
+| CORS Mal Configurado | OK **CORRIGIDO** | Alta | Validação dinâmica de origens |
+| SQL Injection Potencial | OK **CORRIGIDO** | Média | Validação completa de timestamps |
+| Falta de Rate Limiting | OK **CORRIGIDO** | Média | Rate limiting em todas as APIs |
 
 ### **Medidas de Segurança Implementadas**
 
@@ -307,12 +307,12 @@ O PromoPing 2.1.2 passou por uma auditoria de segurança completa, identificando
 ```
 
 ### **Status de Segurança**
-- **Nível de Risco**: **BAIXO** ✅
-- **Vulnerabilidades Ativas**: **0** ✅
-- **Conformidade**: **Adequado para produção** ✅
+- **Nível de Risco**: **BAIXO** OK
+- **Vulnerabilidades Ativas**: **0** OK
+- **Conformidade**: **Adequado para produção** OK
 - **Próxima Auditoria**: **3 meses**
 
-## 🐍 Sistema Python Scraper
+##  Sistema Python Scraper
 
 ### **Arquitetura do Scraper**
 O PromoPing inclui um sistema de monitorização de preços desenvolvido em Python que funciona de forma independente do backend Node.js:
@@ -406,7 +406,7 @@ USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64)...
 - **Execução Independente** - Pode rodar simultaneamente com Node.js
 - **Não Interferência** - Operações isoladas e seguras
 
-## 🐳 Docker e Deployment
+## Docker e Deployment
 
 ### **Containerização Completa**
 O PromoPing oferece suporte completo ao Docker para desenvolvimento e produção:
@@ -677,19 +677,19 @@ O PromoPing implementa um sistema completo de logging para monitorização e deb
 **Categorias de Logs**
 ```javascript
 // Logs de aplicação
-console.log("✅ Produto adicionado:", produto);
-console.warn("⚠️ Rate limit atingido:", ip);
-console.error("❌ Erro na base de dados:", error);
+console.log("OK Produto adicionado:", produto);
+console.warn(" Rate limit atingido:", ip);
+console.error("Erro na base de dados:", error);
 
 // Logs de segurança
-console.warn("🚫 Tentativa de acesso CORS não autorizada:", origin);
-console.log("🔐 Login bem-sucedido:", email);
-console.error("🚨 Tentativa de login suspeita:", ip);
+console.warn("Tentativa de acesso CORS não autorizada:", origin);
+console.log("Login bem-sucedido:", email);
+console.error("Tentativa de login suspeita:", ip);
 
 // Logs de scraping
-console.log("🔄 Iniciando ciclo de scraping");
-console.log("✅ Preço atualizado:", produto, preco);
-console.warn("⚠️ Erro no scraping:", loja, error);
+console.log("Iniciando ciclo de scraping");
+console.log("OK Preço atualizado:", produto, preco);
+console.warn(" Erro no scraping:", loja, error);
 ```
 
 ### **Monitorização em Tempo Real**

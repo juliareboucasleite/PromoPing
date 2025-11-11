@@ -13,7 +13,7 @@ export async function sendEmail(to, subject, message) {
     // Verificar se as credenciais de email estão configuradas
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       const errorMsg = "Credenciais de email não configuradas (EMAIL_USER e EMAIL_PASS)";
-      console.error(`❌ [EMAIL] ${errorMsg}`);
+      console.error(` [EMAIL] ${errorMsg}`);
       throw new Error(errorMsg);
     }
 
@@ -82,7 +82,7 @@ export async function sendEmail(to, subject, message) {
     // Verificar conexão antes de enviar
     console.log(`📧 [EMAIL] Verificando conexão com servidor de email...`);
     await transporter.verify();
-    console.log(`✅ [EMAIL] Conexão com servidor de email verificada com sucesso`);
+    console.log(` [EMAIL] Conexão com servidor de email verificada com sucesso`);
 
     // Detectar se a mensagem é HTML (contém tags HTML)
     const isHtml = /<[a-z][\s\S]*>/i.test(message);
@@ -97,28 +97,28 @@ export async function sendEmail(to, subject, message) {
       html: isHtml ? message : undefined, // Enviar como HTML se detectado
     });
 
-    console.log(`✅ [EMAIL] Email enviado com sucesso!`);
-    console.log(`✅ [EMAIL] Message ID: ${info.messageId}`);
-    console.log(`✅ [EMAIL] Enviado para: ${to} via ${process.env.EMAIL_HOST || 'serviço pré-configurado'}`);
+    console.log(` [EMAIL] Email enviado com sucesso!`);
+    console.log(` [EMAIL] Message ID: ${info.messageId}`);
+    console.log(` [EMAIL] Enviado para: ${to} via ${process.env.EMAIL_HOST || 'serviço pré-configurado'}`);
     
     return info;
   } catch (err) {
-    console.error(`❌ [EMAIL] ========== ERRO DETALHADO ==========`);
-    console.error(`❌ [EMAIL] Tipo: ${err.name}`);
-    console.error(`❌ [EMAIL] Mensagem: ${err.message}`);
-    console.error(`❌ [EMAIL] Código: ${err.code || 'N/A'}`);
+    console.error(` [EMAIL] ========== ERRO DETALHADO ==========`);
+    console.error(` [EMAIL] Tipo: ${err.name}`);
+    console.error(` [EMAIL] Mensagem: ${err.message}`);
+    console.error(` [EMAIL] Código: ${err.code || 'N/A'}`);
     if (err.response) {
-      console.error(`❌ [EMAIL] Resposta do servidor:`, err.response);
+      console.error(` [EMAIL] Resposta do servidor:`, err.response);
     }
     if (err.responseCode) {
-      console.error(`❌ [EMAIL] Código de resposta: ${err.responseCode}`);
+      console.error(` [EMAIL] Código de resposta: ${err.responseCode}`);
     }
     if (err.command) {
-      console.error(`❌ [EMAIL] Comando: ${err.command}`);
+      console.error(` [EMAIL] Comando: ${err.command}`);
     }
-    console.error(`❌ [EMAIL] Stack trace:`);
+    console.error(` [EMAIL] Stack trace:`);
     console.error(err.stack);
-    console.error(`❌ [EMAIL] ===================================`);
+    console.error(` [EMAIL] ===================================`);
     throw err; // Re-lançar o erro para que o chamador possa tratá-lo
   }
 }

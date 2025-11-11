@@ -197,7 +197,7 @@
 
     // ===== REGISTO NORMAL =====
     async function registarUtilizador(nome, email, password, telefone = null) {
-      console.log("📤 Enviando requisição de registro...");
+      console.log(" Enviando requisição de registro...");
       try {
         const res = await makeRequest("http://127.0.0.1:3000/api/auth/register", {
           method: "POST",
@@ -205,11 +205,11 @@
           body: JSON.stringify({ nome, email, password, telefone }),
         });
 
-        console.log("📥 Status HTTP:", res.status);
-        console.log("📥 Status OK:", res.ok);
+        console.log(" Status HTTP:", res.status);
+        console.log(" Status OK:", res.ok);
 
         const data = await res.json();
-        console.log("📥 Dados parseados:", data);
+        console.log(" Dados parseados:", data);
 
         // Se o status HTTP não for OK, adicionar status de erro
         if (!res.ok) {
@@ -222,7 +222,7 @@
 
         return data;
       } catch (error) {
-        console.error("❌ Erro na requisição:", error);
+        console.error(" Erro na requisição:", error);
         throw error;
       }
     }
@@ -281,32 +281,32 @@
       try {
         const data = await registarUtilizador(nome, email, senha, telefone || null);
 
-        console.log("📥 Resposta completa do servidor:", data);
-        console.log("📥 Status da resposta:", data.status);
-        console.log("📥 Mensagem:", data.message);
-        console.log("📥 Erro:", data.error);
+        console.log(" Resposta completa do servidor:", data);
+        console.log(" Status da resposta:", data.status);
+        console.log(" Mensagem:", data.message);
+        console.log(" Erro:", data.error);
 
         if (data.status === "ok") {
-          console.log("✅ Registro bem-sucedido!");
+          console.log(" Registro bem-sucedido!");
           showSuccess("Conta criada com sucesso! Verifique o seu email.");
           document.getElementById("verifyBox").style.display = "block";
           document.getElementById("regForm").style.display = "none";
           document.getElementById("verifyEmail").textContent = email;
           iniciarReenvio(email);
         } else {
-          console.error("❌ Erro no registro:", data);
+          console.error(" Erro no registro:", data);
           const errorMessage = data.error || data.message || "Erro ao criar conta";
-          console.error("❌ Mensagem de erro:", errorMessage);
+          console.error(" Mensagem de erro:", errorMessage);
           if (data.details) {
-            console.error("❌ Detalhes do erro:", data.details);
+            console.error(" Detalhes do erro:", data.details);
           }
           showError(errorMessage);
         }
       } catch (error) {
-        console.error("❌ Exceção ao registrar:", error);
-        console.error("❌ Tipo do erro:", typeof error);
-        console.error("❌ Mensagem:", error.message);
-        console.error("❌ Stack:", error.stack);
+        console.error(" Exceção ao registrar:", error);
+        console.error(" Tipo do erro:", typeof error);
+        console.error(" Mensagem:", error.message);
+        console.error(" Stack:", error.stack);
         showError(error.message || "Erro de ligação ao servidor");
       } finally {
         btnCriar.disabled = false;

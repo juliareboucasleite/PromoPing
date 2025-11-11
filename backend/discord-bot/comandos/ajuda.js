@@ -69,7 +69,7 @@ module.exports = {
         // Definir páginas
         const paginas = [
             {
-                titulo: '📊 Estatísticas do Sistema',
+                titulo: 'Estatísticas do Sistema',
                 conteudo: [
                     '**Sistema de monitoramento de preços via Discord**',
                     'Todos os comandos começam com o prefixo `!` (configurável).',
@@ -149,7 +149,7 @@ module.exports = {
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(`ajuda_anterior_${message.author.id}`)
-                    .setLabel('◀️ Anterior')
+                    .setLabel('Anterior Anterior')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(paginaIndex === 0)
             );
@@ -158,7 +158,7 @@ module.exports = {
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(`ajuda_proximo_${message.author.id}`)
-                    .setLabel('Próximo ▶️')
+                    .setLabel('Próximo Proximo')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(paginaIndex === paginas.length - 1)
             );
@@ -167,7 +167,7 @@ module.exports = {
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(`ajuda_fechar_${message.author.id}`)
-                    .setLabel('❌ Fechar')
+                    .setLabel('Fechar')
                     .setStyle(ButtonStyle.Danger)
             );
 
@@ -225,7 +225,7 @@ module.exports = {
             } catch (error) {
                 console.error('[DISCORD] Erro ao processar interação de ajuda:', error);
                 await interaction.reply({ 
-                    content: '❌ Ocorreu um erro ao navegar. Tente novamente.', 
+                    content: 'Ocorreu um erro ao navegar. Tente novamente.', 
                     ephemeral: true 
                 });
             }
@@ -237,17 +237,17 @@ module.exports = {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`ajuda_anterior_${message.author.id}_disabled`)
-                        .setLabel('◀️ Anterior')
+                        .setLabel('Anterior Anterior')
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`ajuda_proximo_${message.author.id}_disabled`)
-                        .setLabel('Próximo ▶️')
+                        .setLabel('Próximo Proximo')
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`ajuda_fechar_${message.author.id}_disabled`)
-                        .setLabel('❌ Fechar')
+                        .setLabel('Fechar')
                         .setStyle(ButtonStyle.Danger)
                         .setDisabled(true)
                 );

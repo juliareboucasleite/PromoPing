@@ -27,7 +27,7 @@ module.exports = {
 
             if (users.length === 0) {
                 await connection.end();
-                return message.reply('❌ **Você não está registado!** Use `!registar <email> <senha>` para criar uma conta.');
+                return message.reply('**Você não está registado!** Use `!registar <email> <senha>` para criar uma conta.');
             }
 
             const user = users[0];
@@ -47,7 +47,7 @@ module.exports = {
 
             if (produtos.length === 0) {
                 const embed = new EmbedBuilder()
-                    .setTitle('📦 Seus Produtos')
+                    .setTitle('Seus Produtos')
                     .setDescription('**Você ainda não tem produtos monitorados.**\n\nAdicione produtos através do website PromoPing para começar a monitorar preços!')
                     .addFields({
                         name: 'Como Adicionar Produtos',
@@ -69,7 +69,7 @@ module.exports = {
                 const produtosAtuais = produtos.slice(i * produtosPorEmbed, (i + 1) * produtosPorEmbed);
                 
                 const embed = new EmbedBuilder()
-                    .setTitle(`📦 Seus Produtos ${totalEmbeds > 1 ? `(${i + 1}/${totalEmbeds})` : ''}`)
+                    .setTitle(`Seus Produtos ${totalEmbeds > 1 ? `(${i + 1}/${totalEmbeds})` : ''}`)
                     .setDescription(`**${produtos.length} produto(s) monitorado(s)**`)
                     .setColor(0x00bfff)
                     .setTimestamp();
@@ -79,7 +79,7 @@ module.exports = {
                     const precoAlvo = parseFloat(produto.PrecoAlvo || 0);
                     const precoAnterior = parseFloat(produto.PrecoAnterior || 0);
                     
-                    let status = '🟡';
+                    let status = '';
                     let diferenca = '';
                     
                     if (precoAnterior > 0) {
@@ -87,19 +87,19 @@ module.exports = {
                         const percentual = ((mudanca / precoAnterior) * 100).toFixed(1);
                         
                         if (mudanca > 0) {
-                            status = '📈';
+                            status = '[+]';
                             diferenca = `+€${mudanca.toFixed(2)} (+${percentual}%)`;
                         } else if (mudanca < 0) {
-                            status = '📉';
+                            status = '[-]';
                             diferenca = `€${mudanca.toFixed(2)} (${percentual}%)`;
                         } else {
-                            status = '➡️';
+                            status = '';
                             diferenca = 'Sem mudança';
                         }
                     }
 
                     if (precoAtual <= precoAlvo && precoAlvo > 0) {
-                        status = '🎯';
+                        status = '[META]';
                         diferenca = 'Meta atingida!';
                     }
 
@@ -132,7 +132,7 @@ module.exports = {
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando produtos:', error);
-            await message.reply('❌ **Erro interno!** Tente novamente em alguns minutos.');
+            await message.reply('**Erro interno!** Tente novamente em alguns minutos.');
         }
     }
 };

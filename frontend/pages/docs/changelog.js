@@ -256,7 +256,7 @@ async function loadChangelogFromGitHub() {
       if (response.status === 404) {
         changelogContainer.innerHTML = `
           <div style="text-align: center; padding: 3rem; color: #f44336;">
-            <p>❌ Repositório não encontrado ou sem releases</p>
+            <p> Repositório não encontrado ou sem releases</p>
             <p style="font-size: 0.9rem; margin-top: 1rem; color: #ccc;">
               Não foi possível carregar os releases. Possíveis causas:
             </p>
@@ -267,7 +267,7 @@ async function loadChangelogFromGitHub() {
               <li>Problema de conexão com a API do GitHub</li>
             </ul>
             <p style="font-size: 0.8rem; margin-top: 1rem; color: #888;">
-              💡 <strong>Dica:</strong> Se o repositório é privado, configure a variável <code style="background: #232326; padding: 0.2rem 0.4rem; border-radius: 4px;">GITHUB_TOKEN</code> no arquivo <code style="background: #232326; padding: 0.2rem 0.4rem; border-radius: 4px;">.env</code> do backend
+              <strong>Dica:</strong> Se o repositório é privado, configure a variável <code style="background: #232326; padding: 0.2rem 0.4rem; border-radius: 4px;">GITHUB_TOKEN</code> no arquivo <code style="background: #232326; padding: 0.2rem 0.4rem; border-radius: 4px;">.env</code> do backend
             </p>
             <p style="font-size: 0.9rem; margin-top: 1.5rem;">
               <a href="https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases" target="_blank" style="color: #ff9800; font-weight: 600;">
@@ -333,7 +333,7 @@ async function loadChangelogFromGitHub() {
     console.error('Erro ao carregar releases do GitHub:', error);
     changelogContainer.innerHTML = `
       <div style="text-align: center; padding: 3rem; color: #f44336;">
-        <p>❌ Erro ao carregar changelog do GitHub</p>
+        <p> Erro ao carregar changelog do GitHub</p>
         <p style="font-size: 0.9rem; margin-top: 1rem; color: #ccc;">
           Não foi possível carregar os releases automaticamente.
         </p>
