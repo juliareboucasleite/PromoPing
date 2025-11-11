@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>Histórico de Incidentes | PromoPing Docs</title>
@@ -7,20 +8,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" onerror="this.onerror=null; this.src='../../assets/images/PromoPing.png';" />
-            <a href="docs.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon"
+            onerror="this.onerror=null; this.src='../../assets/images/PromoPing.png';" />
+          <a href="docs.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -33,7 +37,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -52,10 +56,10 @@
           </svg>
         </button>
       </div>
-      
+
       <h2>Registo de Incidentes e Atualizações</h2>
       <p>
-        Esta página mantém um registo completo de todos os incidentes, atualizações e melhorias do PromoPing. 
+        Esta página mantém um registo completo de todos os incidentes, atualizações e melhorias do PromoPing.
         Aqui pode acompanhar o estado dos nossos serviços e as últimas correções implementadas.
       </p>
 
@@ -115,7 +119,8 @@
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Status do Serviço</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -126,10 +131,10 @@
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <script>
     // ================== CARREGAR INCIDENTES DA API ==================
     async function carregarIncidentes() {
@@ -137,11 +142,11 @@
         // Usar URL completa do servidor Node.js
         const apiUrl = 'http://127.0.0.1:3000/api/incidentes';
         const response = await fetch(apiUrl);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
 
         if (data.status === "ok" && data.incidentes && data.incidentes.length > 0) {
@@ -178,14 +183,14 @@
     function criarIncidenteCard(incidente) {
       const card = document.createElement('div');
       card.className = 'incident-card';
-      
+
       const dataInicio = new Date(incidente.DataInicio);
       const dataFim = incidente.DataFim ? new Date(incidente.DataFim) : null;
-      
-      const duracao = dataFim 
+
+      const duracao = dataFim
         ? calcularDuracao(dataInicio, dataFim)
         : 'Em andamento';
-      
+
       // Mapear Estado do banco para status (Estado pode ser 'Resolvido', 'Em Andamento', etc.)
       const estado = incidente.Estado || incidente.Status || 'Desconhecido';
       const statusClass = estado.toLowerCase().includes('resolvido') || estado.toLowerCase() === 'resolved' ? 'status-resolved' : 'status-investigating';
@@ -236,7 +241,7 @@
       const now = new Date();
       const lastUpdate = document.getElementById('last-update');
       const footerUpdate = document.getElementById('footer-update');
-      
+
       const timestamp = now.toLocaleString('pt-PT', {
         year: 'numeric',
         month: 'long',
@@ -249,7 +254,7 @@
       if (lastUpdate) {
         lastUpdate.textContent = timestamp;
       }
-      
+
       if (footerUpdate) {
         footerUpdate.textContent = timestamp;
       }
@@ -260,11 +265,11 @@
       try {
         const apiUrl = 'http://127.0.0.1:3000/api/atualizacoes';
         const response = await fetch(apiUrl);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
 
         if (data.status === "ok" && data.atualizacoes && data.atualizacoes.length > 0) {
@@ -303,13 +308,13 @@
     function criarAtualizacaoCard(atualizacao) {
       const card = document.createElement('div');
       card.className = 'update-card';
-      
+
       const dataPublicacao = new Date(atualizacao.DataPublicacao);
       const tipo = atualizacao.Tipo || 'Melhoria';
       const status = atualizacao.Status || 'Implementado';
-      const statusClass = status === 'Implementado' ? 'status-completed' : 
-                         status === 'Em Desenvolvimento' ? 'status-investigating' : 
-                         'status-planned';
+      const statusClass = status === 'Implementado' ? 'status-completed' :
+        status === 'Em Desenvolvimento' ? 'status-investigating' :
+          'status-planned';
 
       card.innerHTML = `
         <div class="update-date">${formatarData(dataPublicacao)}</div>
@@ -328,7 +333,7 @@
 
     // ================== LISTENERS PARA ATUALIZAÇÃO ==================
     // Escutar evento de storage para atualizar quando houver mudanças
-    window.addEventListener('storage', function(e) {
+    window.addEventListener('storage', function (e) {
       if (e.key === 'incidentes_updated') {
         console.log('Atualização de incidentes detectada, recarregando...');
         carregarIncidentes();
@@ -340,36 +345,36 @@
         atualizarTimestamp();
       }
     });
-    
+
     // Também escutar evento customizado (para mesma janela)
-    window.addEventListener('incidentes_updated', function() {
+    window.addEventListener('incidentes_updated', function () {
       console.log('Atualização de incidentes detectada, recarregando...');
       carregarIncidentes();
       atualizarTimestamp();
     });
-    
-    window.addEventListener('atualizacoes_updated', function() {
+
+    window.addEventListener('atualizacoes_updated', function () {
       console.log('Atualização de atualizações detectada, recarregando...');
       carregarAtualizacoes();
       atualizarTimestamp();
     });
-    
+
     // ================== INICIALIZAÇÃO ==================
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Carregar incidentes da API
       carregarIncidentes();
-      
+
       // Carregar atualizações da API
       carregarAtualizacoes();
-      
+
       // Atualizar timestamp
       atualizarTimestamp();
-      
+
       // Atualizar a cada 10 minutos (reduzido para evitar rate limit)
       setInterval(carregarIncidentes, 10 * 60 * 1000);
       setInterval(carregarAtualizacoes, 10 * 60 * 1000);
       setInterval(atualizarTimestamp, 5 * 60 * 1000);
-      
+
       // Adicionar botão de atualização manual
       const contentHeader = document.querySelector('.content-header');
       if (contentHeader) {
@@ -378,20 +383,23 @@
   </script>
   <script src="script.js"></script>
   <script src="search.js"></script>
-  
+
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
@@ -399,4 +407,5 @@
     }
   </style>
 </body>
+
 </html>

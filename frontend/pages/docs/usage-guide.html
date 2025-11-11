@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>Guia de Utilização | PromoPing Docs</title>
@@ -9,16 +10,19 @@
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
@@ -26,20 +30,23 @@
     }
   </style>
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -52,7 +59,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -71,11 +78,12 @@
           </svg>
         </button>
       </div>
-      
+
       <h2>Começar com o PromoPing</h2>
       <h3>Visão Geral</h3>
       <p>
-        O PromoPing é uma plataforma abrangente de monitorização de preços que o ajuda a rastrear produtos em múltiplas lojas online. 
+        O PromoPing é uma plataforma abrangente de monitorização de preços que o ajuda a rastrear produtos em múltiplas
+        lojas online.
         Este guia irá conduzi-lo através de todas as funcionalidades essenciais e como utilizá-las eficazmente.
       </p>
 
@@ -89,7 +97,7 @@
       </ul>
 
       <h3>Adicionar Produtos para Monitorizar</h3>
-      
+
       <h4>Método 1: URL Directa</h4>
       <p>A forma mais fácil de adicionar um produto é colando o seu URL:</p>
       <ol class="list-styled">
@@ -111,7 +119,7 @@
 
       <h3>Configurar Alertas de Preço</h3>
       <p>Configure alertas para ser notificado quando os preços descem:</p>
-      
+
       <h4>Tipos de Alerta</h4>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
         <li><strong>Queda de Preço:</strong> Notificar quando o preço desce abaixo do limiar</li>
@@ -130,7 +138,7 @@
       </ul>
 
       <h3>Gerir os Seus Produtos</h3>
-      
+
       <h4>Vista da Lista de Produtos</h4>
       <p>A sua lista de produtos mostra:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
@@ -143,7 +151,8 @@
 
       <h4>Acções em Massa</h4>
       <p>Executar acções em múltiplos produtos:</p>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
         • Seleccionar múltiplos produtos<br>
         • Actualizar limiares de preço<br>
         • Activar/desactivar alertas<br>
@@ -152,7 +161,7 @@
       </div>
 
       <h3>Análises e Relatórios</h3>
-      
+
       <h4>Histórico de Preços</h4>
       <p>Ver tendências de preços detalhadas para cada produto:</p>
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
@@ -172,7 +181,7 @@
       </ul>
 
       <h3>Funcionalidades Avançadas</h3>
-      
+
       <h4>Comparação de Preços</h4>
       <p>Comparar preços em múltiplas lojas:</p>
       <ol style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
@@ -196,7 +205,8 @@
       <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
         <li><strong>Free:</strong> Perfeito para testar o serviço com até 5 produtos</li>
         <li><strong>Basic:</strong> Ideal para utilizadores casuais que monitorizam algumas dezenas de produtos</li>
-        <li><strong>Standard:</strong> Recomendado para utilizadores activos que precisam de monitorização frequente</li>
+        <li><strong>Standard:</strong> Recomendado para utilizadores activos que precisam de monitorização frequente
+        </li>
         <li><strong>Premium:</strong> Para utilizadores profissionais que precisam de monitorização em tempo real</li>
       </ul>
 
@@ -214,7 +224,8 @@
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -225,12 +236,13 @@
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <!-- SCRIPTS -->
   <script src="script.js"></script>
   <script src="search.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -15,9 +16,9 @@
   <script src="assets/scripts/request-manager.js"></script>
   <script src="pages/inc/load-includes-index.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded",function(){
-      const h=document.querySelector('.pp-hero-left h1');
-      if(h) {
+    document.addEventListener("DOMContentLoaded", function () {
+      const h = document.querySelector('.pp-hero-left h1');
+      if (h) {
         // Remove qualquer classe de animação e deixa o texto visível
         h.classList.remove('blur-text');
         h.style.opacity = '1';
@@ -27,11 +28,11 @@
 
       // Scroll customizado para centralizar a seção "sobre" verticalmente ao clicar em "Saber mais"
       const saberMaisBtn = document.querySelector('a[href="#sobre"]');
-      if(saberMaisBtn) {
-        saberMaisBtn.addEventListener('click', function(e) {
+      if (saberMaisBtn) {
+        saberMaisBtn.addEventListener('click', function (e) {
           e.preventDefault();
           const target = document.querySelector('#sobre');
-          if(target) {
+          if (target) {
             // Calcula o topo do elemento e ajusta para centralizar na viewport
             const rect = target.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -47,28 +48,28 @@
     });
 
     // Abre/fecha dropdown do menu de navegação
-    function openNavigation(btn){
-      const l=btn.nextElementSibling,isOpen=l.style.display==='block';
-      document.querySelectorAll('.pp-header-nav-links').forEach(x=>x.style.display='none');
-      l.style.display=isOpen?'none':'block';
+    function openNavigation(btn) {
+      const l = btn.nextElementSibling, isOpen = l.style.display === 'block';
+      document.querySelectorAll('.pp-header-nav-links').forEach(x => x.style.display = 'none');
+      l.style.display = isOpen ? 'none' : 'block';
     }
 
     // Alterna o menu de navegação mobile
-    function toggleNavigation(){
+    function toggleNavigation() {
       document.documentElement.classList.toggle('opened-nav');
     }
 
     // Fecha dropdowns ao clicar fora dos menus
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('.pp-header-nav-wrapper'))
-        document.querySelectorAll('.pp-header-nav-links').forEach(x=>x.style.display='none');
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.pp-header-nav-wrapper'))
+        document.querySelectorAll('.pp-header-nav-links').forEach(x => x.style.display = 'none');
     });
 
     // Alterna idioma da página
-    function toggleLanguage(){
-      const lang=document.getElementById('lang-text'),cur=lang.textContent;
-      if(cur==='PT'){lang.textContent='EN';translateToEnglish();}
-      else{lang.textContent='PT';translateToPortuguese();}
+    function toggleLanguage() {
+      const lang = document.getElementById('lang-text'), cur = lang.textContent;
+      if (cur === 'PT') { lang.textContent = 'EN'; translateToEnglish(); }
+      else { lang.textContent = 'PT'; translateToPortuguese(); }
     }
 
     // Tradução para inglês do header, menus e conteúdos da página
@@ -105,78 +106,99 @@
     }
   </script>
 </head>
+
 <body class="theme-promoping">
   <div id="header-placeholder"></div>
   <main>
-    <section class="pp-hero"><div class="pp-container pp-hero-grid">
-      <div class="pp-hero-left">
-        <h1 style="opacity: 1 !important; filter: none !important; transform: none !important;">Sempre ligado</h1>
-        <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
+    <section class="pp-hero">
+      <div class="pp-container pp-hero-grid">
+        <div class="pp-hero-left">
+          <h1 style="opacity: 1 !important; filter: none !important; transform: none !important;">Sempre ligado</h1>
+          <a href="#sobre" class="pp-btn pp-btn-cta">Saber mais</a>
+        </div>
+        <div class="pp-hero-right">
+          <img src="assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
+        </div>
       </div>
-      <div class="pp-hero-right">
-        <img src="assets/images/hero-phone.png" alt="App PromoPing" class="pp-hero-logo">
-      </div>
-    </div></section>
+    </section>
     <section id="sobre" class="pp-section pp-section-centered py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
       <div class="pp-container max-w-5xl mx-auto">
         <div class="centered-content">
-          <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-8 md:mb-10 lg:mb-12 text-center tracking-tight leading-tight">
-            <span class="highlight drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]">Conecte-se às suas plataformas favoritas</span>
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-8 md:mb-10 lg:mb-12 text-center tracking-tight leading-tight">
+            <span class="highlight drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]">Conecte-se às suas plataformas
+              favoritas</span>
           </h2>
           <div class="text-content justified max-w-4xl mx-auto space-y-3 md:space-y-4">
             <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
-              Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em oferta.
+              Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em
+              um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em
+              oferta.
             </p>
             <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
-              Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.
+              Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor
+              cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.
             </p>
             <p class="text-base md:text-lg lg:text-xl text-white leading-relaxed text-justify">
-              Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.
+              Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre
+              fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra,
+              economize e aproveite.
             </p>
             <p class="text-lg md:text-xl lg:text-2xl font-bold text-white text-center mt-10 md:mt-12 lg:mt-14">
               <strong>PromoPing. O preço certo, na hora certa.</strong>
             </p>
             <p class="text-lg md:text-xl lg:text-2xl font-bold text-white text-center mt-10 md:mt-12 lg:mt-14"></p>
-          <div style="height: 45px;"></div>
+            <div style="height: 45px;"></div>
           </div>
         </div>
       </div>
     </section>
-    <section id="parceiros" class="pp-partners relative py-16 md:py-20 px-4 sm:px-5 overflow-hidden" style="background: linear-gradient(115deg, #ffffff00 85%, #ffa54b00 100%);">
+    <section id="parceiros" class="pp-partners relative py-16 md:py-20 px-4 sm:px-5 overflow-hidden"
+      style="background: linear-gradient(115deg, #ffffff00 85%, #ffa54b00 100%);">
       <div class="max-w-6xl mx-auto text-center relative z-20 px-6">
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-10 md:mb-12 tracking-tight drop-shadow-lg"
-              style="background: linear-gradient(90deg, #fff 60%, #FFA54B 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
-            <span class="inline-block align-middle">
-              <svg class="inline-block mr-2 -mt-1 w-7 h-7 text-[#FFA54B] drop-shadow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.22"/>
-                <path d="M8 12l2 2l4 -4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              </svg>
-              Mais de <span class="text-[#FFA54B] drop-shadow font-black">50 marcas</span> confiam no PromoPing.
-            </span>
-          </h2>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-10 md:mb-12 tracking-tight drop-shadow-lg"
+          style="background: linear-gradient(90deg, #fff 60%, #FFA54B 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+          <span class="inline-block align-middle">
+            <svg class="inline-block mr-2 -mt-1 w-7 h-7 text-[#FFA54B] drop-shadow" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.22" />
+              <path d="M8 12l2 2l4 -4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                fill="none" />
+            </svg>
+            Mais de <span class="text-[#FFA54B] drop-shadow font-black">50 marcas</span> confiam no PromoPing.
+          </span>
+        </h2>
         <div class="partner-grid max-w-[1100px] mx-auto">
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             Pingo Doce
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             Continente
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             Auchan
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             Worten
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             FNAC
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             IKEA
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             Radio Popular
           </h3>
-          <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+          <h3
+            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
             PcDiga
           </h3>
         </div>
@@ -192,9 +214,9 @@
           <div class="how-step">
             <div class="step-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
               </svg>
             </div>
             <div class="step-content">
@@ -203,15 +225,15 @@
             </div>
             <div class="step-number">01</div>
           </div>
-          
+
           <div class="how-step">
             <div class="step-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 12l2 2 4-4"/>
-                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
-                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
-                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
-                <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
+                <path d="M9 12l2 2 4-4" />
+                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3" />
+                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3" />
+                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3" />
+                <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3" />
               </svg>
             </div>
             <div class="step-content">
@@ -220,12 +242,12 @@
             </div>
             <div class="step-number">02</div>
           </div>
-          
+
           <div class="how-step">
             <div class="step-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </div>
             <div class="step-content">
@@ -335,7 +357,8 @@
         <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
         <a href="pages/inc/register.html">
           Começar agora grátis
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </a>
@@ -344,4 +367,5 @@
   </main>
   <div id="footer-placeholder"></div>
 </body>
+
 </html>

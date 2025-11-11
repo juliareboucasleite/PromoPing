@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>Guia de Instalação | PromoPing Docs</title>
@@ -9,16 +10,19 @@
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
@@ -26,20 +30,23 @@
     }
   </style>
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -52,7 +59,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -71,10 +78,10 @@
           </svg>
         </button>
       </div>
-      
+
       <h2>Pré-requisitos</h2>
       <p>Antes de instalar o PromoPing, certifique-se de que tem os seguintes requisitos instalados no seu sistema:</p>
-      
+
       <div class="alert alert-info">
         <strong>Requisitos Mínimos:</strong>
         <ul>
@@ -87,7 +94,7 @@
       </div>
 
       <h2>Instalação Local</h2>
-      
+
       <h3>1. Clonar o Repositório</h3>
       <div class="code-block">
         <pre><code>git clone https://github.com/juliareboucasleite/PromoPing.git
@@ -115,7 +122,8 @@ nano .env</code></pre>
       </div>
 
       <div class="alert alert-warning">
-        <strong>Importante:</strong> Configure todas as variáveis obrigatórias no arquivo <code>.env</code> antes de prosseguir.
+        <strong>Importante:</strong> Configure todas as variáveis obrigatórias no arquivo <code>.env</code> antes de
+        prosseguir.
       </div>
 
       <h3>4. Configurar Base de Dados</h3>
@@ -137,7 +145,7 @@ npm start</code></pre>
       </div>
 
       <h2>Instalação com Docker</h2>
-      
+
       <h3>Desenvolvimento</h3>
       <div class="code-block">
         <pre><code># Iniciar ambiente de desenvolvimento
@@ -157,7 +165,7 @@ docker-compose -f docker-files/docker-compose.yml up --build</code></pre>
       </div>
 
       <h2>Configuração do Python Scraper</h2>
-      
+
       <h3>1. Configurar Ambiente Unificado</h3>
       <div class="code-block">
         <pre><code># Copiar configuração unificada
@@ -176,7 +184,7 @@ python start.py</code></pre>
       </div>
 
       <h2>Verificação da Instalação</h2>
-      
+
       <h3>1. Verificar API</h3>
       <div class="code-block">
         <pre><code># Verificar se a API está funcionando
@@ -193,7 +201,7 @@ mysql -u root -p -e "USE promoping; SHOW TABLES;"</code></pre>
       </div>
 
       <h2>Configuração de Produção</h2>
-      
+
       <h3>Variáveis de Ambiente Essenciais</h3>
       <div class="code-block">
         <pre><code># Base de Dados
@@ -219,10 +227,11 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
       </div>
 
       <h2>Resolução de Problemas</h2>
-      
+
       <h3>Erro de Conexão com Base de Dados</h3>
       <div class="alert alert-error">
-        <strong>Solução:</strong> Verifique se o MySQL está a correr e se as credenciais no <code>.env</code> estão corretas.
+        <strong>Solução:</strong> Verifique se o MySQL está a correr e se as credenciais no <code>.env</code> estão
+        corretas.
       </div>
 
       <h3>Erro de Dependências</h3>
@@ -240,7 +249,8 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Guia de Utilização</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -251,12 +261,13 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <!-- SCRIPTS -->
   <script src="script.js"></script>
   <script src="search.js"></script>
 </body>
+
 </html>

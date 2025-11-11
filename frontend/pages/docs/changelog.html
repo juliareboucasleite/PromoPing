@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>Changelog | PromoPing Docs</title>
@@ -7,20 +8,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -33,7 +37,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -52,7 +56,7 @@
           </svg>
         </button>
       </div>
-      
+
       <!-- Changelog será carregado dinamicamente do GitHub -->
       <div id="changelog-container">
         <!-- Loading será exibido aqui temporariamente -->
@@ -83,7 +87,8 @@
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -94,34 +99,37 @@
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <!-- SCRIPTS -->
   <script src="script.js"></script>
   <script src="changelog.js"></script>
   <script src="search.js"></script>
-  
+
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
       overflow-x: hidden !important;
     }
-    
+
     .changelog-version {
       margin-bottom: 3rem;
       padding: 2rem;
@@ -130,24 +138,24 @@
       border: 1px solid #232326;
       position: relative;
     }
-    
+
     .changelog-version.future {
       opacity: 0.7;
       border-style: dashed;
     }
-    
+
     .changelog-version h2 {
       color: #ffc72d;
       margin-bottom: 1rem;
       font-size: 1.5rem;
     }
-    
+
     .version-date {
       color: #ccc;
       font-weight: 400;
       font-size: 1rem;
     }
-    
+
     .version-badge {
       position: absolute;
       top: 1rem;
@@ -158,56 +166,56 @@
       font-weight: 600;
       text-transform: uppercase;
     }
-    
+
     .version-badge.major {
       background: #ff4444;
       color: white;
     }
-    
+
     .version-badge.minor {
       background: #ff9800;
       color: white;
     }
-    
+
     .version-badge.patch {
       background: #4caf50;
       color: white;
     }
-    
+
     .version-badge.initial {
       background: #2196f3;
       color: white;
     }
-    
+
     .version-badge.planned {
       background: #9c27b0;
       color: white;
     }
-    
+
     .changelog-version h3 {
       color: #e6e6e6;
       margin-top: 1.5rem;
       margin-bottom: 1rem;
       font-size: 1.1rem;
     }
-    
+
     .changelog-version ul {
       margin-left: 1.5rem;
       margin-bottom: 1rem;
     }
-    
+
     .changelog-version li {
       margin-bottom: 0.5rem;
       line-height: 1.6;
     }
-    
+
     .legend {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1rem;
       margin-top: 2rem;
     }
-    
+
     .legend-item {
       display: flex;
       align-items: center;
@@ -217,11 +225,12 @@
       border-radius: 8px;
       border: 1px solid #232326;
     }
-    
+
     .legend-item span:last-child {
       color: #ccc;
       font-size: 0.9rem;
     }
   </style>
 </body>
+
 </html>

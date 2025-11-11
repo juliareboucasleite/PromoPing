@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>FAQ | PromoPing Docs</title>
@@ -7,20 +8,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -33,7 +37,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -52,43 +56,52 @@
           </svg>
         </button>
       </div>
-      
+
       <h2>Perguntas Gerais</h2>
-      
+
       <div class="faq-item">
         <h3>O que é o PromoPing?</h3>
-        <p>O PromoPing é uma plataforma de monitoramento de preços que permite acompanhar produtos em múltiplas lojas online portuguesas e receber notificações automáticas quando os preços baixam, ajudando os utilizadores a poupar dinheiro nas suas compras.</p>
+        <p>O PromoPing é uma plataforma de monitoramento de preços que permite acompanhar produtos em múltiplas lojas
+          online portuguesas e receber notificações automáticas quando os preços baixam, ajudando os utilizadores a
+          poupar dinheiro nas suas compras.</p>
       </div>
 
       <div class="faq-item">
         <h3>Como funciona o sistema de monitoramento?</h3>
-        <p>O PromoPing utiliza um sistema Python Scraper que verifica periodicamente os preços dos produtos nas lojas suportadas. Quando um preço atinge a meta definida pelo utilizador, o sistema envia notificações via Discord, email ou SMS.</p>
+        <p>O PromoPing utiliza um sistema Python Scraper que verifica periodicamente os preços dos produtos nas lojas
+          suportadas. Quando um preço atinge a meta definida pelo utilizador, o sistema envia notificações via Discord,
+          email ou SMS.</p>
       </div>
 
       <div class="faq-item">
         <h3>Quais lojas são suportadas?</h3>
-        <p>O PromoPing suporta mais de 20 lojas, incluindo Worten, FNAC, Continente, Pingo Doce, IKEA, Radio Popular, Auchan, PcDiga, Amazon e muitas outras. O sistema detecta automaticamente a loja a partir da URL do produto.</p>
+        <p>O PromoPing suporta mais de 20 lojas, incluindo Worten, FNAC, Continente, Pingo Doce, IKEA, Radio Popular,
+          Auchan, PcDiga, Amazon e muitas outras. O sistema detecta automaticamente a loja a partir da URL do produto.
+        </p>
       </div>
 
       <h2>Conta e Autenticação</h2>
-      
+
       <div class="faq-item">
         <h3>Como criar uma conta?</h3>
-        <p>Pode criar uma conta através do registo tradicional com email e password, ou usar login social com Google OAuth. Acesse a página de registo e siga as instruções.</p>
+        <p>Pode criar uma conta através do registo tradicional com email e password, ou usar login social com Google
+          OAuth. Acesse a página de registo e siga as instruções.</p>
       </div>
 
       <div class="faq-item">
         <h3>Esqueci-me da password. Como recuperar?</h3>
-        <p>Na página de login, clique em "Esqueci-me da password" e siga as instruções enviadas por email. Se não receber o email, verifique a pasta de spam.</p>
+        <p>Na página de login, clique em "Esqueci-me da password" e siga as instruções enviadas por email. Se não
+          receber o email, verifique a pasta de spam.</p>
       </div>
 
       <div class="faq-item">
         <h3>Posso usar login social?</h3>
-        <p>Sim! O PromoPing suporta login com Google OAuth e Discord. Basta clicar no botão correspondente na página de login.</p>
+        <p>Sim! O PromoPing suporta login com Google OAuth e Discord. Basta clicar no botão correspondente na página de
+          login.</p>
       </div>
 
       <h2>Planos e Limites</h2>
-      
+
       <div class="faq-item">
         <h3>Quais são os planos disponíveis?</h3>
         <p>O PromoPing oferece 4 planos:</p>
@@ -102,19 +115,22 @@
 
       <div class="faq-item">
         <h3>Posso alterar o meu plano?</h3>
-        <p>Sim, pode alterar o seu plano a qualquer momento através da página de planos no dashboard. As alterações são aplicadas imediatamente.</p>
+        <p>Sim, pode alterar o seu plano a qualquer momento através da página de planos no dashboard. As alterações são
+          aplicadas imediatamente.</p>
       </div>
 
       <div class="faq-item">
         <h3>O que acontece se exceder o limite do meu plano?</h3>
-        <p>Se exceder o limite de produtos, será notificado e poderá fazer upgrade do plano ou remover alguns produtos. O sistema continuará a monitorizar os produtos dentro do limite.</p>
+        <p>Se exceder o limite de produtos, será notificado e poderá fazer upgrade do plano ou remover alguns produtos.
+          O sistema continuará a monitorizar os produtos dentro do limite.</p>
       </div>
 
       <h2>Notificações</h2>
-      
+
       <div class="faq-item">
         <h3>Como configurar notificações?</h3>
-        <p>No dashboard, vá para "Preferências" e configure os canais de notificação desejados (Discord, email, SMS). Pode personalizar a frequência e tipos de alertas.</p>
+        <p>No dashboard, vá para "Preferências" e configure os canais de notificação desejados (Discord, email, SMS).
+          Pode personalizar a frequência e tipos de alertas.</p>
       </div>
 
       <div class="faq-item">
@@ -134,7 +150,7 @@
       </div>
 
       <h2>Problemas Técnicos</h2>
-      
+
       <div class="faq-item">
         <h3>O site não carrega. O que fazer?</h3>
         <p>Verifique se:</p>
@@ -160,11 +176,12 @@
 
       <div class="faq-item">
         <h3>Como reportar um bug?</h3>
-        <p>Pode reportar bugs através da página de suporte ou enviando um email para corporation.promoping@gmail.com. Inclua detalhes sobre o problema e screenshots se possível.</p>
+        <p>Pode reportar bugs através da página de suporte ou enviando um email para corporation.promoping@gmail.com.
+          Inclua detalhes sobre o problema e screenshots se possível.</p>
       </div>
 
       <h2>Privacidade e Segurança</h2>
-      
+
       <div class="faq-item">
         <h3>Os meus dados estão seguros?</h3>
         <p>Sim, o PromoPing implementa medidas de segurança robustas incluindo:</p>
@@ -179,29 +196,34 @@
 
       <div class="faq-item">
         <h3>Posso eliminar a minha conta?</h3>
-        <p>Sim, pode eliminar a sua conta a qualquer momento através das configurações do perfil. Todos os dados serão removidos permanentemente.</p>
+        <p>Sim, pode eliminar a sua conta a qualquer momento através das configurações do perfil. Todos os dados serão
+          removidos permanentemente.</p>
       </div>
 
       <div class="faq-item">
         <h3>O PromoPing partilha os meus dados?</h3>
-        <p>Não, o PromoPing não partilha os seus dados pessoais com terceiros. Consulte a nossa política de privacidade para mais detalhes.</p>
+        <p>Não, o PromoPing não partilha os seus dados pessoais com terceiros. Consulte a nossa política de privacidade
+          para mais detalhes.</p>
       </div>
 
       <h2>Funcionalidades Avançadas</h2>
-      
+
       <div class="faq-item">
         <h3>Como funciona a detecção automática de loja?</h3>
-        <p>O sistema analisa a URL do produto e identifica automaticamente a loja correspondente, aplicando o scraper adequado para cada loja.</p>
+        <p>O sistema analisa a URL do produto e identifica automaticamente a loja correspondente, aplicando o scraper
+          adequado para cada loja.</p>
       </div>
 
       <div class="faq-item">
         <h3>Posso exportar os meus dados?</h3>
-        <p>Sim, pode exportar os seus dados em formato Excel, PDF ou CSV através da página de exportação no dashboard.</p>
+        <p>Sim, pode exportar os seus dados em formato Excel, PDF ou CSV através da página de exportação no dashboard.
+        </p>
       </div>
 
       <div class="faq-item">
         <h3>Como funciona o sistema de períodos de graça?</h3>
-        <p>Os períodos de graça permitem testar funcionalidades premium temporariamente. São geridos automaticamente pelo sistema.</p>
+        <p>Os períodos de graça permitem testar funcionalidades premium temporariamente. São geridos automaticamente
+          pelo sistema.</p>
       </div>
 
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='support.html'">
@@ -209,7 +231,8 @@
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Suporte</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -220,33 +243,36 @@
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <!-- SCRIPTS -->
   <script src="script.js"></script>
   <script src="search.js"></script>
-  
+
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
       overflow-x: hidden !important;
     }
-    
+
     .faq-item {
       margin-bottom: 2rem;
       padding: 1.5rem;
@@ -254,27 +280,28 @@
       border-radius: 8px;
       border: 1px solid #232326;
     }
-    
+
     .faq-item h3 {
       color: #ffc72d;
       margin-bottom: 1rem;
       font-size: 1.1rem;
     }
-    
+
     .faq-item p {
       margin-bottom: 1rem;
       line-height: 1.6;
     }
-    
+
     .faq-item ul {
       margin-left: 1.5rem;
       margin-bottom: 1rem;
     }
-    
+
     .faq-item li {
       margin-bottom: 0.5rem;
       line-height: 1.5;
     }
   </style>
 </body>
+
 </html>

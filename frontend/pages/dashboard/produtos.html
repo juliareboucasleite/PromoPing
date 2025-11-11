@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produtos — PromoPing</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
-   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
   <script src="../../assets/scripts/request-manager.js"></script>
 </head>
+
 <body class="dashboard-body">
   <nav class="dashboard-nav">
     <div class="nav-container">
@@ -16,7 +18,7 @@
         <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
         <span class="nav-brand-name">PromoPing</span>
       </div>
-      
+
       <div class="nav-menu">
         <a href="Painel.html" class="nav-item">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -29,7 +31,9 @@
         </a>
         <a href="produtos.html" class="nav-item nav-item-active">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+            </path>
             <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
             <line x1="12" y1="22.08" x2="12" y2="12"></line>
           </svg>
@@ -43,7 +47,7 @@
           Perfil
         </a>
       </div>
-      
+
       <div class="nav-actions">
         <span class="nav-user" id="userName">Utilizador</span>
         <button class="nav-logout" onclick="logout()">
@@ -102,7 +106,9 @@
           </div>
           <div class="filter-count">
             <svg class="count-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
             </svg>
             <span id="filterProductCount">0</span> produtos
           </div>
@@ -122,7 +128,7 @@
   </main>
   <script src="../../assets/scripts/support-widget.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('DOMContentLoaded', function () {
       if (window.initSupportWidgetFront) window.initSupportWidgetFront();
     });
   </script>
@@ -133,11 +139,13 @@
       <div class="upgrade-content">
         <div class="upgrade-icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+            </path>
           </svg>
         </div>
         <h3>Funcionalidade Exclusiva</h3>
-        <p>As funcionalidades de exportação estão disponíveis apenas para os planos <strong>Basic</strong>, <strong>Standard</strong> e <strong>Premium</strong>.</p>
+        <p>As funcionalidades de exportação estão disponíveis apenas para os planos <strong>Basic</strong>,
+          <strong>Standard</strong> e <strong>Premium</strong>.</p>
         <p><strong>Seu plano atual: <span id="currentPlan">Free</span></strong></p>
         <div class="upgrade-benefits">
           <span class="benefit">
@@ -252,7 +260,7 @@
           const loja = p.Loja || p.loja || p.loja_nome || '';
           const precoAtual = p.PrecoAtual || p.precoAtual || p.preco_atual;
           const precoAlvo = p.PrecoAlvo || p.precoAlvo || p.preco_alvo;
-          
+
           const nomeOk = !query || nome.toLowerCase().includes(query);
           const lojaOk = !lojaFiltro || (loja && loja.toLowerCase() === lojaFiltro.toLowerCase());
           const metaAtingida = precoAlvo != null && precoAtual != null && precoAtual <= precoAlvo;
@@ -266,10 +274,10 @@
           const precoAnterior = hist.length > 0 ? `€${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : '—';
           const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '—';
           const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '—';
-                 const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0) 
-            ? (Number(p.PrecoAtual || p.precoAtual || p.preco_atual) - Number(hist[0].Preco || hist[0].preco)) 
+          const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0)
+            ? (Number(p.PrecoAtual || p.precoAtual || p.preco_atual) - Number(hist[0].Preco || hist[0].preco))
             : null;
-          
+
           const percentual = delta && hist.length > 0 ? ((delta / Number(hist[0].Preco || hist[0].preco)) * 100) : 0;
           let statusTag = '';
           let statusClass = '';
@@ -317,7 +325,7 @@
           }
 
           // Gerar histórico de preços
-          const historicoHtml = hist.slice(0, 3).map(h => 
+          const historicoHtml = hist.slice(0, 3).map(h =>
             `<div class="history-item">${h.Preco || h.preco}€ (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
           ).join('');
 
@@ -348,7 +356,7 @@
               </button>
             </div>
           ` : "";
-          
+
           const card = `
             <div class="product-card-dashboard${blurClass}" style="animation-delay: ${index * 0.1}s">
               <div class="product-header-dashboard">
@@ -442,17 +450,17 @@
     }
 
     let lastSyncTime = Date.now();
-    
+
     // Função: verifica se há mudanças/sincronização dos produtos no backend
     async function verificarSincronizacao() {
       const token = localStorage.getItem("token");
       if (!token) return;
-      
+
       try {
         const res = await makeRequest(`http://127.0.0.1:3000/api/produtos/sync?lastSync=${lastSyncTime}`, {
           headers: { Authorization: "Bearer " + token }
         });
-        
+
         const data = await res.json();
         if (data.status === "ok" && data.produtos.length > 0) {
           // Há produtos atualizados, recarregar a lista
@@ -463,7 +471,7 @@
         console.error("Erro na sincronização:", err);
       }
     }
-    
+
     // Sincronização removida - página estática não precisa de atualizações automáticas
     // setInterval(verificarSincronizacao, 120000);
 
@@ -509,11 +517,11 @@
     function mostrarModalUpgrade(planoAtual) {
       const modal = document.getElementById("upgradeModal");
       const currentPlanSpan = document.getElementById("currentPlan");
-      
+
       if (currentPlanSpan) {
         currentPlanSpan.textContent = planoAtual;
       }
-      
+
       modal.style.display = "block";
       document.body.style.overflow = "hidden"; // Prevenir scroll
       console.log("Modal de upgrade exibido");
@@ -528,17 +536,17 @@
     }
 
     // Fecha modal ao clicar no backdrop
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
       const modal = document.getElementById("upgradeModal");
       const backdrop = document.querySelector('.upgrade-modal-backdrop');
-      
+
       if (event.target === backdrop) {
         fecharModalUpgrade();
       }
     });
 
     // Fecha modal ao pressionar ESC
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
         fecharModalUpgrade();
       }
@@ -563,7 +571,7 @@
         if (response.ok) {
           const data = await response.json();
           console.log(" [PRODUTOS] Dados do perfil:", data);
-          
+
           if (data.status === "ok" && data.profile) {
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
@@ -590,11 +598,12 @@
       // Verificar plano primeiro, depois carregar produtos
       await verificarPlanoUsuario();
       carregarProdutos();
-      
+
       document.getElementById('pesquisa').addEventListener('input', carregarProdutos);
       document.getElementById('filtroLoja').addEventListener('change', carregarProdutos);
       document.getElementById('filtroEstado').addEventListener('change', carregarProdutos);
     };
   </script>
 </body>
+
 </html>

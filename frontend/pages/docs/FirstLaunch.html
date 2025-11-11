@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
   <meta charset="UTF-8">
   <title>Primeiro Lançamento | PromoPing Docs</title>
@@ -9,16 +10,19 @@
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE e Edge */
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
     }
-    
+
     main.content::-webkit-scrollbar {
-      display: none !important; /* Chrome, Safari, Opera */
+      display: none !important;
+      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
-    
+
     /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
@@ -26,20 +30,23 @@
     }
   </style>
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-          <div class="logo">
-            <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-            <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing Docs</a>
-          </div>
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="/pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
       </div>
       <div class="header-right">
         <div class="search-container">
           <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
@@ -52,7 +59,7 @@
   </header>
 
   <div class="docs-container">
-    
+
     <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
@@ -71,11 +78,12 @@
           </svg>
         </button>
       </div>
-      
+
       <h2>Começar</h2>
       <h3>Bem-vindo ao PromoPing!</h3>
       <p>
-        Este guia irá ajudá-lo a configurar o PromoPing pela primeira vez e a monitorizar os seus produtos favoritos em minutos.
+        Este guia irá ajudá-lo a configurar o PromoPing pela primeira vez e a monitorizar os seus produtos favoritos em
+        minutos.
       </p>
 
       <h3>Requisitos do Sistema</h3>
@@ -88,7 +96,7 @@
       </ul>
 
       <h3>Passos de Instalação</h3>
-      
+
       <h4>1. Clonar o Repositório</h4>
       <div class="code-block">
         git clone https://github.com/yourusername/PromoPing-2.0.1.git
@@ -108,12 +116,12 @@
         DB_USER=your_username<br>
         DB_PASSWORD=your_password<br>
         DB_NAME=promoping<br><br>
-        
+
         # Chaves da API<br>
         STRIPE_SECRET_KEY=your_stripe_key<br>
         GOOGLE_CLIENT_ID=your_google_client_id<br>
         GOOGLE_CLIENT_SECRET=your_google_client_secret<br><br>
-        
+
         # Configuração do Servidor<br>
         PORT=3000<br>
         NODE_ENV=development
@@ -121,19 +129,23 @@
 
       <h4>4. Configuração da Base de Dados</h4>
       <p>Execute as migrações da base de dados:</p>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
         npm run migrate
       </div>
 
       <h4>5. Iniciar a Aplicação</h4>
-      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
         npm start
       </div>
 
       <h3>Configuração Inicial</h3>
       <p>Assim que a aplicação estiver a funcionar:</p>
       <ol style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Abra o seu navegador e navegue para <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">http://localhost:3000</code></li>
+        <li>Abra o seu navegador e navegue para <code
+            style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">http://localhost:3000</code>
+        </li>
         <li>Crie a sua primeira conta de administrador</li>
         <li>Configure as suas preferências de notificação</li>
         <li>Adicione o seu primeiro produto para monitorizar</li>
@@ -153,7 +165,8 @@
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Guia de Utilização</span>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
@@ -164,12 +177,13 @@
     </main>
 
   </div>
-  
+
   <!-- FOOTER -->
   <div id="footer-placeholder"></div>
-  
+
   <!-- SCRIPTS -->
   <script src="script.js"></script>
   <script src="search.js"></script>
 </body>
+
 </html>
