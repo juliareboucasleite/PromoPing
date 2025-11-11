@@ -14,10 +14,9 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-// Testar conexão inicial
+// Testar conexão inicial (silencioso)
 pool.getConnection()
   .then((connection) => {
-    console.log(" Conectado à base de dados MySQL");
     connection.release();
   })
   .catch((error) => {

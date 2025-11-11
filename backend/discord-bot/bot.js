@@ -30,6 +30,7 @@ class PromoPingBot {
         this.checkInterval = parseInt(process.env.BOT_CHECK_INTERVAL) || 5;
         this.isMonitoring = false;
         this.lastCheck = new Date();
+        this.lastErrorLog = 0; // Para controlar spam de erros
 
         this.setupEventHandlers();
     }
@@ -37,11 +38,7 @@ class PromoPingBot {
     setupEventHandlers() {
         // Quando o bot se conecta
         this.client.once('ready', () => {
-            console.log(`\nBot conectado como ${this.client.user.tag}`);
-            console.log(`Servidores: ${this.client.guilds.cache.size}`);
-            console.log(`Prefixo atual: ${this.prefix}`);
-            console.log(`Comandos carregados: ${comandos.size}`);
-            console.log('Sistema de monitoramento inicializado.\n');
+            // Bot conectado - log silencioso
             this.startMonitoring();
         });
 
@@ -60,7 +57,7 @@ class PromoPingBot {
                 const comando = comandos.get(commandName);
                 if (!comando) return;
 
-                console.log(`[DISCORD] Executando comando: ${this.prefix}${commandName}`);
+                // Log silencioso de comandos
 
                 await comando.execute(this.client, message, args, this);
             } catch (error) {
@@ -84,7 +81,6 @@ class PromoPingBot {
     }
 
     async startMonitoring() {
-        console.log('[DISCORD] Iniciando monitoramento automático de preços...');
         this.isMonitoring = true;
 
         setInterval(async () => {
@@ -108,7 +104,10 @@ class PromoPingBot {
                 ORDER BY hp.DataRegisto DESC
             `, [this.lastCheck]);
 
-            console.log(`[DISCORD] Verificando ${rows.length} alterações de preço...`);
+            // Só loga se houver alterações
+            if (rows.length > 0) {
+                console.log(`[DISCORD] ${rows.length} alteração(ões) de preço encontrada(s)`);
+            }
             
             // Enviar notificações para cada mudança de preço
             for (const product of rows) {
@@ -118,7 +117,12 @@ class PromoPingBot {
             this.lastCheck = new Date();
             await connection.end();
         } catch (error) {
-            console.error('[DISCORD] Erro ao consultar o banco de dados:', error);
+            // Só loga erros de conexão uma vez a cada 5 minutos para evitar spam
+            const now = Date.now();
+            if (!this.lastErrorLog || (now - this.lastErrorLog) > 300000) {
+                console.error('[DISCORD] Erro ao consultar o banco de dados:', error.code || error.message);
+                this.lastErrorLog = now;
+            }
         }
     }
 
@@ -126,7 +130,7 @@ class PromoPingBot {
         try {
             const user = await this.client.users.fetch(product.DiscordId);
             if (!user) {
-                console.log(`[DISCORD] Usuário ${product.DiscordId} não encontrado`);
+                // Usuário não encontrado - log silencioso
                 return;
             }
 
@@ -175,11 +179,11 @@ class PromoPingBot {
                     new ButtonBuilder()
                         .setCustomId(`parar_notificacoes_${product.Id}`)
                         .setLabel('Parar Notificações')
-                        .setStyle(ButtonStyle.Danger)
+                        .setStyle(ButtonStyle.Danger),
                     new ButtonBuilder()
                         .setCustomId(`ver_produto_${product.Id}`)
                         .setLabel('Ver Produto')
-                        .setStyle(ButtonStyle.Primary)
+                        .setStyle(ButtonStyle.Primary),
                     new ButtonBuilder()
                         .setCustomId(`configurar_${product.Id}`)
                         .setLabel('Configurar')
@@ -194,7 +198,7 @@ class PromoPingBot {
             // Configurar coletor de interações para os botões
             this.setupButtonCollector(message, product, user);
 
-            console.log(`[DISCORD] Notificação enviada para ${user.username} sobre ${product.Nome}`);
+            // Notificação enviada - log silencioso
 
         } catch (error) {
             console.error(`[DISCORD] Erro ao enviar notificação para ${product.DiscordId}:`, error);
@@ -285,7 +289,7 @@ class PromoPingBot {
                 ephemeral: true 
             });
 
-            console.log(`[DISCORD] Notificações paradas para ${user.username} - produto ${product.Id}`);
+            // Notificações paradas - log silencioso
 
         } catch (error) {
             console.error('[DISCORD] Erro ao parar notificações:', error);
@@ -357,7 +361,7 @@ class PromoPingBot {
     async disconnect() {
         try {
             await this.client.destroy();
-            console.log('[DISCORD] Bot desconectado com sucesso.');
+            // Bot desconectado - log silencioso
         } catch (error) {
             console.error('[DISCORD] Erro ao desconectar o bot:', error);
         }

@@ -22,7 +22,6 @@ process.on('uncaughtException', (error) => {
 // Iniciar o bot
 async function startBot() {
     try {
-        console.log('[DISCORD] Iniciando PromoPing Bot...');
         await bot.connect();
     } catch (error) {
         console.error('[DISCORD] Falha ao iniciar bot:', error);
@@ -32,13 +31,11 @@ async function startBot() {
 
 // Tratamento de sinais para shutdown graceful
 process.on('SIGINT', async () => {
-    console.log('\n[DISCORD] Recebido SIGINT. Desconectando bot...');
     await bot.disconnect();
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-    console.log('\n[DISCORD] Recebido SIGTERM. Desconectando bot...');
     await bot.disconnect();
     process.exit(0);
 });

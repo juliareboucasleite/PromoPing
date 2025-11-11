@@ -3,7 +3,7 @@ const path = require('path');
 
 const comandos = new Map();
 
-console.log('📁 Carregando comandos do Discord Bot...');
+// Carregando comandos silenciosamente
 
 try {
     // Lê todos os arquivos .js na pasta comandos (exceto este index)
@@ -18,12 +18,12 @@ try {
             const comando = require(path.join(__dirname, file));
 
             if (!comando.name || typeof comando.execute !== 'function') {
-                console.warn(` Comando inválido em ${file} (faltando 'name' ou 'execute')`);
+                // Comando inválido - log silencioso
                 continue;
             }
 
             if (comandos.has(comando.name)) {
-                console.warn(` Nome duplicado ignorado: ${comando.name}`);
+                // Nome duplicado - log silencioso
                 continue;
             }
 
@@ -34,24 +34,21 @@ try {
             if (Array.isArray(comando.aliases)) {
                 for (const alias of comando.aliases) {
                     if (comandos.has(alias)) {
-                        console.warn(` Alias duplicado ignorado: ${alias}`);
+                        // Alias duplicado - log silencioso
                         continue;
                     }
                     comandos.set(alias, comando);
                 }
             }
 
-            console.log(` Carregado: !${comando.name}${comando.aliases ? ` (${comando.aliases.join(', ')})` : ''}`);
+            // Log silencioso - só mostra em modo debug
 
         } catch (error) {
             console.error(` Erro ao carregar comando ${file}:`, error.message);
         }
     }
 
-    console.log(`${count} comandos carregados com sucesso!`);
-    console.log('Comandos disponíveis:', 
-        Array.from(new Set(comandos.keys())).join(', ')
-    );
+    // Log silencioso - comandos carregados
 
 } catch (error) {
     console.error(' Erro ao carregar comandos:', error);

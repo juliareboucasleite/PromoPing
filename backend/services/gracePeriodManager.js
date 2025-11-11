@@ -11,7 +11,7 @@ export class GracePeriodManager {
    */
   static async checkAndUpdateExpiredGracePeriods() {
     try {
-      console.log(' [GRACE_PERIOD] Verificando períodos de graça expirados...');
+      // Verificando períodos de graça (log silencioso)
       
       // Buscar usuários com período de graça expirado
       const [expiredUsers] = await pool.query(`
@@ -29,17 +29,17 @@ export class GracePeriodManager {
       `);
       
       if (expiredUsers.length === 0) {
-        console.log(' [GRACE_PERIOD] Nenhum período de graça expirado encontrado');
+        // Nenhum período expirado (log silencioso)
         return { updated: 0, users: [] };
       }
       
-      console.log(` [GRACE_PERIOD] Encontrados ${expiredUsers.length} usuários com período expirado`);
+      // Usuários com período expirado encontrados (log silencioso)
       
       const updatedUsers = [];
       
       // Atualizar cada usuário para Free
       for (const user of expiredUsers) {
-        console.log(` [GRACE_PERIOD] Atualizando usuário ${user.user_id} (${user.plan_name})...`);
+        // Atualizando usuário (log silencioso)
         
         // Atualizar configutilizador para Free
         await pool.query(`
@@ -68,10 +68,10 @@ export class GracePeriodManager {
           previousStatus: user.StatusAssinatura
         });
         
-        console.log(` [GRACE_PERIOD] Usuário ${user.user_id} atualizado para Free`);
+        // Usuário atualizado (log silencioso)
       }
       
-      console.log(` [GRACE_PERIOD] ${updatedUsers.length} usuários atualizados para Free`);
+      // Usuários atualizados (log silencioso)
       
       return { updated: updatedUsers.length, users: updatedUsers };
       
@@ -111,7 +111,7 @@ export class GracePeriodManager {
    * Inicia verificação automática (para ser chamada periodicamente)
    */
   static async startAutomaticCheck() {
-    console.log(' [GRACE_PERIOD] Iniciando verificação automática de períodos de graça...');
+    // Verificação automática iniciada silenciosamente
     
     // Verificar a cada 1 hora
     setInterval(async () => {
@@ -122,6 +122,6 @@ export class GracePeriodManager {
       }
     }, 60 * 60 * 1000); // 1 hora em millisegundos
     
-    console.log(' [GRACE_PERIOD] Verificação automática iniciada (a cada 1 hora)');
+    // Verificação automática ativa
   }
 }

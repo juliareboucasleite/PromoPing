@@ -531,9 +531,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, HOST, async () => {
   console.log(`PromoPing rodando em http://${HOST}:${PORT}`);
   if (process.env.NODE_ENV === 'development') {
-    console.log(`Frontend: http://${HOST}:${PORT}/`);
-    console.log(`API: http://${HOST}:${PORT}/api/`);
-    console.log(`Cron: atualização automática a cada 6 horas`);
+    console.log(`Frontend: http://${HOST}:${PORT}/ | API: http://${HOST}:${PORT}/api/`);
   }
   
   // Iniciar verificação automática de períodos de graça
