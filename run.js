@@ -116,9 +116,7 @@ function runLocal() {
     // Iniciar Rich Presence (se disponível)
     let presenceProcess = null;
     if (checkFile('presence.js')) {
-        if (process.env.NODE_ENV !== 'production') {
-            log('Iniciando Discord Rich Presence...', 'cyan');
-        }
+        // Inicia silenciosamente
         try {
             presenceProcess = spawn('node', ['presence.js'], { 
                 stdio: 'pipe', 
@@ -128,21 +126,20 @@ function runLocal() {
             
             presenceProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim()
-                  // Remove emojis comuns do início/fim/mensagens
                   .replace(/[]/g, '')
                   .replace(/^\s+|\s+$/g, '');
 
-                if (message === '') return; // ignora linhas vazias (só emoji)
-
-                if (message.includes('Rich Presence iniciado') || message.includes('Rich Presence pronto')) {
-                    log(`Rich Presence: ${message}`, 'green');
-                } else if (message.includes('Rich Presence erro') || message.includes('Rich Presence alerta')) {
+                if (message === '') return;
+                
+                // Só mostra mensagens importantes (erros e conexão bem-sucedida)
+                if (message.includes('Conectado ao Discord Rich Presence')) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        log(`Rich Presence: Conectado`, 'green');
+                    }
+                } else if (message.includes('Erro') || message.includes('ERROR')) {
                     log(`Rich Presence: ${message}`, 'red');
-                } else if (message.includes('Rich Presence sincronizando')) {
-                    log(`Rich Presence: ${message}`, 'yellow');
-                } else {
-                    log(`Rich Presence: ${message}`, 'green');
                 }
+                // Ignora todas as outras mensagens
             });
             
             presenceProcess.stderr.on('data', (data) => {
@@ -166,7 +163,7 @@ function runLocal() {
     // Iniciar Bot do Discord
     let discordBotProcess = null;
     if (checkFile('backend/discord-bot/package.json')) {
-        log('Iniciando Bot do Discord...', 'cyan');
+        // Inicia silenciosamente
         try {
             // Verificar se as dependências do bot estão instaladas
             const botNodeModules = path.join(__dirname, 'backend', 'discord-bot', 'node_modules');
@@ -190,14 +187,37 @@ function runLocal() {
             
             discordBotProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim();
-                if (message) {
+                // Filtra logs verbosos - bloqueia quase tudo, só mostra erros críticos
+                if (message && (
+                    (message.includes('ERROR') || message.includes('FATAL') || message.includes('CRITICAL')) && 
+                    !message.includes('Verificando') &&
+                    !message.includes('Carregando') &&
+                    !message.includes('Carregado') &&
+                    !message.includes('comandos') &&
+                    !message.includes('Comandos') &&
+                    !message.includes('Servidores') &&
+                    !message.includes('Prefixo') &&
+                    !message.includes('Sistema') &&
+                    !message.includes('Iniciando') &&
+                    !message.includes('Bot conectado') &&
+                    !message.includes('DeprecationWarning') &&
+                    !message.includes('Bot') &&
+                    !message.includes('DISCORD')
+                )) {
                     log(`Bot Discord: ${message}`, 'magenta');
                 }
+                // Bloqueia todos os outros logs do bot
             });
             
             discordBotProcess.stderr.on('data', (data) => {
                 const message = data.toString().trim();
-                if (message && !message.includes('Client ID')) {
+                // Só mostra erros críticos, ignorando warnings e deprecations
+                if (message && 
+                    !message.includes('Client ID') && 
+                    !message.includes('DeprecationWarning') &&
+                    !message.includes('Use `node --trace-deprecation') &&
+                    (message.includes('ERROR') || message.includes('FATAL') || message.includes('CRITICAL'))
+                ) {
                     log(`Bot Discord: ${message}`, 'red');
                 }
             });
@@ -205,11 +225,6 @@ function runLocal() {
             discordBotProcess.on('error', (error) => {
                 log(`Erro no Bot do Discord: ${error.message}`, 'red');
             });
-            
-            // Aguardar um pouco para o bot conectar
-            setTimeout(() => {
-                log('Bot do Discord iniciado', 'green');
-            }, 2000);
             
         } catch (error) {
             log(`Não foi possível iniciar Bot do Discord: ${error.message}`, 'yellow');
@@ -268,11 +283,7 @@ function runLocal() {
         process.on('SIGINT', () => shutdown('SIGINT'));
         process.on('SIGTERM', () => shutdown('SIGTERM'));
         
-        log('Todos os serviços iniciados!', 'green');
         log('Servidor rodando em http://127.0.0.1:3000', 'cyan');
-        if (discordBotProcess) {
-            log('Bot do Discord: Online', 'magenta');
-        }
         log('Pressione Ctrl+C para parar todos os serviços', 'yellow');
         
     } catch (error) {
