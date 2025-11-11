@@ -58,24 +58,27 @@ function connectToDiscord() {
       reconnectAttempts = 0;
     })
     .catch((error) => {
-      console.error("Erro ao conectar ao Discord:", error.message);
       isConnected = false;
       
       if (reconnectAttempts < maxReconnectAttempts) {
         reconnectAttempts++;
-        console.log(`Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts} em ${reconnectDelay/1000} segundos...`);
+        // Só mostra log na primeira tentativa e na última
+        if (reconnectAttempts === 1 || reconnectAttempts === maxReconnectAttempts) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`Rich Presence: Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts}...`);
+          }
+        }
         setTimeout(connectToDiscord, reconnectDelay);
       } else {
-        console.log("Máximo de tentativas de reconexão atingido. Rich Presence desabilitado.");
+        if (process.env.NODE_ENV !== 'production') {
+          console.log("Rich Presence: Máximo de tentativas atingido. Desabilitado.");
+        }
       }
     });
 }
 
 
 rpc.on("ready", () => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log("Rich Presence ativo no Discord!");
-  }
   updateActivity();
   setInterval(updateActivity, updateInterval);
 });
@@ -138,9 +141,7 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log("Iniciando Discord Rich Presence...");
-  }
+  // Inicia silenciosamente
   connectToDiscord();
 }
 initPresence();
