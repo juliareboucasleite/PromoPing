@@ -62,14 +62,59 @@ window.closeModals = function() {
   const overlay = document.getElementById('modalOverlay');
   const loginModal = document.getElementById('loginModal');
   const registerModal = document.getElementById('registerModal');
+  const verificationModal = document.getElementById('verificationModal');
   
   if (overlay) {
     overlay.classList.remove('active');
     overlay.style.display = 'none';
     if (loginModal) loginModal.style.display = 'none';
     if (registerModal) registerModal.style.display = 'none';
+    if (verificationModal) verificationModal.style.display = 'none';
     document.body.style.overflow = '';
   }
+};
+
+// Abrir modal de verificação
+window.openVerificationModal = function(email) {
+  const overlay = document.getElementById('modalOverlay');
+  const verificationModal = document.getElementById('verificationModal');
+  const loginModal = document.getElementById('loginModal');
+  const registerModal = document.getElementById('registerModal');
+  
+  if (!overlay || !verificationModal) {
+    console.error('Elementos não encontrados:', { overlay, verificationModal });
+    return;
+  }
+  
+  // Ocultar outros modais
+  if (loginModal) loginModal.style.display = 'none';
+  if (registerModal) registerModal.style.display = 'none';
+  
+  // Mostrar email no modal
+  const emailSpan = document.getElementById('verificationEmail');
+  if (emailSpan && email) {
+    emailSpan.textContent = email;
+  }
+  
+  // Limpar campos
+  const codeInput = document.getElementById('verificationCode');
+  if (codeInput) codeInput.value = '';
+  
+  const errorMsg = document.getElementById('verificationErrorMessage');
+  const successMsg = document.getElementById('verificationSuccessMessage');
+  if (errorMsg) errorMsg.textContent = '';
+  if (successMsg) successMsg.textContent = '';
+  
+  // Mostrar modal de verificação
+  verificationModal.style.display = 'block';
+  overlay.style.display = 'flex';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  
+  // Focar no input de código
+  setTimeout(() => {
+    if (codeInput) codeInput.focus();
+  }, 100);
 };
 
 // Manter compatibilidade
@@ -425,17 +470,9 @@ document.addEventListener('DOMContentLoaded', function() {
           const data = await res.json();
 
           if (data.status === "ok") {
-            if (typeof window.showSuccess === 'function') {
-              window.showSuccess("Sucesso", "Conta criada com sucesso! Verifique o seu email.");
-            }
-            // Aqui você pode adicionar a lógica de verificação de email se necessário
+            // Fechar modal de registro e abrir modal de verificação
             closeModals();
-            setTimeout(() => {
-              if (typeof window.showSuccess === 'function') {
-                window.showSuccess("Sucesso", "Redirecionando para o painel...");
-              }
-              window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
-            }, 2000);
+            openVerificationModal(email);
           } else {
             if (typeof window.showError === 'function') {
               window.showError("Erro", data.error || data.message || "Erro ao criar conta");
@@ -460,6 +497,138 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnGoogleRegister) {
       btnGoogleRegister.addEventListener('click', () => {
         window.location.href = "http://127.0.0.1:3000/auth/google";
+      });
+    }
+
+    // Verification Form
+    const verificationForm = document.getElementById('verificationForm');
+    if (verificationForm) {
+      verificationForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const codeInput = document.getElementById('verificationCode');
+        const emailSpan = document.getElementById('verificationEmail');
+        const errorMsg = document.getElementById('verificationErrorMessage');
+        const successMsg = document.getElementById('verificationSuccessMessage');
+        const btnVerificar = document.getElementById('btnVerificar');
+        
+        const codigo = codeInput.value.trim();
+        const email = emailSpan ? emailSpan.textContent.trim() : '';
+        
+        if (!codigo) {
+          if (errorMsg) {
+            errorMsg.textContent = 'Por favor, insira o código de verificação';
+            errorMsg.style.display = 'block';
+          }
+          return;
+        }
+        
+        if (btnVerificar) {
+          btnVerificar.disabled = true;
+          btnVerificar.querySelector('.button-text').textContent = "A verificar...";
+        }
+        
+        if (errorMsg) errorMsg.textContent = '';
+        if (successMsg) successMsg.textContent = '';
+        
+        try {
+          const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+          const res = await requestFn("http://127.0.0.1:3000/api/auth/verificar-codigo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, codigo }),
+          });
+          
+          const data = await res.json();
+          
+          if (data.status === "ok" && data.token) {
+            // Salvar token
+            localStorage.setItem("token", data.token);
+            
+            if (successMsg) {
+              successMsg.textContent = "Email verificado com sucesso!";
+              successMsg.style.display = 'block';
+            }
+            
+            if (typeof window.showSuccess === 'function') {
+              window.showSuccess("Sucesso", "Email verificado! Redirecionando...");
+            }
+            
+            // Redirecionar para o dashboard após 1 segundo
+            setTimeout(() => {
+              window.location.href = "/PromoPing/frontend/pages/dashboard/Painel.html";
+            }, 1000);
+          } else {
+            if (errorMsg) {
+              errorMsg.textContent = data.error || "Código inválido ou expirado";
+              errorMsg.style.display = 'block';
+            }
+            if (typeof window.showError === 'function') {
+              window.showError("Erro", data.error || "Código inválido ou expirado");
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao verificar código:", error);
+          if (errorMsg) {
+            errorMsg.textContent = "Erro de ligação ao servidor";
+            errorMsg.style.display = 'block';
+          }
+          if (typeof window.showError === 'function') {
+            window.showError("Erro", "Erro de ligação ao servidor");
+          }
+        } finally {
+          if (btnVerificar) {
+            btnVerificar.disabled = false;
+            btnVerificar.querySelector('.button-text').textContent = "Verificar";
+          }
+        }
+      });
+    }
+
+    // Reenviar código
+    const btnResendCode = document.getElementById('btnResendCode');
+    if (btnResendCode) {
+      btnResendCode.addEventListener('click', async () => {
+        const emailSpan = document.getElementById('verificationEmail');
+        const errorMsg = document.getElementById('verificationErrorMessage');
+        const successMsg = document.getElementById('verificationSuccessMessage');
+        
+        const email = emailSpan ? emailSpan.textContent.trim() : '';
+        
+        if (!email) {
+          if (errorMsg) {
+            errorMsg.textContent = 'Email não encontrado';
+            errorMsg.style.display = 'block';
+          }
+          return;
+        }
+        
+        btnResendCode.disabled = true;
+        btnResendCode.textContent = "A enviar...";
+        
+        if (errorMsg) errorMsg.textContent = '';
+        if (successMsg) successMsg.textContent = '';
+        
+        try {
+          // Nota: O backend precisa ter um endpoint para reenviar código
+          // Por enquanto, vamos apenas mostrar uma mensagem
+          if (typeof window.showSuccess === 'function') {
+            window.showSuccess("Info", "Se o código não chegou, verifica a pasta de spam ou tenta fazer login novamente.");
+          }
+          if (successMsg) {
+            successMsg.textContent = "Se não recebeste o código, verifica a pasta de spam.";
+            successMsg.style.display = 'block';
+          }
+        } catch (error) {
+          console.error("Erro ao reenviar código:", error);
+          if (errorMsg) {
+            errorMsg.textContent = "Erro de ligação ao servidor";
+            errorMsg.style.display = 'block';
+          }
+        } finally {
+          btnResendCode.disabled = false;
+          btnResendCode.textContent = "Reenviar código";
+        }
       });
     }
   });
