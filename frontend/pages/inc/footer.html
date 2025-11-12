@@ -18,7 +18,7 @@
     flex-wrap: wrap;
     gap: 40px 24px;
     justify-content: space-between;
-    align-items: flex-center;
+    align-items: flex-start;
     margin-bottom: 40px;
   }
 
@@ -26,12 +26,14 @@
   .footer-left-section {
     flex: 0 0 auto;
     max-width: 50%;
+    text-align: left;
   }
 
   .system-info {
     display: flex;
     gap: 12px;
     align-items: center;
+    margin-bottom: 30px;
   }
 
   .system-icon {
@@ -46,12 +48,14 @@
     object-fit: contain;
     opacity: 0.7;
     filter: brightness(0.8);
+    margin-top: 90px;
   }
 
   .system-text {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    margin-top: 90px;
   }
 
   .system-label {
@@ -67,7 +71,14 @@
     margin: 0;
   }
 
-  /* ===== RIGHT SECTION - LINKS ===== */
+  /* ===== MIDDLE SECTION - SOBRE NÓS ===== */
+  .footer-middle-section {
+    flex: 0 0 auto;
+    max-width: 50%;
+    text-align: left;
+  }
+
+  /* ===== RIGHT SECTION - IMPORTANT LINKS ===== */
   .footer-right-section {
     flex: 0 0 auto;
     max-width: 50%;
@@ -238,10 +249,12 @@
     }
 
     .footer-left-section,
+    .footer-middle-section,
     .footer-right-section {
       max-width: 100%;
     }
 
+    .footer-middle-section,
     .footer-right-section {
       text-align: left;
     }
@@ -314,6 +327,76 @@
             <p class="system-versions">Windows 10 / 11 / Server 2025</p>
           </div>
         </div>
+      </div>
+
+      <!-- Middle Section - Sobre nós -->
+      <div class="footer-middle-section">
+        <p class="links-title">Sobre nós</p>
+        <ul class="footer-links-list">
+          <li class="footer-link-item">
+            <a href="pages/inc/sobre.html" class="footer-link">
+              <span>O que é o PromoPing?</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/blog.html" class="footer-link">
+              <span>Blog</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/casos-uso.html" class="footer-link">
+              <span>Casos de uso</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/monitoramento.html" class="footer-link">
+              <span>Monitoramento</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/alertas.html" class="footer-link">
+              <span>Alertas</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/relatorios.html" class="footer-link">
+              <span>Relatórios</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="pages/inc/cookies.html" class="footer-link">
+              <span>Política de cookies</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </a>
+          </li>
+        </ul>
       </div>
 
       <!-- Right Section - Important Links -->
