@@ -52,17 +52,17 @@ router.get("/api/charts/overview", async (req, res) => {
     `, [months - 1]);
 
     const [notifMes] = await db.query(`
-      SELECT DATE_FORMAT(COALESCE(DataEnvio, CriadoEm), '%Y-%m') as periodo, COUNT(*) as total
+      SELECT DATE_FORMAT(COALESCE(DataEnvio, Data), '%Y-%m') as periodo, COUNT(*) as total
       FROM Notificacoes
-      WHERE COALESCE(DataEnvio, CriadoEm) >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE COALESCE(DataEnvio, Data) >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);
 
     const [usersMes] = await db.query(`
-      SELECT DATE_FORMAT(DataCriacao, '%Y-%m') as periodo, COUNT(*) as total
+      SELECT DATE_FORMAT(Data_Registo, '%Y-%m') as periodo, COUNT(*) as total
       FROM Utilizadores
-      WHERE DataCriacao >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE Data_Registo >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);
@@ -97,11 +97,11 @@ router.get("/api/charts/daily", async (req, res) => {
     `, [days - 1]);
 
     const [notifDia] = await db.query(`
-      SELECT DATE(COALESCE(DataEnvio, CriadoEm)) as periodo, COUNT(*) as total
+      SELECT DATE(COALESCE(DataEnvio, Data)) as periodo, COUNT(*) as total
       FROM Notificacoes
-      WHERE COALESCE(DataEnvio, CriadoEm) >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-      GROUP BY DATE(COALESCE(DataEnvio, CriadoEm))
-      ORDER BY DATE(COALESCE(DataEnvio, CriadoEm)) ASC
+      WHERE COALESCE(DataEnvio, Data) >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY DATE(COALESCE(DataEnvio, Data))
+      ORDER BY DATE(COALESCE(DataEnvio, Data)) ASC
     `, [days - 1]);
 
     res.json({

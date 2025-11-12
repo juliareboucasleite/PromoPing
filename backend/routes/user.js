@@ -242,11 +242,13 @@ router.put("/admin/:id", verifyToken, async (req, res) => {
 
 // GET estatísticas do utilizador
 router.get("/stats", verifyToken, async (req, res) => {
+  console.log("[STATS] ===== ROTA /api/user/stats CHAMADA =====");
   try {
     const userId = req.user.id;
+    console.log("[STATS] UserId extraído do token:", userId);
 
-    // Estatísticas do utilizador
-    const [rows] = await pool.query(
+    // Buscar estatísticas e data de registro separadamente
+    const [statsRows] = await pool.query(
       `SELECT 
           (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
           (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
@@ -254,13 +256,83 @@ router.get("/stats", verifyToken, async (req, res) => {
       [userId, userId, userId]
     );
 
-    res.json({ 
-      status: "ok", 
-      stats: {
-        ...rows[0],
-        dinheiro_poupado: Number(rows[0].dinheiro_poupado) || 0
+    // Buscar data de registro diretamente
+    const [userRows] = await pool.query(
+      "SELECT Data_Registo FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+
+    console.log("[STATS] UserId usado:", userId);
+    console.log("[STATS] Dados de estatísticas:", statsRows[0]);
+    console.log("[STATS] userRows completo:", userRows);
+    console.log("[STATS] userRows[0]:", userRows[0]);
+    console.log("[STATS] Data_Registo raw:", userRows[0]?.Data_Registo);
+    console.log("[STATS] Tipo de Data_Registo:", typeof userRows[0]?.Data_Registo);
+
+    // Formatar data de registro
+    let membro_desde = "N/A";
+    if (userRows && userRows.length > 0 && userRows[0]) {
+      const dataRegistoRaw = userRows[0].Data_Registo;
+      
+      if (dataRegistoRaw) {
+        try {
+          // Se for um objeto Date do MySQL, converter para string primeiro
+          let dataString = dataRegistoRaw;
+          if (dataRegistoRaw instanceof Date) {
+            dataString = dataRegistoRaw.toISOString();
+          } else if (typeof dataRegistoRaw === 'object' && dataRegistoRaw.toISOString) {
+            dataString = dataRegistoRaw.toISOString();
+          } else if (typeof dataRegistoRaw === 'string') {
+            dataString = dataRegistoRaw;
+          }
+          
+          console.log("[STATS] Data string para conversão:", dataString);
+          const dataRegisto = new Date(dataString);
+          console.log("[STATS] Data convertida:", dataRegisto);
+          console.log("[STATS] isValid:", !isNaN(dataRegisto.getTime()));
+          
+          if (!isNaN(dataRegisto.getTime())) {
+            membro_desde = dataRegisto.toLocaleDateString("pt-PT", {
+              year: "numeric",
+              month: "long"
+            });
+            // Capitalizar primeira letra do mês
+            membro_desde = membro_desde.charAt(0).toUpperCase() + membro_desde.slice(1);
+            console.log("[STATS] Data formatada:", membro_desde);
+          } else {
+            console.log("[STATS] Data inválida após conversão");
+          }
+        } catch (dateErr) {
+          console.error("[STATS] Erro ao formatar data:", dateErr);
+          console.error("[STATS] Stack:", dateErr.stack);
+        }
+      } else {
+        console.log("[STATS] Data_Registo é null, undefined ou vazio");
       }
-    });
+    } else {
+      console.log("[STATS] userRows vazio ou não encontrado");
+    }
+
+    // Garantir que membro_desde sempre tenha um valor
+    const membroDesdeFinal = membro_desde && membro_desde !== "N/A" ? membro_desde : "N/A";
+    
+    const responseData = {
+      status: "ok",
+      stats: {
+        produtos_total: statsRows[0]?.produtos_total || 0,
+        notificacoes_total: statsRows[0]?.notificacoes_total || 0,
+        dinheiro_poupado: Number(statsRows[0]?.dinheiro_poupado) || 0,
+        membro_desde: membroDesdeFinal
+      }
+    };
+
+    console.log("[STATS] membro_desde antes de enviar:", membro_desde);
+    console.log("[STATS] membroDesdeFinal:", membroDesdeFinal);
+    console.log("[STATS] Resposta final sendo enviada:", JSON.stringify(responseData, null, 2));
+    console.log("[STATS] membro_desde no objeto stats:", responseData.stats.membro_desde);
+    console.log("[STATS] Verificando se membro_desde existe:", 'membro_desde' in responseData.stats);
+
+    res.json(responseData);
   } catch (err) {
     console.error("Erro ao buscar estatísticas:", err);
     res.status(500).json({ status: "error", error: err.message });
@@ -293,7 +365,92 @@ router.get("/admins", async (_req, res) => {
   }
 });
 
-// POST configurar senha para utilizador
+// POST alterar senha do utilizador (requer senha atual)
+router.post("/change-password", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Senha atual e nova senha são obrigatórias" 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "A nova senha deve ter pelo menos 6 caracteres" 
+      });
+    }
+
+    // Buscar senha atual do usuário
+    const [users] = await pool.query(
+      "SELECT SenhaHash FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ 
+        status: "error", 
+        error: "Usuário não encontrado" 
+      });
+    }
+
+    const user = users[0];
+
+    // Verificar se o usuário tem senha cadastrada
+    if (!user.SenhaHash) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Você ainda não tem uma senha cadastrada. Use a opção de configurar senha." 
+      });
+    }
+
+    // Verificar senha atual
+    const bcrypt = await import('bcrypt');
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.SenhaHash);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Senha atual incorreta" 
+      });
+    }
+
+    // Verificar se a nova senha é diferente da atual
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "A nova senha deve ser diferente da senha atual" 
+      });
+    }
+
+    // Hash da nova senha
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Atualizar senha na base de dados
+    await pool.query(
+      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
+      [hashedPassword, userId]
+    );
+
+    res.json({ 
+      status: "ok", 
+      message: "Senha alterada com sucesso" 
+    });
+  } catch (err) {
+    console.error("Erro ao alterar senha:", err);
+    res.status(500).json({ 
+      status: "error", 
+      error: "Erro interno no servidor" 
+    });
+  }
+});
+
+// POST configurar senha para utilizador (primeira vez - sem senha atual)
 router.post("/set-password", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -303,6 +460,19 @@ router.post("/set-password", verifyToken, async (req, res) => {
       return res.status(400).json({ 
         status: "error", 
         error: "A senha deve ter pelo menos 6 caracteres" 
+      });
+    }
+
+    // Verificar se já tem senha
+    const [users] = await pool.query(
+      "SELECT SenhaHash FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+
+    if (users.length > 0 && users[0].SenhaHash) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Você já tem uma senha cadastrada. Use a opção de alterar senha." 
       });
     }
 
