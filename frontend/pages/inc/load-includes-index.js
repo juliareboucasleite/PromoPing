@@ -15,6 +15,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Substitui todos os caminhos relativos de imagens no HTML antes de inserir
                 let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
                 headerPlaceholder.innerHTML = correctedData;
+                
+                // Garantir que os modais estejam ocultos após inserir o header
+                setTimeout(() => {
+                  const overlay = document.getElementById('modalOverlay');
+                  const loginModal = document.getElementById('loginModal');
+                  const registerModal = document.getElementById('registerModal');
+                  
+                  if (overlay) {
+                    overlay.classList.remove('active');
+                    overlay.style.display = 'none';
+                  }
+                  if (loginModal) {
+                    loginModal.style.display = 'none';
+                  }
+                  if (registerModal) {
+                    registerModal.style.display = 'none';
+                  }
+                  
+                  // Verificar se as funções estão disponíveis
+                  if (typeof window.openLoginModal === 'function' && typeof window.openRegisterModal === 'function') {
+                    console.log('✅ Funções de modal disponíveis');
+                  } else {
+                    console.error('❌ Funções de modal não encontradas!');
+                  }
+                  
+                  // Verificar se os elementos dos modais foram encontrados
+                  if (overlay && loginModal && registerModal) {
+                    console.log('✅ Elementos dos modais encontrados');
+                  } else {
+                    console.error('❌ Elementos dos modais não encontrados:', { overlay, loginModal, registerModal });
+                  }
+                  
+                  // Inicializar modais se a função estiver disponível
+                  if (typeof window.initializeModals === 'function') {
+                    window.initializeModals();
+                  }
+                  
+                  // Os modais já estão no index.html, não precisam ser carregados do header
+                }, 200);
             }
         })
         .catch(error => {
@@ -29,8 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="pp-header-title">PromoPing</span>
                             </div>
                             <nav class="pp-header-nav">
-                                <a href="pages/inc/Login.html" class="pp-header-nav-link">Entrar</a>
-                                <a href="pages/inc/register.html" class="pp-btn pp-btn-primary">Registar</a>
+                                <button onclick="window.openLoginModal && window.openLoginModal()" class="pp-header-nav-link" style="background: none; border: none; color: inherit; cursor: pointer;">Entrar</button>
+                                <button onclick="window.openRegisterModal && window.openRegisterModal()" class="pp-btn pp-btn-primary" style="border: none; cursor: pointer;">Registar</button>
                             </nav>
                         </div>
                     </header>
