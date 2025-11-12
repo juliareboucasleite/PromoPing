@@ -423,8 +423,16 @@
   box-sizing: border-box !important;
 }
 
+.modal-overlay .modal-verification {
+  display: none !important;
+}
+
 /* Quando overlay está ativo, mostrar apenas o modal que tem display: block */
 .modal-overlay.active .pinterest-modal[style*="display: block"] {
+  display: block !important;
+}
+
+.modal-overlay.active .modal-verification[style*="display: block"] {
   display: block !important;
 }
 
