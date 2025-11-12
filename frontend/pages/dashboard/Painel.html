@@ -466,24 +466,12 @@
             Cookies.remove('token');
           }
 
-          // Defina caminhos possíveis para login (corrija caso esteja em pasta dashboard ou não)
-          let loginPath = "/PromoPing/frontend/pages/inc/Login.html";
-          // Caso esteja em ambiente que serve do root, cheque se arquivo existe via fetch
-          try {
-            // Faz um fetch para ver se o arquivo existe
-            const r = await makeRequest(loginPath, { method: "HEAD" });
-            if (!r.ok) {
-              // Se não existe, tenta pelo raiz
-              loginPath = "/PromoPing/frontend/pages/inc/Login.html";
-            }
-          } catch { /* fallback sem fetch suportado */ }
-
-          // Redireciona
-          window.location.href = loginPath;
+          // Redireciona para a página inicial
+          window.location.href = "/PromoPing/frontend/pages/index.html";
         } catch (err) {
           showError("Erro", "Erro ao sair: " + (err && err.message ? err.message : err));
           // fallback
-          window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
+          window.location.href = "/PromoPing/frontend/pages/index.html";
         }
       });
     }

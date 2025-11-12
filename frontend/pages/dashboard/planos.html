@@ -401,11 +401,11 @@
 
     <script src="../../assets/scripts/request-manager.js"></script>
     <script>
-        // Função para deslogar o usuário e redirecionar para login
+        // Função para deslogar o usuário e redirecionar para página inicial
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
+            window.location.href = "/PromoPing/frontend/pages/index.html";
         }
 
         // Função para selecionar e mudar o plano do usuário
@@ -590,7 +590,7 @@
             const token = localStorage.getItem("token");
             if (!token) {
                 alert("Precisa estar logado!");
-                window.location.href = "/PromoPing/frontend/pages/inc/Login.html";
+                window.location.href = "/PromoPing/frontend/pages/index.html";
                 return;
             }
             try {
