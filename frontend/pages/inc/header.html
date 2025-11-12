@@ -7,42 +7,6 @@
       <span>PromoPing</span>
     </a>
 
-    <!-- Navigation -->
-    <nav class="pp-header-nav" id="pp-header-nav">
-      <!-- Soluções -->
-      <div class="pp-header-nav-wrapper">
-        <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Soluções"
-          aria-labelledby="pp-header-nav-links-1" onclick="openNavigation(this)">
-          Soluções
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </button>
-        <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-1">
-          <a href="pages/inc/monitoramento.html">Monitoramento</a>
-          <a href="pages/inc/alertas.html">Alertas</a>
-          <a href="pages/inc/relatorios.html">Relatórios</a>
-        </div>
-      </div>
-
-      <!-- Recursos -->
-      <div class="pp-header-nav-wrapper">
-        <button class="pp-header-nav-button" type="button" role="button" title="Abrir Navegação" aria-label="Recursos"
-          aria-labelledby="pp-header-nav-links-2" onclick="openNavigation(this)">
-          Recursos
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </button>
-        <div class="pp-header-nav-links pp-header-nav-links-1" id="pp-header-nav-links-2">
-          <a href="pages/inc/casos-uso.html">Casos de Uso</a>
-          <a href="pages/inc/blog.html">Blog</a>
-        </div>
-      </div>
-    </nav>
-
     <!-- Mobile Menu & CTA -->
     <div class="pp-header-burger" style="gap: 14px; display: flex; align-items: center;">
       <div class="pp-header-burger-lang" style="margin-right: 2px;">
@@ -62,10 +26,15 @@
         </svg>
       </button>
 
-      <!-- CTA Button mais junto ao resto -->
-      <a href="pages/inc/Login.html" class="pp-header-cta-button" aria-label="Começar Agora" style="margin-left: 12px;">
-        <span>Começar Agora</span>
-      </a>
+      <!-- CTA Buttons -->
+      <div class="pp-header-cta-buttons">
+        <button class="pp-header-cta-button-secondary" aria-label="Inscreve-te" onclick="openRegisterModal()">
+          <span>Inscreve-te</span>
+        </button>
+        <button class="pp-header-cta-button" aria-label="Entrar" onclick="openLoginModal()">
+          <span>Entrar</span>
+        </button>
+      </div>
     </div>
   </div>
 </header>

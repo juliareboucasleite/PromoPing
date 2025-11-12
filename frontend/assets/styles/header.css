@@ -17,8 +17,8 @@
 
 .pp-header {
   background: var(--promoping-cream-transparent);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-radius: 24px;
   margin: 30px auto 0 auto;
   max-width: 1400px;
@@ -203,19 +203,45 @@
   gap: 24px;
 }
 
-.pp-header-cta-button {
-  background: var(--promoping-orange-gradient);
-  color: var(--text-light);
+.pp-header-cta-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.pp-header-cta-button-secondary {
+  background: #e9e9e9;
+  color: #111;
   padding: 12px 28px;
-  border-radius: 12px;
+  border-radius: 24px;
   text-decoration: none;
   font-weight: 700;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(220, 124, 53, 0.3);
   border: none;
   cursor: pointer;
   display: inline-block;
+}
+
+.pp-header-cta-button-secondary:hover {
+  background: #d3d3d3;
+  transform: translateY(-1px);
+}
+
+.pp-header-cta-button {
+  background: var(--promoping-orange-gradient);
+  color: var(--text-light);
+  padding: 12px 28px;
+  border-radius: 24px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: 0 4px 16px rgba(220, 124, 53, 0.3);
 }
 
 .pp-header-cta-button:hover {
@@ -308,7 +334,18 @@
     height: 36px;
   }
   
-  .pp-header-cta-button {
+  .pp-header-cta-buttons {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
+  }
+
+  .pp-header-cta-button,
+  .pp-header-cta-button-secondary {
+    width: 100%;
+    text-align: center;
     padding: 10px 20px;
     font-size: 0.9rem;
   }
@@ -337,4 +374,73 @@
   border-radius: 23px;
   background: linear-gradient(135deg, rgba(45, 27, 105, 0.1), transparent);
   pointer-events: none;
+}
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: 10000;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin: 0;
+  background: rgba(220, 124, 53, 0.6);
+}
+@media (max-width: 600px) {
+  .modal-overlay {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
+.modal-overlay.active {
+  display: flex !important;
+}
+
+/* Garantir que os modais estejam ocultos por padrão */
+.modal-overlay .pinterest-modal {
+  display: none !important;
+  position: relative;
+  margin: auto;
+  width: 484px !important;
+  max-width: 100%;
+  overflow: visible;
+  border: 1px solid #ddd !important;
+  outline: 1px solid #ddd !important;
+  outline-offset: -1px !important;
+  box-sizing: border-box !important;
+}
+
+/* Quando overlay está ativo, mostrar apenas o modal que tem display: block */
+.modal-overlay.active .pinterest-modal[style*="display: block"] {
+  display: block !important;
+}
+
+.modal-overlay .pinterest-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-overlay .pinterest-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-overlay .pinterest-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.modal-overlay .pinterest-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
