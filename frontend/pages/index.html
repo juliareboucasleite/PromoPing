@@ -712,6 +712,77 @@
         </div>
       </div>
     </div>
+
+    <!-- Verification Code Modal -->
+    <div class="pinterest-modal modal-verification" id="verificationModal" onclick="event.stopPropagation()">
+      <div class="modal-content">
+        <!-- Botão fechar -->
+        <div class="close-button-wrapper">
+          <button aria-label="fechar" class="close-button" type="button" onclick="closeModals()">
+            <svg aria-hidden="true" aria-label="" class="close-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="m12 13.41 8.3 8.3 1.4-1.42L13.42 12l8.3-8.3-1.42-1.4-8.3 8.28-8.3-8.3L2.3 3.7l8.28 8.3-8.3 8.3 1.42 1.4z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Logo -->
+        <div class="logo-wrapper">
+          <img src="assets/images/PromoPing.png" alt="PromoPing Logo" style="height: 45px; width: auto;">
+        </div>
+
+        <!-- Título -->
+        <div class="title-wrapper">
+          <h1 class="modal-title">Verifica o teu email</h1>
+        </div>
+
+        <!-- Subtítulo -->
+        <div class="subtitle-wrapper">
+          <p class="modal-subtitle">Enviamos um código de verificação para <span id="verificationEmail"></span></p>
+        </div>
+
+        <!-- Formulário de Verificação -->
+        <form class="verification-form" id="verificationForm">
+          <div class="form-field">
+            <label class="field-label" for="verificationCode">Código de verificação</label>
+            <div class="input-wrapper">
+              <input 
+                type="text" 
+                class="form-input" 
+                id="verificationCode" 
+                placeholder="Insere o código"
+                maxlength="6"
+                required
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="error-message" id="verificationErrorMessage"></div>
+          <div class="success-message" id="verificationSuccessMessage"></div>
+
+          <!-- Botão Submit -->
+          <div class="submit-wrapper">
+            <button 
+              class="submit-button" 
+              aria-label="Verificar código" 
+              type="submit" 
+              tabindex="0"
+              id="btnVerificar"
+            >
+              <span class="button-text">Verificar</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Reenviar código -->
+        <div class="resend-code-wrapper">
+          <p class="resend-text">Não recebeste o código?</p>
+          <button class="resend-button" type="button" id="btnResendCode">
+            Reenviar código
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Cookie Consent Banner -->

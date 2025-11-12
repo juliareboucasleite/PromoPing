@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../../assets/styles/style.css">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
   <script src="../../assets/scripts/request-manager.js"></script>
+  <script src="../../assets/scripts/notification-system.js"></script>
 </head>
 
 <body class="dashboard-body">
@@ -93,11 +94,6 @@
                 <input type="email" class="form-input" id="email" value="" required>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Telefone</label>
-                <input type="tel" class="form-input" id="phone" value="" required>
-              </div>
-
               <button type="submit" class="save-btn">Guardar alterações</button>
             </form>
           </div>
@@ -113,20 +109,46 @@
             </div>
 
             <div class="card-content">
-              <p class="section-desc">Configure uma senha para entrar com email e senha (opcional)</p>
+              <p class="section-desc">Altere a sua senha para entrar com email e senha</p>
 
               <form class="password-form" id="passwordForm">
                 <div class="form-group">
-                  <label class="form-label">Nova senha</label>
-                  <input type="password" class="form-input" id="newPassword" placeholder="Mínimo 6 caracteres">
+                  <label class="form-label">Senha atual</label>
+                  <div class="input-wrapper password-wrapper">
+                    <input type="password" class="form-input password-input" id="currentPassword" placeholder="Insira a sua senha atual" required>
+                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleCurrentPassword()" id="toggle-currentPassword">
+                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Confirmar senha</label>
-                  <input type="password" class="form-input" id="confirmPassword" placeholder="Repita a senha">
+                  <label class="form-label">Nova senha</label>
+                  <div class="input-wrapper password-wrapper">
+                    <input type="password" class="form-input password-input" id="newPassword" placeholder="Mínimo 6 caracteres" required>
+                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleNewPassword()" id="toggle-newPassword">
+                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
-                <button type="submit" class="save-btn">Configurar Senha</button>
+                <div class="form-group">
+                  <label class="form-label">Confirmar nova senha</label>
+                  <div class="input-wrapper password-wrapper">
+                    <input type="password" class="form-input password-input" id="confirmPassword" placeholder="Repita a nova senha" required>
+                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleConfirmPassword()" id="toggle-confirmPassword">
+                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" class="save-btn">Alterar Senha</button>
               </form>
             </div>
           </div>
@@ -375,22 +397,18 @@
           // Verificar se os elementos existem
           const fullNameEl = document.getElementById("fullName");
           const emailEl = document.getElementById("email");
-          const phoneEl = document.getElementById("phone");
 
           console.log(" [FRONTEND] Elementos encontrados:", {
             fullName: !!fullNameEl,
-            email: !!emailEl,
-            phone: !!phoneEl
+            email: !!emailEl
           });
 
           if (fullNameEl) fullNameEl.value = profile.nome || "";
           if (emailEl) emailEl.value = profile.email || "";
-          if (phoneEl) phoneEl.value = profile.telefone || "";
 
           console.log(" [FRONTEND] Campos preenchidos:", {
             nome: profile.nome,
-            email: profile.email,
-            telefone: profile.telefone
+            email: profile.email
           });
 
           updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
@@ -410,10 +428,43 @@
 
         if (dataStats.status === "ok") {
           const stats = dataStats.stats;
-          document.getElementById("produtos-monitorizados").textContent = stats.produtos_total || "0";
-          document.getElementById("notificacoes-enviadas").textContent = stats.notificacoes_total || "0";
-          document.getElementById("dinheiro-poupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
-          document.getElementById("membro-desde").textContent = "Setembro 2025"; // Pode ser obtido da tabela utilizadores
+          console.log("[FRONTEND] Resposta completa recebida:", JSON.stringify(dataStats, null, 2));
+          console.log("[FRONTEND] Estatísticas recebidas:", stats);
+          console.log("[FRONTEND] Chaves em stats:", Object.keys(stats));
+          console.log("[FRONTEND] stats.membro_desde:", stats.membro_desde);
+          console.log("[FRONTEND] typeof stats.membro_desde:", typeof stats.membro_desde);
+          console.log("[FRONTEND] 'membro_desde' in stats:", 'membro_desde' in stats);
+          
+          // Atualizar produtos monitorizados
+          const produtosEl = document.getElementById("produtos-monitorizados");
+          if (produtosEl) {
+            produtosEl.textContent = stats.produtos_total || 0;
+          }
+          
+          // Atualizar notificações enviadas
+          const notificacoesEl = document.getElementById("notificacoes-enviadas");
+          if (notificacoesEl) {
+            notificacoesEl.textContent = stats.notificacoes_total || 0;
+          }
+          
+          // Atualizar dinheiro poupado
+          const dinheiroEl = document.getElementById("dinheiro-poupado");
+          if (dinheiroEl) {
+            const valor = (stats.dinheiro_poupado || 0).toFixed(2);
+            dinheiroEl.textContent = `€${valor}`;
+          }
+          
+          // Atualizar membro desde
+          const membroEl = document.getElementById("membro-desde");
+          if (membroEl) {
+            const membroDesdeValue = stats.membro_desde || "N/A";
+            console.log("[FRONTEND] Valor a ser exibido:", membroDesdeValue);
+            membroEl.textContent = membroDesdeValue;
+          } else {
+            console.error("[FRONTEND] Elemento membro-desde não encontrado!");
+          }
+        } else {
+          console.error("Erro ao carregar estatísticas:", dataStats.error);
         }
         // Buscar informações do plano atual
         await carregarPlano();
@@ -434,8 +485,7 @@
       e.preventDefault();
       const formData = {
         nome: document.getElementById("fullName").value,
-        email: document.getElementById("email").value,
-        telefone: document.getElementById("phone").value
+        email: document.getElementById("email").value
       };
       try {
         // Salvar perfil editado na API
@@ -460,45 +510,184 @@
       }
     });
 
-    // Evento de submit para troca/criação da senha do usuário
+    // Evento de submit para alteração da senha do usuário
     document.getElementById("passwordForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      const currentPassword = document.getElementById("currentPassword").value;
       const newPassword = document.getElementById("newPassword").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
 
+      // Validações
+      if (!currentPassword) {
+        if (typeof window.showError === 'function') {
+          window.showError("Campo obrigatório", "Por favor, insira a sua senha atual.", 3000);
+        } else {
+          alert("Por favor, insira a sua senha atual!");
+        }
+        return;
+      }
+
       if (newPassword.length < 6) {
-        alert("A senha deve ter pelo menos 6 caracteres!");
+        if (typeof window.showError === 'function') {
+          window.showError("Senha inválida", "A nova senha deve ter pelo menos 6 caracteres.", 3000);
+        } else {
+          alert("A nova senha deve ter pelo menos 6 caracteres!");
+        }
+        return;
+      }
+
+      if (newPassword === currentPassword) {
+        if (typeof window.showError === 'function') {
+          window.showError("Senha inválida", "A nova senha deve ser diferente da senha atual.", 3000);
+        } else {
+          alert("A nova senha deve ser diferente da senha atual!");
+        }
         return;
       }
 
       if (newPassword !== confirmPassword) {
-        alert("As senhas não coincidem!");
+        if (typeof window.showError === 'function') {
+          window.showError("Senhas não coincidem", "As senhas não coincidem. Verifique e tente novamente.", 3000);
+        } else {
+          alert("As senhas não coincidem!");
+        }
         return;
       }
+
       try {
-        // Enviar senha nova para API
-        const res = await makeRequest("http://127.0.0.1:3000/api/user/set-password", {
+        // Enviar senhas para API
+        const res = await makeRequest("http://127.0.0.1:3000/api/user/change-password", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + localStorage.getItem("token")
           },
-          body: JSON.stringify({ password: newPassword })
+          body: JSON.stringify({ 
+            currentPassword: currentPassword,
+            newPassword: newPassword 
+          })
         });
 
         const data = await res.json();
         if (data.status === "ok") {
-          alert("Senha configurada com sucesso! Agora pode entrar com email e senha.");
-          document.getElementById("passwordForm").reset();
+          // Mostrar notificação de sucesso
+          if (typeof window.showSuccess === 'function') {
+            window.showSuccess(
+              "Senha alterada com sucesso!",
+              "Será redirecionado para fazer login novamente.",
+              3000
+            );
+          } else {
+            alert("Senha alterada com sucesso! Será redirecionado para fazer login novamente.");
+          }
+          
+          // Limpar token e fazer logout
+          localStorage.removeItem("token");
+          sessionStorage.removeItem("token");
+          
+          // Redirecionar para o index após 2 segundos (tempo para ver a notificação)
+          setTimeout(() => {
+            window.location.href = "/PromoPing/frontend/pages/index.html";
+          }, 2000);
         } else {
-          alert(data.error || "Erro ao configurar senha.");
+          // Mostrar notificação de erro
+          if (typeof window.showError === 'function') {
+            window.showError(
+              "Erro ao alterar senha",
+              data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
+              5000
+            );
+          } else {
+            alert(data.error || "Erro ao alterar senha.");
+          }
         }
       } catch (err) {
-        console.error("Erro ao configurar senha:", err);
-        alert("Erro de ligação ao servidor.");
+        console.error("Erro ao alterar senha:", err);
+        if (typeof window.showError === 'function') {
+          window.showError(
+            "Erro de ligação",
+            "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+            5000
+          );
+        } else {
+          alert("Erro de ligação ao servidor.");
+        }
       }
     });
+
+    // ===== PASSWORD TOGGLE FUNCTIONS =====
+    function toggleCurrentPassword() {
+      const passwordInput = document.getElementById("currentPassword");
+      const toggleBtn = document.getElementById("toggle-currentPassword");
+
+      if (passwordInput && toggleBtn) {
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+        } else {
+          passwordInput.type = "password";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+        }
+      }
+    }
+
+    function toggleNewPassword() {
+      const passwordInput = document.getElementById("newPassword");
+      const toggleBtn = document.getElementById("toggle-newPassword");
+
+      if (passwordInput && toggleBtn) {
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+        } else {
+          passwordInput.type = "password";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+        }
+      }
+    }
+
+    function toggleConfirmPassword() {
+      const passwordInput = document.getElementById("confirmPassword");
+      const toggleBtn = document.getElementById("toggle-confirmPassword");
+
+      if (passwordInput && toggleBtn) {
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+        } else {
+          passwordInput.type = "password";
+          toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+        }
+      }
+    }
 
     // Atualiza status de contas conectadas na UI
     function updateConnectedAccounts(contas) {

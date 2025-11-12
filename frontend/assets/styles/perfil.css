@@ -89,6 +89,9 @@
     font-size: 1rem;
     transition: all 0.3s ease;
     background: #fff;
+    width: 100%;
+    min-width: 320px;
+    max-width: 535px;
 }
 
 .form-input:focus {
@@ -136,6 +139,54 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+/* ===== PASSWORD WRAPPER ===== */
+.input-wrapper {
+    position: relative;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-input {
+    padding-right: 48px;
+    box-sizing: border-box;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 20%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+    margin: 0;
+}
+
+.password-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+    color: #666;
+    fill: currentColor;
+    stroke: currentColor;
+    display: block;
 }
 
 .section-desc {

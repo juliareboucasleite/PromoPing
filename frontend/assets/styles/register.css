@@ -556,6 +556,84 @@ body.login-page {
   color: #dc7c35;
 }
 
+/* ===== VERIFICATION MODAL ===== */
+.modal-verification .modal-content {
+  padding: 12px 10px 16px;
+}
+
+.modal-verification .subtitle-wrapper {
+  margin: 0px auto 16px;
+  width: 350px;
+  max-width: 90%;
+}
+
+.modal-verification .modal-subtitle {
+  color: #666;
+  font-size: 15px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-verification .modal-subtitle span {
+  font-weight: 600;
+  color: #333;
+}
+
+.resend-code-wrapper {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.resend-text {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.resend-button {
+  background: none;
+  border: none;
+  color: #ff6b35;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.resend-button:hover {
+  color: #dc7c35;
+}
+
+.resend-button:disabled {
+  color: #999;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.modal-verification .error-message,
+.modal-verification .success-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  display: none;
+}
+
+.modal-verification .error-message {
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+}
+
+.modal-verification .success-message {
+  background-color: #efe;
+  color: #3c3;
+  border: 1px solid #cfc;
+}
+
 /* ===== VERIFICATION BOX ===== */
 .verify-box {
   display: none;

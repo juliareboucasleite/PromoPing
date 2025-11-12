@@ -1210,6 +1210,10 @@
     font-size: 0.95rem;
     transition: all 0.2s ease;
     background: #fff;
+    width: 100%;
+    min-width: 320px;
+    max-width: 535px;
+    box-sizing: border-box;
 }
 
 .profile-form .form-input:focus {
