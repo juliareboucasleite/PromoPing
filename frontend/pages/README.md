@@ -1,10 +1,6 @@
----
-description: >-
-  Este guia foi criado para ajudá-lo a configurar o PromoPing pela primeira vez
-  e a começar a monitorizar os seus produtos favoritos em apenas alguns minutos.
----
-
 # PromoPing
+
+#### Bem-vindo!
 
 ### O que é o PromoPing e como o configuro?
 

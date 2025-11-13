@@ -4,13 +4,13 @@
 
 Antes de instalar o PromoPing, certifique-se de que tem os seguintes requisitos instalados no seu sistema:
 
-Requisitos Mínimos:
+**Requisitos Mínimos:**
 
-* Node.js 18+ (recomendado LTS)
-* MySQL 8.0+ ou MariaDB 10.3+
-* npm ou yarn
-* Git
-* Python 3.8+ (para o scraper)
+* **Node.js 18+** (recomendado LTS)
+* **MySQL 8.0+** ou MariaDB 10.3+
+* **npm** ou yarn
+* **Git**
+* **Python 3.8+** (para o scraper)
 
 ## Instalação Local
 
@@ -18,7 +18,7 @@ Requisitos Mínimos:
 {% step %}
 ### Clonar o Repositório
 
-```bash
+```
 git clone https://github.com/juliareboucasleite/PromoPing.git
 cd PromoPing
 ```
@@ -26,8 +26,6 @@ cd PromoPing
 
 {% step %}
 ### Instalar Dependências
-
-Instalar dependências do Node.js e do Python (scraper):
 
 ```bash
 # Instalar dependências do Node.js
@@ -51,7 +49,7 @@ cp env-template.txt .env
 nano .env
 ```
 
-{% hint style="warning" %}
+{% hint style="info" %}
 Importante: Configure todas as variáveis obrigatórias no arquivo `.env` antes de prosseguir.
 {% endhint %}
 {% endstep %}
@@ -145,7 +143,7 @@ curl http://localhost:3000/api/health
 {% step %}
 ### Verificar Frontend
 
-Abra o navegador e acesse: http://localhost:3000
+Abra o navegador e acesse: [http://localhost:3000](http://localhost:3000/)
 {% endstep %}
 
 {% step %}
@@ -162,7 +160,7 @@ mysql -u root -p -e "USE promoping; SHOW TABLES;"
 
 ### Variáveis de Ambiente Essenciais
 
-```
+```bash
 # Base de Dados
 DB_HOST=localhost
 DB_USER=promoping_user

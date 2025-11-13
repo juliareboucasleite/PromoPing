@@ -23,97 +23,75 @@ Antes de começar, certifique-se de que o seu sistema cumpre estes requisitos:
 
 Execute o comando para clonar o repositório:
 
-```bash
-git clone https://github.com/yourusername/PromoPing-2.0.1.git
+{% code title="Clonar repositório" %}
 ```
+```
+{% endcode %}
 {% endstep %}
 
 {% step %}
 ### Instalar Dependências
 
-Navegue até ao diretório do projeto e instale as dependências:
+Entre no diretório do projeto e instale as dependências:
 
-```bash
-cd PromoPing-2.0.1
-npm install
+{% code title="Instalar dependências" %}
 ```
+```
+{% endcode %}
 {% endstep %}
 
 {% step %}
 ### Configuração do Ambiente
 
-Crie um ficheiro `.env` no directório raiz com as variáveis necessárias. Exemplo:
+Crie um ficheiro `.env` no directório raiz com as variáveis de ambiente necessárias. Exemplo:
 
-```env
-# Configuração da Base de Dados
-DB_HOST=localhost
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_NAME=promoping
-
-# Chaves da API
-STRIPE_SECRET_KEY=your_stripe_key
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
-# Configuração do Servidor
-PORT=3000
-NODE_ENV=development
+{% code title=".env (exemplo)" %}
 ```
+```
+{% endcode %}
 {% endstep %}
 
 {% step %}
 ### Configuração da Base de Dados
 
-Execute as migrações da base de dados:
+Execute as migrações da base de dados para criar as tabelas e estruturas necessárias:
 
-```bash
-npm run migrate
+{% code title="Executar migrações" %}
 ```
+```
+{% endcode %}
 {% endstep %}
 
 {% step %}
 ### Iniciar a Aplicação
 
-Inicie a aplicação com:
+Inicie a aplicação com o comando:
 
-```bash
-npm start
+{% code title="Iniciar aplicação" %}
 ```
+```
+{% endcode %}
 {% endstep %}
 {% endstepper %}
 
 ### Configuração Inicial
 
-Assim que a aplicação estiver a funcionar, siga estes passos:
+Assim que a aplicação estiver a funcionar:
 
-{% stepper %}
-{% step %}
-Abra o seu navegador e navegue para `http://localhost:3000`.
-{% endstep %}
-
-{% step %}
-Crie a sua primeira conta de administrador.
-{% endstep %}
-
-{% step %}
-Configure as suas preferências de notificação.
-{% endstep %}
-
-{% step %}
-Adicione o seu primeiro produto para monitorizar.
-{% endstep %}
-{% endstepper %}
+* Abra o seu navegador e navegue para `http://localhost:3000`
+* Crie a sua primeira conta de administrador
+* Configure as suas preferências de notificação
+* Adicione o seu primeiro produto para monitorizar
 
 ### Resolução de Problemas
 
 <details>
 
-<summary>Ver problemas comuns e soluções</summary>
+<summary>Ver dicas de resolução de problemas</summary>
 
 * Verifique se todas as variáveis de ambiente estão correctamente definidas.
 * Certifique-se de que o MySQL está a funcionar e acessível.
 * Verifique se todas as portas necessárias estão disponíveis.
-* Consulte os logs da consola para mensagens de erro específicas.
+* Verifique os logs da consola para mensagens de erro específicas.
 
 </details>
