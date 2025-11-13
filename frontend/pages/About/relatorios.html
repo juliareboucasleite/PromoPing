@@ -3,10 +3,11 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Changelog | PromoPing Docs</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Relatórios | PromoPing</title>
+  <base href="/PromoPing/frontend/">
+  <link rel="stylesheet" href="pages/About/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
 </head>
 
 <body>
@@ -15,9 +16,8 @@
     <div class="header-content">
       <div class="header-left">
         <div class="logo">
-          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="../index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
-            Docs</a>
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing</a>
         </div>
       </div>
       <div class="header-right">
@@ -44,7 +44,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Changelog</h1>
+        <h1>Relatórios e Análises</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,41 +89,52 @@
         </div>
       </div>
 
-      <!-- Changelog será carregado dinamicamente do GitHub -->
-      <div id="changelog-container">
-        <!-- Loading será exibido aqui temporariamente -->
-      </div>
+      <p>Compreenda os seus padrões de compra e maximize as suas poupanças</p>
 
-      <h2>Legenda</h2>
-      <div class="legend">
-        <div class="legend-item">
-          <span class="version-badge major">MAJOR</span>
-          <span>Alterações significativas e novas funcionalidades</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge minor">MINOR</span>
-          <span>Melhorias e correções menores</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge patch">PATCH</span>
-          <span>Correções de bugs e pequenas melhorias</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge planned">PLANEADO</span>
-          <span>Funcionalidades em desenvolvimento</span>
-        </div>
-      </div>
+      <h2>Relatórios Detalhados</h2>
+      <h3>Análise de Poupanças</h3>
+      <p>Visualize quanto dinheiro poupou com o PromoPing através de gráficos detalhados e estatísticas precisas.</p>
 
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='api-reference.html'">
-        <div class="next-content">
-          <span class="next-label">Seguinte</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
-        </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <polyline points="9,18 15,12 9,6"></polyline>
-        </svg>
-      </div>
+      <h3>Tipos de Relatórios</h3>
+      <ul>
+        <li><strong>Relatório Mensal:</strong> Resumo das suas poupanças do mês</li>
+        <li><strong>Relatório por Categoria:</strong> Análise por tipo de produto</li>
+        <li><strong>Relatório por Loja:</strong> Comparação entre diferentes lojas</li>
+        <li><strong>Relatório de Tendências:</strong> Padrões de preços ao longo do tempo</li>
+      </ul>
+
+      <h3>Benefícios</h3>
+      <p>Entenda melhor os seus hábitos de compra e identifique oportunidades de poupança adicionais.</p>
+
+      <h2>Gráficos e Visualizações</h2>
+      <h3>Dashboard Interativo</h3>
+      <p>Acesse um dashboard completo com gráficos interativos que mostram a evolução dos preços e as suas poupanças.</p>
+
+      <h3>Funcionalidades</h3>
+      <ul>
+        <li><strong>Gráficos de Linha:</strong> Evolução dos preços ao longo do tempo</li>
+        <li><strong>Gráficos de Barras:</strong> Comparação entre diferentes produtos</li>
+        <li><strong>Gráficos de Pizza:</strong> Distribuição das suas compras por categoria</li>
+        <li><strong>Filtros Avançados:</strong> Personalize as visualizações conforme necessário</li>
+      </ul>
+
+      <h3>Vantagens</h3>
+      <p>Dados visuais claros que facilitam a tomada de decisões de compra mais inteligentes.</p>
+
+      <h2>Insights Inteligentes</h2>
+      <h3>Recomendações Personalizadas</h3>
+      <p>Receba sugestões baseadas nos seus padrões de compra e nas tendências de mercado.</p>
+
+      <h3>Tipos de Insights</h3>
+      <ul>
+        <li><strong>Melhor Momento para Comprar:</strong> Quando os preços costumam baixar</li>
+        <li><strong>Produtos Similares:</strong> Alternativas mais baratas</li>
+        <li><strong>Padrões Sazonais:</strong> Épocas do ano com melhores ofertas</li>
+        <li><strong>Alertas Inteligentes:</strong> Notificações baseadas no seu comportamento</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Maximize as suas poupanças com recomendações personalizadas e insights de mercado.</p>
 
       <footer>
         <p>Última actualização há 1 dia</p>
@@ -132,26 +143,19 @@
 
   </div>
 
-  <!-- FOOTER -->
-  <div id="footer-placeholder"></div>
-
   <!-- SCRIPTS -->
-  <script src="script.js"></script>
-  <script src="changelog.js"></script>
-  <script src="search.js"></script>
+  <script src="pages/About/script.js"></script>
+  <script src="pages/About/search.js"></script>
 
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
       scrollbar-width: none !important;
-      /* Firefox */
       -ms-overflow-style: none !important;
-      /* IE e Edge */
     }
 
     main.content::-webkit-scrollbar {
       display: none !important;
-      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
@@ -160,107 +164,6 @@
     main.content {
       overflow-y: auto !important;
       overflow-x: hidden !important;
-    }
-
-    .changelog-version {
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: #18181a;
-      border-radius: 12px;
-      border: 1px solid #232326;
-      position: relative;
-    }
-
-    .changelog-version.future {
-      opacity: 0.7;
-      border-style: dashed;
-    }
-
-    .changelog-version h2 {
-      color: #ffc72d;
-      margin-bottom: 1rem;
-      font-size: 1.5rem;
-    }
-
-    .version-date {
-      color: #ccc;
-      font-weight: 400;
-      font-size: 1rem;
-    }
-
-    .version-badge {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .version-badge.major {
-      background: #ff4444;
-      color: white;
-    }
-
-    .version-badge.minor {
-      background: #ff9800;
-      color: white;
-    }
-
-    .version-badge.patch {
-      background: #4caf50;
-      color: white;
-    }
-
-    .version-badge.initial {
-      background: #2196f3;
-      color: white;
-    }
-
-    .version-badge.planned {
-      background: #9c27b0;
-      color: white;
-    }
-
-    .changelog-version h3 {
-      color: #e6e6e6;
-      margin-top: 1.5rem;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-
-    .changelog-version ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .changelog-version li {
-      margin-bottom: 0.5rem;
-      line-height: 1.6;
-    }
-
-    .legend {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: #18181a;
-      border-radius: 8px;
-      border: 1px solid #232326;
-    }
-
-    .legend-item span:last-child {
-      color: #ccc;
-      font-size: 0.9rem;
     }
   </style>
 </body>

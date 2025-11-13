@@ -3,10 +3,11 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Changelog | PromoPing Docs</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Monitoramento | PromoPing</title>
+  <base href="/PromoPing/frontend/">
+  <link rel="stylesheet" href="pages/About/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
 </head>
 
 <body>
@@ -15,9 +16,8 @@
     <div class="header-content">
       <div class="header-left">
         <div class="logo">
-          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="../index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
-            Docs</a>
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing</a>
         </div>
       </div>
       <div class="header-right">
@@ -44,7 +44,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Changelog</h1>
+        <h1>Monitoramento de Preços</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,41 +89,47 @@
         </div>
       </div>
 
-      <!-- Changelog será carregado dinamicamente do GitHub -->
-      <div id="changelog-container">
-        <!-- Loading será exibido aqui temporariamente -->
-      </div>
+      <p>Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra</p>
 
-      <h2>Legenda</h2>
-      <div class="legend">
-        <div class="legend-item">
-          <span class="version-badge major">MAJOR</span>
-          <span>Alterações significativas e novas funcionalidades</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge minor">MINOR</span>
-          <span>Melhorias e correções menores</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge patch">PATCH</span>
-          <span>Correções de bugs e pequenas melhorias</span>
-        </div>
-        <div class="legend-item">
-          <span class="version-badge planned">PLANEADO</span>
-          <span>Funcionalidades em desenvolvimento</span>
-        </div>
-      </div>
+      <h2>Monitoramento em Tempo Real</h2>
+      <h3>Como Funciona</h3>
+      <p>O PromoPing monitora constantemente milhares de produtos em dezenas de lojas online, verificando preços, disponibilidade e ofertas especiais.</p>
 
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='api-reference.html'">
-        <div class="next-content">
-          <span class="next-label">Seguinte</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
-        </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <polyline points="9,18 15,12 9,6"></polyline>
-        </svg>
-      </div>
+      <h3>Recursos de Monitoramento</h3>
+      <ul>
+        <li><strong>Verificação Contínua:</strong> Produtos verificados a cada 15 minutos</li>
+        <li><strong>Múltiplas Lojas:</strong> Monitora PCDiga, Worten, Globaldata e muito mais</li>
+        <li><strong>Histórico Completo:</strong> Acompanha a evolução dos preços ao longo do tempo</li>
+        <li><strong>Análise Inteligente:</strong> Identifica padrões e tendências de preços</li>
+      </ul>
+
+      <h3>Benefícios</h3>
+      <p>Seja notificado instantaneamente quando o preço do produto que deseja baixar, garantindo que nunca perca uma oportunidade.</p>
+
+      <h2>Lojas Suportadas</h2>
+      <p>O PromoPing monitora produtos em mais de 50 lojas online portuguesas, incluindo:</p>
+      <ul>
+        <li>PCDiga</li>
+        <li>Worten</li>
+        <li>Globaldata</li>
+        <li>FNAC</li>
+        <li>El Corte Inglés</li>
+        <li>Continente</li>
+        <li>Pingo Doce</li>
+        <li>E muitas outras...</li>
+      </ul>
+
+      <h2>Frequência de Verificação</h2>
+      <p>Dependendo do seu plano, os produtos são verificados com diferentes frequências:</p>
+      <ul>
+        <li><strong>Plano Free:</strong> Verificação diária</li>
+        <li><strong>Plano Basic:</strong> Verificação a cada 4 horas</li>
+        <li><strong>Plano Standard:</strong> Verificação a cada 2 horas</li>
+        <li><strong>Plano Premium:</strong> Verificação em tempo real</li>
+      </ul>
+
+      <h2>Histórico de Preços</h2>
+      <p>Mantenha um histórico completo de todos os preços dos produtos que monitora. Veja gráficos detalhados mostrando a evolução dos preços ao longo do tempo e identifique os melhores momentos para comprar.</p>
 
       <footer>
         <p>Última actualização há 1 dia</p>
@@ -132,26 +138,19 @@
 
   </div>
 
-  <!-- FOOTER -->
-  <div id="footer-placeholder"></div>
-
   <!-- SCRIPTS -->
-  <script src="script.js"></script>
-  <script src="changelog.js"></script>
-  <script src="search.js"></script>
+  <script src="pages/About/script.js"></script>
+  <script src="pages/About/search.js"></script>
 
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
       scrollbar-width: none !important;
-      /* Firefox */
       -ms-overflow-style: none !important;
-      /* IE e Edge */
     }
 
     main.content::-webkit-scrollbar {
       display: none !important;
-      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
@@ -160,107 +159,6 @@
     main.content {
       overflow-y: auto !important;
       overflow-x: hidden !important;
-    }
-
-    .changelog-version {
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: #18181a;
-      border-radius: 12px;
-      border: 1px solid #232326;
-      position: relative;
-    }
-
-    .changelog-version.future {
-      opacity: 0.7;
-      border-style: dashed;
-    }
-
-    .changelog-version h2 {
-      color: #ffc72d;
-      margin-bottom: 1rem;
-      font-size: 1.5rem;
-    }
-
-    .version-date {
-      color: #ccc;
-      font-weight: 400;
-      font-size: 1rem;
-    }
-
-    .version-badge {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .version-badge.major {
-      background: #ff4444;
-      color: white;
-    }
-
-    .version-badge.minor {
-      background: #ff9800;
-      color: white;
-    }
-
-    .version-badge.patch {
-      background: #4caf50;
-      color: white;
-    }
-
-    .version-badge.initial {
-      background: #2196f3;
-      color: white;
-    }
-
-    .version-badge.planned {
-      background: #9c27b0;
-      color: white;
-    }
-
-    .changelog-version h3 {
-      color: #e6e6e6;
-      margin-top: 1.5rem;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-
-    .changelog-version ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .changelog-version li {
-      margin-bottom: 0.5rem;
-      line-height: 1.6;
-    }
-
-    .legend {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: #18181a;
-      border-radius: 8px;
-      border: 1px solid #232326;
-    }
-
-    .legend-item span:last-child {
-      color: #ccc;
-      font-size: 0.9rem;
     }
   </style>
 </body>

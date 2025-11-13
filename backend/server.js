@@ -508,6 +508,35 @@ app.get("/docs/FirstLaunch", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html"));
 });
 
+// Páginas About
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/about.html"));
+});
+
+app.get("/about/alertas", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/alertas.html"));
+});
+
+app.get("/about/blog", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/blog.html"));
+});
+
+app.get("/about/casos-uso", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/casos-uso.html"));
+});
+
+app.get("/about/monitoramento", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/monitoramento.html"));
+});
+
+app.get("/about/relatorios", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/relatorios.html"));
+});
+
+app.get("/about/privacy-cookies", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/About/privacy-cookies.html"));
+});
+
 // Redirecionamento baseado no .env
 app.get("/redirect", (req, res) => {
   const redirectUrl = process.env.REDIRECT_URL || `http://localhost:${process.env.PORT || 3000}`;

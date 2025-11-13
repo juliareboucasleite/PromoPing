@@ -1,4 +1,4 @@
-// script.js
+// script.js para About
 
 // Navegação completa (fallback)
 const NAVIGATION_HTML = `
@@ -6,24 +6,19 @@ const NAVIGATION_HTML = `
     <nav>
       <ul>
         <li class="sidebar-nav-about">
-          <a href="docs.html">Sobre o PromoPing</a>
+          <a href="../index.html">PromoPing</a>
         </li>
-        <li class="sidebar-nav-section"><span>COMEÇAR</span></li>
-        <li><a href="FirstLaunch.html" class="sidebar-nav-link">Primeiro Lançamento</a></li>
-        <li><a href="installation.html" class="sidebar-nav-link">Guia de Instalação</a></li>
-        <li><a href="usage-guide.html" class="sidebar-nav-link">Guia de Utilização</a></li>
-        <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
-        <li><a href="api-reference.html" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
-        <li class="sidebar-nav-item"><span>SUPORTE</span></li>
-        <li><a href="support.html" class="sidebar-nav-link">Suporte</a></li>
-        <li><a href="faq.html" class="sidebar-nav-link">FAQ</a></li>
-        <li><a href="changelog.html" class="sidebar-nav-link">Changelog</a></li>
-        <li><a href="service-status.html" class="sidebar-nav-link">Status do Serviço</a></li>
-        <li><a href="incident-history.html" class="sidebar-nav-link">Histórico de Incidentes</a></li>
-        <li><a href="terms.html" class="sidebar-nav-link">Termos de Uso</a></li>
+        <li class="sidebar-nav-section"><span>SOBRE NÓS</span></li>
+        <li><a href="alertas.html" class="sidebar-nav-link">O que é o PromoPing?</a></li>
+        <li><a href="blog.html" class="sidebar-nav-link">Blog</a></li>
+        <li><a href="casos-uso.html" class="sidebar-nav-link">Casos de uso</a></li>
+        <li><a href="monitoramento.html" class="sidebar-nav-link">Monitoramento</a></li>
+        <li><a href="alertas.html" class="sidebar-nav-link">Alertas</a></li>
+        <li><a href="relatorios.html" class="sidebar-nav-link">Relatórios</a></li>
+        <li><a href="../docs/privacy.html" class="sidebar-nav-link">Política de cookies</a></li>
       </ul>
     </nav>
-    <div class="powered"><p>Made by PromoPingg</p></div>
+    <div class="powered"><p>Made by PromoPing</p></div>
   </aside>
 `;
 
@@ -52,7 +47,9 @@ async function loadNavigation() {
   
   try {
     // Tentar carregar nav.html - sempre do mesmo diretório
-    const navPath = 'nav.html';
+    const baseTag = document.querySelector('base');
+    const baseHref = baseTag ? baseTag.getAttribute('href') : '/PromoPing/frontend/';
+    const navPath = baseHref + 'pages/About/nav.html';
     const response = await fetch(`${navPath}?t=${Date.now()}`, {
       cache: 'no-cache',
       headers: {
@@ -109,7 +106,7 @@ async function loadNavigation() {
 function highlightActiveLink() {
   const links = document.querySelectorAll(".sidebar nav ul li a");
   const currentPath = window.location.pathname;
-  const currentFile = currentPath.split("/").pop() || window.location.href.split("/").pop() || "docs.html";
+  const currentFile = currentPath.split("/").pop() || window.location.href.split("/").pop() || "alertas.html";
   
   links.forEach(link => {
     const href = link.getAttribute("href");
@@ -119,19 +116,79 @@ function highlightActiveLink() {
     // Verificar se é a página atual
     if (href === currentFile || 
         href === currentPath ||
-        (currentFile === "" && (href === "docs.html" || href === "#")) ||
+        (currentFile === "" && (href === "alertas.html" || href === "#")) ||
         (href && (href === currentFile || href.includes(currentFile)) && currentFile !== "" && href !== "#")) {
       link.classList.add("active");
       // Remover classe inactive se presente
       link.classList.remove("inactive");
     } else if (href && href !== "#" && href !== currentFile) {
       // Adicionar inactive se não for a página atual e não for um link genérico
-      if (!link.classList.contains("inactive") && link.closest("li").querySelector("svg")) {
+      if (!link.classList.contains("inactive") && link.closest("li")?.querySelector("svg")) {
         link.classList.add("inactive");
       }
     }
   });
 }
+
+// Função para carregar footer dinamicamente - DESATIVADA
+/*
+async function loadFooter() {
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+  if (!footerPlaceholder) {
+    return;
+  }
+  
+  try {
+    const baseTag = document.querySelector('base');
+    const baseHref = baseTag ? baseTag.getAttribute('href') : '/PromoPing/frontend/';
+    const footerPath = baseHref + 'pages/inc/footer.html';
+    
+    const response = await fetch(`${footerPath}?t=${Date.now()}`, {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load footer: ${response.status} ${response.statusText}`);
+    }
+    
+    let data = await response.text();
+    
+    // Corrige os caminhos das imagens e links ANTES de inserir o HTML
+    let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
+    correctedData = correctedData.replace(/href="pages\//g, `href="${baseHref}pages/`);
+    correctedData = correctedData.replace(/href="#/g, `href="${baseHref}#`);
+    
+    footerPlaceholder.innerHTML = correctedData;
+  } catch (error) {
+    console.warn('Erro ao carregar footer:', error);
+    // Fallback estático
+    footerPlaceholder.innerHTML = `
+      <footer class="pp-footer">
+        <div class="pp-container">
+          <div class="pp-footer-content">
+            <div class="pp-footer-brand">
+              <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="pp-footer-logo">
+              <span class="pp-footer-title">PromoPing</span>
+            </div>
+            <div class="pp-footer-links">
+              <a href="about.html" class="pp-footer-link">Sobre</a>
+              <a href="blog.html" class="pp-footer-link">Blog</a>
+              <a href="casos-uso.html" class="pp-footer-link">Casos de uso</a>
+            </div>
+          </div>
+          <div class="pp-footer-bottom">
+            <p>&copy; 2024-2025 PromoPing. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </footer>
+    `;
+  }
+}
+*/
 
 // Função de inicialização
 function init() {
@@ -320,76 +377,6 @@ function init() {
     return div.innerHTML;
   }
 
-  // === Emoji Feedback System ===
-  const emojiButtons = document.querySelectorAll('.emoji-btn');
-  const thankYouMessage = document.querySelector('.thank-you-message');
-  const commentSection = document.querySelector('.comment-section');
-  
-  emojiButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      emojiButtons.forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
-      button.classList.add('active');
-      
-      // Get the emoji data
-      const emoji = button.getAttribute('data-emoji');
-      
-      // Show "Thank you!" message
-      if (thankYouMessage) {
-        thankYouMessage.style.display = 'block';
-      }
-      
-      // Show comment section after a short delay
-      if (commentSection) {
-        setTimeout(() => {
-          commentSection.style.display = 'block';
-        }, 500);
-      }
-      
-      // Log feedback
-      console.log(`User feedback: ${emoji}`);
-      
-      // Optional: Send feedback to server
-      // sendFeedback(emoji);
-    });
-  });
-
-  // === Submit Feedback ===
-  const submitButton = document.querySelector('.submit-feedback');
-  const textarea = document.querySelector('.comment-section textarea');
-  
-  if (submitButton) {
-    submitButton.addEventListener('click', () => {
-      const comment = textarea ? textarea.value.trim() : '';
-      const selectedEmoji = document.querySelector('.emoji-btn.active');
-      
-      if (comment) {
-        console.log(`Feedback submitted: ${selectedEmoji?.getAttribute('data-emoji')} - ${comment}`);
-        
-        // Show success message
-        submitButton.textContent = 'Submitted!';
-        submitButton.style.background = '#10b981';
-        
-        // Disable form
-        if (textarea) {
-          textarea.disabled = true;
-        }
-        submitButton.disabled = true;
-        
-        // Optional: Send to server
-        // sendFeedbackWithComment(selectedEmoji, comment);
-      } else if (selectedEmoji) {
-        // Just submit emoji feedback
-        console.log(`Emoji feedback submitted: ${selectedEmoji.getAttribute('data-emoji')}`);
-        submitButton.textContent = 'Submitted!';
-        submitButton.style.background = '#10b981';
-        submitButton.disabled = true;
-      }
-    });
-  }
-
   // === Search Functionality ===
   const searchInput = document.querySelector('.search-box input');
   if (searchInput) {
@@ -415,51 +402,6 @@ function init() {
       searchInput?.focus();
     }
   });
-
-  // === Scroll to Top Functionality ===
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-  // Add scroll to top button if needed
-  const addScrollToTopButton = () => {
-    const button = document.createElement('button');
-    button.innerHTML = '↑';
-    button.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    `;
-    
-    button.addEventListener('click', scrollToTop);
-    document.body.appendChild(button);
-    
-    // Show/hide based on scroll position
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        button.style.opacity = '1';
-      } else {
-        button.style.opacity = '0';
-      }
-    });
-  };
-
-  // Initialize scroll to top button
-  addScrollToTopButton();
   
   // Garantir que a navegação foi carregada após 500ms
   setTimeout(() => {
@@ -471,7 +413,7 @@ function init() {
   }, 500);
 }
 
-// Carregar navegação IMEDIATAMENTE (antes mesmo do DOMContentLoaded)
+  // Carregar navegação IMEDIATAMENTE (antes mesmo do DOMContentLoaded)
 loadNavigation();
 
 // Carregar assim que o script for executado
@@ -493,20 +435,3 @@ if (document.readyState === 'loading') {
   }, 100);
 }
 
-// === Optional: Send feedback to server ===
-function sendFeedback(emoji) {
-  // This is a placeholder - implement your feedback system
-  fetch('/api/feedback', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      emoji: emoji,
-      page: window.location.pathname,
-      timestamp: new Date().toISOString()
-    })
-  }).catch(err => {
-    console.error('Failed to send feedback:', err);
-  });
-}

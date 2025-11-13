@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Casos de Uso | PromoPing</title>
+  <base href="/PromoPing/frontend/">
+  <link rel="stylesheet" href="pages/About/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="logo">
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="pages/index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing</a>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Casos de Uso</h1>
+        <div class="copy-button-wrapper">
+          <button class="copy-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="copy-dropdown">
+            <button class="copy-dropdown-item" data-action="copy-page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <div class="copy-dropdown-item-content">
+                <span class="copy-dropdown-item-title">Copy page</span>
+                <span class="copy-dropdown-item-desc">Copy page as Markdown for LLMs</span>
+              </div>
+            </button>
+            <button class="copy-dropdown-item" data-action="view-markdown">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <div class="copy-dropdown-item-content">
+                <span class="copy-dropdown-item-title">View as Markdown</span>
+                <span class="copy-dropdown-item-desc">View this page as plain text</span>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-dropdown-external">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p>Descubra como o PromoPing pode transformar a sua experiência de compras</p>
+
+      <h2>Profissional de Tecnologia</h2>
+      <h3>O Cenário</h3>
+      <p>João é um engenheiro de software que precisa de equipamentos informáticos regulares para o seu trabalho. Está sempre à procura das melhores ofertas em laptops, monitores e acessórios.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Monitoramento Especializado:</strong> Foca em lojas como PCDiga, Globaldata e Worten</li>
+        <li><strong>Alertas Técnicos:</strong> Notificações quando há descontos em equipamentos específicos</li>
+        <li><strong>Comparação de Especificações:</strong> Análise de preços por características técnicas</li>
+        <li><strong>Histórico de Preços:</strong> Identifica padrões sazonais de desconto</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>João poupou €1,200 no último ano em equipamentos informáticos, comprando sempre no momento certo.</p>
+
+      <h2>Mãe de Família</h2>
+      <h3>O Cenário</h3>
+      <p>Maria é mãe de dois filhos e precisa de gerir o orçamento familiar. Procura constantemente por descontos em produtos para casa, roupa para crianças e eletrodomésticos.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Categorias Familiares:</strong> Monitora produtos para casa, crianças e família</li>
+        <li><strong>Alertas por SMS:</strong> Notificações rápidas para ofertas limitadas</li>
+        <li><strong>Múltiplas Lojas:</strong> Compara preços entre El Corte Inglés, Fnac e outras</li>
+        <li><strong>Relatórios de Poupança:</strong> Acompanha quanto poupa mensalmente</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Maria reduziu as despesas familiares em 25% através de compras inteligentes e alertas personalizados.</p>
+
+      <h2>Estudante Universitário</h2>
+      <h3>O Cenário</h3>
+      <p>Pedro é estudante universitário com orçamento limitado. Precisa de livros, material escolar e equipamentos eletrónicos, mas tem de ser muito cuidadoso com os gastos.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Plano Free:</strong> Acesso gratuito a funcionalidades básicas</li>
+        <li><strong>Alertas de Stock:</strong> Notificações quando produtos em promoção estão a esgotar</li>
+        <li><strong>Comparação de Preços:</strong> Encontra sempre a melhor oferta disponível</li>
+        <li><strong>Histórico de Preços:</strong> Evita comprar quando os preços estão altos</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Pedro conseguiu poupar €300 no material escolar do ano letivo, comprando sempre nas melhores promoções.</p>
+
+      <h2>Entusiasta de Moda</h2>
+      <h3>O Cenário</h3>
+      <p>Ana adora moda e está sempre à procura de peças de qualidade a preços acessíveis. Segue várias marcas e lojas, mas é difícil acompanhar todas as promoções.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Monitoramento de Marcas:</strong> Segue as suas marcas favoritas automaticamente</li>
+        <li><strong>Alertas de Coleções:</strong> Notificações para lançamentos e promoções sazonais</li>
+        <li><strong>Comparação de Tamanhos:</strong> Encontra o mesmo produto em diferentes lojas</li>
+        <li><strong>Histórico de Preços:</strong> Sabe quando é o melhor momento para comprar</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Ana conseguiu construir um guarda-roupa de qualidade com 40% de desconto médio, comprando sempre nas melhores promoções.</p>
+
+      <h2>Proprietário de Casa</h2>
+      <h3>O Cenário</h3>
+      <p>Carlos está a renovar a sua casa e precisa de eletrodomésticos, móveis e materiais de construção. Quer qualidade mas tem de controlar os custos.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Monitoramento de Grandes Compras:</strong> Segue eletrodomésticos e móveis</li>
+        <li><strong>Alertas Sazonais:</strong> Notificações para promoções de Black Friday, Natal, etc.</li>
+        <li><strong>Comparação de Lojas:</strong> Encontra os melhores preços em diferentes retalhistas</li>
+        <li><strong>Relatórios de Poupança:</strong> Acompanha o progresso do projeto</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Carlos poupou €2,500 na renovação da casa, comprando todos os eletrodomésticos e móveis em promoção.</p>
+
+      <h2>Gamer</h2>
+      <h3>O Cenário</h3>
+      <p>Rui é um gamer entusiasta que está sempre à procura de jogos, consolas e acessórios gaming. Quer estar sempre atualizado mas sem gastar uma fortuna.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Monitoramento Gaming:</strong> Segue jogos, consolas e acessórios</li>
+        <li><strong>Alertas de Lançamentos:</strong> Notificações para novos jogos em promoção</li>
+        <li><strong>Comparação Digital vs Físico:</strong> Encontra a melhor opção de compra</li>
+        <li><strong>Histórico de Preços:</strong> Sabe quando os jogos estão mais baratos</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Rui construiu uma biblioteca de jogos de €3,000 por apenas €1,800, comprando sempre nas melhores promoções.</p>
+
+      <h2>Bibliófilo</h2>
+      <h3>O Cenário</h3>
+      <p>Sofia adora ler e compra muitos livros. Quer expandir a sua biblioteca sem gastar muito dinheiro, procurando sempre as melhores ofertas.</p>
+
+      <h3>Como o PromoPing Ajuda</h3>
+      <ul>
+        <li><strong>Monitoramento de Livros:</strong> Segue autores e editoras favoritas</li>
+        <li><strong>Alertas de Lançamentos:</strong> Notificações para novos livros em promoção</li>
+        <li><strong>Comparação de Formatos:</strong> Encontra a melhor opção (físico vs digital)</li>
+        <li><strong>Histórico de Preços:</strong> Sabe quando os livros estão mais baratos</li>
+      </ul>
+
+      <h3>Resultado</h3>
+      <p>Sofia expandiu a sua biblioteca em 200 livros por metade do preço, aproveitando sempre as melhores promoções.</p>
+
+      <footer>
+        <p>Última actualização há 1 dia</p>
+      </footer>
+    </main>
+
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="pages/About/script.js"></script>
+  <script src="pages/About/search.js"></script>
+
+  <style>
+    /* Esconder scrollbar da área de conteúdo principal (main.content) */
+    main.content {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    main.content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      background: transparent !important;
+    }
+
+    /* Manter funcionalidade de scroll */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+  </style>
+</body>
+
+</html>

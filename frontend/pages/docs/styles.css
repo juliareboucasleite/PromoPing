@@ -205,6 +205,10 @@ body {
   color: #fff;
 }
 
+.copy-button-wrapper {
+  position: relative;
+}
+
 .copy-button {
   display: flex;
   align-items: center;
@@ -222,6 +226,77 @@ body {
 .copy-button:hover {
   background: #232326;
   color: #fff;
+}
+
+.copy-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 280px;
+  padding: 4px;
+  display: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.copy-button-wrapper.active .copy-dropdown {
+  display: block;
+}
+
+.copy-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+  color: #fff;
+}
+
+.copy-dropdown-item:hover {
+  background: #232326;
+}
+
+.copy-dropdown-item svg:first-child {
+  flex-shrink: 0;
+  color: #aaa;
+}
+
+.copy-dropdown-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.copy-dropdown-item-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.copy-dropdown-item-desc {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.copy-dropdown-external {
+  flex-shrink: 0;
+  color: #666;
+  margin-left: auto;
+}
+
+.copy-dropdown-item:hover .copy-dropdown-external {
+  color: #aaa;
 }
 
 .content h2 {
