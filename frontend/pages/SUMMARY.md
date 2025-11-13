@@ -1,12 +1,9 @@
 # Table of contents
 
 * [PromoPing](README.md)
-* [Changelog](changelog.md)
 * [Faq](faq.md)
-* [FirstLaunch](firstlaunch.md)
-* [Incident history](incident-history.md)
-* [Installation](installation.md)
-* [Privacy](privacy.md)
-* [Support](support.md)
+* [Registo de Incidentes e Atualizações](registo-de-incidentes-e-atualizacoes.md)
+* [Privacidade](privacidade.md)
+* [Suporte ao Utilizador](suporte-ao-utilizador.md)
 * [Termos do Usuário](termos-do-usuario.md)
 * [Guias de Ajuda](guias-de-ajuda.md)

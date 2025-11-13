@@ -1,6 +1,4 @@
-# Incident history
-
-## Registo de Incidentes e Atualizações
+# Registo de Incidentes e Atualizações
 
 Esta página mantém um registo completo de todos os incidentes, atualizações e melhorias do PromoPing. Aqui pode acompanhar o estado dos nossos serviços e as últimas correções implementadas.
 
