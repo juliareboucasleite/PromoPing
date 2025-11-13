@@ -1,8 +1,6 @@
 # Table of contents
 
-* [MyDocs](README.md)
-  * [Table of contents](MyDocs/SUMMARY.md)
-  * [Docs](MyDocs/docs.md)
+* [PromoPing](README.md)
   * [Faq](MyDocs/faq.md)
   * [FirstLaunch](MyDocs/firstlaunch.md)
   * [Incident history](MyDocs/incident-history.md)
@@ -12,3 +10,14 @@
   * [Suporte](MyDocs/suporte.md)
   * [Termos](MyDocs/termos.md)
   * [API Reference](MyDocs/api-reference.md)
+* ```yaml
+  type: builtin:openapi
+  props:
+    models: true
+    downloadLink: true
+  dependencies:
+    spec:
+      ref:
+        kind: openapi
+        spec: my-api-promoping
+  ```
