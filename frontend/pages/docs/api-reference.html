@@ -111,17 +111,59 @@
         </div>
       </div>
 
-      <h2>Documentação da API PromoPing</h2>
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 2rem; margin: 2rem 0; color: white;">
+        <h2 style="color: white; margin-top: 0;">📚 Documentação OpenAPI Completa</h2>
+        <p style="color: rgba(255,255,255,0.9); margin-bottom: 1.5rem;">
+          A documentação completa da API PromoPing está disponível em formato OpenAPI 3.0, incluindo todos os endpoints, 
+          esquemas de dados, exemplos de requisições e respostas.
+        </p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Ver Documentação Completa no GitBook
+          </a>
+          <a href="/openapi.yaml" 
+             download="promoping-openapi.yaml"
+             style="background: rgba(255,255,255,0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar openapi.yaml
+          </a>
+        </div>
+      </div>
+
+      <h2>Referência Rápida da API</h2>
+      <p style="color: #999; margin-bottom: 2rem;">
+        Esta é uma referência rápida. Para a documentação completa com todos os endpoints, 
+        <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">consulte a documentação OpenAPI no GitBook</a>.
+      </p>
+
       <h3>URL Base</h3>
       <div class="code-block">
         https://api.promoping.com
       </div>
+      <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
+        <strong>Desenvolvimento:</strong> http://127.0.0.1:3000
+      </p>
 
       <h3>Autenticação</h3>
       <p>Todos os endpoints da API (exceto autenticação) requerem um token JWT válido no cabeçalho Authorization:</p>
       <div class="code-block">
         Authorization: Bearer &lt;your_jwt_token&gt;
       </div>
+      <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
+        Obtenha seu token através do endpoint <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px;">POST /api/auth/login</code>
+      </p>
 
       <h2>Perfil do Utilizador e Estatísticas</h2>
 
@@ -317,6 +359,99 @@
         <li><strong>Premium:</strong> 2000 pedidos por hora</li>
       </ul>
 
+      <h2>Endpoints Disponíveis</h2>
+      <p style="color: #999; margin-bottom: 1.5rem;">
+        A API PromoPing inclui os seguintes grupos de endpoints. Consulte a 
+        <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">documentação OpenAPI completa</a> 
+        para detalhes de cada endpoint.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #4ade80; margin-top: 0;">🔐 Autenticação</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Registo de utilizador</li>
+            <li>Login (email/senha)</li>
+            <li>OAuth (Google, GitHub, Discord)</li>
+            <li>Recuperação de senha</li>
+            <li>Verificação de email</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #60a5fa; margin-top: 0;">👤 Utilizadores</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Perfil do utilizador</li>
+            <li>Estatísticas</li>
+            <li>Gestão de planos</li>
+            <li>Alteração de senha</li>
+            <li>Lista de administradores</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #f59e0b; margin-top: 0;">📦 Produtos</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Listar produtos</li>
+            <li>Adicionar produto</li>
+            <li>Editar produto</li>
+            <li>Remover produto</li>
+            <li>Histórico de preços</li>
+            <li>Sincronização</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #ec4899; margin-top: 0;">🔔 Notificações</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Listar notificações</li>
+            <li>Marcar como lida</li>
+            <li>Preferências</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #10b981; margin-top: 0;">💳 Pagamentos</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Criar checkout</li>
+            <li>Verificar sessão</li>
+            <li>Cancelar assinatura</li>
+            <li>Portal do cliente</li>
+            <li>Status da assinatura</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #8b5cf6; margin-top: 0;">💬 Suporte</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Criar thread</li>
+            <li>Listar threads</li>
+            <li>Responder thread</li>
+            <li>Visualizar thread</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #06b6d4; margin-top: 0;">📊 Exportação</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Exportar Excel</li>
+            <li>Exportar PDF</li>
+            <li>Relatório completo</li>
+            <li>Exportar incidentes</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #f97316; margin-top: 0;">📈 Status & Charts</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Status do sistema</li>
+            <li>Métricas</li>
+            <li>Componentes</li>
+            <li>Dados para gráficos</li>
+          </ul>
+        </div>
+      </div>
+
       <h2>Exemplos de SDK</h2>
 
       <h3>JavaScript/Node.js</h3>
@@ -354,8 +489,33 @@
         stats = response.json()
       </div>
 
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+        <h3 style="margin-top: 0;">🔗 Recursos Adicionais</h3>
+        <ul style="color: #ccc; line-height: 2;">
+          <li>
+            <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">
+              Documentação OpenAPI Completa no GitBook
+            </a>
+          </li>
+          <li>
+            <a href="/openapi.yaml" download="promoping-openapi.yaml" style="color: #667eea;">
+              Baixar Especificação OpenAPI (openapi.yaml)
+            </a>
+          </li>
+          <li>
+            <a href="https://swagger.io/tools/swagger-ui/" target="_blank" style="color: #667eea;">
+              Visualizar com Swagger UI
+            </a>
+            <span style="color: #999; font-size: 0.9rem;"> (carregue o arquivo openapi.yaml)</span>
+          </li>
+        </ul>
+      </div>
+
       <footer>
-        <p>Última actualização há 1 ano</p>
+        <p>Última actualização: <script>document.write(new Date().toLocaleDateString('pt-PT'))</script></p>
+        <p style="color: #999; font-size: 0.9rem;">
+          Documentação gerada a partir da especificação OpenAPI 3.0
+        </p>
       </footer>
     </main>
 

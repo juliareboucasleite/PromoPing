@@ -376,6 +376,12 @@ app.get("/inc/load-includes-register.js", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-register.js"));
 });
 
+// ================== OPENAPI SPEC ==================
+app.get("/openapi.yaml", (req, res) => {
+  res.setHeader("Content-Type", "application/yaml");
+  res.sendFile(path.join(__dirname, "../openapi.yaml"));
+});
+
 // ================== FRONTEND ESTÁTICO ==================
 app.use(express.static(path.join(__dirname, "../frontend")));
 
