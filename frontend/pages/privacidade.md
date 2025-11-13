@@ -1,6 +1,4 @@
-# Privacy
-
-## 1. Introdução
+# Privacidade
 
 A PromoPing ("nós", "nosso" ou "empresa") respeita a sua privacidade e está comprometida em proteger os seus dados pessoais. Esta Política de Privacidade explica como recolhemos, utilizamos, armazenamos e protegemos as suas informações quando utiliza os nossos serviços.
 

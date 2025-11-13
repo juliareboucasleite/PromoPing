@@ -1,6 +1,4 @@
-# Support
-
-## Central de Ajuda
+# Central de Ajuda
 
 ### Como podemos ajudar?
 

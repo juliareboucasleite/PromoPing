@@ -1,6 +1,4 @@
-# Faq
-
-## Perguntas Gerais
+# Perguntas Gerais
 
 <details>
 

@@ -1,6 +1,4 @@
-# Guias de Ajuda
-
-## Começar com o PromoPing
+# Começar com o PromoPing
 
 ### Visão Geral
 
