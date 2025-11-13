@@ -47,6 +47,16 @@
   color: #333;
   font-size: 14px;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cookie-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .cookie-banner-text a {
@@ -130,6 +140,13 @@
   .cookie-banner-text {
     min-width: auto;
     font-size: 13px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .cookie-icon {
+    width: 30px;
+    height: 28px;
   }
 
   .cookie-banner-buttons {
