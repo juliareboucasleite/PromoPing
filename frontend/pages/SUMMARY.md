@@ -11,14 +11,4 @@
   * [Service status](MyDocs/service-status.md)
   * [Suporte](MyDocs/suporte.md)
   * [Termos](MyDocs/termos.md)
-* ```yaml
-  type: builtin:openapi
-  props:
-    models: true
-    downloadLink: true
-  dependencies:
-    spec:
-      ref:
-        kind: openapi
-        spec: my-api-promoping
-  ```
+  * [API Reference](MyDocs/api-reference.md)
