@@ -74,6 +74,38 @@ window.closeModals = function() {
   }
 };
 
+// ===== QR CODE MODAL =====
+window.openQRModal = function() {
+  const qrModal = document.getElementById('qrModal');
+  if (!qrModal) {
+    console.error('Modal QR não encontrado');
+    return;
+  }
+  
+  // Fechar outros modais
+  window.closeModals();
+  
+  // Mostrar modal QR
+  qrModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeQRModal = function() {
+  const qrModal = document.getElementById('qrModal');
+  if (qrModal) {
+    qrModal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+};
+
+function openQRModal() {
+  window.openQRModal();
+}
+
+function closeQRModal() {
+  window.closeQRModal();
+}
+
 // Abrir modal de verificação
 window.openVerificationModal = function(email) {
   const overlay = document.getElementById('modalOverlay');
@@ -411,6 +443,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }
+
+    // QR Code Login
+    const btnQRCodeLogin = document.getElementById('btnQRCodeLogin');
+    if (btnQRCodeLogin) {
+      btnQRCodeLogin.addEventListener('click', () => {
+        openQRModal();
+      });
+    }
+
+    // QR Modal Controls
+    const qrModalBack = document.getElementById('qrModalBack');
+    const qrModalClose = document.getElementById('qrModalClose');
+    const qrModal = document.getElementById('qrModal');
+
+    if (qrModalBack) {
+      qrModalBack.addEventListener('click', () => {
+        closeQRModal();
+        openLoginModal();
+      });
+    }
+
+    if (qrModalClose) {
+      qrModalClose.addEventListener('click', () => {
+        closeQRModal();
+      });
+    }
+
+    // Fechar modal QR ao clicar no overlay
+    if (qrModal) {
+      qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+          closeQRModal();
+        }
+      });
+    }
+
+    // Fechar modal QR com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const qrModal = document.getElementById('qrModal');
+        if (qrModal && qrModal.classList.contains('show')) {
+          closeQRModal();
+        }
+      }
+    });
 
     // Register Form
     const regForm = document.getElementById('regForm');

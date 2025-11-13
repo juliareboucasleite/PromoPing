@@ -491,7 +491,7 @@
 
             <!-- QR Code -->
             <div class="qr-code-button-wrapper">
-              <button class="qr-code-button" aria-label="QR code login button" type="button" tabindex="0">
+              <button class="qr-code-button" id="btnQRCodeLogin" aria-label="QR code login button" type="button" tabindex="0">
                 <svg aria-label="QR code" class="qr-icon" height="18" role="img" viewBox="0 0 24 24" width="18">
                   <path d="M5.5 5a.5.5 0 0 0-.5.5v1c0 .28.22.5.5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 1a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3zm5 3v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1M5 18.5c0 .28.22.5.5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zM4 13a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3zm5 3v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1m8-9.5c0 .28.22.5.5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zM13 8a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3zm3-5h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m2 14h-3v2h5v-4h3v-2h-5zm-5 2v4h5v-2h-3v-2zm10 2h-3v2h3zm-2-2h2v-2h-2zm-5-6h-3v2h3z"></path>
                 </svg>
@@ -790,7 +790,7 @@
     <div class="cookie-banner-content">
       <div class="cookie-banner-text">
         <img src="assets/images/Cookies.png" alt="Cookie" class="cookie-icon">
-        <span>Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa <a href="pages/docs/privacy.html" target="_blank">política de cookies</a>.</span>
+        <span>Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer">política de cookies</a>.</span>
       </div>
       <div class="cookie-banner-buttons">
         <button class="cookie-banner-btn accept-all" id="cookieAcceptAll">Aceitar tudo</button>
@@ -818,7 +818,7 @@
           <p class="cookie-privacy-text">
             Podes alterar as preferências de cookies quando quiseres.
           </p>
-          <a href="pages/docs/privacy.html" target="_blank" class="cookie-privacy-link">Política de cookies</a>
+          <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer" class="cookie-privacy-link">Política de cookies</a>
         </div>
 
         <!-- Essencial -->
@@ -862,6 +862,56 @@
         <button class="cookie-modal-btn accept-all" id="cookieModalAcceptAll">Aceitar tudo</button>
         <button class="cookie-modal-btn reject-all" id="cookieModalRejectAll">Rejeitar tudo</button>
         <button class="cookie-modal-btn save" id="cookieModalSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Login Modal -->
+  <div class="qr-modal-overlay" id="qrModal">
+    <div class="qr-modal" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="qr-modal-header">
+        <button class="qr-modal-back" id="qrModalBack" aria-label="Voltar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <button class="qr-modal-close" id="qrModalClose" aria-label="Fechar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="qr-modal-content">
+        <div class="qr-modal-logo">
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="qr-logo-img">
+        </div>
+        
+        <h2 class="qr-modal-title">Deteta com o telemóvel</h2>
+        
+        <div class="qr-instructions">
+          <ol class="qr-instructions-list">
+            <li>Inicia sessão na app do PromoPing no teu telemóvel</li>
+            <li>Deteta o código QR com a câmara do telemóvel</li>
+            <li>Confirma o início de sessão na app do PromoPing</li>
+          </ol>
+        </div>
+        
+
+        <div class="qr-code-container">
+          <div class="qr-code-placeholder" id="qrCodePlaceholder">
+            <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+              <rect width="200" height="200" fill="#f5f5f5" rx="8"/>
+              <text x="100" y="100" text-anchor="middle" fill="#999" font-size="14" font-family="Arial, sans-serif" dominant-baseline="middle">
+                QR Code em breve
+              </text>
+            </svg>
+            <p class="qr-placeholder-text">O código QR estará disponível em breve</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
