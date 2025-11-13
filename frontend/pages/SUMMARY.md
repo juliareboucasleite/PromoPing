@@ -1,23 +1,34 @@
 # Table of contents
 
 * [PromoPing](README.md)
-  * [Faq](MyDocs/faq.md)
-  * [FirstLaunch](MyDocs/firstlaunch.md)
-  * [Incident history](MyDocs/incident-history.md)
-  * [Installation](MyDocs/installation.md)
-  * [Privacy](MyDocs/privacy.md)
-  * [Service status](MyDocs/service-status.md)
-  * [Suporte](MyDocs/suporte.md)
-  * [Termos](MyDocs/termos.md)
+  * [Faq](readme/faq.md)
+  * [FirstLaunch](readme/firstlaunch.md)
+  * [Incident history](readme/incident-history.md)
+  * [Installation](readme/installation.md)
+  * [Privacy](readme/privacy.md)
+  * [Service status](readme/service-status.md)
+  * [Suporte](readme/suporte.md)
+  * [Termos](readme/termos.md)
   * [API Reference](readme/api-reference/README.md)
     * ```yaml
-      type: builtin:openapi
       props:
         models: true
         downloadLink: true
+      type: builtin:openapi
       dependencies:
         spec:
           ref:
             kind: openapi
             spec: my-api-promoping
       ```
+* ```yaml
+  props:
+    models: true
+    downloadLink: true
+  type: builtin:openapi
+  dependencies:
+    spec:
+      ref:
+        kind: openapi
+        spec: my-api-promoping
+  ```
