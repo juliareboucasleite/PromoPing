@@ -31,6 +31,13 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
 
     const resultado = await criarSessaoCheckout(userId, parseInt(planoId), userEmail);
 
+    console.log(`[PAYMENT ROUTE] Resultado recebido:`, {
+      tipo: resultado.tipo,
+      url: resultado.url,
+      session_id: resultado.session_id,
+      metodo: resultado.metodo
+    });
+
     if (resultado.tipo === 'gratuito') {
       return res.json({
         status: "ok",
@@ -39,12 +46,22 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
       });
     }
 
-    res.json({
+    // Garantir que sempre retornamos checkout_url
+    const responseData = {
       status: "ok",
-      session_id: resultado.session_id,
       checkout_url: resultado.url,
+      url: resultado.url, // Duplicado para garantir compatibilidade
       plano: resultado.plano
-    });
+    };
+
+    // Adicionar session_id apenas se existir (não existe para links diretos)
+    if (resultado.session_id) {
+      responseData.session_id = resultado.session_id;
+    }
+
+    console.log(`[PAYMENT ROUTE] Enviando resposta:`, responseData);
+
+    res.json(responseData);
 
   } catch (error) {
     console.error("Erro ao criar sessão de checkout:", error);

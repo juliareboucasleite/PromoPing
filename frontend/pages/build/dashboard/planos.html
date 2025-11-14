@@ -550,17 +550,31 @@
                 }
 
                 const data = await response.json();
-                console.log("[COMPRA] Sessão Stripe criada:", data);
+                console.log("[COMPRA] Resposta recebida:", data);
+                console.log("[COMPRA] checkout_url:", data.checkout_url);
+                console.log("[COMPRA] url:", data.url);
 
                 if (data.checkout_url || data.url) {
-                    // Redirecionar para Stripe
-                    window.location.href = data.checkout_url || data.url;
+                    const redirectUrl = data.checkout_url || data.url;
+                    console.log("[COMPRA] Redirecionando para:", redirectUrl);
+                    
+                    // Fechar modal antes de redirecionar
+                    fecharModalCompra();
+                    
+                    // Pequeno delay para garantir que o modal feche
+                    setTimeout(() => {
+                        // Usar replace para evitar que o usuário volte com o botão voltar
+                        window.location.replace(redirectUrl);
+                    }, 100);
+                    return; // Importante: sair da função após iniciar o redirecionamento
                 } else if (data.status === 'ok' && data.message) {
                     // Plano gratuito ativado
+                    console.log("[COMPRA] Plano gratuito ativado");
                     alert(data.message);
                     fecharModalCompra();
                     location.reload();
                 } else {
+                    console.error("[COMPRA] URL de checkout não encontrada na resposta:", data);
                     throw new Error("URL de checkout não recebida do servidor");
                 }
 

@@ -15,8 +15,29 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
       stripe_price_id: plano?.stripe_price_id
     });
     
+    // Verificar compatibilidade entre chave Stripe e price IDs
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+    const isTestMode = stripeSecretKey.startsWith('sk_test_');
+    const isLiveMode = stripeSecretKey.startsWith('sk_live_');
+    
+    if (plano?.stripe_price_id) {
+      const priceId = plano.stripe_price_id;
+      // Price IDs de teste geralmente começam com price_ e não têm padrão específico
+      // Mas podemos verificar se há incompatibilidade conhecida
+      console.log(` [PAYMENT] Modo Stripe: ${isTestMode ? 'TEST' : isLiveMode ? 'LIVE' : 'DESCONHECIDO'}`);
+      console.log(` [PAYMENT] Price ID: ${priceId}`);
+      
+      if (isTestMode && priceId) {
+        console.warn(` [PAYMENT] ATENÇÃO: Usando chave de TEST com price ID. Certifique-se de que o price ID é de TEST mode.`);
+      }
+      if (isLiveMode && priceId) {
+        console.log(` [PAYMENT] Usando chave de LIVE com price ID de produção.`);
+      }
+    }
+    
     // Log detalhado para debug
     console.log(` [PAYMENT] DEBUG - Variáveis de ambiente:`, {
+      STRIPE_SECRET_KEY: stripeSecretKey ? `${stripeSecretKey.substring(0, 20)}...` : 'não definido',
       STRIPE_BASIC_PRICE_ID: process.env.STRIPE_BASIC_PRICE_ID,
       STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
       STRIPE_PREMIUM_PRICE_ID: process.env.STRIPE_PREMIUM_PRICE_ID
@@ -43,16 +64,30 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
       };
     }
 
-    if (!plano.stripe_price_id) {
-      console.error(` [PAYMENT] Price ID não configurado para plano ${plano.nome}`);
-      console.error(` [PAYMENT] Configure STRIPE_STANDARD_PRICE_ID no arquivo .env`);
-      throw new Error(`Price ID não configurado para o plano ${plano.nome}. Configure STRIPE_STANDARD_PRICE_ID no .env`);
+    // Verificar se há link direto do Stripe (preferencial)
+    if (plano.stripe_checkout_url) {
+      console.log(` [PAYMENT] Usando link direto do Stripe para plano ${plano.nome}`);
+      console.log(` [PAYMENT] URL: ${plano.stripe_checkout_url}`);
+      
+      return {
+        success: true,
+        tipo: 'checkout',
+        url: plano.stripe_checkout_url,
+        plano: plano,
+        metodo: 'link_direto'
+      };
     }
 
-    console.log(` [PAYMENT] Usando price_id: ${plano.stripe_price_id} para plano ${plano.nome}`);
+    // Fallback: criar sessão via API se não houver link direto
+    if (!plano.stripe_price_id) {
+      console.error(` [PAYMENT] Nem link direto nem price ID configurado para plano ${plano.nome}`);
+      throw new Error(`Configuração de pagamento não encontrada para o plano ${plano.nome}. Configure STRIPE_${plano.nome.toUpperCase()}_CHECKOUT_URL ou STRIPE_${plano.nome.toUpperCase()}_PRICE_ID no .env`);
+    }
+
+    console.log(` [PAYMENT] Usando API do Stripe com price_id: ${plano.stripe_price_id} para plano ${plano.nome}`);
     console.log(` [PAYMENT] ATENÇÃO: Se este price_id não for válido, o Stripe pode redirecionar para outro plano!`);
 
-    // Criar sessão de checkout
+    // Criar sessão de checkout via API
     console.log(` [PAYMENT] Criando sessão Stripe com price_id: ${plano.stripe_price_id}`);
     
     // IMPORTANTE: Stripe SEMPRE requer HTTPS para URLs de retorno, mesmo em desenvolvimento
@@ -114,7 +149,8 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
       tipo: 'checkout',
       session_id: session.id,
       url: session.url,
-      plano: plano
+      plano: plano,
+      metodo: 'api'
     };
 
   } catch (error) {
