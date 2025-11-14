@@ -1,7 +1,7 @@
 # PromoPing - Monitor de Preços
 
 [![Version](https://img.shields.io/badge/version-Pap-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
-![Static Badge](https://img.shields.io/badge/LICENSE-PromoPing-orange?link=https%3A%2F%2Fpromoping.gitbook.io%2Fpromoping-docs)
+[![Static Badge](https://img.shields.io/badge/LICENSE-PromoPing-orange?link=https%3A%2F%2Fpromoping.gitbook.io%2Fpromoping-docs)](https://promoping.gitbook.io/promoping-docs)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org)
 
 
