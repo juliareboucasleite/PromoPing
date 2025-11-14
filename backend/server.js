@@ -383,178 +383,193 @@ app.get("/openapi.yaml", (req, res) => {
 });
 
 // ================== FRONTEND ESTÁTICO ==================
-app.use(express.static(path.join(__dirname, "../frontend")));
+// Em produção, o NGINX serve o frontend estático
+// Em desenvolvimento, o Express serve o frontend
+const isProduction = process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND !== 'true';
 
-// Rota para ignorar requests do Chrome DevTools
-app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
-  res.status(404).json({ error: "Not found" });
-});
+if (!isProduction) {
+  // Servir arquivos estáticos apenas em desenvolvimento
+  app.use(express.static(path.join(__dirname, "../frontend")));
+  
+  // Rota para ignorar requests do Chrome DevTools
+  app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
 
-// ================== ROTAS DISCORD DIRETAS ==================
-// Discord OAuth - redirecionar para API
-app.get("/auth/discord", (req, res) => {
-  res.redirect("/api/auth/discord");
-});
+  // ================== ROTAS DISCORD DIRETAS ==================
+  // Discord OAuth - redirecionar para API
+  app.get("/auth/discord", (req, res) => {
+    res.redirect("/api/auth/discord");
+  });
 
-app.get("/auth/discord/callback", (req, res) => {
-  // Preservar os parâmetros da query string
-  const queryString = new URLSearchParams(req.query).toString();
-  res.redirect(`/api/auth/discord/callback?${queryString}`);
-});
+  app.get("/auth/discord/callback", (req, res) => {
+    // Preservar os parâmetros da query string
+    const queryString = new URLSearchParams(req.query).toString();
+    res.redirect(`/api/auth/discord/callback?${queryString}`);
+  });
 
-// ================== ROTAS DO FRONTEND ==================
-// Página inicial
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
-});
+  // ================== ROTAS DO FRONTEND ==================
+  // Página inicial
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
+  });
 
-// Páginas principais
-app.get("/monitoramento", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/monitoramento.html"));
-});
+  // Páginas principais
+  app.get("/monitoramento", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/monitoramento.html"));
+  });
 
-app.get("/alertas", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/alertas.html"));
-});
+  app.get("/alertas", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/alertas.html"));
+  });
 
-app.get("/relatorios", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/relatorios.html"));
-});
+  app.get("/relatorios", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/relatorios.html"));
+  });
 
-app.get("/casos-uso", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/casos-uso.html"));
-});
+  app.get("/casos-uso", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/casos-uso.html"));
+  });
 
-app.get("/blog", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/blog.html"));
-});
+  app.get("/blog", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/blog.html"));
+  });
 
-// Páginas de autenticação
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
-});
+  // Páginas de autenticação
+  app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+  });
 
-app.get("/register", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
-});
+  app.get("/register", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+  });
 
-// Rotas adicionais para compatibilidade com frontend
-app.get("/inc/Login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
-});
+  // Rotas adicionais para compatibilidade com frontend
+  app.get("/inc/Login.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+  });
 
-app.get("/inc/register.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
-});
+  app.get("/inc/register.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+  });
 
-// Páginas do dashboard
-app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
-});
+  // Páginas do dashboard
+  app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+  });
 
-app.get("/dashboard/painel", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
-});
+  app.get("/dashboard/painel", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+  });
 
-app.get("/dashboard/perfil", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
-});
+  app.get("/dashboard/perfil", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+  });
 
-app.get("/dashboard/planos", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
-});
+  app.get("/dashboard/planos", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+  });
 
-app.get("/dashboard/produtos", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
-});
+  app.get("/dashboard/produtos", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+  });
 
-// Rotas adicionais para compatibilidade com frontend (com .html)
-app.get("/dashboard/Painel.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
-});
+  // Rotas adicionais para compatibilidade com frontend (com .html)
+  app.get("/dashboard/Painel.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+  });
 
-app.get("/dashboard/perfil.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
-});
+  app.get("/dashboard/perfil.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+  });
 
-app.get("/dashboard/planos.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
-});
+  app.get("/dashboard/planos.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+  });
 
-app.get("/dashboard/produtos.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
-});
+  app.get("/dashboard/produtos.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+  });
 
-// Páginas de documentação
-app.get("/docs", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/docs.html"));
-});
+  // Páginas de documentação
+  app.get("/docs", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/docs.html"));
+  });
 
-app.get("/docs/support", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/support.html"));
-});
+  app.get("/docs/support", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/support.html"));
+  });
 
-app.get("/docs/service-status", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/service-status.html"));
-});
+  app.get("/docs/service-status", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/service-status.html"));
+  });
 
-app.get("/docs/terms", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/terms.html"));
-});
+  app.get("/docs/terms", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/terms.html"));
+  });
 
-app.get("/docs/usage-guide", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/usage-guide.html"));
-});
+  app.get("/docs/usage-guide", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/usage-guide.html"));
+  });
 
-app.get("/docs/api-reference", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/api-reference.html"));
-});
+  app.get("/docs/api-reference", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/api-reference.html"));
+  });
 
-app.get("/docs/FirstLaunch", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html"));
-});
+  app.get("/docs/FirstLaunch", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html"));
+  });
 
-// Páginas About
-app.get("/about", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/about.html"));
-});
+  // Páginas About
+  app.get("/about", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/about.html"));
+  });
 
-app.get("/about/alertas", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/alertas.html"));
-});
+  app.get("/about/alertas", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/alertas.html"));
+  });
 
-app.get("/about/blog", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/blog.html"));
-});
+  app.get("/about/blog", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/blog.html"));
+  });
 
-app.get("/about/casos-uso", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/casos-uso.html"));
-});
+  app.get("/about/casos-uso", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/casos-uso.html"));
+  });
 
-app.get("/about/monitoramento", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/monitoramento.html"));
-});
+  app.get("/about/monitoramento", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/monitoramento.html"));
+  });
 
-app.get("/about/relatorios", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/relatorios.html"));
-});
+  app.get("/about/relatorios", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/relatorios.html"));
+  });
 
-app.get("/about/privacy-cookies", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/About/privacy-cookies.html"));
-});
+  app.get("/about/privacy-cookies", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pages/About/privacy-cookies.html"));
+  });
 
-// Redirecionamento baseado no .env
-app.get("/redirect", (req, res) => {
-  const redirectUrl = process.env.REDIRECT_URL || `http://localhost:${process.env.PORT || 3000}`;
-  res.redirect(redirectUrl);
-});
+  // Redirecionamento baseado no .env
+  app.get("/redirect", (req, res) => {
+    const redirectUrl = process.env.REDIRECT_URL || `http://localhost:${process.env.PORT || 3000}`;
+    res.redirect(redirectUrl);
+  });
 
-
-// ================== MIDDLEWARE 404 ==================
-// Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "../frontend/pages/404.html"));
-});
+  // ================== MIDDLEWARE 404 ==================
+  // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
+  app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, "../frontend/pages/404.html"));
+  });
+} else {
+  // Em produção, apenas retornar 404 para rotas não-API
+  app.use((req, res, next) => {
+    // Se não começar com /api/, retornar 404 (NGINX deve servir o frontend)
+    if (!req.path.startsWith('/api/') && req.path !== '/openapi.yaml') {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    next();
+  });
+}
 
 // ================== IMPORTAR SERVIÇOS ==================
 import { GracePeriodManager } from './services/gracePeriodManager.js';

@@ -22,6 +22,7 @@
     "discord:start": "cd backend/discord-bot && npm start",
     "discord:dev": "cd backend/discord-bot && npm run dev",
     "discord:test": "cd backend/discord-bot && npm test",
+    "prepare:frontend": "node scripts/prepare-frontend-production.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
