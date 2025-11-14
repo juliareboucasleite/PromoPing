@@ -73,45 +73,476 @@
         document.querySelectorAll('.pp-header-nav-links').forEach(x => x.style.display = 'none');
     });
 
-    // Alterna idioma da página
-    function toggleLanguage() {
-      const lang = document.getElementById('lang-text'), cur = lang.textContent;
-      if (cur === 'PT') { lang.textContent = 'EN'; translateToEnglish(); }
-      else { lang.textContent = 'PT'; translateToPortuguese(); }
+    // Armazena os textos originais em português
+    let originalTexts = {};
+
+    // Função auxiliar para normalizar texto
+    function normalizeText(text) {
+      if (!text) return '';
+      return text.replace(/\s+/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ').trim();
     }
 
-    // Tradução para inglês do header, menus e conteúdos da página
-    // Tabela de traduções dos elementos da página
-    const translations = {
-      en: {
-        // ...traduções...
-      },
-      pt: {
-        // ...traduções...
-      },
+    // Salva os textos originais quando a página carrega
+    function saveOriginalTexts() {
+      // Não sobrescreve se já salvou e está em português (não traduzido)
+      const langText = document.getElementById('lang-text');
+      const isEnglish = langText && langText.textContent.trim() === 'EN';
+      
+      // Se já salvou e não está em inglês, não precisa salvar novamente
+      if (Object.keys(originalTexts).length > 0 && !isEnglish) {
+        // Apenas atualiza elementos do header que podem ter sido carregados depois
+        const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
+        const headerEntrar = document.querySelector('.pp-header-cta-button span');
+        if (headerInscreve && !originalTexts['header-inscreve']) {
+          originalTexts['header-inscreve'] = {
+            element: headerInscreve,
+            text: headerInscreve.textContent
+          };
+        }
+        if (headerEntrar && !originalTexts['header-entrar']) {
+          originalTexts['header-entrar'] = {
+            element: headerEntrar,
+            text: headerEntrar.textContent
+          };
+        }
+        return;
+      }
+      
+      const selectors = [
+        '.pp-hero-left h1',
+        '.pp-btn.pp-btn-cta',
+        '.centered-content h2 .highlight',
+        '.text-content.justified p',
+        '.centered-content .text-content p strong',
+        '.centered-content p strong',
+        '#parceiros h2 span',
+        '.how-header h2',
+        '.how-header p',
+        '.how-step h3',
+        '.how-step p',
+        '.pricing-header h2',
+        '.pricing-header p',
+        '.popular-badge',
+        '.pricing-card .features li',
+        '.pp-cta h2',
+        '.pp-cta p',
+        '.pp-cta a',
+        '.pp-header-cta-button-secondary span',
+        '.pp-header-cta-button span',
+        '.modal-title',
+        '.modal-subtitle',
+        '.field-label',
+        '.form-input[placeholder]',
+        '.forgot-password-link',
+        '.submit-button .button-text',
+        '.divider-text',
+        '.social-button span',
+        '.qr-code-button span',
+        '.footer-link-button',
+        '.terms-text',
+        '.resend-text',
+        '.resend-button',
+        '.cookie-banner-text span',
+        '.cookie-banner-btn',
+        '.cookie-modal-title',
+        '.cookie-modal-subtitle',
+        '.cookie-privacy-title',
+        '.cookie-privacy-text',
+        '.cookie-privacy-link',
+        '.cookie-category-title',
+        '.cookie-category-subtitle',
+        '.cookie-category-description',
+        '.cookie-modal-btn',
+        '.qr-modal-title',
+        '.qr-instructions-list li'
+      ];
+
+      selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((el, index) => {
+          const key = `${selector}:${index}`;
+          if (el.textContent && el.textContent.trim()) {
+            // Normaliza o texto removendo quebras de linha extras e espaços múltiplos
+            const normalizedText = normalizeText(el.textContent);
+            originalTexts[key] = {
+              element: el,
+              text: normalizedText,
+              originalText: el.textContent, // Mantém o texto original também
+              html: el.innerHTML, // Salva HTML também para elementos com HTML interno
+              placeholder: el.placeholder || null
+            };
+          }
+        });
+      });
+
+      // Salva textos específicos do header que são carregados dinamicamente
+      setTimeout(() => {
+        const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
+        const headerEntrar = document.querySelector('.pp-header-cta-button span');
+        if (headerInscreve && !originalTexts['header-inscreve']) {
+          originalTexts['header-inscreve'] = {
+            element: headerInscreve,
+            text: headerInscreve.textContent
+          };
+        }
+        if (headerEntrar && !originalTexts['header-entrar']) {
+          originalTexts['header-entrar'] = {
+            element: headerEntrar,
+            text: headerEntrar.textContent
+          };
+        }
+      }, 500);
+    }
+
+    // Tradução para inglês britânico
+    const translationsGB = {
+      'Sempre ligado': 'Always on',
+      'Saber mais': 'Find out more',
+      'Conecte-se às suas plataformas favoritas': 'Connect to your favourite platforms',
+      'Com o PromoPing, você nunca mais vai perder uma promoção. Nós conectamos todas as suas contas sociais em um só lugar para que você receba alertas instantâneos sempre que aquele produto dos seus sonhos entrar em oferta.': 'With PromoPing, you\'ll never miss a promotion again. We connect all your social accounts in one place so you receive instant alerts whenever that product of your dreams goes on sale.',
+      'Basta adicionar o que quer monitorar e relaxar, nós ficamos de olho nos preços pra você. Assim que o valor cair, você recebe uma notificação no WhatsApp, Telegram, Discord ou email. Rápido, simples e automático.': 'Simply add what you want to monitor and relax, we keep an eye on prices for you. As soon as the price drops, you receive a notification on WhatsApp, Telegram, Discord or email. Quick, simple and automatic.',
+      'Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Thousands of people already save every month with PromoPing. And it goes beyond notifications—it\'s about being part of an intelligent community that shares the best shopping opportunities. Discover, save and enjoy.',
+      'PromoPing. O preço certo, na hora certa.': 'PromoPing. The right price, at the right time.',
+      'Algumas marcas': 'Some brands',
+      ' que estão': ' that are',
+      ' a monitorizar no PromoPing.': ' monitoring on PromoPing.',
+      'Como funciona': 'How it works',
+      'Em apenas 3 passos simples': 'In just 3 simple steps',
+      'Adicione produtos': 'Add products',
+      'Cole o link do produto que pretende monitorizar': 'Paste the link of the product you want to monitor',
+      'Configure alertas': 'Configure alerts',
+      'Defina quando quer ser notificado': 'Set when you want to be notified',
+      'Receba notificações': 'Receive notifications',
+      'Seja alertado quando os preços baixarem': 'Be alerted when prices drop',
+      'Escolha o seu plano': 'Choose your plan',
+      'Escolha o plano que melhor se adapta às suas necessidades': 'Choose the plan that best fits your needs',
+      'Mais Popular': 'Most Popular',
+      'Até 5 produtos': 'Up to 5 products',
+      'Notificações por Email': 'Email notifications',
+      'Alertas básicos': 'Basic alerts',
+      'Verificação diária': 'Daily verification',
+      'Até 25 produtos': 'Up to 25 products',
+      'Email + SMS': 'Email + SMS',
+      'Alertas personalizados': 'Custom alerts',
+      'Verificação de 4h/4h': '4-hour verification',
+      'Histórico de preços': 'Price history',
+      'Até 100 produtos': 'Up to 100 products',
+      'Email, SMS + Discord': 'Email, SMS + Discord',
+      'Verificação de 2h/2h': '2-hour verification',
+      'Histórico completo': 'Complete history',
+      'Relatórios avançados': 'Advanced reports',
+      'Produtos ilimitados': 'Unlimited products',
+      'Todas as notificações': 'All notifications',
+      'Email, SMS, Discord, Telegram, WhatsApp': 'Email, SMS, Discord, Telegram, WhatsApp',
+      'Verificação em tempo real': 'Real-time verification',
+      'API de integração': 'Integration API',
+      'Suporte prioritário': 'Priority support',
+      'Relatórios personalizados': 'Custom reports',
+      '/mês': '/month',
+      'Pronto para poupar dinheiro?': 'Ready to save money?',
+      'Junte-se a milhares de portugueses que já poupam com o PromoPing': 'Join thousands of Portuguese people who already save with PromoPing',
+      'Começar agora grátis': 'Start now for free',
+      'Inscreve-te': 'Sign up',
+      'Entrar': 'Log in',
+      'Bem-vindo(a) ao PromoPing': 'Welcome to PromoPing',
+      'E-mail': 'Email',
+      'Palavra-passe': 'Password',
+      'Esqueceste a palavra-passe?': 'Forgotten your password?',
+      'Iniciar sessão': 'Log in',
+      'OU': 'OR',
+      'Continuar com Google': 'Continue with Google',
+      'Continuar com Discord': 'Continue with Discord',
+      'Usa o código QR': 'Use QR code',
+      'Ainda não estás no PromoPing? Inscreve-te': 'Not on PromoPing yet? Sign up',
+      'És uma empresa? Começa aqui!': 'Are you a business? Start here!',
+      'Ao continuar, estás a concordar com os': 'By continuing, you agree to PromoPing\'s',
+      'Termos de Serviço': 'Terms of Service',
+      ' do PromoPing e a confirmar que leste a nossa': ' and confirm that you have read our',
+      'Política de Privacidade': 'Privacy Policy',
+      '.': '.',
+      'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'By continuing, you agree to PromoPing\'s Terms of Service and confirm that you have read our Privacy Policy.',
+      'Encontra novas ideias para experimentares': 'Find new ideas to try',
+      'Cria uma palavra-passe': 'Create a password',
+      'Data de nascimento': 'Date of birth',
+      'Continuar': 'Continue',
+      'Já és membro?': 'Already a member?',
+      'Criar uma conta de empresa grátis': 'Create a free business account',
+      'Verifica o teu email': 'Verify your email',
+      'Enviamos um código de verificação para': 'We sent a verification code to',
+      'Código de verificação': 'Verification code',
+      'Insere o código': 'Enter the code',
+      'Verificar': 'Verify',
+      'Não recebeste o código?': 'Didn\'t receive the code?',
+      'Reenviar código': 'Resend code',
+      'Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa': 'We use cookies to show ads and personalised experiences and to analyse traffic on your site. For more information, see our',
+      'política de cookies': 'cookie policy',
+      '.': '.',
+      'Aceitar tudo': 'Accept all',
+      'Rejeitar tudo': 'Reject all',
+      'Quero escolher': 'I want to choose',
+      'Privacidade e dados': 'Privacy and data',
+      'Preferências de cookies': 'Cookie preferences',
+      'A tua privacidade': 'Your privacy',
+      'Podes alterar as preferências de cookies quando quiseres.': 'You can change your cookie preferences at any time.',
+      'Essencial': 'Essential',
+      'Necessários para o funcionamento do site': 'Necessary for the website to function',
+      'Sempre ativo': 'Always active',
+      'Estes cookies são necessários para que o PromoPing funcione corretamente. Permitem manter a tua sessão iniciada e guardar as tuas preferências de monitorização de preços.': 'These cookies are necessary for PromoPing to function correctly. They allow you to stay logged in and save your price monitoring preferences.',
+      'Análises': 'Analytics',
+      'Ajudam a melhorar o serviço': 'Help improve the service',
+      'Estes cookies recolhem informações sobre como utilizas o PromoPing para melhorarmos o serviço de monitorização de preços e a experiência de utilização.': 'These cookies collect information about how you use PromoPing to improve the price monitoring service and user experience.',
+      'Guardar': 'Save',
+      'Deteta com o telemóvel': 'Scan with your mobile',
+      'Inicia sessão na app do PromoPing no teu telemóvel': 'Log in to the PromoPing app on your mobile',
+      'Deteta o código QR com a câmara do telemóvel': 'Scan the QR code with your mobile camera',
+      'Confirma o início de sessão na app do PromoPing': 'Confirm login in the PromoPing app',
+      'O código QR estará disponível em breve': 'The QR code will be available soon'
     };
 
-    /**
-     * Atualiza os textos dos elementos da página conforme o idioma
-     */
-    function setPageLanguage(lang) {
-      const dict = translations[lang];
-      if (!dict) return;
-      Object.entries(dict).forEach(([selector, text]) => {
-        const el = document.querySelector(selector);
-        if (el) el.textContent = text;
-      });
+    // Alterna idioma da página
+    function toggleLanguage() {
+      const lang = document.getElementById('lang-text');
+      if (!lang) return;
+      
+      const cur = lang.textContent.trim();
+      
+      if (cur === 'PT') {
+        lang.textContent = 'EN';
+        translateToEnglish();
+      } else {
+        lang.textContent = 'PT';
+        restoreOriginalTexts();
+      }
     }
 
-    // Traduz tudo para inglês
+    // Função auxiliar para traduzir texto preservando HTML interno
+    function translateTextWithHTML(element, originalText) {
+      // Se o elemento tem filhos (HTML interno), traduz apenas o texto dos nós de texto
+      if (element.children.length > 0 || element.querySelector('a, span, strong, em')) {
+        // Traduz o texto completo do elemento
+        const fullText = element.textContent || element.innerText;
+        const translated = translationsGB[fullText.trim()];
+        
+        if (translated) {
+          // Se há tradução completa, substitui mantendo a estrutura HTML
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = element.innerHTML;
+          const textNodes = getTextNodes(tempDiv);
+          textNodes.forEach(node => {
+            if (node.textContent.trim()) {
+              const translatedText = translationsGB[node.textContent.trim()];
+              if (translatedText) {
+                node.textContent = translatedText;
+              } else {
+                // Tenta traduzir por partes
+                let newText = node.textContent;
+                const sortedTranslations = Object.entries(translationsGB)
+                  .sort((a, b) => b[0].length - a[0].length);
+                sortedTranslations.forEach(([pt, en]) => {
+                  if (newText.includes(pt)) {
+                    newText = newText.replace(new RegExp(pt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+                  }
+                });
+                node.textContent = newText;
+              }
+            }
+          });
+          element.innerHTML = tempDiv.innerHTML;
+        } else {
+          // Traduz por partes mantendo HTML
+          const sortedTranslations = Object.entries(translationsGB)
+            .sort((a, b) => b[0].length - a[0].length);
+          sortedTranslations.forEach(([pt, en]) => {
+            if (fullText.includes(pt)) {
+              // Substitui no innerHTML preservando tags
+              element.innerHTML = element.innerHTML.replace(
+                new RegExp(pt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 
+                en
+              );
+            }
+          });
+        }
+      } else {
+        // Elemento simples, traduz diretamente
+        const translated = translationsGB[originalText.trim()];
+        if (translated) {
+          element.textContent = translated;
+        } else {
+          let newText = originalText;
+          const sortedTranslations = Object.entries(translationsGB)
+            .sort((a, b) => b[0].length - a[0].length);
+          sortedTranslations.forEach(([pt, en]) => {
+            if (newText.includes(pt)) {
+              newText = newText.replace(new RegExp(pt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+            }
+          });
+          if (newText !== originalText) {
+            element.textContent = newText;
+          }
+        }
+      }
+    }
+
+    // Função auxiliar para obter nós de texto
+    function getTextNodes(element) {
+      const textNodes = [];
+      const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+      let node;
+      while (node = walker.nextNode()) {
+        textNodes.push(node);
+      }
+      return textNodes;
+    }
+
+    // Traduz tudo para inglês britânico
     function translateToEnglish() {
-      setPageLanguage('en');
+      // Garante que os textos originais foram salvos
+      saveOriginalTexts();
+      
+      // Traduz cada elemento salvo
+      Object.entries(originalTexts).forEach(([key, data]) => {
+        if (data.element && data.text) {
+          // Normaliza o texto atual do elemento para comparação
+          const textToTranslate = normalizeText(data.text);
+          
+          // Verifica se é um elemento strong ou está dentro de um strong
+          const isStrong = data.element.tagName === 'STRONG' || data.element.closest('strong');
+          
+          // Tenta encontrar tradução direta (normalizada)
+          let translated = null;
+          for (const [pt, en] of Object.entries(translationsGB)) {
+            const normalizedPT = normalizeText(pt);
+            if (normalizedPT === textToTranslate) {
+              translated = en;
+              break;
+            }
+          }
+          
+          if (translated) {
+            // Tradução direta encontrada
+            data.element.textContent = translated;
+          } else {
+            // Tenta traduzir por partes
+            let newText = textToTranslate;
+            const sortedTranslations = Object.entries(translationsGB)
+              .sort((a, b) => normalizeText(b[0]).length - normalizeText(a[0]).length);
+            
+            sortedTranslations.forEach(([pt, en]) => {
+              const normalizedPT = normalizeText(pt);
+              if (newText.includes(normalizedPT)) {
+                newText = newText.replace(new RegExp(normalizedPT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), en);
+              }
+            });
+            
+            if (newText !== textToTranslate) {
+              data.element.textContent = newText;
+            } else if (!isStrong) {
+              // Se não encontrou e não é strong, tenta com a função de HTML
+              translateTextWithHTML(data.element, textToTranslate);
+            }
+          }
+          
+          // Traduz placeholders também
+          if (data.placeholder && translationsGB[data.placeholder]) {
+            data.element.placeholder = translationsGB[data.placeholder];
+          }
+        }
+      });
+      
+      // Traduz elementos do header que podem ser carregados dinamicamente
+      setTimeout(() => {
+        const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
+        const headerEntrar = document.querySelector('.pp-header-cta-button span');
+        if (headerInscreve) {
+          const text = headerInscreve.textContent.trim();
+          if (translationsGB[text]) {
+            headerInscreve.textContent = translationsGB[text];
+          }
+        }
+        if (headerEntrar) {
+          const text = headerEntrar.textContent.trim();
+          if (translationsGB[text]) {
+            headerEntrar.textContent = translationsGB[text];
+          }
+        }
+      }, 100);
     }
 
-    // Traduz tudo para português
-    function translateToPortuguese() {
-      setPageLanguage('pt');
+    // Restaura os textos originais em português
+    function restoreOriginalTexts() {
+      Object.entries(originalTexts).forEach(([key, data]) => {
+        if (data.element && data.text) {
+          // Se tem HTML salvo, restaura o HTML, senão restaura apenas o texto
+          if (data.html) {
+            data.element.innerHTML = data.html;
+          } else {
+            data.element.textContent = data.text;
+          }
+          if (data.placeholder) {
+            data.element.placeholder = data.placeholder;
+          }
+        }
+      });
+      
+      // Restaura elementos do header
+      setTimeout(() => {
+        const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
+        const headerEntrar = document.querySelector('.pp-header-cta-button span');
+        if (headerInscreve && originalTexts['header-inscreve']) {
+          headerInscreve.textContent = originalTexts['header-inscreve'].text;
+        }
+        if (headerEntrar && originalTexts['header-entrar']) {
+          headerEntrar.textContent = originalTexts['header-entrar'].text;
+        }
+      }, 100);
     }
+
+    // Salva os textos originais quando a página carrega
+    document.addEventListener('DOMContentLoaded', function() {
+      // Salva textos iniciais
+      setTimeout(saveOriginalTexts, 500);
+      
+      // Salva novamente após o header ser carregado (pode ser carregado dinamicamente)
+      setTimeout(saveOriginalTexts, 1500);
+      
+      // Observa mudanças no DOM para capturar elementos carregados dinamicamente
+      const observer = new MutationObserver(function(mutations) {
+        let shouldSave = false;
+        mutations.forEach(function(mutation) {
+          if (mutation.addedNodes.length > 0) {
+            const hasHeaderButtons = Array.from(mutation.addedNodes).some(node => {
+              if (node.nodeType === 1) { // Element node
+                return node.querySelector && (
+                  node.querySelector('.pp-header-cta-button-secondary span') ||
+                  node.querySelector('.pp-header-cta-button span')
+                );
+              }
+              return false;
+            });
+            if (hasHeaderButtons) {
+              shouldSave = true;
+            }
+          }
+        });
+        if (shouldSave) {
+          setTimeout(saveOriginalTexts, 100);
+        }
+      });
+      
+      // Observa mudanças no header placeholder
+      const headerPlaceholder = document.getElementById('header-placeholder');
+      if (headerPlaceholder) {
+        observer.observe(headerPlaceholder, {
+          childList: true,
+          subtree: true
+        });
+      }
+    });
   </script>
 </head>
 
