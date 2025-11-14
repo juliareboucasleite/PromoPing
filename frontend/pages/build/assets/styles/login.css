@@ -38,6 +38,8 @@ body.login-page {
 /* Modais dentro do overlay não devem aparecer por padrão */
 .modal-overlay .pinterest-modal {
   display: none !important;
+  position: relative !important;
+  margin: 0 auto !important;
 }
 
 .modal-content {
@@ -201,15 +203,18 @@ body.login-page {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   width: 24px;
   height: 24px;
   z-index: 10;
   margin: 0;
+  box-shadow: none;
+  margin-top: -1px;
 }
 
 .password-toggle:hover {
   background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -10px 8px rgba(0, 0, 0, 0.15);
 }
 
 .eye-icon {
@@ -219,6 +224,7 @@ body.login-page {
   fill: currentColor;
   stroke: currentColor;
   display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 /* ===== FORGOT PASSWORD ===== */

@@ -409,18 +409,37 @@
   display: flex !important;
 }
 
-/* Garantir que os modais estejam ocultos por padrão */
+/* Garantir que os modais estejam ocultos por padrão e centralizados */
 .modal-overlay .pinterest-modal {
   display: none !important;
-  position: relative;
-  margin: auto;
+  position: relative !important;
+  margin: 0 auto !important;
   width: 484px !important;
-  max-width: 100%;
+  max-width: calc(100% - 40px) !important;
   overflow: visible;
   border: 1px solid #ddd !important;
-  outline: 1px solid #ddd !important;
-  outline-offset: -1px !important;
+  outline: none !important;
+  outline-offset: 0 !important;
   box-sizing: border-box !important;
+  z-index: 10001 !important;
+  background-color: rgb(255, 255, 255) !important;
+}
+
+/* Garantir que modal-content não tenha background duplicado dos outros CSS */
+.modal-overlay .pinterest-modal .modal-content {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Garantir que apenas um modal apareça por vez */
+.modal-overlay .pinterest-modal:not([style*="display: block"]) {
+  display: none !important;
 }
 
 .modal-overlay .modal-verification {
@@ -430,10 +449,14 @@
 /* Quando overlay está ativo, mostrar apenas o modal que tem display: block */
 .modal-overlay.active .pinterest-modal[style*="display: block"] {
   display: block !important;
+  position: relative !important;
+  margin: 0 auto !important;
 }
 
 .modal-overlay.active .modal-verification[style*="display: block"] {
   display: block !important;
+  position: relative !important;
+  margin: 0 auto !important;
 }
 
 .modal-overlay .pinterest-modal::-webkit-scrollbar {
