@@ -1,8 +1,10 @@
 # PromoPing - Monitor de Preços
 
-[![Version](https://img.shields.io/badge/version-2.1.2-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
+[![Version](https://img.shields.io/badge/version-Pap-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
+![Static Badge](https://img.shields.io/badge/LICENSE-PromoPing-orange?link=https%3A%2F%2Fpromoping.gitbook.io%2Fpromoping-docs)
+[![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org)
+
+
 
 Sistema de monitoramento de preços para consumidores portugueses. O PromoPing permite acompanhar produtos em múltiplas lojas online portuguesas e receber notificações automáticas quando os preços baixam, ajudando os utilizadores a poupar dinheiro nas suas compras.
 
