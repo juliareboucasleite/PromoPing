@@ -1,39 +1,42 @@
-                                 Licença PromoPing
-                           Versão 1.0, janeiro de 2025
-                    Copyright [2025-2026] [Julia Rebouças Leite]
+Licença PromoPing
+Versão 1.0 — Janeiro de 2025
+Copyright (C) 2025-2026 — Julia Rebouças Leite
+Todos os direitos reservados.
 
-            TERMOS E CONDIÇÕES DE USO, REPRODUÇÃO E DISTRIBUIÇÃO
-            1. Concessão Limitada de Uso*
-            É concedido ao utilizador apenas uma permissão restrita para estudar o código-fonte 
-            contido neste repositório ("Software").
-            Nenhum outro direito é concedido.
-            
-            2. Proibição de Uso Comercial*
-            É estritamente proibido utilizar o Software, total ou parcialmente, para qualquer finalidade 
-            comercial, incluindo produtos, serviços, revenda, consultoria, monetização direta ou indireta, 
-            ou qualquer atividade que gere valor econômico.
-            
-            3. Proibição de Redistribuição*
-            É proibido copiar, redistribuir, publicar, divulgar, disponibilizar, sublicenciar, vender ou 
-            compartilhar o Software, total ou parcialmente, em qualquer meio ou plataforma.
-            
-            4. Uso Exclusivo para Estudo*
-            O Software só pode ser utilizado para fins educacionais pessoais, como leitura, análise e 
-            aprendizado técnico.
-            É proibido modificá-lo, adaptá-lo, integrá-lo a outros sistemas, executá-lo publicamente, 
-            utilizá-lo em aplicações reais ou derivar obras dele.
-            
-            5. Obrigação de Atribuição*
-            Ao estudar ou citar qualquer parte do código, o utilizador deve obrigatoriamente incluir:
-              5.1- O Nome do Autor original, conforme indicado neste arquivo;
-              5.2- Uma referência clara indicando a origem do código (ex: link do repositório).
-            
-            6. Ausência de Garantia*
-            O Software é fornecido "COMO ESTÁ", sem qualquer tipo de garantia, explícita ou implícita.
-            O autor não se responsabiliza por danos de qualquer natureza decorrentes de uso, incapacidade 
-            de uso ou interpretação do Software.
-            
-            7. Aceitação dos Termos*
-            Ao aceder ao Software, o utilizador concorda integralmente com todos os termos desta Licença.
-            Caso o utilizador não concorde, não está autorizado a aceder, estudar ou examinar o Software.
+TERMOS E CONDIÇÕES DE USO, REPRODUÇÃO E DISTRIBUIÇÃO
 
+1. Concessão Limitada de Uso
+É concedida ao utilizador apenas uma permissão restrita para estudar o conteúdo e o código-fonte
+contido neste repositório ("Software").
+Nenhum outro direito é concedido ou inferido.
+
+2. Proibição de Uso Comercial
+É estritamente proibido utilizar o Software, total ou parcialmente, para qualquer finalidade comercial,
+incluindo produtos, serviços, revenda, consultoria, monetização direta ou indireta, ou qualquer atividade
+que gere valor económico.
+
+3. Proibição de Redistribuição
+É proibido copiar, redistribuir, publicar, divulgar, disponibilizar, sublicenciar, vender, emprestar ou 
+partilhar o Software, total ou parcialmente, em qualquer meio ou plataforma.
+
+4. Uso Exclusivo para Estudo
+O Software só pode ser utilizado para fins educacionais pessoais, como leitura, análise e aprendizagem
+técnica.
+É proibido modificá-lo, adaptá-lo, integrá-lo a outros sistemas, executá-lo publicamente, utilizá-lo em
+aplicações reais ou criar obras derivadas com base nele.
+
+5. Obrigação de Atribuição
+Ao estudar ou citar qualquer parte deste Software, o utilizador deve:
+  5.1 — Mencionar claramente o nome da Autora conforme indicado neste arquivo;
+  5.2 — Incluir referência explícita à origem do código (ex.: link do repositório).
+
+6. Ausência de Garantia
+O Software é fornecido “TAL COMO ESTÁ”, sem qualquer tipo de garantia, explícita ou implícita,
+incluindo, mas não limitada a, garantias de comercialização, adequação a um fim específico ou ausência
+de infrações. A autora não se responsabiliza por danos de qualquer natureza decorrentes do uso,
+incapacidade de uso ou interpretação do Software.
+
+7. Aceitação dos Termos
+Ao aceder, visualizar ou estudar o Software, o utilizador declara estar de acordo integralmente com
+todos os termos desta Licença. Caso não concorde, não está autorizado a aceder, utilizar ou examinar
+o Software.
