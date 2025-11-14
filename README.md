@@ -5,874 +5,144 @@
 [![node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org)
 [![Site](https://img.shields.io/badge/site-promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
 
+## Sobre o PromoPing
 
+O PromoPing é um sistema avançado de monitoramento de preços desenvolvido especificamente para consumidores portugueses. A plataforma permite acompanhar produtos em múltiplas lojas online e receber notificações automáticas quando os preços atingem metas definidas, ajudando os utilizadores a tomar decisões de compra informadas e a economizar dinheiro.
 
-Sistema de monitoramento de preços para consumidores portugueses. O PromoPing permite acompanhar produtos em múltiplas lojas online portuguesas e receber notificações automáticas quando os preços baixam, ajudando os utilizadores a poupar dinheiro nas suas compras.
+## Funcionalidades Principais
 
-## Funcionalidades
+### Interface Web Avançada
 
-### **Interface Web Avançada**
-- **Dashboard Responsivo** - Interface moderna e intuitiva com design adaptável
-- **Histórico de Preços Detalhado** - Gráficos interativos e análise temporal
-- **Gestão Completa de Produtos** - Adicionar, editar e remover produtos monitorizados
-- **Sistema de Alertas Personalizados** - Configuração flexível de notificações
-- **Estatísticas de Economia** - Relatórios detalhados de poupanças
-- **Filtros Avançados** - Busca e filtragem inteligente de produtos
-- **Interface Acessível** - Design inclusivo seguindo padrões WCAG
+O PromoPing oferece uma interface web moderna e intuitiva, totalmente responsiva e otimizada para diferentes dispositivos. O dashboard proporciona uma visão completa dos produtos monitorizados, com gráficos interativos que mostram a evolução dos preços ao longo do tempo. A plataforma inclui ferramentas avançadas de busca e filtragem, permitindo aos utilizadores encontrar rapidamente os produtos que procuram.
 
-### **Sistema de Utilizador Robusto**
-- **Autenticação Segura** - JWT com refresh tokens e validação robusta
-- **Perfil Personalizável** - Configurações detalhadas de preferências
-- **Verificação de Email** - Sistema completo de validação de conta
-- **Login Social** - Integração com Google OAuth e Discord
-- **Gestão de Conta** - Atualização de dados pessoais e segurança
-- **Sistema de Planos** - Free, Basic, Standard e Premium com diferentes limites
+### Sistema de Utilizador Robusto
 
-### **Sistema de Notificações Multi-Canal**
-- **Discord Bot** - Notificações em tempo real com Rich Presence
-- **Email Transacional** - Notificações por correio eletrónico com templates
-- **Configuração Personalizada** - Frequência e tipos de alertas personalizáveis
-- **Histórico Completo** - Log detalhado de todas as notificações enviadas
+A plataforma implementa um sistema de autenticação seguro utilizando JWT com refresh tokens, garantindo a segurança das sessões dos utilizadores. O sistema suporta login social através de Google OAuth e Discord, facilitando o acesso à plataforma. Os utilizadores podem personalizar completamente o seu perfil e preferências, incluindo configurações detalhadas de notificações.
 
-### **Lojas Suportadas (20+ Lojas)**
-**Principais Lojas Portuguesas:**
-- **Worten** - Eletrónica e eletrodomésticos
-- **FNAC** - Livros, música e tecnologia
-- **Continente** - Supermercado e produtos gerais
-- **Pingo Doce** - Alimentação e produtos domésticos
-- **IKEA** - Móveis e decoração
-- **Radio Popular** - Eletrónica e informática
-- **Auchan** - Hipermercado e produtos diversos
-- **PcDiga** - Informática e tecnologia
+### Sistema de Notificações Multi-Canal
 
-**Lojas Internacionais:**
-- **Amazon** - Marketplace global com bypass de cookies
-- **Outras lojas** - Sistema genérico para detecção automática
+O PromoPing envia notificações através de múltiplos canais, incluindo Discord Bot com Rich Presence, emails transacionais com templates personalizados, e suporte opcional para SMS. Os utilizadores podem configurar a frequência e os tipos de alertas que desejam receber, garantindo que sejam informados apenas sobre as informações mais relevantes.
 
-### **Funcionalidades Avançadas**
-- **Detecção Automática de Loja** - Identificação inteligente a partir da URL
-- **Preço Alvo Personalizado** - Definição de metas de preço flexíveis
-- **Alertas por Percentagem** - Notificações baseadas em descontos
-- **Comparação de Preços** - Análise entre diferentes lojas
-- **Exportação de Dados** - Excel e PDF com relatórios detalhados
-- **Sistema de Planos** - Limites diferenciados por subscrição
-- **Períodos de Graça** - Gestão automática de trial periods
-- **Rate Limiting** - Proteção contra abuso e DDoS
+### Lojas Suportadas
+
+A plataforma suporta mais de 20 lojas online, incluindo as principais lojas portuguesas como Worten, FNAC, Continente, Pingo Doce, IKEA, Radio Popular, Auchan e PcDiga. O sistema também inclui suporte para lojas internacionais como Amazon, com detecção automática de loja a partir da URL do produto.
+
+### Funcionalidades Avançadas
+
+O PromoPing oferece detecção automática de loja, permitindo que os utilizadores adicionem produtos simplesmente fornecendo a URL. Os utilizadores podem definir preços alvo personalizados e receber alertas quando esses valores são atingidos. O sistema também envia notificações quando há variações significativas de preço, permitindo aos utilizadores aproveitar oportunidades de economia.
+
+A plataforma inclui funcionalidades de comparação de preços entre diferentes lojas, exportação de dados em múltiplos formatos (Excel, PDF, CSV), e um sistema de planos diferenciados que oferece diferentes limites e funcionalidades conforme a subscrição escolhida.
 
 ## Arquitetura do Sistema
 
-### **Arquitetura Microserviços**
-O PromoPing utiliza uma arquitetura modular composta por múltiplos componentes independentes:
+O PromoPing utiliza uma arquitetura modular baseada em microserviços, composta por três componentes principais que trabalham de forma independente e coordenada.
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   Backend       │    │  Python Scraper │
-│   (HTML/CSS/JS) │◄──►│   (Node.js)     │◄──►│   (Selenium)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       ▼                       │
-         │              ┌─────────────────┐              │
-         │              │   MySQL DB      │◄─────────────┘
-         │              │   (Dados)       │
-         │              └─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Notificações   │
-│ (Discord/Email) │
-└─────────────────┘
-```
+### Frontend
 
-### **Componentes Principais**
+A interface web é desenvolvida utilizando tecnologias modernas como HTML5, CSS3 e JavaScript ES6+, seguindo uma arquitetura de Single Page Application (SPA) com módulos modulares. O design é totalmente responsivo, acessível e otimizado para performance, garantindo uma experiência de utilizador excecional em qualquer dispositivo.
 
-**Frontend (Interface Web)**
-- **Tecnologia**: HTML5, CSS3, JavaScript ES6+
-- **Arquitetura**: SPA (Single Page Application) com módulos
-- **Características**: Responsivo, acessível, otimizado para performance
-- **Localização**: `frontend/` - Páginas estáticas servidas pelo Express
+### Backend
 
-**Backend (API REST)**
-- **Tecnologia**: Node.js + Express.js
-- **Arquitetura**: API RESTful com middleware modular
-- **Características**: Rate limiting, CORS seguro, autenticação JWT
-- **Localização**: `backend/` - Servidor principal e rotas
+O backend é construído com Node.js e Express.js, fornecendo uma API RESTful completa com middleware modular. O sistema implementa rate limiting para proteção contra abuso, configuração segura de CORS, e autenticação robusta através de JWT. Todas as operações são protegidas contra vulnerabilidades comuns através de validação de entrada, sanitização de dados e prepared statements.
 
-**Python Scraper (Monitorização)**
-- **Tecnologia**: Python + Selenium + BeautifulSoup
-- **Arquitetura**: Processo independente com scheduler
-- **Características**: Scraping inteligente, bypass de proteções, logs detalhados
-- **Localização**: `python-scraper/` - Sistema de monitorização de preços
+### Sistema de Monitorização
 
-**Base de Dados**
-- **Tecnologia**: MySQL 8.0+ com Sequelize ORM
-- **Arquitetura**: Relacional com tabelas normalizadas
-- **Características**: Índices otimizados, prepared statements, migrações automáticas
-- **Localização**: `backend/database/` - Modelos e configurações
+O sistema de monitorização de preços é desenvolvido em Python e funciona de forma independente do backend. Utiliza Selenium WebDriver para automação de navegador e BeautifulSoup para parsing inteligente de HTML. O sistema implementa técnicas avançadas de scraping, incluindo bypass de proteções anti-bot, rotação de User-Agent, e timeouts inteligentes que se adaptam a diferentes velocidades de carregamento.
 
-**Sistema de Notificações**
-- **Discord**: Bot com Rich Presence e comandos slash
-- **Email**: Nodemailer com templates personalizados
-- **SMS**: Twilio para notificações móveis (opcional)
-- **Localização**: `backend/services/` - Serviços de notificação
+### Base de Dados
 
-### **Fluxo de Dados**
-
-1. **Utilizador** adiciona produto via interface web
-2. **Backend** valida dados e armazena na base de dados
-3. **Python Scraper** monitoriza preços periodicamente
-4. **Sistema de Notificações** envia alertas quando metas são atingidas
-5. **Frontend** atualiza interface com novos dados
-
-### **Segurança e Performance**
-
-- **Autenticação**: JWT com refresh tokens e validação robusta
-- **Rate Limiting**: Proteção contra DDoS e abuso de API
-- **CORS**: Configuração segura com validação de origens
-- **SQL Injection**: Prepared statements em todas as queries
-- **XSS Protection**: Sanitização de entradas e escape de HTML
-- **Logs**: Sistema completo de auditoria e monitorização
-
-## Instalação
-
-**Pré-requisitos**
-- Node.js 18+ (recomendado LTS)
-- MySQL 8.0+ ou MariaDB 10.3+
-- npm ou yarn
-- Git
-
-**Configuração do Ambiente**
-Antes de iniciar, certifique-se de ter configurado as variáveis de ambiente necessárias no arquivo `.env`:
-
-```env
-# Base de Dados
-DB_HOST=localhost
-DB_USER=promoping_user
-DB_PASSWORD=sua_password
-DB_NAME=promoping
-
-# Autenticação
-JWT_SECRET=seu_jwt_secret_aqui
-GOOGLE_CLIENT_ID=seu_google_client_id
-GOOGLE_CLIENT_SECRET=seu_google_client_secret
-
-# Bots
-DISCORD_TOKEN=seu_discord_bot_token
-TELEGRAM_TOKEN=seu_telegram_bot_token
-
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=seu_email@gmail.com
-SMTP_PASS=sua_senha_app
-```
-
-**Instalação Local**
-```bash
-# Clonar o repositório
-git clone https://github.com/juliareboucasleite/PromoPing.git
-cd PromoPing
-
-# Instalar dependências
-npm install
-
-# Configurar variáveis de ambiente
-cp .env.example .env
-# Editar o arquivo .env com suas configurações
-
-# Configurar base de dados
-npm run migrate
-
-# Iniciar o servidor
-npm start
-```
-
-**Docker (Recomendado)**
-```bash
-# Desenvolvimento
-npm run docker:dev
-
-# Produção
-npm run docker:prod
-
-# Parar containers
-npm run docker:stop
-```
-
-## Tecnologias
-
-### **Backend (Node.js)**
-- **Node.js 18+** - Runtime JavaScript assíncrono e não-bloqueante
-- **Express.js 5.x** - Framework web minimalista com middleware robusto
-- **MySQL 8.0+** - Base de dados relacional com performance otimizada
-- **Sequelize ORM** - Mapeamento objeto-relacional com migrações automáticas
-- **JWT (jsonwebtoken)** - Autenticação stateless com refresh tokens
-- **bcrypt** - Hashing seguro de passwords com salt rounds
-- **express-rate-limit** - Rate limiting para proteção contra DDoS
-- **cors** - Configuração segura de Cross-Origin Resource Sharing
-- **cookie-parser** - Gestão de cookies para sessões
-- **dotenv** - Gestão de variáveis de ambiente
-
-### **Sistema de Notificações**
-- **Discord.js 14.x** - Bot Discord com Rich Presence e comandos slash
-- **Telegraf** - Framework para bots do Telegram
-- **Twilio** - API para envio de SMS e WhatsApp
-- **Nodemailer** - Envio de emails transacionais com templates
-- **Passport.js** - Autenticação social (Google OAuth, Discord)
-
-### **Frontend (Web)**
-- **HTML5** - Estrutura semântica e acessível
-- **CSS3** - Estilização moderna com Flexbox e Grid
-- **JavaScript ES6+** - Lógica de interface com módulos ES6
-- **Chart.js** - Visualização de dados e gráficos interativos
-- **Responsive Design** - Interface adaptável (mobile-first)
-- **Progressive Web App** - Funcionalidades offline e instalação
-
-### **Python Scraper**
-- **Python 3.8+** - Linguagem principal do scraper
-- **Selenium WebDriver** - Automação de navegador para scraping
-- **BeautifulSoup4** - Parsing de HTML e extração de dados
-- **Requests** - HTTP client para requisições web
-- **Pandas** - Manipulação e análise de dados
-- **Schedule** - Agendamento de tarefas periódicas
-
-### **Base de Dados**
-- **MySQL 8.0** - Sistema de gestão de base de dados relacional
-- **Índices Otimizados** - Performance melhorada para queries complexas
-- **Prepared Statements** - Proteção contra SQL injection
-- **Transações ACID** - Consistência e integridade dos dados
-- **Backup Automático** - Estratégias de backup e recuperação
-
-### **DevOps e Infraestrutura**
-- **Docker & Docker Compose** - Containerização para desenvolvimento e produção
-- **PM2** - Gestão de processos Node.js com auto-restart
-- **Nginx** - Servidor web e proxy reverso com load balancing
-- **Git** - Controlo de versões distribuído com branching
-- **GitHub Actions** - CI/CD para testes e deployment automático
-- **Supervisor** - Gestão de processos em containers
-
-### **Segurança e Monitorização**
-- **Helmet.js** - Headers de segurança HTTP
-- **Express-validator** - Validação e sanitização de dados
-- **Winston** - Sistema de logging estruturado
-- **Morgan** - Logger de requisições HTTP
-- **Rate Limiting** - Proteção contra abuso e DDoS
-- **CORS** - Configuração segura de origens permitidas
-
-### **Integrações Externas**
-- **Stripe** - Processamento de pagamentos e subscrições
-- **Google OAuth 2.0** - Autenticação social com Google
-- **Discord API** - Integração com Discord para notificações
-- **Twilio API** - Serviços de SMS e comunicação
-- **SMTP** - Envio de emails via Gmail/Outlook
+A base de dados utiliza MySQL 8.0+ com arquitetura relacional e tabelas normalizadas. O sistema implementa índices otimizados para melhorar a performance de queries complexas, prepared statements para proteção contra SQL injection, e transações ACID para garantir consistência e integridade dos dados.
 
 ## Segurança
 
-### **Análise de Segurança Completa**
-O PromoPing 2.1.2 passou por uma auditoria de segurança completa, identificando e corrigindo **5 vulnerabilidades críticas**:
+O PromoPing passou por uma auditoria de segurança completa, identificando e corrigindo todas as vulnerabilidades críticas. O sistema implementa múltiplas camadas de proteção, incluindo:
 
-| Vulnerabilidade | Status | Severidade | Correção |
-|----------------|--------|------------|----------|
-| JWT Secret Hardcoded | OK **CORRIGIDO** | Crítica | Variáveis de ambiente obrigatórias |
-| XSS na Barra de Pesquisa | OK **CORRIGIDO** | Alta | Sanitização robusta de entradas |
-| CORS Mal Configurado | OK **CORRIGIDO** | Alta | Validação dinâmica de origens |
-| SQL Injection Potencial | OK **CORRIGIDO** | Média | Validação completa de timestamps |
-| Falta de Rate Limiting | OK **CORRIGIDO** | Média | Rate limiting em todas as APIs |
+- Autenticação JWT com refresh tokens e validação robusta
+- Rate limiting configurado para proteção contra DDoS e abuso de API
+- Configuração segura de CORS com validação dinâmica de origens
+- Sanitização completa de entradas para prevenção de XSS
+- Prepared statements em todas as queries para prevenção de SQL injection
+- Sistema completo de auditoria e monitorização através de logs estruturados
 
-### **Medidas de Segurança Implementadas**
+O nível de risco do sistema é considerado baixo, com zero vulnerabilidades ativas e adequado para ambiente de produção.
 
-**Proteção Frontend**
-- **Sanitização de Entrada** - Remoção de caracteres perigosos
-- **Escape HTML** - Uso de `textContent` para evitar XSS
-- **Validação de Comprimento** - Limites de tamanho para entradas
-- **Prevenção ReDoS** - Limitação de complexidade de regex
-- **Tratamento de Erros** - Try-catch para operações perigosas
+## Tecnologias Utilizadas
 
-**Proteção Backend**
-- **Autenticação JWT** - Validação obrigatória de variáveis de ambiente
-- **Rate Limiting** - Limitação de requisições por IP (100/15min)
-- **Validação de Entrada** - Sanitização de parâmetros
-- **CORS Seguro** - Validação dinâmica de origens
-- **Prepared Statements** - Prevenção de SQL injection
-- **Logs de Segurança** - Registro de tentativas suspeitas
+### Backend
 
-**Configurações de Segurança**
-- **Variáveis de Ambiente** - Secrets não expostos no código
-- **Headers de Segurança** - CORS configurado adequadamente
-- **Validação de Dados** - Múltiplas camadas de validação
-- **Tratamento de Erros** - Respostas informativas sem vazamento de dados
+O backend utiliza Node.js 18+ como runtime, Express.js 5.x como framework web, MySQL 8.0+ como base de dados relacional, e Sequelize ORM para mapeamento objeto-relacional. O sistema de autenticação utiliza JWT (jsonwebtoken) e bcrypt para hashing seguro de passwords.
 
-### **Rate Limiting Configurado**
-```javascript
-// Rate limiting geral: 500 requisições por IP a cada 15 minutos
-// Rate limiting de autenticação: 50 tentativas por IP a cada 15 minutos
-// Rate limiting de produtos: 100 requisições por IP por minuto
-// Rate limiting OAuth: 100 tentativas por IP a cada 15 minutos
-```
+### Sistema de Notificações
 
-### **Status de Segurança**
-- **Nível de Risco**: **BAIXO** OK
-- **Vulnerabilidades Ativas**: **0** OK
-- **Conformidade**: **Adequado para produção** OK
-- **Próxima Auditoria**: **3 meses**
+O sistema de notificações integra Discord.js 14.x para bots Discord, Nodemailer para envio de emails transacionais, e suporte opcional para Twilio para SMS e WhatsApp. A autenticação social é implementada através de Passport.js com suporte para Google OAuth e Discord.
 
-##  Sistema Python Scraper
+### Frontend
 
-### **Arquitetura do Scraper**
-O PromoPing inclui um sistema de monitorização de preços desenvolvido em Python que funciona de forma independente do backend Node.js:
+O frontend utiliza HTML5 para estrutura semântica, CSS3 com Flexbox e Grid para estilização moderna, e JavaScript ES6+ com módulos. A visualização de dados é realizada através de Chart.js, e o design segue princípios de Progressive Web App para funcionalidades offline.
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Scheduler     │    │   Web Scraper   │    │   Price Checker │
-│   (Schedule)    │───►│   (Selenium)    │───►│   (BeautifulSoup)│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       ▼                       │
-         │              ┌─────────────────┐              │
-         │              │   Store Detector│              │
-         │              │   (Worten/FNAC) │              │
-         │              └─────────────────┘              │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   MySQL DB      │◄───│   Price Update  │◄───│   Notification  │
-│   (Shared)      │    │   (Database)    │    │   (Discord/Email)│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+### Python Scraper
 
-### **Funcionalidades do Scraper**
+O sistema de scraping utiliza Python 3.8+, Selenium WebDriver para automação de navegador, BeautifulSoup4 para parsing de HTML, e Schedule para agendamento de tarefas periódicas. O sistema implementa monitorização inteligente com detecção automática de metas, histórico de preços, e análise de tendências.
 
-**Lojas Suportadas**
-- **Worten** - Eletrónica e eletrodomésticos (scraper otimizado)
-- **FNAC** - Livros, música e tecnologia (sistema complexo de cookies)
-- **Amazon** - Marketplace global (bypass de cookies)
-- **Sistema Genérico** - Fallback para outras lojas
+### DevOps e Infraestrutura
 
-**Características Técnicas**
-- **Selenium WebDriver** - Automação de navegador Chrome
-- **BeautifulSoup4** - Parsing inteligente de HTML
-- **Sistema de Cookies** - Bypass de proteções anti-bot
-- **User-Agent Rotação** - Evitar detecção de scraping
-- **Timeouts Inteligentes** - Adaptação a diferentes velocidades de carregamento
-- **Logs Detalhados** - Monitorização completa de operações
+A plataforma oferece suporte completo para Docker e Docker Compose, permitindo containerização para desenvolvimento e produção. O sistema utiliza PM2 para gestão de processos Node.js, Nginx como servidor web e proxy reverso, e GitHub Actions para CI/CD automatizado.
 
-**Sistema de Planos Integrado**
-```python
-# Intervalos de verificação por plano
-PLAN_INTERVALS = {
-    'free': 24 * 60 * 60,      # 24 horas
-    'basic': 4 * 60 * 60,      # 4 horas  
-    'standard': 30 * 60,       # 30 minutos
-    'premium': 5 * 60          # 5 minutos
-}
-```
+## Sistema de Planos
 
-**Monitorização Inteligente**
-- **Detecção de Metas** - Alertas automáticos quando preços atingem metas
-- **Histórico de Preços** - Armazenamento temporal de variações
-- **Análise de Tendências** - Identificação de padrões de preços
-- **Reinicialização Automática** - Recuperação de erros sem intervenção manual
+O PromoPing oferece quatro planos diferentes, cada um com limites e funcionalidades específicas:
 
-### **Configuração e Execução**
+- **Free**: Plano gratuito com funcionalidades básicas e limites reduzidos
+- **Basic**: Plano básico com intervalos de verificação de 4 horas
+- **Standard**: Plano standard com intervalos de verificação de 30 minutos
+- **Premium**: Plano premium com intervalos de verificação de 5 minutos e acesso a todas as funcionalidades
 
-**Instalação Rápida**
-```bash
-# Instalar dependências
-pip install -r python-scraper/requirements-simple.txt
-
-# Configurar ambiente unificado
-copy python-scraper/env-unified.txt .env
-
-# Executar scraper
-cd python-scraper
-python start.py --test  # Teste rápido
-python start.py         # Execução completa
-```
-
-**Configurações Principais**
-```env
-# Intervalo entre ciclos (segundos)
-CYCLE_INTERVAL=120
-
-# Modo headless (True/False)
-HEADLESS=False
-
-# Tempo máximo de espera (segundos)
-MAX_WAIT=10
-
-# User Agent personalizado
-USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64)...
-```
-
-### **Integração com Backend**
-- **Base de Dados Compartilhada** - Usa as mesmas tabelas MySQL
-- **Configuração Unificada** - Arquivo `.env` compartilhado
-- **Execução Independente** - Pode rodar simultaneamente com Node.js
-- **Não Interferência** - Operações isoladas e seguras
-
-## Docker e Deployment
-
-### **Containerização Completa**
-O PromoPing oferece suporte completo ao Docker para desenvolvimento e produção:
-
-**Desenvolvimento**
-```bash
-# Iniciar ambiente de desenvolvimento
-npm run docker:dev
-
-# Ou diretamente com Docker Compose
-docker-compose -f docker-files/docker-compose.dev.yml up --build
-```
-
-**Produção**
-```bash
-# Deploy em produção
-npm run docker:prod
-
-# Ou diretamente com Docker Compose
-docker-compose -f docker-files/docker-compose.yml up --build
-```
-
-### **Arquitetura de Containers**
-
-```yaml
-# docker-compose.yml (Produção)
-services:
-  promoping:
-    build: .
-    ports:
-      - "80:80"      # Nginx
-      - "3000:3000"  # Node.js
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=mysql
-    depends_on:
-      - mysql
-      - redis
-
-  mysql:
-    image: mysql:8.0
-    environment:
-      - MYSQL_ROOT_PASSWORD=root_password
-      - MYSQL_DATABASE=promoping
-    volumes:
-      - mysql_data:/var/lib/mysql
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
-```
-
-### **Serviços Incluídos**
-
-**Aplicação Principal**
-- **Node.js** - Backend API e frontend
-- **Nginx** - Servidor web e proxy reverso
-- **Supervisor** - Gestão de processos
-- **PM2** - Process manager para Node.js
-
-**Base de Dados**
-- **MySQL 8.0** - Base de dados principal
-- **Redis** - Cache e sessões
-- **Volumes Persistentes** - Dados preservados entre restarts
-
-**Ferramentas de Desenvolvimento**
-- **Hot Reload** - Recarregamento automático em desenvolvimento
-- **Logs Centralizados** - Todos os logs em `/var/log/supervisor`
-- **Debug Mode** - Configurações específicas para desenvolvimento
-
-### **Configuração de Produção**
-
-**Variáveis de Ambiente**
-```env
-NODE_ENV=production
-DB_HOST=mysql
-DB_USER=promoping
-DB_PASSWORD=promoping_password
-DB_NAME=promoping
-REDIS_HOST=redis
-REDIS_PORT=6379
-```
-
-**Volumes Persistentes**
-- `mysql_data` - Dados da base de dados MySQL
-- `redis_data` - Cache e sessões Redis
-- `./logs` - Logs da aplicação
-- `./uploads` - Ficheiros carregados
-
-**Portas Expostas**
-- **80** - Nginx (HTTP)
-- **443** - Nginx (HTTPS) - configurável
-- **3000** - Node.js (desenvolvimento)
-- **3306** - MySQL (acesso direto)
-- **6379** - Redis (acesso direto)
-
-### **Scripts de Deployment**
-
-**Deploy Automático**
-```bash
-# Script de deploy incluído
-./deploy-files/deploy.sh
-
-# Ou usando npm
-npm run docker:prod
-```
-
-**Gestão de Containers**
-```bash
-# Parar todos os serviços
-npm run docker:stop
-
-# Ver logs
-docker-compose logs -f
-
-# Aceder ao container
-docker-compose exec promoping bash
-```
-
-### **Monitorização e Logs**
-
-**Logs Centralizados**
-- **Aplicação**: `/var/log/supervisor/promoping.log`
-- **Nginx**: `/var/log/nginx/access.log`
-- **MySQL**: `/var/log/mysql/error.log`
-- **Redis**: `/var/log/redis/redis.log`
-
-**Health Checks**
-- **API Health**: `GET /api/health`
-- **Database**: Verificação automática de conectividade
-- **Redis**: Ping automático para verificar disponibilidade
+Cada plano oferece diferentes limites de produtos monitorizados, frequências de verificação, e canais de notificação disponíveis.
 
 ## API REST
 
-A API do PromoPing é RESTful e utiliza JSON para comunicação. Todos os endpoints requerem autenticação via JWT, exceto os de registo e login.
+O PromoPing fornece uma API RESTful completa que utiliza JSON para comunicação. A API inclui endpoints para autenticação e gestão de utilizadores, gestão completa de produtos com CRUD completo, sistema de notificações com preferências personalizáveis, sistema de pagamentos integrado com Stripe, estatísticas e relatórios detalhados, e exportação de dados em múltiplos formatos.
 
-### **Autenticação e Utilizadores**
-
-**Registo e Login**
-- `POST /api/auth/register` - Registro de novo utilizador
-- `POST /api/auth/login` - Autenticação com email/password
-- `POST /api/auth/google` - Login social com Google OAuth
-- `POST /api/auth/discord` - Login social com Discord OAuth
-- `GET /api/auth/verify` - Verificação de email
-- `POST /api/auth/refresh` - Renovar token de acesso
-- `POST /api/auth/logout` - Logout e invalidação de token
-
-**Gestão de Utilizador**
-- `GET /api/user/me` - Obter dados do utilizador atual
-- `PUT /api/user/profile` - Atualizar perfil do utilizador
-- `PUT /api/user/password` - Alterar password
-- `DELETE /api/user/account` - Eliminar conta do utilizador
-
-### **Gestão de Produtos**
-
-**CRUD de Produtos**
-- `GET /api/produtos` - Listar produtos do utilizador (com paginação)
-- `POST /api/produtos` - Adicionar novo produto para monitoramento
-- `GET /api/produtos/:id` - Obter detalhes de um produto específico
-- `PUT /api/produtos/:id` - Atualizar configurações do produto
-- `DELETE /api/produtos/:id` - Remover produto do monitoramento
-- `GET /api/produtos/:id/historico` - Obter histórico de preços
-
-**Filtros e Busca**
-- `GET /api/produtos/search?q=termo` - Buscar produtos por nome
-- `GET /api/produtos/filter?loja=worten` - Filtrar por loja
-- `GET /api/produtos/sort?by=preco&order=asc` - Ordenar produtos
-
-### **Sistema de Notificações**
-
-**Gestão de Notificações**
-- `GET /api/notificacoes` - Listar notificações do utilizador
-- `GET /api/notificacoes/unread` - Notificações não lidas
-- `POST /api/notificacoes` - Enviar notificação manual
-- `PUT /api/notificacoes/:id` - Marcar notificação como lida
-- `DELETE /api/notificacoes/:id` - Eliminar notificação
-- `PUT /api/notificacoes/mark-all-read` - Marcar todas como lidas
-
-**Preferências de Notificação**
-- `GET /api/notificacoes/preferencias` - Obter preferências de notificação
-- `PUT /api/notificacoes/preferencias` - Atualizar preferências
-- `POST /api/notificacoes/test` - Enviar notificação de teste
-
-### **Sistema de Pagamentos**
-
-**Planos e Subscrições**
-- `GET /api/payment/plans` - Listar planos disponíveis
-- `POST /api/payment/subscribe` - Criar subscrição
-- `GET /api/payment/subscription` - Obter detalhes da subscrição
-- `PUT /api/payment/subscription` - Atualizar subscrição
-- `DELETE /api/payment/subscription` - Cancelar subscrição
-
-**Gestão de Pagamentos**
-- `GET /api/payment/invoices` - Listar faturas
-- `GET /api/payment/invoices/:id` - Obter fatura específica
-- `POST /api/payment/webhook` - Webhook do Stripe
-
-### **Estatísticas e Relatórios**
-
-**Estatísticas do Utilizador**
-- `GET /api/stats/economia` - Estatísticas de economia do utilizador
-- `GET /api/stats/produtos` - Estatísticas de produtos monitorizados
-- `GET /api/stats/notificacoes` - Estatísticas de notificações
-- `GET /api/stats/atividade` - Atividade recente do utilizador
-
-**Exportação de Dados**
-- `GET /api/export/excel` - Exportar dados em Excel
-- `GET /api/export/pdf` - Exportar relatório em PDF
-- `GET /api/export/csv` - Exportar dados em CSV
-- `POST /api/export/custom` - Exportação personalizada
-
-### **Configurações e Preferências**
-
-**Configurações do Sistema**
-- `GET /api/config` - Obter configurações do sistema
-- `PUT /api/config` - Atualizar configurações
-- `GET /api/config/lojas` - Listar lojas suportadas
-- `GET /api/config/planos` - Obter detalhes dos planos
-
-**Preferências do Utilizador**
-- `GET /api/user/preferences` - Obter preferências do utilizador
-- `PUT /api/user/preferences` - Atualizar preferências
-- `GET /api/user/preferences/notifications` - Preferências de notificação
-- `PUT /api/user/preferences/notifications` - Atualizar preferências de notificação
-
-### **Status e Monitorização**
-
-**Status do Sistema**
-- `GET /api/status` - Status geral do sistema
-- `GET /api/health` - Health check da API
-- `GET /api/status/uptime` - Tempo de atividade do servidor
-- `GET /api/status/database` - Status da base de dados
-- `GET /api/status/redis` - Status do Redis
-
-**Logs e Debugging**
-- `GET /api/logs` - Obter logs do sistema (admin)
-- `GET /api/logs/errors` - Logs de erro
-- `GET /api/logs/access` - Logs de acesso
-
-### **Endpoints Especiais**
-
-**Notificações Diretas**
-- `POST /notify` - Enviar notificação direta (email/SMS)
-
-**Frontend Includes**
-- `GET /inc/header.html` - Header do site
-- `GET /inc/footer.html` - Footer do site
-- `GET /inc/load-includes.js` - Script de carregamento
-
-**Redirecionamentos**
-- `GET /redirect` - Redirecionamento baseado em configuração
-- `GET /auth/discord` - Redirecionamento para Discord OAuth
+Todos os endpoints requerem autenticação via JWT, exceto os endpoints de registo e login. A API implementa rate limiting diferenciado por tipo de operação, garantindo segurança e performance adequadas.
 
 ## Monitorização e Logs
 
-### **Sistema de Logging Estruturado**
+O PromoPing implementa um sistema completo de logging estruturado para monitorização e debugging. O sistema registra logs em múltiplos níveis (ERROR, WARN, INFO, DEBUG, HTTP) e categoriza os logs por componente (aplicação, segurança, scraping).
 
-O PromoPing implementa um sistema completo de logging para monitorização e debugging:
-
-**Níveis de Log**
-- **ERROR** - Erros críticos que requerem atenção imediata
-- **WARN** - Avisos sobre situações anómalas
-- **INFO** - Informações gerais sobre operações
-- **DEBUG** - Detalhes técnicos para debugging
-- **HTTP** - Logs de requisições HTTP (Morgan)
-
-**Categorias de Logs**
-```javascript
-// Logs de aplicação
-console.log("OK Produto adicionado:", produto);
-console.warn(" Rate limit atingido:", ip);
-console.error("Erro na base de dados:", error);
-
-// Logs de segurança
-console.warn("Tentativa de acesso CORS não autorizada:", origin);
-console.log("Login bem-sucedido:", email);
-console.error("Tentativa de login suspeita:", ip);
-
-// Logs de scraping
-console.log("Iniciando ciclo de scraping");
-console.log("OK Preço atualizado:", produto, preco);
-console.warn(" Erro no scraping:", loja, error);
-```
-
-### **Monitorização em Tempo Real**
-
-**Health Checks Automáticos**
-- **API Status**: `GET /api/health` - Verificação de saúde da API
-- **Database**: Ping automático à base de dados MySQL
-- **Redis**: Verificação de conectividade do cache
-- **External APIs**: Monitorização de serviços externos (Stripe, Discord)
-
-**Métricas de Performance**
-- **Response Time** - Tempo de resposta das APIs
-- **Memory Usage** - Uso de memória do Node.js
-- **CPU Usage** - Utilização do processador
-- **Database Connections** - Pool de conexões MySQL
-- **Rate Limiting** - Estatísticas de rate limiting
-
-### **Sistema de Alertas**
-
-**Alertas Automáticos**
-- **Sistema Down** - Quando a API não responde
-- **Database Error** - Erros críticos na base de dados
-- **High Memory Usage** - Uso excessivo de memória
-- **Rate Limit Exceeded** - Tentativas de abuso
-- **Scraping Failures** - Falhas no sistema de scraping
-
-**Canais de Notificação**
-- **Discord** - Alertas em tempo real no servidor
-- **Email** - Notificações por correio eletrónico
-- **Log Files** - Registro em ficheiros de log
-- **Console** - Output direto no terminal
-
-### **Logs por Componente**
-
-**Backend (Node.js)**
-```
-/var/log/supervisor/promoping.log
-- Requisições HTTP
-- Erros de aplicação
-- Operações de base de dados
-- Autenticação e autorização
-```
-
-**Python Scraper**
-```
-python-scraper/scraper.log
-- Ciclos de scraping
-- Preços atualizados
-- Erros de scraping
-- Metas atingidas
-```
-
-**Nginx (Web Server)**
-```
-/var/log/nginx/access.log
-- Requisições HTTP
-- Status codes
-- Response times
-- User agents
-```
-
-**MySQL (Database)**
-```
-/var/log/mysql/error.log
-- Erros de base de dados
-- Queries lentas
-- Conexões perdidas
-- Deadlocks
-```
-
-### **Ferramentas de Monitorização**
-
-**Logs Centralizados**
-```bash
-# Ver todos os logs em tempo real
-docker-compose logs -f
-
-# Logs específicos
-docker-compose logs -f promoping
-docker-compose logs -f mysql
-docker-compose logs -f redis
-
-# Filtrar por nível
-docker-compose logs | grep ERROR
-docker-compose logs | grep WARN
-```
-
-**Análise de Logs**
-```bash
-# Contar erros por tipo
-grep "ERROR" /var/log/supervisor/promoping.log | wc -l
-
-# Top IPs com mais requisições
-awk '{print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -nr
-
-# Queries mais lentas
-grep "slow query" /var/log/mysql/error.log
-```
-
-### **Dashboard de Monitorização**
-
-**Métricas em Tempo Real**
-- **Uptime** - Tempo de atividade do sistema
-- **Active Users** - Utilizadores ativos
-- **Products Monitored** - Produtos em monitorização
-- **Notifications Sent** - Notificações enviadas
-- **API Calls** - Chamadas à API por minuto
-
-**Gráficos e Estatísticas**
-- **Response Time Chart** - Gráfico de tempos de resposta
-- **Error Rate** - Taxa de erros por hora
-- **Memory Usage** - Uso de memória ao longo do tempo
-- **Database Performance** - Performance da base de dados
-
-### **Manutenção e Debugging**
-
-**Comandos Úteis**
-```bash
-# Verificar status dos serviços
-docker-compose ps
-
-# Reiniciar um serviço específico
-docker-compose restart promoping
-
-# Aceder ao container para debugging
-docker-compose exec promoping bash
-
-# Ver logs de erro específicos
-docker-compose logs --tail=100 promoping | grep ERROR
-```
-
-**Limpeza de Logs**
-```bash
-# Limpar logs antigos (manter últimos 7 dias)
-find /var/log -name "*.log" -mtime +7 -delete
-
-# Comprimir logs antigos
-gzip /var/log/supervisor/promoping.log.1
-```
+A plataforma inclui health checks automáticos para API, base de dados, Redis e APIs externas. O sistema monitoriza métricas de performance incluindo tempo de resposta, uso de memória, utilização de CPU, e estatísticas de rate limiting.
 
 ## Contribuição
 
-O PromoPing é um projeto open-source e aceita contribuições da comunidade. Se quiser contribuir:
+O PromoPing é um projeto open-source que aceita contribuições da comunidade. Para contribuir, é necessário fazer fork do repositório, criar uma branch para a funcionalidade, desenvolver e testar as alterações, e abrir um Pull Request no repositório original.
 
-1. **Fork do repositório** - Crie um fork do projeto no GitHub
-2. **Clone local** - `git clone https://github.com/SEU_USERNAME/PromoPing.git`
-3. **Crie uma branch** - `git checkout -b feature/SuaFeature`
-4. **Desenvolva** - Implemente a sua funcionalidade ou correção
-5. **Teste** - Certifique-se de que os testes passam
-6. **Commit** - `git commit -m 'Adiciona feature: descrição'`
-7. **Push** - `git push origin feature/SuaFeature`
-8. **Pull Request** - Abra um PR no repositório original
-
-**Diretrizes de Contribuição**
-- Siga as convenções de código existentes
-- Adicione testes para novas funcionalidades
-- Documente alterações significativas
-- Mantenha commits pequenos e focados
-- Use mensagens de commit descritivas
+As diretrizes de contribuição incluem seguir as convenções de código existentes, adicionar testes para novas funcionalidades, documentar alterações significativas, manter commits pequenos e focados, e usar mensagens de commit descritivas.
 
 ## Licença
 
-Este projeto está licenciado sob a Licença . Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a Licença PromoPing. Veja o arquivo LICENSE para mais detalhes.
 
 ## Suporte
 
-**Canais de Suporte**
+### Canais de Suporte
+
 - **Email**: corporation.promoping@gmail.com
 - **GitHub Issues**: Para reportar bugs e solicitar funcionalidades
 - **Discord**: [Servidor da comunidade](https://discord.gg/PXBXKXmfph)
 
-**Documentação**
-- [Guia de Instalação](frontend/pages/docs/installation.html)
-- [API Reference](frontend/pages/docs/api-reference.html)
-- [FAQ](frontend/pages/docs/faq.html)
-- [Changelog](frontend/pages/docs/changelog.html)
+### Documentação
 
-**Roadmap**
-- Suporte a mais lojas online
-- Integração com redes sociais
-- App mobile nativo
-- Sistema de recomendações
-- API pública para desenvolvedores
+A documentação completa está disponível no [GitBook do PromoPing](https://promoping.gitbook.io/promoping-docs), incluindo guias, FAQ e changelog.
+
+## Roadmap
+
+O roadmap do PromoPing inclui:
+
+- Suporte a mais lojas online portuguesas e internacionais
+- Integração com redes sociais para compartilhamento de ofertas
+- Aplicação mobile nativa para iOS e Android
+- Sistema de recomendações baseado em histórico de compras
+- API pública para desenvolvedores terceiros
+
+---
+
+**PromoPing** - Economize mais, compre melhor.
