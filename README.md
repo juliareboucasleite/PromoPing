@@ -135,13 +135,13 @@ A documentação completa está disponível no [GitBook do PromoPing](https://pr
 
 ## Roadmap
 
-O roadmap do PromoPing inclui:
+Os próximos passos planejados para o PromoPing incluem:
 
-- Suporte a mais lojas online portuguesas e internacionais
-- Integração com redes sociais para compartilhamento de ofertas
-- Aplicação mobile nativa para iOS e Android
-- Sistema de recomendações baseado em histórico de compras
-- API pública para desenvolvedores terceiros
+- Expansão do suporte a lojas online portuguesas e internacionais
+- Integração com redes sociais para facilitar o compartilhamento de ofertas
+- Desenvolvimento de aplicativo móvel nativo para iOS e Android
+- Implementação de sistema de recomendações personalizadas com base no histórico de compras dos usuários
+- Lançamento de uma API pública para desenvolvedores de terceiros
 
 ---
 
