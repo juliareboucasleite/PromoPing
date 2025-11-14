@@ -7,7 +7,7 @@
 
 ## Sobre o PromoPing
 
-O PromoPing é um sistema avançado de monitoramento de preços desenvolvido especificamente para consumidores portugueses. A plataforma permite acompanhar produtos em múltiplas lojas online e receber notificações automáticas quando os preços atingem metas definidas, ajudando os utilizadores a tomar decisões de compra informadas e a economizar dinheiro.
+O PromoPing é um sistema avançado de monitoramento de preços feito especialmente para consumidores portugueses que gostam de poupar. Com o PromoPing, você pode acompanhar facilmente produtos em diversas lojas online e receber notificações automáticas sempre que os preços atingirem as metas que você definiu. Assim, fica muito mais simples tomar decisões de compra inteligentes, evitando gastar mais do que precisa e aproveitando oportunidades reais de economia.
 
 ## Funcionalidades Principais
 
@@ -19,9 +19,9 @@ O PromoPing oferece uma interface web moderna e intuitiva, totalmente responsiva
 
 A plataforma implementa um sistema de autenticação seguro utilizando JWT com refresh tokens, garantindo a segurança das sessões dos utilizadores. O sistema suporta login social através de Google OAuth e Discord, facilitando o acesso à plataforma. Os utilizadores podem personalizar completamente o seu perfil e preferências, incluindo configurações detalhadas de notificações.
 
-### Sistema de Notificações Multi-Canal
+### Sistema de Notificações
 
-O PromoPing envia notificações através de múltiplos canais, incluindo Discord Bot com Rich Presence, emails transacionais com templates personalizados, e suporte opcional para SMS. Os utilizadores podem configurar a frequência e os tipos de alertas que desejam receber, garantindo que sejam informados apenas sobre as informações mais relevantes.
+O PromoPing envia notificações apenas através de dois canais principais: Discord Bot (com Rich Presence) e emails transacionais com templates personalizados. Os utilizadores podem configurar a frequência e os tipos de alertas que desejam receber, garantindo que sejam informados apenas sobre informações realmente relevantes.
 
 ### Lojas Suportadas
 
@@ -29,9 +29,11 @@ A plataforma suporta mais de 20 lojas online, incluindo as principais lojas port
 
 ### Funcionalidades Avançadas
 
-O PromoPing oferece detecção automática de loja, permitindo que os utilizadores adicionem produtos simplesmente fornecendo a URL. Os utilizadores podem definir preços alvo personalizados e receber alertas quando esses valores são atingidos. O sistema também envia notificações quando há variações significativas de preço, permitindo aos utilizadores aproveitar oportunidades de economia.
+O PromoPing faz a monotorização automática de lojas suportadas, permitindo aos utilizadores adicionar produtos facilmente apenas fornecendo a URL. Os utilizadores podem definir preços-alvo personalizados e recebem alertas automáticos quando esses valores são atingidos. Além disso, o sistema envia notificações sempre que há variações relevantes de preço, ajudando os utilizadores a nunca perderem oportunidades de economia.
 
-A plataforma inclui funcionalidades de comparação de preços entre diferentes lojas, exportação de dados em múltiplos formatos (Excel, PDF, CSV), e um sistema de planos diferenciados que oferece diferentes limites e funcionalidades conforme a subscrição escolhida.
+Importante: O PromoPing não compara preços entre lojas. Apenas monitora os produtos escolhidos e envia notificações ao utilizador de acordo com os critérios definidos. A plataforma oferece ainda diferentes planos de subscrição, cada um com os seus limites e funcionalidades.
+
+> **Nota:** A exportação de dados (Excel, PDF, CSV) ainda não está disponível, mas será implementada em breve.
 
 ## Arquitetura do Sistema
 
