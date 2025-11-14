@@ -488,6 +488,56 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // Verificar se conta está desativada e permitir reativação se ainda não expirou
+    if (user.Ativo === 0) {
+      // Verificar se ainda está dentro do período de 20 dias
+      let canReactivate = false;
+      let expirationDate = null;
+      
+      try {
+        // Verificar se DataDesativacao existe e não expirou
+        const [deactivatedInfo] = await pool.query(
+          "SELECT DataDesativacao FROM Utilizadores WHERE Id = ?",
+          [user.Id]
+        );
+        
+        if (deactivatedInfo.length > 0 && deactivatedInfo[0].DataDesativacao) {
+          expirationDate = new Date(deactivatedInfo[0].DataDesativacao);
+          const now = new Date();
+          canReactivate = expirationDate > now;
+        } else {
+          // Se não tem DataDesativacao, usar Data_Registo como fallback (20 dias)
+          const registerDate = new Date(user.Data_Registo);
+          const expirationDateFallback = new Date(registerDate);
+          expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
+          canReactivate = expirationDateFallback > new Date();
+          expirationDate = expirationDateFallback;
+        }
+      } catch (error) {
+        console.error("[AUTH] Erro ao verificar data de desativação:", error);
+        // Em caso de erro, permitir tentativa de reativação
+        canReactivate = true;
+      }
+      
+      if (canReactivate) {
+        // Reativar conta automaticamente ao fazer login
+        await pool.query(
+          "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE Id = ?",
+          [user.Id]
+        );
+        console.log(`[AUTH] Conta ${user.Id} reativada automaticamente via login`);
+        
+        // Marcar que a conta foi reativada para mostrar modal no frontend
+        user.accountReactivated = true;
+      } else {
+        return res.status(403).json({
+          status: "error",
+          error: "Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.",
+          accountExpired: true
+        });
+      }
+    }
+
     // Verificar se email está verificado
     if (!user.EmailVerificado) {
       return res.status(403).json({
@@ -526,7 +576,13 @@ router.post("/login", async (req, res) => {
     res.json({
       status: "ok",
       token,
-      user: { id: user.Id, email: user.Email, nome: user.Nome, perfilId: user.PerfilId || user.perfilId },
+      user: { 
+        id: user.Id, 
+        email: user.Email, 
+        nome: user.Nome, 
+        perfilId: user.PerfilId || user.perfilId 
+      },
+      accountReactivated: user.accountReactivated || false
     });
   } catch (err) {
     console.error(" Erro no login:", err);

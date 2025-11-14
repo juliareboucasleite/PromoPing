@@ -395,6 +395,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (data.status === "ok" && data.token) {
             localStorage.setItem("token", data.token);
+            // Salvar informação de reativação se a conta foi reativada
+            if (data.accountReactivated) {
+              localStorage.setItem("accountReactivated", "true");
+            }
             if (typeof window.showSuccess === 'function') {
               window.showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
             }

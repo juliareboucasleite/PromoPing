@@ -3,6 +3,7 @@ import express from "express";
 import { pool } from "../database/db.js";
 // import { formatDate } from "../utils/format.js"; // Removido - função não existe
 import { verifyToken } from "../middleware/auth.js";
+import { sendEmail } from "../services/notify.js";
 
 const router = express.Router();
 
@@ -837,6 +838,240 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error(" Erro ao cancelar assinatura:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
+    });
+  }
+});
+
+// ================== DESATIVAR CONTA ==================
+router.post("/deactivate", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Buscar dados do usuário antes de desativar
+    const [userRows] = await pool.query(
+      "SELECT Nome, Email FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuário não encontrado"
+      });
+    }
+
+    const user = userRows[0];
+    const userName = user.Nome || "Usuário";
+    const userEmail = user.Email;
+
+    // Calcular data de expiração (20 dias a partir de agora)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 20);
+    const expirationDateStr = expirationDate.toISOString().slice(0, 19).replace('T', ' ');
+
+    // Enviar email de confirmação de desativação
+    try {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+          <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h2 style="color: #856404; margin: 0;">Conta Desativada</h2>
+          </div>
+          <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px;">
+            <p>Olá <b>${userName}</b>,</p>
+            <p>Sua conta no <b>PromoPing</b> foi desativada com sucesso.</p>
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #856404;"><strong>Importante:</strong> Você tem 20 dias para reativar sua conta fazendo login novamente.</p>
+            </div>
+            <p style="color: #856404; font-weight: 600;">Após 20 dias, sua conta será permanentemente excluída e não poderá ser recuperada.</p>
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+              <strong>Data de expiração:</strong> ${expirationDate.toLocaleDateString('pt-PT', { dateStyle: 'long' })}
+            </p>
+            <p>Se você não solicitou esta ação, entre em contato conosco imediatamente através do suporte.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            <p style="color: #666; font-size: 14px; text-align: center;">
+              &copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados
+            </p>
+          </div>
+        </div>
+      `;
+
+      await sendEmail(userEmail, "PromoPing - Conta Desativada", emailHtml);
+      console.log(`[USER] Email de desativação enviado para ${userEmail}`);
+    } catch (emailError) {
+      console.error("[USER] Erro ao enviar email de desativação:", emailError);
+      // Não falhar a operação se o email não for enviado
+    }
+
+    // Marcar conta como desativada com data de desativação
+    // Verificar se a coluna DataDesativacao existe, se não, criar
+    try {
+      // Tentar atualizar com DataDesativacao
+      await pool.query(
+        "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE Id = ?",
+        [expirationDateStr, userId]
+      );
+    } catch (error) {
+      // Se a coluna não existir (erro 1054 = Unknown column), criar
+      if (error.code === 'ER_BAD_FIELD_ERROR' || error.message?.includes('Unknown column')) {
+        try {
+          console.log("[USER] Coluna DataDesativacao não existe, criando...");
+          await pool.query(
+            "ALTER TABLE Utilizadores ADD COLUMN DataDesativacao DATETIME NULL AFTER Ativo"
+          );
+          // Tentar atualizar novamente
+          await pool.query(
+            "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE Id = ?",
+            [expirationDateStr, userId]
+          );
+          console.log("[USER] Coluna DataDesativacao criada e conta desativada com sucesso");
+        } catch (alterError) {
+          // Se falhar ao criar (pode já existir), apenas desativar
+          console.warn("[USER] Erro ao criar DataDesativacao:", alterError.message);
+          await pool.query(
+            "UPDATE Utilizadores SET Ativo = 0 WHERE Id = ?",
+            [userId]
+          );
+        }
+      } else {
+        // Outro tipo de erro, apenas desativar
+        console.error("[USER] Erro ao desativar conta com data:", error.message);
+        await pool.query(
+          "UPDATE Utilizadores SET Ativo = 0 WHERE Id = ?",
+          [userId]
+        );
+      }
+    }
+
+    console.log(`[USER] Conta desativada para usuário ${userId}. Expira em: ${expirationDateStr}`);
+
+    res.json({
+      status: "ok",
+      message: "Conta desativada com sucesso",
+      expirationDate: expirationDateStr,
+      daysRemaining: 20
+    });
+  } catch (error) {
+    console.error("Erro ao desativar conta:", error);
+    res.status(500).json({
+      status: "error",
+      error: "Erro interno do servidor"
+    });
+  }
+});
+
+// ================== EXCLUIR CONTA ==================
+router.delete("/delete", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Buscar dados do usuário ANTES de deletar (precisamos do email para enviar confirmação)
+    const [userRows] = await pool.query(
+      "SELECT Nome, Email FROM Utilizadores WHERE Id = ?",
+      [userId]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        error: "Usuário não encontrado"
+      });
+    }
+
+    const user = userRows[0];
+    const userName = user.Nome || "Usuário";
+    const userEmail = user.Email;
+
+    // Enviar email de confirmação de exclusão ANTES de deletar
+    try {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+          <div style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h2 style="color: #721c24; margin: 0;">Conta Excluída Permanentemente</h2>
+          </div>
+          <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px;">
+            <p>Olá <b>${userName}</b>,</p>
+            <p>Confirmamos que sua conta no <b>PromoPing</b> foi excluída permanentemente.</p>
+            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #721c24;"><strong>Atenção:</strong> Esta ação é permanente e não pode ser desfeita.</p>
+            </div>
+            <p>Os seguintes dados foram removidos permanentemente:</p>
+            <ul style="color: #666; line-height: 1.8;">
+              <li>Seus produtos monitorizados</li>
+              <li>Histórico de notificações</li>
+              <li>Configurações e preferências</li>
+              <li>Assinaturas ativas</li>
+              <li>Todos os dados da sua conta</li>
+            </ul>
+            <p>Se você não solicitou esta ação, entre em contato conosco imediatamente através do suporte.</p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              <strong>Data da exclusão:</strong> ${new Date().toLocaleString('pt-PT', { dateStyle: 'long', timeStyle: 'short' })}
+            </p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            <p style="color: #666; font-size: 14px; text-align: center;">
+              &copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados
+            </p>
+          </div>
+        </div>
+      `;
+
+      await sendEmail(userEmail, "PromoPing - Conta Excluída", emailHtml);
+      console.log(`[USER] Email de exclusão enviado para ${userEmail}`);
+    } catch (emailError) {
+      console.error("[USER] Erro ao enviar email de exclusão:", emailError);
+      // Não falhar a operação se o email não for enviado, mas logar o erro
+    }
+
+    // Iniciar transação para garantir que tudo seja deletado
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // 1. Deletar produtos do usuário
+      await connection.query("DELETE FROM Produtos WHERE UserId = ?", [userId]);
+
+      // 2. Deletar configurações do usuário
+      await connection.query("DELETE FROM configutilizador WHERE UserId = ?", [userId]);
+
+      // 3. Deletar preferências de notificação
+      await connection.query("DELETE FROM preferenciasnotificacao WHERE UserId = ?", [userId]);
+
+      // 4. Deletar contas conectadas
+      await connection.query("DELETE FROM contasconectadas WHERE UserId = ?", [userId]);
+
+      // 5. Deletar assinaturas Stripe relacionadas
+      await connection.query("DELETE FROM stripe_subscriptions WHERE user_id = ?", [userId]);
+
+      // 6. Deletar histórico de notificações
+      await connection.query("DELETE FROM notificacoes WHERE UserId = ?", [userId]);
+
+      // 7. Deletar mensagens de suporte
+      await connection.query("DELETE FROM supportmessages WHERE userId = ?", [userId]);
+
+      // 8. Deletar tokens de recuperação de senha (já tem CASCADE, mas deletamos explicitamente para garantir)
+      await connection.query("DELETE FROM recuperar_senha WHERE UserId = ?", [userId]);
+
+      // 9. Finalmente, deletar o usuário (isso também deleta automaticamente via CASCADE: recuperar_senha, historicoprecos via produtos)
+      await connection.query("DELETE FROM Utilizadores WHERE Id = ?", [userId]);
+
+      await connection.commit();
+      connection.release();
+
+      console.log(`[USER] Conta completamente excluída para usuário ${userId}`);
+
+      res.json({
+        status: "ok",
+        message: "Conta excluída com sucesso"
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Erro ao excluir conta:", error);
     res.status(500).json({
       status: "error",
       error: "Erro interno do servidor"

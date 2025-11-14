@@ -201,6 +201,54 @@
               </div>
             </div>
           </div>
+
+          <!-- Card separado para Gerenciamento de Conta -->
+          <div class="profile-card">
+            <div class="card-header">
+              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="M9 12l2 2 4-4"></path>
+              </svg>
+              <h2 class="card-title">Gerenciamento de Conta</h2>
+            </div>
+
+            <div class="account-management-section">
+              <div class="account-action-item">
+                <div class="account-action-info">
+                  <svg class="account-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                  <div class="account-action-details">
+                    <span class="account-action-name">Desativar Conta</span>
+                    <span class="account-action-desc">Temporariamente desativa sua conta. Você pode reativar depois.</span>
+                  </div>
+                </div>
+                <button class="account-action-btn deactivate-btn" onclick="desativarConta()">
+                  Desativar
+                </button>
+              </div>
+
+              <div class="account-action-item">
+                <div class="account-action-info">
+                  <svg class="account-action-icon delete-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                  <div class="account-action-details">
+                    <span class="account-action-name">Excluir Conta</span>
+                    <span class="account-action-desc">Remove permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.</span>
+                  </div>
+                </div>
+                <button class="account-action-btn delete-btn" onclick="excluirConta()">
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="profile-right">
@@ -340,6 +388,93 @@
 
     </div>
   </main>
+
+  <!-- Modal de Desativar Conta -->
+  <div class="modal-overlay" id="deactivateModal" style="display: none;">
+    <div class="modal-content account-modal-content">
+      <div class="modal-header account-modal-header">
+        <div class="modal-icon-wrapper warning-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <h3>Desativar Conta</h3>
+        <button class="modal-close" onclick="fecharModalDesativar()" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body account-modal-body">
+        <p class="modal-message">
+          Tem certeza que deseja desativar sua conta? Você poderá reativá-la depois fazendo login novamente.
+        </p>
+        <div class="modal-actions">
+          <button class="modal-btn cancel" onclick="fecharModalDesativar()">Cancelar</button>
+          <button class="modal-btn confirm warning" onclick="confirmarDesativar()">Desativar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Excluir Conta -->
+  <div class="modal-overlay" id="deleteModal" style="display: none;">
+    <div class="modal-content account-modal-content">
+      <div class="modal-header account-modal-header">
+        <div class="modal-icon-wrapper danger-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </div>
+        <h3>Excluir Conta</h3>
+        <button class="modal-close" onclick="fecharModalExcluir()" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body account-modal-body">
+        <div class="delete-warning">
+          <p class="modal-message warning-text">
+            <strong>Esta ação é PERMANENTE e não pode ser desfeita!</strong>
+          </p>
+          <p class="modal-message">
+            Todos os seus dados serão permanentemente removidos, incluindo:
+          </p>
+          <ul class="delete-list">
+            <li>Seus produtos monitorizados</li>
+            <li>Histórico de notificações</li>
+            <li>Configurações e preferências</li>
+            <li>Assinaturas ativas</li>
+          </ul>
+        </div>
+        <div class="delete-confirmation">
+          <label for="deleteConfirmInput" class="delete-label">
+            Digite <strong>"EXCLUIR"</strong> para confirmar:
+          </label>
+          <input 
+            type="text" 
+            id="deleteConfirmInput" 
+            class="delete-input" 
+            placeholder="Digite EXCLUIR"
+            onkeyup="verificarConfirmacaoExclusao()"
+          >
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn cancel" onclick="fecharModalExcluir()">Cancelar</button>
+          <button class="modal-btn confirm danger" id="confirmDeleteBtn" onclick="confirmarExcluir()" disabled>Excluir Conta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../../assets/scripts/support-widget.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -778,6 +913,154 @@
     // Chamar notificações ao carregar (podem duplicar mas backend já protege)
     carregarNotificacoes();
 
+    // ===== GERENCIAMENTO DE CONTA =====
+    function desativarConta() {
+      document.getElementById('deactivateModal').style.display = 'flex';
+    }
+
+    function fecharModalDesativar() {
+      document.getElementById('deactivateModal').style.display = 'none';
+    }
+
+    async function confirmarDesativar() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Erro: Não autenticado");
+        fecharModalDesativar();
+        return;
+      }
+
+      const btn = document.querySelector('#deactivateModal .modal-btn.confirm');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+
+      try {
+        const response = await makeRequest('/api/user/deactivate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'ok') {
+          // Guardar data de expiração no localStorage
+          if (data.expirationDate) {
+            localStorage.setItem('accountDeactivated', 'true');
+            localStorage.setItem('accountExpirationDate', data.expirationDate);
+            localStorage.setItem('accountDaysRemaining', data.daysRemaining || 20);
+          }
+          
+          alert(`Conta desativada com sucesso. Você tem ${data.daysRemaining || 20} dias para reativar fazendo login. Após esse período, sua conta será permanentemente excluída.`);
+          localStorage.removeItem('token');
+          window.location.href = '/';
+        } else {
+          alert(data.error || 'Erro ao desativar conta');
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error('[PERFIL] Erro ao desativar conta:', error);
+        alert('Erro ao desativar conta. Tente novamente mais tarde.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    function excluirConta() {
+      document.getElementById('deleteModal').style.display = 'flex';
+      document.getElementById('deleteConfirmInput').value = '';
+      document.getElementById('confirmDeleteBtn').disabled = true;
+    }
+
+    function fecharModalExcluir() {
+      document.getElementById('deleteModal').style.display = 'none';
+      document.getElementById('deleteConfirmInput').value = '';
+      document.getElementById('confirmDeleteBtn').disabled = true;
+    }
+
+    function verificarConfirmacaoExclusao() {
+      const input = document.getElementById('deleteConfirmInput');
+      const btn = document.getElementById('confirmDeleteBtn');
+      
+      if (input.value === 'EXCLUIR') {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    async function confirmarExcluir() {
+      const input = document.getElementById('deleteConfirmInput');
+      if (input.value !== 'EXCLUIR') {
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Erro: Não autenticado");
+        fecharModalExcluir();
+        return;
+      }
+
+      const btn = document.getElementById('confirmDeleteBtn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Excluindo...';
+
+      try {
+        const response = await makeRequest('/api/user/delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'ok') {
+          alert('Conta excluída com sucesso.');
+          localStorage.removeItem('token');
+          window.location.href = '/';
+        } else {
+          alert(data.error || 'Erro ao excluir conta');
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error('[PERFIL] Erro ao excluir conta:', error);
+        alert('Erro ao excluir conta. Tente novamente mais tarde.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // Fechar modais ao clicar no overlay
+    document.addEventListener('DOMContentLoaded', function() {
+      const deactivateModal = document.getElementById('deactivateModal');
+      const deleteModal = document.getElementById('deleteModal');
+
+      if (deactivateModal) {
+        deactivateModal.addEventListener('click', function(e) {
+          if (e.target === deactivateModal) {
+            fecharModalDesativar();
+          }
+        });
+      }
+
+      if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+          if (e.target === deleteModal) {
+            fecharModalExcluir();
+          }
+        });
+      }
+    });
+
     // Atualizar switches de preferências de notificação
     function updateNotificationPreferences(preferencias) {
       const prefMap = {};
@@ -968,5 +1251,4 @@
 
   </script>
 </body>
-
 </html>

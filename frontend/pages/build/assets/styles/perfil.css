@@ -295,6 +295,103 @@ input:checked + .toggle-slider:before {
     transform: translateX(26px);
 }
 
+/* ===== GERENCIAMENTO DE CONTA ===== */
+.account-management-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.account-action-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.account-action-item:hover {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    transform: translateX(4px);
+}
+
+.account-action-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.account-action-icon {
+    width: 20px;
+    height: 20px;
+    color: #6c757d;
+    flex-shrink: 0;
+}
+
+.account-action-icon.delete-icon {
+    color: #dc3545;
+}
+
+.account-action-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.account-action-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.account-action-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.account-action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.account-action-btn.deactivate-btn {
+    background: #ffc107;
+    color: #000;
+}
+
+.account-action-btn.deactivate-btn:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.account-action-btn.delete-btn {
+    background: #dc3545;
+    color: #fff;
+}
+
+.account-action-btn.delete-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.account-action-btn:active {
+    transform: translateY(0);
+}
+
 /* ===== CONTAS CONECTADAS ===== */
 .connected-accounts {
     display: flex;
@@ -589,5 +686,262 @@ input:checked + .toggle-slider:before {
     .change-plan-btn {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* ===== MODAIS DE GERENCIAMENTO DE CONTA ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.account-modal-content {
+    max-width: 500px;
+    width: 90%;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.account-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.modal-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.warning-icon-wrapper {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+.danger-icon-wrapper {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+.modal-icon-wrapper svg {
+    width: 24px;
+    height: 24px;
+}
+
+.account-modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0e0f19;
+    margin: 0;
+    flex: 1;
+}
+
+.account-modal-header .modal-close {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+    border-radius: 6px;
+    padding: 0;
+}
+
+.account-modal-header .modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.account-modal-body {
+    padding: 1.5rem;
+}
+
+.modal-message {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.modal-message.warning-text {
+    color: #dc3545;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.delete-warning {
+    margin-bottom: 1.5rem;
+}
+
+.delete-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.delete-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: #4b5563;
+    font-size: 0.9rem;
+}
+
+.delete-list li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.delete-confirmation {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.delete-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.delete-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.delete-input:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.delete-input:valid {
+    border-color: #dc3545;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.modal-btn.cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-btn.cancel:hover {
+    background: #e5e7eb;
+}
+
+.modal-btn.confirm {
+    background: #f4af55;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #e09d44;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(244, 175, 85, 0.3);
+}
+
+.modal-btn.confirm.warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.modal-btn.confirm.warning:hover {
+    background: #e0a800;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.modal-btn.confirm.danger {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-btn.confirm.danger:hover {
+    background: #c82333;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+@media (max-width: 768px) {
+    .account-modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-btn {
+        width: 100%;
     }
 }

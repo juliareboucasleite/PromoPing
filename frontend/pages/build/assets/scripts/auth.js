@@ -56,6 +56,10 @@ export async function loginEmail(email, password) {
 
     if (data.status === "ok" && data.token) {
       salvarToken(data.token);
+      // Salvar informação de reativação se a conta foi reativada
+      if (data.accountReactivated) {
+        localStorage.setItem("accountReactivated", "true");
+      }
       window.location.href = "/dashboard";
     } else {
       alert(data.error || "Erro ao entrar.");

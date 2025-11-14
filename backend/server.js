@@ -857,6 +857,7 @@ if (!isProduction) {
 
 // ================== IMPORTAR SERVIÇOS ==================
 import { GracePeriodManager } from './services/gracePeriodManager.js';
+import { DeactivatedAccountsManager } from './services/deactivatedAccountsManager.js';
 
 // ================== INICIAR SERVIDOR ==================
 const HOST = process.env.HOST || "127.0.0.1";
@@ -873,5 +874,12 @@ app.listen(PORT, HOST, async () => {
     await GracePeriodManager.startAutomaticCheck();
   } catch (error) {
     console.error('Erro ao iniciar verificação automática de períodos de graça:', error);
+  }
+  
+  // Iniciar verificação automática de contas desativadas
+  try {
+    await DeactivatedAccountsManager.startAutomaticCheck();
+  } catch (error) {
+    console.error('Erro ao iniciar verificação automática de contas desativadas:', error);
   }
 });
