@@ -1,13 +1,9 @@
 # PromoPing - Monitor de Preços
 
-# PromoPing - Monitor de Preços
-
-[PromoPing Logo](https://raw.githubusercontent.com/juliareboucasleite/PromoPing/main/docs/logo.png)
-
 [![version](https://img.shields.io/badge/version-Pap-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
 [![LICENSE](https://img.shields.io/badge/LICENSE-PromoPing-orange?link=https%3A%2F%2Fpromoping.gitbook.io%2Fpromoping-docs)](https://promoping.gitbook.io/promoping-docs)
 [![node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org)
-[![Site](https://img.shields.io/badge/site-promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](https://promoping.pt)
+[![Site](https://img.shields.io/badge/site-promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
 
 
 
