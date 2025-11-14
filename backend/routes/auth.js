@@ -596,14 +596,14 @@ router.post("/login", async (req, res) => {
 // REGISTO com email e senha
 router.post("/register", async (req, res) => {
   try {
-    const { nome, email, password, telefone } = req.body;
-    console.log("[REGISTRO] Tentativa de registro:", { nome, email, telefone: telefone ? "fornecido" : "não fornecido" });
+    const { nome, email, password, telefone, data_nascimento } = req.body;
+    console.log("[REGISTRO] Tentativa de registro:", { nome, email, telefone: telefone ? "fornecido" : "não fornecido", data_nascimento: data_nascimento ? "fornecido" : "não fornecido" });
 
-    if (!nome || !email || !password) {
+    if (!nome || !email || !password || !data_nascimento) {
       console.log("[REGISTRO] Campos obrigatórios faltando");
       return res.status(400).json({
         status: "error",
-        error: "Nome, email e senha são obrigatórios",
+        error: "Nome, email, senha e data de nascimento são obrigatórios",
       });
     }
 
@@ -614,6 +614,46 @@ router.post("/register", async (req, res) => {
         error: "A senha deve ter pelo menos 6 caracteres",
       });
     }
+
+    // Validar idade mínima (13 anos) - obrigatório
+    const birthDate = new Date(data_nascimento);
+    
+    // Verificar se a data é válida
+    if (isNaN(birthDate.getTime())) {
+      console.log("[REGISTRO] Data de nascimento inválida");
+      return res.status(400).json({
+        status: "error",
+        error: "Data de nascimento inválida",
+      });
+    }
+
+    // Verificar se a data não é no futuro
+    const today = new Date();
+    if (birthDate > today) {
+      console.log("[REGISTRO] Data de nascimento no futuro");
+      return res.status(400).json({
+        status: "error",
+        error: "Data de nascimento não pode ser no futuro",
+      });
+    }
+
+    // Calcular idade
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    // Validar idade mínima de 13 anos
+    if (age < 13) {
+      console.log(`[REGISTRO] Usuário menor de 13 anos tentou se registrar (idade: ${age})`);
+      return res.status(403).json({
+        status: "error",
+        error: "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing",
+      });
+    }
+    
+    console.log(`[REGISTRO] Idade validada: ${age} anos`);
 
     console.log("[REGISTRO] Verificando se email já existe...");
     const [existing] = await pool.query(
@@ -642,10 +682,38 @@ router.post("/register", async (req, res) => {
     console.log(`[REGISTRO] PerfilId determinado: ${perfilId}`);
 
     console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
-    const [result] = await pool.query(
-      "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-      [nome, email, hashedPassword, 0, telefone || null, perfilId]
-    );
+    
+    // Tentar inserir com data_nascimento se fornecido
+    let result;
+    try {
+      if (data_nascimento) {
+        const [insertResult] = await pool.query(
+          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo, data_nascimento) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), ?)",
+          [nome, email, hashedPassword, 0, telefone || null, perfilId, data_nascimento]
+        );
+        result = insertResult;
+        console.log("[REGISTRO] Usuário criado com data de nascimento");
+      } else {
+        const [insertResult] = await pool.query(
+          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
+          [nome, email, hashedPassword, 0, telefone || null, perfilId]
+        );
+        result = insertResult;
+        console.log("[REGISTRO] Usuário criado sem data de nascimento");
+      }
+    } catch (insertError) {
+      // Se a coluna data_nascimento não existir, inserir sem ela
+      if (insertError.code === 'ER_BAD_FIELD_ERROR' || insertError.message?.includes('data_nascimento')) {
+        console.log("[REGISTRO] Coluna data_nascimento não existe, inserindo sem ela...");
+        const [insertResult] = await pool.query(
+          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
+          [nome, email, hashedPassword, 0, telefone || null, perfilId]
+        );
+        result = insertResult;
+      } else {
+        throw insertError;
+      }
+    }
 
     const userId = result.insertId;
     console.log(`[REGISTRO] Usuário criado com ID: ${userId}`);

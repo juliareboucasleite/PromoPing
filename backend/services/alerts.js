@@ -18,50 +18,79 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
     const savings = precoAlvo - novoPreco;
     const savingsPercent = ((savings / precoAlvo) * 100).toFixed(1);
     
-    const messageHtml = `
-    Olá <b>${product.Nome}</b> ,
-    O preço do produto ${product.Nome} atingiu o preço alvo de ${formatPriceDisplay(precoAlvo)}.
-    Aproveite antes que o preço volte a subir! 
-    Atenciosamente, <br/>
-    <b>Equipe PromoPing </b><br/>
-    <small>Esta é uma notificação automática — não responda a este email.</small>
-  `;
-        
-
-    // Buscar configurações de notificação do utilizador
-    const [configRows] = await pool.query(
-      "SELECT CanalPreferido FROM ConfigUtilizador WHERE UserId = ?",
-      [product.UserId]
-    );
-
-    // Buscar email e telefone da tabela Utilizadores
+    // Buscar dados do usuário
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone FROM Utilizadores WHERE Id = ?",
+      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE Id = ?",
       [product.UserId]
     );
 
-    const config = configRows[0] || {};
     const user = userRows[0] || {};
-    const canal = config.CanalPreferido || "email";
+    const userName = user.Nome || 'Usuário';
+    
+    const messageHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; color: #333;">
+        <div style="background: linear-gradient(135deg, #ff9800 0%, #ff6b35 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h2 style="color: white; margin: 0; font-size: 24px;">🎯 Preço Alvo Atingido!</h2>
+        </div>
+        
+        <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+            Olá <b>${userName}</b>,
+          </p>
+          
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Ótimas notícias! O preço do produto <b>${product.Nome}</b> atingiu o seu preço alvo!
+          </p>
+          
+          <div style="background: #f0f8ff; border-left: 4px solid #ff9800; padding: 20px; margin: 25px 0; border-radius: 4px;">
+            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Produto:</b> ${product.Nome}</p>
+            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Loja:</b> ${product.Loja || 'Loja'}</p>
+            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Preço Alvo:</b> ${formatPriceDisplay(precoAlvo)}</p>
+            <p style="margin: 5px 0; font-size: 16px; color: #28a745; font-weight: bold;"><b>Preço Atual:</b> ${formatPriceDisplay(novoPreco)}</p>
+            <p style="margin: 5px 0; font-size: 14px; color: #28a745; font-weight: bold;"><b>Você economizou:</b> ${formatPriceDisplay(savings)} (${savingsPercent}%)</p>
+          </div>
 
-    // Enviar notificação
-    await sendNotification({
-      canal,
-      email: user.Email || process.env.EMAIL_USER,
-      telefone: user.Telefone || null,
-      mensagem: messageHtml,
-    });
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${product.Link}" target="_blank" 
+               style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #ff9800 0%, #ff6b35 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+              Ver Produto Agora
+            </a>
+          </div>
+
+          <p style="text-align: center; color: #856404; font-size: 14px; font-weight: 600; margin-top: 20px;">
+            ⚠️ Aproveite antes que o preço volte a subir!
+          </p>
+
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;" />
+
+          <p style="font-size: 13px; color: #666; text-align: center;">
+            Atenciosamente, <br/>
+            <b>Equipe PromoPing</b><br/>
+            <small>Esta é uma notificação automática — não responda a este email.</small>
+          </p>
+        </div>
+      </div>
+    `;
+
+    // Enviar email diretamente
+    if (user.Email) {
+      const { sendEmail } = await import("./notify.js");
+      await sendEmail(
+        user.Email,
+        `🎯 Preço Alvo Atingido: ${product.Nome}`,
+        messageHtml
+      );
+      console.log(`[ALERTS] Email de preço alvo enviado para ${user.Email}`);
+    }
 
     // Gravar notificação no banco
     await pool.query(
       "INSERT INTO Notificacoes (UserId, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [product.UserId, product.Id, canal, messageHtml, true, savings]
+      [product.UserId, product.Id, 'email', messageHtml, true, savings]
     );
 
-    console.log(` Alerta de preço alvo enviado para ${product.Nome} (${canal})`);
-
   } catch (error) {
-    console.error(" Erro ao enviar alerta de preço alvo:", error.message);
+    console.error("[ALERTS] Erro ao enviar alerta de preço alvo:", error.message);
   }
 }
 
@@ -132,21 +161,35 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
 
     // Buscar email e telefone da tabela Utilizadores
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone FROM Utilizadores WHERE Id = ?",
+      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE Id = ?",
       [product.UserId]
     );
 
     const config = configRows[0] || {};
     const user = userRows[0] || {};
     const canal = config.CanalPreferido || "email";
+    const userName = user.Nome || 'Usuário';
 
-    // Enviar notificação
-    await sendNotification({
-      canal,
-      email: user.Email || process.env.EMAIL_USER,
-      telefone: user.Telefone || null,
-      mensagem: messageHtml,
-    });
+    // Sempre enviar email quando o preço baixar muito ou mudar significativamente
+    if (user.Email) {
+      const { sendEmail } = await import("./notify.js");
+      const emailSubject = isIncrease 
+        ? `📈 Preço Subiu: ${product.Nome}`
+        : `📉 Preço Baixou: ${product.Nome}`;
+      
+      await sendEmail(user.Email, emailSubject, messageHtml);
+      console.log(`[ALERTS] Email de mudança de preço enviado para ${user.Email}`);
+    }
+
+    // Também enviar via canal preferido (se não for email)
+    if (canal !== "email") {
+      await sendNotification({
+        canal,
+        email: user.Email || process.env.EMAIL_USER,
+        telefone: user.Telefone || null,
+        mensagem: messageHtml,
+      });
+    }
 
     // Gravar notificação no banco
     await pool.query(
@@ -171,12 +214,25 @@ export async function processAlerts(product, novoPreco, precoAnterior) {
   try {
     // Verificar se atingiu preço alvo
     if (product.PrecoAlvo && novoPreco <= product.PrecoAlvo) {
+      console.log(`[ALERTS] Preço alvo atingido para produto ${product.Id}: ${novoPreco} <= ${product.PrecoAlvo}`);
       await sendTargetAlert(product, novoPreco, product.PrecoAlvo);
     }
     
-    // Verificar mudança significativa (mais de 5%)
-    if (precoAnterior && Math.abs(novoPreco - precoAnterior) / precoAnterior > 0.05) {
-      await sendPriceChangeAlert(product, novoPreco, precoAnterior);
+    // Verificar mudança significativa
+    if (precoAnterior && precoAnterior > 0) {
+      const percentualMudanca = Math.abs(novoPreco - precoAnterior) / precoAnterior;
+      const isDecrease = novoPreco < precoAnterior;
+      
+      // Se o preço baixou muito (mais de 10%), sempre enviar alerta
+      if (isDecrease && percentualMudanca > 0.10) {
+        console.log(`[ALERTS] Queda significativa detectada para produto ${product.Id}: ${percentualMudanca * 100}% de redução`);
+        await sendPriceChangeAlert(product, novoPreco, precoAnterior);
+      }
+      // Se mudança significativa (mais de 5%) em qualquer direção
+      else if (percentualMudanca > 0.05) {
+        console.log(`[ALERTS] Mudança significativa detectada para produto ${product.Id}: ${percentualMudanca * 100}%`);
+        await sendPriceChangeAlert(product, novoPreco, precoAnterior);
+      }
     }
     
   } catch (error) {

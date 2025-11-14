@@ -534,6 +534,26 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
+        // Validar idade mínima (13 anos)
+        const birthDate = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+
+        if (age < 13) {
+          if (typeof window.showError === 'function') {
+            window.showError("Erro", "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing");
+          }
+          if (btnCriar) {
+            btnCriar.disabled = false;
+            btnCriar.querySelector('.button-text').textContent = "Continuar";
+          }
+          return;
+        }
+
         const btnCriar = document.getElementById('btnCriar');
         if (btnCriar) {
           btnCriar.disabled = true;
@@ -545,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const res = await requestFn("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nome, email, password, telefone: null }),
+            body: JSON.stringify({ nome, email, password, telefone: null, data_nascimento: birthdate }),
           });
 
           const data = await res.json();
