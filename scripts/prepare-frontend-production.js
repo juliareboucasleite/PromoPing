@@ -62,9 +62,9 @@ function fixBaseHref(filePath) {
 }
 
 /**
- * Ajusta caminhos relativos em arquivos JavaScript que referenciam a API
+ * Ajusta caminhos relativos em arquivos HTML e JavaScript
  */
-function fixApiPaths(filePath) {
+function fixPaths(filePath) {
     try {
         let content = fs.readFileSync(filePath, 'utf8');
         let modified = false;
@@ -81,6 +81,76 @@ function fixApiPaths(filePath) {
         const relativeApiRegex = /(['"`])(\.\.\/)+api\//g;
         if (relativeApiRegex.test(content)) {
             content = content.replace(relativeApiRegex, '$1/api/');
+            modified = true;
+        }
+
+        // Corrigir caminhos pages/inc/ para inc/ (já que base href é /)
+        const pagesIncRegex = /(['"`])pages\/inc\//g;
+        if (pagesIncRegex.test(content)) {
+            content = content.replace(pagesIncRegex, '$1inc/');
+            modified = true;
+        }
+
+        // Corrigir caminhos pages/ para / (se necessário)
+        const pagesPathRegex = /(['"`])pages\/(?!inc)/g;
+        if (pagesPathRegex.test(content)) {
+            content = content.replace(pagesPathRegex, '$1');
+            modified = true;
+        }
+
+        // Corrigir URLs hardcoded da API (http://127.0.0.1:3000/api/ → /api/)
+        const apiUrlRegex = /http:\/\/127\.0\.0\.1:3000\/api\//g;
+        if (apiUrlRegex.test(content)) {
+            content = content.replace(apiUrlRegex, '/api/');
+            modified = true;
+        }
+
+        // Corrigir URLs localhost:3000/api/ → /api/
+        const localhostApiRegex = /http:\/\/localhost:3000\/api\//g;
+        if (localhostApiRegex.test(content)) {
+            content = content.replace(localhostApiRegex, '/api/');
+            modified = true;
+        }
+
+        // Corrigir caminhos /PromoPing/frontend/pages/dashboard/ → /dashboard
+        const dashboardPathRegex = /\/PromoPing\/frontend\/pages\/dashboard\//g;
+        if (dashboardPathRegex.test(content)) {
+            content = content.replace(dashboardPathRegex, '/dashboard/');
+            modified = true;
+        }
+
+        // Corrigir caminhos /PromoPing/frontend/pages/ → /
+        const frontendPagesRegex = /\/PromoPing\/frontend\/pages\//g;
+        if (frontendPagesRegex.test(content)) {
+            content = content.replace(frontendPagesRegex, '/');
+            modified = true;
+        }
+
+        // Corrigir caminhos /PromoPing/frontend/ → /
+        const frontendRegex = /\/PromoPing\/frontend\//g;
+        if (frontendRegex.test(content)) {
+            content = content.replace(frontendRegex, '/');
+            modified = true;
+        }
+
+        // Corrigir /inc/Login.html → /login
+        const loginPathRegex = /\/inc\/Login\.html/g;
+        if (loginPathRegex.test(content)) {
+            content = content.replace(loginPathRegex, '/login');
+            modified = true;
+        }
+
+        // Corrigir window.location.href com caminhos antigos
+        const windowLocationRegex = /window\.location\.href\s*=\s*["']\/PromoPing\/frontend\/pages\/dashboard\/Painel\.html["']/g;
+        if (windowLocationRegex.test(content)) {
+            content = content.replace(windowLocationRegex, "window.location.href = '/dashboard'");
+            modified = true;
+        }
+
+        // Corrigir window.location.href com /inc/Login.html
+        const windowLocationLoginRegex = /window\.location\.href\s*=\s*["']\/inc\/Login\.html["']/g;
+        if (windowLocationLoginRegex.test(content)) {
+            content = content.replace(windowLocationLoginRegex, "window.location.href = '/login'");
             modified = true;
         }
 
@@ -140,23 +210,34 @@ function processHtmlFiles() {
 }
 
 /**
- * Processa arquivos JavaScript do frontend
+ * Processa arquivos JavaScript e HTML para corrigir caminhos
  */
 function processJsFiles() {
-    log('Processando arquivos JavaScript...', 'blue');
+    log('Processando arquivos JavaScript e corrigindo caminhos em HTML...', 'blue');
     
     const frontendDir = path.join(projectRoot, 'frontend');
     const jsFiles = listFilesRecursive(frontendDir, '.js');
+    const htmlFiles = listFilesRecursive(frontendDir, '.html');
 
     let processed = 0;
+    
+    // Processar arquivos JS
     for (const file of jsFiles) {
-        if (fixApiPaths(file)) {
+        if (fixPaths(file)) {
+            processed++;
+            log(`  ✓ ${path.relative(projectRoot, file)}`, 'green');
+        }
+    }
+    
+    // Processar arquivos HTML novamente para corrigir caminhos
+    for (const file of htmlFiles) {
+        if (fixPaths(file)) {
             processed++;
             log(`  ✓ ${path.relative(projectRoot, file)}`, 'green');
         }
     }
 
-    log(`\n${processed} arquivo(s) JavaScript processado(s)`, 'green');
+    log(`\n${processed} arquivo(s) processado(s)`, 'green');
     return processed;
 }
 

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <base href="/">
+  
+  
+  <meta charset="UTF-8">
+  <title>Referência da API | PromoPing Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <style>
+    /* Esconder scrollbar da área de conteúdo principal (main.content) */
+    main.content {
+      scrollbar-width: none !important;
+      /* Firefox */
+      -ms-overflow-style: none !important;
+      /* IE e Edge */
+    }
+
+    main.content::-webkit-scrollbar {
+      display: none !important;
+      /* Chrome, Safari, Opera */
+      width: 0 !important;
+      background: transparent !important;
+    }
+
+    /* Manter funcionalidade de scroll */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="logo">
+          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="../index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+            Docs</a>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <span class="shortcut">Ctrl K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div class="content-header">
+        <h1>Referência da API</h1>
+        <div class="copy-button-wrapper">
+          <button class="copy-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="copy-dropdown">
+            <button class="copy-dropdown-item" data-action="copy-page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <div class="copy-dropdown-item-content">
+                <span class="copy-dropdown-item-title">Copy page</span>
+                <span class="copy-dropdown-item-desc">Copy page as Markdown for LLMs</span>
+              </div>
+            </button>
+            <button class="copy-dropdown-item" data-action="view-markdown">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <div class="copy-dropdown-item-content">
+                <span class="copy-dropdown-item-title">View as Markdown</span>
+                <span class="copy-dropdown-item-desc">View this page as plain text</span>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-dropdown-external">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 2rem; margin: 2rem 0; color: white;">
+        <h2 style="color: white; margin-top: 0;">📚 Documentação OpenAPI Completa</h2>
+        <p style="color: rgba(255,255,255,0.9); margin-bottom: 1.5rem;">
+          A documentação completa da API PromoPing está disponível em formato OpenAPI 3.0, incluindo todos os endpoints, 
+          esquemas de dados, exemplos de requisições e respostas.
+        </p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Ver Documentação Completa no GitBook
+          </a>
+          <a href="/openapi.yaml" 
+             download="promoping-openapi.yaml"
+             style="background: rgba(255,255,255,0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar openapi.yaml
+          </a>
+        </div>
+      </div>
+
+      <h2>Referência Rápida da API</h2>
+      <p style="color: #999; margin-bottom: 2rem;">
+        Esta é uma referência rápida. Para a documentação completa com todos os endpoints, 
+        <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">consulte a documentação OpenAPI no GitBook</a>.
+      </p>
+
+      <h3>URL Base</h3>
+      <div class="code-block">
+        https://api.promoping.com
+      </div>
+      <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
+        <strong>Desenvolvimento:</strong> http://127.0.0.1:3000
+      </p>
+
+      <h3>Autenticação</h3>
+      <p>Todos os endpoints da API (exceto autenticação) requerem um token JWT válido no cabeçalho Authorization:</p>
+      <div class="code-block">
+        Authorization: Bearer &lt;your_jwt_token&gt;
+      </div>
+      <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
+        Obtenha seu token através do endpoint <code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px;">POST /api/auth/login</code>
+      </p>
+
+      <h2>Perfil do Utilizador e Estatísticas</h2>
+
+      <h3>Obter Perfil do Utilizador</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/profile
+      </div>
+      <p>Retorna o perfil completo do utilizador autenticado.</p>
+
+      <h4>Resposta</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "ok",<br>
+        &nbsp;&nbsp;"profile": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"nome": "João Silva",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"email": "joao@example.com",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"telefone": "+351912345678",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"contas_conectadas": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "google", "Conectado": true },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "discord", "Conectado": false },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "telefone", "Conectado": true }<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;],<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"preferencias": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "email", "Ativo": 1 },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "sms", "Ativo": 0 }<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;]<br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+
+      <h3>Actualizar Perfil do Utilizador</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/user/profile
+      </div>
+      <p>Actualiza os dados do perfil do utilizador.</p>
+
+      <h4>Corpo da Requisição</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"nome": "João Silva",<br>
+        &nbsp;&nbsp;"email": "joao@example.com",<br>
+        &nbsp;&nbsp;"telefone": "+351912345678"<br>
+        }
+      </div>
+
+      <h3>Obter Estatísticas do Utilizador</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/stats
+      </div>
+      <p>Retorna estatísticas do utilizador incluindo total de produtos, notificações e dinheiro poupado.</p>
+
+      <h4>Resposta</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "ok",<br>
+        &nbsp;&nbsp;"stats": {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"produtos_total": 15,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"notificacoes_total": 42,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"dinheiro_poupado": 125.50<br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+
+      <h2>Preferências de Notificação</h2>
+
+      <h3>Obter Preferências de Notificação</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/user/preferences
+      </div>
+      <p>Retorna as preferências de notificação do utilizador.</p>
+
+      <h4>Resposta</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "ok",<br>
+        &nbsp;&nbsp;"preferences": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "email", "Ativo": 1 },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "sms", "Ativo": 0 },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "Tipo": "push", "Ativo": 1 }<br>
+        &nbsp;&nbsp;]<br>
+        }
+      </div>
+
+      <h3>Actualizar Preferências de Notificação</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/user/preferences
+      </div>
+      <p>Actualiza as preferências de notificação do utilizador.</p>
+
+      <h4>Corpo da Requisição</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"preferences": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "email", "ativo": true },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "sms", "ativo": false },<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ "tipo": "push", "ativo": true }<br>
+        &nbsp;&nbsp;]<br>
+        }
+      </div>
+
+      <h2>Notificações</h2>
+
+      <h3>Obter Notificações</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #4ade80;">GET</span> /api/notificacoes
+      </div>
+      <p>Retorna as notificações do utilizador.</p>
+
+      <h4>Parâmetros de Consulta</h4>
+      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
+        <li><code style="background: #18181a; padding: 0.2rem 0.4rem; border-radius: 4px; color: #ff9800;">limit</code>
+          (opcional): Número máximo de notificações (predefinido: 20)</li>
+      </ul>
+
+      <h4>Resposta</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "ok",<br>
+        &nbsp;&nbsp;"notificacoes": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 1,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"produto_id": 5,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"tipo": "preco_baixou",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mensagem": "O preço do produto X baixou para €25.99",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"enviada": true,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"data_envio": "2024-01-15T10:30:00Z"<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+        &nbsp;&nbsp;]<br>
+        }
+      </div>
+
+      <h3>Marcar Notificação como Lida</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff;">
+        <span style="color: #f59e0b;">PUT</span> /api/notificacoes/:id/lida
+      </div>
+      <p>Marca uma notificação como lida.</p>
+
+      <h4>Resposta</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "ok",<br>
+        &nbsp;&nbsp;"message": "Notificação marcada como lida"<br>
+        }
+      </div>
+
+      <h2>Respostas de Erro</h2>
+      <p>Todos os endpoints podem retornar respostas de erro com a seguinte estrutura:</p>
+
+      <h4>Erro de Autenticação</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "error",<br>
+        &nbsp;&nbsp;"message": "Token inválido ou expirado",<br>
+        &nbsp;&nbsp;"code": 401<br>
+        }
+      </div>
+
+      <h4>Erro de Validação</h4>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        {<br>
+        &nbsp;&nbsp;"status": "error",<br>
+        &nbsp;&nbsp;"message": "Dados inválidos",<br>
+        &nbsp;&nbsp;"code": 400,<br>
+        &nbsp;&nbsp;"errors": [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"Email é obrigatório",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;"Telefone deve ter formato válido"<br>
+        &nbsp;&nbsp;]<br>
+        }
+      </div>
+
+      <h2>Limitação de Taxa</h2>
+      <p>A API implementa limitação de taxa para garantir uso justo:</p>
+      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
+        <li><strong>Free:</strong> 100 pedidos por hora</li>
+        <li><strong>Basic:</strong> 500 pedidos por hora</li>
+        <li><strong>Standard:</strong> 1000 pedidos por hora</li>
+        <li><strong>Premium:</strong> 2000 pedidos por hora</li>
+      </ul>
+
+      <h2>Endpoints Disponíveis</h2>
+      <p style="color: #999; margin-bottom: 1.5rem;">
+        A API PromoPing inclui os seguintes grupos de endpoints. Consulte a 
+        <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">documentação OpenAPI completa</a> 
+        para detalhes de cada endpoint.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #4ade80; margin-top: 0;">🔐 Autenticação</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Registo de utilizador</li>
+            <li>Login (email/senha)</li>
+            <li>OAuth (Google, GitHub, Discord)</li>
+            <li>Recuperação de senha</li>
+            <li>Verificação de email</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #60a5fa; margin-top: 0;">👤 Utilizadores</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Perfil do utilizador</li>
+            <li>Estatísticas</li>
+            <li>Gestão de planos</li>
+            <li>Alteração de senha</li>
+            <li>Lista de administradores</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #f59e0b; margin-top: 0;">📦 Produtos</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Listar produtos</li>
+            <li>Adicionar produto</li>
+            <li>Editar produto</li>
+            <li>Remover produto</li>
+            <li>Histórico de preços</li>
+            <li>Sincronização</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #ec4899; margin-top: 0;">🔔 Notificações</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Listar notificações</li>
+            <li>Marcar como lida</li>
+            <li>Preferências</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #10b981; margin-top: 0;">💳 Pagamentos</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Criar checkout</li>
+            <li>Verificar sessão</li>
+            <li>Cancelar assinatura</li>
+            <li>Portal do cliente</li>
+            <li>Status da assinatura</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #8b5cf6; margin-top: 0;">💬 Suporte</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Criar thread</li>
+            <li>Listar threads</li>
+            <li>Responder thread</li>
+            <li>Visualizar thread</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #06b6d4; margin-top: 0;">📊 Exportação</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Exportar Excel</li>
+            <li>Exportar PDF</li>
+            <li>Relatório completo</li>
+            <li>Exportar incidentes</li>
+          </ul>
+        </div>
+
+        <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem;">
+          <h4 style="color: #f97316; margin-top: 0;">📈 Status & Charts</h4>
+          <ul style="color: #ccc; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+            <li>Status do sistema</li>
+            <li>Métricas</li>
+            <li>Componentes</li>
+            <li>Dados para gráficos</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Exemplos de SDK</h2>
+
+      <h3>JavaScript/Node.js</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        const axios = require('axios');<br><br>
+        const api = axios.create({<br>
+        &nbsp;&nbsp;baseURL: 'https://api.promoping.com',<br>
+        &nbsp;&nbsp;headers: {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;'Authorization': `Bearer ${token}`<br>
+        &nbsp;&nbsp;}<br>
+        });<br><br>
+        // Get user profile<br>
+        const profile = await api.get('/api/user/profile');<br><br>
+        // Update preferences<br>
+        await api.put('/api/user/preferences', {<br>
+        &nbsp;&nbsp;preferences: [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;{ tipo: 'email', ativo: true }<br>
+        &nbsp;&nbsp;]<br>
+        });
+      </div>
+
+      <h3>Python</h3>
+      <div
+        style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1rem; margin: 1rem 0; font-family: 'Courier New', monospace; color: #fff; font-size: 0.9rem;">
+        import requests<br><br>
+        headers = {<br>
+        &nbsp;&nbsp;'Authorization': f'Bearer {token}'<br>
+        }<br><br>
+        # Get user stats<br>
+        response = requests.get(<br>
+        &nbsp;&nbsp;'https://api.promoping.com/api/user/stats',<br>
+        &nbsp;&nbsp;headers=headers<br>
+        )<br><br>
+        stats = response.json()
+      </div>
+
+      <div style="background: #18181a; border: 1px solid #232326; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+        <h3 style="margin-top: 0;">🔗 Recursos Adicionais</h3>
+        <ul style="color: #ccc; line-height: 2;">
+          <li>
+            <a href="https://app.gitbook.com/o/S2JnYVFxHGRaEWg94c0r/openapi/my-api-promoping" target="_blank" style="color: #667eea;">
+              Documentação OpenAPI Completa no GitBook
+            </a>
+          </li>
+          <li>
+            <a href="/openapi.yaml" download="promoping-openapi.yaml" style="color: #667eea;">
+              Baixar Especificação OpenAPI (openapi.yaml)
+            </a>
+          </li>
+          <li>
+            <a href="https://swagger.io/tools/swagger-ui/" target="_blank" style="color: #667eea;">
+              Visualizar com Swagger UI
+            </a>
+            <span style="color: #999; font-size: 0.9rem;"> (carregue o arquivo openapi.yaml)</span>
+          </li>
+        </ul>
+      </div>
+
+      <footer>
+        <p>Última actualização: <script>document.write(new Date().toLocaleDateString('pt-PT'))</script></p>
+        <p style="color: #999; font-size: 0.9rem;">
+          Documentação gerada a partir da especificação OpenAPI 3.0
+        </p>
+      </footer>
+    </main>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer-placeholder"></div>
+
+  <!-- SCRIPTS -->
+  <script src="script.js"></script>
+  <script src="search.js"></script>
+</body>
+
+</html>

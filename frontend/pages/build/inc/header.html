@@ -1,0 +1,43 @@
+<!-- ===== HEADER ===== -->
+<header class="pp-header">
+  <base href="/">
+  
+  
+  <div class="pp-header-container">
+    <!-- Logo -->
+    <a href="index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
+      <img src="assets/images/PromoPing.png" alt="PromoPing Logo">
+      <span>PromoPing</span>
+    </a>
+
+    <!-- Mobile Menu & CTA -->
+    <div class="pp-header-burger" style="gap: 14px; display: flex; align-items: center;">
+      <div class="pp-header-burger-lang" style="margin-right: 2px;">
+        <!-- Botão de idioma, volta a ser togglável -->
+        <button class="pp-header-lang-btn" type="button" aria-label="Idioma" onclick="toggleLanguage()"
+          style="cursor: pointer;">
+          <span id="lang-text">PT</span>
+        </button>
+      </div>
+
+      <button class="pp-header-burger-btn" type="button" role="button" title="Alternar Navegação"
+        aria-label="Alternar Navegação" onclick="toggleNavigation()" style="margin-right: 6px;">
+        <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+          <path class="line line1" d="M20 25H80" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+          <path class="line line2" d="M20 50H80" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+          <path class="line line3" d="M20 75H80" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <!-- CTA Buttons -->
+      <div class="pp-header-cta-buttons">
+        <button class="pp-header-cta-button-secondary" aria-label="Inscreve-te" onclick="openRegisterModal()">
+          <span>Inscreve-te</span>
+        </button>
+        <button class="pp-header-cta-button" aria-label="Entrar" onclick="openLoginModal()">
+          <span>Entrar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

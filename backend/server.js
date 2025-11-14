@@ -19,6 +19,7 @@ import { dirname, join } from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
@@ -64,6 +65,17 @@ import { sendNotification } from "./services/notify.js";        // Notificaçõe
 
 // ================== CONFIGURAÇÃO DO EXPRESS ==================
 const app = express();
+
+// Trust proxy para funcionar corretamente com NGINX/proxy reverso
+// Em produção, confiar apenas no primeiro proxy (NGINX)
+// Em desenvolvimento, confiar apenas em localhost (usando IPs válidos)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
+} else {
+  // Em desenvolvimento, confiar apenas em localhost (127.0.0.1 e ::1)
+  app.set('trust proxy', ['127.0.0.1', '::1']);
+}
+
 app.use(cookieParser());  // Cookies
 app.use(express.json());  // JSON parsing
 
@@ -135,6 +147,11 @@ const allowedOrigins = [
   // Adicionar variações comuns do XAMPP
   `http://localhost:80`,
   `http://127.0.0.1:80`,
+  // Domínios de produção
+  `http://promoping.pt`,
+  `https://promoping.pt`,
+  `http://www.promoping.pt`,
+  `https://www.promoping.pt`,
   // file:// removido por segurança
 ];
 
@@ -161,6 +178,18 @@ const corsOptions = {
     // Verificar se a origem está na lista permitida
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
+    }
+    
+    // Permitir promoping.pt em qualquer ambiente (produção e desenvolvimento)
+    try {
+      const url = new URL(origin);
+      const hostname = url.hostname.toLowerCase();
+      
+      if (hostname === 'promoping.pt' || hostname === 'www.promoping.pt') {
+        return callback(null, true);
+      }
+    } catch (e) {
+      // URL inválida - continuar para verificar outras condições
     }
     
     // Em desenvolvimento, permitir qualquer origem localhost/127.0.0.1
@@ -342,38 +371,71 @@ app.post("/notify", async (req, res) => {
   }
 });
 
+// ================== VERIFICAR PASTA BUILD ==================
+// Verificar se a pasta build existe (usado em várias partes do código)
+const buildPath = path.join(__dirname, "../frontend/pages/build");
+const buildExists = fs.existsSync(buildPath);
+
 // ================== SERVIÇOS DE INCLUDES ==================
 // Servir includes específicos ANTES dos arquivos estáticos
 app.get("/inc/header.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header.html"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/header.html")
+    : path.join(__dirname, "../frontend/pages/inc/header.html");
+  res.sendFile(filePath);
 });
 
 app.get("/inc/header-login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header-login.html"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/header-login.html")
+    : path.join(__dirname, "../frontend/pages/inc/header-login.html");
+  res.sendFile(filePath);
 });
 
 app.get("/inc/header-register.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/header-register.html"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/header-register.html")
+    : path.join(__dirname, "../frontend/pages/inc/header-register.html");
+  res.sendFile(filePath);
 });
 
 app.get("/inc/footer.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/footer.html"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/footer.html")
+    : path.join(__dirname, "../frontend/pages/inc/footer.html");
+  res.sendFile(filePath);
 });
 
 app.get("/inc/load-includes.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes.js"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/load-includes.js")
+    : path.join(__dirname, "../frontend/pages/inc/load-includes.js");
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(filePath);
 });
 
 app.get("/inc/load-includes-index.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-index.js"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/load-includes-index.js")
+    : path.join(__dirname, "../frontend/pages/inc/load-includes-index.js");
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(filePath);
 });
 
 app.get("/inc/load-includes-login.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-login.js"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/load-includes-login.js")
+    : path.join(__dirname, "../frontend/pages/inc/load-includes-login.js");
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(filePath);
 });
 
 app.get("/inc/load-includes-register.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/pages/inc/load-includes-register.js"));
+  const filePath = buildExists 
+    ? path.join(buildPath, "inc/load-includes-register.js")
+    : path.join(__dirname, "../frontend/pages/inc/load-includes-register.js");
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(filePath);
 });
 
 // ================== OPENAPI SPEC ==================
@@ -389,7 +451,17 @@ const isProduction = process.env.NODE_ENV === 'production' && process.env.SERVE_
 
 if (!isProduction) {
   // Servir arquivos estáticos apenas em desenvolvimento
-  app.use(express.static(path.join(__dirname, "../frontend")));
+  // Usar a pasta build se existir, senão usar frontend direto
+  // buildPath e buildExists já foram definidos acima
+  const frontendPath = path.join(__dirname, "../frontend");
+  
+  if (buildExists) {
+    // Servir da pasta build
+    app.use(express.static(buildPath));
+  } else {
+    // Fallback para frontend direto
+    app.use(express.static(frontendPath));
+  }
   
   // Rota para ignorar requests do Chrome DevTools
   app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
@@ -411,142 +483,313 @@ if (!isProduction) {
   // ================== ROTAS DO FRONTEND ==================
   // Página inicial
   app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
+    const indexPath = buildExists 
+      ? path.join(buildPath, "index.html")
+      : path.join(__dirname, "../frontend/pages/index.html");
+    res.sendFile(indexPath);
   });
 
   // Páginas principais
   app.get("/monitoramento", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/monitoramento.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/monitoramento.html")
+      : path.join(__dirname, "../frontend/pages/inc/monitoramento.html");
+    res.sendFile(filePath);
   });
 
   app.get("/alertas", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/alertas.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/alertas.html")
+      : path.join(__dirname, "../frontend/pages/inc/alertas.html");
+    res.sendFile(filePath);
   });
 
   app.get("/relatorios", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/relatorios.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/relatorios.html")
+      : path.join(__dirname, "../frontend/pages/inc/relatorios.html");
+    res.sendFile(filePath);
   });
 
   app.get("/casos-uso", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/casos-uso.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/casos-uso.html")
+      : path.join(__dirname, "../frontend/pages/inc/casos-uso.html");
+    res.sendFile(filePath);
   });
 
   app.get("/blog", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/blog.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/blog.html")
+      : path.join(__dirname, "../frontend/pages/inc/blog.html");
+    res.sendFile(filePath);
   });
 
   // Páginas de autenticação
   app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/login.html")
+      : path.join(__dirname, "../frontend/pages/inc/Login.html");
+    res.sendFile(filePath);
   });
 
   app.get("/register", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/registar.html")
+      : path.join(__dirname, "../frontend/pages/inc/register.html");
+    res.sendFile(filePath);
   });
 
   // Rotas adicionais para compatibilidade com frontend
   app.get("/inc/Login.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/Login.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/login.html")
+      : path.join(__dirname, "../frontend/pages/inc/Login.html");
+    res.sendFile(filePath);
   });
 
   app.get("/inc/register.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/inc/register.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/registar.html")
+      : path.join(__dirname, "../frontend/pages/inc/register.html");
+    res.sendFile(filePath);
+  });
+
+  // Página de recuperação de senha
+  app.get("/forgot-password", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "inc/forgot-password.html")
+      : path.join(__dirname, "../frontend/pages/inc/forgot-password.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/inc/forgot-password.html", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "inc/forgot-password.html")
+      : path.join(__dirname, "../frontend/pages/inc/forgot-password.html");
+    res.sendFile(filePath);
   });
 
   // Páginas do dashboard
   app.get("/dashboard", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/Painel.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/painel", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/Painel.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/perfil", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/perfil.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/perfil.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/planos", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/planos.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/planos.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/produtos", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/produtos.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/produtos.html");
+    res.sendFile(filePath);
   });
 
   // Rotas adicionais para compatibilidade com frontend (com .html)
   app.get("/dashboard/Painel.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/Painel.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/Painel.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/perfil.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/perfil.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/perfil.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/perfil.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/planos.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/planos.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/planos.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/planos.html");
+    res.sendFile(filePath);
   });
 
   app.get("/dashboard/produtos.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/dashboard/produtos.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "dashboard/produtos.html")
+      : path.join(__dirname, "../frontend/pages/dashboard/produtos.html");
+    res.sendFile(filePath);
   });
 
   // Páginas de documentação
   app.get("/docs", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/docs.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/docs.html")
+      : path.join(__dirname, "../frontend/pages/docs/docs.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/support", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/support.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/support.html")
+      : path.join(__dirname, "../frontend/pages/docs/support.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/service-status", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/service-status.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/service-status.html")
+      : path.join(__dirname, "../frontend/pages/docs/service-status.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/terms", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/terms.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/terms.html")
+      : path.join(__dirname, "../frontend/pages/docs/terms.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/usage-guide", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/usage-guide.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/usage-guide.html")
+      : path.join(__dirname, "../frontend/pages/docs/usage-guide.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/api-reference", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/api-reference.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/api-reference.html")
+      : path.join(__dirname, "../frontend/pages/docs/api-reference.html");
+    res.sendFile(filePath);
   });
 
   app.get("/docs/FirstLaunch", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/FirstLaunch.html")
+      : path.join(__dirname, "../frontend/pages/docs/FirstLaunch.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/faq", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/faq.html")
+      : path.join(__dirname, "../frontend/pages/docs/faq.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/changelog", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/changelog.html")
+      : path.join(__dirname, "../frontend/pages/docs/changelog.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/privacy", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/privacy.html")
+      : path.join(__dirname, "../frontend/pages/docs/privacy.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/installation", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/installation.html")
+      : path.join(__dirname, "../frontend/pages/docs/installation.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/incident-history", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/incident-history.html")
+      : path.join(__dirname, "../frontend/pages/docs/incident-history.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/docs/security-headers", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "docs/security-headers.html")
+      : path.join(__dirname, "../frontend/pages/docs/security-headers.html");
+    res.sendFile(filePath);
   });
 
   // Páginas About
   app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/about.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/about.html")
+      : path.join(__dirname, "../frontend/pages/About/about.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/alertas", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/alertas.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/alertas.html")
+      : path.join(__dirname, "../frontend/pages/About/alertas.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/blog", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/blog.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/blog.html")
+      : path.join(__dirname, "../frontend/pages/About/blog.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/casos-uso", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/casos-uso.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/casos-uso.html")
+      : path.join(__dirname, "../frontend/pages/About/casos-uso.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/monitoramento", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/monitoramento.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/monitoramento.html")
+      : path.join(__dirname, "../frontend/pages/About/monitoramento.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/relatorios", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/relatorios.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/relatorios.html")
+      : path.join(__dirname, "../frontend/pages/About/relatorios.html");
+    res.sendFile(filePath);
   });
 
   app.get("/about/privacy-cookies", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pages/About/privacy-cookies.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "About/privacy-cookies.html")
+      : path.join(__dirname, "../frontend/pages/About/privacy-cookies.html");
+    res.sendFile(filePath);
+  });
+
+  // Rotas adicionais para compatibilidade
+  app.get("/business/create/login", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/login.html")
+      : path.join(__dirname, "../frontend/pages/business/create/login.html");
+    res.sendFile(filePath);
+  });
+
+  app.get("/business/create/registar", (req, res) => {
+    const filePath = buildExists 
+      ? path.join(buildPath, "business/create/registar.html")
+      : path.join(__dirname, "../frontend/pages/business/create/registar.html");
+    res.sendFile(filePath);
   });
 
   // Redirecionamento baseado no .env
@@ -555,10 +798,34 @@ if (!isProduction) {
     res.redirect(redirectUrl);
   });
 
+  // ================== MIDDLEWARE DE TRATAMENTO DE ERROS ==================
+  // Garantir que CORS seja aplicado mesmo em erros
+  app.use((err, req, res, next) => {
+    // Aplicar CORS mesmo em caso de erro
+    const origin = req.headers.origin;
+    if (origin && (allowedOrigins.includes(origin) || 
+        origin.includes('promoping.pt') || 
+        origin.includes('localhost') || 
+        origin.includes('127.0.0.1'))) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    
+    console.error('Erro não tratado:', err);
+    res.status(err.status || 500).json({
+      status: 'error',
+      message: err.message || 'Erro interno do servidor',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+  });
+
   // ================== MIDDLEWARE 404 ==================
   // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
   app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "../frontend/pages/404.html"));
+    const filePath = buildExists 
+      ? path.join(buildPath, "404.html")
+      : path.join(__dirname, "../frontend/pages/404.html");
+    res.status(404).sendFile(filePath);
   });
 } else {
   // Em produção, apenas retornar 404 para rotas não-API
@@ -568,6 +835,23 @@ if (!isProduction) {
       return res.status(404).json({ error: 'Not found' });
     }
     next();
+  });
+  
+  // Middleware de tratamento de erros em produção
+  app.use((err, req, res, next) => {
+    // Aplicar CORS mesmo em caso de erro
+    const origin = req.headers.origin;
+    if (origin && (allowedOrigins.includes(origin) || 
+        origin.includes('promoping.pt'))) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    
+    console.error('Erro não tratado:', err);
+    res.status(err.status || 500).json({
+      status: 'error',
+      message: err.message || 'Erro interno do servidor'
+    });
   });
 }
 

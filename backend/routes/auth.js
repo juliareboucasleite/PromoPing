@@ -773,7 +773,7 @@ router.get("/google", (req, res) => {
 
 router.get("/google/callback", (req, res) => {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+    const loginUrl = process.env.LOGIN_URL || "/login";
     passport.authenticate("google", { failureRedirect: loginUrl })(req, res, (err) => {
       if (err) {
         console.error("Erro na autenticação Google:", err);
@@ -792,8 +792,8 @@ router.get("/google/callback", (req, res) => {
           { expiresIn: "7d" }
         );
 
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/PromoPing/frontend/pages/dashboard/Painel.html";
-        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/PromoPing/Painel_Administrativo_Php/pages/profile.html";
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
+        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
         
         // Verificar se veio do sign-up ou login
         const fromSignUp = req.query.from === 'signup';
@@ -831,7 +831,7 @@ router.get("/github", (req, res) => {
 
 router.get("/github/callback", (req, res) => {
   if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+    const loginUrl = process.env.LOGIN_URL || "/login";
     passport.authenticate("github", { failureRedirect: loginUrl })(req, res, (err) => {
       if (err) {
         console.error("Erro na autenticação GitHub:", err);
@@ -850,8 +850,8 @@ router.get("/github/callback", (req, res) => {
           { expiresIn: "7d" }
         );
 
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/PromoPing/frontend/pages/dashboard/Painel.html";
-        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/PromoPing/Painel_Administrativo_Php/pages/profile.html";
+        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
+        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
         
         // Verificar se veio do sign-up ou login
         const fromSignUp = req.query.from === 'signup';
