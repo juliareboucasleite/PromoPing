@@ -113,9 +113,7 @@ A plataforma inclui health checks automáticos para API, base de dados, Redis e 
 
 ## Contribuição
 
-O PromoPing é um projeto open-source que aceita contribuições da comunidade. Para contribuir, é necessário fazer fork do repositório, criar uma branch para a funcionalidade, desenvolver e testar as alterações, e abrir um Pull Request no repositório original.
-
-As diretrizes de contribuição incluem seguir as convenções de código existentes, adicionar testes para novas funcionalidades, documentar alterações significativas, manter commits pequenos e focados, e usar mensagens de commit descritivas.
+Só aceitamos contribuições mediante contato por email através do suporte. Veja a licença para mais informações e instruções detalhadas.
 
 ## Licença
 
