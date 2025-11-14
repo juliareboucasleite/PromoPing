@@ -95,7 +95,7 @@
                             id="gracePeriodEnd"></span></p>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button class="change-plan-btn" onclick="abrirModalPlanos()">
+                    <button class="change-plan-btn" onclick="location.reload()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" style="margin-right: 0.5rem;">
                             <path d="M7 17L17 7"></path>
@@ -155,7 +155,7 @@
                             Sem relatórios
                         </li>
                     </ul>
-                    <button class="plan-button secondary" onclick="abrirModalPlanos()">
+                    <button class="plan-button secondary" onclick="abrirModalCompra(1, 'Free', 0.00)">
                         Escolher Free
                     </button>
                 </div>
@@ -203,7 +203,7 @@
                             Relatórios básicos
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalPlanos()">
+                    <button class="plan-button primary" onclick="abrirModalCompra(2, 'Basic', 4.99)">
                         Escolher Basic
                     </button>
                 </div>
@@ -250,7 +250,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalPlanos()">
+                    <button class="plan-button primary" onclick="abrirModalCompra(4, 'Standard', 12.99)">
                         Escolher Standard
                     </button>
                 </div>
@@ -298,7 +298,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalPlanos()">
+                    <button class="plan-button primary" onclick="abrirModalCompra(3, 'Premium', 15.30)">
                         Escolher Premium
                     </button>
                 </div>
@@ -312,22 +312,68 @@
         });
     </script>
 
-    <!-- Modal de Seleção de Planos -->
-    <div class="modal-overlay" id="plansModal" style="display: none;">
-        <div class="modal-content plans-modal-content">
-            <div class="modal-header">
-                <h3>Escolher Novo Plano</h3>
-                <button class="modal-close" onclick="fecharModalPlanos()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <!-- Modal de Compra de Plano -->
+    <div class="modal-overlay" id="purchaseModal" style="display: none;">
+        <div class="modal-content purchase-modal-content">
+            <div class="modal-header purchase-modal-header">
+                <h3>Confirmar Compra</h3>
+                <button class="modal-close" onclick="fecharModalCompra()" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
-            <div class="modal-body">
-                <p>Selecione o plano que melhor se adequa às suas necessidades:</p>
-                <div class="modal-plans-grid" id="modalPlansGrid">
-                    <!-- Planos serão carregados dinamicamente -->
+            <div class="modal-body purchase-modal-body">
+                <div class="purchase-plan-info">
+                    <div class="plan-header-row">
+                        <span class="plan-name-compact" id="purchasePlanName">Plano</span>
+                        <span class="plan-price-compact">
+                            <span class="price-amount-compact" id="purchasePlanPrice">€0,00</span>
+                            <span class="price-period-compact">/mês</span>
+                        </span>
+                    </div>
+                    <div class="payment-dates">
+                        <div class="date-info">
+                            <span class="date-label">Data de hoje:</span>
+                            <span class="date-value" id="currentDate"></span>
+                        </div>
+                        <div class="date-info">
+                            <span class="date-label">Próximo pagamento:</span>
+                            <span class="date-value" id="nextPaymentDate"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Método de Pagamento</h4>
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="stripe" checked>
+                            <span>Cartão de Crédito/Débito (Stripe)</span>
+                            <div class="radio-check"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <label class="terms-checkbox-wrapper" for="acceptPurchaseTerms">
+                        <div class="custom-checkbox" id="customCheckbox">
+                            <input type="checkbox" id="acceptPurchaseTerms" onchange="togglePurchaseButton(); updateCheckboxStyle(this);">
+                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <span class="terms-text">
+                            Concordo com os <a href="https://promoping.gitbook.io/promoping-docs/termos-do-usuario" target="_blank" rel="noopener noreferrer">Termos de Serviço</a> e
+                            <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="fecharModalCompra()">Cancelar</button>
+                    <button class="modal-btn confirm" id="confirmPurchaseBtn" onclick="confirmarCompra()" disabled>Comprar</button>
                 </div>
             </div>
         </div>
@@ -359,48 +405,6 @@
             </div>
         </div>
     </div>
-    <div class="terms-modal-overlay" id="termsModal">
-        <div class="terms-modal-content">
-            <div class="terms-modal-header">
-                <h3>Termos de Serviço</h3>
-                <p>Antes de prosseguir com o pagamento, leia e aceite nossos termos</p>
-            </div>
-
-            <div class="terms-content">
-                <h4>Termos de Uso do PromoPing</h4>
-                <p>Ao utilizar nossos serviços, você concorda com os seguintes termos:</p>
-
-                <ul>
-                    <li>O pagamento será processado através do Stripe</li>
-                    <li>Você será cobrado mensalmente conforme o plano escolhido</li>
-                    <li>Pode cancelar sua assinatura a qualquer momento</li>
-                    <li>Os dados são processados de forma segura e criptografada</li>
-                    <li>Respeitamos sua privacidade conforme nossa política</li>
-                </ul>
-
-                <p><strong>Valor:</strong> <span id="selectedPlanPrice">€0.00</span> por mês</p>
-                <p><strong>Plano:</strong> <span id="selectedPlanName">Free</span></p>
-            </div>
-
-            <div class="terms-checkbox">
-                <input type="checkbox" id="acceptTerms" onchange="toggleTermsAcceptance()">
-                <label for="acceptTerms">
-                    Concordo com os <a href="/docs/terms" target="_blank">Termos de Serviço</a> e
-                    <a href="/docs/privacy" target="_blank">Política de Privacidade</a>
-                </label>
-            </div>
-
-            <div class="terms-modal-actions">
-                <button class="terms-modal-btn cancel" onclick="fecharModalTermos()">
-                    Cancelar
-                </button>
-                <button class="terms-modal-btn confirm" id="proceedToStripeBtn" onclick="prosseguirParaStripe()"
-                    disabled>
-                    Prosseguir para Pagamento
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script src="../../assets/scripts/request-manager.js"></script>
     <script>
@@ -411,120 +415,119 @@
             window.location.href = "/index.html";
         }
 
-        // Função para selecionar e mudar o plano do usuário
-        async function selecionarPlano(planoId, planoNome, isCurrentPlan) {
-            if (isCurrentPlan) {
-                return; // Não fazer nada se for o plano atual
-            }
-            const token = localStorage.getItem("token");
-            try {
-                console.log(`Alterando para plano: ${planoNome} (ID: ${planoId})`);
-                const response = await makeRequest("/api/user/change-plan", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token
-                    },
-                    body: JSON.stringify({ planId: planoId })
-                });
 
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log("Plano alterado:", data);
+        // Variável global para armazenar dados do plano selecionado
+        let selectedPlanData = null;
 
-                alert(`Plano alterado para ${planoNome} com sucesso!`);
-                // Recarregar a página para mostrar as mudanças
-                location.reload();
-
-            } catch (error) {
-                console.error("Erro ao alterar plano:", error);
-                alert("Erro ao alterar plano. Tente novamente.");
-            }
-        }
-
-        // Função para abrir modal de seleção de planos
-        async function abrirModalPlanos() {
-            const modal = document.getElementById('plansModal');
-            const modalGrid = document.getElementById('modalPlansGrid');
-
-            // Carregar planos disponíveis
-            await carregarPlanosParaModal();
-
-            // Mostrar modal
+        // Função para abrir modal de compra
+        function abrirModalCompra(planoId, planoNome, preco) {
+            selectedPlanData = { id: planoId, name: planoNome, price: preco };
+            
+            const modal = document.getElementById('purchaseModal');
+            const planNameEl = document.getElementById('purchasePlanName');
+            const planPriceEl = document.getElementById('purchasePlanPrice');
+            const currentDateEl = document.getElementById('currentDate');
+            const nextPaymentDateEl = document.getElementById('nextPaymentDate');
+            
+            planNameEl.textContent = planoNome;
+            planPriceEl.textContent = `€${preco.toFixed(2).replace('.', ',')}`;
+            
+            // Calcular e exibir datas
+            const today = new Date();
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            
+            const formatDate = (date) => {
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            };
+            
+            currentDateEl.textContent = formatDate(today);
+            nextPaymentDateEl.textContent = formatDate(nextMonth);
+            
+            // Resetar checkbox e botão
+            const checkbox = document.getElementById('acceptPurchaseTerms');
+            checkbox.checked = false;
+            updateCheckboxStyle(checkbox);
+            document.getElementById('confirmPurchaseBtn').disabled = true;
+            
+            // Resetar método de pagamento para Stripe
+            document.querySelector('input[name="paymentMethod"][value="stripe"]').checked = true;
+            
             modal.style.display = 'flex';
             modal.classList.add('active');
         }
 
-        // Função para fechar modal de planos
-        function fecharModalPlanos() {
-            const modal = document.getElementById('plansModal');
+        // Função para fechar modal de compra
+        function fecharModalCompra() {
+            const modal = document.getElementById('purchaseModal');
             modal.style.display = 'none';
             modal.classList.remove('active');
+            selectedPlanData = null;
         }
 
-        // Função para carregar planos no modal
-        async function carregarPlanosParaModal() {
-            const token = localStorage.getItem("token");
-            const modalGrid = document.getElementById('modalPlansGrid');
+        // Função para habilitar/desabilitar botão de compra
+        function togglePurchaseButton() {
+            const checkbox = document.getElementById('acceptPurchaseTerms');
+            const button = document.getElementById('confirmPurchaseBtn');
+            button.disabled = !checkbox.checked;
+        }
 
-            try {
-                const response = await makeRequest("/api/user/planos", {
-                    headers: { Authorization: "Bearer " + token }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const planos = data.planos || [];
-
-                // Limpar grid
-                modalGrid.innerHTML = '';
-
-                // Criar cards dos planos
-                planos.forEach(plano => {
-                    const planCard = document.createElement('div');
-                    planCard.className = 'modal-plan-card';
-                    planCard.innerHTML = `
-                        <div class="modal-plan-header">
-                            <div class="modal-plan-name">${plano.Nome}</div>
-                            <div class="modal-plan-price">€${parseFloat(plano.Preco).toFixed(2)}</div>
-                        </div>
-                        <ul class="modal-plan-features">
-                            <li>Até ${plano.LimiteProdutos} produtos</li>
-                            <li>${plano.PermiteSMS ? 'SMS incluído' : 'Apenas Email'}</li>
-                            <li>${plano.Relatorios ? 'Relatórios incluídos' : 'Sem relatórios'}</li>
-                        </ul>
-                        <button class="modal-plan-button" onclick="prosseguirParaPagamento(${plano.Id}, '${plano.Nome}')">
-                            Escolher ${plano.Nome}
-                        </button>
-                    `;
-                    modalGrid.appendChild(planCard);
-                });
-
-            } catch (error) {
-                console.error("Erro ao carregar planos:", error);
-                modalGrid.innerHTML = '<p>Erro ao carregar planos. Tente novamente.</p>';
+        // Função para atualizar estilo do checkbox customizado
+        function updateCheckboxStyle(checkbox) {
+            const customCheckbox = document.getElementById('customCheckbox');
+            if (checkbox.checked) {
+                customCheckbox.classList.add('checked');
+            } else {
+                customCheckbox.classList.remove('checked');
             }
         }
 
-        // Função para prosseguir para pagamento Stripe
-        async function prosseguirParaPagamento(planoId, planoNome) {
+        // Função para confirmar compra e redirecionar para Stripe
+        async function confirmarCompra() {
+            if (!selectedPlanData) {
+                alert('Erro: Dados do plano não encontrados');
+                return;
+            }
+
+            const { id, name, price } = selectedPlanData;
             const token = localStorage.getItem("token");
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
             try {
-                console.log(`Iniciando pagamento para plano: ${planoNome} (ID: ${planoId})`);
+                // Se for plano Free, ativar diretamente
+                if (id === 1 || price === 0) {
+                    const response = await makeRequest('/api/user/change-plan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ planId: id })
+                    });
 
-                const response = await makeRequest("/api/payment/create-checkout-session", {
-                    method: "POST",
+                    if (!response.ok) {
+                        throw new Error('Erro ao ativar plano gratuito');
+                    }
+
+                    alert('Plano Free ativado com sucesso!');
+                    fecharModalCompra();
+                    location.reload();
+                    return;
+                }
+
+                // Para planos pagos, criar sessão de checkout no Stripe
+                console.log(`Iniciando pagamento para plano: ${name} (ID: ${id}) via ${paymentMethod}`);
+
+                const response = await makeRequest('/api/payment/create-checkout-session', {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ planId: planoId })
+                    body: JSON.stringify({ planoId: id })
                 });
 
                 if (!response.ok) {
@@ -534,16 +537,16 @@
                 const data = await response.json();
                 console.log("Sessão Stripe criada:", data);
 
-                if (data.url) {
+                if (data.checkout_url || data.url) {
                     // Redirecionar para Stripe
-                    window.location.href = data.url;
+                    window.location.href = data.checkout_url || data.url;
                 } else {
-                    throw new Error("URL de pagamento não recebida");
+                    throw new Error("URL de checkout não recebida");
                 }
 
             } catch (error) {
-                console.error("Erro ao criar sessão de pagamento:", error);
-                alert("Erro ao processar pagamento. Tente novamente.");
+                console.error('Erro ao processar compra:', error);
+                alert('Erro ao processar pagamento. Tente novamente.');
             }
         }
 
@@ -662,7 +665,17 @@
                 if (currentText.includes('Plano Atual')) {
                     // Extrair nome do plano do texto atual
                     const planName = currentText.replace('Plano Atual', '').trim();
-                    button.textContent = `Escolher ${planName}`;
+                    // Restaurar texto original baseado no onclick
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes('Free')) {
+                        button.textContent = 'Escolher Free';
+                    } else if (onclick && onclick.includes('Basic')) {
+                        button.textContent = 'Escolher Basic';
+                    } else if (onclick && onclick.includes('Standard')) {
+                        button.textContent = 'Escolher Standard';
+                    } else if (onclick && onclick.includes('Premium')) {
+                        button.textContent = 'Escolher Premium';
+                    }
                 }
             });
 
@@ -671,19 +684,19 @@
             let planName = '';
             switch (userPlanId) {
                 case 1: // Free
-                    currentButton = document.querySelector('button[onclick*="selecionarPlano(1"]');
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(1"]');
                     planName = 'Free';
                     break;
                 case 2: // Basic
-                    currentButton = document.querySelector('button[onclick*="selecionarPlano(2"]');
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(2"]');
                     planName = 'Basic';
                     break;
                 case 3: // Premium
-                    currentButton = document.querySelector('button[onclick*="selecionarPlano(3"]');
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(3"]');
                     planName = 'Premium';
                     break;
                 case 4: // Standard
-                    currentButton = document.querySelector('button[onclick*="selecionarPlano(4"]');
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(4"]');
                     planName = 'Standard';
                     break;
             }
@@ -708,6 +721,14 @@
             }
             const user = data.user;
             const stats = data.stats || {};
+            
+            // Verificar se o plano é Free (ID 1) - se for, não mostrar a seção
+            const planoId = user.PlanoAtualId || user.plano_id || 1;
+            if (planoId === 1 || user.plano_nome === 'Free' || user.plano_nome === 'FREE') {
+                currentPlanSection.style.display = "none";
+                return;
+            }
+            
             // Determinar status do plano baseado no banco de dados
             let status = "Ativo";
             let statusClass = "active";
@@ -754,87 +775,16 @@
             currentPlanSection.style.display = "block";
         }
 
-        // Função para abrir o modal de Termos de Serviço
-        function abrirModalTermos() {
-            document.getElementById('termsModal').classList.add('active');
-        }
-
-        // Função para fechar o modal de Termos de Serviço e resetar estado
-        function fecharModalTermos() {
-            document.getElementById('termsModal').classList.remove('active');
-            // Limpar checkbox
-            document.getElementById('acceptTerms').checked = false;
-            document.getElementById('proceedToStripeBtn').disabled = true;
-        }
-
-        // Função que habilita/desabilita botão de pagamento dependendo do aceite nos termos
-        function toggleTermsAcceptance() {
-            const checkbox = document.getElementById('acceptTerms');
-            const button = document.getElementById('proceedToStripeBtn');
-            button.disabled = !checkbox.checked;
-        }
-
-        // Função que leva para o checkout do Stripe ou ativa Free direto
-        async function prosseguirParaStripe() {
-            if (!window.selectedPlanData) {
-                alert('Erro: Dados do plano não encontrados');
-                return;
-            }
-            const { id, name, price } = window.selectedPlanData;
-            try {
-                const token = localStorage.getItem('token');
-                // Se for plano gratuito (Free), ativar diretamente
-                if (parseInt(id) === 1) {
-                    const response = await makeRequest('/api/user/change-plan', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ planId: parseInt(id) })
-                    });
-                    if (!response.ok) {
-                        throw new Error('Erro ao ativar plano gratuito');
-                    }
-                    alert('Plano Free ativado com sucesso!');
-                    fecharModalTermos();
-                    carregarDadosUsuario();
-                    return;
-                }
-                // Para planos pagos, criar sessão de checkout
-                const response = await makeRequest('/api/payment/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ planoId: parseInt(id) })
-                });
-                if (!response.ok) {
-                    throw new Error('Erro ao criar sessão de pagamento');
-                }
-                const data = await response.json();
-                if (data.checkout_url) {
-                    // Redirecionar para o Stripe
-                    window.location.href = data.checkout_url;
-                } else {
-                    alert('Erro: URL de checkout não recebida');
-                }
-            } catch (error) {
-                console.error('Erro ao prosseguir para pagamento:', error);
-                alert('Erro ao processar pagamento. Tente novamente.');
-            }
-        }
 
         // Eventos para fechar os modais se clicar no overlay
         document.addEventListener('click', function (event) {
             const cancelModal = document.getElementById('cancelModal');
-            const termsModal = document.getElementById('termsModal');
+            const purchaseModal = document.getElementById('purchaseModal');
             if (event.target === cancelModal) {
                 fecharModalCancelamento();
             }
-            if (event.target === termsModal) {
-                fecharModalTermos();
+            if (event.target === purchaseModal) {
+                fecharModalCompra();
             }
         });
 

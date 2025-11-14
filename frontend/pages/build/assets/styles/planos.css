@@ -352,7 +352,7 @@
     left: 0;
     right: 0;
     height: 6px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(rgba(0, 0, 0, 0));
 }
 
 .modal-header {
@@ -806,5 +806,345 @@
     
     .modal-body {
         padding: 1rem 1.5rem 1.5rem 1.5rem;
+    }
+}
+
+/* ===== MODAL DE COMPRA ===== */
+.purchase-modal-content {
+    max-width: 450px;
+    width: 90%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.purchase-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.purchase-modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0e0f19;
+    margin: 0;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+    border-radius: 6px;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.purchase-modal-body {
+    padding: 1.5rem;
+}
+
+.purchase-plan-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.plan-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.plan-name-compact {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0e0f19;
+}
+
+.plan-price-compact {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.price-amount-compact {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0e0f19;
+}
+
+.price-period-compact {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.payment-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.date-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.date-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.date-value {
+    font-size: 0.875rem;
+    color: #0e0f19;
+    font-weight: 600;
+}
+
+.payment-methods {
+    margin-bottom: 1.5rem;
+}
+
+.payment-methods h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0e0f19;
+    margin: 0 0 0.75rem 0;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    position: relative;
+}
+
+.payment-option:hover {
+    border-color: #f1a86b;
+    background: #fff5d5;
+}
+
+.payment-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.payment-option span {
+    font-size: 0.95rem;
+    color: #374151;
+    flex: 1;
+}
+
+.radio-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.payment-option input[type="radio"]:checked ~ .radio-check {
+    border-color: #f1a86b;
+    background: #f1a86b;
+}
+
+.payment-option input[type="radio"]:checked ~ .radio-check::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+.terms-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #fff5d5;
+    border-radius: 8px;
+    border: 1px solid #f1a86b;
+}
+
+.terms-checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.custom-checkbox {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    margin: 0;
+    z-index: 2;
+}
+
+.custom-checkbox:hover {
+    border-color: #f1a86b;
+}
+
+.check-icon {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    color: white;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.custom-checkbox.checked {
+    border-color: #f1a86b;
+    background: #f1a86b;
+}
+
+.custom-checkbox.checked .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.terms-text {
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.terms-text a {
+    color: #eea23f;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.terms-text a:hover {
+    color: #dc7c35;
+    text-decoration: underline;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.modal-btn.cancel {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.modal-btn.cancel:hover {
+    background-color: #e5e7eb;
+}
+
+.modal-btn.confirm {
+    background: linear-gradient(135deg, #f1a86b 0%, #eea23f 100%);
+    color: white;
+}
+
+.modal-btn.confirm:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.modal-btn.confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+    .purchase-modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .purchase-modal-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .purchase-modal-body {
+        padding: 1.25rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-btn {
+        width: 100%;
     }
 }
