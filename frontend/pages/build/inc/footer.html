@@ -48,14 +48,12 @@
     object-fit: contain;
     opacity: 0.7;
     filter: brightness(0.8);
-    margin-top: 90px;
   }
 
   .system-text {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-top: 90px;
   }
 
   .system-label {
@@ -243,15 +241,24 @@
 
   /* ===== RESPONSIVIDADE ===== */
   @media (max-width: 768px) {
+    .modern-footer {
+      margin-top: 60px;
+    }
+
+    .footer-container {
+      padding: 32px 16px;
+    }
+
     .footer-content {
       flex-direction: column;
-      gap: 30px;
+      gap: 32px;
     }
 
     .footer-left-section,
     .footer-middle-section,
     .footer-right-section {
       max-width: 100%;
+      width: 100%;
     }
 
     .footer-middle-section,
@@ -267,49 +274,166 @@
       justify-content: flex-start;
     }
 
+    .system-info {
+      margin-bottom: 0;
+    }
+
     .footer-bottom {
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       text-align: center;
+      align-items: center;
     }
 
     .footer-brand {
       flex-direction: column;
       gap: 12px;
+      align-items: center;
     }
 
     .brand-logo {
-      flex-direction: column;
-      gap: 8px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .footer-container {
-      padding: 30px 12px;
-    }
-
-    .footer-content {
-      gap: 25px;
-    }
-
-    .system-info {
-      flex-direction: column;
-      text-align: center;
+      flex-direction: row;
       gap: 12px;
       align-items: center;
     }
 
-    .system-icon {
-      margin-top: 0;
+    .footer-copyright {
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .modern-footer {
+      margin-top: 40px;
     }
 
-    .footer-links-list {
+    .footer-container {
+      padding: 24px 12px;
+    }
+
+    .footer-content {
+      gap: 28px;
+    }
+
+    .system-info {
+      flex-direction: row;
+      text-align: left;
+      gap: 12px;
       align-items: center;
+      margin-bottom: 0;
+    }
+
+    .system-icon {
+      flex-shrink: 0;
+    }
+
+    .windows-logo {
+      width: 28px;
+      height: 28px;
+    }
+
+    .system-label {
+      font-size: 0.85rem;
+    }
+
+    .system-versions {
+      font-size: 0.8rem;
+    }
+
+    .links-title {
+      font-size: 0.95rem;
+      margin-bottom: 12px;
     }
 
     .footer-link {
-      justify-content: center;
+      font-size: 0.85rem;
+      padding: 2px 0;
+    }
+
+    .footer-links-list {
+      align-items: flex-start;
+    }
+
+    .footer-link {
+      justify-content: flex-start;
+    }
+
+    .footer-bottom {
+      gap: 14px;
+    }
+
+    .footer-brand {
+      gap: 10px;
+    }
+
+    .brand-logo {
+      gap: 10px;
+    }
+
+    .footer-logo {
+      width: 28px;
+      height: 28px;
+    }
+
+    .brand-name {
+      font-size: 1.1rem;
+    }
+
+    .version-badge {
+      padding: 3px 10px;
+      font-size: 0.75rem;
+    }
+
+    .footer-copyright {
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .footer-container {
+      padding: 20px 10px;
+    }
+
+    .footer-content {
+      gap: 24px;
+    }
+
+    .system-info {
+      gap: 10px;
+    }
+
+    .windows-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .system-label {
+      font-size: 0.8rem;
+    }
+
+    .system-versions {
+      font-size: 0.75rem;
+    }
+
+    .links-title {
+      font-size: 0.9rem;
+    }
+
+    .footer-link {
+      font-size: 0.8rem;
+    }
+
+    .footer-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-name {
+      font-size: 1rem;
+    }
+
+    .footer-copyright {
+      font-size: 0.8rem;
     }
   }
 </style>
