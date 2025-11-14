@@ -250,7 +250,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalCompra(4, 'Standard', 12.99)">
+                    <button class="plan-button primary" onclick="abrirModalCompra(3, 'Standard', 12.99)">
                         Escolher Standard
                     </button>
                 </div>
@@ -298,7 +298,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalCompra(3, 'Premium', 15.30)">
+                    <button class="plan-button primary" onclick="abrirModalCompra(4, 'Premium', 15.30)">
                         Escolher Premium
                     </button>
                 </div>
@@ -494,7 +494,19 @@
 
             const { id, name, price } = selectedPlanData;
             const token = localStorage.getItem("token");
-            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            if (!token) {
+                alert('Você precisa estar logado para comprar um plano.');
+                window.location.href = '/login';
+                return;
+            }
+
+            const confirmBtn = document.getElementById('confirmPurchaseBtn');
+            const originalText = confirmBtn.textContent;
+            
+            // Desabilitar botão e mostrar loading
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Processando...';
 
             try {
                 // Se for plano Free, ativar diretamente
@@ -509,9 +521,11 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error('Erro ao ativar plano gratuito');
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Erro ao ativar plano gratuito');
                     }
 
+                    const data = await response.json();
                     alert('Plano Free ativado com sucesso!');
                     fecharModalCompra();
                     location.reload();
@@ -519,7 +533,7 @@
                 }
 
                 // Para planos pagos, criar sessão de checkout no Stripe
-                console.log(`Iniciando pagamento para plano: ${name} (ID: ${id}) via ${paymentMethod}`);
+                console.log(`[COMPRA] Iniciando pagamento para plano: ${name} (ID: ${id})`);
 
                 const response = await makeRequest('/api/payment/create-checkout-session', {
                     method: 'POST',
@@ -531,22 +545,32 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log("Sessão Stripe criada:", data);
+                console.log("[COMPRA] Sessão Stripe criada:", data);
 
                 if (data.checkout_url || data.url) {
                     // Redirecionar para Stripe
                     window.location.href = data.checkout_url || data.url;
+                } else if (data.status === 'ok' && data.message) {
+                    // Plano gratuito ativado
+                    alert(data.message);
+                    fecharModalCompra();
+                    location.reload();
                 } else {
-                    throw new Error("URL de checkout não recebida");
+                    throw new Error("URL de checkout não recebida do servidor");
                 }
 
             } catch (error) {
-                console.error('Erro ao processar compra:', error);
-                alert('Erro ao processar pagamento. Tente novamente.');
+                console.error('[COMPRA] Erro ao processar compra:', error);
+                alert(`Erro ao processar pagamento: ${error.message || 'Tente novamente mais tarde.'}`);
+                
+                // Reabilitar botão
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
             }
         }
 
@@ -691,13 +715,13 @@
                     currentButton = document.querySelector('button[onclick*="abrirModalCompra(2"]');
                     planName = 'Basic';
                     break;
-                case 3: // Premium
+                case 3: // Standard
                     currentButton = document.querySelector('button[onclick*="abrirModalCompra(3"]');
-                    planName = 'Premium';
-                    break;
-                case 4: // Standard
-                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(4"]');
                     planName = 'Standard';
+                    break;
+                case 4: // Premium
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(4"]');
+                    planName = 'Premium';
                     break;
             }
             if (currentButton) {
@@ -788,8 +812,59 @@
             }
         });
 
+        // Verificar se retornou do Stripe após pagamento
+        function verificarRetornoStripe() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const canceled = urlParams.get('canceled');
+            const sessionId = urlParams.get('session_id');
+
+            if (success === 'true' && sessionId) {
+                // Verificar sessão e atualizar plano
+                verificarSessaoPagamento(sessionId);
+            } else if (canceled === 'true') {
+                // Usuário cancelou o pagamento
+                alert('Pagamento cancelado. Você pode tentar novamente quando quiser.');
+                // Limpar parâmetros da URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Verificar sessão de pagamento após retorno do Stripe
+        async function verificarSessaoPagamento(sessionId) {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                const response = await makeRequest('/api/payment/verify-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'ok') {
+                        alert('Pagamento confirmado! Seu plano foi ativado com sucesso.');
+                        // Limpar parâmetros da URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        // Recarregar dados
+                        location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error('[COMPRA] Erro ao verificar sessão:', error);
+                // Mesmo com erro, recarregar para verificar se o plano foi atualizado
+                location.reload();
+            }
+        }
+
         // Quando o DOM estiver pronto, carrega os dados iniciais do usuário/planos
         document.addEventListener('DOMContentLoaded', function () {
+            verificarRetornoStripe();
             carregarDadosUsuario();
         });
     </script>

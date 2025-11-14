@@ -250,7 +250,21 @@ router.get("/subscription-status/:subscription_id", verifyToken, async (req, res
 router.post("/create-portal-session", verifyToken, async (req, res) => {
   try {
     const { customer_id } = req.body;
-    const returnUrl = `${process.env.FRONTEND_URL}/planos`;
+    
+    // IMPORTANTE: Stripe SEMPRE requer HTTPS para URLs de retorno
+    // Extrair o domínio da FRONTEND_URL e forçar HTTPS
+    let frontendUrl = process.env.FRONTEND_URL || 'promoping.pt';
+    
+    // Remover qualquer esquema existente
+    frontendUrl = frontendUrl.replace(/^https?:\/\//, '');
+    
+    // Remover barra final se existir
+    frontendUrl = frontendUrl.replace(/\/$/, '');
+    
+    // SEMPRE usar HTTPS para URLs do Stripe (requisito do Stripe)
+    const stripeReturnUrl = `https://${frontendUrl}`;
+    
+    const returnUrl = `${stripeReturnUrl}/dashboard/planos`;
 
     if (!customer_id) {
       return res.status(400).json({

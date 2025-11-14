@@ -54,6 +54,31 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
 
     // Criar sessão de checkout
     console.log(` [PAYMENT] Criando sessão Stripe com price_id: ${plano.stripe_price_id}`);
+    
+    // IMPORTANTE: Stripe SEMPRE requer HTTPS para URLs de retorno, mesmo em desenvolvimento
+    // Extrair o domínio da FRONTEND_URL e forçar HTTPS
+    let frontendUrl = process.env.FRONTEND_URL || 'promoping.pt';
+    
+    // Remover qualquer esquema existente
+    frontendUrl = frontendUrl.replace(/^https?:\/\//, '');
+    
+    // Remover barra final se existir
+    frontendUrl = frontendUrl.replace(/\/$/, '');
+    
+    // SEMPRE usar HTTPS para URLs do Stripe (requisito do Stripe)
+    const stripeReturnUrl = `https://${frontendUrl}`;
+    
+    const successUrl = `${stripeReturnUrl}/dashboard/planos?success=true&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${stripeReturnUrl}/dashboard/planos?canceled=true`;
+    
+    console.log(` [PAYMENT] URLs de retorno do Stripe (sempre HTTPS):`, { 
+      frontendUrlOriginal: process.env.FRONTEND_URL || 'não definido',
+      frontendUrlProcessado: frontendUrl,
+      stripeReturnUrl,
+      successUrl, 
+      cancelUrl 
+    });
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -63,8 +88,8 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.FRONTEND_URL}/planos?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/planos?canceled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       customer_email: userEmail,
       metadata: {
         userId: userId.toString(),
