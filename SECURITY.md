@@ -12,7 +12,7 @@ A segurança é uma prioridade para o PromoPing. Se descobrir uma vulnerabilidad
 
 **NÃO** reporte vulnerabilidades de segurança através de issues públicos no GitHub.
 
-Em vez disso, envie um email para: **security@promoping.pt** (ou o email de contato do mantenedor)
+Em vez disso, envie um email para: **corporation.promoping@gmail.com** (ou o email de contato do mantenedor)
 
 Inclua o seguinte no seu reporte:
 - Tipo de vulnerabilidade
