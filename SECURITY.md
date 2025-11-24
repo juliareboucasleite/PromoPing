@@ -137,7 +137,6 @@ Atualmente não há vulnerabilidades conhecidas. Se descobrir alguma, por favor 
 
 Para questões de segurança, entre em contato:
 - **Email**: corporation.promoping@gmail.com
-- **GitHub Security Advisories**: [Link se disponível]
 
 ---
 
