@@ -6,28 +6,27 @@
 # PromoPing
 O PromoPing é um sistema de monitoramento de preços para consumidores portugueses. Permite acompanhar produtos em diversas lojas online e receber notificações automáticas quando os preços atingem metas definidas.
 
-### Funcionalidades
-- **Interface Web**: Dashboard responsivo com gráficos interativos de evolução de preços
-- **Autenticação**: Sistema seguro com JWT, suporte para Google OAuth e Discord
-- **Notificações**: Alertas via Discord Bot e email transacional
-- **Monitorização Automática**: Suporte para mais de 20 lojas online (Worten, FNAC, Amazon, etc.)
-- **Planos de Subscrição**: Free, Basic, Standard e Premium com diferentes intervalos de verificação
-- **API RESTful**: API completa para integração e gestão de produtos
+Algumas funcionalidades é a
+**Interface Web**: Dashboard responsivo com gráficos interativos de evolução de preços
+**Autenticação**: Sistema seguro com JWT, suporte para Google OAuth e Discord
+**Notificações**: Alertas via Discord Bot e email transacional
+**Monitorização Automática**: Suporte para mais de 20 lojas online (Worten, FNAC, Amazon, etc.)
+**Planos de Subscrição**: Free, Basic, Standard e Premium com diferentes intervalos de verificação
+**API RESTful**: API completa para integração e gestão de produtos
 
 > **Nota:** O PromoPing monitora produtos escolhidos pelo utilizador e não compara preços entre lojas.
 
-### Arquitetura
-- **Frontend**: HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
-- **Backend**: Node.js 18+, Express.js 5.x, MySQL 8.0+
-- **Scraper**: Python 3.8+, Selenium WebDriver, BeautifulSoup4
-- **Infraestrutura**: Docker, PM2, Nginx, GitHub Actions
+A Arquitetura do PromoPing foi pensada usando essas linguagens: 
+HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
+ode.js 18+, Express.js 5.x, MySQL 8.0+
+Python 3.8+, Selenium WebDriver, BeautifulSoup4
+Docker, PM2, Nginx, GitHub Actions
 
-### Segurança
 O sistema implementa múltiplas camadas de proteção:
-- Autenticação JWT com refresh tokens
-- Rate limiting e CORS configurado
-- Sanitização de entradas e prepared statements
-- Logging estruturado e auditoria completa
+Autenticação JWT com refresh tokens
+Rate limiting e CORS configurado
+Sanitização de entradas e prepared statements
+Logging estruturado e auditoria completa
 
 Para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
 
