@@ -121,11 +121,11 @@ Atualmente não há vulnerabilidades conhecidas. Se descobrir alguma, por favor 
 
 ## Histórico de Correções de Segurança
 
-### 2024
-- **Data**: [Data da correção]
-- **Vulnerabilidade**: [Descrição]
-- **Severidade**: [Crítica/Alta/Média/Baixa]
-- **Correção**: [Descrição da correção]
+### 2025
+- **Data**: [25/11/2025]
+- **Vulnerabilidade**: [0]
+- **Severidade**: [Baixa]
+- **Correção**: [Onde o utilizador coloca o link e abre já o scraping]
 
 ## Recursos Adicionais
 
@@ -141,5 +141,5 @@ Para questões de segurança, entre em contato:
 
 ---
 
-**Última atualização**: Novembro 2024
+**Última atualização**: Novembro 2025
 
