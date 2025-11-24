@@ -1,7 +1,7 @@
 # PromoPing - Monitor de Preços
 
 [![Version](https://img.shields.io/badge/Version-Pap-blue.svg)](https://github.com/juliareboucasleite/PromoPing)
-[![LICENSE](https://img.shields.io/badge/LICENSE-PromoPing-orange?link=https%3A%2F%2Fpromoping.gitbook.io%2Fpromoping-docs)](https://promoping.gitbook.io/promoping-docs)
+[![LICENSE](https://img.shields.io/badge/LICENSE-GPL--2.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
 [![Site](https://img.shields.io/badge/site-Promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
 
@@ -119,7 +119,7 @@ Só aceitamos contribuições mediante contato por email através do suporte. Ve
 
 ## Licença
 
-Este projeto está licenciado sob a Licença PromoPing. Veja o arquivo LICENSE para mais detalhes.
+Este projeto está licenciado sob a GNU General Public License v2.0 (GPL-2.0), a mesma licença utilizada pelo Git. Veja o arquivo LICENSE para mais detalhes.
 
 ## Suporte
 
