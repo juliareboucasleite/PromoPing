@@ -21,14 +21,13 @@ O PromoPing é um sistema de monitoramento de preços para consumidores portugue
 > **Nota:** O PromoPing monitora produtos escolhidos pelo utilizador e não compara preços entre lojas.
 
 ## Arquitetura
-
-- **Frontend**: HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
-- **Backend**: Node.js 18+, Express.js 5.x, MySQL 8.0+
-- **Scraper**: Python 3.8+, Selenium WebDriver, BeautifulSoup4
-- **Infraestrutura**: Docker, PM2, Nginx, GitHub Actions
+A Arquitetura do PromoPing foi pensada usando essas linguagens: 
+HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
+Node.js 18+, Express.js 5.x, MySQL 8.0+
+Python 3.8+, Selenium WebDriver, BeautifulSoup4
+Docker, PM2, Nginx, GitHub Actions
 
 ## Segurança
-
 O sistema implementa múltiplas camadas de proteção:
 - Autenticação JWT com refresh tokens
 - Rate limiting e CORS configurado
