@@ -78,7 +78,7 @@ def fetch_products():
         # Tenta buscar com JOIN completo
         cur.execute("""
             SELECT p.Id, p.Nome, p.Link, p.PrecoAlvo, p.PrecoAtual, p.UserId, 
-                   u.PerfilId as PlanoId, pl.Nome as PlanoNome, pl.VerificacaoIntervalo
+                   u.PerfilId as PlanoId, pl.Nome as PlanoNome, pl.IntervaloVerificacao as VerificacaoIntervalo
             FROM produtos p
             JOIN utilizadores u ON p.UserId = u.Id
             JOIN planos pl ON u.PerfilId = pl.Id
@@ -172,6 +172,82 @@ def check_target_reached(product_id, current_price, target_price):
         logger.info(f"[META] Produto {product_id}: €{current_price} <= €{target_price}")
         return True
     return False
+
+def scrape_single_product(product_url, is_initial=False):
+    """Executa scraping de um único produto por URL"""
+    driver = None
+    try:
+        logger.info(f"[INITIAL] Verificação inicial para: {product_url}")
+        
+        # Buscar produto pelo link ANTES de criar o driver
+        conn = connect_db()
+        cur = conn.cursor(dictionary=True)
+        
+        try:
+            # Tenta buscar com JOIN completo
+            try:
+                cur.execute("""
+                    SELECT p.Id, p.Nome, p.Link, p.PrecoAlvo, p.PrecoAtual, p.UserId,
+                           u.PerfilId as PlanoId, pl.Nome as PlanoNome, pl.IntervaloVerificacao as VerificacaoIntervalo
+                    FROM produtos p
+                    JOIN utilizadores u ON p.UserId = u.Id
+                    JOIN planos pl ON u.PerfilId = pl.Id
+                    WHERE p.Link = %s AND p.DeletedAt IS NULL
+                    LIMIT 1
+                """, (product_url,))
+                produto = cur.fetchone()
+            except Exception as e:
+                logger.warning(f"[INITIAL] Erro no JOIN, tentando fallback: {e}")
+                # Fallback: busca simples sem JOIN
+                cur.execute("""
+                    SELECT Id, Nome, Link, PrecoAlvo, PrecoAtual, UserId
+                    FROM produtos
+                    WHERE Link = %s AND DeletedAt IS NULL
+                    LIMIT 1
+                """, (product_url,))
+                produto = cur.fetchone()
+                if produto:
+                    produto['PlanoNome'] = 'Free'
+                    produto['VerificacaoIntervalo'] = 24
+            
+            if not produto:
+                logger.warning(f"[INITIAL] Produto não encontrado para URL: {product_url}")
+                return
+            
+            pid = produto["Id"]
+            nome = produto["Nome"]
+            link = produto["Link"]
+            preco_alvo = produto.get("PrecoAlvo")
+            
+        finally:
+            cur.close()
+            conn.close()
+        
+        # Criar driver APÓS buscar dados do produto
+        driver = create_driver()
+        logger.info(f"[INITIAL] Driver criado, extraindo preço para: {nome}")
+        
+        # Extrair preço
+        loja, preco, flag = extract_price(driver, link)
+        
+        if preco is not None:
+            preco = round(float(preco), 2)
+            logger.info(f"[INITIAL] {nome} ({loja}): €{preco}")
+            update_price_and_history(pid, preco)
+            
+            if preco_alvo and check_target_reached(pid, preco, preco_alvo):
+                logger.info(f"[INITIAL] Meta atingida para {nome}!")
+        else:
+            logger.warning(f"[INITIAL] {nome}: preço não encontrado")
+            
+    except Exception as e:
+        logger.error(f"[INITIAL] Erro ao verificar produto: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        if driver:
+            safe_quit(driver)
+            logger.info(f"[INITIAL] Driver fechado")
 
 # ==================== SCRAPING ====================
 
@@ -269,6 +345,18 @@ def aceitar_cookies(driver):
             except:
                 pass
         
+        # Black Market / Back Market
+        if "blackmarket" in driver.current_url.lower() or "backmarket" in driver.current_url.lower():
+            try:
+                blackmarket_button = WebDriverWait(driver, 2).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Aceitar') or contains(text(), 'Accept')]"))
+                )
+                blackmarket_button.click()
+                sleep(0.5)
+                return
+            except:
+                pass
+        
         # Fallback genérico
         botoes = driver.find_elements(By.TAG_NAME, "button")
         for b in botoes:
@@ -350,14 +438,164 @@ def extract_price(driver, url):
         # Worten
         elif "worten" in u:
             try:
-                WebDriverWait(driver, SCRAPER_CONFIG['max_wait']).until(
-                    EC.visibility_of_element_located((By.CSS_SELECTOR, "span.value, .price"))
-                )
-                el = driver.find_element(By.CSS_SELECTOR, "span.value, .price")
-                preco = clean_price_text(el.text)
-                return "Worten", preco, None
-            except:
-                return "Worten", None, None
+                sleep(2)  # Aguarda carregamento
+                aceitar_cookies(driver)
+                sleep(1)
+                
+                # Tentar capturar preço com inteiro e decimal separados (como Amazon)
+                try:
+                    WebDriverWait(driver, 5).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.value, .price, [class*='price']"))
+                    )
+                    
+                    # Procurar por elementos de preço inteiro e decimal separados
+                    try:
+                        # Seletores para parte inteira
+                        inteiro_selectors = [
+                            "span.value sup.integer",
+                            ".price sup.integer",
+                            "[class*='price'] sup.integer",
+                            "span.value .integer",
+                            ".price .integer"
+                        ]
+                        
+                        # Seletores para parte decimal
+                        decimal_selectors = [
+                            "span.value sup.decimal",
+                            ".price sup.decimal",
+                            "[class*='price'] sup.decimal",
+                            "span.value .decimal",
+                            ".price .decimal"
+                        ]
+                        
+                        inteiro = ""
+                        decimal = ""
+                        
+                        # Tentar encontrar parte inteira
+                        for selector in inteiro_selectors:
+                            try:
+                                el = driver.find_element(By.CSS_SELECTOR, selector)
+                                inteiro = el.text.strip()
+                                if inteiro:
+                                    break
+                            except:
+                                continue
+                        
+                        # Tentar encontrar parte decimal
+                        for selector in decimal_selectors:
+                            try:
+                                el = driver.find_element(By.CSS_SELECTOR, selector)
+                                decimal = el.text.strip()
+                                if decimal:
+                                    break
+                            except:
+                                continue
+                        
+                        # Se encontrou ambas as partes, combinar
+                        if inteiro and decimal:
+                            preco = clean_price_text(f"{inteiro},{decimal}")
+                            if preco:
+                                logger.info(f"[WORTEN] Preço encontrado (inteiro+decimal): €{preco}")
+                                return "Worten", preco, None
+                    except:
+                        pass
+                    
+                    # Se não encontrou separado, tentar elemento completo
+                    selectors = [
+                        "span.value",
+                        ".price",
+                        "[data-testid*='price']",
+                        ".product-price",
+                        ".current-price",
+                        "span[class*='price']",
+                        "[class*='price']"
+                    ]
+                    
+                    for selector in selectors:
+                        try:
+                            el = driver.find_element(By.CSS_SELECTOR, selector)
+                            texto_completo = el.text.strip()
+                            
+                            # Se o texto contém o preço completo, usar
+                            if "€" in texto_completo or re.search(r'\d+[,\.]\d{2}', texto_completo):
+                                preco = clean_price_text(texto_completo)
+                                if preco:
+                                    logger.info(f"[WORTEN] Preço encontrado com seletor: {selector} = €{preco}")
+                                    return "Worten", preco, None
+                        except:
+                            continue
+                    
+                except:
+                    pass
+                
+                # Fallback: busca por padrão de preço no texto da página (com decimais)
+                page_text = driver.page_source
+                # Padrão mais específico: número com vírgula/ponto e 2 decimais seguido de €
+                price_patterns = [
+                    r'(\d+[,\.]\d{2})\s*€',  # 122,57 € ou 122.57 €
+                    r'€\s*(\d+[,\.]\d{2})',  # € 122,57 ou € 122.57
+                    r'(\d+)\s*[,\.]\s*(\d{2})\s*€',  # 122 , 57 €
+                ]
+                
+                for pattern in price_patterns:
+                    price_match = re.search(pattern, page_text)
+                    if price_match:
+                        if len(price_match.groups()) == 2:
+                            # Caso com grupos separados
+                            preco = clean_price_text(f"{price_match.group(1)},{price_match.group(2)}")
+                        else:
+                            # Caso com grupo único
+                            preco = clean_price_text(price_match.group(1))
+                        
+                        if preco:
+                            logger.info(f"[WORTEN] Preço encontrado via regex: €{preco}")
+                            return "Worten", preco, None
+                        
+            except Exception as e:
+                logger.error(f"Erro Worten: {e}")
+                import traceback
+                traceback.print_exc()
+            return "Worten", None, None
+        
+        # Black Market / Back Market
+        elif "blackmarket" in u or "backmarket" in u:
+            try:
+                sleep(2)  # Aguarda carregamento
+                aceitar_cookies(driver)
+                sleep(1)
+                
+                # Seletores para o preço do Black Market
+                selectors = [
+                    "span.heading-2",
+                    ".heading-2",
+                    "span[class*='price']",
+                    ".price",
+                    "[data-testid*='price']"
+                ]
+                
+                for selector in selectors:
+                    try:
+                        WebDriverWait(driver, 5).until(
+                            EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
+                        )
+                        el = driver.find_element(By.CSS_SELECTOR, selector)
+                        preco = clean_price_text(el.text)
+                        if preco:
+                            return "Black Market", preco, None
+                    except:
+                        continue
+                
+                # Fallback: busca por padrão de preço no texto da página
+                page_text = driver.page_source
+                price_match = re.search(r'(\d+[,\.]\d{2})\s*€', page_text)
+                if price_match:
+                    preco = clean_price_text(price_match.group(1))
+                    if preco:
+                        return "Black Market", preco, None
+                        
+            except Exception as e:
+                logger.error(f"Erro Black Market: {e}")
+            return "Black Market", None, None
         
         # Fallback genérico
         else:

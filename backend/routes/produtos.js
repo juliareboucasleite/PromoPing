@@ -1,9 +1,15 @@
 import express from "express";
 import { pool } from "../database/db.js";
 import { formatDate } from "../utils/format.js";
+import { exec } from "child_process";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // import { atualizarPrecos } from "../services/atualizarPrecos.js"; // Removido - sem atualização automática
 // import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
 
@@ -69,16 +75,36 @@ router.post("/", verifyToken, async (req, res) => {
         // inserir produto com loja detectada (apenas data é opcional)
         console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
-            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
             [req.user.id, nome, link, data || null, store.name, Number(precoAlvo)]
         );
-        console.log(" Produto inserido com ID:", result.insertId);
+        const productId = result.insertId;
+        console.log(" Produto inserido com ID:", productId);
+
+        // Executar scraping inicial de forma assíncrona (não bloqueia a resposta)
+        const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
+        
+        // Escapar a URL para segurança (Windows e Linux)
+        const escapedLink = link.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+        const isWindows = process.platform === 'win32';
+        const pythonCmd = isWindows ? 'python' : 'python3';
+        const command = `${pythonCmd} "${scraperPath}" --single "${escapedLink}"`;
+        
+        console.log(" [SCRAPER] Iniciando verificação inicial para:", link);
+        exec(command, { cwd: path.join(__dirname, '../../') }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(" [SCRAPER] Erro na verificação inicial:", error.message);
+                return;
+            }
+            if (stdout) console.log(" [SCRAPER] Output:", stdout);
+            if (stderr) console.error(" [SCRAPER] Stderr:", stderr);
+        });
 
         res.json({ 
             status: "ok", 
-            message: "Produto adicionado com sucesso", 
+            message: "Produto adicionado. Verificação inicial iniciada!", 
             produto: {
-                Id: result.insertId,
+                Id: productId,
                 Nome: nome,
                 PrecoAtual: null,
                 Loja: store.name
