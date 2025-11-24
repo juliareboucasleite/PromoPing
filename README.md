@@ -6,13 +6,7 @@
 # PromoPing
 O PromoPing é um sistema de monitoramento de preços para consumidores portugueses. Permite acompanhar produtos em diversas lojas online e receber notificações automáticas quando os preços atingem metas definidas.
 
-Algumas funcionalidades é a
-**Interface Web**: Dashboard responsivo com gráficos interativos de evolução de preços
-**Autenticação**: Sistema seguro com JWT, suporte para Google OAuth e Discord
-**Notificações**: Alertas via Discord Bot e email transacional
-**Monitorização Automática**: Suporte para mais de 20 lojas online (Worten, FNAC, Amazon, etc.)
-**Planos de Subscrição**: Free, Basic, Standard e Premium com diferentes intervalos de verificação
-**API RESTful**: API completa para integração e gestão de produtos
+O sistema inclui uma interface web responsiva com gráficos de evolução de preços, um mecanismo de autenticação seguro via JWT, Google OAuth e Discord, e notificações automáticas enviadas por email e Discord Bot. Conta ainda com monitorização contínua para mais de vinte lojas online, planos de subscrição com diferentes intervalos de verificação e uma API RESTful que permite integração e gestão completa dos produtos monitorizados.
 
 > **Nota:** O PromoPing monitora produtos escolhidos pelo utilizador e não compara preços entre lojas.
 
@@ -28,13 +22,10 @@ Rate limiting e CORS configurado
 Sanitização de entradas e prepared statements
 Logging estruturado e auditoria completa
 
-Para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
+Questões que são relevantes para a segurança devem ser divulgadas de forma privada contacte corporation.promoping@gmail.com e para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
 
 Contribuições são bem-vindas mediante contato por email. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) e [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) para diretrizes.
 Este projeto está licenciado sob a **GNU General Public License v2.0 (GPL-2.0)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-### Suporte
-**Email**: corporation.promoping@gmail.com
-**GitHub Issues**: [Reportar bugs e solicitar funcionalidades](https://github.com/juliareboucasleite/PromoPing/issues)
-**Discord**: [Servidor da comunidade](https://discord.gg/PXBXKXmfph)
-**Documentação**: [GitBook do PromoPing](https://promoping.gitbook.io/promoping-docs)
+
+Para suporte, dúvidas, envio de sugestões ou reporte de problemas, o projeto disponibiliza vários canais oficiais. O contacto direto pode ser feito através do email corporation.promoping@gmail.com . Questões técnicas, bugs ou pedidos de funcionalidades devem ser encaminhados pela página de Issues no GitHub. A comunidade também pode interagir e acompanhar novidades por meio do servidor oficial no Discord. A documentação completa, incluindo guias e referências do sistema, encontra-se disponível no GitBook do PromoPing.
