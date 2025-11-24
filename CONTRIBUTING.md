@@ -1,11 +1,12 @@
-# Guia de Contribuição para o PromoPing
+# Contribuindo para o PromoPing
 
-Obrigado por considerar contribuir para o PromoPing! Este documento fornece diretrizes para contribuir com o projeto.
+Obrigado por considerar contribuir para o PromoPing! A comunidade do PromoPing utiliza o GitHub para receber contribuições através de issues e pull requests.
 
-## Como Posso Contribuir?
+Para reportar bugs ou sugerir melhorias, utilize as [Issues do GitHub](https://github.com/juliareboucasleite/PromoPing/issues). Verifique se já existe uma issue similar antes de criar uma nova. Para bugs, inclua título descritivo, descrição detalhada, passos para reproduzir, comportamento esperado vs. atual, screenshots (se aplicável) e informações do ambiente.
 
-### Reportar Bugs
+Para contribuir com código, faça fork do repositório, clone o seu fork, instale as dependências (npm install para backend, pip install -r requirements.txt para Python scraper), configure as variáveis de ambiente e o banco de dados. Crie uma branch para sua feature ou correção, siga os padrões de código do projeto (JavaScript/Node.js com ESLint, Python seguindo PEP 8, HTML/CSS com indentação consistente), teste suas mudanças e abra um Pull Request com descrição clara das mudanças.
 
+<<<<<<< Updated upstream
 Se encontrar um bug, verifique se já foi reportado nas [Issues do GitHub](https://github.com/juliareboucasleite/PromoPing/issues). Se não foi reportado, crie uma nova issue com: título descritivo e claro, descrição detalhada do problema, passos para reproduzir o bug, comportamento esperado vs. comportamento atual, screenshots (se aplicável) e ambiente (OS, versão do Node.js, Python, etc.).
 
 ### Sugerir Melhorias
@@ -57,5 +58,10 @@ Mantenedores revisarão seu PR verificando se o código segue os padrões, testa
 Se tiver dúvidas sobre como contribuir, abra uma issue com a tag `question` ou entre em contato: **corporation.promoping@gmail.com**
 
 Obrigado por contribuir para tornar o PromoPing melhor!
+=======
+Para entender melhor como o projeto PromoPing é gerido e como colaborar, recomendamos revisar o [README.md](README.md) e as diretrizes de submissão. Para questões sobre contribuições, entre em contato através de **corporation.promoping@gmail.com** ou abra uma issue com a tag `question`.
+
+Sua simpática comunidade PromoPing!
+>>>>>>> Stashed changes
 
 **Última atualização**: Novembro 2025

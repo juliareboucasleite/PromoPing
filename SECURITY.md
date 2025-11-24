@@ -1,19 +1,38 @@
 # Política de Segurança do PromoPing
 
+<<<<<<< Updated upstream
 ## Versão Suportada
 
 Apenas a versão mais recente do PromoPing recebe atualizações de segurança. Recomendamos manter o sistema sempre atualizado.
 
+=======
+>>>>>>> Stashed changes
 ## Reportar uma Vulnerabilidade
 
 A segurança é uma prioridade para o PromoPing. Se descobrir uma vulnerabilidade de segurança, agradecemos que nos informe de forma responsável.
 
+<<<<<<< Updated upstream
 **NÃO** reporte vulnerabilidades de segurança através de issues públicos no GitHub. Em vez disso, envie um email para: **corporation.promoping@gmail.com**
 
 Inclua no seu reporte: tipo de vulnerabilidade, localização do código afetado, passos para reproduzir, impacto potencial e sugestões de correção (se houver).
+=======
+**NÃO** reporte vulnerabilidades de segurança através de issues públicos no GitHub. Em vez disso, envie um email detalhado para **corporation.promoping@gmail.com**. Discuta vulnerabilidades apenas por email, e não em público.
 
-### O que Esperar
+Exemplos de detalhes para incluir no seu reporte:
+- Idealmente uma breve descrição (ou um script) para demonstrar uma exploração
+- As plataformas e cenários afetados
+- O nome e a afiliação dos pesquisadores de segurança (se aplicável)
+- Se a vulnerabilidade já foi divulgada
+- Quanto tempo um embargo seria necessário para ser seguro
 
+Receberá uma confirmação do recebimento do reporte em até 48 horas, uma resposta inicial com avaliação da vulnerabilidade em até 7 dias, atualizações sobre o progresso da correção conforme necessário e reconhecimento público (se desejar) após a correção ser implementada.
+
+## Versões Suportadas
+>>>>>>> Stashed changes
+
+Atualmente, apenas a versão mais recente do PromoPing recebe atualizações de segurança. Recomendamos manter o sistema sempre atualizado.
+
+<<<<<<< Updated upstream
 Receberá uma confirmação do recebimento do reporte em até 48 horas, uma resposta inicial com avaliação da vulnerabilidade em até 7 dias, atualizações sobre o progresso da correção conforme necessário e reconhecimento público (se desejar) após a correção ser implementada.
 
 ## Medidas de Segurança Implementadas
@@ -53,5 +72,8 @@ Atualmente não há vulnerabilidades conhecidas. Se descobrir alguma, por favor 
 ## Contato
 
 Para questões de segurança: **corporation.promoping@gmail.com**
+=======
+Não há versões de "Suporte a longo prazo" oficiais. As correções são feitas para a branch de manutenção da versão de feature mais recente. Correções críticas de vulnerabilidades são aplicadas à branch mais recente e pelo menos uma ou duas tracks de manutenção mais antigas.
+>>>>>>> Stashed changes
 
 **Última atualização**: Novembro 2025
