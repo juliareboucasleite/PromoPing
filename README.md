@@ -13,7 +13,7 @@ O sistema inclui uma interface web responsiva com gráficos de evolução de pre
 
 A Arquitetura do PromoPing foi pensada usando essas linguagens: 
 HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
-ode.js 18+, Express.js 5.x, MySQL 8.0+
+Node.js 18+, Express.js 5.x, MySQL 8.0+
 Python 3.8+, Selenium WebDriver, BeautifulSoup4
 Docker, PM2, Nginx, GitHub Actions
 
