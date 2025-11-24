@@ -27,7 +27,7 @@
   },
   "keywords": [],
   "author": "Julia Rebouças Leite",
-  "license": "ISC",
+  "license": "GPL-2.0",
   "dependencies": {
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
