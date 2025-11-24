@@ -26,6 +26,7 @@ Os mantenedores do projeto que não seguirem ou aplicarem o Código de Conduta d
 
 ## Resolução de Conflitos
 
+<<<<<<< Updated upstream
 **Processo**: Comunicação direta com a pessoa envolvida de forma respeitosa, mediação através de um mantenedor do projeto se necessário, ação formal em casos graves contactando **corporation.promoping@gmail.com**.
 
 **Consequências**: Dependendo da gravidade e frequência do comportamento inaceitável, as consequências podem incluir aviso (advertência verbal ou escrita), suspensão temporária (proibição temporária de participar no projeto) ou banimento permanente (remoção permanente do projeto e de todos os espaços relacionados).
@@ -37,13 +38,26 @@ Como contribuidor do PromoPing, esperamos que você seja respeitoso, construtivo
 ## Espaços Cobertos
 
 Este Código de Conduta aplica-se a: repositório GitHub, issues e pull requests, comunicação via email do projeto, eventos e reuniões relacionadas ao projeto, qualquer outro espaço oficial do projeto.
+=======
+Tente resolver o conflito diretamente com a pessoa envolvida de forma respeitosa. Se necessário, envolva um mantenedor do projeto para mediar. Em casos graves, contacte **corporation.promoping@gmail.com**. Dependendo da gravidade e frequência do comportamento inaceitável, as consequências podem incluir aviso (advertência verbal ou escrita), suspensão temporária (proibição temporária de participar no projeto) ou banimento permanente (remoção permanente do projeto e de todos os espaços relacionados).
+>>>>>>> Stashed changes
 
 ## Atribuição
 
 Este Código de Conduta é adaptado do [Contributor Covenant](https://www.contributor-covenant.org), versão 2.1, disponível em https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
 
+<<<<<<< Updated upstream
 ## Contato
 
 Para questões sobre este Código de Conduta: **corporation.promoping@gmail.com**
 
 Para reportar violações, envie um email diretamente para **corporation.promoping@gmail.com** com o assunto "Violação do Código de Conduta".
+=======
+Para respostas a perguntas comuns sobre este código de conduta, consulte https://www.contributor-covenant.org/faq
+
+## Contato
+
+Para questões sobre este Código de Conduta ou para reportar violações, envie um email para **corporation.promoping@gmail.com**. Para reportar violações, use o assunto "Violação do Código de Conduta".
+
+**Última atualização**: Novembro 2025
+>>>>>>> Stashed changes
