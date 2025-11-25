@@ -9,9 +9,21 @@ module.exports = {
     description: 'Gerencia notificações de releases do GitHub no canal announcements.',
     execute: async (client, message, args, botInstance) => {
         try {
-            // Verificar permissões de administrador
-            if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                return await message.reply('❌ Você precisa de permissões de administrador para usar este comando.');
+            const action = args[0]?.toLowerCase();
+            
+            // Para ação de sincronizar, verificar cargo específico
+            if (action === 'sincronizar' || action === 'sync') {
+                const allowedRoleId = '1442655601682419722';
+                const hasAllowedRole = message.member.roles.cache.has(allowedRoleId);
+                
+                if (!hasAllowedRole) {
+                    return await message.channel.send('❌ Você não tem permissão para sincronizar releases. Apenas membros com o cargo específico podem usar esta função.');
+                }
+            } else {
+                // Para outras ações, verificar permissões de administrador
+                if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                    return await message.channel.send('❌ Você precisa de permissões de administrador para usar este comando.');
+                }
             }
 
             const dbConfig = {
@@ -23,7 +35,6 @@ module.exports = {
             };
 
             const connection = await mysql.createConnection(dbConfig);
-            const action = args[0]?.toLowerCase();
 
             // ID do canal announcements
             const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
@@ -31,7 +42,7 @@ module.exports = {
 
             if (!channel) {
                 await connection.end();
-                return await message.reply('❌ Canal announcements não encontrado!');
+                return await message.channel.send('❌ Canal announcements não encontrado!');
             }
 
             if (!action || action === 'status' || action === 'info') {
@@ -74,7 +85,7 @@ module.exports = {
                 });
 
                 await connection.end();
-                return await message.reply({ embeds: [embed] });
+                return await message.channel.send({ embeds: [embed] });
 
             } else if (action === 'configurar' || action === 'config') {
                 // Configurar webhook URL (opcional - pode ser feito manualmente no GitHub)
@@ -82,7 +93,7 @@ module.exports = {
                 
                 if (!webhookUrl) {
                     await connection.end();
-                    return await message.reply(
+                    return await message.channel.send(
                         '❌ Por favor, forneça a URL do webhook.\n**Uso:** `!announcements configurar <webhook-url>`'
                     );
                 }
@@ -117,7 +128,7 @@ module.exports = {
                     .setTimestamp();
 
                 await connection.end();
-                return await message.reply({ embeds: [embed] });
+                return await message.channel.send({ embeds: [embed] });
 
             } else if (action === 'testar' || action === 'test') {
                 // Testar notificação de release
@@ -137,23 +148,119 @@ module.exports = {
 
                 await channel.send({ embeds: [embed] });
                 await connection.end();
-                return await message.reply('✅ Notificação de teste enviada no canal announcements!');
+                return await message.channel.send('✅ Notificação de teste enviada no canal announcements!');
+
+            } else if (action === 'sincronizar' || action === 'sync') {
+                // Sincronizar todas as releases do GitHub
+                const loadingMsg = await message.channel.send('🔄 Sincronizando releases do GitHub... Isso pode levar alguns segundos.');
+                
+                try {
+                    // Chamar API de sincronização
+                    const syncUrl = process.env.API_URL || 'http://localhost:3000';
+                    const response = await fetch(`${syncUrl}/api/webhooks/github/sync`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Erro na API: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const embed = new EmbedBuilder()
+                            .setTitle('✅ Sincronização Concluída')
+                            .setDescription('Todas as releases do GitHub foram sincronizadas.')
+                            .addFields(
+                                { name: 'Total de Releases', value: result.total.toString(), inline: true },
+                                { name: 'Enviadas', value: result.sent.toString(), inline: true },
+                                { name: 'Já Processadas', value: result.skipped.toString(), inline: true }
+                            )
+                            .setColor(0x00ff00)
+                            .setTimestamp();
+                        
+                        await connection.end();
+                        await loadingMsg.edit({ content: '', embeds: [embed] });
+                        return;
+                    } else {
+                        await connection.end();
+                        await loadingMsg.edit(`❌ Erro ao sincronizar: ${result.error || 'Erro desconhecido'}`);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao sincronizar releases:', error);
+                    await connection.end();
+                    await loadingMsg.edit(`❌ Erro ao sincronizar releases: ${error.message}`).catch(() => {
+                        // Se não conseguir editar, enviar nova mensagem
+                        message.channel.send(`❌ Erro ao sincronizar releases: ${error.message}`).catch(console.error);
+                    });
+                    return;
+                }
 
             } else {
                 await connection.end();
-                return await message.reply(
+                return await message.channel.send(
                     '❌ Ação inválida!\n\n' +
                     '**Ações disponíveis:**\n' +
                     '• `status` - Mostra status da configuração\n' +
                     '• `configurar <url>` - Configura webhook URL (opcional)\n' +
-                    '• `testar` - Envia uma notificação de teste\n\n' +
+                    '• `testar` - Envia uma notificação de teste\n' +
+                    '• `sincronizar` - Sincroniza todas as releases do GitHub (requer cargo específico)\n\n' +
                     '**Exemplo:** `!announcements status`'
                 );
             }
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando announcements:', error);
-            return await message.reply('❌ Ocorreu um erro ao processar o comando. Tente novamente.');
+            
+            // Registrar erro no banco de dados
+            try {
+                const dbConfig = {
+                    host: process.env.DB_HOST || 'localhost',
+                    user: process.env.DB_USER || 'root',
+                    password: process.env.DB_PASSWORD || '',
+                    database: process.env.DB_NAME || 'pap',
+                    port: parseInt(process.env.DB_PORT) || 3306
+                };
+                const errorConnection = await mysql.createConnection(dbConfig);
+                
+                // Criar tabela de erros se não existir
+                await errorConnection.execute(`
+                    CREATE TABLE IF NOT EXISTS discord_errors (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        CommandName VARCHAR(100) NOT NULL,
+                        ErrorMessage TEXT NOT NULL,
+                        StackTrace TEXT,
+                        UserId VARCHAR(50),
+                        ChannelId VARCHAR(50),
+                        CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_command (CommandName),
+                        INDEX idx_created_at (CreatedAt)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                `);
+                
+                // Inserir erro
+                await errorConnection.execute(
+                    'INSERT INTO discord_errors (CommandName, ErrorMessage, StackTrace, UserId, ChannelId) VALUES (?, ?, ?, ?, ?)',
+                    [
+                        'announcements',
+                        error.message || 'Erro desconhecido',
+                        error.stack || '',
+                        message.author?.id || null,
+                        message.channel?.id || null
+                    ]
+                );
+                
+                await errorConnection.end();
+            } catch (dbError) {
+                console.error('[DISCORD] Erro ao registrar erro no banco:', dbError);
+            }
+            
+            return await message.channel.send('❌ Ocorreu um erro ao processar o comando. Tente novamente.').catch(() => {
+                // Se não conseguir enviar, apenas logar
+                console.error('[DISCORD] Não foi possível enviar mensagem de erro');
+            });
         }
     }
 };
