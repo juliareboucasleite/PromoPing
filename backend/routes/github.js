@@ -16,16 +16,155 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const router = express.Router();
 
-// Função para obter instância do bot Discord (se disponível)
-async function getDiscordBot() {
+// Função para enviar mensagem via bot Discord (usando servidor interno)
+async function sendDiscordMessage(channelId, embed) {
     try {
-        // A instância do bot é armazenada globalmente quando iniciado
-        return global.discordBotInstance || null;
+        // Tentar usar instância global primeiro (se no mesmo processo)
+        const bot = global.discordBotInstance;
+        if (bot && bot.client && bot.client.isReady()) {
+            const channel = await bot.client.channels.fetch(channelId).catch(() => null);
+            if (channel) {
+                await channel.send({ embeds: [embed] });
+                return true;
+            }
+        }
+        
+        // Se não estiver no mesmo processo, usar servidor HTTP interno do bot
+        const response = await fetch('http://127.0.0.1:3001/internal/send-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId, embed })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            console.error('[GITHUB WEBHOOK] Erro ao enviar mensagem via servidor interno:', error);
+            return false;
+        }
+        
+        return true;
     } catch (error) {
-        console.error('[GITHUB WEBHOOK] Erro ao obter instância do bot:', error);
-        return null;
+        console.error('[GITHUB WEBHOOK] Erro ao enviar mensagem:', error.message);
+        return false;
     }
 }
+
+// Função para verificar se o bot está disponível
+async function checkBotStatus() {
+    try {
+        // Tentar instância global primeiro
+        const bot = global.discordBotInstance;
+        if (bot && bot.client && bot.client.isReady()) {
+            return { available: true, ready: true };
+        }
+        
+        // Tentar servidor HTTP interno
+        const response = await fetch('http://127.0.0.1:3001/internal/status', {
+            method: 'GET',
+            timeout: 2000
+        }).catch(() => null);
+        
+        if (response && response.ok) {
+            return await response.json();
+        }
+        
+        return { available: false, ready: false };
+    } catch (error) {
+        return { available: false, ready: false };
+    }
+}
+
+// Endpoint de teste para verificar se o webhook está funcionando
+router.get("/api/webhooks/github/test", async (req, res) => {
+    try {
+        const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
+        const botStatus = await checkBotStatus();
+        
+        if (!botStatus.available || !botStatus.ready) {
+            return res.status(500).json({ 
+                error: 'Bot Discord não disponível',
+                botAvailable: false,
+                botReady: false,
+                channelId: ANNOUNCEMENTS_CHANNEL_ID,
+                tip: 'Verifique se o bot Discord está rodando'
+            });
+        }
+        
+        // Testar envio de mensagem
+        const testEmbed = {
+            title: '✅ Teste de Webhook GitHub',
+            description: 'Esta é uma notificação de teste do webhook do GitHub.',
+            color: 0x00ff00,
+            timestamp: new Date().toISOString()
+        };
+        
+        const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, testEmbed);
+        
+        return res.json({
+            status: 'ok',
+            botAvailable: true,
+            botReady: true,
+            messageSent: sent,
+            channelId: ANNOUNCEMENTS_CHANNEL_ID,
+            message: 'Webhook está configurado. Use este endpoint para testar: POST /api/webhooks/github',
+            webhookUrl: `${req.protocol}://${req.get('host')}/api/webhooks/github`
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: 'Erro ao verificar webhook',
+            message: error.message
+        });
+    }
+});
+
+// Endpoint para simular webhook do GitHub (para testes locais)
+router.post("/api/webhooks/github/test", express.json(), async (req, res) => {
+    try {
+        console.log('[GITHUB WEBHOOK TEST] Teste manual recebido');
+        
+        // Simular payload de release do GitHub
+        const testPayload = {
+            action: 'published',
+            release: {
+                tag_name: 'v2.5.0',
+                name: 'Test Release',
+                body: 'Esta é uma release de teste',
+                published_at: new Date().toISOString(),
+                html_url: 'https://github.com/juliareboucasleite/PromoPing/releases/tag/v2.5.0',
+                author: {
+                    login: 'juliareboucasleite'
+                },
+                assets: []
+            },
+            repository: {
+                full_name: 'juliareboucasleite/PromoPing',
+                html_url: 'https://github.com/juliareboucasleite/PromoPing',
+                owner: {
+                    login: 'juliareboucasleite',
+                    avatar_url: 'https://avatars.githubusercontent.com/u/69313019?v=4'
+                }
+            }
+        };
+
+        // Processar como se fosse um webhook real
+        req.headers['x-github-event'] = 'release';
+        req.body = Buffer.from(JSON.stringify(testPayload));
+        
+        // Chamar o handler do webhook
+        const originalUrl = req.url;
+        req.url = '/api/webhooks/github';
+        
+        // Usar o mesmo handler
+        return await router.handle(req, res);
+        
+    } catch (error) {
+        console.error('[GITHUB WEBHOOK TEST] Erro:', error);
+        return res.status(500).json({
+            error: 'Erro ao processar teste',
+            message: error.message
+        });
+    }
+});
 
 // ================== ROTA: OBTER RELEASES DO GITHUB ==================
 router.get("/api/github/releases", async (req, res) => {
@@ -166,11 +305,19 @@ const rawBodyMiddleware = express.raw({ type: 'application/json' });
 // ================== WEBHOOK: RECEBER EVENTOS DE RELEASE DO GITHUB ==================
 router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
   try {
+    console.log('[GITHUB WEBHOOK] ========== WEBHOOK RECEBIDO ==========');
+    console.log('[GITHUB WEBHOOK] Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('[GITHUB WEBHOOK] Body length:', req.body?.length || 0);
+    
+    const event = req.headers['x-github-event'];
+    console.log(`[GITHUB WEBHOOK] Evento recebido: ${event || 'NENHUM'}`);
+    
     // Verificar assinatura do webhook (se configurado)
     const githubSecret = process.env.GITHUB_WEBHOOK_SECRET;
     if (githubSecret) {
       const signature = req.headers['x-hub-signature-256'];
       if (!signature) {
+        console.error('[GITHUB WEBHOOK] Assinatura não fornecida');
         return res.status(401).json({ error: 'Assinatura não fornecida' });
       }
 
@@ -178,14 +325,17 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       const digest = 'sha256=' + hmac.update(req.body).digest('hex');
       
       if (signature !== digest) {
+        console.error('[GITHUB WEBHOOK] Assinatura inválida');
         return res.status(401).json({ error: 'Assinatura inválida' });
       }
+      console.log('[GITHUB WEBHOOK] Assinatura verificada com sucesso');
+    } else {
+      console.log('[GITHUB WEBHOOK] GITHUB_WEBHOOK_SECRET não configurado, pulando verificação de assinatura');
     }
-
-    const event = req.headers['x-github-event'];
     
     // Processar apenas eventos de release
     if (event !== 'release') {
+      console.log(`[GITHUB WEBHOOK] Evento ignorado: ${event}`);
       return res.status(200).json({ message: 'Evento ignorado', event });
     }
 
@@ -197,11 +347,15 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Body inválido' });
     }
     const action = releaseData.action; // published, created, edited, deleted, prereleased, released
+    console.log(`[GITHUB WEBHOOK] Ação da release: ${action}`);
 
     // Processar apenas releases publicados
     if (action !== 'published' && action !== 'released') {
+      console.log(`[GITHUB WEBHOOK] Release não publicado ainda (ação: ${action})`);
       return res.status(200).json({ message: 'Release não publicado ainda', action });
     }
+    
+    console.log(`[GITHUB WEBHOOK] Processando release publicada: ${releaseData.repository?.full_name} ${releaseData.release?.tag_name}`);
 
     const release = releaseData.release;
     const repository = releaseData.repository;
@@ -209,24 +363,24 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     // ID do canal announcements
     const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
 
-    // Obter instância do bot Discord
-    const bot = await getDiscordBot();
-    if (!bot || !bot.client) {
-      console.error('[GITHUB WEBHOOK] Bot Discord não disponível');
+    // Verificar se o bot está disponível
+    console.log('[GITHUB WEBHOOK] Verificando disponibilidade do bot Discord...');
+    const botStatus = await checkBotStatus();
+    if (!botStatus.available || !botStatus.ready) {
+      console.error('[GITHUB WEBHOOK] Bot Discord não disponível - verifique se o bot está rodando');
       return res.status(500).json({ error: 'Bot Discord não disponível' });
     }
+    console.log('[GITHUB WEBHOOK] Bot Discord está disponível e pronto');
 
-    const channel = await bot.client.channels.fetch(ANNOUNCEMENTS_CHANNEL_ID);
-    if (!channel) {
-      console.error('[GITHUB WEBHOOK] Canal announcements não encontrado');
-      return res.status(500).json({ error: 'Canal não encontrado' });
-    }
-
-    // Criar embed de notificação
-    const embed = new EmbedBuilder()
-      .setTitle('🚀 Nova Release')
-      .setDescription(`**${release.tag_name}** foi lançada!`)
-      .addFields(
+    // Criar embed de notificação (formato JSON para envio via HTTP)
+    const embedData = {
+      title: '🚀 Nova Release',
+      description: `**${release.tag_name}** foi lançada!`,
+      url: release.html_url,
+      color: 0x24292e,
+      timestamp: new Date(release.published_at).toISOString(),
+      footer: { text: 'PromoPing - GitHub Releases' },
+      fields: [
         { 
           name: 'Repositório', 
           value: `[${repository.full_name}](${repository.html_url})`, 
@@ -242,14 +396,12 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
           value: release.author?.login || 'Desconhecido', 
           inline: true 
         }
-      )
-      .setColor(0x24292e)
-      .setTimestamp(new Date(release.published_at))
-      .setFooter({ text: 'PromoPing - GitHub Releases' });
+      ]
+    };
 
     // Adicionar thumbnail do repositório
     if (repository.owner?.avatar_url) {
-      embed.setThumbnail(repository.owner.avatar_url);
+      embedData.thumbnail = { url: repository.owner.avatar_url };
     }
 
     // Adicionar notas da release (se houver)
@@ -257,7 +409,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       const bodyText = release.body.length > 1024 
         ? release.body.substring(0, 1021) + '...' 
         : release.body;
-      embed.addFields({
+      embedData.fields.push({
         name: 'Notas da Release',
         value: bodyText,
         inline: false
@@ -265,15 +417,18 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     }
 
     // Adicionar link para a release
-    embed.addFields({
+    embedData.fields.push({
       name: 'Links',
       value: `[Ver Release](${release.html_url}) | [Download](${release.assets[0]?.browser_download_url || release.html_url})`,
       inline: false
     });
 
-    // Enviar notificação
-    await channel.send({ embeds: [embed] });
-
+    // Enviar mensagem via função helper
+    const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, embedData);
+    if (!sent) {
+      console.error('[GITHUB WEBHOOK] Falha ao enviar mensagem para o Discord');
+      return res.status(500).json({ error: 'Falha ao enviar notificação' });
+    }
     console.log(`[GITHUB WEBHOOK] Notificação de release enviada: ${repository.full_name} ${release.tag_name}`);
 
     res.status(200).json({ 

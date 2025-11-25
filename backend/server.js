@@ -859,6 +859,10 @@ if (!isProduction) {
 import { GracePeriodManager } from './services/gracePeriodManager.js';
 import { DeactivatedAccountsManager } from './services/deactivatedAccountsManager.js';
 
+// ================== INICIAR BOT DISCORD (se token configurado) ==================
+// O bot é iniciado em processo separado via run.js, mas precisamos acessá-lo
+// Vamos criar uma função helper para buscar a instância do bot
+
 // ================== INICIAR SERVIDOR ==================
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
