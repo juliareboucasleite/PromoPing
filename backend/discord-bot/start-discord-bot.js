@@ -8,8 +8,8 @@ const __dirname = path.dirname(__filename);
 console.log('Iniciando PromoPing Discord Bot...');
 console.log('=====================================');
 
-// Caminho para o bot
-const botPath = path.join(__dirname, 'backend', 'discord-bot');
+// Caminho para o bot (já estamos em backend/discord-bot)
+const botPath = __dirname;
 
 // Iniciar o bot
 const bot = spawn('node', ['start-bot.js'], {

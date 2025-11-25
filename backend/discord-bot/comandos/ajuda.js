@@ -84,7 +84,6 @@ module.exports = {
                     '• Monitoramento automático de preços',
                     '• Notificações privadas sobre mudanças',
                     '• Sistema conectado à base de dados em tempo real',
-                    '• Prefixo configurável via `.env`'
                 ].join('\n')
             },
             {
@@ -123,6 +122,64 @@ module.exports = {
                     })
                     .join('\n') || 'Nenhum comando de produtos disponível'
             },
+            {
+                titulo: 'Comandos de Suporte',
+                conteudo: comandosArray
+                    .filter(cmd => ['ticket', 'fechar-ticket'].includes(cmd.name))
+                    .map(cmd => {
+                        const aliases = cmd.aliases && cmd.aliases.length
+                            ? ` (${cmd.aliases.join(', ')})`
+                            : '';
+                        return `• \`!${cmd.name}\`${aliases} — ${cmd.description}`;
+                    })
+                    .join('\n') || 'Nenhum comando de suporte disponível'
+            },
+            {
+                titulo: 'Comandos de Moderação',
+                conteudo: comandosArray
+                    .filter(cmd => ['lock', 'unlock', 'clear'].includes(cmd.name))
+                    .map(cmd => {
+                        const aliases = cmd.aliases && cmd.aliases.length
+                            ? ` (${cmd.aliases.join(', ')})`
+                            : '';
+                        let desc = cmd.description;
+                        if (cmd.name === 'clear') {
+                            desc += '\n  `!clear <número>` - Deleta 1-100 mensagens';
+                        }
+                        return `• \`!${cmd.name}\`${aliases} — ${desc}`;
+                    })
+                    .join('\n') || 'Nenhum comando de moderação disponível'
+            },
+            {
+                titulo: 'Comandos de Entretenimento',
+                conteudo: comandosArray
+                    .filter(cmd => ['counting'].includes(cmd.name))
+                    .map(cmd => {
+                        const aliases = cmd.aliases && cmd.aliases.length
+                            ? ` (${cmd.aliases.join(', ')})`
+                            : '';
+                        return `• \`!${cmd.name}\`${aliases} — ${cmd.description}\n  \`!counting configurar #canal\` - Configura canal de contagem\n  \`!counting status\` - Mostra status\n  \`!counting reset\` - Reseta contagem`;
+                    })
+                    .join('\n') || 'Nenhum comando de entretenimento disponível'
+            },
+            {
+                titulo: 'Comandos de Notificações',
+                conteudo: comandosArray
+                    .filter(cmd => ['social-feed', 'announcements'].includes(cmd.name))
+                    .map(cmd => {
+                        const aliases = cmd.aliases && cmd.aliases.length
+                            ? ` (${cmd.aliases.join(', ')})`
+                            : '';
+                        let desc = cmd.description;
+                        if (cmd.name === 'social-feed') {
+                            desc += '\n  `!social-feed adicionar <canal>` - Adiciona canal Twitch\n  `!social-feed listar` - Lista canais\n  `!social-feed verificar` - Força verificação';
+                        } else if (cmd.name === 'announcements') {
+                            desc += '\n  `!announcements status` - Mostra status\n  `!announcements testar` - Testa notificação';
+                        }
+                        return `• \`!${cmd.name}\`${aliases} — ${desc}`;
+                    })
+                    .join('\n') || 'Nenhum comando de notificações disponível'
+            },
         ];
 
         let paginaAtual = 0;
@@ -149,7 +206,7 @@ module.exports = {
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(`ajuda_anterior_${message.author.id}`)
-                    .setLabel('Anterior Anterior')
+                    .setLabel('◀ Anterior')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(paginaIndex === 0)
             );
@@ -158,7 +215,7 @@ module.exports = {
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(`ajuda_proximo_${message.author.id}`)
-                    .setLabel('Próximo Proximo')
+                    .setLabel('Próximo ▶')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(paginaIndex === paginas.length - 1)
             );
@@ -237,12 +294,12 @@ module.exports = {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`ajuda_anterior_${message.author.id}_disabled`)
-                        .setLabel('Anterior Anterior')
+                        .setLabel('◀ Anterior')
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`ajuda_proximo_${message.author.id}_disabled`)
-                        .setLabel('Próximo Proximo')
+                        .setLabel('Próximo ▶')
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()

@@ -6,17 +6,18 @@
 # PromoPing
 O PromoPing é um sistema de monitoramento de preços para consumidores portugueses e futuramente para todo mundo. Permite acompanhar produtos em diversas lojas online e receber notificações automáticas quando os preços atingem metas definidas. Inicialmente a ideia surgiu como apenas "Bot Fiscal de preço" e o nome “PromoPing” apareceu num daqueles momentos em que o desespero e criatividade forçada onde se busca nomes no ChatGpt. Parece significar “ping de promoções” e até soa profissional. Nos dias normais, lembra mais “pinga promoções”, porque resolve disparar alertas todos de uma vez. E quando alguma loja muda o HTML sem avisar, o nome transforma-se facilmente em “programa maldito que só pinga quando quer”. No fim, ficou porque funciona… e porque nenhum nome melhor surgiu antes da paciência acabar.
 
-
 O sistema inclui uma interface web responsiva com gráficos de evolução de preços, um mecanismo de autenticação seguro via JWT, Google OAuth e Discord, e notificações automáticas enviadas por email e Discord Bot. Conta ainda com monitorização contínua para mais de vinte lojas online, planos de subscrição com diferentes intervalos de verificação e uma API RESTful que permite integração e gestão completa dos produtos monitorizados.
 
 > **Nota:** O PromoPing monitora produtos escolhidos pelo utilizador e não compara preços entre lojas.
 
+## Arquitetura
 A Arquitetura do PromoPing foi pensada usando essas linguagens: 
 HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
 Node.js 18+, Express.js 5.x, MySQL 8.0+
 Python 3.8+, Selenium WebDriver, BeautifulSoup4
 Docker, PM2, Nginx, GitHub Actions
 
+## Segurança
 O sistema implementa múltiplas camadas de proteção:
 Autenticação JWT com refresh tokens
 Rate limiting e CORS configurado

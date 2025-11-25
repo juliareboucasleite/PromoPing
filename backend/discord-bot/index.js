@@ -9,6 +9,9 @@ if (!process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_BOT_TOKEN === 'SEU_TOK
 // Criar e iniciar o bot
 const bot = new PromoPingBot();
 
+// Exportar instância globalmente para acesso de outros módulos
+global.discordBotInstance = bot;
+
 // Tratamento de erros não capturados
 process.on('unhandledRejection', (reason, promise) => {
     console.error('[DISCORD] Unhandled Rejection at:', promise, 'reason:', reason);
@@ -22,9 +25,11 @@ process.on('uncaughtException', (error) => {
 // Iniciar o bot
 async function startBot() {
     try {
+        console.log('Iniciando bot Discord...');
         await bot.connect();
+        console.log('Bot Discord conectado com sucesso!');
     } catch (error) {
-        console.error('[DISCORD] Falha ao iniciar bot:', error);
+        console.error('Falha ao iniciar bot:', error);
         process.exit(1);
     }
 }

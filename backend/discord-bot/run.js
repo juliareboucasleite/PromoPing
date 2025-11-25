@@ -19,6 +19,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const rootDir = path.join(__dirname, '../..');
 
 // Cores para output
 const colors = {
@@ -50,13 +51,13 @@ function checkCommand(command) {
 }
 
 function checkFile(file) {
-    return fs.existsSync(path.join(__dirname, file));
+    return fs.existsSync(path.join(rootDir, file));
 }
 
 function runSetup() {
     log('Executando setup automático...', 'blue');
     try {
-        execSync('node scripts/setup.js', { stdio: 'inherit', cwd: __dirname });
+        execSync('node scripts/setup.js', { stdio: 'inherit', cwd: rootDir });
         return true;
     } catch (error) {
         log('Erro no setup automático', 'red');
@@ -73,7 +74,7 @@ function runDocker() {
     try {
         execSync(`docker-compose -f ${dockerComposeFile} up --build`, { 
             stdio: 'inherit', 
-            cwd: __dirname 
+            cwd: rootDir 
         });
     } catch (error) {
         log('Erro ao executar Docker', 'red');
@@ -103,7 +104,7 @@ function runLocal() {
     if (!checkFile('node_modules')) {
         log('Instalando dependências...', 'blue');
         try {
-            execSync('npm install', { stdio: 'inherit', cwd: __dirname });
+            execSync('npm install', { stdio: 'inherit', cwd: rootDir });
         } catch (error) {
             log('Erro ao instalar dependências', 'red');
             process.exit(1);
@@ -120,7 +121,7 @@ function runLocal() {
         try {
             presenceProcess = spawn('node', ['presence.js'], { 
                 stdio: 'pipe', 
-                cwd: __dirname 
+                cwd: rootDir 
             });
             processes.push(presenceProcess);
             
@@ -162,17 +163,18 @@ function runLocal() {
     
     // Iniciar Bot do Discord
     let discordBotProcess = null;
-    if (checkFile('backend/discord-bot/package.json')) {
+    // Verificar se package.json existe na pasta atual (já estamos em backend/discord-bot)
+    if (fs.existsSync(path.join(__dirname, 'package.json'))) {
         // Inicia silenciosamente
         try {
             // Verificar se as dependências do bot estão instaladas
-            const botNodeModules = path.join(__dirname, 'backend', 'discord-bot', 'node_modules');
+            const botNodeModules = path.join(__dirname, 'node_modules');
             if (!fs.existsSync(botNodeModules)) {
                 log('Instalando dependências do bot do Discord...', 'yellow');
                 try {
                     execSync('npm install', { 
                         stdio: 'inherit', 
-                        cwd: path.join(__dirname, 'backend', 'discord-bot') 
+                        cwd: __dirname 
                     });
                 } catch (error) {
                     log('Aviso: Erro ao instalar dependências do bot, continuando...', 'yellow');
@@ -180,43 +182,40 @@ function runLocal() {
             }
             
             discordBotProcess = spawn('node', ['index.js'], {
-                cwd: path.join(__dirname, 'backend', 'discord-bot'),
+                cwd: __dirname,
                 stdio: 'pipe'
             });
             processes.push(discordBotProcess);
             
             discordBotProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim();
-                // Filtra logs verbosos - bloqueia quase tudo, só mostra erros críticos
+                // Mostrar logs importantes do bot
                 if (message && (
-                    (message.includes('ERROR') || message.includes('FATAL') || message.includes('CRITICAL')) && 
-                    !message.includes('Verificando') &&
-                    !message.includes('Carregando') &&
-                    !message.includes('Carregado') &&
-                    !message.includes('comandos') &&
-                    !message.includes('Comandos') &&
-                    !message.includes('Servidores') &&
-                    !message.includes('Prefixo') &&
-                    !message.includes('Sistema') &&
-                    !message.includes('Iniciando') &&
-                    !message.includes('Bot conectado') &&
-                    !message.includes('DeprecationWarning') &&
-                    !message.includes('Bot') &&
-                    !message.includes('DISCORD')
+                    message.includes('ERROR') || 
+                    message.includes('FATAL') || 
+                    message.includes('CRITICAL') ||
+                    message.includes('conectado') ||
+                    message.includes('comandos de barra registrados') ||
+                    message.includes('Twitch') ||
+                    message.includes('Verificando lives') ||
+                    message.includes('Notificação enviada') ||
+                    message.includes('Erro ao verificar lives')
                 )) {
                     log(`Bot Discord: ${message}`, 'magenta');
                 }
-                // Bloqueia todos os outros logs do bot
             });
             
             discordBotProcess.stderr.on('data', (data) => {
                 const message = data.toString().trim();
-                // Só mostra erros críticos, ignorando warnings e deprecations
+                // Mostrar erros importantes, ignorando apenas deprecations
                 if (message && 
-                    !message.includes('Client ID') && 
                     !message.includes('DeprecationWarning') &&
                     !message.includes('Use `node --trace-deprecation') &&
-                    (message.includes('ERROR') || message.includes('FATAL') || message.includes('CRITICAL'))
+                    (message.includes('ERROR') || 
+                     message.includes('FATAL') || 
+                     message.includes('CRITICAL') ||
+                     message.includes('Erro') ||
+                     message.includes('Falha'))
                 ) {
                     log(`Bot Discord: ${message}`, 'red');
                 }
@@ -240,7 +239,7 @@ function runLocal() {
     try {
         const server = spawn('node', ['backend/server.js'], { 
             stdio: 'inherit', 
-            cwd: __dirname 
+            cwd: rootDir 
         });
         processes.push(server);
         
