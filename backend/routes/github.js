@@ -363,32 +363,24 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     // ID do canal announcements
     const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
 
-    // Obter instância do bot Discord
-    console.log('[GITHUB WEBHOOK] Tentando obter instância do bot Discord...');
-    const bot = await getDiscordBot();
-    if (!bot || !bot.client) {
+    // Verificar se o bot está disponível
+    console.log('[GITHUB WEBHOOK] Verificando disponibilidade do bot Discord...');
+    const botStatus = await checkBotStatus();
+    if (!botStatus.available || !botStatus.ready) {
       console.error('[GITHUB WEBHOOK] Bot Discord não disponível - verifique se o bot está rodando');
       return res.status(500).json({ error: 'Bot Discord não disponível' });
     }
-    console.log('[GITHUB WEBHOOK] Bot Discord encontrado');
+    console.log('[GITHUB WEBHOOK] Bot Discord está disponível e pronto');
 
-    console.log(`[GITHUB WEBHOOK] Buscando canal ${ANNOUNCEMENTS_CHANNEL_ID}...`);
-    const channel = await bot.client.channels.fetch(ANNOUNCEMENTS_CHANNEL_ID).catch(err => {
-      console.error(`[GITHUB WEBHOOK] Erro ao buscar canal: ${err.message}`);
-      return null;
-    });
-    
-    if (!channel) {
-      console.error('[GITHUB WEBHOOK] Canal announcements não encontrado');
-      return res.status(500).json({ error: 'Canal não encontrado' });
-    }
-    console.log(`[GITHUB WEBHOOK] Canal encontrado: ${channel.name}`);
-
-    // Criar embed de notificação
-    const embed = new EmbedBuilder()
-      .setTitle('🚀 Nova Release')
-      .setDescription(`**${release.tag_name}** foi lançada!`)
-      .addFields(
+    // Criar embed de notificação (formato JSON para envio via HTTP)
+    const embedData = {
+      title: '🚀 Nova Release',
+      description: `**${release.tag_name}** foi lançada!`,
+      url: release.html_url,
+      color: 0x24292e,
+      timestamp: new Date(release.published_at).toISOString(),
+      footer: { text: 'PromoPing - GitHub Releases' },
+      fields: [
         { 
           name: 'Repositório', 
           value: `[${repository.full_name}](${repository.html_url})`, 
@@ -404,14 +396,12 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
           value: release.author?.login || 'Desconhecido', 
           inline: true 
         }
-      )
-      .setColor(0x24292e)
-      .setTimestamp(new Date(release.published_at))
-      .setFooter({ text: 'PromoPing - GitHub Releases' });
+      ]
+    };
 
     // Adicionar thumbnail do repositório
     if (repository.owner?.avatar_url) {
-      embed.setThumbnail(repository.owner.avatar_url);
+      embedData.thumbnail = { url: repository.owner.avatar_url };
     }
 
     // Adicionar notas da release (se houver)
@@ -419,7 +409,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       const bodyText = release.body.length > 1024 
         ? release.body.substring(0, 1021) + '...' 
         : release.body;
-      embed.addFields({
+      embedData.fields.push({
         name: 'Notas da Release',
         value: bodyText,
         inline: false
@@ -427,15 +417,18 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     }
 
     // Adicionar link para a release
-    embed.addFields({
+    embedData.fields.push({
       name: 'Links',
       value: `[Ver Release](${release.html_url}) | [Download](${release.assets[0]?.browser_download_url || release.html_url})`,
       inline: false
     });
 
-    // Enviar notificação
-    await channel.send({ embeds: [embed] });
-
+    // Enviar mensagem via função helper
+    const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, embedData);
+    if (!sent) {
+      console.error('[GITHUB WEBHOOK] Falha ao enviar mensagem para o Discord');
+      return res.status(500).json({ error: 'Falha ao enviar notificação' });
+    }
     console.log(`[GITHUB WEBHOOK] Notificação de release enviada: ${repository.full_name} ${release.tag_name}`);
 
     res.status(200).json({ 
