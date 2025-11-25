@@ -16,52 +16,95 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const router = express.Router();
 
-// Função para obter instância do bot Discord (se disponível)
-async function getDiscordBot() {
+// Função para enviar mensagem via bot Discord (usando servidor interno)
+async function sendDiscordMessage(channelId, embed) {
     try {
-        // A instância do bot é armazenada globalmente quando iniciado
+        // Tentar usar instância global primeiro (se no mesmo processo)
         const bot = global.discordBotInstance;
-        if (!bot) {
-            console.error('[GITHUB WEBHOOK] Bot não encontrado em global.discordBotInstance');
-            return null;
+        if (bot && bot.client && bot.client.isReady()) {
+            const channel = await bot.client.channels.fetch(channelId).catch(() => null);
+            if (channel) {
+                await channel.send({ embeds: [embed] });
+                return true;
+            }
         }
-        if (!bot.client) {
-            console.error('[GITHUB WEBHOOK] Bot encontrado mas client não disponível');
-            return null;
+        
+        // Se não estiver no mesmo processo, usar servidor HTTP interno do bot
+        const response = await fetch('http://127.0.0.1:3001/internal/send-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId, embed })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            console.error('[GITHUB WEBHOOK] Erro ao enviar mensagem via servidor interno:', error);
+            return false;
         }
-        if (!bot.client.isReady()) {
-            console.error('[GITHUB WEBHOOK] Bot encontrado mas não está pronto (ready)');
-            return null;
-        }
-        return bot;
+        
+        return true;
     } catch (error) {
-        console.error('[GITHUB WEBHOOK] Erro ao obter instância do bot:', error);
-        return null;
+        console.error('[GITHUB WEBHOOK] Erro ao enviar mensagem:', error.message);
+        return false;
+    }
+}
+
+// Função para verificar se o bot está disponível
+async function checkBotStatus() {
+    try {
+        // Tentar instância global primeiro
+        const bot = global.discordBotInstance;
+        if (bot && bot.client && bot.client.isReady()) {
+            return { available: true, ready: true };
+        }
+        
+        // Tentar servidor HTTP interno
+        const response = await fetch('http://127.0.0.1:3001/internal/status', {
+            method: 'GET',
+            timeout: 2000
+        }).catch(() => null);
+        
+        if (response && response.ok) {
+            return await response.json();
+        }
+        
+        return { available: false, ready: false };
+    } catch (error) {
+        return { available: false, ready: false };
     }
 }
 
 // Endpoint de teste para verificar se o webhook está funcionando
 router.get("/api/webhooks/github/test", async (req, res) => {
     try {
-        const bot = await getDiscordBot();
         const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
+        const botStatus = await checkBotStatus();
         
-        if (!bot || !bot.client) {
+        if (!botStatus.available || !botStatus.ready) {
             return res.status(500).json({ 
                 error: 'Bot Discord não disponível',
                 botAvailable: false,
-                channelId: ANNOUNCEMENTS_CHANNEL_ID
+                botReady: false,
+                channelId: ANNOUNCEMENTS_CHANNEL_ID,
+                tip: 'Verifique se o bot Discord está rodando'
             });
         }
         
-        const channel = await bot.client.channels.fetch(ANNOUNCEMENTS_CHANNEL_ID).catch(() => null);
+        // Testar envio de mensagem
+        const testEmbed = {
+            title: '✅ Teste de Webhook GitHub',
+            description: 'Esta é uma notificação de teste do webhook do GitHub.',
+            color: 0x00ff00,
+            timestamp: new Date().toISOString()
+        };
+        
+        const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, testEmbed);
         
         return res.json({
             status: 'ok',
             botAvailable: true,
-            botReady: bot.client.isReady(),
-            channelFound: !!channel,
-            channelName: channel?.name || 'Não encontrado',
+            botReady: true,
+            messageSent: sent,
             channelId: ANNOUNCEMENTS_CHANNEL_ID,
             message: 'Webhook está configurado. Use este endpoint para testar: POST /api/webhooks/github',
             webhookUrl: `${req.protocol}://${req.get('host')}/api/webhooks/github`
