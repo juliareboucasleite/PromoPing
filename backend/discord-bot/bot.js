@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder } = require('discord.js');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const comandos = require('./comandos');
@@ -11,7 +11,9 @@ class PromoPingBot {
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.MessageContent,
-                GatewayIntentBits.DirectMessages
+                GatewayIntentBits.DirectMessages,
+                GatewayIntentBits.GuildMembers,
+                GatewayIntentBits.GuildPresences
             ],
             partials: ['CHANNEL']
         });
@@ -31,21 +33,58 @@ class PromoPingBot {
         this.isMonitoring = false;
         this.lastCheck = new Date();
         this.lastErrorLog = 0; // Para controlar spam de erros
+        
+        // Anti-spam para chamar moderador: armazena timestamp por canal
+        this.lastModeratorCall = new Map(); // channelId -> timestamp
+
+        // Monitoramento de Twitch
+        this.twitchCheckInterval = null;
+        this.lastTwitchCheck = new Date();
+        this.twitchLiveStatus = new Map(); // channelName -> { isLive: boolean, lastNotification: Date }
 
         this.setupEventHandlers();
     }
 
     setupEventHandlers() {
         // Quando o bot se conecta
-        this.client.once('ready', () => {
-            // Bot conectado - log silencioso
+        this.client.once('ready', async () => {
+            console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
+            console.log(`[DISCORD] Iniciando monitoramento de preços e Twitch...`);
             this.startMonitoring();
+            this.startTwitchMonitoring();
+            
+            // Definir status/presença do bot
+            // Alterna entre diferentes descrições de status a cada 20 segundos
+            const activities = [
+                { name: 'PromoPing - Monitor de Preços', type: 0 },
+                { name: '!ajuda para comandos', type: 0 },
+                { name: 'promoping.pt', type: 3 }
+            ];
+            let activityIndex = 0;
+            const updateActivity = () => {
+                const activity = activities[activityIndex];
+                this.client.user.setActivity(activity.name, { type: activity.type });
+                activityIndex = (activityIndex + 1) % activities.length;
+            };
+            updateActivity();
+            setInterval(updateActivity, 20000);
+            
+            // Registrar comandos de barra (slash commands)
+            await this.registerSlashCommands();
         });
 
         // Quando alguém envia uma mensagem
         this.client.on('messageCreate', async (message) => {
             try {
-                if (message.author.bot) return; // ignora bots
+                if (message.author.bot) {
+                    // Verificar se é mensagem de counting (mesmo sendo bot, pode ser necessário)
+                    await this.handleCounting(message);
+                    return;
+                }
+
+                // Verificar counting antes de processar comandos
+                const countingHandled = await this.handleCounting(message);
+                if (countingHandled) return; // Se foi processado como counting, não processar como comando
 
                 // Ignora mensagens sem prefixo
                 if (!message.content.startsWith(this.prefix)) return;
@@ -62,13 +101,837 @@ class PromoPingBot {
                 await comando.execute(this.client, message, args, this);
             } catch (error) {
                 console.error(`[DISCORD] Erro ao processar comando:`, error);
-                await message.reply('Ocorreu um erro ao executar este comando.');
+                if (!message.deleted) {
+                    await message.reply('Ocorreu um erro ao executar este comando.').catch(() => {});
+                }
             }
         });
 
         this.client.on('error', (error) => {
             console.error('[DISCORD] Erro no bot:', error);
         });
+
+        // Handler de interações (botões, menus, slash commands, etc)
+        this.client.on('interactionCreate', async (interaction) => {
+            try {
+                // Lidar com comandos de barra (slash commands)
+                if (interaction.isChatInputCommand()) {
+                    await this.handleSlashCommand(interaction);
+                    return;
+                }
+                
+                // Lidar com menus de seleção
+                if (interaction.isStringSelectMenu()) {
+                    if (interaction.customId.startsWith('ticket_categoria_')) {
+                        // Extrair categoria do valor selecionado
+                        const selectedValue = interaction.values[0];
+                        const parts = selectedValue.split('_');
+                        const categoriaCode = parts[0]; // notificacoes, duvida, login, produtos, outros
+                        const userId = parts[1];
+                        
+                        // Verificar se é o usuário correto
+                        if (interaction.user.id !== userId) {
+                            return await interaction.reply({ 
+                                content: 'Esta interação não é para você!', 
+                                ephemeral: true 
+                            });
+                        }
+                        
+                        const categoriaNomes = {
+                            'notificacoes': 'Problema com Notificações',
+                            'duvida': 'Dúvida sobre o Bot',
+                            'login': 'Erro ao Fazer Login',
+                            'produtos': 'Problema com Produtos',
+                            'outros': 'Outros'
+                        };
+                        await this.handleTicketCategory(interaction, categoriaNomes[categoriaCode] || categoriaCode, categoriaCode);
+                    }
+                }
+                // Lidar com botões
+                else if (interaction.isButton()) {
+                    if (interaction.customId === 'abrir_ticket_promoping') {
+                        await this.handleTicketButton(interaction);
+                    } else if (interaction.customId.startsWith('ticket_confirmar_')) {
+                        // Extrair categoria do customId: ticket_confirmar_userId_categoriaCode
+                        const parts = interaction.customId.split('_');
+                        const categoriaCode = parts[3]; // código da categoria (notificacoes, duvida, etc)
+                        await this.handleTicketConfirm(interaction, categoriaCode);
+                    } else if (interaction.customId.startsWith('ticket_cancelar_')) {
+                        await this.handleTicketCancel(interaction);
+                    } else if (interaction.customId.startsWith('ticket_fechar_confirmar_')) {
+                        // Verificar confirmar ANTES de ticket_fechar_ (mais específico)
+                        await this.handleFecharTicketConfirm(interaction);
+                    } else if (interaction.customId.startsWith('ticket_fechar_cancelar_')) {
+                        // Verificar cancelar ANTES de ticket_fechar_ (mais específico)
+                        await interaction.update({ 
+                            content: 'Fechamento cancelado.', 
+                            embeds: [], 
+                            components: [] 
+                        });
+                    } else if (interaction.customId.startsWith('ticket_fechar_')) {
+                        // Verificar ticket_fechar_ depois das verificações específicas
+                        await this.handleFecharTicketButton(interaction);
+                    } else if (interaction.customId.startsWith('ticket_chamar_mod_')) {
+                        await this.handleChamarModerador(interaction);
+                    }
+                }
+            } catch (error) {
+                console.error('[DISCORD] Erro ao processar interação:', error);
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({ 
+                        content: 'Ocorreu um erro ao processar sua solicitação.', 
+                        ephemeral: true 
+                    });
+                } else {
+                    await interaction.reply({ 
+                        content: 'Ocorreu um erro ao processar sua solicitação.', 
+                        ephemeral: true 
+                    });
+                }
+            }
+        });
+    }
+
+    async handleTicketButton(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+
+            if (!guild) {
+                return await interaction.reply({ 
+                    content: 'Este botão só pode ser usado em um servidor!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Verificar se o usuário já tem um ticket aberto
+            const ticketChannelName = `ticket-${interaction.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+            
+            const existingChannel = guild.channels.cache.find(
+                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+            );
+
+            if (existingChannel) {
+                const embed = new EmbedBuilder()
+                    .setTitle('Ticket Já Existe')
+                    .setDescription(`Você já tem um ticket aberto: ${existingChannel}`)
+                    .setColor(0xffa500)
+                    .setTimestamp();
+                
+                return await interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+
+            // Mostrar opções de categoria com menu de seleção
+            const categoriaEmbed = new EmbedBuilder()
+                .setTitle('Escolha a Categoria do Ticket')
+                .setDescription('Selecione a categoria que melhor descreve seu problema:')
+                .setColor(0x5865F2)
+                .setTimestamp();
+
+            const categoriaSelectMenu = new StringSelectMenuBuilder()
+                .setCustomId(`ticket_categoria_${userId}`)
+                .setPlaceholder('Selecione uma categoria...')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Notificações')
+                        .setDescription('Problema com notificações')
+                        .setValue(`notificacoes_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Dúvida')
+                        .setDescription('Dúvida sobre o bot')
+                        .setValue(`duvida_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Login')
+                        .setDescription('Erro ao fazer login')
+                        .setValue(`login_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Produtos')
+                        .setDescription('Problema com produtos')
+                        .setValue(`produtos_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Outros')
+                        .setDescription('Outro tipo de problema')
+                        .setValue(`outros_${userId}`)
+                );
+
+            const categoriaRow = new ActionRowBuilder()
+                .addComponents(categoriaSelectMenu);
+
+            await interaction.reply({ 
+                embeds: [categoriaEmbed], 
+                components: [categoriaRow],
+                ephemeral: true 
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar botão de ticket:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleTicketCategory(interaction, categoria, categoriaCode) {
+        try {
+            const userId = interaction.user.id;
+
+            // Mostrar confirmação
+            const confirmEmbed = new EmbedBuilder()
+                .setTitle('Confirmar Criação do Ticket')
+                .setDescription(`**Categoria selecionada:** ${categoria}\n\nClique em **Confirmar** para criar o ticket.`)
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            const confirmRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_confirmar_${userId}_${categoriaCode}`)
+                        .setLabel('Confirmar')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_cancelar_${userId}`)
+                        .setLabel('Cancelar')
+                        .setStyle(ButtonStyle.Danger)
+                );
+
+            await interaction.update({ 
+                embeds: [confirmEmbed], 
+                components: [confirmRow] 
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar categoria de ticket:', error);
+            await interaction.reply({ 
+                content: 'Ocorreu um erro ao processar sua seleção.', 
+                ephemeral: true 
+            });
+        }
+    }
+
+    async handleTicketConfirm(interaction, categoriaCode) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+
+            // Verificar se é o usuário correto
+            if (!interaction.customId.includes(userId)) {
+                return await interaction.reply({ 
+                    content: 'Esta interação não é para você!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Mapear código para nome da categoria
+            const categoriaNomes = {
+                'notificacoes': 'Problema com Notificações',
+                'duvida': 'Dúvida sobre o Bot',
+                'login': 'Erro ao Fazer Login',
+                'produtos': 'Problema com Produtos',
+                'outros': 'Outros'
+            };
+            const categoriaNome = categoriaNomes[categoriaCode] || 'Outros';
+
+            // Verificar se o usuário já tem um ticket aberto
+            const ticketChannelName = `ticket-${interaction.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+            
+            const existingChannel = guild.channels.cache.find(
+                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+            );
+
+            if (existingChannel) {
+                const embed = new EmbedBuilder()
+                    .setTitle('Ticket Já Existe')
+                    .setDescription(`Você já tem um ticket aberto: ${existingChannel}`)
+                    .setColor(0xffa500)
+                    .setTimestamp();
+                
+                return await interaction.update({ 
+                    embeds: [embed], 
+                    components: [] 
+                });
+            }
+
+            // Criar categoria de tickets se não existir
+            let ticketCategory = guild.channels.cache.find(
+                cat => cat.name === '🎫 Tickets' && cat.type === ChannelType.GuildCategory
+            );
+
+            if (!ticketCategory) {
+                ticketCategory = await guild.channels.create({
+                    name: '🎫 Tickets',
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                        {
+                            id: guild.id,
+                            deny: [PermissionFlagsBits.ViewChannel]
+                        }
+                    ]
+                });
+            }
+
+            // Criar canal de ticket com permissões explícitas
+            const ticketChannel = await guild.channels.create({
+                name: ticketChannelName,
+                type: ChannelType.GuildText,
+                parent: ticketCategory.id,
+                permissionOverwrites: [
+                    {
+                        id: guild.id,
+                        deny: [PermissionFlagsBits.ViewChannel]
+                    },
+                    {
+                        id: userId,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                            PermissionFlagsBits.AttachFiles,
+                            PermissionFlagsBits.EmbedLinks
+                        ],
+                        deny: []
+                    },
+                    {
+                        id: this.client.user.id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    }
+                ]
+            });
+
+            // Garantir que o usuário tenha acesso ao canal (atualizar permissões se necessário)
+            try {
+                await ticketChannel.permissionOverwrites.edit(userId, {
+                    ViewChannel: true,
+                    SendMessages: true,
+                    ReadMessageHistory: true,
+                    AttachFiles: true,
+                    EmbedLinks: true
+                });
+            } catch (error) {
+                console.error('[DISCORD] Erro ao atualizar permissões do usuário:', error);
+            }
+
+            // Adicionar permissões para roles de suporte (se configuradas)
+            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
+            if (supportRoleId) {
+                await ticketChannel.permissionOverwrites.edit(supportRoleId, {
+                    ViewChannel: true,
+                    SendMessages: true,
+                    ReadMessageHistory: true,
+                    AttachFiles: true,
+                    EmbedLinks: true
+                });
+            }
+
+            // Criar embed de boas-vindas no canal do ticket
+            const welcomeEmbed = new EmbedBuilder()
+                .setTitle('🎫 Ticket de Suporte Criado')
+                .setDescription(`**Ticket criado por:** ${interaction.user}\n**Categoria:** ${categoriaNome}`)
+                .addFields({
+                    name: 'Informações',
+                    value: '• Um membro da equipe de suporte responderá em breve\n• Descreva seu problema com detalhes\n• Use os botões abaixo para gerenciar o ticket',
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Suporte' });
+
+            // Criar botões para o ticket
+            const ticketButtonsRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_fechar_${ticketChannel.id}_${userId}`)
+                        .setLabel('Fechar Ticket')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_chamar_mod_${ticketChannel.id}_${userId}`)
+                        .setLabel('Chamar Suporte')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            const mentionText = supportRoleId 
+                ? `${interaction.user} | <@&${supportRoleId}>`
+                : `${interaction.user}`;
+            
+            await ticketChannel.send({ 
+                content: mentionText,
+                embeds: [welcomeEmbed],
+                components: [ticketButtonsRow]
+            });
+
+            // Confirmar criação do ticket
+            const successEmbed = new EmbedBuilder()
+                .setTitle('🎫 Ticket Criado com Sucesso!')
+                .setDescription(`Seu ticket foi criado: ${ticketChannel}\n\n**Categoria:** ${categoriaNome}\n\nClique no canal acima para acessá-lo.`)
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            await interaction.update({ 
+                embeds: [successEmbed], 
+                components: [] 
+            });
+
+            // Enviar mensagem adicional com link
+            await interaction.followUp({ 
+                content: `🎫 Seu ticket foi criado! Acesse: ${ticketChannel}`,
+                ephemeral: true 
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao criar ticket:', error);
+            await interaction.update({ 
+                content: ' **Erro ao criar o ticket!** Tente novamente em alguns minutos.',
+                components: []
+            });
+        }
+    }
+
+    async handleTicketCancel(interaction) {
+        try {
+            const userId = interaction.user.id;
+
+            // Verificar se é o usuário correto
+            if (!interaction.customId.includes(userId)) {
+                return await interaction.reply({ 
+                    content: 'Esta interação não é para você!', 
+                    ephemeral: true 
+                });
+            }
+
+            const cancelEmbed = new EmbedBuilder()
+                .setTitle('Ticket Cancelado')
+                .setDescription('A criação do ticket foi cancelada.')
+                .setColor(0xff0000)
+                .setTimestamp();
+
+            await interaction.update({ 
+                embeds: [cancelEmbed], 
+                components: [] 
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao cancelar ticket:', error);
+            await interaction.reply({ 
+                content: 'Ocorreu um erro ao cancelar.', 
+                ephemeral: true 
+            });
+        }
+    }
+
+    async handleFecharTicketButton(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+
+            if (!guild) {
+                return await interaction.reply({ 
+                    content: 'Este comando só pode ser usado em um servidor!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Usar o canal da interação diretamente (mais confiável)
+            const channel = interaction.channel;
+            
+            if (!channel) {
+                // Se não tiver canal na interação, tentar buscar pelo ID do customId
+                const parts = interaction.customId.split('_');
+                const channelId = parts[2];
+                const channelFromId = guild.channels.cache.get(channelId);
+                
+                if (!channelFromId) {
+                    return await interaction.reply({ 
+                        content: '❌ Canal não encontrado!', 
+                        ephemeral: true 
+                    });
+                }
+                
+                // Verificar se é um ticket
+                if (!channelFromId.name.startsWith('ticket-')) {
+                    return await interaction.reply({ 
+                        content: '❌ Este comando só pode ser usado em um canal de ticket!', 
+                        ephemeral: true 
+                    });
+                }
+            } else {
+                // Verificar se é um ticket
+                if (!channel.name.startsWith('ticket-')) {
+                    return await interaction.reply({ 
+                        content: '❌ Este comando só pode ser usado em um canal de ticket!', 
+                        ephemeral: true 
+                    });
+                }
+            }
+
+            const finalChannel = channel || guild.channels.cache.get(interaction.customId.split('_')[2]);
+            const channelId = finalChannel.id;
+
+            // Extrair informações do customId: ticket_fechar_channelId_userId
+            const parts = interaction.customId.split('_');
+            const ticketOwnerId = parts[3];
+
+            // Verificar permissões
+            const isTicketOwner = userId === ticketOwnerId;
+            const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+            const supportRoleId = '1442655668904398980';
+            const hasSupportRole = interaction.member.roles.cache.has(supportRoleId);
+
+            if (!isTicketOwner && !isAdmin && !hasSupportRole) {
+                return await interaction.reply({ 
+                    content: '❌ Apenas o criador do ticket, administradores ou membros da equipe de suporte podem fechar tickets!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Confirmar fechamento
+            const confirmEmbed = new EmbedBuilder()
+                .setTitle('Confirmar Fechamento')
+                .setDescription('Tem certeza que deseja fechar este ticket?')
+                .setColor(0xffa500)
+                .setTimestamp();
+
+            const confirmRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_fechar_confirmar_${channelId}_${userId}`)
+                        .setLabel('Sim, Fechar')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_fechar_cancelar_${userId}`)
+                        .setLabel('Cancelar')
+                        .setStyle(ButtonStyle.Secondary)
+                );
+
+            await interaction.reply({ 
+                embeds: [confirmEmbed], 
+                components: [confirmRow],
+                ephemeral: true 
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar fechar ticket:', error);
+            await interaction.reply({ 
+                content: 'Ocorreu um erro ao processar sua solicitação.', 
+                ephemeral: true 
+            });
+        }
+    }
+
+    async handleChamarModerador(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+
+            if (!guild) {
+                return await interaction.reply({ 
+                    content: 'Este comando só pode ser usado em um servidor!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Extrair informações do customId: ticket_chamar_mod_channelId_userId
+            const parts = interaction.customId.split('_');
+            const channelId = parts[3];
+            const ticketOwnerId = parts[4];
+
+            // Verificar se é o dono do ticket
+            if (userId !== ticketOwnerId) {
+                return await interaction.reply({ 
+                    content: '❌ Apenas o criador do ticket pode chamar um moderador!', 
+                    ephemeral: true 
+                });
+            }
+
+            const channel = guild.channels.cache.get(channelId);
+            if (!channel) {
+                return await interaction.reply({ 
+                    content: '❌ Canal não encontrado!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Verificar anti-spam: 1 chamada a cada 10 minutos por canal
+            const now = Date.now();
+            const lastCall = this.lastModeratorCall.get(channelId);
+            const cooldownTime = 10 * 60 * 1000; // 10 minutos em milissegundos
+
+            if (lastCall && (now - lastCall) < cooldownTime) {
+                const timeRemaining = Math.ceil((cooldownTime - (now - lastCall)) / 1000 / 60); // minutos restantes
+                const secondsRemaining = Math.ceil((cooldownTime - (now - lastCall)) / 1000 % 60);
+                
+                const spamEmbed = new EmbedBuilder()
+                    .setTitle('Aguarde')
+                    .setDescription(`Você já chamou um moderador recentemente.`)
+                    .addFields({
+                        name: 'Tempo restante',
+                        value: `Aguarde **${timeRemaining} minuto(s) e ${secondsRemaining} segundo(s)** antes de chamar novamente.`,
+                        inline: false
+                    })
+                    .setColor(0xffa500)
+                    .setTimestamp();
+
+                return await interaction.reply({ 
+                    embeds: [spamEmbed],
+                    ephemeral: true 
+                });
+            }
+
+            // ID do role de suporte
+            const supportRoleId = '1442655668904398980';
+            const supportRole = guild.roles.cache.get(supportRoleId);
+
+            if (!supportRole) {
+                return await interaction.reply({ 
+                    content: '❌ Role de suporte não encontrado!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Buscar membros com o role de suporte que estão online ou com status "não perturbe"
+            // Primeiro, buscar todos os membros do role
+            const allSupportMembers = supportRole.members.filter(member => !member.user.bot);
+            
+            // Filtrar apenas os que estão online ou em "não perturbe"
+            const supportMembers = new Map();
+            let onlineCount = 0;
+            let dndCount = 0;
+            let offlineCount = 0;
+            
+            for (const [memberId, member] of allSupportMembers) {
+                // Buscar presença atualizada do membro
+                // Tentar buscar do cache primeiro, depois fazer fetch se necessário
+                let presence = member.presence;
+                
+                // Se não tiver presença no cache, tentar buscar do guild
+                if (!presence) {
+                    try {
+                        const guildMember = await guild.members.fetch(memberId);
+                        presence = guildMember.presence;
+                    } catch (error) {
+                        // Se não conseguir buscar, considerar offline
+                        presence = null;
+                    }
+                }
+                
+                const status = presence?.status || 'offline';
+                
+                if (status === 'online' || status === 'dnd') {
+                    supportMembers.set(memberId, member);
+                    if (status === 'online') onlineCount++;
+                    if (status === 'dnd') dndCount++;
+                } else {
+                    offlineCount++;
+                }
+            }
+
+            if (supportMembers.size === 0) {
+                const noModEmbed = new EmbedBuilder()
+                    .setTitle('⚠️ Nenhum Moderador Disponível')
+                    .setDescription('Nenhum moderador está online ou com status "não perturbe" no momento.')
+                    .addFields({
+                        name: 'Status dos Moderadores',
+                        value: `• Online: ${onlineCount}\n• Não Perturbe: ${dndCount}\n• Offline/Ausente: ${offlineCount}`,
+                        inline: false
+                    })
+                    .setColor(0xffa500)
+                    .setTimestamp();
+                
+                return await interaction.reply({ 
+                    embeds: [noModEmbed],
+                    ephemeral: true 
+                });
+            }
+
+            // Criar embed de notificação
+            const notificationEmbed = new EmbedBuilder()
+                .setTitle('Moderador Solicitado')
+                .setDescription(`Um moderador foi solicitado no ticket **${channel.name}**`)
+                .addFields(
+                    { name: 'Canal', value: `${channel}`, inline: true },
+                    { name: 'Solicitado por', value: `${interaction.user}`, inline: true },
+                    { name: 'Link do Canal', value: `[Clique aqui para acessar](${channel.url})`, inline: false }
+                )
+                .setColor(0x5865F2)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Sistema de Tickets' });
+
+            // Enviar mensagem privada para cada membro do suporte
+            let sentCount = 0;
+            for (const [memberId, member] of supportMembers) {
+                try {
+                    await member.send({ embeds: [notificationEmbed] });
+                    sentCount++;
+                } catch (error) {
+                    // Se não conseguir enviar (DMs desabilitadas, etc), apenas continua
+                    console.error(`[DISCORD] Erro ao enviar DM para ${member.user.tag}:`, error.message);
+                }
+            }
+
+            // Atualizar timestamp do anti-spam
+            this.lastModeratorCall.set(channelId, now);
+
+            // Confirmar no canal do ticket
+            const confirmEmbed = new EmbedBuilder()
+                .setTitle('Moderador Notificado')
+                .setDescription(`Os moderadores disponíveis foram notificados sobre este ticket.`)
+                .addFields(
+                    { name: 'Notificações Enviadas', value: `**${sentCount}** moderador(es)`, inline: true },
+                    { name: 'Status', value: `Online: ${onlineCount} | Não Perturbe: ${dndCount}`, inline: true }
+                )
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            await interaction.reply({ 
+                embeds: [confirmEmbed],
+                ephemeral: false 
+            });
+
+            // Mencionar o role no canal
+            await channel.send(`<@&${supportRoleId}> - Um moderador foi solicitado neste ticket.`);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao chamar moderador:', error);
+            await interaction.reply({ 
+                content: 'Ocorreu um erro ao chamar o moderador.', 
+                ephemeral: true 
+            });
+        }
+    }
+
+    async handleFecharTicketConfirm(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+
+            if (!guild) {
+                return await interaction.reply({ 
+                    content: 'Este comando só pode ser usado em um servidor!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Usar o canal da interação diretamente (mais confiável)
+            let channel = interaction.channel;
+            
+            // Se não tiver canal na interação, tentar buscar pelo ID do customId
+            if (!channel) {
+                const parts = interaction.customId.split('_');
+                const channelId = parts[3];
+                channel = guild.channels.cache.get(channelId);
+                
+                // Tentar buscar via fetch se não estiver no cache
+                if (!channel) {
+                    try {
+                        channel = await guild.channels.fetch(channelId);
+                    } catch (error) {
+                        console.error('[DISCORD] Erro ao buscar canal:', error);
+                        return await interaction.update({ 
+                            content: '❌ Canal não encontrado!', 
+                            embeds: [], 
+                            components: [] 
+                        });
+                    }
+                }
+            }
+
+            if (!channel) {
+                return await interaction.update({ 
+                    content: '❌ Canal não encontrado!', 
+                    embeds: [], 
+                    components: [] 
+                });
+            }
+
+            // Verificar se o canal é um ticket
+            if (!channel.name.startsWith('ticket-')) {
+                return await interaction.update({ 
+                    content: '❌ Este não é um canal de ticket!', 
+                    embeds: [], 
+                    components: [] 
+                });
+            }
+
+            // Salvar referência da categoria antes de deletar
+            const ticketCategory = channel.parent;
+
+            // Criar embed de fechamento
+            const closeEmbed = new EmbedBuilder()
+                .setTitle('Ticket Fechado')
+                .setDescription(`Este ticket foi fechado por ${interaction.user}`)
+                .addFields({
+                    name: 'Informação',
+                    value: 'O canal será deletado em **10 segundos**.',
+                    inline: false
+                })
+                .setColor(0xff0000)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Suporte' });
+
+            await channel.send({ embeds: [closeEmbed] });
+
+            // Atualizar a interação
+            await interaction.update({ 
+                content: '✅ Ticket será fechado em 10 segundos...', 
+                embeds: [], 
+                components: [] 
+            });
+
+            // Deletar o canal após 10 segundos
+            setTimeout(async () => {
+                try {
+                    // Deletar o canal
+                    await channel.delete();
+
+                    // Verificar se a categoria existe e está vazia
+                    if (ticketCategory && ticketCategory.type === ChannelType.GuildCategory) {
+                        // Aguardar um pouco para garantir que o canal foi deletado
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+
+                        // Buscar a categoria novamente para verificar se ainda existe
+                        const category = guild.channels.cache.get(ticketCategory.id);
+                        
+                        if (category) {
+                            // Contar quantos canais restam na categoria (excluindo a própria categoria)
+                            const channelsInCategory = category.children.cache.filter(
+                                ch => ch.type !== ChannelType.GuildCategory
+                            );
+
+                            // Se não houver mais canais na categoria, deletar a categoria
+                            if (channelsInCategory.size === 0) {
+                                try {
+                                    await category.delete();
+                                    console.log(`[DISCORD] Categoria de tickets vazia deletada: ${category.name}`);
+                                } catch (error) {
+                                    console.error('[DISCORD] Erro ao deletar categoria de tickets:', error);
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao deletar canal de ticket:', error);
+                }
+            }, 10000);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao confirmar fechamento do ticket:', error);
+            await interaction.update({ 
+                content: '❌ Erro ao fechar o ticket!', 
+                embeds: [], 
+                components: [] 
+            });
+        }
     }
 
     async connect() {
@@ -88,6 +951,165 @@ class PromoPingBot {
                 await this.checkPriceChanges();
             }
         }, this.checkInterval * 60 * 1000);
+    }
+
+    async startTwitchMonitoring() {
+        // Verificar lives da Twitch a cada 5 minutos
+        this.twitchCheckInterval = setInterval(async () => {
+            try {
+                await this.checkTwitchLives();
+            } catch (error) {
+                console.error('[DISCORD] Erro ao verificar lives da Twitch:', error);
+            }
+        }, 5 * 60 * 1000); // 5 minutos
+
+        // Verificar imediatamente ao iniciar
+        await this.checkTwitchLives();
+    }
+
+    async checkTwitchLives() {
+        try {
+            console.log('[DISCORD] Verificando lives da Twitch...');
+            const connection = await mysql.createConnection(this.dbConfig);
+            const [channels] = await connection.execute(
+                'SELECT ChannelName, IsLive, TwitchUserId FROM twitch_channels'
+            );
+
+            if (channels.length === 0) {
+                console.log('[DISCORD] Nenhum canal Twitch configurado para monitorar');
+                await connection.end();
+                return;
+            }
+
+            console.log(`[DISCORD] Verificando ${channels.length} canal(is) da Twitch: ${channels.map(c => c.ChannelName).join(', ')}`);
+
+            const SOCIAL_FEED_CHANNEL_ID = '1442931610927366284';
+            const channel = await this.client.channels.fetch(SOCIAL_FEED_CHANNEL_ID);
+            if (!channel) {
+                console.error('[DISCORD] Canal social-feed não encontrado!');
+                await connection.end();
+                return;
+            }
+
+            // API da Twitch - precisa de Client ID e Client Secret
+            const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
+            const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
+
+            if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET) {
+                console.warn('[DISCORD] Twitch Client ID/Secret não configurados. Configure TWITCH_CLIENT_ID e TWITCH_CLIENT_SECRET no .env');
+                await connection.end();
+                return;
+            }
+
+            // Obter token de acesso da Twitch
+            const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    client_id: TWITCH_CLIENT_ID,
+                    client_secret: TWITCH_CLIENT_SECRET,
+                    grant_type: 'client_credentials'
+                })
+            });
+
+            if (!tokenResponse.ok) {
+                const errorText = await tokenResponse.text();
+                console.error(`[DISCORD] Erro ao obter token da Twitch: ${tokenResponse.status} - ${errorText}`);
+                await connection.end();
+                return;
+            }
+
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.access_token;
+            console.log('[DISCORD] Token da Twitch obtido com sucesso');
+
+            // Buscar informações dos canais (máximo 100 por requisição)
+            // Construir query string corretamente
+            const channelNames = channels.map(c => c.ChannelName);
+            const queryParams = channelNames.map(name => `user_login=${encodeURIComponent(name)}`).join('&');
+            const streamsResponse = await fetch(
+                `https://api.twitch.tv/helix/streams?${queryParams}`,
+                {
+                    headers: {
+                        'Client-ID': TWITCH_CLIENT_ID,
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                }
+            );
+
+            if (!streamsResponse.ok) {
+                const errorText = await streamsResponse.text();
+                console.error(`[DISCORD] Erro ao buscar streams da Twitch: ${streamsResponse.status} - ${errorText}`);
+                await connection.end();
+                return;
+            }
+
+            const streamsData = await streamsResponse.json();
+            console.log(`[DISCORD] Resposta da API Twitch: ${streamsData.data?.length || 0} stream(s) encontrado(s)`);
+            const liveChannels = new Set(streamsData.data.map(s => s.user_login.toLowerCase()));
+
+            // Verificar cada canal e enviar notificação se necessário
+            for (const channelData of channels) {
+                const channelName = channelData.ChannelName.toLowerCase();
+                const isLive = liveChannels.has(channelName);
+                const wasLive = channelData.IsLive;
+
+                // Atualizar status no banco
+                await connection.execute(
+                    'UPDATE twitch_channels SET IsLive = ?, LastLiveCheck = NOW() WHERE ChannelName = ?',
+                    [isLive, channelName]
+                );
+
+                console.log(`[DISCORD] Canal ${channelName}: ${isLive ? 'AO VIVO' : 'Offline'} (era: ${wasLive ? 'AO VIVO' : 'Offline'})`);
+
+                // Se ficou ao vivo e não estava antes, enviar notificação
+                if (isLive && !wasLive) {
+                    console.log(`[DISCORD] Canal ${channelName} ficou ao vivo! Enviando notificação...`);
+                    // Sempre notificar quando canal fica ao vivo (se estava offline antes)
+                    // O controle de spam é feito verificando wasLive no banco
+                    const streamInfo = streamsData.data.find(s => s.user_login.toLowerCase() === channelName);
+                    await this.sendTwitchLiveNotification(channel, channelName, streamInfo);
+                    this.twitchLiveStatus.set(channelName, { isLive: true, lastNotification: new Date() });
+                    console.log(`[DISCORD] Notificação enviada para ${channelName}`);
+                } else if (!isLive && wasLive) {
+                    // Canal saiu do ar - limpar status completamente para permitir nova notificação quando voltar
+                    console.log(`[DISCORD] Canal ${channelName} saiu do ar - status limpo`);
+                    this.twitchLiveStatus.delete(channelName);
+                } else if (isLive && wasLive) {
+                    // Canal continua ao vivo - apenas atualizar timestamp da última verificação
+                    console.log(`[DISCORD] Canal ${channelName} continua ao vivo`);
+                }
+            }
+
+            await connection.end();
+            this.lastTwitchCheck = new Date();
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao verificar lives da Twitch:', error);
+        }
+    }
+
+    async sendTwitchLiveNotification(discordChannel, twitchChannelName, streamData) {
+        try {
+            const embed = new EmbedBuilder()
+                .setTitle('🔴 Live na Twitch')
+                .setDescription(`**${twitchChannelName}** está ao vivo!`)
+                .addFields(
+                    { name: 'Canal', value: `[${twitchChannelName}](https://twitch.tv/${twitchChannelName})`, inline: true },
+                    { name: 'Status', value: '🔴 AO VIVO', inline: true },
+                    { name: 'Título', value: streamData?.title || 'Sem título', inline: false },
+                    { name: 'Jogo', value: streamData?.game_name || 'Sem jogo', inline: true },
+                    { name: 'Viewers', value: streamData?.viewer_count?.toString() || '0', inline: true }
+                )
+                .setColor(0x9146ff)
+                .setThumbnail(streamData?.thumbnail_url?.replace('{width}', '320').replace('{height}', '180') || null)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Social Feed' });
+
+            await discordChannel.send({ embeds: [embed] });
+        } catch (error) {
+            console.error('[DISCORD] Erro ao enviar notificação de live:', error);
+        }
     }
 
     async checkPriceChanges() {
@@ -355,6 +1377,336 @@ class PromoPingBot {
             return 'Loja Online';
         } catch {
             return 'Loja Online';
+        }
+    }
+
+    async registerSlashCommands() {
+        try {
+            const commands = [
+                new SlashCommandBuilder()
+                    .setName('ping')
+                    .setDescription('Verifica se o bot está online'),
+                new SlashCommandBuilder()
+                    .setName('status')
+                    .setDescription('Mostra informações sobre o sistema PromoPing'),
+                new SlashCommandBuilder()
+                    .setName('ajuda')
+                    .setDescription('Mostra a lista de comandos disponíveis'),
+                new SlashCommandBuilder()
+                    .setName('produtos')
+                    .setDescription('Lista seus produtos monitorados'),
+                new SlashCommandBuilder()
+                    .setName('login')
+                    .setDescription('Faz login na sua conta PromoPing')
+                    .addStringOption(option =>
+                        option.setName('email')
+                            .setDescription('Seu email')
+                            .setRequired(true))
+                    .addStringOption(option =>
+                        option.setName('senha')
+                            .setDescription('Sua senha')
+                            .setRequired(true)),
+                new SlashCommandBuilder()
+                    .setName('registar')
+                    .setDescription('Cria uma nova conta PromoPing')
+                    .addStringOption(option =>
+                        option.setName('email')
+                            .setDescription('Seu email')
+                            .setRequired(true))
+                    .addStringOption(option =>
+                        option.setName('senha')
+                            .setDescription('Sua senha (mínimo 6 caracteres)')
+                            .setRequired(true)),
+                new SlashCommandBuilder()
+                    .setName('social-feed')
+                    .setDescription('Gerencia notificações de live da Twitch')
+                    .addStringOption(option =>
+                        option.setName('acao')
+                            .setDescription('Ação a realizar')
+                            .setRequired(false)
+                            .addChoices(
+                                { name: 'Listar', value: 'listar' },
+                                { name: 'Adicionar', value: 'adicionar' },
+                                { name: 'Remover', value: 'remover' },
+                                { name: 'Testar', value: 'testar' }
+                            ))
+                    .addStringOption(option =>
+                        option.setName('canal')
+                            .setDescription('Nome do canal da Twitch')
+                            .setRequired(false)),
+                new SlashCommandBuilder()
+                    .setName('announcements')
+                    .setDescription('Gerencia notificações de releases do GitHub')
+                    .addStringOption(option =>
+                        option.setName('acao')
+                            .setDescription('Ação a realizar')
+                            .setRequired(false)
+                            .addChoices(
+                                { name: 'Status', value: 'status' },
+                                { name: 'Configurar', value: 'configurar' },
+                                { name: 'Testar', value: 'testar' }
+                            ))
+                    .addStringOption(option =>
+                        option.setName('url')
+                            .setDescription('URL do webhook (para configurar)')
+                            .setRequired(false)),
+                new SlashCommandBuilder()
+                    .setName('lock')
+                    .setDescription('Tranca o chat, impedindo que membros enviem mensagens'),
+                new SlashCommandBuilder()
+                    .setName('unlock')
+                    .setDescription('Destranca o chat, permitindo que membros enviem mensagens novamente'),
+                new SlashCommandBuilder()
+                    .setName('clear')
+                    .setDescription('Limpa mensagens do chat (1-100 mensagens)')
+                    .addIntegerOption(option =>
+                        option.setName('quantidade')
+                            .setDescription('Número de mensagens para deletar (1-100)')
+                            .setRequired(true)
+                            .setMinValue(1)
+                            .setMaxValue(100)),
+                new SlashCommandBuilder()
+                    .setName('counting')
+                    .setDescription('Gerencia o sistema de contagem')
+                    .addStringOption(option =>
+                        option.setName('acao')
+                            .setDescription('Ação a realizar')
+                            .setRequired(false)
+                            .addChoices(
+                                { name: 'Status', value: 'status' },
+                                { name: 'Configurar', value: 'configurar' },
+                                { name: 'Reset', value: 'reset' },
+                                { name: 'Desativar', value: 'desativar' }
+                            ))
+                    .addChannelOption(option =>
+                        option.setName('canal')
+                            .setDescription('Canal para configurar (para configurar)')
+                            .setRequired(false))
+            ].map(command => command.toJSON());
+
+            const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+
+            // Registrar comandos globalmente
+            await rest.put(
+                Routes.applicationCommands(this.client.user.id),
+                { body: commands }
+            );
+
+            console.log(`[DISCORD] ${commands.length} comandos de barra registrados com sucesso.`);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao registrar comandos de barra:', error);
+        }
+    }
+
+    async handleSlashCommand(interaction) {
+        try {
+            const commandName = interaction.commandName;
+            const comandosMap = require('./comandos');
+
+            // Mapear comandos de barra para comandos existentes
+            const comandoMap = {
+                'ping': 'ping',
+                'status': 'status',
+                'ajuda': 'ajuda',
+                'produtos': 'produtos',
+                'login': 'login',
+                'registar': 'registar',
+                'social-feed': 'social-feed',
+                'announcements': 'announcements',
+                'lock': 'lock',
+                'unlock': 'unlock',
+                'counting': 'counting',
+                'clear': 'clear'
+            };
+
+            const comandoNome = comandoMap[commandName];
+            if (!comandoNome) {
+                return await interaction.reply({ 
+                    content: 'Comando não encontrado!', 
+                    ephemeral: true 
+                });
+            }
+
+            const comando = comandosMap.get(comandoNome);
+            if (!comando) {
+                return await interaction.reply({ 
+                    content: 'Comando não disponível!', 
+                    ephemeral: true 
+                });
+            }
+
+            // Converter opções do slash command para args
+            const args = [];
+            if (interaction.options) {
+                // Para comandos com opções nomeadas, manter a ordem correta
+                if (commandName === 'social-feed' || commandName === 'announcements' || commandName === 'counting') {
+                    const acao = interaction.options.get('acao')?.value;
+                    const canal = interaction.options.get('canal')?.value;
+                    const url = interaction.options.get('url')?.value;
+                    
+                    if (acao) args.push(acao);
+                    if (canal) {
+                        // Para counting, passar menção do canal
+                        args.push(`<#${canal.id}>`);
+                    }
+                    if (url) args.push(url);
+                } else if (commandName === 'clear') {
+                    // Para clear, passar quantidade
+                    const quantidade = interaction.options.get('quantidade')?.value;
+                    if (quantidade) args.push(quantidade.toString());
+                } else {
+                    // Para outros comandos, manter comportamento original
+                    interaction.options.data.forEach(option => {
+                        args.push(option.value);
+                    });
+                }
+            }
+
+            // Criar uma mensagem simulada para compatibilidade com comandos existentes
+            let replied = false;
+            const fakeMessage = {
+                author: interaction.user,
+                member: interaction.member,
+                guild: interaction.guild,
+                channel: interaction.channel,
+                createdTimestamp: Date.now(),
+                reply: async (content) => {
+                    if (replied) {
+                        if (typeof content === 'string') {
+                            return await interaction.followUp({ content, ephemeral: false });
+                        } else {
+                            return await interaction.followUp({ ...content, ephemeral: false });
+                        }
+                    } else {
+                        replied = true;
+                        if (typeof content === 'string') {
+                            const response = await interaction.reply({ content, ephemeral: false, fetchReply: true });
+                            return {
+                                ...response,
+                                edit: async (newContent) => {
+                                    if (typeof newContent === 'string') {
+                                        return await interaction.editReply({ content: newContent });
+                                    } else {
+                                        return await interaction.editReply(newContent);
+                                    }
+                                },
+                                createdTimestamp: response.createdTimestamp || Date.now()
+                            };
+                        } else {
+                            const response = await interaction.reply({ ...content, ephemeral: false, fetchReply: true });
+                            return {
+                                ...response,
+                                edit: async (newContent) => {
+                                    if (typeof newContent === 'string') {
+                                        return await interaction.editReply({ content: newContent });
+                                    } else {
+                                        return await interaction.editReply(newContent);
+                                    }
+                                },
+                                createdTimestamp: response.createdTimestamp || Date.now()
+                            };
+                        }
+                    }
+                }
+            };
+
+            await comando.execute(this.client, fakeMessage, args, this);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar comando de barra:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao executar este comando.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao executar este comando.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleCounting(message) {
+        try {
+            // Verificar se o canal tem counting configurado
+            const connection = await mysql.createConnection(this.dbConfig);
+            const [configs] = await connection.execute(
+                'SELECT * FROM counting_config WHERE ChannelId = ?',
+                [message.channel.id]
+            );
+
+            if (configs.length === 0) {
+                await connection.end();
+                return false; // Não é canal de counting
+            }
+
+            const config = configs[0];
+            const expectedNumber = config.CurrentNumber + 1;
+            const messageNumber = parseInt(message.content.trim());
+
+            // Verificar se a mensagem é um número
+            if (isNaN(messageNumber)) {
+                await connection.end();
+                return false; // Não é número, não processar
+            }
+
+            // Verificar se é o número correto
+            if (messageNumber === expectedNumber) {
+                // Verificar se a mesma pessoa não enviou o número anterior
+                if (config.LastUserId === message.author.id) {
+                    // Mesma pessoa - erro!
+                    await message.react('❌');
+                    await message.reply(`❌ Você não pode enviar dois números seguidos! A contagem volta para **0**.`);
+                    
+                    // Resetar contagem
+                    await connection.execute(
+                        'UPDATE counting_config SET CurrentNumber = 0, LastUserId = NULL WHERE Id = ?',
+                        [config.Id]
+                    );
+                    
+                    await connection.end();
+                    return true;
+                }
+
+                // Número correto e pessoa diferente - sucesso!
+                await message.react('✅');
+                
+                // Atualizar contagem
+                const newNumber = expectedNumber;
+                const newHighScore = newNumber > config.HighScore ? newNumber : config.HighScore;
+                
+                await connection.execute(
+                    'UPDATE counting_config SET CurrentNumber = ?, HighScore = ?, LastUserId = ?, LastMessageId = ? WHERE Id = ?',
+                    [newNumber, newHighScore, message.author.id, message.id, config.Id]
+                );
+
+                // Se bateu recorde, celebrar
+                if (newNumber > config.HighScore) {
+                    await message.reply(`🎉 **NOVO RECORDE!** Contagem chegou em **${newNumber}**!`);
+                }
+
+                await connection.end();
+                return true;
+
+            } else {
+                // Número errado - resetar
+                await message.react('❌');
+                await message.reply(`❌ Erro! Era esperado **${expectedNumber}**, mas você enviou **${messageNumber}**. A contagem volta para **0**.`);
+                
+                await connection.execute(
+                    'UPDATE counting_config SET CurrentNumber = 0, LastUserId = NULL WHERE Id = ?',
+                    [config.Id]
+                );
+                
+                await connection.end();
+                return true;
+            }
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar counting:', error);
+            return false;
         }
     }
 
