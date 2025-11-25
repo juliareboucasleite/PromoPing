@@ -72,6 +72,151 @@ async function checkBotStatus() {
     }
 }
 
+// Função para buscar todas as releases do GitHub e enviar notificações
+async function syncAllReleases() {
+    try {
+        const owner = 'juliareboucasleite';
+        const repo = 'PromoPing';
+        const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
+
+        // Verificar se o bot está disponível
+        const botStatus = await checkBotStatus();
+        if (!botStatus.available || !botStatus.ready) {
+            console.error('[GITHUB SYNC] Bot Discord não disponível');
+            return { success: false, error: 'Bot Discord não disponível' };
+        }
+
+        // Buscar todas as releases da API do GitHub
+        const githubApiUrl = `https://api.github.com/repos/${owner}/${repo}/releases`;
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'PromoPing-Backend'
+        };
+
+        if (process.env.GITHUB_TOKEN) {
+            headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+        }
+
+        const response = await fetch(githubApiUrl, { headers });
+        if (!response.ok) {
+            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        }
+
+        const releases = await response.json();
+        console.log(`[GITHUB SYNC] Encontradas ${releases.length} releases`);
+
+        let sentCount = 0;
+        let skippedCount = 0;
+
+        // Processar cada release (da mais recente para a mais antiga)
+        for (const release of releases) {
+            // Criar ID único para a release
+            const releaseId = `${owner}/${repo}:${release.tag_name}:${release.published_at || release.created_at}`;
+            
+            // Verificar se já foi processada (banco + cache)
+            if (await isReleaseProcessed(releaseId)) {
+                skippedCount++;
+                continue;
+            }
+
+            // Criar embed de notificação
+            const embedData = {
+                title: '🚀 Release',
+                description: `**${release.tag_name}**${release.name && release.name !== release.tag_name ? ` - ${release.name}` : ''}`,
+                url: release.html_url,
+                color: 0x24292e,
+                timestamp: new Date(release.published_at || release.created_at).toISOString(),
+                footer: { text: 'PromoPing - GitHub Releases' },
+                fields: [
+                    { 
+                        name: 'Repositório', 
+                        value: `[${owner}/${repo}](https://github.com/${owner}/${repo})`, 
+                        inline: true 
+                    },
+                    { 
+                        name: 'Tag', 
+                        value: release.tag_name, 
+                        inline: true 
+                    },
+                    { 
+                        name: 'Autor', 
+                        value: release.author?.login || 'Desconhecido', 
+                        inline: true 
+                    }
+                ]
+            };
+
+            // Adicionar thumbnail do autor
+            if (release.author?.avatar_url) {
+                embedData.thumbnail = { url: release.author.avatar_url };
+            }
+
+            // Adicionar body da release (se houver)
+            if (release.body) {
+                const bodyText = release.body.length > 1024 
+                    ? release.body.substring(0, 1021) + '...' 
+                    : release.body;
+                embedData.fields.push({
+                    name: 'Notas da Release',
+                    value: bodyText,
+                    inline: false
+                });
+            }
+
+            // Adicionar links
+            const downloadLink = release.assets && release.assets.length > 0 
+                ? release.assets[0].browser_download_url 
+                : release.html_url;
+            embedData.fields.push({
+                name: 'Links',
+                value: `[Ver Release](${release.html_url}) | [Download](${downloadLink})`,
+                inline: false
+            });
+
+            // Enviar mensagem
+            const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, embedData);
+            if (sent) {
+                // Marcar como processada no banco de dados
+                await markReleaseAsProcessed(releaseId, release.tag_name, `${owner}/${repo}`);
+                sentCount++;
+                console.log(`[GITHUB SYNC] Notificação enviada: ${release.tag_name}`);
+                
+                // Pequeno delay entre envios para evitar rate limit
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+                console.error(`[GITHUB SYNC] Falha ao enviar: ${release.tag_name}`);
+            }
+        }
+
+        return {
+            success: true,
+            total: releases.length,
+            sent: sentCount,
+            skipped: skippedCount
+        };
+
+    } catch (error) {
+        console.error('[GITHUB SYNC] Erro ao sincronizar releases:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Endpoint para sincronizar todas as releases
+router.post("/api/webhooks/github/sync", async (req, res) => {
+    try {
+        const result = await syncAllReleases();
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Endpoint de teste para verificar se o webhook está funcionando
 router.get("/api/webhooks/github/test", async (req, res) => {
     try {
@@ -299,20 +444,137 @@ router.get("/api/github/check", async (req, res) => {
 // Middleware para capturar body raw para verificação de assinatura
 const rawBodyMiddleware = express.raw({ type: 'application/json' });
 
-// Cache de releases já processadas (para evitar envios duplicados)
-// Formato: releaseId -> timestamp
+// Cache de releases já processadas (em memória para performance)
 const processedReleases = new Map();
 
-// Limpar cache antigo a cada hora (releases com mais de 24h)
-setInterval(() => {
-  const now = Date.now();
-  const maxAge = 24 * 60 * 60 * 1000; // 24 horas
-  for (const [releaseId, timestamp] of processedReleases.entries()) {
-    if (now - timestamp > maxAge) {
-      processedReleases.delete(releaseId);
+// Função para garantir que a tabela de releases processadas existe
+async function ensureProcessedReleasesTable() {
+    try {
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'pap',
+            port: parseInt(process.env.DB_PORT) || 3306
+        };
+        
+        const connection = await mysql.createConnection(dbConfig);
+        
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS processed_releases (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                ReleaseId VARCHAR(255) NOT NULL UNIQUE,
+                TagName VARCHAR(100) NOT NULL,
+                Repository VARCHAR(200) NOT NULL,
+                ProcessedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_release_id (ReleaseId),
+                INDEX idx_repository (Repository),
+                INDEX idx_processed_at (ProcessedAt)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        
+        await connection.end();
+    } catch (error) {
+        console.error('[GITHUB] Erro ao criar tabela processed_releases:', error);
     }
-  }
-}, 60 * 60 * 1000); // Executar a cada hora
+}
+
+// Carregar releases já processadas do banco de dados na inicialização
+async function loadProcessedReleases() {
+    try {
+        await ensureProcessedReleasesTable();
+        
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'pap',
+            port: parseInt(process.env.DB_PORT) || 3306
+        };
+        
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute(
+            'SELECT ReleaseId FROM processed_releases'
+        );
+        
+        for (const row of rows) {
+            processedReleases.set(row.ReleaseId, Date.now());
+        }
+        
+        await connection.end();
+        console.log(`[GITHUB] Carregadas ${rows.length} releases já processadas do banco de dados`);
+    } catch (error) {
+        console.error('[GITHUB] Erro ao carregar releases processadas:', error);
+    }
+}
+
+// Verificar se uma release já foi processada (banco + cache)
+async function isReleaseProcessed(releaseId) {
+    // Verificar cache primeiro (mais rápido)
+    if (processedReleases.has(releaseId)) {
+        return true;
+    }
+    
+    // Verificar banco de dados
+    try {
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'pap',
+            port: parseInt(process.env.DB_PORT) || 3306
+        };
+        
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute(
+            'SELECT Id FROM processed_releases WHERE ReleaseId = ?',
+            [releaseId]
+        );
+        
+        await connection.end();
+        
+        if (rows.length > 0) {
+            // Adicionar ao cache
+            processedReleases.set(releaseId, Date.now());
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('[GITHUB] Erro ao verificar release processada:', error);
+        return false;
+    }
+}
+
+// Marcar release como processada (banco + cache)
+async function markReleaseAsProcessed(releaseId, tagName, repository) {
+    try {
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'pap',
+            port: parseInt(process.env.DB_PORT) || 3306
+        };
+        
+        const connection = await mysql.createConnection(dbConfig);
+        
+        await connection.execute(
+            'INSERT IGNORE INTO processed_releases (ReleaseId, TagName, Repository) VALUES (?, ?, ?)',
+            [releaseId, tagName, repository]
+        );
+        
+        await connection.end();
+        
+        // Adicionar ao cache
+        processedReleases.set(releaseId, Date.now());
+    } catch (error) {
+        console.error('[GITHUB] Erro ao marcar release como processada:', error);
+    }
+}
+
+// Inicializar: carregar releases processadas do banco
+loadProcessedReleases();
 
 // ================== WEBHOOK: RECEBER EVENTOS DE RELEASE DO GITHUB ==================
 router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
@@ -363,7 +625,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     const releaseId = `${repository.full_name}:${release.tag_name}:${release.published_at}`;
     
     // Verificar se já processamos esta release
-    if (processedReleases.has(releaseId)) {
+    if (await isReleaseProcessed(releaseId)) {
       return res.status(200).json({ 
         status: 'ok', 
         message: 'Release já processada',
@@ -373,7 +635,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     }
 
     // Marcar como processada ANTES de enviar (para evitar duplicatas se houver retry)
-    processedReleases.set(releaseId, Date.now());
+    await markReleaseAsProcessed(releaseId, release.tag_name, repository.full_name);
 
     // ID do canal announcements
     const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
@@ -442,8 +704,22 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, embedData);
     if (!sent) {
       console.error('[GITHUB WEBHOOK] Falha ao enviar mensagem para o Discord');
-      // Remover do cache se falhar para permitir retry
+      // Remover do cache e banco se falhar para permitir retry
       processedReleases.delete(releaseId);
+      try {
+        const dbConfig = {
+          host: process.env.DB_HOST || 'localhost',
+          user: process.env.DB_USER || 'root',
+          password: process.env.DB_PASSWORD || '',
+          database: process.env.DB_NAME || 'pap',
+          port: parseInt(process.env.DB_PORT) || 3306
+        };
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute('DELETE FROM processed_releases WHERE ReleaseId = ?', [releaseId]);
+        await connection.end();
+      } catch (error) {
+        console.error('[GITHUB WEBHOOK] Erro ao remover release do banco:', error);
+      }
       return res.status(500).json({ error: 'Falha ao enviar notificação' });
     }
     
