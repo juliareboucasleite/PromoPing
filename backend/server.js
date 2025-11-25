@@ -859,6 +859,27 @@ if (!isProduction) {
 import { GracePeriodManager } from './services/gracePeriodManager.js';
 import { DeactivatedAccountsManager } from './services/deactivatedAccountsManager.js';
 
+// ================== INICIAR BOT DISCORD (se token configurado) ==================
+let discordBot = null;
+if (process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_BOT_TOKEN !== 'SEU_TOKEN_AQUI') {
+  try {
+    // Importar e iniciar bot Discord no mesmo processo
+    const { default: PromoPingBot } = await import('../discord-bot/bot.js');
+    discordBot = new PromoPingBot();
+    global.discordBotInstance = discordBot;
+    
+    // Conectar bot em background
+    discordBot.connect().catch(err => {
+      console.error('[SERVER] Erro ao conectar bot Discord:', err.message);
+    });
+    
+    console.log('[SERVER] Bot Discord será iniciado em background');
+  } catch (error) {
+    console.error('[SERVER] Erro ao carregar bot Discord:', error.message);
+    console.log('[SERVER] Continuando sem bot Discord...');
+  }
+}
+
 // ================== INICIAR SERVIDOR ==================
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
