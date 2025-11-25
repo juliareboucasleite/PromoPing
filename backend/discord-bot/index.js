@@ -36,7 +36,24 @@ internalApp.post('/internal/send-message', async (req, res) => {
             return res.status(404).json({ error: 'Canal não encontrado' });
         }
         
-        await channel.send({ embeds: [embed] });
+        // Converter embed JSON para EmbedBuilder do Discord.js
+        const { EmbedBuilder } = require('discord.js');
+        const discordEmbed = new EmbedBuilder();
+        
+        if (embed.title) discordEmbed.setTitle(embed.title);
+        if (embed.description) discordEmbed.setDescription(embed.description);
+        if (embed.url) discordEmbed.setURL(embed.url);
+        if (embed.color) discordEmbed.setColor(embed.color);
+        if (embed.timestamp) discordEmbed.setTimestamp(new Date(embed.timestamp));
+        if (embed.footer) discordEmbed.setFooter(embed.footer);
+        if (embed.author) discordEmbed.setAuthor(embed.author);
+        if (embed.thumbnail) discordEmbed.setThumbnail(embed.thumbnail.url);
+        if (embed.image) discordEmbed.setImage(embed.image.url);
+        if (embed.fields && Array.isArray(embed.fields)) {
+            discordEmbed.addFields(embed.fields);
+        }
+        
+        await channel.send({ embeds: [discordEmbed] });
         
         res.json({ success: true, message: 'Mensagem enviada' });
     } catch (error) {
