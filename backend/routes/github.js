@@ -37,8 +37,6 @@ async function sendDiscordMessage(channelId, embed) {
         });
         
         if (!response.ok) {
-            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-            console.error('[GITHUB WEBHOOK] Erro ao enviar mensagem via servidor interno:', error);
             return false;
         }
         
@@ -120,7 +118,6 @@ router.get("/api/webhooks/github/test", async (req, res) => {
 // Endpoint para simular webhook do GitHub (para testes locais)
 router.post("/api/webhooks/github/test", express.json(), async (req, res) => {
     try {
-        console.log('[GITHUB WEBHOOK TEST] Teste manual recebido');
         
         // Simular payload de release do GitHub
         const testPayload = {
@@ -338,14 +335,10 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
         console.error('[GITHUB WEBHOOK] Assinatura inválida');
         return res.status(401).json({ error: 'Assinatura inválida' });
       }
-      console.log('[GITHUB WEBHOOK] Assinatura verificada com sucesso');
-    } else {
-      console.log('[GITHUB WEBHOOK] GITHUB_WEBHOOK_SECRET não configurado, pulando verificação de assinatura');
     }
     
     // Processar apenas eventos de release
     if (event !== 'release') {
-      console.log(`[GITHUB WEBHOOK] Evento ignorado: ${event}`);
       return res.status(200).json({ message: 'Evento ignorado', event });
     }
 
@@ -357,11 +350,9 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Body inválido' });
     }
     const action = releaseData.action; // published, created, edited, deleted, prereleased, released
-    console.log(`[GITHUB WEBHOOK] Ação da release: ${action}`);
 
     // Processar apenas releases publicados
     if (action !== 'published' && action !== 'released') {
-      console.log(`[GITHUB WEBHOOK] Release não publicado ainda (ação: ${action})`);
       return res.status(200).json({ message: 'Release não publicado ainda', action });
     }
     
@@ -373,7 +364,6 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     
     // Verificar se já processamos esta release
     if (processedReleases.has(releaseId)) {
-      console.log(`[GITHUB WEBHOOK] Release já processada anteriormente: ${release.tag_name}`);
       return res.status(200).json({ 
         status: 'ok', 
         message: 'Release já processada',
@@ -384,8 +374,6 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
 
     // Marcar como processada ANTES de enviar (para evitar duplicatas se houver retry)
     processedReleases.set(releaseId, Date.now());
-
-    console.log(`[GITHUB WEBHOOK] Processando release: ${repository.full_name} ${release.tag_name}`);
 
     // ID do canal announcements
     const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
