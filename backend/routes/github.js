@@ -302,15 +302,25 @@ router.get("/api/github/check", async (req, res) => {
 // Middleware para capturar body raw para verificação de assinatura
 const rawBodyMiddleware = express.raw({ type: 'application/json' });
 
+// Cache de releases já processadas (para evitar envios duplicados)
+// Formato: releaseId -> timestamp
+const processedReleases = new Map();
+
+// Limpar cache antigo a cada hora (releases com mais de 24h)
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000; // 24 horas
+  for (const [releaseId, timestamp] of processedReleases.entries()) {
+    if (now - timestamp > maxAge) {
+      processedReleases.delete(releaseId);
+    }
+  }
+}, 60 * 60 * 1000); // Executar a cada hora
+
 // ================== WEBHOOK: RECEBER EVENTOS DE RELEASE DO GITHUB ==================
 router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
   try {
-    console.log('[GITHUB WEBHOOK] ========== WEBHOOK RECEBIDO ==========');
-    console.log('[GITHUB WEBHOOK] Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('[GITHUB WEBHOOK] Body length:', req.body?.length || 0);
-    
     const event = req.headers['x-github-event'];
-    console.log(`[GITHUB WEBHOOK] Evento recebido: ${event || 'NENHUM'}`);
     
     // Verificar assinatura do webhook (se configurado)
     const githubSecret = process.env.GITHUB_WEBHOOK_SECRET;
@@ -355,22 +365,39 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
       return res.status(200).json({ message: 'Release não publicado ainda', action });
     }
     
-    console.log(`[GITHUB WEBHOOK] Processando release publicada: ${releaseData.repository?.full_name} ${releaseData.release?.tag_name}`);
-
     const release = releaseData.release;
     const repository = releaseData.repository;
+
+    // Criar ID único para a release (tag + published_at)
+    const releaseId = `${repository.full_name}:${release.tag_name}:${release.published_at}`;
+    
+    // Verificar se já processamos esta release
+    if (processedReleases.has(releaseId)) {
+      console.log(`[GITHUB WEBHOOK] Release já processada anteriormente: ${release.tag_name}`);
+      return res.status(200).json({ 
+        status: 'ok', 
+        message: 'Release já processada',
+        repository: repository.full_name,
+        tag: release.tag_name
+      });
+    }
+
+    // Marcar como processada ANTES de enviar (para evitar duplicatas se houver retry)
+    processedReleases.set(releaseId, Date.now());
+
+    console.log(`[GITHUB WEBHOOK] Processando release: ${repository.full_name} ${release.tag_name}`);
 
     // ID do canal announcements
     const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
 
     // Verificar se o bot está disponível
-    console.log('[GITHUB WEBHOOK] Verificando disponibilidade do bot Discord...');
     const botStatus = await checkBotStatus();
     if (!botStatus.available || !botStatus.ready) {
-      console.error('[GITHUB WEBHOOK] Bot Discord não disponível - verifique se o bot está rodando');
+      console.error('[GITHUB WEBHOOK] Bot Discord não disponível');
+      // Remover do cache se falhar para permitir retry
+      processedReleases.delete(releaseId);
       return res.status(500).json({ error: 'Bot Discord não disponível' });
     }
-    console.log('[GITHUB WEBHOOK] Bot Discord está disponível e pronto');
 
     // Criar embed de notificação (formato JSON para envio via HTTP)
     const embedData = {
@@ -427,9 +454,12 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     const sent = await sendDiscordMessage(ANNOUNCEMENTS_CHANNEL_ID, embedData);
     if (!sent) {
       console.error('[GITHUB WEBHOOK] Falha ao enviar mensagem para o Discord');
+      // Remover do cache se falhar para permitir retry
+      processedReleases.delete(releaseId);
       return res.status(500).json({ error: 'Falha ao enviar notificação' });
     }
-    console.log(`[GITHUB WEBHOOK] Notificação de release enviada: ${repository.full_name} ${release.tag_name}`);
+    
+    console.log(`[GITHUB WEBHOOK] Notificação enviada: ${repository.full_name} ${release.tag_name}`);
 
     res.status(200).json({ 
       status: 'ok', 
