@@ -1,0 +1,17 @@
+{
+    "name": "promoping/admin-panel",
+    "description": "Painel Administrativo PromoPing com OAuth",
+    "type": "project",
+    "require": {
+        "php": "^8.0",
+        "league/oauth2-google": "^4.0",
+        "league/oauth2-github": "^3.0",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "PromoPing\\": "src/"
+        }
+    }
+}
+

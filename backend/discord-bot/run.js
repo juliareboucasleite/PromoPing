@@ -6,18 +6,24 @@ process.env.DOTENV_CONFIG_DEBUG = 'false';
 // Interceptar console.log para filtrar mensagens do dotenv
 const originalConsoleLog = console.log;
 console.log = (...args) => {
-  const message = args.join(' ');
-  if (!message.includes('[dotenv@') && !message.includes('injecting env')) {
-    originalConsoleLog(...args);
-  }
+    const message = args.join(' ');
+    if (!message.includes('[dotenv@') && !message.includes('injecting env')) {
+        originalConsoleLog(...args);
+    }
 };
 
-import { execSync, spawn } from 'child_process';
+import {
+    execSync,
+    spawn
+} from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {
+    fileURLToPath
+} from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(
+    import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '../..');
 
@@ -40,9 +46,13 @@ function log(message, color = 'reset') {
 function checkCommand(command) {
     try {
         if (process.platform === 'win32') {
-            execSync(`where ${command}`, { stdio: 'ignore' });
+            execSync(`where ${command}`, {
+                stdio: 'ignore'
+            });
         } else {
-            execSync(`which ${command}`, { stdio: 'ignore' });
+            execSync(`which ${command}`, {
+                stdio: 'ignore'
+            });
         }
         return true;
     } catch {
@@ -57,7 +67,10 @@ function checkFile(file) {
 function runSetup() {
     log('Executando setup automático...', 'blue');
     try {
-        execSync('node scripts/setup.js', { stdio: 'inherit', cwd: rootDir });
+        execSync('node scripts/setup.js', {
+            stdio: 'inherit',
+            cwd: rootDir
+        });
         return true;
     } catch (error) {
         log('Erro no setup automático', 'red');
@@ -68,13 +81,13 @@ function runSetup() {
 function runDocker() {
     log('Iniciando com Docker...', 'blue');
     log('Isso pode demorar alguns minutos na primeira vez...', 'yellow');
-    
+
     const dockerComposeFile = checkFile('docker-files/docker-compose.dev.yml') ? 'docker-files/docker-compose.dev.yml' : 'docker-files/docker-compose.yml';
-    
+
     try {
-        execSync(`docker-compose -f ${dockerComposeFile} up --build`, { 
-            stdio: 'inherit', 
-            cwd: rootDir 
+        execSync(`docker-compose -f ${dockerComposeFile} up --build`, {
+            stdio: 'inherit',
+            cwd: rootDir
         });
     } catch (error) {
         log('Erro ao executar Docker', 'red');
@@ -83,8 +96,8 @@ function runDocker() {
 }
 
 function runLocal() {
-    log('Iniciando localmente...', 'blue');
-    
+    // Log removido para reduzir verbosidade
+
     // Verificar se .env existe
     if (!checkFile('.env')) {
         log('Arquivo .env não encontrado, executando setup...', 'yellow');
@@ -93,56 +106,55 @@ function runLocal() {
             process.exit(1);
         }
     }
-    
+
     // Verificar dependências
     if (!checkCommand('node')) {
         log('Node.js não encontrado. Instale Node.js primeiro.', 'red');
         process.exit(1);
     }
-    
+
     // Instalar dependências se necessário
     if (!checkFile('node_modules')) {
         log('Instalando dependências...', 'blue');
         try {
-            execSync('npm install', { stdio: 'inherit', cwd: rootDir });
+            execSync('npm install', {
+                stdio: 'inherit',
+                cwd: rootDir
+            });
         } catch (error) {
             log('Erro ao instalar dependências', 'red');
             process.exit(1);
         }
     }
-    
+
     // Array para armazenar todos os processos
     const processes = [];
-    
+
     // Iniciar Rich Presence (se disponível)
     let presenceProcess = null;
     if (checkFile('presence.js')) {
         // Inicia silenciosamente
         try {
-            presenceProcess = spawn('node', ['presence.js'], { 
-                stdio: 'pipe', 
-                cwd: rootDir 
+            presenceProcess = spawn('node', ['presence.js'], {
+                stdio: 'pipe',
+                cwd: rootDir
             });
             processes.push(presenceProcess);
-            
+
             presenceProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim()
-                  .replace(/[]/g, '')
-                  .replace(/^\s+|\s+$/g, '');
+                    .replace(/[]/g, '')
+                    .replace(/^\s+|\s+$/g, '');
 
                 if (message === '') return;
-                
-                // Só mostra mensagens importantes (erros e conexão bem-sucedida)
-                if (message.includes('Conectado ao Discord Rich Presence')) {
-                    if (process.env.NODE_ENV !== 'production') {
-                        log(`Rich Presence: Conectado`, 'green');
-                    }
-                } else if (message.includes('Erro') || message.includes('ERROR')) {
+
+                // Só mostra erros críticos
+                if (message.includes('Erro') || message.includes('ERROR') || message.includes('FATAL')) {
                     log(`Rich Presence: ${message}`, 'red');
                 }
-                // Ignora todas as outras mensagens
+                // Ignora todas as outras mensagens (incluindo conexão bem-sucedida)
             });
-            
+
             presenceProcess.stderr.on('data', (data) => {
                 const message = data.toString().trim();
                 if (message.includes('Client ID')) {
@@ -151,16 +163,16 @@ function runLocal() {
                     log(`Rich Presence: ${message}`, 'red');
                 }
             });
-            
+
             presenceProcess.on('error', (error) => {
                 log(`Erro no Rich Presence: ${error.message}`, 'red');
             });
-            
+
         } catch (error) {
             log('Não foi possível iniciar Rich Presence', 'yellow');
         }
     }
-    
+
     // Iniciar Bot do Discord
     let discordBotProcess = null;
     // Verificar se package.json existe na pasta atual (já estamos em backend/discord-bot)
@@ -172,77 +184,70 @@ function runLocal() {
             if (!fs.existsSync(botNodeModules)) {
                 log('Instalando dependências do bot do Discord...', 'yellow');
                 try {
-                    execSync('npm install', { 
-                        stdio: 'inherit', 
-                        cwd: __dirname 
+                    execSync('npm install', {
+                        stdio: 'inherit',
+                        cwd: __dirname
                     });
                 } catch (error) {
                     log('Aviso: Erro ao instalar dependências do bot, continuando...', 'yellow');
                 }
             }
-            
+
             discordBotProcess = spawn('node', ['index.js'], {
                 cwd: __dirname,
                 stdio: 'pipe'
             });
             processes.push(discordBotProcess);
-            
+
             discordBotProcess.stdout.on('data', (data) => {
                 const message = data.toString().trim();
-                // Mostrar logs importantes do bot
+                // Mostrar apenas erros críticos do bot
                 if (message && (
-                    message.includes('ERROR') || 
-                    message.includes('FATAL') || 
-                    message.includes('CRITICAL') ||
-                    message.includes('conectado') ||
-                    message.includes('comandos de barra registrados') ||
-                    message.includes('Twitch') ||
-                    message.includes('Verificando lives') ||
-                    message.includes('Notificação enviada') ||
-                    message.includes('Erro ao verificar lives')
-                )) {
+                        message.includes('ERROR') ||
+                        message.includes('FATAL') ||
+                        message.includes('CRITICAL') ||
+                        message.includes('Erro ao verificar lives')
+                    )) {
                     log(`Bot Discord: ${message}`, 'magenta');
                 }
+                // Ignorar mensagens de sucesso e rotinas normais
             });
-            
+
             discordBotProcess.stderr.on('data', (data) => {
                 const message = data.toString().trim();
                 // Mostrar erros importantes, ignorando apenas deprecations
-                if (message && 
+                if (message &&
                     !message.includes('DeprecationWarning') &&
                     !message.includes('Use `node --trace-deprecation') &&
-                    (message.includes('ERROR') || 
-                     message.includes('FATAL') || 
-                     message.includes('CRITICAL') ||
-                     message.includes('Erro') ||
-                     message.includes('Falha'))
+                    (message.includes('ERROR') ||
+                        message.includes('FATAL') ||
+                        message.includes('CRITICAL') ||
+                        message.includes('Erro') ||
+                        message.includes('Falha'))
                 ) {
                     log(`Bot Discord: ${message}`, 'red');
                 }
             });
-            
+
             discordBotProcess.on('error', (error) => {
                 log(`Erro no Bot do Discord: ${error.message}`, 'red');
             });
-            
+
         } catch (error) {
             log(`Não foi possível iniciar Bot do Discord: ${error.message}`, 'yellow');
         }
     } else {
         log('Bot do Discord não encontrado, pulando...', 'yellow');
     }
-    
-    // Iniciar servidor
-    if (process.env.NODE_ENV !== 'production') {
-        log('Iniciando servidor...', 'green');
-    }
+
+    // Iniciar servidor (log removido - servidor mostra sua própria mensagem)
     try {
-        const server = spawn('node', ['backend/server.js'], { 
-            stdio: 'inherit', 
-            cwd: rootDir 
+        const server = spawn('node', ['backend/server.js'], {
+            stdio: 'inherit',
+            cwd: rootDir
         });
         processes.push(server);
-        
+
         server.on('error', (error) => {
             log(`Erro no servidor: ${error.message}`, 'red');
             // Parar todos os processos
@@ -253,11 +258,11 @@ function runLocal() {
             });
             process.exit(1);
         });
-        
+
         // Graceful shutdown
         const shutdown = (signal) => {
             log(`\n${signal} recebido. Parando todos os serviços...`, 'yellow');
-            
+
             // Parar todos os processos
             processes.forEach((proc, index) => {
                 if (proc && !proc.killed) {
@@ -267,7 +272,7 @@ function runLocal() {
                     proc.kill(signal);
                 }
             });
-            
+
             // Aguardar um pouco e forçar encerramento se necessário
             setTimeout(() => {
                 processes.forEach(proc => {
@@ -278,13 +283,12 @@ function runLocal() {
                 process.exit(0);
             }, 5000);
         };
-        
+
         process.on('SIGINT', () => shutdown('SIGINT'));
         process.on('SIGTERM', () => shutdown('SIGTERM'));
-        
-        log('Servidor rodando em http://127.0.0.1:3000', 'cyan');
-        log('Pressione Ctrl+C para parar todos os serviços', 'yellow');
-        
+
+        // Log removido para reduzir verbosidade - servidor mostra suas próprias mensagens
+
     } catch (error) {
         log(`Erro ao iniciar servidor: ${error.message}`, 'red');
         // Parar todos os processos em caso de erro
@@ -298,14 +302,11 @@ function runLocal() {
 }
 
 function main() {
-    if (process.env.NODE_ENV !== 'production') {
-        log('PromoPing - Execução Rápida', 'bright');
-        log('================================', 'bright');
-    }
-    
+    // Logs de cabeçalho removidos para reduzir verbosidade
+
     const args = process.argv.slice(2);
     const mode = args[0] || 'auto';
-    
+
     switch (mode) {
         case 'docker':
             if (checkCommand('docker') && checkCommand('docker-compose')) {
@@ -315,15 +316,15 @@ function main() {
                 process.exit(1);
             }
             break;
-            
+
         case 'local':
             runLocal();
             break;
-            
+
         case 'setup':
             runSetup();
             break;
-            
+
         case 'auto':
         default:
             // Detectar melhor método
