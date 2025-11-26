@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-placeholder">PP</div>
+                <h2>PromoPing Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="tabelas.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <h1>Suporte ao Cliente</h1>
+                    <button id="refreshBtn" class="refresh-button">Atualizar</button>
+                </div>
+
+                <div class="support-layout">
+                    <!-- Threads List -->
+                    <div class="threads-panel">
+                        <div class="threads-header">
+                            <h3>Conversas</h3>
+                            <span id="threadsCount" class="badge">0</span>
+                        </div>
+                        <div id="threadsList" class="threads-list">
+                            <div class="loading-state">Carregando conversas...</div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Panel -->
+                    <div class="chat-panel">
+                        <div id="chatHeader" class="chat-header" style="display: none;">
+                            <div class="chat-user-info">
+                                <h3 id="chatUserName">Usuário</h3>
+                                <span id="chatUserEmail" class="chat-email"></span>
+                            </div>
+                            <button id="deleteThreadBtn" class="delete-thread-btn" title="Excluir conversa">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="m19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="empty-state">
+                                <p>Selecione uma conversa para visualizar as mensagens</p>
+                            </div>
+                        </div>
+                        <div id="chatInput" class="chat-input-container" style="display: none;">
+                            <textarea id="messageInput" class="message-input" placeholder="Digite sua resposta..." rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../script/suporte.js"></script>
+</body>
+
+</html>

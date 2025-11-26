@@ -1,349 +1,400 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import express from "express";
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Strategy as DiscordStrategy } from "passport-discord";
-import { Strategy as GitHubStrategy } from "passport-github2";
-import { pool } from "../database/db.js";
+import {
+    Strategy as GoogleStrategy
+} from "passport-google-oauth20";
+import {
+    Strategy as DiscordStrategy
+} from "passport-discord";
+import {
+    Strategy as GitHubStrategy
+} from "passport-github2";
+import {
+    pool
+} from "../database/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { verifyToken } from "../middleware/auth.js";
-import { atualizarMetricasAutomaticamente } from "./status.js";
+import {
+    verifyToken
+} from "../middleware/auth.js";
+import {
+    atualizarMetricasAutomaticamente
+} from "./status.js";
 import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
-import { findDiscordUser, registerDiscordUser, linkDiscordUser } from "../utils/discord-users.js";
-import { getCachedDiscordUser, setCachedDiscordUser } from "../utils/discord-cache.js";
+import {
+    fileURLToPath
+} from "url";
+import {
+    findDiscordUser,
+    registerDiscordUser,
+    linkDiscordUser
+} from "../utils/discord-users.js";
+import {
+    getCachedDiscordUser,
+    setCachedDiscordUser
+} from "../utils/discord-cache.js";
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') }); // Garante que .env está sendo lido da raiz
+dotenv.config({
+    path: path.resolve(process.cwd(), '.env')
+}); // Garante que .env está sendo lido da raiz
 
 const router = express.Router();
 
 function gerarCodigo() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+    return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Função para enviar email
 async function enviarEmail(to, subject, text) {
-  try {
-    const { sendEmail } = await import("../services/notify.js");
-    await sendEmail(to, subject, text);
-    console.log(` Email enviado para ${to}`);
-    return { success: true };
-  } catch (error) {
-    console.error(" Erro ao enviar email:", error);
-    return { success: false, error: error.message };
-  }
+    try {
+        const {
+            sendEmail
+        } = await import("../services/notify.js");
+        await sendEmail(to, subject, text);
+        console.log(` Email enviado para ${to}`);
+        return {
+            success: true
+        };
+    } catch (error) {
+        console.error(" Erro ao enviar email:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
 }
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://127.0.0.1:3000/api/auth/google/callback",
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          const email = profile.emails[0].value;
-          const googleId = profile.id;
-          const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-          const nome = profile.displayName || profile.name?.givenName || 'Usuário Google';
+    passport.use(
+        new GoogleStrategy({
+                clientID: process.env.GOOGLE_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                callbackURL: "http://127.0.0.1:3000/api/auth/google/callback",
+            },
+            async (accessToken, refreshToken, profile, done) => {
+                try {
+                    const email = profile.emails[0].value;
+                    const googleId = profile.id;
+                    const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+                    const nome = profile.displayName || profile.name ?.givenName || 'Usuário Google';
 
-          const [rows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
-            [email]
-          );
+                    const [rows] = await pool.query(
+                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        [email]
+                    );
 
-          let userId;
-          if (rows.length > 0) {
-            userId = rows[0].Id;
-            // Atualizar foto de perfil se fornecida
-            if (fotoPerfil) {
-              try {
-                await pool.query(
-                  "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                  [fotoPerfil, userId]
-                );
-              } catch (updateErr) {
-                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
-              }
-            }
-            console.log("Usuário Google já existe:", email);
-          } else {
-            // Inserir novo usuário com foto de perfil se disponível
-            try {
-              const [result] = await pool.query(
-                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
-                [nome, email, null, fotoPerfil]
-              );
-              userId = result.insertId;
-            } catch (insertErr) {
-              // Se campo FotoPerfil não existe, inserir sem ele
-              const [result] = await pool.query(
-                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-                [nome, email, null]
-              );
-              userId = result.insertId;
-            }
-          }
+                    let userId;
+                    if (rows.length > 0) {
+                        userId = rows[0].Id;
+                        // Atualizar foto de perfil se fornecida
+                        if (fotoPerfil) {
+                            try {
+                                await pool.query(
+                                    "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                    [fotoPerfil, userId]
+                                );
+                            } catch (updateErr) {
+                                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+                            }
+                        }
+                        console.log("Usuário Google já existe:", email);
+                    } else {
+                        // Inserir novo usuário com foto de perfil se disponível
+                        try {
+                            const [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
+                                [nome, email, null, fotoPerfil]
+                            );
+                            userId = result.insertId;
+                        } catch (insertErr) {
+                            // Se campo FotoPerfil não existe, inserir sem ele
+                            const [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
+                                [nome, email, null]
+                            );
+                            userId = result.insertId;
+                        }
+                    }
 
-          await pool.query(
-            `INSERT INTO configutilizador (UserId, CanalPreferido) 
+                    await pool.query(
+                        `INSERT INTO configutilizador (UserId, CanalPreferido) 
              VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
-            [userId, "email"]
-          );
+                        [userId, "email"]
+                    );
 
-          return done(null, { id: userId, email, nome, fotoPerfil });
-        } catch (err) {
-          return done(err, null);
-        }
-      }
-    )
-  );
+                    return done(null, {
+                        id: userId,
+                        email,
+                        nome,
+                        fotoPerfil
+                    });
+                } catch (err) {
+                    return done(err, null);
+                }
+            }
+        )
+    );
 } else {
-  // Google OAuth não configurado - silencioso
+    // Google OAuth não configurado - silencioso
 }
 
 // ================== GITHUB STRATEGY ==================
 if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  passport.use(
-    new GitHubStrategy(
-      {
-        clientID: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: "http://127.0.0.1:3000/api/auth/github/callback",
-        scope: ['user:email']
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          // GitHub pode não ter email público, então precisamos buscar da API
-          let email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-          
-          // Se não houver email no perfil, tentar buscar da API do GitHub
-          if (!email) {
-            try {
-              const response = await fetch('https://api.github.com/user/emails', {
-                headers: {
-                  'Authorization': `token ${accessToken}`,
-                  'User-Agent': 'PromoPing'
-                }
-              });
-              const emails = await response.json();
-              if (Array.isArray(emails) && emails.length > 0) {
-                const primaryEmail = emails.find(e => e.primary) || emails[0];
-                email = primaryEmail.email;
-              }
-            } catch (emailErr) {
-              console.log("Erro ao buscar email do GitHub:", emailErr.message);
-            }
-          }
+    passport.use(
+        new GitHubStrategy({
+                clientID: process.env.GITHUB_CLIENT_ID,
+                clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                callbackURL: "http://127.0.0.1:3000/api/auth/github/callback",
+                scope: ['user:email']
+            },
+            async (accessToken, refreshToken, profile, done) => {
+                try {
+                    // GitHub pode não ter email público, então precisamos buscar da API
+                    let email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
-          // Usar email do GitHub ou criar um email baseado no username
-          if (!email) {
-            email = `${profile.username}@github.local`;
-          }
+                    // Se não houver email no perfil, tentar buscar da API do GitHub
+                    if (!email) {
+                        try {
+                            const response = await fetch('https://api.github.com/user/emails', {
+                                headers: {
+                                    'Authorization': `token ${accessToken}`,
+                                    'User-Agent': 'PromoPing'
+                                }
+                            });
+                            const emails = await response.json();
+                            if (Array.isArray(emails) && emails.length > 0) {
+                                const primaryEmail = emails.find(e => e.primary) || emails[0];
+                                email = primaryEmail.email;
+                            }
+                        } catch (emailErr) {
+                            console.log("Erro ao buscar email do GitHub:", emailErr.message);
+                        }
+                    }
 
-          const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : 
-                            profile._json?.avatar_url || null;
-          const nome = profile.displayName || profile.username || 'Usuário GitHub';
+                    // Usar email do GitHub ou criar um email baseado no username
+                    if (!email) {
+                        email = `${profile.username}@github.local`;
+                    }
 
-          const [rows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
-            [email]
-          );
+                    const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value :
+                        profile._json ?.avatar_url || null;
+                    const nome = profile.displayName || profile.username || 'Usuário GitHub';
 
-          let userId;
-          if (rows.length > 0) {
-            userId = rows[0].Id;
-            // Atualizar foto de perfil se fornecida
-            if (fotoPerfil) {
-              try {
-                await pool.query(
-                  "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                  [fotoPerfil, userId]
-                );
-              } catch (updateErr) {
-                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
-              }
-            }
-            console.log("Usuário GitHub já existe:", email);
-          } else {
-            // Inserir novo usuário com foto de perfil se disponível
-            try {
-              const [result] = await pool.query(
-                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
-                [nome, email, null, fotoPerfil]
-              );
-              userId = result.insertId;
-              
-              // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
-              try {
-                await atualizarMetricasAutomaticamente();
-                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
-              } catch (metricError) {
-                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-                // Não bloquear resposta em caso de erro nas métricas
-              }
-            } catch (insertErr) {
-              // Se campo FotoPerfil não existe, inserir sem ele
-              const [result] = await pool.query(
-                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-                [nome, email, null]
-              );
-              userId = result.insertId;
-              
-              // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
-              try {
-                await atualizarMetricasAutomaticamente();
-                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
-              } catch (metricError) {
-                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-                // Não bloquear resposta em caso de erro nas métricas
-              }
-            }
-          }
+                    const [rows] = await pool.query(
+                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        [email]
+                    );
 
-          await pool.query(
-            `INSERT INTO configutilizador (UserId, CanalPreferido) 
+                    let userId;
+                    if (rows.length > 0) {
+                        userId = rows[0].Id;
+                        // Atualizar foto de perfil se fornecida
+                        if (fotoPerfil) {
+                            try {
+                                await pool.query(
+                                    "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                    [fotoPerfil, userId]
+                                );
+                            } catch (updateErr) {
+                                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+                            }
+                        }
+                        console.log("Usuário GitHub já existe:", email);
+                    } else {
+                        // Inserir novo usuário com foto de perfil se disponível
+                        try {
+                            const [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
+                                [nome, email, null, fotoPerfil]
+                            );
+                            userId = result.insertId;
+
+                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+                            try {
+                                await atualizarMetricasAutomaticamente();
+                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+                            } catch (metricError) {
+                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                                // Não bloquear resposta em caso de erro nas métricas
+                            }
+                        } catch (insertErr) {
+                            // Se campo FotoPerfil não existe, inserir sem ele
+                            const [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
+                                [nome, email, null]
+                            );
+                            userId = result.insertId;
+
+                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+                            try {
+                                await atualizarMetricasAutomaticamente();
+                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+                            } catch (metricError) {
+                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                                // Não bloquear resposta em caso de erro nas métricas
+                            }
+                        }
+                    }
+
+                    await pool.query(
+                        `INSERT INTO configutilizador (UserId, CanalPreferido) 
              VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
-            [userId, "email"]
-          );
+                        [userId, "email"]
+                    );
 
-          return done(null, { id: userId, email, nome, fotoPerfil });
-        } catch (err) {
-          return done(err, null);
-        }
-      }
-    )
-  );
+                    return done(null, {
+                        id: userId,
+                        email,
+                        nome,
+                        fotoPerfil
+                    });
+                } catch (err) {
+                    return done(err, null);
+                }
+            }
+        )
+    );
 } else {
-  // GitHub OAuth não configurado - silencioso
+    // GitHub OAuth não configurado - silencioso
 }
 
 // ================== DISCORD STRATEGY ==================
 if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-  passport.use(
-    new DiscordStrategy(
-      {
-        clientID: process.env.DISCORD_CLIENT_ID,
-        clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        callbackURL: "http://127.0.0.1:3000/auth/discord/callback",
-        scope: ['identify', 'email']
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          console.log(" Discord profile recebido:", {
-            id: profile.id,
-            username: profile.username,
-            email: profile.email,
-            avatar: profile.avatar
-          });
+    passport.use(
+        new DiscordStrategy({
+                clientID: process.env.DISCORD_CLIENT_ID,
+                clientSecret: process.env.DISCORD_CLIENT_SECRET,
+                callbackURL: "http://127.0.0.1:3000/auth/discord/callback",
+                scope: ['identify', 'email']
+            },
+            async (accessToken, refreshToken, profile, done) => {
+                try {
+                    console.log(" Discord profile recebido:", {
+                        id: profile.id,
+                        username: profile.username,
+                        email: profile.email,
+                        avatar: profile.avatar
+                    });
 
-          const email = profile.email;
-          const discordId = profile.id;
-          const username = profile.username;
-          const avatar = profile.avatar;
+                    const email = profile.email;
+                    const discordId = profile.id;
+                    const username = profile.username;
+                    const avatar = profile.avatar;
 
-          // Verificar se usuário Discord já existe no JSON
-          let discordUser = findDiscordUser(discordId);
-          
-          if (discordUser && discordUser.userId) {
-            // Usuário Discord já existe e está associado - LOGIN DIRETO
-            console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
-            
-            const token = jwt.sign(
-              { id: discordUser.userId, email: discordUser.email },
-              process.env.JWT_SECRET,
-              { expiresIn: "7d" }
-            );
+                    // Verificar se usuário Discord já existe no JSON
+                    let discordUser = findDiscordUser(discordId);
 
-            console.log(" Login direto realizado para usuário:", discordUser.userId);
-            return done(null, { userId: discordUser.userId, email: discordUser.email, token });
-          }
+                    if (discordUser && discordUser.userId) {
+                        // Usuário Discord já existe e está associado - LOGIN DIRETO
+                        console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
 
-          // Usuário Discord não existe ou não está associado
-          if (!discordUser) {
-            // Registrar novo usuário Discord no JSON
-            discordUser = registerDiscordUser({
-              id: discordId,
-              username: username,
-              email: email,
-              avatar: avatar
-            });
-          }
+                        const token = jwt.sign({
+                                id: discordUser.userId,
+                                email: discordUser.email
+                            },
+                            process.env.JWT_SECRET, {
+                                expiresIn: "7d"
+                            }
+                        );
 
-          // Verificar se usuário existe no banco de dados
-          const [rows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
-            [email]
-    );
+                        console.log(" Login direto realizado para usuário:", discordUser.userId);
+                        return done(null, {
+                            userId: discordUser.userId,
+                            email: discordUser.email,
+                            token
+                        });
+                    }
 
-    let userId;
-          if (rows.length > 0) {
-            // Usuário já existe no banco - ASSOCIAR DISCORD
-            console.log(" Usuário existente encontrado - Associando Discord:", rows[0].Nome);
-            userId = rows[0].Id;
-            
-            // Associar Discord com usuário do banco
-            linkDiscordUser(discordId, userId);
-    } else {
-            // Criar novo usuário no banco
-            console.log("🆕 Criando novo usuário no banco:", username);
-      const [result] = await pool.query(
-              "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
-              [username, email]
-      );
-      userId = result.insertId;
-            
-            // Buscar ID do plano FREE
-            const [planoFree] = await pool.query(
-              "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
-            );
-            
-            const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+                    // Usuário Discord não existe ou não está associado
+                    if (!discordUser) {
+                        // Registrar novo usuário Discord no JSON
+                        discordUser = registerDiscordUser({
+                            id: discordId,
+                            username: username,
+                            email: email,
+                            avatar: avatar
+                        });
+                    }
 
-            // Criar configuração do usuário com plano FREE
-            await pool.query(
-              "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
-              [userId, "discord", planoFreeId]
-            );
-            
-            console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
-            
-            // Associar Discord com novo usuário
-            linkDiscordUser(discordId, userId);
-            
-            // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
-            try {
-              await atualizarMetricasAutomaticamente();
-              console.log(" Métricas atualizadas após criação de novo utilizador via Discord");
-            } catch (metricError) {
-              console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-              // Não bloquear resposta em caso de erro nas métricas
+                    // Verificar se usuário existe no banco de dados
+                    const [rows] = await pool.query(
+                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        [email]
+                    );
+
+                    let userId;
+                    if (rows.length > 0) {
+                        // Usuário já existe no banco - ASSOCIAR DISCORD
+                        console.log(" Usuário existente encontrado - Associando Discord:", rows[0].Nome);
+                        userId = rows[0].Id;
+
+                        // Associar Discord com usuário do banco
+                        linkDiscordUser(discordId, userId);
+                    } else {
+                        // Criar novo usuário no banco
+                        console.log("🆕 Criando novo usuário no banco:", username);
+                        const [result] = await pool.query(
+                            "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
+                            [username, email]
+                        );
+                        userId = result.insertId;
+
+                        // Buscar ID do plano FREE
+                        const [planoFree] = await pool.query(
+                            "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
+                        );
+
+                        const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+
+                        // Criar configuração do usuário com plano FREE
+                        await pool.query(
+                            "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+                            [userId, "discord", planoFreeId]
+                        );
+
+                        console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
+
+                        // Associar Discord com novo usuário
+                        linkDiscordUser(discordId, userId);
+
+                        // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
+                        try {
+                            await atualizarMetricasAutomaticamente();
+                            console.log(" Métricas atualizadas após criação de novo utilizador via Discord");
+                        } catch (metricError) {
+                            console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                            // Não bloquear resposta em caso de erro nas métricas
+                        }
+                    }
+
+                    const token = jwt.sign({
+                            id: userId,
+                            email
+                        },
+                        process.env.JWT_SECRET, {
+                            expiresIn: "7d"
+                        }
+                    );
+
+                    console.log(" Token JWT gerado para usuário:", userId);
+                    return done(null, {
+                        userId,
+                        email,
+                        token
+                    });
+                } catch (error) {
+                    console.error(" Erro na autenticação Discord:", error);
+                    return done(error, null);
+                }
             }
-          }
-
-          const token = jwt.sign(
-            { id: userId, email },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-          );
-
-          console.log(" Token JWT gerado para usuário:", userId);
-          return done(null, { userId, email, token });
-        } catch (error) {
-          console.error(" Erro na autenticação Discord:", error);
-          return done(error, null);
-        }
-      }
-    )
-  );
+        )
+    );
 } else {
-  // Discord OAuth não configurado - silencioso
+    // Discord OAuth não configurado - silencioso
 }
 
 passport.serializeUser((user, done) => done(null, user));
@@ -353,51 +404,60 @@ passport.deserializeUser((obj, done) => done(null, obj));
 
 // Verificar se usuário Discord já existe
 router.get('/discord/check/:discordId', async (req, res) => {
-  try {
-    const { discordId } = req.params;
-    const discordUser = findDiscordUser(discordId);
-    
-    if (discordUser && discordUser.userId) {
-      // Usuário já existe - pode fazer login direto
-      res.json({ 
-        exists: true, 
-        message: "Usuário Discord já registrado - pode fazer login direto",
-        user: {
-          username: discordUser.username,
-          email: discordUser.email
+    try {
+        const {
+            discordId
+        } = req.params;
+        const discordUser = findDiscordUser(discordId);
+
+        if (discordUser && discordUser.userId) {
+            // Usuário já existe - pode fazer login direto
+            res.json({
+                exists: true,
+                message: "Usuário Discord já registrado - pode fazer login direto",
+                user: {
+                    username: discordUser.username,
+                    email: discordUser.email
+                }
+            });
+        } else {
+            // Usuário não existe - precisa registrar
+            res.json({
+                exists: false,
+                message: "Usuário Discord não encontrado - precisa registrar primeiro"
+            });
         }
-      });
-    } else {
-      // Usuário não existe - precisa registrar
-      res.json({ 
-        exists: false, 
-        message: "Usuário Discord não encontrado - precisa registrar primeiro"
-      });
+    } catch (error) {
+        console.error(" Erro ao verificar usuário Discord:", error);
+        res.status(500).json({
+            error: "Erro interno do servidor"
+        });
     }
-  } catch (error) {
-    console.error(" Erro ao verificar usuário Discord:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
-  }
 });
 
 // Rota alternativa para Discord sem rate limiting
 router.get('/discord/direct/:discordId', async (req, res) => {
-  try {
-    const { discordId } = req.params;
-    const discordUser = findDiscordUser(discordId);
-    
-    if (discordUser && discordUser.userId) {
-      // Gerar token diretamente
-    const token = jwt.sign(
-        { id: discordUser.userId, email: discordUser.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    try {
+        const {
+            discordId
+        } = req.params;
+        const discordUser = findDiscordUser(discordId);
 
-      console.log(" Login direto via rota alternativa para usuário:", discordUser.userId);
-      
-      // Criar página HTML que salva no localStorage e redireciona
-      const html = `
+        if (discordUser && discordUser.userId) {
+            // Gerar token diretamente
+            const token = jwt.sign({
+                    id: discordUser.userId,
+                    email: discordUser.email
+                },
+                process.env.JWT_SECRET, {
+                    expiresIn: "7d"
+                }
+            );
+
+            console.log(" Login direto via rota alternativa para usuário:", discordUser.userId);
+
+            // Criar página HTML que salva no localStorage e redireciona
+            const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -423,15 +483,19 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         </body>
         </html>
       `;
-      
-      res.send(html);
-    } else {
-      res.status(404).json({ error: "Usuário Discord não encontrado" });
+
+            res.send(html);
+        } else {
+            res.status(404).json({
+                error: "Usuário Discord não encontrado"
+            });
+        }
+    } catch (error) {
+        console.error(" Erro no login direto Discord:", error);
+        res.status(500).json({
+            error: "Erro interno do servidor"
+        });
     }
-  } catch (error) {
-    console.error(" Erro no login direto Discord:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
-  }
 });
 
 // ================== ROTAS SMS/WHATSAPP REMOVIDAS ==================
@@ -443,108 +507,112 @@ router.get('/discord/direct/:discordId', async (req, res) => {
 
 // Buscar contas por nome/email/username (estilo Pinterest)
 router.get("/search-accounts", async (req, res) => {
-  try {
-    const { query } = req.query;
+    try {
+        const {
+            query
+        } = req.query;
 
-    if (!query || query.trim().length < 2) {
-      return res.json({
-        status: "ok",
-        accounts: []
-      });
-    }
+        if (!query || query.trim().length < 2) {
+            return res.json({
+                status: "ok",
+                accounts: []
+            });
+        }
 
-    const searchTerm = `%${query.trim()}%`;
+        const searchTerm = `%${query.trim()}%`;
 
-    // Buscar usuários por nome, email ou username (usando nome como username)
-    const [userRows] = await pool.query(
-      `SELECT Id, Nome, Email, FotoPerfil 
+        // Buscar usuários por nome, email ou username (usando nome como username)
+        const [userRows] = await pool.query(
+            `SELECT Id, Nome, Email, FotoPerfil 
        FROM Utilizadores 
        WHERE (Nome LIKE ? OR Email LIKE ?) 
        AND Ativo = 1 
        AND EmailVerificado = 1
        LIMIT 10`,
-      [searchTerm, searchTerm]
-    );
+            [searchTerm, searchTerm]
+        );
 
-    // Mascarar emails para privacidade
-    const accounts = userRows.map(user => {
-      const email = user.Email || '';
-      const [localPart, domain] = email.split('@');
-      
-      let maskedEmail = '';
-      if (localPart && localPart.length > 0) {
-        const visibleChars = Math.min(2, localPart.length);
-        const maskedChars = localPart.length - visibleChars;
-        maskedEmail = localPart.substring(0, visibleChars) + '_'.repeat(Math.min(maskedChars, 4));
-      }
-      
-      if (domain) {
-        const [domainName, domainExt] = domain.split('.');
-        const visibleDomainChars = Math.min(1, domainName.length);
-        const maskedDomain = domainName.substring(0, visibleDomainChars) + '_'.repeat(Math.min(domainName.length - visibleDomainChars, 3));
-        maskedEmail += `@${maskedDomain}.${domainExt ? domainExt.substring(0, 1) + '_'.repeat(Math.min(domainExt.length - 1, 2)) : ''}`;
-      }
+        // Mascarar emails para privacidade
+        const accounts = userRows.map(user => {
+            const email = user.Email || '';
+            const [localPart, domain] = email.split('@');
 
-      return {
-        id: user.Id,
-        nome: user.Nome,
-        email: email, // Email real para envio
-        maskedEmail: maskedEmail, // Email mascarado para exibição
-        fotoPerfil: user.FotoPerfil || null
-      };
-    });
+            let maskedEmail = '';
+            if (localPart && localPart.length > 0) {
+                const visibleChars = Math.min(2, localPart.length);
+                const maskedChars = localPart.length - visibleChars;
+                maskedEmail = localPart.substring(0, visibleChars) + '_'.repeat(Math.min(maskedChars, 4));
+            }
 
-    res.json({
-      status: "ok",
-      accounts: accounts
-    });
-  } catch (err) {
-    console.error("[SEARCH-ACCOUNTS] Erro ao buscar contas:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao buscar contas",
-    });
-  }
+            if (domain) {
+                const [domainName, domainExt] = domain.split('.');
+                const visibleDomainChars = Math.min(1, domainName.length);
+                const maskedDomain = domainName.substring(0, visibleDomainChars) + '_'.repeat(Math.min(domainName.length - visibleDomainChars, 3));
+                maskedEmail += `@${maskedDomain}.${domainExt ? domainExt.substring(0, 1) + '_'.repeat(Math.min(domainExt.length - 1, 2)) : ''}`;
+            }
+
+            return {
+                id: user.Id,
+                nome: user.Nome,
+                email: email, // Email real para envio
+                maskedEmail: maskedEmail, // Email mascarado para exibição
+                fotoPerfil: user.FotoPerfil || null
+            };
+        });
+
+        res.json({
+            status: "ok",
+            accounts: accounts
+        });
+    } catch (err) {
+        console.error("[SEARCH-ACCOUNTS] Erro ao buscar contas:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao buscar contas",
+        });
+    }
 });
 
 // Solicitar reset de senha (estilo Pinterest)
 router.post("/forgot-password", async (req, res) => {
-  try {
-    const { email } = req.body;
+    try {
+        const {
+            email
+        } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email é obrigatório",
-      });
-    }
+        if (!email) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email é obrigatório",
+            });
+        }
 
-    // Buscar usuário
-    const [userRows] = await pool.query(
-      "SELECT Id, Nome, Email FROM Utilizadores WHERE Email = ?",
-      [email]
-    );
+        // Buscar usuário
+        const [userRows] = await pool.query(
+            "SELECT Id, Nome, Email FROM Utilizadores WHERE Email = ?",
+            [email]
+        );
 
-    // SEMPRE retornar sucesso (por segurança, não revelar se email existe)
-    if (userRows.length === 0) {
-      return res.json({
-        status: "ok",
-        message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
-      });
-    }
+        // SEMPRE retornar sucesso (por segurança, não revelar se email existe)
+        if (userRows.length === 0) {
+            return res.json({
+                status: "ok",
+                message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+            });
+        }
 
-    const user = userRows[0];
+        const user = userRows[0];
 
-    // Gerar token único
-    const crypto = await import("crypto");
-    const token = crypto.default.randomBytes(32).toString("hex");
-    
-    // Token expira em 24 horas
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+        // Gerar token único
+        const crypto = await import("crypto");
+        const token = crypto.default.randomBytes(32).toString("hex");
 
-    // Criar tabela se não existir
-    await pool.query(`
+        // Token expira em 24 horas
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24);
+
+        // Criar tabela se não existir
+        await pool.query(`
       CREATE TABLE IF NOT EXISTS password_reset_tokens (
         Id INT AUTO_INCREMENT PRIMARY KEY,
         UserId INT(10) UNSIGNED NOT NULL,
@@ -560,24 +628,24 @@ router.post("/forgot-password", async (req, res) => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-    // Invalidar tokens anteriores do usuário
-    await pool.query(
-      "UPDATE password_reset_tokens SET Used = TRUE WHERE UserId = ? AND Used = FALSE",
-      [user.Id]
-    );
+        // Invalidar tokens anteriores do usuário
+        await pool.query(
+            "UPDATE password_reset_tokens SET Used = TRUE WHERE UserId = ? AND Used = FALSE",
+            [user.Id]
+        );
 
-    // Salvar novo token
-    await pool.query(
-      "INSERT INTO password_reset_tokens (UserId, Token, Email, ExpiresAt) VALUES (?, ?, ?, ?)",
-      [user.Id, token, user.Email, expiresAt]
-    );
+        // Salvar novo token
+        await pool.query(
+            "INSERT INTO password_reset_tokens (UserId, Token, Email, ExpiresAt) VALUES (?, ?, ?, ?)",
+            [user.Id, token, user.Email, expiresAt]
+        );
 
-    // URL de reset (ajustar conforme ambiente)
-    const baseUrl = process.env.FRONTEND_URL || "http://127.0.0.1:3000";
-    const resetUrl = `${baseUrl}/inc/forgot-password.html?token=${token}`;
+        // URL de reset (ajustar conforme ambiente)
+        const baseUrl = process.env.FRONTEND_URL || "http://127.0.0.1:3000";
+        const resetUrl = `${baseUrl}/inc/forgot-password.html?token=${token}`;
 
-    // Template de email estilo Pinterest
-    const emailHtml = `
+        // Template de email estilo Pinterest
+        const emailHtml = `
       <!DOCTYPE html>
       <html lang="pt-PT">
       <head>
@@ -639,491 +707,520 @@ router.post("/forgot-password", async (req, res) => {
       </html>
     `;
 
-    // Enviar email
-    const emailResult = await enviarEmail(
-      user.Email,
-      "Repõe a palavra-passe - PromoPing",
-      emailHtml
-    );
+        // Enviar email
+        const emailResult = await enviarEmail(
+            user.Email,
+            "Repõe a palavra-passe - PromoPing",
+            emailHtml
+        );
 
-    if (emailResult.success) {
-      console.log(`[FORGOT-PASSWORD] Email de reset enviado para ${user.Email}`);
+        if (emailResult.success) {
+            console.log(`[FORGOT-PASSWORD] Email de reset enviado para ${user.Email}`);
+        }
+
+        res.json({
+            status: "ok",
+            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+        });
+    } catch (err) {
+        console.error("[FORGOT-PASSWORD] Erro ao processar solicitação:", err);
+        // Sempre retornar sucesso por segurança
+        res.json({
+            status: "ok",
+            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+        });
     }
-
-    res.json({
-      status: "ok",
-      message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
-    });
-  } catch (err) {
-    console.error("[FORGOT-PASSWORD] Erro ao processar solicitação:", err);
-    // Sempre retornar sucesso por segurança
-    res.json({
-      status: "ok",
-      message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
-    });
-  }
 });
 
 // Validar token de reset
 router.get("/reset-password/:token", async (req, res) => {
-  try {
-    const { token } = req.params;
+    try {
+        const {
+            token
+        } = req.params;
 
-    if (!token) {
-      return res.status(400).json({
-        status: "error",
-        error: "Token é obrigatório",
-      });
-    }
+        if (!token) {
+            return res.status(400).json({
+                status: "error",
+                error: "Token é obrigatório",
+            });
+        }
 
-    // Buscar token válido
-    const [tokenRows] = await pool.query(
-      `SELECT prt.*, u.Email 
+        // Buscar token válido
+        const [tokenRows] = await pool.query(
+            `SELECT prt.*, u.Email 
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.UserId = u.Id
        WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
-      [token]
-    );
+            [token]
+        );
 
-    if (tokenRows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Token inválido ou expirado",
-      });
+        if (tokenRows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Token inválido ou expirado",
+            });
+        }
+
+        res.json({
+            status: "ok",
+            valid: true,
+            email: tokenRows[0].Email,
+        });
+    } catch (err) {
+        console.error("[RESET-PASSWORD] Erro ao validar token:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao validar token",
+        });
     }
-
-    res.json({
-      status: "ok",
-      valid: true,
-      email: tokenRows[0].Email,
-    });
-  } catch (err) {
-    console.error("[RESET-PASSWORD] Erro ao validar token:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao validar token",
-    });
-  }
 });
 
 // Resetar senha com token
 router.post("/reset-password", async (req, res) => {
-  try {
-    const { token, newPassword } = req.body;
+    try {
+        const {
+            token,
+            newPassword
+        } = req.body;
 
-    if (!token || !newPassword) {
-      return res.status(400).json({
-        status: "error",
-        error: "Token e nova senha são obrigatórios",
-      });
-    }
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                status: "error",
+                error: "Token e nova senha são obrigatórios",
+            });
+        }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({
-        status: "error",
-        error: "A senha deve ter pelo menos 6 caracteres",
-      });
-    }
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                status: "error",
+                error: "A senha deve ter pelo menos 6 caracteres",
+            });
+        }
 
-    // Buscar token válido
-    const [tokenRows] = await pool.query(
-      `SELECT prt.*, u.Id as UserId
+        // Buscar token válido
+        const [tokenRows] = await pool.query(
+            `SELECT prt.*, u.Id as UserId
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.UserId = u.Id
        WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
-      [token]
-    );
+            [token]
+        );
 
-    if (tokenRows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Token inválido ou expirado",
-      });
+        if (tokenRows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Token inválido ou expirado",
+            });
+        }
+
+        const tokenData = tokenRows[0];
+
+        // Hash da nova senha
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Atualizar senha
+        await pool.query(
+            "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
+            [hashedPassword, tokenData.UserId]
+        );
+
+        // Marcar token como usado
+        await pool.query(
+            "UPDATE password_reset_tokens SET Used = TRUE WHERE Token = ?",
+            [token]
+        );
+
+        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.UserId}`);
+
+        res.json({
+            status: "ok",
+            message: "Senha redefinida com sucesso!",
+        });
+    } catch (err) {
+        console.error("[RESET-PASSWORD] Erro ao resetar senha:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao redefinir senha",
+        });
     }
-
-    const tokenData = tokenRows[0];
-
-    // Hash da nova senha
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-    // Atualizar senha
-    await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
-      [hashedPassword, tokenData.UserId]
-    );
-
-    // Marcar token como usado
-    await pool.query(
-      "UPDATE password_reset_tokens SET Used = TRUE WHERE Token = ?",
-      [token]
-    );
-
-    console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.UserId}`);
-
-    res.json({
-      status: "ok",
-      message: "Senha redefinida com sucesso!",
-    });
-  } catch (err) {
-    console.error("[RESET-PASSWORD] Erro ao resetar senha:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao redefinir senha",
-    });
-  }
 });
 
 // ================== FIM RESET DE SENHA (ESTILO PINTEREST) ==================
 
 // LOGIN com email e senha
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log(" Login tentativa:", email);
+    try {
+        const {
+            email,
+            password
+        } = req.body;
+        console.log(" Login tentativa:", email);
 
-    if (!email || !password) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email e senha são obrigatórios",
-      });
-    }
-
-    // Busca utilizador
-    const [rows] = await pool.query(
-      "SELECT * FROM Utilizadores WHERE Email = ?",
-      [email]
-    );
-    console.log(" Resultado SELECT:", rows);
-
-    if (rows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email ou senha incorretos",
-      });
-    }
-
-    const user = rows[0];
-    console.log(" Usuário retornado:", user);
-
-    if (!user.SenhaHash) {
-      return res.status(400).json({
-        status: "error",
-        error:
-          "Conta não tem senha configurada. Use Google ou configure uma senha no perfil.",
-      });
-    }
-
-    // Verifica senha
-    const validPassword = await bcrypt.compare(password, user.SenhaHash);
-    console.log(" Senha válida?:", validPassword);
-
-    if (!validPassword) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email ou senha incorretos",
-      });
-    }
-
-    // Verificar se conta está desativada e permitir reativação se ainda não expirou
-    if (user.Ativo === 0) {
-      // Verificar se ainda está dentro do período de 20 dias
-      let canReactivate = false;
-      let expirationDate = null;
-      
-      try {
-        // Verificar se DataDesativacao existe e não expirou
-        const [deactivatedInfo] = await pool.query(
-          "SELECT DataDesativacao FROM Utilizadores WHERE Id = ?",
-          [user.Id]
-        );
-        
-        if (deactivatedInfo.length > 0 && deactivatedInfo[0].DataDesativacao) {
-          expirationDate = new Date(deactivatedInfo[0].DataDesativacao);
-          const now = new Date();
-          canReactivate = expirationDate > now;
-        } else {
-          // Se não tem DataDesativacao, usar Data_Registo como fallback (20 dias)
-          const registerDate = new Date(user.Data_Registo);
-          const expirationDateFallback = new Date(registerDate);
-          expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
-          canReactivate = expirationDateFallback > new Date();
-          expirationDate = expirationDateFallback;
+        if (!email || !password) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email e senha são obrigatórios",
+            });
         }
-      } catch (error) {
-        console.error("[AUTH] Erro ao verificar data de desativação:", error);
-        // Em caso de erro, permitir tentativa de reativação
-        canReactivate = true;
-      }
-      
-      if (canReactivate) {
-        // Reativar conta automaticamente ao fazer login
-        await pool.query(
-          "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE Id = ?",
-          [user.Id]
+
+        // Busca utilizador
+        const [rows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ?",
+            [email]
         );
-        console.log(`[AUTH] Conta ${user.Id} reativada automaticamente via login`);
-        
-        // Marcar que a conta foi reativada para mostrar modal no frontend
-        user.accountReactivated = true;
-      } else {
-        return res.status(403).json({
-          status: "error",
-          error: "Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.",
-          accountExpired: true
+        console.log(" Resultado SELECT:", rows);
+
+        if (rows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email ou senha incorretos",
+            });
+        }
+
+        const user = rows[0];
+        console.log(" Usuário retornado:", user);
+
+        if (!user.SenhaHash) {
+            return res.status(400).json({
+                status: "error",
+                error: "Conta não tem senha configurada. Use Google ou configure uma senha no perfil.",
+            });
+        }
+
+        // Verifica senha
+        const validPassword = await bcrypt.compare(password, user.SenhaHash);
+        console.log(" Senha válida?:", validPassword);
+
+        if (!validPassword) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email ou senha incorretos",
+            });
+        }
+
+        // Verificar se conta está desativada e permitir reativação se ainda não expirou
+        if (user.Ativo === 0) {
+            // Verificar se ainda está dentro do período de 20 dias
+            let canReactivate = false;
+            let expirationDate = null;
+
+            try {
+                // Verificar se DataDesativacao existe e não expirou
+                const [deactivatedInfo] = await pool.query(
+                    "SELECT DataDesativacao FROM Utilizadores WHERE Id = ?",
+                    [user.Id]
+                );
+
+                if (deactivatedInfo.length > 0 && deactivatedInfo[0].DataDesativacao) {
+                    expirationDate = new Date(deactivatedInfo[0].DataDesativacao);
+                    const now = new Date();
+                    canReactivate = expirationDate > now;
+                } else {
+                    // Se não tem DataDesativacao, usar Data_Registo como fallback (20 dias)
+                    const registerDate = new Date(user.Data_Registo);
+                    const expirationDateFallback = new Date(registerDate);
+                    expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
+                    canReactivate = expirationDateFallback > new Date();
+                    expirationDate = expirationDateFallback;
+                }
+            } catch (error) {
+                console.error("[AUTH] Erro ao verificar data de desativação:", error);
+                // Em caso de erro, permitir tentativa de reativação
+                canReactivate = true;
+            }
+
+            if (canReactivate) {
+                // Reativar conta automaticamente ao fazer login
+                await pool.query(
+                    "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE Id = ?",
+                    [user.Id]
+                );
+                console.log(`[AUTH] Conta ${user.Id} reativada automaticamente via login`);
+
+                // Marcar que a conta foi reativada para mostrar modal no frontend
+                user.accountReactivated = true;
+            } else {
+                return res.status(403).json({
+                    status: "error",
+                    error: "Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.",
+                    accountExpired: true
+                });
+            }
+        }
+
+        // Verificar se email está verificado
+        if (!user.EmailVerificado) {
+            return res.status(403).json({
+                status: "error",
+                error: "Email não verificado. Verifique seu email antes de fazer login.",
+                needsVerification: true,
+                email: user.Email
+            });
+        }
+
+        // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
+        // Se a requisição vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
+        const referer = req.headers['referer'] || '';
+        const origin = req.headers['origin'] || '';
+        const adminPanelHeader = req.headers['x-admin-panel'] || req.headers['X-Admin-Panel'] || '';
+
+        const isAdminPanel = referer.includes('Painel_Administrativo') ||
+            referer.includes('admin.promoping') ||
+            origin.includes('Painel_Administrativo') ||
+            origin.includes('admin.promoping') ||
+            adminPanelHeader === 'true';
+
+        if (isAdminPanel) {
+            const perfilId = user.PerfilId || user.perfilId;
+            if (perfilId !== 1) {
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} não é admin (PerfilId=${perfilId})`);
+                return res.status(403).json({
+                    status: "error",
+                    error: "Acesso negado. Apenas administradores podem acessar o painel administrativo.",
+                    accessDenied: true
+                });
+            }
+        }
+
+        // Gera token JWT
+        const token = jwt.sign({
+                id: user.Id,
+                email: user.Email
+            },
+            process.env.JWT_SECRET, {
+                expiresIn: "7d"
+            }
+        );
+
+        res.json({
+            status: "ok",
+            token,
+            user: {
+                id: user.Id,
+                email: user.Email,
+                nome: user.Nome,
+                perfilId: user.PerfilId || user.perfilId
+            },
+            accountReactivated: user.accountReactivated || false
         });
-      }
-    }
-
-    // Verificar se email está verificado
-    if (!user.EmailVerificado) {
-      return res.status(403).json({
-        status: "error",
-        error: "Email não verificado. Verifique seu email antes de fazer login.",
-        needsVerification: true,
-        email: user.Email
-      });
-    }
-
-    // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
-    // Se a requisição vier do Painel Administrativo, apenas administradores podem fazer login
-    const isAdminPanel = req.headers['referer']?.includes('Painel_Administrativo') || 
-                        req.headers['origin']?.includes('Painel_Administrativo') ||
-                        req.headers['x-admin-panel'] === 'true';
-    
-    if (isAdminPanel) {
-      const perfilId = user.PerfilId || user.perfilId;
-      if (perfilId !== 1) {
-        console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} não é admin (PerfilId=${perfilId})`);
-        return res.status(403).json({
-          status: "error",
-          error: "Acesso negado. Apenas administradores podem acessar o painel administrativo.",
-          accessDenied: true
+    } catch (err) {
+        console.error(" Erro no login:", err);
+        res.status(500).json({
+            status: "error",
+            error: err.message || "Erro interno no servidor",
         });
-      }
     }
-
-    // Gera token JWT
-    const token = jwt.sign(
-      { id: user.Id, email: user.Email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.json({
-      status: "ok",
-      token,
-      user: { 
-        id: user.Id, 
-        email: user.Email, 
-        nome: user.Nome, 
-        perfilId: user.PerfilId || user.perfilId 
-      },
-      accountReactivated: user.accountReactivated || false
-    });
-  } catch (err) {
-    console.error(" Erro no login:", err);
-    res.status(500).json({
-      status: "error",
-      error: err.message || "Erro interno no servidor",
-    });
-  }
 });
 
 // REGISTO com email e senha
 router.post("/register", async (req, res) => {
-  try {
-    const { nome, email, password, telefone, data_nascimento } = req.body;
-    console.log("[REGISTRO] Tentativa de registro:", { nome, email, telefone: telefone ? "fornecido" : "não fornecido", data_nascimento: data_nascimento ? "fornecido" : "não fornecido" });
-
-    if (!nome || !email || !password || !data_nascimento) {
-      console.log("[REGISTRO] Campos obrigatórios faltando");
-      return res.status(400).json({
-        status: "error",
-        error: "Nome, email, senha e data de nascimento são obrigatórios",
-      });
-    }
-
-    if (password.length < 6) {
-      console.log("[REGISTRO] Senha muito curta");
-      return res.status(400).json({
-        status: "error",
-        error: "A senha deve ter pelo menos 6 caracteres",
-      });
-    }
-
-    // Validar idade mínima (13 anos) - obrigatório
-    const birthDate = new Date(data_nascimento);
-    
-    // Verificar se a data é válida
-    if (isNaN(birthDate.getTime())) {
-      console.log("[REGISTRO] Data de nascimento inválida");
-      return res.status(400).json({
-        status: "error",
-        error: "Data de nascimento inválida",
-      });
-    }
-
-    // Verificar se a data não é no futuro
-    const today = new Date();
-    if (birthDate > today) {
-      console.log("[REGISTRO] Data de nascimento no futuro");
-      return res.status(400).json({
-        status: "error",
-        error: "Data de nascimento não pode ser no futuro",
-      });
-    }
-
-    // Calcular idade
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    // Validar idade mínima de 13 anos
-    if (age < 13) {
-      console.log(`[REGISTRO] Usuário menor de 13 anos tentou se registrar (idade: ${age})`);
-      return res.status(403).json({
-        status: "error",
-        error: "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing",
-      });
-    }
-    
-    console.log(`[REGISTRO] Idade validada: ${age} anos`);
-
-    console.log("[REGISTRO] Verificando se email já existe...");
-    const [existing] = await pool.query(
-      "SELECT Id FROM Utilizadores WHERE Email = ?",
-      [email]
-    );
-
-    if (existing.length > 0) {
-      console.log("[REGISTRO] Email já em uso");
-      return res.status(400).json({
-        status: "error",
-        error: "Email já está em uso",
-      });
-    }
-
-    console.log("[REGISTRO] Gerando hash da senha...");
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
-    console.log("[REGISTRO] Verificando perfil do usuário...");
-    const [adminCountRows] = await pool.query(
-      "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
-    );
-    const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
-    console.log(`[REGISTRO] PerfilId determinado: ${perfilId}`);
-
-    console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
-    
-    // Tentar inserir com data_nascimento se fornecido
-    let result;
     try {
-      if (data_nascimento) {
-        const [insertResult] = await pool.query(
-          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo, data_nascimento) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), ?)",
-          [nome, email, hashedPassword, 0, telefone || null, perfilId, data_nascimento]
-        );
-        result = insertResult;
-        console.log("[REGISTRO] Usuário criado com data de nascimento");
-      } else {
-        const [insertResult] = await pool.query(
-          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-          [nome, email, hashedPassword, 0, telefone || null, perfilId]
-        );
-        result = insertResult;
-        console.log("[REGISTRO] Usuário criado sem data de nascimento");
-      }
-    } catch (insertError) {
-      // Se a coluna data_nascimento não existir, inserir sem ela
-      if (insertError.code === 'ER_BAD_FIELD_ERROR' || insertError.message?.includes('data_nascimento')) {
-        console.log("[REGISTRO] Coluna data_nascimento não existe, inserindo sem ela...");
-        const [insertResult] = await pool.query(
-          "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-          [nome, email, hashedPassword, 0, telefone || null, perfilId]
-        );
-        result = insertResult;
-      } else {
-        throw insertError;
-      }
-    }
+        const {
+            nome,
+            email,
+            password,
+            telefone,
+            data_nascimento
+        } = req.body;
+        console.log("[REGISTRO] Tentativa de registro:", {
+            nome,
+            email,
+            telefone: telefone ? "fornecido" : "não fornecido",
+            data_nascimento: data_nascimento ? "fornecido" : "não fornecido"
+        });
 
-    const userId = result.insertId;
-    console.log(`[REGISTRO] Usuário criado com ID: ${userId}`);
+        if (!nome || !email || !password || !data_nascimento) {
+            console.log("[REGISTRO] Campos obrigatórios faltando");
+            return res.status(400).json({
+                status: "error",
+                error: "Nome, email, senha e data de nascimento são obrigatórios",
+            });
+        }
 
-    // Buscar ID do plano FREE
-    console.log("[REGISTRO] Buscando plano FREE...");
-    const [planoFree] = await pool.query(
-      "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
-    );
-    
-    const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
-    console.log(`[REGISTRO] Plano FREE ID: ${planoFreeId}`);
+        if (password.length < 6) {
+            console.log("[REGISTRO] Senha muito curta");
+            return res.status(400).json({
+                status: "error",
+                error: "A senha deve ter pelo menos 6 caracteres",
+            });
+        }
 
-    // Criar configuração do usuário
-    console.log("[REGISTRO] Criando configuração do usuário...");
-    try {
-      // Verificar se já existe configuração para este usuário
-      const [existingConfig] = await pool.query(
-        "SELECT Id FROM configutilizador WHERE UserId = ?",
-        [userId]
-      );
-      
-      if (existingConfig.length > 0) {
-        // Atualizar configuração existente
-        console.log("[REGISTRO] Configuração já existe, atualizando...");
-        await pool.query(
-          "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE UserId = ?",
-          ["email", planoFreeId, userId]
+        // Validar idade mínima (13 anos) - obrigatório
+        const birthDate = new Date(data_nascimento);
+
+        // Verificar se a data é válida
+        if (isNaN(birthDate.getTime())) {
+            console.log("[REGISTRO] Data de nascimento inválida");
+            return res.status(400).json({
+                status: "error",
+                error: "Data de nascimento inválida",
+            });
+        }
+
+        // Verificar se a data não é no futuro
+        const today = new Date();
+        if (birthDate > today) {
+            console.log("[REGISTRO] Data de nascimento no futuro");
+            return res.status(400).json({
+                status: "error",
+                error: "Data de nascimento não pode ser no futuro",
+            });
+        }
+
+        // Calcular idade
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        // Validar idade mínima de 13 anos
+        if (age < 13) {
+            console.log(`[REGISTRO] Usuário menor de 13 anos tentou se registrar (idade: ${age})`);
+            return res.status(403).json({
+                status: "error",
+                error: "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing",
+            });
+        }
+
+        console.log(`[REGISTRO] Idade validada: ${age} anos`);
+
+        console.log("[REGISTRO] Verificando se email já existe...");
+        const [existing] = await pool.query(
+            "SELECT Id FROM Utilizadores WHERE Email = ?",
+            [email]
         );
-        console.log("[REGISTRO] Configuração do usuário atualizada");
-      } else {
-        // Inserir nova configuração
-        console.log("[REGISTRO] Inserindo nova configuração...");
-        await pool.query(
-          "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
-          [userId, "email", planoFreeId]
+
+        if (existing.length > 0) {
+            console.log("[REGISTRO] Email já em uso");
+            return res.status(400).json({
+                status: "error",
+                error: "Email já está em uso",
+            });
+        }
+
+        console.log("[REGISTRO] Gerando hash da senha...");
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+        console.log("[REGISTRO] Verificando perfil do usuário...");
+        const [adminCountRows] = await pool.query(
+            "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
         );
-        console.log("[REGISTRO] Configuração do usuário criada");
-      }
-    } catch (configError) {
-      console.error("[REGISTRO] Erro ao criar configuração do usuário:", configError.message);
-      console.error("[REGISTRO] Código SQL:", configError.code);
-      console.error("[REGISTRO] SQL State:", configError.sqlState);
-      console.error("[REGISTRO] Stack trace:", configError.stack);
-      // Não falhar o registro se a configuração falhar - pode ser criada depois
-    }
-    
-    console.log(`[REGISTRO] Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+        const perfilId = (adminCountRows[0] ?.total || 0) === 0 ? 1 : 2;
+        console.log(`[REGISTRO] PerfilId determinado: ${perfilId}`);
 
-    console.log("[REGISTRO] Gerando código de verificação...");
-    const codigo = gerarCodigo();
-    console.log(`[REGISTRO] Código gerado: ${codigo}`);
-    
-    console.log("[REGISTRO] Salvando código no banco de dados...");
-    await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
-      codigo,
-      userId,
-    ]);
-    console.log("[REGISTRO] Código salvo no banco de dados");
+        console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
 
-    // Enviar código por email
-    console.log("[REGISTRO] Preparando envio de email...");
-    console.log(`[REGISTRO] Destinatário: ${email}`);
-    console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
-    console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
-    console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
-    console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
-    
-    try {
-      const { sendEmail } = await import("../services/notify.js");
-      console.log("[REGISTRO] Função sendEmail importada com sucesso");
-      
-      const messageHtml = `
+        // Tentar inserir com data_nascimento se fornecido
+        let result;
+        try {
+            if (data_nascimento) {
+                const [insertResult] = await pool.query(
+                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo, data_nascimento) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), ?)",
+                    [nome, email, hashedPassword, 0, telefone || null, perfilId, data_nascimento]
+                );
+                result = insertResult;
+                console.log("[REGISTRO] Usuário criado com data de nascimento");
+            } else {
+                const [insertResult] = await pool.query(
+                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
+                    [nome, email, hashedPassword, 0, telefone || null, perfilId]
+                );
+                result = insertResult;
+                console.log("[REGISTRO] Usuário criado sem data de nascimento");
+            }
+        } catch (insertError) {
+            // Se a coluna data_nascimento não existir, inserir sem ela
+            if (insertError.code === 'ER_BAD_FIELD_ERROR' || insertError.message ?.includes('data_nascimento')) {
+                console.log("[REGISTRO] Coluna data_nascimento não existe, inserindo sem ela...");
+                const [insertResult] = await pool.query(
+                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
+                    [nome, email, hashedPassword, 0, telefone || null, perfilId]
+                );
+                result = insertResult;
+            } else {
+                throw insertError;
+            }
+        }
+
+        const userId = result.insertId;
+        console.log(`[REGISTRO] Usuário criado com ID: ${userId}`);
+
+        // Buscar ID do plano FREE
+        console.log("[REGISTRO] Buscando plano FREE...");
+        const [planoFree] = await pool.query(
+            "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
+        );
+
+        const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+        console.log(`[REGISTRO] Plano FREE ID: ${planoFreeId}`);
+
+        // Criar configuração do usuário
+        console.log("[REGISTRO] Criando configuração do usuário...");
+        try {
+            // Verificar se já existe configuração para este usuário
+            const [existingConfig] = await pool.query(
+                "SELECT Id FROM configutilizador WHERE UserId = ?",
+                [userId]
+            );
+
+            if (existingConfig.length > 0) {
+                // Atualizar configuração existente
+                console.log("[REGISTRO] Configuração já existe, atualizando...");
+                await pool.query(
+                    "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE UserId = ?",
+                    ["email", planoFreeId, userId]
+                );
+                console.log("[REGISTRO] Configuração do usuário atualizada");
+            } else {
+                // Inserir nova configuração
+                console.log("[REGISTRO] Inserindo nova configuração...");
+                await pool.query(
+                    "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+                    [userId, "email", planoFreeId]
+                );
+                console.log("[REGISTRO] Configuração do usuário criada");
+            }
+        } catch (configError) {
+            console.error("[REGISTRO] Erro ao criar configuração do usuário:", configError.message);
+            console.error("[REGISTRO] Código SQL:", configError.code);
+            console.error("[REGISTRO] SQL State:", configError.sqlState);
+            console.error("[REGISTRO] Stack trace:", configError.stack);
+            // Não falhar o registro se a configuração falhar - pode ser criada depois
+        }
+
+        console.log(`[REGISTRO] Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+
+        console.log("[REGISTRO] Gerando código de verificação...");
+        const codigo = gerarCodigo();
+        console.log(`[REGISTRO] Código gerado: ${codigo}`);
+
+        console.log("[REGISTRO] Salvando código no banco de dados...");
+        await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
+            codigo,
+            userId,
+        ]);
+        console.log("[REGISTRO] Código salvo no banco de dados");
+
+        // Enviar código por email
+        console.log("[REGISTRO] Preparando envio de email...");
+        console.log(`[REGISTRO] Destinatário: ${email}`);
+        console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
+        console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
+        console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
+        console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
+
+        try {
+            const {
+                sendEmail
+            } = await import("../services/notify.js");
+            console.log("[REGISTRO] Função sendEmail importada com sucesso");
+
+            const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
           <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
           <p>Olá <b>${nome}</b>,</p>
@@ -1138,237 +1235,252 @@ router.post("/register", async (req, res) => {
           <p style="color: #999; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados</p>
         </div>
       `;
-      
-      console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
-      console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
-      
-      await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
-      
-      console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
-      console.log(`[REGISTRO] Código de verificação: ${codigo}`);
-    } catch (emailError) {
-      console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
-      console.error("[REGISTRO] Tipo do erro:", emailError.name);
-      console.error("[REGISTRO] Mensagem:", emailError.message);
-      console.error("[REGISTRO] Código:", emailError.code);
-      if (emailError.response) {
-        console.error("[REGISTRO] Resposta do servidor:", emailError.response);
-      }
-      if (emailError.command) {
-        console.error("[REGISTRO] Comando:", emailError.command);
-      }
-      console.error("[REGISTRO] Stack trace completo:");
-      console.error(emailError.stack);
-      console.error("[REGISTRO] ==========================================");
-      
-      // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
-      console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
-      console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
-      console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
+
+            console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
+            console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
+
+            await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
+
+            console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
+            console.log(`[REGISTRO] Código de verificação: ${codigo}`);
+        } catch (emailError) {
+            console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
+            console.error("[REGISTRO] Tipo do erro:", emailError.name);
+            console.error("[REGISTRO] Mensagem:", emailError.message);
+            console.error("[REGISTRO] Código:", emailError.code);
+            if (emailError.response) {
+                console.error("[REGISTRO] Resposta do servidor:", emailError.response);
+            }
+            if (emailError.command) {
+                console.error("[REGISTRO] Comando:", emailError.command);
+            }
+            console.error("[REGISTRO] Stack trace completo:");
+            console.error(emailError.stack);
+            console.error("[REGISTRO] ==========================================");
+
+            // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
+            console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
+            console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+            console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
+        }
+
+        // WhatsApp desabilitado
+        // if (telefone) {
+        //   try {
+        //     const telefoneLimpo = telefone.replace(/[^\d]/g, '');
+        //     await enviarWhatsApp(
+        //       telefoneLimpo,
+        //       `Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+        //     );
+        //     console.log(`Código de verificação enviado para ${telefone}: ${codigo}`);
+        //   } catch (whatsappError) {
+        //     console.log("WhatsApp não configurado, mas conta criada com sucesso");
+        //   }
+        // }
+
+        // Atualizar métricas automaticamente quando novo utilizador é criado
+        console.log("[REGISTRO] Atualizando métricas...");
+        try {
+            await atualizarMetricasAutomaticamente();
+            console.log("[REGISTRO] Métricas atualizadas após criação de novo utilizador");
+        } catch (metricError) {
+            console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
+            console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
+            // Não bloquear resposta em caso de erro nas métricas
+        }
+
+        console.log("[REGISTRO] Registro concluído com sucesso!");
+        console.log("[REGISTRO] Enviando resposta ao cliente...");
+
+        res.json({
+            status: "ok",
+            message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
+            codigo: codigo // Para desenvolvimento - remover em produção
+        });
+
+        console.log(" [REGISTRO] Resposta enviada ao cliente");
+    } catch (err) {
+        console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
+        console.error(" [REGISTRO] Mensagem de erro:", err.message);
+        console.error(" [REGISTRO] Stack trace completo:", err.stack);
+
+        res.status(500).json({
+            status: "error",
+            error: err.message || "Erro interno no servidor",
+            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
-
-    // WhatsApp desabilitado
-    // if (telefone) {
-    //   try {
-    //     const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-    //     await enviarWhatsApp(
-    //       telefoneLimpo,
-    //       `Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-    //     );
-    //     console.log(`Código de verificação enviado para ${telefone}: ${codigo}`);
-    //   } catch (whatsappError) {
-    //     console.log("WhatsApp não configurado, mas conta criada com sucesso");
-    //   }
-    // }
-
-    // Atualizar métricas automaticamente quando novo utilizador é criado
-    console.log("[REGISTRO] Atualizando métricas...");
-    try {
-      await atualizarMetricasAutomaticamente();
-      console.log("[REGISTRO] Métricas atualizadas após criação de novo utilizador");
-    } catch (metricError) {
-      console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
-      console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
-      // Não bloquear resposta em caso de erro nas métricas
-    }
-
-    console.log("[REGISTRO] Registro concluído com sucesso!");
-    console.log("[REGISTRO] Enviando resposta ao cliente...");
-    
-    res.json({
-      status: "ok",
-      message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
-      codigo: codigo // Para desenvolvimento - remover em produção
-    });
-    
-    console.log(" [REGISTRO] Resposta enviada ao cliente");
-  } catch (err) {
-    console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
-    console.error(" [REGISTRO] Mensagem de erro:", err.message);
-    console.error(" [REGISTRO] Stack trace completo:", err.stack);
-    
-    res.status(500).json({
-      status: "error",
-      error: err.message || "Erro interno no servidor",
-      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
-  }
 });
 
 // ================== ROTAS GOOGLE ==================
 router.get("/google", (req, res) => {
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    console.log(" Google OAuth configurado:");
-    console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
-    console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
-    passport.authenticate("google", { scope: ["profile", "email"] })(req, res);
-  } else {
-    console.error(" Google OAuth não configurado:");
-    console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
-    console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
-    res.status(400).json({
-      error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        console.log(" Google OAuth configurado:");
+        console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
+        console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
+        passport.authenticate("google", {
+            scope: ["profile", "email"]
+        })(req, res);
+    } else {
+        console.error(" Google OAuth não configurado:");
+        console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
+        console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
+        res.status(400).json({
+            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 router.get("/google/callback", (req, res) => {
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    const loginUrl = process.env.LOGIN_URL || "/login";
-    passport.authenticate("google", { failureRedirect: loginUrl })(req, res, (err) => {
-      if (err) {
-        console.error("Erro na autenticação Google:", err);
-        return res.redirect(`${loginUrl}?error=auth_failed`);
-      }
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        const loginUrl = process.env.LOGIN_URL || "/login";
+        passport.authenticate("google", {
+            failureRedirect: loginUrl
+        })(req, res, (err) => {
+            if (err) {
+                console.error("Erro na autenticação Google:", err);
+                return res.redirect(`${loginUrl}?error=auth_failed`);
+            }
 
-      if (!req.user) {
-        console.error("req.user está undefined");
-        return res.redirect(`${loginUrl}?error=user_undefined`);
-      }
+            if (!req.user) {
+                console.error("req.user está undefined");
+                return res.redirect(`${loginUrl}?error=user_undefined`);
+            }
 
-      try {
-        const token = jwt.sign(
-          { id: req.user.id, email: req.user.email, nome: req.user.nome || req.user.name },
-          process.env.JWT_SECRET,
-          { expiresIn: "7d" }
-        );
+            try {
+                const token = jwt.sign({
+                        id: req.user.id,
+                        email: req.user.email,
+                        nome: req.user.nome || req.user.name
+                    },
+                    process.env.JWT_SECRET, {
+                        expiresIn: "7d"
+                    }
+                );
 
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
-        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
-        
-        // Verificar se veio do sign-up ou login
-        const fromSignUp = req.query.from === 'signup';
-        const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
-        
-        res.redirect(`${redirectUrl}?token=${token}`);
-      } catch (tokenError) {
-        console.error("Erro ao gerar token:", tokenError);
-        res.redirect(`${loginUrl}?error=token_error`);
-      }
-    });
-  } else {
-    res.status(400).json({
-      error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+                const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
+                const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
+
+                // Verificar se veio do sign-up ou login
+                const fromSignUp = req.query.from === 'signup';
+                const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
+
+                res.redirect(`${redirectUrl}?token=${token}`);
+            } catch (tokenError) {
+                console.error("Erro ao gerar token:", tokenError);
+                res.redirect(`${loginUrl}?error=token_error`);
+            }
+        });
+    } else {
+        res.status(400).json({
+            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 // ================== ROTAS GITHUB ==================
 router.get("/github", (req, res) => {
-  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    console.log(" GitHub OAuth configurado:");
-    console.log("   Client ID:", process.env.GITHUB_CLIENT_ID.substring(0, 20) + "...");
-    console.log("   Client Secret:", process.env.GITHUB_CLIENT_SECRET.substring(0, 10) + "...");
-    passport.authenticate("github", { scope: ["user:email"] })(req, res);
-  } else {
-    console.error(" GitHub OAuth não configurado:");
-    console.log("   GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID ? "Presente" : "Ausente");
-    console.log("   GITHUB_CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "Presente" : "Ausente");
-    res.status(400).json({
-      error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+    if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+        console.log(" GitHub OAuth configurado:");
+        console.log("   Client ID:", process.env.GITHUB_CLIENT_ID.substring(0, 20) + "...");
+        console.log("   Client Secret:", process.env.GITHUB_CLIENT_SECRET.substring(0, 10) + "...");
+        passport.authenticate("github", {
+            scope: ["user:email"]
+        })(req, res);
+    } else {
+        console.error(" GitHub OAuth não configurado:");
+        console.log("   GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID ? "Presente" : "Ausente");
+        console.log("   GITHUB_CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "Presente" : "Ausente");
+        res.status(400).json({
+            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 router.get("/github/callback", (req, res) => {
-  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    const loginUrl = process.env.LOGIN_URL || "/login";
-    passport.authenticate("github", { failureRedirect: loginUrl })(req, res, (err) => {
-      if (err) {
-        console.error("Erro na autenticação GitHub:", err);
-        return res.redirect(`${loginUrl}?error=auth_failed`);
-      }
+    if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+        const loginUrl = process.env.LOGIN_URL || "/login";
+        passport.authenticate("github", {
+            failureRedirect: loginUrl
+        })(req, res, (err) => {
+            if (err) {
+                console.error("Erro na autenticação GitHub:", err);
+                return res.redirect(`${loginUrl}?error=auth_failed`);
+            }
 
-      if (!req.user) {
-        console.error("req.user está undefined");
-        return res.redirect(`${loginUrl}?error=user_undefined`);
-      }
+            if (!req.user) {
+                console.error("req.user está undefined");
+                return res.redirect(`${loginUrl}?error=user_undefined`);
+            }
 
-      try {
-        const token = jwt.sign(
-          { id: req.user.id, email: req.user.email, nome: req.user.nome || req.user.name },
-          process.env.JWT_SECRET,
-          { expiresIn: "7d" }
-        );
+            try {
+                const token = jwt.sign({
+                        id: req.user.id,
+                        email: req.user.email,
+                        nome: req.user.nome || req.user.name
+                    },
+                    process.env.JWT_SECRET, {
+                        expiresIn: "7d"
+                    }
+                );
 
-        const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
-        const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
-        
-        // Verificar se veio do sign-up ou login
-        const fromSignUp = req.query.from === 'signup';
-        const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
-        
-        res.redirect(`${redirectUrl}?token=${token}`);
-      } catch (tokenError) {
-        console.error("Erro ao gerar token:", tokenError);
-        res.redirect(`${loginUrl}?error=token_error`);
-      }
-    });
-  } else {
-    res.status(400).json({
-      error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+                const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
+                const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
+
+                // Verificar se veio do sign-up ou login
+                const fromSignUp = req.query.from === 'signup';
+                const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
+
+                res.redirect(`${redirectUrl}?token=${token}`);
+            } catch (tokenError) {
+                console.error("Erro ao gerar token:", tokenError);
+                res.redirect(`${loginUrl}?error=token_error`);
+            }
+        });
+    } else {
+        res.status(400).json({
+            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 // ================== ROTAS DISCORD ==================
 
 router.get("/discord", (req, res) => {
-  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-    passport.authenticate("discord", { 
-      session: false,
-      scope: ['identify', 'email'] 
-    })(req, res);
-  } else {
-    res.status(400).json({
-      error:
-        "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+    if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+        passport.authenticate("discord", {
+            session: false,
+            scope: ['identify', 'email']
+        })(req, res);
+    } else {
+        res.status(400).json({
+            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 router.get("/discord/callback", (req, res) => {
-  console.log(" Discord callback recebido:", JSON.stringify(req.query));
-  
-  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-    passport.authenticate("discord", { 
-      session: false,
-      failureRedirect: "/login?error=discord_auth_failed"
-    })(req, res, (err, user) => {
-      if (err) {
-        console.error(" Erro na autenticação Discord:", err);
-        return res.redirect("/login?error=discord_auth_failed");
-      }
-      
-      if (!user) {
-        console.error(" Usuário Discord não encontrado");
-        return res.redirect("/login?error=discord_auth_failed");
-      }
-      
-      console.log(" Usuário Discord autenticado:", user.email);
-      
-      // Criar página HTML que salva no localStorage e redireciona
-      const html = `
+    console.log(" Discord callback recebido:", JSON.stringify(req.query));
+
+    if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+        passport.authenticate("discord", {
+            session: false,
+            failureRedirect: "/login?error=discord_auth_failed"
+        })(req, res, (err, user) => {
+            if (err) {
+                console.error(" Erro na autenticação Discord:", err);
+                return res.redirect("/login?error=discord_auth_failed");
+            }
+
+            if (!user) {
+                console.error(" Usuário Discord não encontrado");
+                return res.redirect("/login?error=discord_auth_failed");
+            }
+
+            console.log(" Usuário Discord autenticado:", user.email);
+
+            // Criar página HTML que salva no localStorage e redireciona
+            const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -1394,111 +1506,112 @@ router.get("/discord/callback", (req, res) => {
         </body>
         </html>
       `;
-      
-      res.send(html);
-    });
-  } else {
-    console.error(" Discord OAuth não configurado");
-    res.status(400).json({
-      error:
-        "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
-    });
-  }
+
+            res.send(html);
+        });
+    } else {
+        console.error(" Discord OAuth não configurado");
+        res.status(400).json({
+            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
+        });
+    }
 });
 
 // ================== ROTAS DE VERIFICAÇÃO ==================
 
 // Verificar telefone - enviar código por WhatsApp
 router.post("/verificar/telefone", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const codigo = gerarCodigo();
+    try {
+        const userId = req.user.id;
+        const codigo = gerarCodigo();
 
-    // Buscar telefone do usuário
-    const [userRows] = await pool.query(
-      "SELECT Telefone, Nome FROM Utilizadores WHERE Id = ?",
-      [userId]
-    );
+        // Buscar telefone do usuário
+        const [userRows] = await pool.query(
+            "SELECT Telefone, Nome FROM Utilizadores WHERE Id = ?",
+            [userId]
+        );
 
-    if (userRows.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        error: "Usuário não encontrado",
-      });
+        if (userRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Usuário não encontrado",
+            });
+        }
+
+        const user = userRows[0];
+
+        if (!user.Telefone) {
+            return res.status(400).json({
+                status: "error",
+                error: "Telefone não cadastrado. Adicione um telefone no perfil primeiro.",
+            });
+        }
+
+        // Salvar código no banco
+        await pool.query(
+            "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
+            [codigo, userId]
+        );
+
+        // Enviar WhatsApp
+        const telefoneLimpo = user.Telefone.replace(/[^\d]/g, ''); // Remove caracteres não numéricos
+        const resultadoWhatsApp = await enviarWhatsApp(
+            telefoneLimpo,
+            ` Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+        );
+
+        if (resultadoWhatsApp.success) {
+            console.log(` Código de verificação enviado para ${user.Telefone}: ${codigo}`);
+        } else {
+            console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
+        }
+
+        res.json({
+            status: "ok",
+            message: "Código enviado!",
+        });
+    } catch (err) {
+        console.error("Erro ao enviar código:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao enviar código de verificação",
+        });
     }
-
-    const user = userRows[0];
-
-    if (!user.Telefone) {
-      return res.status(400).json({
-        status: "error",
-        error: "Telefone não cadastrado. Adicione um telefone no perfil primeiro.",
-      });
-    }
-
-    // Salvar código no banco
-    await pool.query(
-      "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
-      [codigo, userId]
-    );
-
-    // Enviar WhatsApp
-    const telefoneLimpo = user.Telefone.replace(/[^\d]/g, ''); // Remove caracteres não numéricos
-    const resultadoWhatsApp = await enviarWhatsApp(
-      telefoneLimpo,
-      ` Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-    );
-
-    if (resultadoWhatsApp.success) {
-      console.log(` Código de verificação enviado para ${user.Telefone}: ${codigo}`);
-    } else {
-      console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
-    }
-
-    res.json({
-      status: "ok",
-      message: "Código enviado!",
-    });
-  } catch (err) {
-    console.error("Erro ao enviar código:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao enviar código de verificação",
-    });
-  }
 });
 
 // Verificar email - enviar código por email
 router.post("/verificar/email", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const codigo = gerarCodigo();
-
-    // Buscar email do usuário
-    const [userRows] = await pool.query(
-      "SELECT Email, Nome FROM Utilizadores WHERE Id = ?",
-      [userId]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        error: "Usuário não encontrado",
-      });
-    }
-
-    const user = userRows[0];
-
-    // Salvar código no banco
-    await pool.query(
-      "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-      [codigo, userId]
-    );
-
-    // Enviar email
     try {
-      const { sendEmail } = await import("../services/notify.js");
-      const messageHtml = `
+        const userId = req.user.id;
+        const codigo = gerarCodigo();
+
+        // Buscar email do usuário
+        const [userRows] = await pool.query(
+            "SELECT Email, Nome FROM Utilizadores WHERE Id = ?",
+            [userId]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Usuário não encontrado",
+            });
+        }
+
+        const user = userRows[0];
+
+        // Salvar código no banco
+        await pool.query(
+            "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
+            [codigo, userId]
+        );
+
+        // Enviar email
+        try {
+            const {
+                sendEmail
+            } = await import("../services/notify.js");
+            const messageHtml = `
         <h2> Verificação de Conta</h2>
         <p>Olá <b>${user.Nome}</b> ,</p>
         <p>Use o código abaixo para verificar sua conta:</p>
@@ -1508,306 +1621,319 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
-      
-      await sendEmail(user.Email, "PromoPing - Verificação de conta", messageHtml);
-      console.log(` Código de verificação enviado para ${user.Email}: ${codigo}`);
-    } catch (emailError) {
-      console.log(" Email não configurado, mas código salvo:", codigo);
-    }
 
-    res.json({
-      status: "ok",
-      message: "Código enviado por email!",
-    });
-  } catch (err) {
-    console.error(" Erro ao enviar código por email:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao enviar código de verificação",
-    });
-  }
+            await sendEmail(user.Email, "PromoPing - Verificação de conta", messageHtml);
+            console.log(` Código de verificação enviado para ${user.Email}: ${codigo}`);
+        } catch (emailError) {
+            console.log(" Email não configurado, mas código salvo:", codigo);
+        }
+
+        res.json({
+            status: "ok",
+            message: "Código enviado por email!",
+        });
+    } catch (err) {
+        console.error(" Erro ao enviar código por email:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao enviar código de verificação",
+        });
+    }
 });
 
 // Validar código de verificação
 router.post("/verificar/validar", verifyToken, async (req, res) => {
-  try {
-    const { codigo, tipo } = req.body; // tipo: 'email' ou 'telefone'
-    const userId = req.user.id;
+    try {
+        const {
+            codigo,
+            tipo
+        } = req.body; // tipo: 'email' ou 'telefone'
+        const userId = req.user.id;
 
-    if (!codigo || !tipo) {
-      return res.status(400).json({
-        status: "error",
-        error: "Código e tipo são obrigatórios",
-      });
+        if (!codigo || !tipo) {
+            return res.status(400).json({
+                status: "error",
+                error: "Código e tipo são obrigatórios",
+            });
+        }
+
+        if (!['email', 'telefone'].includes(tipo)) {
+            return res.status(400).json({
+                status: "error",
+                error: "Tipo deve ser 'email' ou 'telefone'",
+            });
+        }
+
+        // Buscar usuário e verificar código
+        const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
+        const [userRows] = await pool.query(
+            `SELECT * FROM Utilizadores WHERE Id = ? AND ${campoCodigo} = ?`,
+            [userId, codigo]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Código inválido ou expirado",
+            });
+        }
+
+        // Marcar como verificado
+        if (tipo === 'email') {
+            await pool.query(
+                "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
+                [userId]
+            );
+        } else {
+            // Para telefone, podemos adicionar um campo TelefoneVerificado se necessário
+            await pool.query(
+                "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE Id = ?",
+                [userId]
+            );
+        }
+
+        console.log(` ${tipo} verificado com sucesso para usuário ${userId}`);
+
+        res.json({
+            status: "ok",
+            message: `${tipo === 'email' ? 'Email' : 'Telefone'} verificado com sucesso!`,
+        });
+    } catch (err) {
+        console.error(" Erro ao validar código:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao validar código",
+        });
     }
-
-    if (!['email', 'telefone'].includes(tipo)) {
-      return res.status(400).json({
-        status: "error",
-        error: "Tipo deve ser 'email' ou 'telefone'",
-      });
-    }
-
-    // Buscar usuário e verificar código
-    const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
-    const [userRows] = await pool.query(
-      `SELECT * FROM Utilizadores WHERE Id = ? AND ${campoCodigo} = ?`,
-      [userId, codigo]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Código inválido ou expirado",
-      });
-    }
-
-    // Marcar como verificado
-    if (tipo === 'email') {
-      await pool.query(
-        "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
-        [userId]
-      );
-    } else {
-      // Para telefone, podemos adicionar um campo TelefoneVerificado se necessário
-      await pool.query(
-        "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE Id = ?",
-        [userId]
-      );
-    }
-
-    console.log(` ${tipo} verificado com sucesso para usuário ${userId}`);
-
-    res.json({
-      status: "ok",
-      message: `${tipo === 'email' ? 'Email' : 'Telefone'} verificado com sucesso!`,
-    });
-  } catch (err) {
-    console.error(" Erro ao validar código:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao validar código",
-    });
-  }
 });
 
 // ================== ROTAS DE RECUPERAÇÃO DE SENHA ==================
 
 // Esqueci a senha - enviar código
 router.post("/esqueci-senha", async (req, res) => {
-  try {
-    const { emailOuTelefone } = req.body;
+    try {
+        const {
+            emailOuTelefone
+        } = req.body;
 
-    if (!emailOuTelefone) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email ou telefone é obrigatório",
-      });
+        if (!emailOuTelefone) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email ou telefone é obrigatório",
+            });
+        }
+
+        // Determinar se é email ou telefone
+        const isEmail = emailOuTelefone.includes('@');
+        let user = null;
+
+        if (isEmail) {
+            // Buscar por email
+            const [userRows] = await pool.query(
+                "SELECT * FROM Utilizadores WHERE Email = ?",
+                [emailOuTelefone]
+            );
+            user = userRows[0];
+        } else {
+            // Buscar por telefone
+            const [userRows] = await pool.query(
+                "SELECT * FROM Utilizadores WHERE Telefone = ?",
+                [emailOuTelefone]
+            );
+            user = userRows[0];
+        }
+
+        if (!user) {
+            return res.status(404).json({
+                status: "error",
+                error: "Usuário não encontrado",
+            });
+        }
+
+        const codigo = gerarCodigo();
+
+        // Salvar código no campo apropriado
+        if (isEmail) {
+            await pool.query(
+                "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
+                [codigo, user.Id]
+            );
+        } else {
+            await pool.query(
+                "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
+                [codigo, user.Id]
+            );
+        }
+
+        // Enviar código pelo canal apropriado
+        if (isEmail) {
+            // Enviar por email
+            const emailResult = await enviarEmail(
+                user.Email,
+                "PromoPing - Recuperação de senha",
+                `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
+            );
+
+            if (emailResult.success) {
+                console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
+            } else {
+                console.log(" Email não configurado, mas código salvo:", codigo);
+            }
+        } else {
+            // Enviar por WhatsApp
+            const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
+            const resultadoWhatsApp = await enviarWhatsApp(
+                telefoneLimpo,
+                ` Seu código de recuperação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+            );
+
+            if (resultadoWhatsApp.success) {
+                console.log(` Código de recuperação enviado para ${user.Telefone}: ${codigo}`);
+            } else {
+                console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
+            }
+        }
+
+        res.json({
+            status: "ok",
+            message: `Código enviado por ${isEmail ? 'email' : 'WhatsApp'}!`,
+            canal: isEmail ? 'email' : 'whatsapp'
+        });
+    } catch (err) {
+        console.error(" Erro na recuperação de senha:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao processar recuperação de senha",
+        });
     }
-
-    // Determinar se é email ou telefone
-    const isEmail = emailOuTelefone.includes('@');
-    let user = null;
-
-    if (isEmail) {
-      // Buscar por email
-      const [userRows] = await pool.query(
-        "SELECT * FROM Utilizadores WHERE Email = ?",
-        [emailOuTelefone]
-      );
-      user = userRows[0];
-    } else {
-      // Buscar por telefone
-      const [userRows] = await pool.query(
-        "SELECT * FROM Utilizadores WHERE Telefone = ?",
-        [emailOuTelefone]
-      );
-      user = userRows[0];
-    }
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        error: "Usuário não encontrado",
-      });
-    }
-
-    const codigo = gerarCodigo();
-
-    // Salvar código no campo apropriado
-    if (isEmail) {
-      await pool.query(
-        "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-        [codigo, user.Id]
-      );
-    } else {
-      await pool.query(
-        "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
-        [codigo, user.Id]
-      );
-    }
-
-    // Enviar código pelo canal apropriado
-    if (isEmail) {
-      // Enviar por email
-      const emailResult = await enviarEmail(
-        user.Email,
-        "PromoPing - Recuperação de senha",
-        `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
-      );
-      
-      if (emailResult.success) {
-        console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
-      } else {
-        console.log(" Email não configurado, mas código salvo:", codigo);
-      }
-    } else {
-      // Enviar por WhatsApp
-      const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
-      const resultadoWhatsApp = await enviarWhatsApp(
-        telefoneLimpo,
-        ` Seu código de recuperação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-      );
-      
-      if (resultadoWhatsApp.success) {
-        console.log(` Código de recuperação enviado para ${user.Telefone}: ${codigo}`);
-      } else {
-        console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
-      }
-    }
-
-    res.json({
-      status: "ok",
-      message: `Código enviado por ${isEmail ? 'email' : 'WhatsApp'}!`,
-      canal: isEmail ? 'email' : 'whatsapp'
-    });
-  } catch (err) {
-    console.error(" Erro na recuperação de senha:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao processar recuperação de senha",
-    });
-  }
 });
 
 // Resetar senha com código
 router.post("/resetar-senha", async (req, res) => {
-  try {
-    const { emailOuTelefone, codigo, novaSenha } = req.body;
+    try {
+        const {
+            emailOuTelefone,
+            codigo,
+            novaSenha
+        } = req.body;
 
-    if (!emailOuTelefone || !codigo || !novaSenha) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email/telefone, código e nova senha são obrigatórios",
-      });
+        if (!emailOuTelefone || !codigo || !novaSenha) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email/telefone, código e nova senha são obrigatórios",
+            });
+        }
+
+        if (novaSenha.length < 6) {
+            return res.status(400).json({
+                status: "error",
+                error: "A nova senha deve ter pelo menos 6 caracteres",
+            });
+        }
+
+        // Determinar se é email ou telefone
+        const isEmail = emailOuTelefone.includes('@');
+        let user = null;
+
+        if (isEmail) {
+            // Buscar por email e verificar código de email
+            const [userRows] = await pool.query(
+                "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
+                [emailOuTelefone, codigo]
+            );
+            user = userRows[0];
+        } else {
+            // Buscar por telefone e verificar código de telefone
+            const [userRows] = await pool.query(
+                "SELECT * FROM Utilizadores WHERE Telefone = ? AND CodigoTelefone = ?",
+                [emailOuTelefone, codigo]
+            );
+            user = userRows[0];
+        }
+
+        if (!user) {
+            return res.status(400).json({
+                status: "error",
+                error: "Código inválido ou expirado",
+            });
+        }
+
+        // Hash da nova senha
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(novaSenha, saltRounds);
+
+        // Atualizar senha e limpar códigos
+        await pool.query(
+            "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE Id = ?",
+            [hashedPassword, user.Id]
+        );
+
+        console.log(` Senha redefinida com sucesso para usuário ${user.Id} via ${isEmail ? 'email' : 'WhatsApp'}`);
+
+        res.json({
+            status: "ok",
+            message: "Senha redefinida com sucesso!",
+        });
+    } catch (err) {
+        console.error(" Erro ao resetar senha:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao redefinir senha",
+        });
     }
-
-    if (novaSenha.length < 6) {
-      return res.status(400).json({
-        status: "error",
-        error: "A nova senha deve ter pelo menos 6 caracteres",
-      });
-    }
-
-    // Determinar se é email ou telefone
-    const isEmail = emailOuTelefone.includes('@');
-    let user = null;
-
-    if (isEmail) {
-      // Buscar por email e verificar código de email
-      const [userRows] = await pool.query(
-        "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
-        [emailOuTelefone, codigo]
-      );
-      user = userRows[0];
-    } else {
-      // Buscar por telefone e verificar código de telefone
-      const [userRows] = await pool.query(
-        "SELECT * FROM Utilizadores WHERE Telefone = ? AND CodigoTelefone = ?",
-        [emailOuTelefone, codigo]
-      );
-      user = userRows[0];
-    }
-
-    if (!user) {
-      return res.status(400).json({
-        status: "error",
-        error: "Código inválido ou expirado",
-      });
-    }
-
-    // Hash da nova senha
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(novaSenha, saltRounds);
-
-    // Atualizar senha e limpar códigos
-    await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE Id = ?",
-      [hashedPassword, user.Id]
-    );
-
-    console.log(` Senha redefinida com sucesso para usuário ${user.Id} via ${isEmail ? 'email' : 'WhatsApp'}`);
-
-    res.json({
-      status: "ok",
-      message: "Senha redefinida com sucesso!",
-    });
-  } catch (err) {
-    console.error(" Erro ao resetar senha:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao redefinir senha",
-    });
-  }
 });
 
 // ================== ROTAS DE VERIFICAÇÃO ADICIONAIS ==================
 
 // Reenviar código de verificação (para usuários não logados)
 router.post("/reenviar-codigo", async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email é obrigatório",
-      });
-    }
-
-    // Buscar usuário
-    const [userRows] = await pool.query(
-      "SELECT * FROM Utilizadores WHERE Email = ?",
-      [email]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        error: "Usuário não encontrado",
-      });
-    }
-
-    const user = userRows[0];
-
-    // Se já está verificado, não precisa reenviar
-    if (user.EmailVerificado) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email já está verificado",
-      });
-    }
-
-    const codigo = gerarCodigo();
-    await pool.query(
-      "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-      [codigo, user.Id]
-    );
-
-    // Enviar por email
     try {
-      const { sendEmail } = await import("../services/notify.js");
-      const messageHtml = `
+        const {
+            email
+        } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email é obrigatório",
+            });
+        }
+
+        // Buscar usuário
+        const [userRows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ?",
+            [email]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Usuário não encontrado",
+            });
+        }
+
+        const user = userRows[0];
+
+        // Se já está verificado, não precisa reenviar
+        if (user.EmailVerificado) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email já está verificado",
+            });
+        }
+
+        const codigo = gerarCodigo();
+        await pool.query(
+            "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
+            [codigo, user.Id]
+        );
+
+        // Enviar por email
+        try {
+            const {
+                sendEmail
+            } = await import("../services/notify.js");
+            const messageHtml = `
         <h2> Código de Verificação</h2>
         <p>Olá <b>${user.Nome}</b> ,</p>
         <p>Você solicitou um novo código de verificação:</p>
@@ -1817,174 +1943,186 @@ router.post("/reenviar-codigo", async (req, res) => {
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
-      
-      await sendEmail(user.Email, "PromoPing - Novo código de verificação", messageHtml);
-      console.log(` Novo código de verificação enviado para ${user.Email}: ${codigo}`);
-    } catch (emailError) {
-      console.log(" Email não configurado, mas código salvo:", codigo);
-    }
 
-    // Se tem telefone, também enviar por WhatsApp
-    if (user.Telefone) {
-      try {
-        const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
-        await enviarWhatsApp(
-          telefoneLimpo,
-          ` Seu novo código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-        );
-        console.log(` Novo código de verificação enviado para ${user.Telefone}: ${codigo}`);
-      } catch (whatsappError) {
-        console.log(" WhatsApp não configurado");
-      }
-    }
+            await sendEmail(user.Email, "PromoPing - Novo código de verificação", messageHtml);
+            console.log(` Novo código de verificação enviado para ${user.Email}: ${codigo}`);
+        } catch (emailError) {
+            console.log(" Email não configurado, mas código salvo:", codigo);
+        }
 
-    res.json({
-      status: "ok",
-      message: "Código reenviado com sucesso!",
-    });
-  } catch (err) {
-    console.error(" Erro ao reenviar código:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao reenviar código",
-    });
-  }
+        // Se tem telefone, também enviar por WhatsApp
+        if (user.Telefone) {
+            try {
+                const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
+                await enviarWhatsApp(
+                    telefoneLimpo,
+                    ` Seu novo código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
+                );
+                console.log(` Novo código de verificação enviado para ${user.Telefone}: ${codigo}`);
+            } catch (whatsappError) {
+                console.log(" WhatsApp não configurado");
+            }
+        }
+
+        res.json({
+            status: "ok",
+            message: "Código reenviado com sucesso!",
+        });
+    } catch (err) {
+        console.error(" Erro ao reenviar código:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao reenviar código",
+        });
+    }
 });
 
 // Verificar código sem login (para usuários não logados)
 router.post("/verificar-codigo", async (req, res) => {
-  try {
-    const { email, codigo } = req.body;
+    try {
+        const {
+            email,
+            codigo
+        } = req.body;
 
-    if (!email || !codigo) {
-      return res.status(400).json({
-        status: "error",
-        error: "Email e código são obrigatórios",
-      });
+        if (!email || !codigo) {
+            return res.status(400).json({
+                status: "error",
+                error: "Email e código são obrigatórios",
+            });
+        }
+
+        // Buscar usuário e verificar código
+        const [userRows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
+            [email, codigo]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Código inválido ou expirado",
+            });
+        }
+
+        const user = userRows[0];
+
+        // Marcar como verificado
+        await pool.query(
+            "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
+            [user.Id]
+        );
+
+        // Gerar token JWT
+        const token = jwt.sign({
+                id: user.Id,
+                email: user.Email
+            },
+            process.env.JWT_SECRET, {
+                expiresIn: "7d"
+            }
+        );
+
+        console.log(` Email verificado com sucesso para usuário ${user.Id}`);
+
+        res.json({
+            status: "ok",
+            message: "Email verificado com sucesso!",
+            token,
+            user: {
+                id: user.Id,
+                email: user.Email,
+                nome: user.Nome
+            },
+        });
+    } catch (err) {
+        console.error(" Erro ao verificar código:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao verificar código",
+        });
     }
-
-    // Buscar usuário e verificar código
-    const [userRows] = await pool.query(
-      "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
-      [email, codigo]
-    );
-
-    if (userRows.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        error: "Código inválido ou expirado",
-      });
-    }
-
-    const user = userRows[0];
-
-    // Marcar como verificado
-    await pool.query(
-      "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
-      [user.Id]
-    );
-
-    // Gerar token JWT
-    const token = jwt.sign(
-      { id: user.Id, email: user.Email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    console.log(` Email verificado com sucesso para usuário ${user.Id}`);
-
-    res.json({
-      status: "ok",
-      message: "Email verificado com sucesso!",
-      token,
-      user: { id: user.Id, email: user.Email, nome: user.Nome },
-    });
-  } catch (err) {
-    console.error(" Erro ao verificar código:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro ao verificar código",
-    });
-  }
 });
 
 // ================== ROTAS DE PERFIL ==================
 
 // Atualizar telefone do usuário
 router.put("/telefone", verifyToken, async (req, res) => {
-  try {
-    const { telefone } = req.body;
-    const userId = req.user.id;
+    try {
+        const {
+            telefone
+        } = req.body;
+        const userId = req.user.id;
 
-    if (!telefone) {
-      return res.status(400).json({
-        status: "error",
-        error: "Telefone é obrigatório",
-      });
+        if (!telefone) {
+            return res.status(400).json({
+                status: "error",
+                error: "Telefone é obrigatório",
+            });
+        }
+
+        // Validar formato do telefone (básico)
+        const telefoneRegex = /^[0-9+\-\s()]{9,15}$/;
+        if (!telefoneRegex.test(telefone)) {
+            return res.status(400).json({
+                status: "error",
+                error: "Formato de telefone inválido",
+            });
+        }
+
+        await pool.query(
+            "UPDATE Utilizadores SET Telefone = ? WHERE Id = ?",
+            [telefone, userId]
+        );
+
+        res.json({
+            status: "ok",
+            message: "Telefone atualizado com sucesso",
+        });
+    } catch (err) {
+        console.error(" Erro ao atualizar telefone:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro interno no servidor",
+        });
     }
-
-    // Validar formato do telefone (básico)
-    const telefoneRegex = /^[0-9+\-\s()]{9,15}$/;
-    if (!telefoneRegex.test(telefone)) {
-      return res.status(400).json({
-        status: "error",
-        error: "Formato de telefone inválido",
-      });
-    }
-
-    await pool.query(
-      "UPDATE Utilizadores SET Telefone = ? WHERE Id = ?",
-      [telefone, userId]
-    );
-
-    res.json({
-      status: "ok",
-      message: "Telefone atualizado com sucesso",
-    });
-  } catch (err) {
-    console.error(" Erro ao atualizar telefone:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro interno no servidor",
-    });
-  }
 });
 
 // Buscar dados do usuário
 router.get("/profile", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
+    try {
+        const userId = req.user.id;
 
-    const [rows] = await pool.query(
-      "SELECT Id, Nome, Email, Telefone, EmailVerificado FROM Utilizadores WHERE Id = ?",
-      [userId]
-    );
+        const [rows] = await pool.query(
+            "SELECT Id, Nome, Email, Telefone, EmailVerificado FROM Utilizadores WHERE Id = ?",
+            [userId]
+        );
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        error: "Usuário não encontrado",
-      });
+        if (rows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Usuário não encontrado",
+            });
+        }
+
+        const user = rows[0];
+        res.json({
+            status: "ok",
+            user: {
+                id: user.Id,
+                nome: user.Nome,
+                email: user.Email,
+                telefone: user.Telefone,
+                emailVerificado: user.EmailVerificado,
+            },
+        });
+    } catch (err) {
+        console.error(" Erro ao buscar perfil:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro interno no servidor",
+        });
     }
-
-    const user = rows[0];
-    res.json({
-      status: "ok",
-      user: {
-        id: user.Id,
-        nome: user.Nome,
-        email: user.Email,
-        telefone: user.Telefone,
-        emailVerificado: user.EmailVerificado,
-      },
-    });
-  } catch (err) {
-    console.error(" Erro ao buscar perfil:", err);
-    res.status(500).json({
-      status: "error",
-      error: "Erro interno no servidor",
-    });
-  }
 });
 
 export default router;

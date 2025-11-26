@@ -219,28 +219,28 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Produtos ilimitados
+                            Até 50 produtos
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Verificação a cada 0.5h
+                            Verificação a cada 2h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Email + SMS + Discord
+                            Email + SMS
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Histórico completo
+                            Histórico de 50 dias
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -250,7 +250,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalCompra(3, 'Standard', 12.99)">
+                    <button class="plan-button primary" onclick="abrirModalCompra(4, 'Standard', 12.99)">
                         Escolher Standard
                     </button>
                 </div>
@@ -267,28 +267,28 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Produtos ilimitados
+                            Até 100 produtos
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Verificação contínua
+                            Verificação a cada 1h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Todos os canais
+                            Email + SMS
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Histórico completo
+                            Histórico de 100 dias
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -298,7 +298,7 @@
                             Relatórios avançados
                         </li>
                     </ul>
-                    <button class="plan-button primary" onclick="abrirModalCompra(4, 'Premium', 15.30)">
+                    <button class="plan-button primary" onclick="abrirModalCompra(3, 'Premium', 15.30)">
                         Escolher Premium
                     </button>
                 </div>
@@ -729,13 +729,13 @@
                     currentButton = document.querySelector('button[onclick*="abrirModalCompra(2"]');
                     planName = 'Basic';
                     break;
-                case 3: // Standard
+                case 3: // Premium
                     currentButton = document.querySelector('button[onclick*="abrirModalCompra(3"]');
-                    planName = 'Standard';
-                    break;
-                case 4: // Premium
-                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(4"]');
                     planName = 'Premium';
+                    break;
+                case 4: // Standard
+                    currentButton = document.querySelector('button[onclick*="abrirModalCompra(4"]');
+                    planName = 'Standard';
                     break;
             }
             if (currentButton) {

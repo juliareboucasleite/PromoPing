@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-placeholder">PP</div>
+                <h2>PromoPing Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="tabelas.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <h1>Produtos Monitorados</h1>
+                    <button id="refreshProductsBtn" class="refresh-button">Atualizar</button>
+                </div>
+                <div id="productsList" class="data-table-container">
+                    <div class="loading-state">Carregando produtos...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../script/produtos.js"></script>
+</body>
+
+</html>

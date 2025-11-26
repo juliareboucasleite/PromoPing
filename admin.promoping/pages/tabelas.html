@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidentes e Atualizações - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-placeholder">PP</div>
+                <h2>PromoPing Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="tabelas.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <h1>Incidentes e Atualizações</h1>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button id="newIncidentBtn" class="refresh-button">+ Novo Incidente</button>
+                        <button id="newUpdateBtn" class="refresh-button">+ Nova Atualização</button>
+                        <button id="refreshBtn" class="refresh-button">Atualizar</button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <button class="tab-button active" data-tab="incidents">Incidentes</button>
+                    <button class="tab-button" data-tab="updates">Atualizações</button>
+                </div>
+
+                <!-- Incidents Tab -->
+                <div id="incidentsTab" class="tab-content active">
+                    <div id="incidentsList" class="data-table-container">
+                        <div class="loading-state">Carregando incidentes...</div>
+                    </div>
+                </div>
+
+                <!-- Updates Tab -->
+                <div id="updatesTab" class="tab-content">
+                    <div id="updatesList" class="data-table-container">
+                        <div class="loading-state">Carregando atualizações...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Novo Incidente -->
+    <div id="incidentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Novo Incidente</h2>
+                <button class="modal-close" id="closeIncidentModal">&times;</button>
+            </div>
+            <form id="incidentForm">
+                <div class="form-group">
+                    <label class="form-label">Título</label>
+                    <input type="text" id="incidentTitle" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="incidentDescription" class="form-input" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Componente Afetado</label>
+                    <input type="text" id="incidentComponent" class="form-input" placeholder="Ex: API, Banco de Dados, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="incidentStatus" class="form-input" required>
+                        <option value="investigating">Investigando</option>
+                        <option value="identified">Identificado</option>
+                        <option value="monitoring">Monitorando</option>
+                        <option value="resolved">Resolvido</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Criar Incidente</button>
+                    <button type="button" class="modal-cancel-button" id="cancelIncidentBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Nova Atualização -->
+    <div id="updateModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Nova Atualização</h2>
+                <button class="modal-close" id="closeUpdateModal">&times;</button>
+            </div>
+            <form id="updateForm">
+                <div class="form-group">
+                    <label class="form-label">Título</label>
+                    <input type="text" id="updateTitle" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="updateDescription" class="form-input" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select id="updateType" class="form-input" required>
+                        <option value="feature">Nova Funcionalidade</option>
+                        <option value="fix">Correção</option>
+                        <option value="improvement">Melhoria</option>
+                        <option value="maintenance">Manutenção</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Criar Atualização</button>
+                    <button type="button" class="modal-cancel-button" id="cancelUpdateBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../script/dashboard.js"></script>
+    <script src="../script/tabelas.js"></script>
+</body>
+
+</html>

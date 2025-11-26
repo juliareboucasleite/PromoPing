@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugs & Projetos - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-placeholder">PP</div>
+                <h2>PromoPing Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="tabelas.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <h1>Bugs & Projetos Secundários</h1>
+                    <button id="newBugBtn" class="refresh-button">+ Novo Bug</button>
+                </div>
+                <div id="bugsList" class="data-table-container">
+                    <div class="loading-state">Carregando bugs e projetos...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Novo Bug -->
+    <div id="bugModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Novo Bug / Projeto</h2>
+                <button class="modal-close" id="closeBugModal">&times;</button>
+            </div>
+            <form id="bugForm">
+                <div class="form-group">
+                    <label class="form-label">Título</label>
+                    <input type="text" id="bugTitle" class="form-input" required placeholder="Ex: Botão de login não funciona">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="bugDescription" class="form-input" rows="4" required placeholder="Descreva o bug ou projeto em detalhes..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select id="bugType" class="form-input" required>
+                        <option value="bug">Bug</option>
+                        <option value="projeto">Projeto Secundário</option>
+                        <option value="melhoria">Melhoria</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridade</label>
+                    <select id="bugPriority" class="form-input" required>
+                        <option value="low">Baixa</option>
+                        <option value="medium" selected>Média</option>
+                        <option value="high">Alta</option>
+                        <option value="critical">Crítica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="bugStatus" class="form-input" required>
+                        <option value="open" selected>Aberto</option>
+                        <option value="in-progress">Em Progresso</option>
+                        <option value="resolved">Resolvido</option>
+                        <option value="closed">Fechado</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Criar Bug/Projeto</button>
+                    <button type="button" class="modal-cancel-button" id="cancelBugBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../script/bugs.js"></script>
+</body>
+
+</html>

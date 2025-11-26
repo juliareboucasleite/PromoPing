@@ -1,0 +1,778 @@
+/**
+ * Dashboard - PromoPing Admin
+ * Sistema completo de administração
+ */
+
+(function() {
+    'use strict';
+
+    // Configuração
+    const API_BASE = (localStorage.getItem('PROMOPING_API') || 'http://localhost:3000').replace(/\/+$/, '');
+    const TOKEN = localStorage.getItem('PROMOPING_TOKEN');
+
+    // Estado
+    let currentThreadId = null;
+    let threads = [];
+    let messages = [];
+    let currentSection = 'overview';
+
+    /**
+     * Verificar autenticação
+     */
+    function checkAuth() {
+        if (!TOKEN) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Requisição autenticada com tratamento de erros
+     */
+    async function fetchAuth(url, options = {}) {
+        try {
+            const response = await fetch(`${API_BASE}${url}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${TOKEN}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            // Verificar se a resposta é JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error(`[DASHBOARD] Resposta não-JSON de ${url}:`, text.substring(0, 200));
+                throw new Error(`Resposta inválida do servidor (${response.status}): ${text.substring(0, 100)}`);
+            }
+
+            // Se não for OK, tentar parsear JSON do erro
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);
+            }
+
+            return response;
+        } catch (error) {
+            // Se já for um erro nosso, re-lançar
+            if (error.message && error.message.includes('Resposta inválida')) {
+                throw error;
+            }
+            // Se for erro de rede ou outro tipo
+            console.error(`[DASHBOARD] Erro ao fazer requisição para ${url}:`, error);
+            throw new Error(`Erro de conexão: ${error.message}`);
+        }
+    }
+
+    /**
+     * Formatar data
+     */
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return 'Agora';
+        if (minutes < 60) return `${minutes}min atrás`;
+        if (hours < 24) return `${hours}h atrás`;
+        if (days < 7) return `${days}d atrás`;
+
+        return date.toLocaleDateString('pt-PT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    /**
+     * Escape HTML
+     */
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ================== OVERVIEW ==================
+    async function loadOverview() {
+        try {
+            // Carregar estatísticas
+            const [usersRes, productsRes, supportRes, bugsRes, statsRes] = await Promise.all([
+                fetchAuth('/api/admin/users?limit=1').catch(() => null),
+                fetchAuth('/api/admin/products?limit=1').catch(() => null),
+                fetch(`${API_BASE}/api/support/messages/admin`).catch(() => null),
+                fetchAuth('/api/admin/bugs').catch(() => null),
+                fetch(`${API_BASE}/api/stats/users`).catch(() => null)
+            ]);
+
+            const usersData = usersRes ? await usersRes.json().catch(() => ({
+                total: 0
+            })) : {
+                total: 0
+            };
+            const productsData = productsRes ? await productsRes.json().catch(() => ({
+                total: 0
+            })) : {
+                total: 0
+            };
+            const supportData = supportRes ? await supportRes.json().catch(() => ({
+                items: []
+            })) : {
+                items: []
+            };
+            const bugsData = bugsRes ? await bugsRes.json().catch(() => ({
+                bugs: []
+            })) : {
+                bugs: []
+            };
+            const statsData = statsRes ? await statsRes.json().catch(() => ({})) : {};
+
+            // Atualizar cards
+            document.getElementById('statUsersActive').textContent = usersData.total || 0;
+            document.getElementById('statProductsMonitored').textContent = productsData.total || 0;
+            document.getElementById('statSupportThreads').textContent = (supportData.items || []).length;
+            document.getElementById('statBugsOpen').textContent = (bugsData.bugs || []).filter(b => b.Status === 'open').length;
+
+            // Carregar atividade recente
+            await loadRecentActivity();
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar overview:', error);
+        }
+    }
+
+    async function loadRecentActivity() {
+        const activityList = document.getElementById('recentActivity');
+        if (!activityList) return;
+
+        try {
+            const [usersRes, productsRes] = await Promise.all([
+                fetchAuth('/api/admin/users?limit=5'),
+                fetchAuth('/api/admin/products?limit=5')
+            ]);
+
+            const usersData = await usersRes.json();
+            const productsData = await productsRes.json();
+
+            const activities = [];
+
+            // Adicionar novos usuários
+            (usersData.users || []).forEach(user => {
+                activities.push({
+                    type: 'user',
+                    icon: '👤',
+                    title: 'Novo utilizador registado',
+                    description: `${user.Nome} (${user.Email})`,
+                    time: user.Data_Registo
+                });
+            });
+
+            // Adicionar novos produtos
+            (productsData.products || []).forEach(product => {
+                activities.push({
+                    type: 'product',
+                    icon: '📦',
+                    title: 'Novo produto monitorizado',
+                    description: `${product.Nome} por ${product.UserName || 'Usuário'}`,
+                    time: product.DataCriacao
+                });
+            });
+
+            // Ordenar por data
+            activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+            if (activities.length === 0) {
+                activityList.innerHTML = '<div class="loading-state">Nenhuma atividade recente</div>';
+                return;
+            }
+
+            activityList.innerHTML = activities.slice(0, 10).map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.type}">${activity.icon}</div>
+                    <div class="activity-content">
+                        <h4>${escapeHtml(activity.title)}</h4>
+                        <p>${escapeHtml(activity.description)}</p>
+                    </div>
+                    <div class="activity-time">${formatDate(activity.time)}</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar atividade:', error);
+            activityList.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Erro ao carregar atividade</div>';
+        }
+    }
+
+    // ================== USERS ==================
+    async function loadUsers() {
+        const usersList = document.getElementById('usersList');
+        if (!usersList) return;
+
+        try {
+            usersList.innerHTML = '<div class="loading-state">Carregando utilizadores...</div>';
+
+            const response = await fetchAuth('/api/admin/users?limit=50');
+            const data = await response.json();
+
+            if (data.users.length === 0) {
+                usersList.innerHTML = '<div class="loading-state">Nenhum utilizador encontrado</div>';
+                return;
+            }
+
+            usersList.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Registado</th>
+                            <th>Produtos</th>
+                            <th>Notificações</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.users.map(user => `
+                            <tr>
+                                <td>${escapeHtml(user.Nome || 'N/A')}</td>
+                                <td>${escapeHtml(user.Email || 'N/A')}</td>
+                                <td>${formatDate(user.Data_Registo)}</td>
+                                <td>${user.produtosCount || 0}</td>
+                                <td>${user.notificacoesCount || 0}</td>
+                                <td>
+                                    <span style="color: ${user.Ativo ? '#86efac' : '#fca5a5'}">
+                                        ${user.Ativo ? '✓ Ativo' : '✗ Inativo'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar utilizadores:', error);
+            usersList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    // ================== PRODUCTS ==================
+    async function loadProducts() {
+        const productsList = document.getElementById('productsList');
+        if (!productsList) return;
+
+        try {
+            productsList.innerHTML = '<div class="loading-state">Carregando produtos...</div>';
+
+            const response = await fetchAuth('/api/admin/products?limit=50');
+            const data = await response.json();
+
+            if (data.products.length === 0) {
+                productsList.innerHTML = '<div class="loading-state">Nenhum produto encontrado</div>';
+                return;
+            }
+
+            productsList.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Utilizador</th>
+                            <th>Preço Atual</th>
+                            <th>Preço Alvo</th>
+                            <th>Loja</th>
+                            <th>Criado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.products.map(product => `
+                            <tr>
+                                <td>${escapeHtml(product.Nome || 'N/A')}</td>
+                                <td>${escapeHtml(product.UserName || 'N/A')}</td>
+                                <td>€${parseFloat(product.PrecoAtual || 0).toFixed(2)}</td>
+                                <td>€${parseFloat(product.PrecoAlvo || 0).toFixed(2)}</td>
+                                <td>${escapeHtml(product.Loja || 'N/A')}</td>
+                                <td>${formatDate(product.DataCriacao)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar produtos:', error);
+            productsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    // ================== REVIEWS ==================
+    async function loadReviews() {
+        const reviewsList = document.getElementById('reviewsList');
+        if (!reviewsList) return;
+
+        try {
+            reviewsList.innerHTML = '<div class="loading-state">Carregando avaliações...</div>';
+
+            const response = await fetchAuth('/api/admin/reviews');
+            const data = await response.json();
+
+            if (data.reviews.length === 0) {
+                reviewsList.innerHTML = '<div class="loading-state">Sistema de avaliações em desenvolvimento</div>';
+                return;
+            }
+
+            reviewsList.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Utilizador</th>
+                            <th>Avaliação</th>
+                            <th>Comentário</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.reviews.map(review => `
+                            <tr>
+                                <td>${escapeHtml(review.userName || 'N/A')}</td>
+                                <td>${'⭐'.repeat(review.rating || 0)}</td>
+                                <td>${escapeHtml(review.comment || 'N/A')}</td>
+                                <td>${formatDate(review.date)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar avaliações:', error);
+            reviewsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    // ================== BUGS ==================
+    async function loadBugs() {
+        const bugsList = document.getElementById('bugsList');
+        if (!bugsList) return;
+
+        try {
+            bugsList.innerHTML = '<div class="loading-state">Carregando bugs e projetos...</div>';
+
+            const response = await fetchAuth('/api/admin/bugs');
+            const data = await response.json();
+
+            if (!data.bugs || data.bugs.length === 0) {
+                bugsList.innerHTML = '<div class="loading-state">Nenhum bug ou projeto encontrado</div>';
+                return;
+            }
+
+            bugsList.innerHTML = data.bugs.map(bug => `
+                <div class="bug-item">
+                    <div class="bug-header">
+                        <h3 class="bug-title">${escapeHtml(bug.Titulo || 'Sem título')}</h3>
+                        <span class="bug-status ${bug.Status || 'open'}">${bug.Status || 'open'}</span>
+                    </div>
+                    <p class="bug-description">${escapeHtml(bug.Descricao || 'Sem descrição')}</p>
+                    <div class="bug-meta">
+                        <span>Tipo: ${bug.Tipo || 'bug'}</span>
+                        <span>Prioridade: ${bug.Prioridade || 'medium'}</span>
+                        <span>Criado: ${formatDate(bug.DataCriacao)}</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar bugs:', error);
+            bugsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    /**
+     * Criar novo bug
+     */
+    async function createBug() {
+        const bugTitle = document.getElementById('bugTitle');
+        const bugDescription = document.getElementById('bugDescription');
+        const bugType = document.getElementById('bugType');
+        const bugPriority = document.getElementById('bugPriority');
+        const bugStatus = document.getElementById('bugStatus');
+
+        if (!bugTitle || !bugDescription || !bugType || !bugPriority || !bugStatus) {
+            alert('Erro: Elementos do formulário não encontrados');
+            return;
+        }
+
+        const formData = {
+            titulo: bugTitle.value.trim(),
+            descricao: bugDescription.value.trim(),
+            tipo: bugType.value,
+            prioridade: bugPriority.value,
+            status: bugStatus.value
+        };
+
+        if (!formData.titulo || !formData.descricao) {
+            alert('Por favor, preencha título e descrição');
+            return;
+        }
+
+        try {
+            const response = await fetchAuth('/api/admin/bugs', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao criar bug');
+            }
+
+            alert('Bug/Projeto criado com sucesso!');
+            closeBugModal();
+            await loadBugs(); // Recarregar lista
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao criar bug:', error);
+            alert(`Erro ao criar bug: ${error.message}`);
+        }
+    }
+
+    /**
+     * Fechar modal de bug
+     */
+    function closeBugModal() {
+        const modal = document.getElementById('bugModal');
+        const form = document.getElementById('bugForm');
+
+        if (modal) modal.classList.remove('show');
+        if (form) form.reset();
+    }
+
+    // ================== SUPPORT (mantido do código original) ==================
+    async function loadThreads() {
+        const threadsList = document.getElementById('threadsList');
+        const threadsCount = document.getElementById('threadsCount');
+        if (!threadsList) return;
+
+        try {
+            threadsList.innerHTML = '<div class="loading-state">Carregando conversas...</div>';
+
+            const response = await fetch(`${API_BASE}/api/support/messages/admin?limit=50`);
+
+            // Verificar se a resposta é JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('[DASHBOARD] Resposta não-JSON de /api/support/messages/admin:', text.substring(0, 200));
+                throw new Error(`Resposta inválida do servidor (${response.status})`);
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({
+                    error: 'Erro ao carregar conversas'
+                }));
+                throw new Error(errorData.error || 'Erro ao carregar conversas');
+            }
+
+            const data = await response.json();
+            threads = data.items || [];
+
+            renderThreads();
+            if (threadsCount) threadsCount.textContent = threads.length;
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar threads:', error);
+            threadsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    function renderThreads() {
+        const threadsList = document.getElementById('threadsList');
+        if (!threadsList) return;
+
+        if (threads.length === 0) {
+            threadsList.innerHTML = '<div class="loading-state">Nenhuma conversa encontrada</div>';
+            return;
+        }
+
+        threadsList.innerHTML = threads.map(thread => `
+            <div class="thread-item ${currentThreadId === thread.id ? 'active' : ''}" data-thread-id="${thread.id}">
+                <h4>${escapeHtml(thread.userName || 'Usuário Desconhecido')}</h4>
+                <p>${escapeHtml(thread.message)}</p>
+                <div class="thread-meta">
+                    <span>${formatDate(thread.createdAt)}</span>
+                    <span>${thread.replyCount > 0 ? `${thread.replyCount} respostas` : 'Nova'}</span>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.thread-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const threadId = parseInt(item.dataset.threadId);
+                selectThread(threadId);
+            });
+        });
+    }
+
+    async function selectThread(threadId) {
+        currentThreadId = threadId;
+        await loadMessages(threadId);
+        renderThreads();
+    }
+
+    async function loadMessages(threadId) {
+        const chatMessages = document.getElementById('chatMessages');
+        const chatHeader = document.getElementById('chatHeader');
+        const chatUserName = document.getElementById('chatUserName');
+        const chatUserEmail = document.getElementById('chatUserEmail');
+        const chatInput = document.getElementById('chatInput');
+
+        if (!chatMessages) return;
+
+        try {
+            chatMessages.innerHTML = '<div class="loading-state">Carregando mensagens...</div>';
+
+            const response = await fetch(`${API_BASE}/api/support/messages/admin?threadId=${threadId}`);
+
+            // Verificar se a resposta é JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('[DASHBOARD] Resposta não-JSON de /api/support/messages/admin:', text.substring(0, 200));
+                throw new Error(`Resposta inválida do servidor (${response.status})`);
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({
+                    error: 'Erro ao carregar mensagens'
+                }));
+                throw new Error(errorData.error || 'Erro ao carregar mensagens');
+            }
+
+            messages = await response.json();
+
+            if (messages.length === 0) {
+                chatMessages.innerHTML = '<div class="empty-state">Nenhuma mensagem nesta conversa</div>';
+                chatHeader.style.display = 'none';
+                chatInput.style.display = 'none';
+                return;
+            }
+
+            const firstMessage = messages[0];
+            if (chatUserName) chatUserName.textContent = escapeHtml(firstMessage.userName || 'Usuário');
+            if (chatUserEmail) chatUserEmail.textContent = escapeHtml(firstMessage.userEmail || '');
+            if (chatHeader) chatHeader.style.display = 'flex';
+            if (chatInput) chatInput.style.display = 'flex';
+
+            chatMessages.innerHTML = messages.map(msg => `
+                <div class="message-bubble ${msg.senderType}">
+                    <div class="message-sender">${msg.senderType === 'user' ? escapeHtml(msg.userName || 'Usuário') : 'Suporte'}</div>
+                    <div class="message-text">${escapeHtml(msg.message)}</div>
+                    <div class="message-time">${formatDate(msg.createdAt)}</div>
+                </div>
+            `).join('');
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao carregar mensagens:', error);
+            chatMessages.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    async function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        if (!messageInput || !sendBtn || !currentThreadId) return;
+
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Enviando...';
+
+        try {
+            const response = await fetch(`${API_BASE}/api/support/messages/${currentThreadId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({
+                    message: message,
+                    senderType: 'support'
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erro ao enviar mensagem');
+            }
+
+            messageInput.value = '';
+            await loadMessages(currentThreadId);
+            await loadThreads();
+        } catch (error) {
+            console.error('[DASHBOARD] Erro ao enviar mensagem:', error);
+            alert(`Erro ao enviar mensagem: ${error.message}`);
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Enviar';
+        }
+    }
+
+    // ================== NAVEGAÇÃO ==================
+    function switchSection(section) {
+        currentSection = section;
+
+        // Atualizar nav
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.section === section) {
+                item.classList.add('active');
+            }
+        });
+
+        // Mostrar seção
+        document.querySelectorAll('.dashboard-section').forEach(sec => {
+            sec.classList.remove('active');
+        });
+
+        const sectionEl = document.getElementById(`${section}Section`);
+        if (sectionEl) {
+            sectionEl.classList.add('active');
+        }
+
+        // Carregar dados da seção
+        switch (section) {
+            case 'overview':
+                loadOverview();
+                break;
+            case 'users':
+                loadUsers();
+                break;
+            case 'products':
+                loadProducts();
+                break;
+            case 'reviews':
+                loadReviews();
+                break;
+            case 'support':
+                loadThreads();
+                break;
+            case 'bugs':
+                loadBugs();
+                break;
+        }
+    }
+
+    // ================== INICIALIZAÇÃO ==================
+    function init() {
+        if (!checkAuth()) return;
+
+        // Event listeners
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (sendBtn && messageInput) {
+            sendBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                switchSection(currentSection);
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Tem certeza que deseja sair?')) {
+                    localStorage.removeItem('PROMOPING_TOKEN');
+                    localStorage.removeItem('PROMOPING_USER');
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        // Navegação
+        document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(item.dataset.section);
+            });
+        });
+
+        // Botões de refresh específicos
+        const refreshOverviewBtn = document.getElementById('refreshOverviewBtn');
+        const refreshUsersBtn = document.getElementById('refreshUsersBtn');
+        const refreshProductsBtn = document.getElementById('refreshProductsBtn');
+        const refreshReviewsBtn = document.getElementById('refreshReviewsBtn');
+        const newBugBtn = document.getElementById('newBugBtn');
+        const closeBugModalBtn = document.getElementById('closeBugModal');
+        const cancelBugBtn = document.getElementById('cancelBugBtn');
+        const bugForm = document.getElementById('bugForm');
+
+        if (refreshOverviewBtn) refreshOverviewBtn.addEventListener('click', () => loadOverview());
+        if (refreshUsersBtn) refreshUsersBtn.addEventListener('click', () => loadUsers());
+        if (refreshProductsBtn) refreshProductsBtn.addEventListener('click', () => loadProducts());
+        if (refreshReviewsBtn) refreshReviewsBtn.addEventListener('click', () => loadReviews());
+
+        // Modal de Bug
+        if (newBugBtn) {
+            newBugBtn.addEventListener('click', () => {
+                const modal = document.getElementById('bugModal');
+                if (modal) modal.classList.add('show');
+            });
+        }
+
+        if (closeBugModalBtn) {
+            closeBugModalBtn.addEventListener('click', closeBugModal);
+        }
+
+        if (cancelBugBtn) {
+            cancelBugBtn.addEventListener('click', closeBugModal);
+        }
+
+        // Fechar modal ao clicar fora
+        const bugModal = document.getElementById('bugModal');
+        if (bugModal) {
+            bugModal.addEventListener('click', (e) => {
+                if (e.target === bugModal) {
+                    closeBugModal();
+                }
+            });
+        }
+
+        if (bugForm) {
+            bugForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await createBug();
+            });
+        }
+
+        // Carregar seção inicial
+        switchSection('overview');
+
+        // Auto-refresh a cada 60 segundos
+        setInterval(() => {
+            switchSection(currentSection);
+        }, 60000);
+
+        console.log('[DASHBOARD] Dashboard inicializado');
+    }
+
+    // Inicializar quando DOM estiver pronto
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
