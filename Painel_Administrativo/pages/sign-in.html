@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,17 +8,14 @@
     <link rel="icon" type="image/png" href="../assets/img/promoping/PromoPing.png">
     <title>PromoPing</title>
     <!--     Fonts and icons     -->
-    <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
+    <!-- Fontes locais - removidas referências externas -->
     <!-- Nucleo Icons -->
-    <link href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-svg.css" rel="stylesheet" />
-    <!-- Font Awesome Icons -->
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
+    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
+    <!-- Font Awesome Icons - usando versão local se disponível -->
     <!-- CSS Files -->
     <link id="pagestyle" href="../assets/css/soft-ui-dashboard.css?v=1.1.0" rel="stylesheet" />
-    <!-- Nepcha Analytics (nepcha.com) -->
-    <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+    <!-- Analytics removido - usando apenas recursos locais do PromoPing -->
 </head>
 
 <body class="">
@@ -40,22 +37,7 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navigation">
                             <ul class="navbar-nav mx-auto ms-xl-auto me-xl-7">
-
-                                <li class="nav-item">
-                                    <a class="nav-link me-2" href="../pages/sign-up.html">
-                                        <i class="fas fa-user-circle opacity-6 text-dark me-1"></i>
-                                        Sign Up
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link me-2" href="../pages/sign-in.html">
-                                        <i class="fas fa-key opacity-6 text-dark me-1"></i>
-                                        Sign In
-                                    </a>
-                                </li>
                             </ul>
-
-
                         </div>
                     </div>
                 </nav>
@@ -96,10 +78,7 @@
                                     </form>
                                 </div>
                                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                                    <p class="mb-4 text-sm mx-auto">
-                                        Don't have an account?
-                                        <a href="javascript:;" class="text-info text-gradient font-weight-bold">Sign up</a>
-                                    </p>
+                                    <!-- Registro removido do painel administrativo -->
                                 </div>
                             </div>
                         </div>
@@ -113,29 +92,6 @@
             </div>
         </section>
     </main>
-    <footer class="footer py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 mb-4 mx-auto text-center">
-                    <a href="../docs/documentation.html" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Documentação</a>
-                    <a href="#" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Termos</a>
-                    <a href="#" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Privacidade</a>
-                </div>
-                <div class="col-lg-8 mx-auto text-center mb-4 mt-2">
-                    <!-- links sociais do projeto podem ser adicionados aqui -->
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-8 mx-auto text-center mt-1">
-                    <p class="mb-0 text-secondary">©
-                        <script>
-                            document.write(new Date().getFullYear())
-                        </script> PromoPing.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </footer>
     <script src="../assets/js/core/popper.min.js"></script>
     <script src="../assets/js/core/bootstrap.min.js"></script>
     <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
@@ -162,7 +118,27 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 errEl.style.display = 'none';
+                errEl.classList.remove('text-success');
+                errEl.classList.add('text-danger');
+
+                // Validação básica
+                if (!emailEl.value.trim()) {
+                    errEl.textContent = 'Por favor, informe seu email.';
+                    errEl.style.display = 'block';
+                    return;
+                }
+                if (!passEl.value) {
+                    errEl.textContent = 'Por favor, informe sua senha.';
+                    errEl.style.display = 'block';
+                    return;
+                }
+
                 try {
+                    console.log('[Login] Tentando fazer login...', {
+                        email: emailEl.value.trim(),
+                        api: API
+                    });
+
                     const resp = await fetch(`${API}/api/auth/login`, {
                         method: 'POST',
                         headers: {
@@ -174,11 +150,34 @@
                             password: passEl.value
                         })
                     });
-                    const data = await resp.json();
+
+                    console.log('[Login] Resposta recebida:', {
+                        status: resp.status,
+                        ok: resp.ok
+                    });
+
+                    let data;
+                    try {
+                        data = await resp.json();
+                    } catch (parseErr) {
+                        console.error('[Login] Erro ao parsear JSON:', parseErr);
+                        throw new Error('Erro ao comunicar com o servidor. Verifique se o servidor está rodando em ' + API);
+                    }
+
+                    console.log('[Login] Dados recebidos:', data);
+
                     if (!resp.ok || data.status !== 'ok' || !data.token) {
                         // Verificar se foi acesso negado por não ser admin
                         if (data.accessDenied) {
                             throw new Error('Acesso negado. Apenas administradores podem acessar o painel administrativo.');
+                        }
+                        // Verificar se precisa verificar email
+                        if (data.needsVerification) {
+                            throw new Error('Email não verificado. Verifique seu email antes de fazer login.');
+                        }
+                        // Verificar se conta está expirada
+                        if (data.accountExpired) {
+                            throw new Error('Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.');
                         }
                         throw new Error(data?.error || 'Email ou senha incorretos');
                     }
@@ -211,7 +210,15 @@
                         window.location.href = back;
                     }, 100);
                 } catch (err) {
-                    errEl.textContent = err.message || 'Falha ao autenticar';
+                    console.error('[Login] Erro:', err);
+                    let errorMessage = err.message || 'Falha ao autenticar';
+
+                    // Tratar erros de rede
+                    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                        errorMessage = 'Não foi possível conectar ao servidor. Verifique se o servidor está rodando em ' + API;
+                    }
+
+                    errEl.textContent = errorMessage;
                     errEl.style.display = 'block';
                 }
             });
@@ -250,8 +257,7 @@
             });
         })();
     </script>
-    <!-- Github buttons -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!-- GitHub buttons removido - usando apenas recursos locais do PromoPing -->
     <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
     <script src="../assets/js/soft-ui-dashboard.min.js?v=1.1.0"></script>
 </body>
