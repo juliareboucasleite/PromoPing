@@ -69,6 +69,7 @@ import exportRoutes from "./routes/exportRoutes.js"; // Exportação
 import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
+import adminRoutes from "./routes/admin.js"; // Admin Panel
 
 // ================== MIDDLEWARE ==================
 import {
@@ -349,6 +350,7 @@ app.use("/api/user/preferences", preferencesRoutes); // Preferências
 app.use("/api/payment", paymentRoutes); // Pagamentos
 app.use("/api/exportar", exportRoutes); // Exportação
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
+app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
 app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
@@ -506,6 +508,14 @@ if (!isProduction) {
         // Fallback para frontend direto
         app.use(express.static(frontendPath));
     }
+
+    // Servir arquivos estáticos do Painel Administrativo
+    const painelPath = path.join(__dirname, "../Painel_Administrativo");
+    app.use("/Painel_Administrativo", express.static(painelPath));
+
+    // Servir arquivos estáticos do Admin PromoPing
+    const adminPath = path.join(__dirname, "../admin.promoping");
+    app.use("/admin.promoping", express.static(adminPath));
 
     // Rota para ignorar requests do Chrome DevTools
     app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
@@ -870,6 +880,15 @@ if (!isProduction) {
     // ================== MIDDLEWARE 404 ==================
     // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
     app.use((req, res) => {
+        // Se for uma rota de API, retornar JSON em vez de HTML
+        if (req.path.startsWith('/api/')) {
+            return res.status(404).json({
+                status: 'error',
+                error: 'Rota não encontrada',
+                path: req.path
+            });
+        }
+
         const filePath = buildExists ?
             path.join(buildPath, "404.html") :
             path.join(__dirname, "../frontend/pages/404.html");
@@ -926,7 +945,8 @@ app.listen(PORT, HOST, async () => {
     if (process.env.NODE_ENV === 'development') {
         console.log(`  Frontend: http://${HOST}:${PORT}/ | API: http://${HOST}:${PORT}/api/`);
     }
-    console.log(`  Painel Administrativo: http://${HOST}:${PORT}/Painel_Administrativo/pages/sign-in.html\n`);
+    console.log(`  Painel Administrativo: http://${HOST}:${PORT}/Painel_Administrativo/pages/sign-in.html`);
+    console.log(`  Admin PromoPing: http://${HOST}:${PORT}/admin.promoping/pages/login.html\n`);
 
     // Iniciar verificação automática de períodos de graça
     try {
