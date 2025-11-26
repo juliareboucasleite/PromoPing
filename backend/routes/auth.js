@@ -439,6 +439,343 @@ router.get('/discord/direct/:discordId', async (req, res) => {
 
 // ================== ROTAS EMAIL/SENHA ==================
 
+// ================== RESET DE SENHA (ESTILO PINTEREST) ==================
+
+// Buscar contas por nome/email/username (estilo Pinterest)
+router.get("/search-accounts", async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || query.trim().length < 2) {
+      return res.json({
+        status: "ok",
+        accounts: []
+      });
+    }
+
+    const searchTerm = `%${query.trim()}%`;
+
+    // Buscar usuários por nome, email ou username (usando nome como username)
+    const [userRows] = await pool.query(
+      `SELECT Id, Nome, Email, FotoPerfil 
+       FROM Utilizadores 
+       WHERE (Nome LIKE ? OR Email LIKE ?) 
+       AND Ativo = 1 
+       AND EmailVerificado = 1
+       LIMIT 10`,
+      [searchTerm, searchTerm]
+    );
+
+    // Mascarar emails para privacidade
+    const accounts = userRows.map(user => {
+      const email = user.Email || '';
+      const [localPart, domain] = email.split('@');
+      
+      let maskedEmail = '';
+      if (localPart && localPart.length > 0) {
+        const visibleChars = Math.min(2, localPart.length);
+        const maskedChars = localPart.length - visibleChars;
+        maskedEmail = localPart.substring(0, visibleChars) + '_'.repeat(Math.min(maskedChars, 4));
+      }
+      
+      if (domain) {
+        const [domainName, domainExt] = domain.split('.');
+        const visibleDomainChars = Math.min(1, domainName.length);
+        const maskedDomain = domainName.substring(0, visibleDomainChars) + '_'.repeat(Math.min(domainName.length - visibleDomainChars, 3));
+        maskedEmail += `@${maskedDomain}.${domainExt ? domainExt.substring(0, 1) + '_'.repeat(Math.min(domainExt.length - 1, 2)) : ''}`;
+      }
+
+      return {
+        id: user.Id,
+        nome: user.Nome,
+        email: email, // Email real para envio
+        maskedEmail: maskedEmail, // Email mascarado para exibição
+        fotoPerfil: user.FotoPerfil || null
+      };
+    });
+
+    res.json({
+      status: "ok",
+      accounts: accounts
+    });
+  } catch (err) {
+    console.error("[SEARCH-ACCOUNTS] Erro ao buscar contas:", err);
+    res.status(500).json({
+      status: "error",
+      error: "Erro ao buscar contas",
+    });
+  }
+});
+
+// Solicitar reset de senha (estilo Pinterest)
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: "error",
+        error: "Email é obrigatório",
+      });
+    }
+
+    // Buscar usuário
+    const [userRows] = await pool.query(
+      "SELECT Id, Nome, Email FROM Utilizadores WHERE Email = ?",
+      [email]
+    );
+
+    // SEMPRE retornar sucesso (por segurança, não revelar se email existe)
+    if (userRows.length === 0) {
+      return res.json({
+        status: "ok",
+        message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+      });
+    }
+
+    const user = userRows[0];
+
+    // Gerar token único
+    const crypto = await import("crypto");
+    const token = crypto.default.randomBytes(32).toString("hex");
+    
+    // Token expira em 24 horas
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    // Criar tabela se não existir
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        Id INT AUTO_INCREMENT PRIMARY KEY,
+        UserId INT(10) UNSIGNED NOT NULL,
+        Token VARCHAR(255) NOT NULL UNIQUE,
+        Email VARCHAR(255) NOT NULL,
+        ExpiresAt TIMESTAMP NOT NULL,
+        Used BOOLEAN DEFAULT FALSE,
+        CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_token (Token),
+        INDEX idx_user_id (UserId),
+        INDEX idx_email (Email),
+        INDEX idx_expires_at (ExpiresAt)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    // Invalidar tokens anteriores do usuário
+    await pool.query(
+      "UPDATE password_reset_tokens SET Used = TRUE WHERE UserId = ? AND Used = FALSE",
+      [user.Id]
+    );
+
+    // Salvar novo token
+    await pool.query(
+      "INSERT INTO password_reset_tokens (UserId, Token, Email, ExpiresAt) VALUES (?, ?, ?, ?)",
+      [user.Id, token, user.Email, expiresAt]
+    );
+
+    // URL de reset (ajustar conforme ambiente)
+    const baseUrl = process.env.FRONTEND_URL || "http://127.0.0.1:3000";
+    const resetUrl = `${baseUrl}/inc/forgot-password.html?token=${token}`;
+
+    // Template de email estilo Pinterest
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="pt-PT">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Redefinir senha - PromoPing</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; max-width: 600px;">
+                <!-- Header -->
+                <tr>
+                  <td style="padding: 40px 40px 20px; text-align: center;">
+                    <div style="width: 60px; height: 60px; background-color: #ff6b35; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                      <span style="color: #ffffff; font-size: 32px; font-weight: bold;">P</span>
+                    </div>
+                    <h1 style="margin: 0; color: #000000; font-size: 24px; font-weight: 600;">Recebemos o teu pedido</h1>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 0 40px 20px;">
+                    <p style="margin: 0 0 30px; color: #000000; font-size: 16px; line-height: 24px;">Já podes repor a tua palavra-passe!</p>
+                    
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="padding: 20px 0;">
+                          <a href="${resetUrl}" style="display: inline-block; background-color: #e60023; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 24px; font-size: 16px; font-weight: 600; text-align: center;">Redefinir senha</a>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Informamos que tens 24 horas para escolher uma palavra-passe. Depois disso, terás de solicitar uma nova.</p>
+                    
+                    <p style="margin: 20px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Não solicitaste uma nova palavra-passe? Podes ignorar este e-mail.</p>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 40px; border-top: 1px solid #e5e5e5;">
+                    <p style="margin: 0 0 10px; color: #666666; font-size: 12px; line-height: 18px;">Este e-mail foi enviado para <strong>${user.Email}</strong></p>
+                    <p style="margin: 10px 0; color: #999999; font-size: 12px;">
+                      <a href="${baseUrl}" style="color: #666666; text-decoration: none;">Central de Ajuda</a> · 
+                      <a href="${baseUrl}/pages/privacidade.html" style="color: #666666; text-decoration: none;">Política de Privacidade</a> · 
+                      <a href="${baseUrl}/pages/termos.html" style="color: #666666; text-decoration: none;">Termos e condições</a>
+                    </p>
+                    <p style="margin: 20px 0 0; color: #999999; font-size: 11px; line-height: 16px;">PromoPing. Todos os direitos reservados.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    // Enviar email
+    const emailResult = await enviarEmail(
+      user.Email,
+      "Repõe a palavra-passe - PromoPing",
+      emailHtml
+    );
+
+    if (emailResult.success) {
+      console.log(`[FORGOT-PASSWORD] Email de reset enviado para ${user.Email}`);
+    }
+
+    res.json({
+      status: "ok",
+      message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+    });
+  } catch (err) {
+    console.error("[FORGOT-PASSWORD] Erro ao processar solicitação:", err);
+    // Sempre retornar sucesso por segurança
+    res.json({
+      status: "ok",
+      message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+    });
+  }
+});
+
+// Validar token de reset
+router.get("/reset-password/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({
+        status: "error",
+        error: "Token é obrigatório",
+      });
+    }
+
+    // Buscar token válido
+    const [tokenRows] = await pool.query(
+      `SELECT prt.*, u.Email 
+       FROM password_reset_tokens prt
+       INNER JOIN Utilizadores u ON prt.UserId = u.Id
+       WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
+      [token]
+    );
+
+    if (tokenRows.length === 0) {
+      return res.status(400).json({
+        status: "error",
+        error: "Token inválido ou expirado",
+      });
+    }
+
+    res.json({
+      status: "ok",
+      valid: true,
+      email: tokenRows[0].Email,
+    });
+  } catch (err) {
+    console.error("[RESET-PASSWORD] Erro ao validar token:", err);
+    res.status(500).json({
+      status: "error",
+      error: "Erro ao validar token",
+    });
+  }
+});
+
+// Resetar senha com token
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        status: "error",
+        error: "Token e nova senha são obrigatórios",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        status: "error",
+        error: "A senha deve ter pelo menos 6 caracteres",
+      });
+    }
+
+    // Buscar token válido
+    const [tokenRows] = await pool.query(
+      `SELECT prt.*, u.Id as UserId
+       FROM password_reset_tokens prt
+       INNER JOIN Utilizadores u ON prt.UserId = u.Id
+       WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
+      [token]
+    );
+
+    if (tokenRows.length === 0) {
+      return res.status(400).json({
+        status: "error",
+        error: "Token inválido ou expirado",
+      });
+    }
+
+    const tokenData = tokenRows[0];
+
+    // Hash da nova senha
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Atualizar senha
+    await pool.query(
+      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
+      [hashedPassword, tokenData.UserId]
+    );
+
+    // Marcar token como usado
+    await pool.query(
+      "UPDATE password_reset_tokens SET Used = TRUE WHERE Token = ?",
+      [token]
+    );
+
+    console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.UserId}`);
+
+    res.json({
+      status: "ok",
+      message: "Senha redefinida com sucesso!",
+    });
+  } catch (err) {
+    console.error("[RESET-PASSWORD] Erro ao resetar senha:", err);
+    res.status(500).json({
+      status: "error",
+      error: "Erro ao redefinir senha",
+    });
+  }
+});
+
+// ================== FIM RESET DE SENHA (ESTILO PINTEREST) ==================
+
 // LOGIN com email e senha
 router.post("/login", async (req, res) => {
   try {
