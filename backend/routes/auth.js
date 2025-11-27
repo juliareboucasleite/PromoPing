@@ -67,11 +67,17 @@ async function enviarEmail(to, subject, text) {
 }
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    // Construir callback URL dinamicamente
+    const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+    const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || `${baseUrl}/api/auth/google/callback`;
+    
+    console.log(`[AUTH] Google OAuth Callback URL: ${googleCallbackUrl}`);
+    
     passport.use(
         new GoogleStrategy({
                 clientID: process.env.GOOGLE_CLIENT_ID,
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                callbackURL: "http://127.0.0.1:3000/api/auth/google/callback",
+                callbackURL: googleCallbackUrl,
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
@@ -143,11 +149,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 // ================== GITHUB STRATEGY ==================
 if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    // Construir callback URL dinamicamente
+    const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+    const githubCallbackUrl = process.env.GITHUB_CALLBACK_URL || `${baseUrl}/api/auth/github/callback`;
+    
+    console.log(`[AUTH] GitHub OAuth Callback URL: ${githubCallbackUrl}`);
+    
     passport.use(
         new GitHubStrategy({
                 clientID: process.env.GITHUB_CLIENT_ID,
                 clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                callbackURL: "http://127.0.0.1:3000/api/auth/github/callback",
+                callbackURL: githubCallbackUrl,
                 scope: ['user:email']
             },
             async (accessToken, refreshToken, profile, done) => {
@@ -264,21 +276,36 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
 // ================== DISCORD STRATEGY ==================
 if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    // Construir callback URL dinamicamente
+    const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+    const discordCallbackUrl = process.env.DISCORD_CALLBACK_URL || `${baseUrl}/api/auth/discord/callback`;
+    
+    console.log(`[AUTH] Discord OAuth Callback URL: ${discordCallbackUrl}`);
+    
     passport.use(
         new DiscordStrategy({
                 clientID: process.env.DISCORD_CLIENT_ID,
                 clientSecret: process.env.DISCORD_CLIENT_SECRET,
-                callbackURL: "http://127.0.0.1:3000/auth/discord/callback",
+                callbackURL: discordCallbackUrl,
                 scope: ['identify', 'email']
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    console.log(" Discord profile recebido:", {
+                    console.log(" [DISCORD STRATEGY] ========== INÍCIO DA ESTRATÉGIA ==========");
+                    console.log(" [DISCORD STRATEGY] Profile recebido:", {
                         id: profile.id,
                         username: profile.username,
                         email: profile.email,
-                        avatar: profile.avatar
+                        avatar: profile.avatar,
+                        verified: profile.verified
                     });
+
+                    // Verificar se o email está disponível e verificado
+                    if (!profile.email) {
+                        const error = new Error("Email não fornecido pelo Discord. Certifique-se de que seu email está verificado no Discord.");
+                        console.error(" Erro: Email não fornecido pelo Discord");
+                        return done(error, null);
+                    }
 
                     const email = profile.email;
                     const discordId = profile.id;
@@ -292,6 +319,17 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         // Usuário Discord já existe e está associado - LOGIN DIRETO
                         console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
 
+                        // Garantir que discord_id está salvo no banco (caso não esteja)
+                        try {
+                            await pool.query(
+                                "UPDATE Utilizadores SET discord_id = ? WHERE Id = ? AND (discord_id IS NULL OR discord_id = '')",
+                                [discordId, discordUser.userId]
+                            );
+                        } catch (dbError) {
+                            console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
+                            // Continuar mesmo se falhar
+                        }
+
                         const token = jwt.sign({
                                 id: discordUser.userId,
                                 email: discordUser.email
@@ -301,12 +339,15 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                             }
                         );
 
-                        console.log(" Login direto realizado para usuário:", discordUser.userId);
-                        return done(null, {
+                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.userId);
+                        const userObject = {
                             userId: discordUser.userId,
                             email: discordUser.email,
-                            token
-                        });
+                            token,
+                            discordId: discordId // Incluir discordId para uso no callback
+                        };
+                        console.log(" [DISCORD STRATEGY] Chamando done() com user (login direto):", JSON.stringify(userObject, null, 2));
+                        return done(null, userObject);
                     }
 
                     // Usuário Discord não existe ou não está associado
@@ -334,13 +375,37 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         // Associar Discord com usuário do banco
                         linkDiscordUser(discordId, userId);
+                        
+                        // Atualizar discord_id no banco de dados (se a coluna existir)
+                        try {
+                            await pool.query(
+                                "UPDATE Utilizadores SET discord_id = ? WHERE Id = ?",
+                                [discordId, userId]
+                            );
+                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${userId}`);
+                        } catch (dbError) {
+                            console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode não existir):", dbError.message);
+                            // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                        }
                     } else {
-                        // Criar novo usuário no banco
+                        // Criar novo usuário no banco (tentar com discord_id, se falhar, criar sem)
                         console.log("🆕 Criando novo usuário no banco:", username);
-                        const [result] = await pool.query(
-                            "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
-                            [username, email]
-                        );
+                        let result;
+                        try {
+                            // Tentar criar com discord_id
+                            [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Ativo, discord_id) VALUES (?, ?, 1, ?)",
+                                [username, email, discordId]
+                            );
+                            console.log(` [DISCORD STRATEGY] Novo usuário criado com discord_id ${discordId}`);
+                        } catch (dbError) {
+                            // Se falhar (coluna não existe), criar sem discord_id
+                            console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
+                            [result] = await pool.query(
+                                "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
+                                [username, email]
+                            );
+                        }
                         userId = result.insertId;
 
                         // Buscar ID do plano FREE
@@ -380,14 +445,18 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         }
                     );
 
-                    console.log(" Token JWT gerado para usuário:", userId);
-                    return done(null, {
+                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", userId);
+                    const userObject = {
                         userId,
                         email,
-                        token
-                    });
+                        token,
+                        discordId: discordId // Incluir discordId para uso no callback
+                    };
+                    console.log(" [DISCORD STRATEGY] Chamando done() com user:", JSON.stringify(userObject, null, 2));
+                    return done(null, userObject);
                 } catch (error) {
-                    console.error(" Erro na autenticação Discord:", error);
+                    console.error(" [DISCORD STRATEGY] ERRO na autenticação Discord:", error);
+                    console.error(" [DISCORD STRATEGY] Stack trace:", error.stack);
                     return done(error, null);
                 }
             }
@@ -1448,6 +1517,23 @@ router.get("/github/callback", (req, res) => {
 
 router.get("/discord", (req, res) => {
     if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+        // Armazenar parâmetros na sessão (se disponível) ou usar cookies como fallback
+        if (req.query.from === 'profile' && req.query.token) {
+            // Armazenar token temporariamente em cookie seguro
+            res.cookie('discord_connect_token', req.query.token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000 // 5 minutos
+            });
+            res.cookie('discord_connect_from', 'profile', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000 // 5 minutos
+            });
+        }
+        
         passport.authenticate("discord", {
             session: false,
             scope: ['identify', 'email']
@@ -1459,27 +1545,173 @@ router.get("/discord", (req, res) => {
     }
 });
 
-router.get("/discord/callback", (req, res) => {
+router.get("/discord/callback", async (req, res) => {
     console.log(" Discord callback recebido:", JSON.stringify(req.query));
+    
+    // Verificar se há erro do Discord
+    if (req.query.error) {
+        console.error(" Erro retornado pelo Discord:", req.query.error);
+        console.error(" Descrição do erro:", req.query.error_description);
+        const fromProfile = req.query.state && req.query.state.includes('from=profile');
+        const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_connection_failed' : `/login?error=discord_${req.query.error}&description=${encodeURIComponent(req.query.error_description || '')}`;
+        return res.redirect(redirectUrl);
+    }
 
     if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+        // Usar uma abordagem diferente: fazer authenticate primeiro, depois processar
         passport.authenticate("discord", {
-            session: false,
-            failureRedirect: "/login?error=discord_auth_failed"
-        })(req, res, (err, user) => {
+            session: false
+        })(req, res, async (err, discordUser) => {
+            console.log(" [DISCORD CALLBACK] ========== INÍCIO DO CALLBACK ==========");
+            console.log(" [DISCORD CALLBACK] Erro recebido:", err ? err.message : "Nenhum erro");
+            console.log(" [DISCORD CALLBACK] DiscordUser recebido do passport:", discordUser ? JSON.stringify(discordUser, null, 2) : "null/undefined");
+            console.log(" [DISCORD CALLBACK] Query params:", JSON.stringify(req.query));
+            console.log(" [DISCORD CALLBACK] State:", req.query.state);
+            console.log(" [DISCORD CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "null/undefined");
+            console.log(" [DISCORD CALLBACK] req.isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "método não disponível");
+            
             if (err) {
-                console.error(" Erro na autenticação Discord:", err);
-                return res.redirect("/login?error=discord_auth_failed");
+                console.error(" [DISCORD CALLBACK] ERRO na autenticação Discord:", err);
+                console.error(" [DISCORD CALLBACK] Stack trace:", err.stack);
+                
+                // Determinar tipo de erro específico
+                let errorType = "discord_auth_failed";
+                if (err.message && err.message.includes("email")) {
+                    errorType = "discord_email_required";
+                } else if (err.message && err.message.includes("redirect")) {
+                    errorType = "discord_redirect_invalid";
+                }
+                
+                const fromProfile = req.query.state && req.query.state.includes('from=profile');
+                const redirectUrl = fromProfile ? `/dashboard/perfil?error=${errorType}` : `/login?error=${errorType}&details=${encodeURIComponent(err.message || 'Erro desconhecido')}`;
+                return res.redirect(redirectUrl);
             }
 
-            if (!user) {
-                console.error(" Usuário Discord não encontrado");
-                return res.redirect("/login?error=discord_auth_failed");
+            // Tentar obter o usuário de várias fontes
+            if (!discordUser) {
+                console.log(" [DISCORD CALLBACK] discordUser é null, tentando req.user...");
+                discordUser = req.user;
+            }
+            
+            if (!discordUser) {
+                console.error(" [DISCORD CALLBACK] ERRO CRÍTICO: discordUser é null/undefined após todas as tentativas");
+                console.error(" [DISCORD CALLBACK] Query params completos:", JSON.stringify(req.query));
+                console.error(" [DISCORD CALLBACK] req.user:", req.user);
+                console.error(" [DISCORD CALLBACK] req.session:", req.session);
+                console.error(" [DISCORD CALLBACK] Verificando se a estratégia foi executada...");
+                
+                // Se chegou aqui, a estratégia pode não ter sido executada ou não chamou done()
+                const fromProfile = req.query.state && req.query.state.includes('from=profile');
+                const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_user_not_found' : '/login?error=discord_user_not_found';
+                return res.redirect(redirectUrl);
             }
 
-            console.log(" Usuário Discord autenticado:", user.email);
+            console.log(" [DISCORD CALLBACK] Usuário Discord autenticado com sucesso!");
+            console.log(" [DISCORD CALLBACK] Email:", discordUser.email);
+            console.log(" [DISCORD CALLBACK] UserId:", discordUser.userId);
+            console.log(" [DISCORD CALLBACK] DiscordId:", discordUser.discordId);
 
-            // Criar página HTML que salva no localStorage e redireciona
+            // Verificar se veio do perfil (usuário já logado querendo conectar)
+            // Tentar obter dos cookies primeiro, depois do state
+            const tokenFromCookie = req.cookies?.discord_connect_token;
+            const fromProfileCookie = req.cookies?.discord_connect_from === 'profile';
+            const fromProfileState = req.query.state && req.query.state.includes('from=profile');
+            const tokenFromState = req.query.state ? new URLSearchParams(req.query.state).get('token') : null;
+            
+            const fromProfile = fromProfileCookie || fromProfileState;
+            const tokenFromProfile = tokenFromCookie || tokenFromState;
+            
+            console.log(" [DISCORD CALLBACK] From profile (cookie):", fromProfileCookie);
+            console.log(" [DISCORD CALLBACK] From profile (state):", fromProfileState);
+            console.log(" [DISCORD CALLBACK] Token from cookie:", tokenFromCookie ? "Presente" : "Ausente");
+            console.log(" [DISCORD CALLBACK] Token from state:", tokenFromState ? "Presente" : "Ausente");
+
+            if (fromProfile && tokenFromProfile) {
+                try {
+                    // Limpar cookies após uso
+                    res.clearCookie('discord_connect_token');
+                    res.clearCookie('discord_connect_from');
+                    
+                    // Verificar token JWT do usuário logado
+                    const decoded = jwt.verify(tokenFromProfile, process.env.JWT_SECRET);
+                    const loggedInUserId = decoded.id;
+                    
+                    console.log(` Associando Discord ao usuário logado: ${loggedInUserId}`);
+
+                    // Obter discordId do objeto retornado pela estratégia (agora incluído)
+                    const discordIdToLink = discordUser.discordId;
+                    
+                    if (!discordIdToLink) {
+                        console.error(" Discord ID não encontrado no objeto de autenticação");
+                        throw new Error("Não foi possível obter o ID do Discord");
+                    }
+
+                    // Verificar se o Discord já está associado a outro usuário
+                    const existingDiscordUser = findDiscordUser(discordIdToLink);
+                    
+                    if (existingDiscordUser && existingDiscordUser.userId && existingDiscordUser.userId !== loggedInUserId) {
+                        // Discord já está associado a outro usuário
+                        const html = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <title>Discord Conectado - PromoPing</title>
+                            </head>
+                            <body>
+                              <script>
+                                alert('Esta conta Discord já está associada a outra conta.');
+                                window.location.href = '/dashboard/perfil';
+                              </script>
+                              <p>Redirecionando...</p>
+                            </body>
+                            </html>
+                          `;
+                        return res.send(html);
+                    }
+
+                    // Associar Discord ao usuário logado
+                    linkDiscordUser(discordIdToLink, loggedInUserId);
+                    
+                    // Atualizar discord_id no banco de dados (se a coluna existir)
+                    try {
+                        await pool.query(
+                            "UPDATE Utilizadores SET discord_id = ? WHERE Id = ?",
+                            [discordIdToLink, loggedInUserId]
+                        );
+                    } catch (dbError) {
+                        console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
+                        // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                    }
+
+                    console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInUserId}`);
+
+                    // Redirecionar de volta ao perfil
+                    const html = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                          <title>Discord Conectado - PromoPing</title>
+                        </head>
+                        <body>
+                          <script>
+                            // Manter o token existente
+                            localStorage.setItem('token', '${tokenFromProfile}');
+                            
+                            // Redirecionar para o perfil
+                            window.location.href = '/dashboard/perfil?discord_connected=true';
+                          </script>
+                          <p>Conectando Discord ao seu perfil...</p>
+                        </body>
+                        </html>
+                      `;
+                    return res.send(html);
+                } catch (tokenError) {
+                    console.error(" Erro ao verificar token ou associar Discord:", tokenError);
+                    // Se falhar, fazer login normal
+                }
+            }
+
+            // Login normal (não veio do perfil ou token inválido)
             const html = `
         <!DOCTYPE html>
         <html>
@@ -1490,14 +1722,14 @@ router.get("/discord/callback", (req, res) => {
           <script>
             // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
-              id: ${user.userId},
-              email: '${user.email}',
-              token: '${user.token}',
+              id: ${discordUser.userId},
+              email: '${discordUser.email}',
+              token: '${discordUser.token}',
               loginMethod: 'discord'
             }));
             
             // Salvar token separadamente para compatibilidade com auth.js
-            localStorage.setItem('token', '${user.token}');
+            localStorage.setItem('token', '${discordUser.token}');
             
             // Redirecionar para o painel
             window.location.href = '/dashboard';
