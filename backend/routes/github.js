@@ -169,14 +169,14 @@ async function syncAllReleases() {
                     },
                     {
                         name: 'Autor',
-                        value: release.author?.login || 'Desconhecido',
+                        value: (release.author == null) ? login : 'Desconhecido',
                         inline: true
                     }
                 ]
             };
 
             // Adicionar thumbnail do autor
-            if (release.author?.avatar_url) {
+            if (release.author && typeof release.author.avatar_url === 'string') {
                 embedData.thumbnail = {
                     url: release.author.avatar_url
                 };
@@ -718,14 +718,14 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
                 },
                 {
                     name: 'Autor',
-                    value: release.author?.login || 'Desconhecido',
+                    value: (release.author == null) ? login : 'Desconhecido',
                     inline: true
                 }
             ]
         };
 
         // Adicionar thumbnail do repositório
-        if (repository.owner?.avatar_url) {
+        if (repository && repository.owner && typeof repository.owner.avatar_url === 'string') {
             embedData.thumbnail = {
                 url: repository.owner.avatar_url
             };
