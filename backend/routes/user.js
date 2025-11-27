@@ -81,12 +81,39 @@ router.get("/profile", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
-    // Contas conectadas - usando apenas colunas que existem
-    const [contas] = await pool.query(
-      "SELECT 'email' as Tipo, Email IS NOT NULL as Conectado FROM Utilizadores WHERE Id = ? " +
-      "UNION SELECT 'telefone', Telefone IS NOT NULL FROM Utilizadores WHERE Id = ?",
-      [userId, userId]
-    );
+    // Contas conectadas - verificando email, telefone e discord_id
+    let contas = [];
+    try {
+      // Verificar se a coluna discord_id existe antes de usar
+      const [contasRows] = await pool.query(
+        "SELECT 'email' as Tipo, CASE WHEN Email IS NOT NULL AND Email != '' THEN 1 ELSE 0 END as Conectado FROM Utilizadores WHERE Id = ? " +
+        "UNION SELECT 'telefone', CASE WHEN Telefone IS NOT NULL AND Telefone != '' THEN 1 ELSE 0 END FROM Utilizadores WHERE Id = ?",
+        [userId, userId]
+      );
+      
+      // Tentar adicionar verificação do Discord (pode falhar se a coluna não existir)
+      try {
+        const [discordRow] = await pool.query(
+          "SELECT 'discord' as Tipo, CASE WHEN discord_id IS NOT NULL AND discord_id != '' THEN 1 ELSE 0 END as Conectado FROM Utilizadores WHERE Id = ?",
+          [userId]
+        );
+        contas = [...contasRows, ...discordRow];
+      } catch (discordError) {
+        // Se a coluna discord_id não existir, apenas usar email e telefone
+        console.log(" [BACKEND] Coluna discord_id não encontrada, usando apenas email e telefone");
+        contas = contasRows;
+        // Adicionar Discord como não conectado
+        contas.push({ Tipo: 'discord', Conectado: 0 });
+      }
+    } catch (err) {
+      console.error(" [BACKEND] Erro ao buscar contas conectadas:", err);
+      // Retornar valores padrão em caso de erro
+      contas = [
+        { Tipo: 'email', Conectado: 0 },
+        { Tipo: 'telefone', Conectado: 0 },
+        { Tipo: 'discord', Conectado: 0 }
+      ];
+    }
 
     // Preferências
     const [prefs] = await pool.query(

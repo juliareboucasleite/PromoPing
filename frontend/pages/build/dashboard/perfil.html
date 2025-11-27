@@ -1205,9 +1205,17 @@
       try {
         console.log(" Iniciando conexão com Discord...");
 
-        // Redirecionar para Discord OAuth
-        const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
-        window.location.href = discordAuthUrl;
+        // Verificar se usuário está logado
+        const token = localStorage.getItem("token");
+        if (token) {
+          // Se estiver logado, passar parâmetro para associar ao perfil
+          const discordAuthUrl = `http://127.0.0.1:3000/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
+          window.location.href = discordAuthUrl;
+        } else {
+          // Se não estiver logado, fazer login normal
+          const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
+          window.location.href = discordAuthUrl;
+        }
 
       } catch (error) {
         console.error(" Erro ao conectar Discord:", error);

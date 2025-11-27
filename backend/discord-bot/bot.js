@@ -82,6 +82,22 @@ class PromoPingBot {
                     return;
                 }
 
+                // Verificar se é mensagem privada (DM)
+                if (!message.guild) {
+                    // Processar comandos no privado também
+                    if (message.content.startsWith(this.prefix)) {
+                        const args = message.content.slice(this.prefix.length).trim().split(/ +/);
+                        const commandName = args.shift().toLowerCase();
+                        const comando = comandos.get(commandName);
+                        if (comando) {
+                            await comando.execute(this.client, message, args, this);
+                            return;
+                        }
+                    }
+                    // Se não for comando, apenas ignorar (não criar ticket automaticamente)
+                    return;
+                }
+
                 // Verificar counting antes de processar comandos
                 const countingHandled = await this.handleCounting(message);
                 if (countingHandled) return; // Se foi processado como counting, não processar como comando
@@ -173,6 +189,8 @@ class PromoPingBot {
                         await this.handleFecharTicketButton(interaction);
                     } else if (interaction.customId.startsWith('ticket_chamar_mod_')) {
                         await this.handleChamarModerador(interaction);
+                    } else if (interaction.customId === 'aceitar_regras_promoping') {
+                        await this.handleAceitarRegras(interaction);
                     }
                 }
             } catch (error) {
@@ -498,6 +516,255 @@ class PromoPingBot {
         }
     }
 
+    async handleDirectMessageTicket(message, ticketMessage = null) {
+        try {
+            const userId = message.author.id;
+            // Se ticketMessage foi fornecido (via comando), usar ele. Caso contrário, usar o conteúdo da mensagem
+            const userMessage = ticketMessage || (message.content ? message.content.trim() : '');
+
+            // Função auxiliar para responder mensagens (trata interações deferidas)
+            const safeReply = async (content) => {
+                // Se for uma interação deferida, usar editReply
+                if (message.interaction && message.interaction.deferred) {
+                    if (typeof content === 'string') {
+                        return await message.interaction.editReply({ content });
+                    } else {
+                        return await message.interaction.editReply(content);
+                    }
+                }
+                // Caso contrário, usar reply normal
+                return await message.reply(content);
+            };
+
+            // Ignorar mensagens vazias ou muito curtas
+            if (!userMessage || userMessage.length < 3) {
+                const embed = new EmbedBuilder()
+                    .setTitle('❌ Mensagem Muito Curta')
+                    .setDescription('Por favor, forneça uma descrição mais detalhada sobre seu problema ou dúvida.\n\n**Exemplo:** `!suporte Preciso de ajuda com notificações`')
+                    .setColor(0xff0000)
+                    .setTimestamp();
+                return await safeReply({ embeds: [embed] });
+            }
+
+            // Obter o servidor principal
+            const guildId = process.env.DISCORD_GUILD_ID;
+            let guild = null;
+
+            if (guildId) {
+                guild = this.client.guilds.cache.get(guildId);
+            } else {
+                // Se não houver guild ID configurado, usar o primeiro servidor disponível
+                guild = this.client.guilds.cache.first();
+            }
+
+            if (!guild) {
+                const embed = new EmbedBuilder()
+                    .setTitle('❌ Servidor Não Encontrado')
+                    .setDescription('Não foi possível encontrar o servidor para criar o ticket. Por favor, contate um administrador.')
+                    .setColor(0xff0000)
+                    .setTimestamp();
+                return await safeReply({ embeds: [embed] });
+            }
+
+            // Verificar se o usuário está no servidor
+            let member = null;
+            try {
+                member = await guild.members.fetch(userId);
+            } catch (error) {
+                const embed = new EmbedBuilder()
+                    .setTitle('❌ Você Não Está no Servidor')
+                    .setDescription('Para criar um ticket, você precisa estar no servidor do PromoPing. Por favor, entre no servidor primeiro.')
+                    .setColor(0xff0000)
+                    .setTimestamp();
+                return await safeReply({ embeds: [embed] });
+            }
+
+            // Verificar se o usuário já tem um ticket aberto
+            const username = message.author.username || message.author.displayName || message.author.tag.split('#')[0] || 'user';
+            const ticketChannelName = `ticket-${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+            
+            const existingChannel = guild.channels.cache.find(
+                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+            );
+
+            if (existingChannel) {
+                const embed = new EmbedBuilder()
+                    .setTitle('🎫 Ticket Já Existe')
+                    .setDescription(`Você já tem um ticket aberto no servidor.\n\nAcesse: ${existingChannel}\n\nSua mensagem foi encaminhada para o ticket existente.`)
+                    .setColor(0xffa500)
+                    .setTimestamp();
+
+                // Enviar mensagem para o ticket existente
+                const ticketMessageEmbed = new EmbedBuilder()
+                    .setTitle('📩 Nova Mensagem do Usuário (via DM)')
+                    .setDescription(userMessage)
+                    .setAuthor({ 
+                        name: message.author.tag, 
+                        iconURL: message.author.displayAvatarURL() 
+                    })
+                    .setColor(0x5865F2)
+                    .setTimestamp();
+
+                await existingChannel.send({ embeds: [ticketMessageEmbed] });
+                return await safeReply({ embeds: [embed] });
+            }
+
+            // Criar categoria de tickets se não existir
+            let ticketCategory = guild.channels.cache.find(
+                cat => cat.name === '🎫 Tickets' && cat.type === ChannelType.GuildCategory
+            );
+
+            if (!ticketCategory) {
+                ticketCategory = await guild.channels.create({
+                    name: '🎫 Tickets',
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                        {
+                            id: guild.id,
+                            deny: [PermissionFlagsBits.ViewChannel]
+                        }
+                    ]
+                });
+            }
+
+            // Criar canal de ticket com permissões explícitas
+            const ticketChannel = await guild.channels.create({
+                name: ticketChannelName,
+                type: ChannelType.GuildText,
+                parent: ticketCategory.id,
+                permissionOverwrites: [
+                    {
+                        id: guild.id,
+                        deny: [PermissionFlagsBits.ViewChannel]
+                    },
+                    {
+                        id: userId,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                            PermissionFlagsBits.AttachFiles,
+                            PermissionFlagsBits.EmbedLinks
+                        ],
+                        deny: []
+                    },
+                    {
+                        id: this.client.user.id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ReadMessageHistory,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    }
+                ]
+            });
+
+            // Garantir que o usuário tenha acesso ao canal
+            try {
+                await ticketChannel.permissionOverwrites.edit(userId, {
+                    ViewChannel: true,
+                    SendMessages: true,
+                    ReadMessageHistory: true,
+                    AttachFiles: true,
+                    EmbedLinks: true
+                });
+            } catch (error) {
+                console.error('[DISCORD] Erro ao atualizar permissões do usuário:', error);
+            }
+
+            // Adicionar permissões para roles de suporte (se configuradas)
+            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
+            if (supportRoleId) {
+                await ticketChannel.permissionOverwrites.edit(supportRoleId, {
+                    ViewChannel: true,
+                    SendMessages: true,
+                    ReadMessageHistory: true,
+                    AttachFiles: true,
+                    EmbedLinks: true
+                });
+            }
+
+            // Criar embed de boas-vindas no canal do ticket
+            const welcomeEmbed = new EmbedBuilder()
+                .setTitle('🎫 Ticket de Suporte Criado via DM')
+                .setDescription(`**Ticket criado por:** ${message.author}\n**Categoria:** Criado via Mensagem Privada`)
+                .addFields({
+                    name: 'Mensagem Inicial',
+                    value: userMessage,
+                    inline: false
+                })
+                .addFields({
+                    name: 'Informações',
+                    value: '• Um membro da equipe de suporte responderá em breve\n• Descreva seu problema com detalhes\n• Use os botões abaixo para gerenciar o ticket',
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Suporte' });
+
+            // Criar botões para o ticket
+            const ticketButtonsRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_fechar_${ticketChannel.id}_${userId}`)
+                        .setLabel('Fechar Ticket')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_chamar_mod_${ticketChannel.id}_${userId}`)
+                        .setLabel('Chamar Suporte')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            const mentionText = supportRoleId 
+                ? `${message.author} | <@&${supportRoleId}>`
+                : `${message.author}`;
+            
+            await ticketChannel.send({ 
+                content: mentionText,
+                embeds: [welcomeEmbed],
+                components: [ticketButtonsRow]
+            });
+
+            // Confirmar criação do ticket na DM
+            const successEmbed = new EmbedBuilder()
+                .setTitle('🎫 Ticket Criado com Sucesso!')
+                .setDescription(`Seu ticket foi criado no servidor!\n\n**Canal:** ${ticketChannel}\n\nA equipe de suporte foi notificada e responderá em breve.`)
+                .addFields({
+                    name: 'Sua Mensagem',
+                    value: userMessage,
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Suporte' });
+
+            // Usar safeReply para responder (trata interações deferidas automaticamente)
+            await safeReply({ embeds: [successEmbed] });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao criar ticket via DM:', error);
+            const errorEmbed = new EmbedBuilder()
+                .setTitle('❌ Erro ao Criar Ticket')
+                .setDescription('Ocorreu um erro ao criar seu ticket. Por favor, tente novamente em alguns minutos ou contate um administrador.')
+                .setColor(0xff0000)
+                .setTimestamp();
+            
+            // Tentar responder com safeReply, se falhar tentar diretamente com a interação
+            try {
+                if (message.interaction && message.interaction.deferred) {
+                    await message.interaction.editReply({ embeds: [errorEmbed] });
+                } else if (message.interaction) {
+                    await message.interaction.followUp({ embeds: [errorEmbed] });
+                } else {
+                    await message.reply({ embeds: [errorEmbed] });
+                }
+            } catch (replyError) {
+                console.error('[DISCORD] Erro ao responder com erro:', replyError);
+            }
+        }
+    }
+
     async handleTicketCancel(interaction) {
         try {
             const userId = interaction.user.id;
@@ -626,6 +893,41 @@ class PromoPingBot {
                 content: 'Ocorreu um erro ao processar sua solicitação.', 
                 ephemeral: true 
             });
+        }
+    }
+
+    async handleAceitarRegras(interaction) {
+        try {
+            // ID do cargo a ser adicionado: 1443627596565712978
+            const roleId = '1443627596565712978';
+
+            // Checar se está em um guild e o membro ainda existe
+            const guild = interaction.guild;
+            if (!guild) {
+                return await interaction.reply({ content: '❌ Não consegui identificar o servidor.', ephemeral: true });
+            }
+            
+            const member = await guild.members.fetch(interaction.user.id).catch(() => null);
+            if (!member) {
+                return await interaction.reply({ content: '❌ Não consegui encontrar você neste servidor.', ephemeral: true });
+            }
+
+            // Verifica se o usuário já tem o cargo
+            if (member.roles.cache.has(roleId)) {
+                return await interaction.reply({ content: '✅ Você já possui o cargo de verificação!', ephemeral: true });
+            }
+
+            // Adiciona o cargo
+            await member.roles.add(roleId, 'Aceite das regras do PromoPing');
+            await interaction.reply({ content: '✅ Você foi verificado e recebeu acesso ao servidor!', ephemeral: true });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao adicionar cargo de verificação:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ content: '❌ Ocorreu um erro ao te dar o cargo. Por favor, contate a staff.', ephemeral: true });
+            } else {
+                await interaction.reply({ content: '❌ Ocorreu um erro ao te dar o cargo. Por favor, contate a staff.', ephemeral: true });
+            }
         }
     }
 
@@ -1156,8 +1458,13 @@ class PromoPingBot {
                 return;
             }
 
-            const priceChange = product.PrecoAtual - product.PrecoAnterior;
-            const percentageChange = ((priceChange / product.PrecoAnterior) * 100).toFixed(2);
+            // Converter valores para números (podem vir como string ou Decimal do MySQL)
+            const precoAnterior = parseFloat(product.PrecoAnterior) || 0;
+            const precoAtual = parseFloat(product.PrecoAtual) || 0;
+            const precoAlvo = parseFloat(product.PrecoAlvo) || 0;
+
+            const priceChange = precoAtual - precoAnterior;
+            const percentageChange = precoAnterior > 0 ? ((priceChange / precoAnterior) * 100).toFixed(2) : '0.00';
             
             let color = 0x00ff00; // Verde para diminuição
             let emoji = '';
@@ -1170,7 +1477,7 @@ class PromoPingBot {
             }
 
             // Verificar se atingiu o preço alvo
-            if (product.PrecoAtual <= product.PrecoAlvo) {
+            if (precoAtual <= precoAlvo) {
                 color = 0x00bfff; // Azul para meta atingida
                 emoji = '[META]';
                 status = 'atingiu o preço alvo';
@@ -1180,10 +1487,10 @@ class PromoPingBot {
                 .setTitle(`${emoji} Preço ${status}!`)
                 .setDescription(`**${product.Nome}**`)
                 .addFields(
-                    { name: 'Preço Anterior', value: `€${product.PrecoAnterior.toFixed(2)}`, inline: true },
-                    { name: 'Preço Atual', value: `€${product.PrecoAtual.toFixed(2)}`, inline: true },
+                    { name: 'Preço Anterior', value: `€${precoAnterior.toFixed(2)}`, inline: true },
+                    { name: 'Preço Atual', value: `€${precoAtual.toFixed(2)}`, inline: true },
                     { name: 'Diferença', value: `€${priceChange.toFixed(2)} (${percentageChange}%)`, inline: true },
-                    { name: 'Preço Alvo', value: `€${product.PrecoAlvo.toFixed(2)}`, inline: true },
+                    { name: 'Preço Alvo', value: `€${precoAlvo.toFixed(2)}`, inline: true },
                     { name: 'Loja', value: this.extractStoreName(product.Link), inline: true },
                     { name: 'Data', value: new Date(product.UpdatedAt).toLocaleString('pt-PT'), inline: true }
                 )
@@ -1323,12 +1630,16 @@ class PromoPingBot {
     }
 
     async handleViewProduct(interaction, product) {
+        // Converter valores para números (podem vir como string ou Decimal do MySQL)
+        const precoAtual = parseFloat(product.PrecoAtual) || 0;
+        const precoAlvo = parseFloat(product.PrecoAlvo) || 0;
+
         const embed = new EmbedBuilder()
             .setTitle('Detalhes do Produto')
             .setDescription(`**${product.Nome}**`)
             .addFields(
-                { name: 'Preço Atual', value: `€${product.PrecoAtual.toFixed(2)}`, inline: true },
-                { name: 'Preço Alvo', value: `€${product.PrecoAlvo.toFixed(2)}`, inline: true },
+                { name: 'Preço Atual', value: `€${precoAtual.toFixed(2)}`, inline: true },
+                { name: 'Preço Alvo', value: `€${precoAlvo.toFixed(2)}`, inline: true },
                 { name: 'Loja', value: this.extractStoreName(product.Link), inline: true },
                 { name: 'Link', value: `[Abrir Produto](${product.Link})`, inline: false }
             )
@@ -1342,11 +1653,14 @@ class PromoPingBot {
     }
 
     async handleConfigure(interaction, product, user) {
+        // Converter valores para números (podem vir como string ou Decimal do MySQL)
+        const precoAlvo = parseFloat(product.PrecoAlvo) || 0;
+
         const embed = new EmbedBuilder()
             .setTitle('Configurações do Produto')
             .setDescription(`**${product.Nome}**`)
             .addFields(
-                { name: 'Preço Alvo Atual', value: `€${product.PrecoAlvo.toFixed(2)}`, inline: true },
+                { name: 'Preço Alvo Atual', value: `€${precoAlvo.toFixed(2)}`, inline: true },
                 { name: 'Status', value: '🟢 Monitorando', inline: true },
                 { name: 'Loja', value: this.extractStoreName(product.Link), inline: true }
             )
@@ -1481,6 +1795,13 @@ class PromoPingBot {
                     .addChannelOption(option =>
                         option.setName('canal')
                             .setDescription('Canal para configurar (para configurar)')
+                            .setRequired(false)),
+                new SlashCommandBuilder()
+                    .setName('suporte')
+                    .setDescription('Cria um ticket de suporte ou mostra informações')
+                    .addStringOption(option =>
+                        option.setName('mensagem')
+                            .setDescription('Descrição do seu problema ou dúvida')
                             .setRequired(false))
             ].map(command => command.toJSON());
 
@@ -1501,6 +1822,98 @@ class PromoPingBot {
     async handleSlashCommand(interaction) {
         try {
             const commandName = interaction.commandName;
+            
+            // Tratamento especial para comando suporte em DMs
+            if (commandName === 'suporte' && !interaction.guild) {
+                const mensagem = interaction.options.get('mensagem')?.value;
+                
+                if (!mensagem || mensagem.trim().length < 3) {
+                    const embed = new EmbedBuilder()
+                        .setTitle('🎫 Criar Ticket de Suporte')
+                        .setDescription(
+                            'Para criar um ticket, use o parâmetro `mensagem` com sua dúvida ou problema.\n\n' +
+                            '**Exemplo:**\n' +
+                            '`/suporte mensagem: Preciso de ajuda com notificações`\n' +
+                            '`/suporte mensagem: Tenho um problema ao fazer login`'
+                        )
+                        .setColor(0x5865F2)
+                        .setTimestamp()
+                        .setFooter({ text: '©PromoPing • Todos os direitos reservados' });
+                    return await interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+
+                // Fazer defer da interação para evitar timeout (dá 15 minutos para processar)
+                await interaction.deferReply({ ephemeral: false });
+                
+                // Criar ticket diretamente usando handleDirectMessageTicket
+                try {
+                    let interactionReplied = false;
+                    
+                    // Criar uma mensagem simulada para usar com handleDirectMessageTicket
+                    const fakeMessage = {
+                        author: interaction.user,
+                        guild: null,
+                        channel: interaction.channel,
+                        content: '',
+                        interaction: interaction, // Adicionar referência à interação
+                        reply: async (content) => {
+                            try {
+                                // Sempre usar editReply já que fizemos defer
+                                if (interactionReplied) {
+                                    // Se já respondeu, usar followUp
+                                    if (typeof content === 'string') {
+                                        return await interaction.followUp({ content, ephemeral: false });
+                                    } else {
+                                        return await interaction.followUp({ ...content, ephemeral: false });
+                                    }
+                                } else {
+                                    interactionReplied = true;
+                                    // Primeira resposta - sempre usar editReply já que fizemos defer
+                                    if (typeof content === 'string') {
+                                        return await interaction.editReply({ content });
+                                    } else {
+                                        return await interaction.editReply(content);
+                                    }
+                                }
+                            } catch (error) {
+                                // Se editReply falhar (interação expirada), tentar followUp
+                                if (error.code === 10062 || error.message?.includes('Unknown interaction')) {
+                                    console.error('[DISCORD] Erro ao editar resposta (interação pode ter expirado), tentando followUp:', error);
+                                    interactionReplied = true; // Marcar como respondido para evitar tentar novamente
+                                    if (typeof content === 'string') {
+                                        return await interaction.followUp({ content, ephemeral: false });
+                                    } else {
+                                        return await interaction.followUp({ ...content, ephemeral: false });
+                                    }
+                                }
+                                // Se não for erro de interação desconhecida, relançar o erro
+                                console.error('[DISCORD] Erro inesperado ao responder:', error);
+                                throw error;
+                            }
+                        }
+                    };
+                    
+                    await this.handleDirectMessageTicket(fakeMessage, mensagem);
+                    return;
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao criar ticket via slash command:', error);
+                    try {
+                        if (interaction.deferred || interaction.replied) {
+                            await interaction.editReply({ 
+                                content: '❌ Erro ao criar o ticket! Tente novamente em alguns minutos.' 
+                            });
+                        } else {
+                            await interaction.reply({ 
+                                content: '❌ Erro ao criar o ticket! Tente novamente em alguns minutos.', 
+                                ephemeral: true 
+                            });
+                        }
+                    } catch (replyError) {
+                        console.error('[DISCORD] Erro ao responder interação:', replyError);
+                    }
+                }
+            }
+
             const comandosMap = require('./comandos');
 
             // Mapear comandos de barra para comandos existentes
@@ -1516,7 +1929,8 @@ class PromoPingBot {
                 'lock': 'lock',
                 'unlock': 'unlock',
                 'counting': 'counting',
-                'clear': 'clear'
+                'clear': 'clear',
+                'suporte': 'suporte'
             };
 
             const comandoNome = comandoMap[commandName];
@@ -1554,6 +1968,13 @@ class PromoPingBot {
                     // Para clear, passar quantidade
                     const quantidade = interaction.options.get('quantidade')?.value;
                     if (quantidade) args.push(quantidade.toString());
+                } else if (commandName === 'suporte') {
+                    // Para suporte, passar mensagem se fornecida
+                    const mensagem = interaction.options.get('mensagem')?.value;
+                    if (mensagem) {
+                        // Dividir a mensagem em palavras para simular args
+                        args.push(...mensagem.split(' '));
+                    }
                 } else {
                     // Para outros comandos, manter comportamento original
                     interaction.options.data.forEach(option => {
@@ -1570,6 +1991,8 @@ class PromoPingBot {
                 guild: interaction.guild,
                 channel: interaction.channel,
                 createdTimestamp: Date.now(),
+                content: interaction.commandName + (args.length > 0 ? ' ' + args.join(' ') : ''),
+                deleted: false,
                 reply: async (content) => {
                     if (replied) {
                         if (typeof content === 'string') {

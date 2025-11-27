@@ -100,7 +100,7 @@ def fetch_products():
             for row in rows:
                 row['UserId'] = 1
                 row['PlanoNome'] = 'Free'
-                row['VerificacaoIntervalo'] = 24
+                row['VerificacaoIntervalo'] = 24.0  # Garantir que é float
             logger.info(f"[DB] {len(rows)} produtos com plano Free")
         except Exception as e2:
             logger.error(f"[DB] Erro no fallback: {e2}")
@@ -208,7 +208,7 @@ def scrape_single_product(product_url, is_initial=False):
                 produto = cur.fetchone()
                 if produto:
                     produto['PlanoNome'] = 'Free'
-                    produto['VerificacaoIntervalo'] = 24
+                    produto['VerificacaoIntervalo'] = 24.0  # Garantir que é float
             
             if not produto:
                 logger.warning(f"[INITIAL] Produto não encontrado para URL: {product_url}")
@@ -257,7 +257,14 @@ def clean_price_text(text):
         return None
     txt = text.strip().split("/")[0].strip()
     txt = txt.replace("€", "").replace("\xa0", " ").replace("\n", " ")
-    txt = re.sub(r"[^\d\,\.]", "", txt)
+    
+    # Extrair apenas o primeiro padrão de preço válido (número com até 2 decimais)
+    # Padrão: número opcionalmente seguido de vírgula/ponto e 2 dígitos decimais
+    price_pattern = re.search(r'(\d{1,6}(?:[,\.]\d{1,2})?)', txt)
+    if not price_pattern:
+        return None
+    
+    txt = price_pattern.group(1)
     
     # Normalizar vírgula decimal
     if txt.count(",") == 1 and txt.rfind(",") > txt.rfind("."):
@@ -266,8 +273,14 @@ def clean_price_text(text):
         txt = txt.replace(",", "")
     
     try:
-        return round(float(txt), 2)
-    except Exception:
+        price = round(float(txt), 2)
+        # Validar se o preço está em um range razoável (entre 0.01 e 1.000.000)
+        if price < 0.01 or price > 1000000:
+            logger.warning(f"[CLEAN_PRICE] Preço fora do range válido: €{price} (texto original: {text})")
+            return None
+        return price
+    except Exception as e:
+        logger.warning(f"[CLEAN_PRICE] Erro ao converter preço: {e} (texto: {text})")
         return None
 
 def create_driver():
@@ -639,7 +652,8 @@ def monitor_loop():
                 pid = p["Id"]
                 nome = p["Nome"]
                 link = p["Link"]
-                plano_intervalo = p["VerificacaoIntervalo"]
+                # Converter VerificacaoIntervalo para float (pode vir como string do banco)
+                plano_intervalo = float(p.get("VerificacaoIntervalo", 24))
                 plano_nome = p["PlanoNome"]
                 preco_alvo = p["PrecoAlvo"]
                 
@@ -680,11 +694,14 @@ def monitor_loop():
             # Calcula próximo intervalo
             intervalos = set()
             for p in produtos:
-                if abs(p["VerificacaoIntervalo"] - 5/60) < 0.001:  # Premium
+                # Converter VerificacaoIntervalo para float (pode vir como string do banco)
+                intervalo = float(p.get("VerificacaoIntervalo", 24))
+                
+                if abs(intervalo - 5/60) < 0.001:  # Premium
                     intervalos.add(300)  # 5 min
-                elif p["VerificacaoIntervalo"] == 0.5:  # Standard
+                elif intervalo == 0.5:  # Standard
                     intervalos.add(1800)  # 30 min
-                elif p["VerificacaoIntervalo"] == 4:  # Basic
+                elif intervalo == 4:  # Basic
                     intervalos.add(14400)  # 4h
                 else:  # Free
                     intervalos.add(86400)  # 24h
@@ -737,7 +754,8 @@ class PriceScraper:
                 pid = p["Id"]
                 nome = p["Nome"]
                 link = p["Link"]
-                plano_intervalo = p.get("VerificacaoIntervalo", 24)
+                # Converter VerificacaoIntervalo para float (pode vir como string do banco)
+                plano_intervalo = float(p.get("VerificacaoIntervalo", 24))
                 preco_alvo = p.get("PrecoAlvo")
                 
                 # Verifica se deve atualizar
