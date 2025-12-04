@@ -17,7 +17,7 @@ router.get("/me", verifyToken, async (req, res) => {
 
     // Info do utilizador
     const [users] = await pool.query(
-      "SELECT Id, Nome, Email, Telefone, Data_Registo FROM Utilizadores WHERE Id = ?",
+      "SELECT Id, Nome, Email, Telefone, Data_Registo, FotoPerfil FROM Utilizadores WHERE Id = ?",
       [userId]
     );
     const user = users[0];
@@ -70,7 +70,7 @@ router.get("/profile", verifyToken, async (req, res) => {
 
     // Dados pessoais
     const [userRows] = await pool.query(
-      "SELECT Nome, Email, Telefone FROM Utilizadores WHERE Id = ?",
+      "SELECT Nome, Email, Telefone, FotoPerfil FROM Utilizadores WHERE Id = ?",
       [userId]
     );
 
@@ -127,6 +127,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         nome: userRows[0]?.Nome,
         email: userRows[0]?.Email,
         telefone: userRows[0]?.Telefone,
+        FotoPerfil: userRows[0]?.FotoPerfil,
         contas_conectadas: contas,
         preferencias: prefs
       }
@@ -524,6 +525,53 @@ router.post("/set-password", verifyToken, async (req, res) => {
     res.status(500).json({ 
       status: "error", 
       error: "Erro interno no servidor" 
+    });
+  }
+});
+
+// ================== UPLOAD DE FOTO DE PERFIL ==================
+router.post("/upload-photo", verifyToken, async (req, res) => {
+  try {
+    console.log("[UPLOAD-PHOTO] Rota chamada");
+    const userId = req.user.id;
+    const { photo_url } = req.body;
+    console.log("[UPLOAD-PHOTO] UserId:", userId, "Photo URL length:", photo_url?.length || 0);
+
+    if (!photo_url) {
+      return res.status(400).json({ 
+        status: "error", 
+        message: "URL da foto não fornecida" 
+      });
+    }
+
+    // Verificar se a coluna FotoPerfil existe antes de atualizar
+    try {
+      await pool.query(
+        "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+        [photo_url, userId]
+      );
+      
+      res.json({ 
+        status: "ok", 
+        message: "Foto atualizada com sucesso",
+        photo_url: photo_url
+      });
+    } catch (updateErr) {
+      // Se a coluna não existir, retornar erro
+      if (updateErr.code === 'ER_BAD_FIELD_ERROR') {
+        console.log("Coluna FotoPerfil não existe na tabela Utilizadores");
+        return res.status(400).json({ 
+          status: "error", 
+          message: "Funcionalidade de foto de perfil não disponível" 
+        });
+      }
+      throw updateErr;
+    }
+  } catch (err) {
+    console.error("Erro ao fazer upload da foto:", err);
+    res.status(500).json({ 
+      status: "error", 
+      message: err.message || "Erro ao fazer upload da foto" 
     });
   }
 });

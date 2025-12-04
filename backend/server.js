@@ -100,7 +100,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use(cookieParser()); // Cookies
-app.use(express.json()); // JSON parsing
+app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
 // ================== RATE LIMITING ==================
 // Rate limiting geral para todas as rotas
@@ -343,10 +343,10 @@ app.use("/api/produtos", productLimiter);
 app.use("/api/produtos", produtosRoutes); // Produtos
 app.use("/api/config", configRoutes); // Configurações
 app.use("/api/user", userRoutes); // Usuários
+app.use("/api/user/accounts", contasRoutes); // Contas (deve vir depois de /api/user)
+app.use("/api/user/preferences", preferencesRoutes); // Preferências (deve vir depois de /api/user)
 app.use("/api/notificacoes", notificacoesRoutes); // Notificações
 app.use("/api/grace-period", gracePeriodRoutes); // Períodos de graça
-app.use("/api/user/accounts", contasRoutes); // Contas
-app.use("/api/user/preferences", preferencesRoutes); // Preferências
 app.use("/api/payment", paymentRoutes); // Pagamentos
 app.use("/api/exportar", exportRoutes); // Exportação
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
@@ -879,13 +879,16 @@ if (!isProduction) {
 
     // ================== MIDDLEWARE 404 ==================
     // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
+    // IMPORTANTE: Este middleware deve vir DEPOIS de todas as rotas registradas
     app.use((req, res) => {
         // Se for uma rota de API, retornar JSON em vez de HTML
         if (req.path.startsWith('/api/')) {
+            console.log(`[404] Rota não encontrada: ${req.method} ${req.path}`);
             return res.status(404).json({
                 status: 'error',
                 error: 'Rota não encontrada',
-                path: req.path
+                path: req.path,
+                method: req.method
             });
         }
 
@@ -937,16 +940,38 @@ import {
 // Vamos criar uma função helper para buscar a instância do bot
 
 // ================== INICIAR SERVIDOR ==================
-const HOST = process.env.HOST || "127.0.0.1";
+// Usar 0.0.0.0 para aceitar conexões de qualquer interface de rede (incluindo IP local 192.168.1.64)
+// Isso permite que dispositivos móveis na mesma rede Wi-Fi se conectem ao servidor
+const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
     console.log(`\n✓ PromoPing rodando em http://${HOST}:${PORT}`);
     if (process.env.NODE_ENV === 'development') {
-        console.log(`  Frontend: http://${HOST}:${PORT}/ | API: http://${HOST}:${PORT}/api/`);
+        // Mostrar também o IP local da rede para acesso via dispositivos móveis
+        const os = await import('os');
+        const networkInterfaces = os.networkInterfaces();
+        let localIP = '192.168.1.64'; // IP padrão
+        
+        // Tentar encontrar o IP da rede local automaticamente
+        for (const interfaceName in networkInterfaces) {
+            const addresses = networkInterfaces[interfaceName];
+            if (addresses) {
+                for (const addr of addresses) {
+                    if (addr.family === 'IPv4' && !addr.internal && addr.address.startsWith('192.168.')) {
+                        localIP = addr.address;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        console.log(`  Frontend local: http://localhost:${PORT}/ | API: http://localhost:${PORT}/api/`);
+        console.log(`  Acesso via rede local: http://${localIP}:${PORT}/`);
+        console.log(`  API via rede local: http://${localIP}:${PORT}/api/`);
     }
-    console.log(`  Painel Administrativo: http://${HOST}:${PORT}/Painel_Administrativo/pages/sign-in.html`);
-    console.log(`  Admin PromoPing: http://${HOST}:${PORT}/admin.promoping/pages/login.html\n`);
+    console.log(`  Painel Administrativo: http://localhost:${PORT}/Painel_Administrativo/pages/sign-in.html`);
+    console.log(`  Admin PromoPing: http://localhost:${PORT}/admin.promoping/pages/login.html\n`);
 
     // Iniciar verificação automática de períodos de graça
     try {
