@@ -937,11 +937,11 @@ import {
 // Vamos criar uma função helper para buscar a instância do bot
 
 // ================== INICIAR SERVIDOR ==================
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
-    console.log(`\n✓ PromoPing rodando em http://${HOST}:${PORT}`);
+    console.log(`\nPromoPing rodando em http://${HOST}:${PORT}`);
     if (process.env.NODE_ENV === 'development') {
         console.log(`  Frontend: http://${HOST}:${PORT}/ | API: http://${HOST}:${PORT}/api/`);
     }
