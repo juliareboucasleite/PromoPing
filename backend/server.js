@@ -940,9 +940,13 @@ import {
 // Vamos criar uma função helper para buscar a instância do bot
 
 // ================== INICIAR SERVIDOR ==================
+<<<<<<< Updated upstream
 // Usar 0.0.0.0 para aceitar conexões de qualquer interface de rede (incluindo IP local 192.168.1.64)
 // Isso permite que dispositivos móveis na mesma rede Wi-Fi se conectem ao servidor
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
+=======
+const HOST = "0.0.0.0";
+>>>>>>> Stashed changes
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
