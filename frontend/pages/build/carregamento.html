@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando - PromoPing</title>
+    <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.8;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .logo {
+                max-width: 150px;
+            }
+
+            .loading-text {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="logo-wrapper">
+            <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="logo" id="logo">
+        </div>
+        <div class="loading-text" id="loadingText">Carregando...</div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // Configurações
+            const CONFIG = {
+                minLoadingTime: 1500, // Tempo mínimo de carregamento (ms) - ajuda com rate limit
+                redirectDelay: 500,  // Delay adicional antes de redirecionar
+                targetUrl: window.location.origin + '/index.html', // URL de destino completa
+                enableCacheClear: true, // Limpar cache do navegador
+                enableServiceWorkerClear: true // Limpar service workers
+            };
+
+            // Função para limpar cache do navegador
+            function clearCache() {
+                if (!CONFIG.enableCacheClear) return;
+
+                try {
+                    // Limpar cache via Cache API
+                    if ('caches' in window) {
+                        caches.keys().then(function(names) {
+                            names.forEach(function(name) {
+                                caches.delete(name);
+                            });
+                        });
+                    }
+
+                    // Limpar localStorage (opcional - descomente se necessário)
+                    // localStorage.clear();
+
+                    // Limpar sessionStorage (opcional - descomente se necessário)
+                    // sessionStorage.clear();
+
+                    console.log('Cache limpo com sucesso');
+                } catch (error) {
+                    console.warn('Erro ao limpar cache:', error);
+                }
+            }
+
+            // Função para limpar service workers
+            function clearServiceWorkers() {
+                if (!CONFIG.enableServiceWorkerClear) return;
+
+                try {
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                            registrations.forEach(function(registration) {
+                                registration.unregister();
+                            });
+                        });
+                    }
+                    console.log('Service workers limpos com sucesso');
+                } catch (error) {
+                    console.warn('Erro ao limpar service workers:', error);
+                }
+            }
+
+            // Função para adicionar timestamp à URL para evitar cache
+            function addCacheBuster(url) {
+                const separator = url.includes('?') ? '&' : '?';
+                return url + separator + '_t=' + Date.now();
+            }
+
+            // Função principal de inicialização
+            function init() {
+                const startTime = Date.now();
+                
+                // Limpar cache e service workers
+                clearCache();
+                clearServiceWorkers();
+
+                // Adicionar timestamp à logo para evitar cache
+                const logo = document.getElementById('logo');
+                if (logo) {
+                    logo.src = addCacheBuster(logo.src);
+                }
+
+                // Calcular tempo restante para atingir o tempo mínimo
+                function proceed() {
+                    const elapsed = Date.now() - startTime;
+                    const remaining = Math.max(0, CONFIG.minLoadingTime - elapsed);
+
+                    setTimeout(function() {
+                        // Redirecionar para a página de destino
+                        const targetUrl = addCacheBuster(CONFIG.targetUrl);
+                        window.location.href = targetUrl;
+                    }, remaining + CONFIG.redirectDelay);
+                }
+
+                // Verificar se a página já está carregada
+                if (document.readyState === 'complete') {
+                    proceed();
+                } else {
+                    window.addEventListener('load', proceed);
+                }
+
+                // Fallback: se após 5 segundos ainda não redirecionou, forçar redirecionamento
+                setTimeout(function() {
+                    if (window.location.href.includes('carregamento.html')) {
+                        window.location.href = addCacheBuster(CONFIG.targetUrl);
+                    }
+                }, 5000);
+            }
+
+            // Inicializar quando o DOM estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
