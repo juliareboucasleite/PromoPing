@@ -145,14 +145,68 @@ router.get("/profile", verifyToken, async (req, res) => {
 router.put("/profile", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { nome, email, telefone } = req.body;
+    const { nome, email, telefone, fotoPerfil, photo_url } = req.body;
 
-    await pool.query(
-      "UPDATE Utilizadores SET Nome=?, Email=?, Telefone=? WHERE Id=?",
-      [nome, email, telefone, userId]
-    );
+    // Usar photo_url se fornecido, senão usar fotoPerfil
+    const foto = photo_url || fotoPerfil;
 
-    res.json({ status: "ok" });
+    // Construir query dinamicamente baseado nos campos fornecidos
+    const updates = [];
+    const values = [];
+
+    if (nome !== undefined) {
+      updates.push("Nome = ?");
+      values.push(nome);
+    }
+    if (email !== undefined) {
+      updates.push("Email = ?");
+      values.push(email);
+    }
+    if (telefone !== undefined) {
+      updates.push("Telefone = ?");
+      values.push(telefone);
+    }
+    if (foto !== undefined) {
+      updates.push("FotoPerfil = ?");
+      values.push(foto);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ 
+        status: "error", 
+        error: "Nenhum campo fornecido para atualizar" 
+      });
+    }
+
+    values.push(userId);
+
+    const query = `UPDATE Utilizadores SET ${updates.join(", ")} WHERE Id = ?`;
+    
+    try {
+      await pool.query(query, values);
+      res.json({ status: "ok", message: "Perfil atualizado com sucesso" });
+    } catch (updateErr) {
+      // Se a coluna FotoPerfil não existir, tentar sem ela
+      if (updateErr.code === 'ER_BAD_FIELD_ERROR' && updateErr.message.includes('FotoPerfil')) {
+        console.log("Coluna FotoPerfil não existe, tentando sem ela");
+        // Remover FotoPerfil dos updates e tentar novamente
+        const updatesWithoutPhoto = updates.filter(u => !u.includes('FotoPerfil'));
+        if (updatesWithoutPhoto.length > 0) {
+          const valuesWithoutPhoto = values.slice(0, -1).filter((v, i) => !updates[i].includes('FotoPerfil'));
+          valuesWithoutPhoto.push(userId);
+          const queryWithoutPhoto = `UPDATE Utilizadores SET ${updatesWithoutPhoto.join(", ")} WHERE Id = ?`;
+          await pool.query(queryWithoutPhoto, valuesWithoutPhoto);
+          res.json({ 
+            status: "ok", 
+            message: "Perfil atualizado (foto não salva - coluna não existe no banco)" 
+          });
+        } else {
+          throw updateErr;
+        }
+      } else {
+        throw updateErr;
+      }
+    }
   } catch (err) {
     console.error("Erro ao atualizar perfil:", err);
     res.status(500).json({ status: "error", error: err.message });
