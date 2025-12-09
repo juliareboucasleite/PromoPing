@@ -1275,21 +1275,31 @@ router.post("/register", async (req, res) => {
         ]);
         console.log("[REGISTRO] Código salvo no banco de dados");
 
-        // Enviar código por email
-        console.log("[REGISTRO] Preparando envio de email...");
-        console.log(`[REGISTRO] Destinatário: ${email}`);
-        console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
-        console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
-        console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
-        console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
+        // Responder IMEDIATAMENTE ao cliente (antes de enviar email)
+        console.log("[REGISTRO] Enviando resposta ao cliente IMEDIATAMENTE...");
+        res.json({
+            status: "ok",
+            message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
+            codigo: codigo // Para desenvolvimento - remover em produção
+        });
+        console.log(" [REGISTRO] Resposta enviada ao cliente");
 
-        try {
-            const {
-                sendEmail
-            } = await import("../services/notify.js");
-            console.log("[REGISTRO] Função sendEmail importada com sucesso");
+        // Enviar código por email EM BACKGROUND (não bloqueia a resposta)
+        console.log("[REGISTRO] Agendando envio de email em background...");
+        (async () => {
+            try {
+                console.log(`[REGISTRO] Destinatário: ${email}`);
+                console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
+                console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
+                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
+                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
 
-            const messageHtml = `
+                const {
+                    sendEmail
+                } = await import("../services/notify.js");
+                console.log("[REGISTRO] Função sendEmail importada com sucesso");
+
+                const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
           <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
           <p>Olá <b>${nome}</b>,</p>
@@ -1305,69 +1315,43 @@ router.post("/register", async (req, res) => {
         </div>
       `;
 
-            console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
-            console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
+                console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
+                console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
 
-            await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
+                await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
 
-            console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
-            console.log(`[REGISTRO] Código de verificação: ${codigo}`);
-        } catch (emailError) {
-            console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
-            console.error("[REGISTRO] Tipo do erro:", emailError.name);
-            console.error("[REGISTRO] Mensagem:", emailError.message);
-            console.error("[REGISTRO] Código:", emailError.code);
-            if (emailError.response) {
-                console.error("[REGISTRO] Resposta do servidor:", emailError.response);
+                console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
+                console.log(`[REGISTRO] Código de verificação: ${codigo}`);
+            } catch (emailError) {
+                console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
+                console.error("[REGISTRO] Tipo do erro:", emailError.name);
+                console.error("[REGISTRO] Mensagem:", emailError.message);
+                console.error("[REGISTRO] Código:", emailError.code);
+                if (emailError.response) {
+                    console.error("[REGISTRO] Resposta do servidor:", emailError.response);
+                }
+                if (emailError.command) {
+                    console.error("[REGISTRO] Comando:", emailError.command);
+                }
+                console.error("[REGISTRO] Stack trace completo:");
+                console.error(emailError.stack);
+                console.error("[REGISTRO] ==========================================");
+
+                // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
+                console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
+                console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+                console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
             }
-            if (emailError.command) {
-                console.error("[REGISTRO] Comando:", emailError.command);
-            }
-            console.error("[REGISTRO] Stack trace completo:");
-            console.error(emailError.stack);
-            console.error("[REGISTRO] ==========================================");
+        })();
 
-            // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
-            console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
-            console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
-            console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
-        }
-
-        // WhatsApp desabilitado
-        // if (telefone) {
-        //   try {
-        //     const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-        //     await enviarWhatsApp(
-        //       telefoneLimpo,
-        //       `Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-        //     );
-        //     console.log(`Código de verificação enviado para ${telefone}: ${codigo}`);
-        //   } catch (whatsappError) {
-        //     console.log("WhatsApp não configurado, mas conta criada com sucesso");
-        //   }
-        // }
-
-        // Atualizar métricas automaticamente quando novo utilizador é criado
-        console.log("[REGISTRO] Atualizando métricas...");
-        try {
-            await atualizarMetricasAutomaticamente();
-            console.log("[REGISTRO] Métricas atualizadas após criação de novo utilizador");
-        } catch (metricError) {
+        // Atualizar métricas em background
+        console.log("[REGISTRO] Agendando atualização de métricas em background...");
+        atualizarMetricasAutomaticamente().catch(metricError => {
             console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
             console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
-            // Não bloquear resposta em caso de erro nas métricas
-        }
-
-        console.log("[REGISTRO] Registro concluído com sucesso!");
-        console.log("[REGISTRO] Enviando resposta ao cliente...");
-
-        res.json({
-            status: "ok",
-            message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
-            codigo: codigo // Para desenvolvimento - remover em produção
         });
 
-        console.log(" [REGISTRO] Resposta enviada ao cliente");
+        console.log("[REGISTRO] Registro concluído com sucesso!");
     } catch (err) {
         console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
         console.error(" [REGISTRO] Mensagem de erro:", err.message);
