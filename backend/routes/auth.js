@@ -157,30 +157,38 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         }
                         console.log("[GOOGLE STRATEGY] Usuário Google já existe:", email);
                     } else {
-                        // Inserir novo usuário com foto de perfil e google_id se disponíveis
+                        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+                        const [adminCountRows] = await pool.query(
+                            "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
+                        );
+                        const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
+                        
+                        // Inserir novo usuário com foto de perfil, google_id e campos necessários
                         try {
-                            // Tentar inserir com google_id e FotoPerfil
+                            // Tentar inserir com google_id, FotoPerfil, Ativo e PerfilId
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, google_id) VALUES (?, ?, ?, ?, ?)",
-                                [nome, email, null, fotoPerfil, googleId]
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, google_id, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                [nome, email, null, fotoPerfil, googleId, perfilId]
                             );
                             userId = result.insertId;
                             console.log("[GOOGLE STRATEGY] Novo usuário criado com google_id:", googleId);
+                            
+                            // Atualizar métricas automaticamente
+                            try {
+                                await atualizarMetricasAutomaticamente();
+                                console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                            } catch (metricError) {
+                                console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                            }
                         } catch (insertErr) {
                             // Se campos não existem, tentar inserir sem eles
                             try {
                                 const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
-                                    [nome, email, null, fotoPerfil]
+                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [nome, email, null, fotoPerfil, perfilId]
                                 );
                                 userId = result.insertId;
-                            } catch (insertErr2) {
-                                // Se FotoPerfil não existe, inserir sem ele
-                                const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-                                    [nome, email, null]
-                                );
-                                userId = result.insertId;
+                                
                                 // Tentar atualizar google_id separadamente se possível
                                 if (googleId) {
                                     try {
@@ -191,6 +199,53 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                     } catch (googleIdErr) {
                                         console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
                                     }
+                                }
+                                
+                                // Atualizar métricas automaticamente
+                                try {
+                                    await atualizarMetricasAutomaticamente();
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                } catch (metricError) {
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                }
+                            } catch (insertErr2) {
+                                // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
+                                const [result] = await pool.query(
+                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, 1, ?, NOW(), 1)",
+                                    [nome, email, null, perfilId]
+                                );
+                                userId = result.insertId;
+                                
+                                // Tentar atualizar google_id separadamente se possível
+                                if (googleId) {
+                                    try {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                                            [googleId, userId]
+                                        );
+                                    } catch (googleIdErr) {
+                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
+                                    }
+                                }
+                                
+                                // Tentar atualizar FotoPerfil separadamente se possível
+                                if (fotoPerfil) {
+                                    try {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                            [fotoPerfil, userId]
+                                        );
+                                    } catch (fotoErr) {
+                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil não existe, ignorando");
+                                    }
+                                }
+                                
+                                // Atualizar métricas automaticamente
+                                try {
+                                    await atualizarMetricasAutomaticamente();
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                } catch (metricError) {
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                                 }
                             }
                         }
@@ -1509,8 +1564,9 @@ router.get("/google/callback", (req, res) => {
         console.log("[GOOGLE CALLBACK] Query params:", JSON.stringify(req.query));
         
         passport.authenticate("google", {
+            session: false, // Não usar sessões para OAuth
             failureRedirect: loginUrl
-        })(req, res, async (err) => {
+        })(req, res, async (err, googleUser) => {
             // Função auxiliar para salvar dados OAuth em cookie quando houver erro
             const saveOAuthData = (oauthData) => {
                 const dataString = JSON.stringify(oauthData);
@@ -1533,32 +1589,32 @@ router.get("/google/callback", (req, res) => {
                 return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent(errorDetails)}`);
             }
 
+            // Tentar obter o usuário de várias fontes (sem sessões)
+            let user = googleUser || req.user;
+            
+            console.log("[GOOGLE CALLBACK] googleUser:", googleUser ? JSON.stringify(googleUser, null, 2) : "undefined");
             console.log("[GOOGLE CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "undefined");
             
-            if (!req.user) {
-                console.error("[GOOGLE CALLBACK] req.user está undefined após autenticação");
-                console.error("[GOOGLE CALLBACK] req.session:", req.session);
-                
-                // Tentar obter dados do profile da sessão do Passport
-                // Se não conseguir, redirecionar com erro
+            if (!user) {
+                console.error("[GOOGLE CALLBACK] Usuário está undefined após autenticação");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
-            // Verificar se req.user tem os campos necessários
-            if (!req.user.id || !req.user.email) {
-                console.error("[GOOGLE CALLBACK] req.user não tem campos necessários:", {
-                    hasId: !!req.user.id,
-                    hasEmail: !!req.user.email,
-                    user: req.user
+            // Verificar se user tem os campos necessários
+            if (!user.id || !user.email) {
+                console.error("[GOOGLE CALLBACK] user não tem campos necessários:", {
+                    hasId: !!user.id,
+                    hasEmail: !!user.email,
+                    user: user
                 });
                 
                 // Salvar dados OAuth disponíveis para permitir completar registro/login
                 const oauthData = {
                     provider: 'google',
-                    email: req.user.email || null,
-                    nome: req.user.nome || req.user.name || null,
-                    fotoPerfil: req.user.fotoPerfil || null,
-                    googleId: req.user.googleId || null,
+                    email: user.email || null,
+                    nome: user.nome || user.name || null,
+                    fotoPerfil: user.fotoPerfil || null,
+                    googleId: user.googleId || null,
                     timestamp: Date.now()
                 };
                 
@@ -1572,13 +1628,13 @@ router.get("/google/callback", (req, res) => {
 
             try {
                 // Garantir que google_id está salvo no banco
-                if (req.user.googleId) {
+                if (user.googleId) {
                     try {
                         await pool.query(
                             "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                            [req.user.googleId, req.user.id]
+                            [user.googleId, user.id]
                         );
-                        console.log("[GOOGLE CALLBACK] google_id salvo no banco:", req.user.googleId);
+                        console.log("[GOOGLE CALLBACK] google_id salvo no banco:", user.googleId);
                     } catch (dbError) {
                         console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode não existir):", dbError.message);
                         // Continuar mesmo se falhar - não é crítico
@@ -1586,26 +1642,52 @@ router.get("/google/callback", (req, res) => {
                 }
 
                 const token = jwt.sign({
-                        id: req.user.id,
-                        email: req.user.email,
-                        nome: req.user.nome || req.user.name
+                        id: user.id,
+                        email: user.email,
+                        nome: user.nome || user.name
                     },
                     process.env.JWT_SECRET, {
                         expiresIn: "7d"
                     }
                 );
 
-                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", req.user.id);
+                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.id);
 
-                const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
-                const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
-
-                // Verificar se veio do sign-up ou login
-                const fromSignUp = req.query.from === 'signup';
-                const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
-
-                console.log("[GOOGLE CALLBACK] Redirecionando para:", redirectUrl);
-                res.redirect(`${redirectUrl}?token=${token}`);
+                // Criar página HTML que salva o token no localStorage e redireciona para o dashboard
+                // Similar ao que o Discord faz
+                // Escapar caracteres especiais para evitar XSS
+                const escapedEmail = (user.email || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const escapedNome = (user.nome || user.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                
+                const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Google Login - PromoPing</title>
+        </head>
+        <body>
+          <script>
+            // Salvar token no localStorage
+            localStorage.setItem('token', '${token}');
+            
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('user', JSON.stringify({
+              id: ${user.id},
+              email: '${escapedEmail}',
+              nome: '${escapedNome}',
+              loginMethod: 'google'
+            }));
+            
+            // Redirecionar para o painel
+            window.location.href = '/dashboard';
+          </script>
+          <p>Redirecionando para o painel...</p>
+        </body>
+        </html>
+      `;
+                
+                console.log("[GOOGLE CALLBACK] Redirecionando para dashboard via HTML");
+                res.send(html);
             } catch (tokenError) {
                 console.error("[GOOGLE CALLBACK] Erro ao gerar token:", tokenError);
                 console.error("[GOOGLE CALLBACK] Stack trace:", tokenError.stack);
@@ -1613,10 +1695,10 @@ router.get("/google/callback", (req, res) => {
                 // Salvar dados OAuth antes de redirecionar com erro
                 const oauthData = {
                     provider: 'google',
-                    email: req.user.email || null,
-                    nome: req.user.nome || req.user.name || null,
-                    fotoPerfil: req.user.fotoPerfil || null,
-                    googleId: req.user.googleId || null,
+                    email: user.email || null,
+                    nome: user.nome || user.name || null,
+                    fotoPerfil: user.fotoPerfil || null,
+                    googleId: user.googleId || null,
                     timestamp: Date.now()
                 };
                 
