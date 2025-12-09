@@ -15,6 +15,18 @@ window.openLoginModal = function() {
     registerModal.style.display = 'none';
   }
   
+  // Limpar mensagens de erro ao abrir o modal
+  const errorElement = document.getElementById('loginErrorMessage');
+  const successElement = document.getElementById('loginSuccessMessage');
+  if (errorElement) {
+    errorElement.textContent = '';
+    errorElement.style.display = 'none';
+  }
+  if (successElement) {
+    successElement.textContent = '';
+    successElement.style.display = 'none';
+  }
+  
   // Mostrar modal de login
   loginModal.style.display = 'block';
   overlay.style.display = 'flex';
@@ -372,6 +384,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Login Form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+      // Limpar mensagens de erro quando o usuário começar a digitar
+      const emailInput = document.getElementById('loginEmail');
+      const passwordInput = document.getElementById('loginPassword');
+      const errorElement = document.getElementById('loginErrorMessage');
+      
+      const clearError = () => {
+        if (errorElement) {
+          errorElement.textContent = '';
+          errorElement.style.display = 'none';
+        }
+      };
+      
+      if (emailInput) {
+        emailInput.addEventListener('input', clearError);
+        emailInput.addEventListener('focus', clearError);
+      }
+      
+      if (passwordInput) {
+        passwordInput.addEventListener('input', clearError);
+        passwordInput.addEventListener('focus', clearError);
+      }
+      
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -384,6 +418,17 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
+        // Desabilitar botão durante o login
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton ? submitButton.querySelector('.button-text')?.textContent : null;
+        
+        if (submitButton) {
+          submitButton.disabled = true;
+          if (submitButton.querySelector('.button-text')) {
+            submitButton.querySelector('.button-text').textContent = "A iniciar sessão...";
+          }
+        }
+
         try {
           const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
           const res = await requestFn("/api/auth/login", {
@@ -391,9 +436,18 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
           });
-          const data = await res.json();
 
-          if (data.status === "ok" && data.token) {
+          // Verificar status HTTP antes de fazer parse do JSON
+          let data;
+          try {
+            data = await res.json();
+          } catch (parseError) {
+            console.error("Erro ao fazer parse da resposta:", parseError);
+            throw new Error("Resposta inválida do servidor");
+          }
+
+          // Verificar se a resposta foi bem-sucedida
+          if (res.ok && data.status === "ok" && data.token) {
             localStorage.setItem("token", data.token);
             // Salvar informação de reativação se a conta foi reativada
             if (data.accountReactivated) {
@@ -406,14 +460,45 @@ document.addEventListener('DOMContentLoaded', function() {
               window.location.href = "/dashboard";
             }, 2000);
           } else {
+            // Tratar erros do servidor
+            const errorMessage = data.error || data.message || "Email ou senha incorretos";
+            
+            // Mostrar mensagem de erro no elemento de erro do modal
+            const errorElement = document.getElementById('loginErrorMessage');
+            if (errorElement) {
+              errorElement.textContent = errorMessage;
+              errorElement.style.display = 'block';
+            }
+            
             if (typeof window.showError === 'function') {
-              window.showError("Erro de Login", data.error || "Email ou senha incorretos");
+              window.showError("Erro de Login", errorMessage);
+            } else {
+              alert("Erro: " + errorMessage);
             }
           }
         } catch (err) {
           console.error("Erro no login:", err);
+          const errorMessage = err.message || "Erro de ligação com o servidor";
+          
+          // Mostrar mensagem de erro no elemento de erro do modal
+          const errorElement = document.getElementById('loginErrorMessage');
+          if (errorElement) {
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+          }
+          
           if (typeof window.showError === 'function') {
-            window.showError("Erro", "Erro de ligação com o servidor");
+            window.showError("Erro", errorMessage);
+          } else {
+            alert("Erro: " + errorMessage);
+          }
+        } finally {
+          // Reabilitar botão
+          if (submitButton) {
+            submitButton.disabled = false;
+            if (submitButton.querySelector('.button-text') && originalButtonText) {
+              submitButton.querySelector('.button-text').textContent = originalButtonText;
+            }
           }
         }
       });
@@ -562,11 +647,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
           const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+          
+          // Incluir dados OAuth se disponíveis
+          const registerData = { nome, email, password, telefone: null, data_nascimento: birthdate };
+          if (window.oauthTempData) {
+            registerData.oauthProvider = window.oauthTempData.provider;
+            // Mapear o ID do OAuth baseado no provider
+            if (window.oauthTempData.provider === 'google') {
+              registerData.oauthId = window.oauthTempData.googleId;
+            } else if (window.oauthTempData.provider === 'discord') {
+              registerData.oauthId = window.oauthTempData.discordId;
+            } else if (window.oauthTempData.provider === 'github') {
+              registerData.oauthId = window.oauthTempData.githubId;
+            }
+            registerData.fotoPerfil = window.oauthTempData.fotoPerfil;
+          }
+          
           const res = await requestFn("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nome, email, password, telefone: null, data_nascimento: birthdate }),
+            body: JSON.stringify(registerData),
           });
+          
+          // Limpar dados OAuth temporários após registro bem-sucedido
+          if (res.ok) {
+            if (window.oauthTempData) {
+              fetch('/api/auth/oauth-temp-data/clear', { method: 'POST' });
+              window.oauthTempData = null;
+            }
+          }
 
           const data = await res.json();
 
