@@ -1,6 +1,3 @@
-// @ts-nocheck
-// PromoPing - Servidor principal do sistema de monitoramento de preços
-// Silenciar dotenv globalmente
 process.env.DOTENV_CONFIG_SILENT = 'true';
 process.env.DOTENV_CONFIG_DEBUG = 'false';
 
@@ -70,21 +67,12 @@ import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
-
-// ================== MIDDLEWARE ==================
-import {
-    verifyToken
-} from "./middleware/auth.js"; // JWT
+import { verifyToken} from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
-import {
-    pool
-} from "./database/db.js"; // Pool de conexão
-
+import {pool} from "./database/db.js"; // Pool de conexão
 // ================== SERVIÇOS ==================
-import {
-    sendNotification
-} from "./services/notify.js"; // Notificações
+import {sendNotification} from "./services/notify.js"; // Notificações
 
 // ================== CONFIGURAÇÃO DO EXPRESS ==================
 const app = express();
@@ -92,17 +80,14 @@ const app = express();
 // Trust proxy para funcionar corretamente com NGINX/proxy reverso
 // Em produção, confiar apenas no primeiro proxy (NGINX)
 // Em desenvolvimento, confiar apenas em localhost (usando IPs válidos)
-if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
+if (process.env.NODE_ENV === 'production') { app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
 } else {
-    // Em desenvolvimento, confiar apenas em localhost (127.0.0.1 e ::1)
     app.set('trust proxy', ['127.0.0.1', '::1']);
 }
-
 app.use(cookieParser()); // Cookies
 app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
-// ================== RATE LIMITING ==================
+// ================== RATE LIMITING, tava tomando rate limiting por recarregar a pagina a cada hora
 // Rate limiting geral para todas as rotas
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
@@ -877,7 +862,6 @@ if (!isProduction) {
         });
     });
 
-    // ================== MIDDLEWARE 404 ==================
     // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
     // IMPORTANTE: Este middleware deve vir DEPOIS de todas as rotas registradas
     app.use((req, res) => {
@@ -926,8 +910,6 @@ if (!isProduction) {
         });
     });
 }
-
-// ================== IMPORTAR SERVIÇOS ==================
 import {
     GracePeriodManager
 } from './services/gracePeriodManager.js';
@@ -935,18 +917,11 @@ import {
     DeactivatedAccountsManager
 } from './services/deactivatedAccountsManager.js';
 
-// ================== INICIAR BOT DISCORD (se token configurado) ==================
 // O bot é iniciado em processo separado via run.js, mas precisamos acessá-lo
 // Vamos criar uma função helper para buscar a instância do bot
-
-// ================== INICIAR SERVIDOR ==================
-<<<<<<< Updated upstream
 // Usar 0.0.0.0 para aceitar conexões de qualquer interface de rede (incluindo IP local 192.168.1.64)
 // Isso permite que dispositivos móveis na mesma rede Wi-Fi se conectem ao servidor
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
-=======
-const HOST = "0.0.0.0";
->>>>>>> Stashed changes
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
