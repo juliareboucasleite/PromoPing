@@ -24,9 +24,9 @@ Rate limiting e CORS configurado
 Sanitização de entradas e prepared statements
 Logging estruturado e auditoria completa
 
-Questões que são relevantes para a segurança devem ser divulgadas de forma privada contacte corporation.promoping@gmail.com e para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
+Questões que são relevantes para a segurança devem ser divulgadas de forma privada contacte <corporation.promoping@gmail.com> e para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
 
 Contribuições são bem-vindas mediante contato por email. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) e [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) para diretrizes.
 Este projeto está licenciado sob a **GNU General Public License v2.0 (GPL-2.0)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-Para suporte, dúvidas, envio de sugestões ou reporte de problemas, o projeto disponibiliza vários canais oficiais. O contacto direto pode ser feito através do email corporation.promoping@gmail.com . Questões técnicas, bugs ou pedidos de funcionalidades devem ser encaminhados pela página de Issues no GitHub. A comunidade também pode interagir e acompanhar novidades por meio do servidor oficial no Discord. A documentação completa, incluindo guias e referências do sistema, encontra-se disponível no GitBook do PromoPing.
+Para suporte, dúvidas, envio de sugestões ou reporte de problemas, o projeto disponibiliza vários canais oficiais. O contacto direto pode ser feito através do email <corporation.promoping@gmail.com> . Questões técnicas, bugs ou pedidos de funcionalidades devem ser encaminhados pela página de Issues no GitHub. A comunidade também pode interagir e acompanhar novidades por meio do servidor oficial no Discord. A documentação completa, incluindo guias e referências do sistema, encontra-se disponível no GitBook do PromoPing.
