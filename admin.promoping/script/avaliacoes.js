@@ -62,6 +62,16 @@
         return div.innerHTML;
     }
 
+    function generateStarRating(rating) {
+        const filledStar = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#ffd700" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#ffd700" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+        const emptyStar = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#666" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            stars += i < rating ? filledStar : emptyStar;
+        }
+        return stars;
+    }
+
     async function loadReviews() {
         const reviewsList = document.getElementById('reviewsList');
         if (!reviewsList) return;
@@ -91,7 +101,7 @@
                         ${data.reviews.map(review => `
                             <tr>
                                 <td>${escapeHtml(review.userName || 'N/A')}</td>
-                                <td>${'⭐'.repeat(review.rating || 0)}</td>
+                                <td>${generateStarRating(review.rating || 0)}</td>
                                 <td>${escapeHtml(review.comment || 'N/A')}</td>
                                 <td>${formatDate(review.date)}</td>
                             </tr>

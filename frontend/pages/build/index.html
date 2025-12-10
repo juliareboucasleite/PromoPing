@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
-
 <head>
   <base href="/">
-  
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>PromoPing - Sempre ligado</title>
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/styles/style.css">
   <link rel="stylesheet" href="assets/styles/dasboard.css">
@@ -24,7 +20,153 @@
   <script src="inc/load-includes-index.js"></script>
   <script src="assets/scripts/cookie-banner.js"></script>
   <script>
+    // Verificar parâmetros de erro na URL e abrir modal de login se necessário
     document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const description = urlParams.get('description');
+      const details = urlParams.get('details');
+      const oauthData = urlParams.get('oauth_data');
+      const action = urlParams.get('action');
+      
+      // Verificar se há dados OAuth para completar registro/login
+      if (oauthData && action === 'complete') {
+        // Limpar parâmetros da URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Buscar dados OAuth salvos no backend
+        fetch('/api/auth/oauth-temp-data')
+          .then(res => res.json())
+          .then(result => {
+            if (result.hasData && result.data) {
+              const oauthInfo = result.data;
+              
+              // Aguardar scripts carregarem
+              setTimeout(() => {
+                // Abrir modal de registro (para completar com dados OAuth)
+                if (typeof window.openRegisterModal === 'function') {
+                  window.openRegisterModal();
+                }
+                
+                // Aguardar modal abrir e pré-preencher campos
+                setTimeout(() => {
+                  // Pré-preencher campos do formulário de registro
+                  const registerEmail = document.getElementById('registerEmail');
+                  const registerName = document.getElementById('registerName');
+                  
+                  if (registerEmail && oauthInfo.email) {
+                    registerEmail.value = oauthInfo.email;
+                    registerEmail.readOnly = true; // Email do OAuth não pode ser alterado
+                    registerEmail.style.backgroundColor = '#f5f5f5';
+                  }
+                  
+                  if (registerName && oauthInfo.nome) {
+                    registerName.value = oauthInfo.nome;
+                  }
+                  
+                  // Mostrar mensagem informativa
+                  const registerErrorMessage = document.getElementById('registerErrorMessage');
+                  if (registerErrorMessage) {
+                    const providerName = oauthInfo.provider === 'google' ? 'Google' : 
+                                       oauthInfo.provider === 'discord' ? 'Discord' : 
+                                       oauthInfo.provider === 'github' ? 'GitHub' : 'OAuth';
+                    registerErrorMessage.textContent = `Complete seu cadastro com os dados do ${providerName}.`;
+                    registerErrorMessage.style.display = 'block';
+                    registerErrorMessage.style.color = '#ff6b35';
+                    registerErrorMessage.style.backgroundColor = '#fff3f0';
+                    registerErrorMessage.style.padding = '10px';
+                    registerErrorMessage.style.borderRadius = '4px';
+                    registerErrorMessage.style.marginBottom = '10px';
+                    
+                    // Salvar dados OAuth em variável global para uso no registro
+                    window.oauthTempData = oauthInfo;
+                    
+                    // Mostrar notificação
+                    if (typeof window.showInfo === 'function') {
+                      window.showInfo('Dados OAuth', 'Complete seu cadastro com os dados do ' + providerName);
+                    }
+                  } else {
+                    // Salvar dados OAuth mesmo se não houver elemento de erro
+                    window.oauthTempData = oauthInfo;
+                  }
+                }, 300);
+              }, 500);
+            } else {
+              // Se não houver dados, apenas mostrar erro se existir
+              if (error) {
+                setTimeout(() => {
+                  if (typeof window.openLoginModal === 'function') {
+                    window.openLoginModal();
+                  }
+                }, 500);
+              }
+            }
+          })
+          .catch(err => {
+            console.error('Erro ao buscar dados OAuth:', err);
+            if (error) {
+              setTimeout(() => {
+                if (typeof window.openLoginModal === 'function') {
+                  window.openLoginModal();
+                }
+              }, 500);
+            }
+          });
+      } else if (error) {
+        // Limpar parâmetros da URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Aguardar um pouco para garantir que os scripts estejam carregados
+        setTimeout(() => {
+          // Abrir modal de login
+          if (typeof window.openLoginModal === 'function') {
+            window.openLoginModal();
+          } else if (typeof openLoginModal === 'function') {
+            openLoginModal();
+          }
+          
+          // Aguardar um pouco mais para garantir que o modal esteja aberto
+          setTimeout(() => {
+            const errorElement = document.getElementById('loginErrorMessage');
+            let errorMessage = '';
+            
+            // Mapear códigos de erro para mensagens amigáveis
+            const errorMessages = {
+              'auth_failed': 'Falha na autenticação. Por favor, tente novamente.',
+              'user_undefined': 'Erro ao obter informações do usuário. Tente novamente.',
+              'user_incomplete': 'Dados do usuário incompletos. Verifique se seu email está visível no Google.',
+              'token_error': 'Erro ao gerar token de acesso. Tente novamente.',
+              'discord_auth_failed': 'Falha na autenticação com Discord. Tente novamente.',
+              'discord_email_required': 'É necessário ter um email verificado no Discord para fazer login.',
+              'discord_redirect_invalid': 'Erro no redirecionamento do Discord. Tente novamente.',
+              'discord_user_not_found': 'Usuário Discord não encontrado. Tente novamente.'
+            };
+            
+            // Obter mensagem de erro
+            if (errorMessages[error]) {
+              errorMessage = errorMessages[error];
+            } else if (details) {
+              errorMessage = decodeURIComponent(details);
+            } else if (description) {
+              errorMessage = decodeURIComponent(description);
+            } else {
+              errorMessage = 'Ocorreu um erro durante a autenticação. Tente novamente.';
+            }
+            
+            // Exibir mensagem de erro
+            if (errorElement) {
+              errorElement.textContent = errorMessage;
+              errorElement.style.display = 'block';
+            }
+            
+            // Também usar sistema de notificações se disponível
+            if (typeof window.showError === 'function') {
+              window.showError('Erro de Autenticação', errorMessage);
+            }
+          }, 300);
+        }, 500);
+      }
+      
       const h = document.querySelector('.pp-hero-left h1');
       if (h) {
         // Remove qualquer classe de animação e deixa o texto visível

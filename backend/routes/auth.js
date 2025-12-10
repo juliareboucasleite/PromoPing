@@ -81,10 +81,26 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
+                    console.log("[GOOGLE STRATEGY] Profile recebido:", {
+                        id: profile.id,
+                        displayName: profile.displayName,
+                        emails: profile.emails ? profile.emails.map(e => e.value) : [],
+                        photos: profile.photos ? profile.photos.length : 0
+                    });
+
+                    // Verificar se profile tem emails
+                    if (!profile.emails || profile.emails.length === 0) {
+                        const error = new Error("Email não fornecido pelo Google. Certifique-se de que seu email está visível no Google.");
+                        console.error("[GOOGLE STRATEGY] Erro: Email não fornecido pelo Google");
+                        return done(error, null);
+                    }
+
                     const email = profile.emails[0].value;
                     const googleId = profile.id;
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
                     const nome = profile.displayName || profile.name ?.givenName || 'Usuário Google';
+
+                    console.log("[GOOGLE STRATEGY] Processando usuário:", { email, nome, googleId });
 
                     const [rows] = await pool.query(
                         "SELECT * FROM Utilizadores WHERE Email = ?",
@@ -94,33 +110,144 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     let userId;
                     if (rows.length > 0) {
                         userId = rows[0].Id;
-                        // Atualizar foto de perfil se fornecida
-                        if (fotoPerfil) {
+                        // Atualizar foto de perfil e google_id se fornecidos
+                        if (fotoPerfil || googleId) {
                             try {
-                                await pool.query(
-                                    "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                                    [fotoPerfil, userId]
-                                );
+                                // Tentar atualizar com google_id e FotoPerfil
+                                if (fotoPerfil && googleId) {
+                                    await pool.query(
+                                        "UPDATE Utilizadores SET FotoPerfil = ?, google_id = ? WHERE Id = ?",
+                                        [fotoPerfil, googleId, userId]
+                                    );
+                                } else if (fotoPerfil) {
+                                    await pool.query(
+                                        "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                        [fotoPerfil, userId]
+                                    );
+                                } else if (googleId) {
+                                    await pool.query(
+                                        "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                                        [googleId, userId]
+                                    );
+                                }
                             } catch (updateErr) {
-                                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+                                // Se campo não existe, tentar atualizar apenas o que existe
+                                console.log("[GOOGLE STRATEGY] Erro ao atualizar (campo pode não existir):", updateErr.message);
+                                try {
+                                    if (fotoPerfil) {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                            [fotoPerfil, userId]
+                                        );
+                                    }
+                                } catch (fotoErr) {
+                                    console.log("[GOOGLE STRATEGY] FotoPerfil não existe, ignorando");
+                                }
+                                try {
+                                    if (googleId) {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                                            [googleId, userId]
+                                        );
+                                    }
+                                } catch (googleIdErr) {
+                                    console.log("[GOOGLE STRATEGY] google_id não existe, ignorando");
+                                }
                             }
                         }
-                        console.log("Usuário Google já existe:", email);
+                        console.log("[GOOGLE STRATEGY] Usuário Google já existe:", email);
                     } else {
-                        // Inserir novo usuário com foto de perfil se disponível
+                        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+                        const [adminCountRows] = await pool.query(
+                            "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
+                        );
+                        const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
+                        
+                        // Inserir novo usuário com foto de perfil, google_id e campos necessários
                         try {
+                            // Tentar inserir com google_id, FotoPerfil, Ativo e PerfilId
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
-                                [nome, email, null, fotoPerfil]
+                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, google_id, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                [nome, email, null, fotoPerfil, googleId, perfilId]
                             );
                             userId = result.insertId;
+                            console.log("[GOOGLE STRATEGY] Novo usuário criado com google_id:", googleId);
+                            
+                            // Atualizar métricas automaticamente
+                            try {
+                                await atualizarMetricasAutomaticamente();
+                                console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                            } catch (metricError) {
+                                console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                            }
                         } catch (insertErr) {
-                            // Se campo FotoPerfil não existe, inserir sem ele
-                            const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-                                [nome, email, null]
-                            );
-                            userId = result.insertId;
+                            // Se campos não existem, tentar inserir sem eles
+                            try {
+                                const [result] = await pool.query(
+                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [nome, email, null, fotoPerfil, perfilId]
+                                );
+                                userId = result.insertId;
+                                
+                                // Tentar atualizar google_id separadamente se possível
+                                if (googleId) {
+                                    try {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                                            [googleId, userId]
+                                        );
+                                    } catch (googleIdErr) {
+                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
+                                    }
+                                }
+                                
+                                // Atualizar métricas automaticamente
+                                try {
+                                    await atualizarMetricasAutomaticamente();
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                } catch (metricError) {
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                }
+                            } catch (insertErr2) {
+                                // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
+                                const [result] = await pool.query(
+                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, 1, ?, NOW(), 1)",
+                                    [nome, email, null, perfilId]
+                                );
+                                userId = result.insertId;
+                                
+                                // Tentar atualizar google_id separadamente se possível
+                                if (googleId) {
+                                    try {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                                            [googleId, userId]
+                                        );
+                                    } catch (googleIdErr) {
+                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
+                                    }
+                                }
+                                
+                                // Tentar atualizar FotoPerfil separadamente se possível
+                                if (fotoPerfil) {
+                                    try {
+                                        await pool.query(
+                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                                            [fotoPerfil, userId]
+                                        );
+                                    } catch (fotoErr) {
+                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil não existe, ignorando");
+                                    }
+                                }
+                                
+                                // Atualizar métricas automaticamente
+                                try {
+                                    await atualizarMetricasAutomaticamente();
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                } catch (metricError) {
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                }
+                            }
                         }
                     }
 
@@ -135,7 +262,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         id: userId,
                         email,
                         nome,
-                        fotoPerfil
+                        fotoPerfil,
+                        googleId: googleId // Incluir googleId para uso no callback
                     });
                 } catch (err) {
                     return done(err, null);
@@ -1091,7 +1219,10 @@ router.post("/register", async (req, res) => {
             email,
             password,
             telefone,
-            data_nascimento
+            data_nascimento,
+            oauthProvider,
+            oauthId,
+            fotoPerfil
         } = req.body;
         console.log("[REGISTRO] Tentativa de registro:", {
             nome,
@@ -1184,35 +1315,77 @@ router.post("/register", async (req, res) => {
 
         console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
 
-        // Tentar inserir com data_nascimento se fornecido
+        // Tentar inserir com data_nascimento e/ou google_id se fornecidos
         let result;
         try {
+            // Construir query dinamicamente baseado nos campos disponíveis
+            const fields = ['Nome', 'Email', 'SenhaHash', 'EmailVerificado', 'Telefone', 'PerfilId', 'Ativo', 'Data_Registo'];
+            const values = [nome, email, hashedPassword, 0, telefone || null, perfilId, 1];
+            const placeholders = ['?', '?', '?', '?', '?', '?', '?', 'NOW()'];
+            
+            // Adicionar campos opcionais
             if (data_nascimento) {
-                const [insertResult] = await pool.query(
-                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo, data_nascimento) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), ?)",
-                    [nome, email, hashedPassword, 0, telefone || null, perfilId, data_nascimento]
-                );
-                result = insertResult;
-                console.log("[REGISTRO] Usuário criado com data de nascimento");
-            } else {
-                const [insertResult] = await pool.query(
-                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-                    [nome, email, hashedPassword, 0, telefone || null, perfilId]
-                );
-                result = insertResult;
-                console.log("[REGISTRO] Usuário criado sem data de nascimento");
+                fields.push('data_nascimento');
+                values.push(data_nascimento);
+                placeholders.push('?');
             }
+            
+            if (oauthProvider === 'google' && oauthId) {
+                fields.push('google_id');
+                values.push(oauthId);
+                placeholders.push('?');
+                console.log("[REGISTRO] Incluindo google_id no registro:", oauthId);
+            }
+            
+            if (fotoPerfil) {
+                fields.push('FotoPerfil');
+                values.push(fotoPerfil);
+                placeholders.push('?');
+            }
+            
+            const query = `INSERT INTO Utilizadores (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`;
+            const [insertResult] = await pool.query(query, values);
+            result = insertResult;
+            console.log(`[REGISTRO] Usuário criado com campos: ${fields.join(', ')}`);
         } catch (insertError) {
-            // Se a coluna data_nascimento não existir, inserir sem ela
-            if (insertError.code === 'ER_BAD_FIELD_ERROR' || insertError.message ?.includes('data_nascimento')) {
-                console.log("[REGISTRO] Coluna data_nascimento não existe, inserindo sem ela...");
+            // Se algum campo não existir, tentar inserir sem ele
+            console.log("[REGISTRO] Erro ao inserir, tentando sem campos opcionais:", insertError.message);
+            
+            // Tentar inserir apenas com campos básicos
+            try {
                 const [insertResult] = await pool.query(
                     "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
                     [nome, email, hashedPassword, 0, telefone || null, perfilId]
                 );
                 result = insertResult;
-            } else {
-                throw insertError;
+                
+                // Tentar atualizar google_id separadamente se disponível
+                if (oauthProvider === 'google' && oauthId && result.insertId) {
+                    try {
+                        await pool.query(
+                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                            [oauthId, result.insertId]
+                        );
+                        console.log("[REGISTRO] google_id atualizado após criação:", oauthId);
+                    } catch (googleIdErr) {
+                        console.log("[REGISTRO] Campo google_id não existe, ignorando");
+                    }
+                }
+                
+                // Tentar atualizar FotoPerfil separadamente se disponível
+                if (fotoPerfil && result.insertId) {
+                    try {
+                        await pool.query(
+                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
+                            [fotoPerfil, result.insertId]
+                        );
+                        console.log("[REGISTRO] FotoPerfil atualizado após criação");
+                    } catch (fotoErr) {
+                        console.log("[REGISTRO] Campo FotoPerfil não existe, ignorando");
+                    }
+                }
+            } catch (retryError) {
+                throw retryError;
             }
         }
 
@@ -1275,21 +1448,31 @@ router.post("/register", async (req, res) => {
         ]);
         console.log("[REGISTRO] Código salvo no banco de dados");
 
-        // Enviar código por email
-        console.log("[REGISTRO] Preparando envio de email...");
-        console.log(`[REGISTRO] Destinatário: ${email}`);
-        console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
-        console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
-        console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
-        console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
+        // Responder IMEDIATAMENTE ao cliente (antes de enviar email)
+        console.log("[REGISTRO] Enviando resposta ao cliente IMEDIATAMENTE...");
+        res.json({
+            status: "ok",
+            message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
+            codigo: codigo // Para desenvolvimento - remover em produção
+        });
+        console.log(" [REGISTRO] Resposta enviada ao cliente");
 
-        try {
-            const {
-                sendEmail
-            } = await import("../services/notify.js");
-            console.log("[REGISTRO] Função sendEmail importada com sucesso");
+        // Enviar código por email EM BACKGROUND (não bloqueia a resposta)
+        console.log("[REGISTRO] Agendando envio de email em background...");
+        (async () => {
+            try {
+                console.log(`[REGISTRO] Destinatário: ${email}`);
+                console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
+                console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
+                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
+                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
 
-            const messageHtml = `
+                const {
+                    sendEmail
+                } = await import("../services/notify.js");
+                console.log("[REGISTRO] Função sendEmail importada com sucesso");
+
+                const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
           <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
           <p>Olá <b>${nome}</b>,</p>
@@ -1305,69 +1488,43 @@ router.post("/register", async (req, res) => {
         </div>
       `;
 
-            console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
-            console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
+                console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
+                console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
 
-            await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
+                await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
 
-            console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
-            console.log(`[REGISTRO] Código de verificação: ${codigo}`);
-        } catch (emailError) {
-            console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
-            console.error("[REGISTRO] Tipo do erro:", emailError.name);
-            console.error("[REGISTRO] Mensagem:", emailError.message);
-            console.error("[REGISTRO] Código:", emailError.code);
-            if (emailError.response) {
-                console.error("[REGISTRO] Resposta do servidor:", emailError.response);
+                console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
+                console.log(`[REGISTRO] Código de verificação: ${codigo}`);
+            } catch (emailError) {
+                console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
+                console.error("[REGISTRO] Tipo do erro:", emailError.name);
+                console.error("[REGISTRO] Mensagem:", emailError.message);
+                console.error("[REGISTRO] Código:", emailError.code);
+                if (emailError.response) {
+                    console.error("[REGISTRO] Resposta do servidor:", emailError.response);
+                }
+                if (emailError.command) {
+                    console.error("[REGISTRO] Comando:", emailError.command);
+                }
+                console.error("[REGISTRO] Stack trace completo:");
+                console.error(emailError.stack);
+                console.error("[REGISTRO] ==========================================");
+
+                // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
+                console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
+                console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+                console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
             }
-            if (emailError.command) {
-                console.error("[REGISTRO] Comando:", emailError.command);
-            }
-            console.error("[REGISTRO] Stack trace completo:");
-            console.error(emailError.stack);
-            console.error("[REGISTRO] ==========================================");
+        })();
 
-            // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
-            console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
-            console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
-            console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
-        }
-
-        // WhatsApp desabilitado
-        // if (telefone) {
-        //   try {
-        //     const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-        //     await enviarWhatsApp(
-        //       telefoneLimpo,
-        //       `Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-        //     );
-        //     console.log(`Código de verificação enviado para ${telefone}: ${codigo}`);
-        //   } catch (whatsappError) {
-        //     console.log("WhatsApp não configurado, mas conta criada com sucesso");
-        //   }
-        // }
-
-        // Atualizar métricas automaticamente quando novo utilizador é criado
-        console.log("[REGISTRO] Atualizando métricas...");
-        try {
-            await atualizarMetricasAutomaticamente();
-            console.log("[REGISTRO] Métricas atualizadas após criação de novo utilizador");
-        } catch (metricError) {
+        // Atualizar métricas em background
+        console.log("[REGISTRO] Agendando atualização de métricas em background...");
+        atualizarMetricasAutomaticamente().catch(metricError => {
             console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
             console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
-            // Não bloquear resposta em caso de erro nas métricas
-        }
-
-        console.log("[REGISTRO] Registro concluído com sucesso!");
-        console.log("[REGISTRO] Enviando resposta ao cliente...");
-
-        res.json({
-            status: "ok",
-            message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
-            codigo: codigo // Para desenvolvimento - remover em produção
         });
 
-        console.log(" [REGISTRO] Resposta enviada ao cliente");
+        console.log("[REGISTRO] Registro concluído com sucesso!");
     } catch (err) {
         console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
         console.error(" [REGISTRO] Mensagem de erro:", err.message);
@@ -1402,45 +1559,161 @@ router.get("/google", (req, res) => {
 
 router.get("/google/callback", (req, res) => {
     if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-        const loginUrl = process.env.LOGIN_URL || "/login";
+        const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+        console.log("[GOOGLE CALLBACK] Iniciando callback do Google OAuth");
+        console.log("[GOOGLE CALLBACK] Query params:", JSON.stringify(req.query));
+        
         passport.authenticate("google", {
+            session: false, // Não usar sessões para OAuth
             failureRedirect: loginUrl
-        })(req, res, (err) => {
+        })(req, res, async (err, googleUser) => {
+            // Função auxiliar para salvar dados OAuth em cookie quando houver erro
+            const saveOAuthData = (oauthData) => {
+                const dataString = JSON.stringify(oauthData);
+                res.cookie('oauth_temp_data', dataString, {
+                    httpOnly: false, // Precisa ser acessível via JavaScript
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 15 * 60 * 1000 // 15 minutos
+                });
+                console.log("[GOOGLE CALLBACK] Dados OAuth salvos temporariamente:", oauthData);
+            };
+
             if (err) {
-                console.error("Erro na autenticação Google:", err);
-                return res.redirect(`${loginUrl}?error=auth_failed`);
+                console.error("[GOOGLE CALLBACK] Erro na autenticação Google:", err);
+                console.error("[GOOGLE CALLBACK] Stack trace:", err.stack);
+                const errorDetails = err.message || 'Erro desconhecido';
+                
+                // Tentar obter dados do profile mesmo com erro (se disponível)
+                // Isso pode não funcionar se o erro ocorrer antes do profile ser retornado
+                return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent(errorDetails)}`);
             }
 
-            if (!req.user) {
-                console.error("req.user está undefined");
+            // Tentar obter o usuário de várias fontes (sem sessões)
+            let user = googleUser || req.user;
+            
+            console.log("[GOOGLE CALLBACK] googleUser:", googleUser ? JSON.stringify(googleUser, null, 2) : "undefined");
+            console.log("[GOOGLE CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "undefined");
+            
+            if (!user) {
+                console.error("[GOOGLE CALLBACK] Usuário está undefined após autenticação");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
+            // Verificar se user tem os campos necessários
+            if (!user.id || !user.email) {
+                console.error("[GOOGLE CALLBACK] user não tem campos necessários:", {
+                    hasId: !!user.id,
+                    hasEmail: !!user.email,
+                    user: user
+                });
+                
+                // Salvar dados OAuth disponíveis para permitir completar registro/login
+                const oauthData = {
+                    provider: 'google',
+                    email: user.email || null,
+                    nome: user.nome || user.name || null,
+                    fotoPerfil: user.fotoPerfil || null,
+                    googleId: user.googleId || null,
+                    timestamp: Date.now()
+                };
+                
+                if (oauthData.email) {
+                    saveOAuthData(oauthData);
+                    return res.redirect(`/index.html?oauth_data=google&action=complete`);
+                }
+                
+                return res.redirect(`${loginUrl}?error=user_incomplete&details=${encodeURIComponent('Dados do usuário incompletos')}`);
+            }
+
             try {
+                // Garantir que google_id está salvo no banco
+                if (user.googleId) {
+                    try {
+                        await pool.query(
+                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
+                            [user.googleId, user.id]
+                        );
+                        console.log("[GOOGLE CALLBACK] google_id salvo no banco:", user.googleId);
+                    } catch (dbError) {
+                        console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode não existir):", dbError.message);
+                        // Continuar mesmo se falhar - não é crítico
+                    }
+                }
+
                 const token = jwt.sign({
-                        id: req.user.id,
-                        email: req.user.email,
-                        nome: req.user.nome || req.user.name
+                        id: user.id,
+                        email: user.email,
+                        nome: user.nome || user.name
                     },
                     process.env.JWT_SECRET, {
                         expiresIn: "7d"
                     }
                 );
 
-                const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
-                const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
+                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.id);
 
-                // Verificar se veio do sign-up ou login
-                const fromSignUp = req.query.from === 'signup';
-                const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
-
-                res.redirect(`${redirectUrl}?token=${token}`);
+                // Criar página HTML que salva o token no localStorage e redireciona para o dashboard
+                // Similar ao que o Discord faz
+                // Escapar caracteres especiais para evitar XSS
+                const escapedEmail = (user.email || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const escapedNome = (user.nome || user.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                
+                const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Google Login - PromoPing</title>
+        </head>
+        <body>
+          <script>
+            // Salvar token no localStorage
+            localStorage.setItem('token', '${token}');
+            
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('user', JSON.stringify({
+              id: ${user.id},
+              email: '${escapedEmail}',
+              nome: '${escapedNome}',
+              loginMethod: 'google'
+            }));
+            
+            // Redirecionar para o painel
+            window.location.href = '/dashboard';
+          </script>
+          <p>Redirecionando para o painel...</p>
+        </body>
+        </html>
+      `;
+                
+                console.log("[GOOGLE CALLBACK] Redirecionando para dashboard via HTML");
+                res.send(html);
             } catch (tokenError) {
-                console.error("Erro ao gerar token:", tokenError);
-                res.redirect(`${loginUrl}?error=token_error`);
+                console.error("[GOOGLE CALLBACK] Erro ao gerar token:", tokenError);
+                console.error("[GOOGLE CALLBACK] Stack trace:", tokenError.stack);
+                
+                // Salvar dados OAuth antes de redirecionar com erro
+                const oauthData = {
+                    provider: 'google',
+                    email: user.email || null,
+                    nome: user.nome || user.name || null,
+                    fotoPerfil: user.fotoPerfil || null,
+                    googleId: user.googleId || null,
+                    timestamp: Date.now()
+                };
+                
+                if (oauthData.email) {
+                    saveOAuthData(oauthData);
+                    const errorDetails = tokenError.message || 'Erro ao gerar token';
+                    return res.redirect(`/index.html?oauth_data=google&action=complete&error=token_error&details=${encodeURIComponent(errorDetails)}`);
+                }
+                
+                const errorDetails = tokenError.message || 'Erro ao gerar token';
+                res.redirect(`${loginUrl}?error=token_error&details=${encodeURIComponent(errorDetails)}`);
             }
         });
     } else {
+        console.error("[GOOGLE CALLBACK] Google OAuth não configurado");
         res.status(400).json({
             error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
@@ -2355,6 +2628,70 @@ router.get("/profile", verifyToken, async (req, res) => {
             error: "Erro interno no servidor",
         });
     }
+});
+
+// ================== ROTA PARA RECUPERAR DADOS OAuth TEMPORÁRIOS ==================
+// Rota para recuperar dados OAuth salvos temporariamente (via cookie)
+router.get("/oauth-temp-data", (req, res) => {
+    try {
+        const oauthDataCookie = req.cookies?.oauth_temp_data;
+        
+        if (!oauthDataCookie) {
+            return res.json({
+                status: "ok",
+                hasData: false,
+                data: null
+            });
+        }
+
+        try {
+            const oauthData = JSON.parse(oauthDataCookie);
+            
+            // Verificar se os dados não expiraram (15 minutos)
+            const dataAge = Date.now() - (oauthData.timestamp || 0);
+            const maxAge = 15 * 60 * 1000; // 15 minutos
+            
+            if (dataAge > maxAge) {
+                // Dados expirados, limpar cookie
+                res.clearCookie('oauth_temp_data');
+                return res.json({
+                    status: "ok",
+                    hasData: false,
+                    data: null,
+                    expired: true
+                });
+            }
+
+            return res.json({
+                status: "ok",
+                hasData: true,
+                data: oauthData
+            });
+        } catch (parseError) {
+            console.error("[OAUTH TEMP DATA] Erro ao fazer parse dos dados:", parseError);
+            res.clearCookie('oauth_temp_data');
+            return res.json({
+                status: "ok",
+                hasData: false,
+                data: null
+            });
+        }
+    } catch (err) {
+        console.error("[OAUTH TEMP DATA] Erro ao recuperar dados OAuth:", err);
+        res.status(500).json({
+            status: "error",
+            error: "Erro ao recuperar dados OAuth"
+        });
+    }
+});
+
+// Rota para limpar dados OAuth temporários
+router.post("/oauth-temp-data/clear", (req, res) => {
+    res.clearCookie('oauth_temp_data');
+    res.json({
+        status: "ok",
+        message: "Dados OAuth temporários limpos"
+    });
 });
 
 export default router;
