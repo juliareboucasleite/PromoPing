@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-PromoPing Python Scraper - Inicialização
-"""
-
 import sys
 import os
 import argparse
@@ -16,7 +11,7 @@ def test_system():
         # Teste conexão
         conn = connect_db()
         conn.close()
-        print("✓ Conexão com banco OK")
+        print("Conexão com banco OK")
         
         # Teste produtos
         produtos = fetch_products()

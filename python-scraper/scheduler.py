@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Script de inicialização do PromoPing Python Scraper
-Este script pode ser executado de forma independente ou integrado com o sistema Node.js
-"""
-
 import os
 import sys
 import time

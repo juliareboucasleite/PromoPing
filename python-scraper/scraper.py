@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-PromoPing Python Scraper
-Sistema de monitorização de preços para e-commerce
-"""
-
 import os
 import re
 import traceback
