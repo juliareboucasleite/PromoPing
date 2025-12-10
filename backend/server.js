@@ -917,15 +917,14 @@ import {
     DeactivatedAccountsManager
 } from './services/deactivatedAccountsManager.js';
 
-// O bot é iniciado em processo separado via run.js, mas precisamos acessá-lo
-// Vamos criar uma função helper para buscar a instância do bot
-// Usar 0.0.0.0 para aceitar conexões de qualquer interface de rede (incluindo IP local 192.168.1.64)
-// Isso permite que dispositivos móveis na mesma rede Wi-Fi se conectem ao servidor
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
+
+// ================== INICIAR SERVIDOR ==================
+const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
-    console.log(`\n✓ PromoPing rodando em http://${HOST}:${PORT}`);
+    console.log(`\nPromoPing rodando em http://${HOST}:${PORT}`);
     if (process.env.NODE_ENV === 'development') {
         // Mostrar também o IP local da rede para acesso via dispositivos móveis
         const os = await import('os');

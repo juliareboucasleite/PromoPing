@@ -1,10 +1,5 @@
 # Política de Segurança do PromoPing
-<<<<<<< Updated upstream
-
-## Reportar uma Vulnerabilidade
-=======
 ### Reportar uma Vulnerabilidade
->>>>>>> Stashed changes
 A segurança é uma prioridade para o PromoPing. Se descobrir uma vulnerabilidade de segurança, agradecemos que nos informe de forma responsável.
 Envie um email detalhado para **corporation.promoping@gmail.com** para reportar vulnerabilidades no PromoPing. Mesmo que não tenha certeza se um bug é uma vulnerabilidade explorável, recomendamos enviar o reporte para **corporation.promoping@gmail.com** e não discutir o problema em outro lugar.
 Discuta vulnerabilidades apenas por email, e não em público, até um anúncio oficial na lista de discussão do PromoPing na data de lançamento.
