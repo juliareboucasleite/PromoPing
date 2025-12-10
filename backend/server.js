@@ -920,7 +920,6 @@ import {
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
 
 // ================== INICIAR SERVIDOR ==================
-const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
