@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <title>Guia de Instalação | PromoPing Docs</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
   <style>
@@ -41,7 +41,7 @@
       <div class="header-left">
         <div class="logo">
           <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="../index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+          <a href="/" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
             Docs</a>
         </div>
       </div>
@@ -114,172 +114,30 @@
         </div>
       </div>
 
-      <h2>Pré-requisitos</h2>
-      <p>Antes de instalar o PromoPing, certifique-se de que tem os seguintes requisitos instalados no seu sistema:</p>
-
-      <div class="alert alert-info">
-        <strong>Requisitos Mínimos:</strong>
-        <ul>
-          <li><strong>Node.js 18+</strong> (recomendado LTS)</li>
-          <li><strong>MySQL 8.0+</strong> ou MariaDB 10.3+</li>
-          <li><strong>npm</strong> ou yarn</li>
-          <li><strong>Git</strong></li>
-          <li><strong>Python 3.8+</strong> (para o scraper)</li>
-        </ul>
+      <div style="background: linear-gradient(135deg, #8b4f01 0%, #303030 100%); border-radius: 12px; padding: 2rem; margin: 2rem 0; color: white; text-align: center;">
+        <h2 style="color: white; margin-top: 0;">PromoPing é um Serviço Web</h2>
+        <p style="color: rgba(255,255,255,0.9); margin-bottom: 1.5rem; font-size: 1.1rem;">
+          O PromoPing é um serviço web completo de monitoramento de preços. Não é necessário instalar ou configurar nada no seu computador.
+        </p>
+        <p style="color: rgba(255,255,255,0.8); margin-bottom: 0;">
+          Basta criar uma conta e começar a usar diretamente no navegador. Tudo funciona na nuvem!
+        </p>
       </div>
 
-      <h2>Instalação Local</h2>
+      <h2>Como Começar</h2>
+      <p>Para começar a usar o PromoPing:</p>
+      <ol style="color: #ccc; line-height: 1.8; margin: 1rem 0; padding-left: 2rem;">
+        <li>Crie uma conta no nosso site</li>
+        <li>Adicione produtos para monitorizar</li>
+        <li>Configure os seus alertas de preço</li>
+        <li>Receba notificações quando os preços mudarem</li>
+      </ol>
 
-      <h3>1. Clonar o Repositório</h3>
-      <div class="code-block">
-        <pre><code>git clone https://github.com/juliareboucasleite/PromoPing.git
-cd PromoPing</code></pre>
+      <div class="alert alert-info" style="margin-top: 2rem;">
+        <strong>Dica:</strong> Se desejar receber notificações através do Discord, pode adicionar o nosso bot aos seus servidores Discord. Veja mais no <a href="/docs/usage-guide" style="color: #ff9800;">guia de utilização</a>.
       </div>
 
-      <h3>2. Instalar Dependências</h3>
-      <div class="code-block">
-        <pre><code># Instalar dependências do Node.js
-npm install
-
-# Instalar dependências do Python Scraper
-cd python-scraper
-pip install -r requirements-simple.txt
-cd ..</code></pre>
-      </div>
-
-      <h3>3. Configurar Variáveis de Ambiente</h3>
-      <div class="code-block">
-        <pre><code># Copiar arquivo de configuração
-cp env-template.txt .env
-
-# Editar o arquivo .env com suas configurações
-nano .env</code></pre>
-      </div>
-
-      <div class="alert alert-warning">
-        <strong>Importante:</strong> Configure todas as variáveis obrigatórias no arquivo <code>.env</code> antes de
-        prosseguir.
-      </div>
-
-      <h3>4. Configurar Base de Dados</h3>
-      <div class="code-block">
-        <pre><code># Executar migrações da base de dados
-npm run migrate
-
-# Ou executar setup completo
-npm run setup</code></pre>
-      </div>
-
-      <h3>5. Iniciar o Servidor</h3>
-      <div class="code-block">
-        <pre><code># Iniciar em modo desenvolvimento
-npm run dev
-
-# Ou iniciar com execução automática
-npm start</code></pre>
-      </div>
-
-      <h2>Instalação com Docker</h2>
-
-      <h3>Desenvolvimento</h3>
-      <div class="code-block">
-        <pre><code># Iniciar ambiente de desenvolvimento
-npm run docker:dev
-
-# Ou diretamente com Docker Compose
-docker-compose -f docker-files/docker-compose.dev.yml up --build</code></pre>
-      </div>
-
-      <h3>Produção</h3>
-      <div class="code-block">
-        <pre><code># Deploy em produção
-npm run docker:prod
-
-# Ou diretamente com Docker Compose
-docker-compose -f docker-files/docker-compose.yml up --build</code></pre>
-      </div>
-
-      <h2>Configuração do Python Scraper</h2>
-
-      <h3>1. Configurar Ambiente Unificado</h3>
-      <div class="code-block">
-        <pre><code># Copiar configuração unificada
-copy python-scraper\env-unified.txt .env</code></pre>
-      </div>
-
-      <h3>2. Executar Scraper</h3>
-      <div class="code-block">
-        <pre><code>cd python-scraper
-
-# Teste rápido
-python start.py --test
-
-# Iniciar monitorização
-python start.py</code></pre>
-      </div>
-
-      <h2>Verificação da Instalação</h2>
-
-      <h3>1. Verificar API</h3>
-      <div class="code-block">
-        <pre><code># Verificar se a API está funcionando
-curl /api/health</code></pre>
-      </div>
-
-      <h3>2. Verificar Frontend</h3>
-      <p>Abra o navegador e acesse: <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>
-
-      <h3>3. Verificar Base de Dados</h3>
-      <div class="code-block">
-        <pre><code># Verificar conexão com MySQL
-mysql -u root -p -e "USE promoping; SHOW TABLES;"</code></pre>
-      </div>
-
-      <h2>Configuração de Produção</h2>
-
-      <h3>Variáveis de Ambiente Essenciais</h3>
-      <div class="code-block">
-        <pre><code># Base de Dados
-DB_HOST=localhost
-DB_USER=promoping_user
-DB_PASSWORD=sua_password_segura
-DB_NAME=promoping
-
-# Autenticação
-JWT_SECRET=sua_chave_jwt_muito_segura
-GOOGLE_CLIENT_ID=seu_google_client_id
-GOOGLE_CLIENT_SECRET=seu_google_client_secret
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=seu_email@gmail.com
-EMAIL_PASS=sua_senha_app
-
-# Stripe (opcional)
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
-      </div>
-
-      <h2>Resolução de Problemas</h2>
-
-      <h3>Erro de Conexão com Base de Dados</h3>
-      <div class="alert alert-error">
-        <strong>Solução:</strong> Verifique se o MySQL está a correr e se as credenciais no <code>.env</code> estão
-        corretas.
-      </div>
-
-      <h3>Erro de Dependências</h3>
-      <div class="alert alert-error">
-        <strong>Solução:</strong> Execute <code>npm install</code> novamente e verifique se tem Node.js 18+ instalado.
-      </div>
-
-      <h3>Erro de Permissões</h3>
-      <div class="alert alert-error">
-        <strong>Solução:</strong> No Linux/Mac, execute <code>sudo npm install</code> ou configure permissões adequadas.
-      </div>
-
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='usage-guide.html'">
+      <div class="next-card" style="cursor: pointer; margin-top: 2rem;" onclick="window.location.href='/docs/usage-guide'">
         <div class="next-content">
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Guia de Utilização</span>
@@ -289,10 +147,6 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
           <polyline points="9,18 15,12 9,6"></polyline>
         </svg>
       </div>
-
-      <footer>
-        <p>Última actualização há 1 dia</p>
-      </footer>
     </main>
 
   </div>
@@ -301,8 +155,8 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...</code></pre>
   <div id="footer-placeholder"></div>
 
   <!-- SCRIPTS -->
-  <script src="script.js"></script>
-  <script src="search.js"></script>
+  <script src="docs/script.js"></script>
+  <script src="docs/search.js"></script>
 </body>
 
 </html>
