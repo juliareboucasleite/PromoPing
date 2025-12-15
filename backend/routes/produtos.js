@@ -4,9 +4,12 @@ import { formatDate } from "../utils/format.js";
 import { exec } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { promisify } from "util";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
+
+const execAsync = promisify(exec);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -100,6 +103,10 @@ router.post("/", verifyToken, async (req, res) => {
             if (stderr) console.error(" [SCRAPER] Stderr:", stderr);
         });
 
+        // Executar comparação de produtos em background (opcional, não bloqueia resposta)
+        // Pode ser acionado posteriormente via rota /produtos/:id/compare
+        const comparisonResults = null; // Será preenchido se usuário solicitar
+        
         res.json({ 
             status: "ok", 
             message: "Produto adicionado. Verificação inicial iniciada!", 
@@ -109,7 +116,8 @@ router.post("/", verifyToken, async (req, res) => {
                 PrecoAtual: null,
                 Loja: store.name
             },
-            storeInfo: store
+            storeInfo: store,
+            comparisonAvailable: true // Indica que comparação está disponível
         });
     } catch (err) {
         console.error(" Erro ao adicionar produto:", err);
@@ -276,6 +284,95 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
 //  Atualizar preço de produto específico - REMOVIDO
 // Funcionalidade de atualização automática de preços removida
+
+//  Comparar produto em múltiplas lojas (novo fluxo isolado)
+router.post("/:id/compare", verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Verificar se produto pertence ao usuário
+        const [productRows] = await pool.query(
+            "SELECT Link FROM Produtos WHERE Id = ? AND UserId = ? AND DeletedAt IS NULL",
+            [id, req.user.id]
+        );
+        
+        if (productRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "Produto não encontrado"
+            });
+        }
+        
+        const productLink = productRows[0].Link;
+        
+        // Executar comparação via Python
+        const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
+        const escapedLink = productLink.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+        const isWindows = process.platform === 'win32';
+        const pythonCmd = isWindows ? 'python' : 'python3';
+        const command = `${pythonCmd} "${scraperPath}" --compare-simple "${escapedLink}"`;
+        
+        console.log(`[COMPARE] Comparando produto ${id} em múltiplas lojas...`);
+        
+        try {
+            const { stdout, stderr } = await execAsync(command, {
+                cwd: path.join(__dirname, '../../'),
+                timeout: 120000 // 2 minutos de timeout
+            });
+            
+            if (stderr && !stderr.includes('INFO')) {
+                console.error(`[COMPARE] Stderr: ${stderr}`);
+            }
+            
+            // Parse JSON do stdout
+            let comparisons = [];
+            try {
+                const jsonOutput = stdout.trim();
+                // Tentar extrair JSON do output (pode ter logs antes)
+                const jsonMatch = jsonOutput.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    comparisons = JSON.parse(jsonMatch[0]);
+                } else {
+                    // Tentar parse direto
+                    comparisons = JSON.parse(jsonOutput);
+                }
+            } catch (parseError) {
+                console.error(`[COMPARE] Erro ao parsear JSON: ${parseError.message}`);
+                console.error(`[COMPARE] Output recebido: ${stdout.substring(0, 500)}`);
+                return res.status(500).json({
+                    status: "error",
+                    message: "Erro ao processar resultados da comparação",
+                    comparisons: []
+                });
+            }
+            
+            console.log(`[COMPARE] Encontrados ${comparisons.length} produtos comparáveis`);
+            
+            res.json({
+                status: "ok",
+                message: "Comparação concluída",
+                comparisons: comparisons,
+                count: comparisons.length
+            });
+            
+        } catch (execError) {
+            console.error(`[COMPARE] Erro na execução: ${execError.message}`);
+            return res.status(500).json({
+                status: "error",
+                message: "Erro ao executar comparação de produtos",
+                error: execError.message,
+                comparisons: []
+            });
+        }
+        
+    } catch (err) {
+        console.error("Erro ao comparar produto:", err);
+        res.status(500).json({
+            status: "error",
+            message: "Erro interno do servidor"
+        });
+    }
+});
 
 //  Verificar se há produtos atualizados recentemente
 router.get("/sync", verifyToken, async (req, res) => {

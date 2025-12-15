@@ -42,7 +42,30 @@ class PromoPingBot {
         this.lastTwitchCheck = new Date();
         this.twitchLiveStatus = new Map(); // channelName -> { isLive: boolean, lastNotification: Date }
 
+        // IDs de administradores com acesso total a todos os comandos
+        this.adminIds = [
+            '1448056767253708821' // ID com acesso total
+        ];
+
         this.setupEventHandlers();
+    }
+
+    /**
+     * Verifica se um usuário tem acesso de administrador (permissoes do Discord OU ID na lista)
+     * @param {GuildMember} member - Membro do servidor
+     * @returns {boolean} - True se tem acesso de admin
+     */
+    isAdmin(member) {
+        if (!member) return false;
+        
+        // Verificar se tem permissões de administrador no Discord
+        if (member.permissions && member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return true;
+        }
+        
+        // Verificar se o ID está na lista de administradores
+        const userId = member.user ? member.user.id : member.id;
+        return this.adminIds.includes(userId);
     }
 
     setupEventHandlers() {
@@ -161,12 +184,29 @@ class PromoPingBot {
                             'outros': 'Outros'
                         };
                         await this.handleTicketCategory(interaction, categoriaNomes[categoriaCode] || categoriaCode, categoriaCode);
+                    } else if (interaction.customId.startsWith('review_tipo_')) {
+                        // Handler para menu de seleção de review
+                        await this.handleReviewTypeSelection(interaction);
                     }
                 }
                 // Lidar com botões
                 else if (interaction.isButton()) {
                     if (interaction.customId === 'abrir_ticket_promoping') {
                         await this.handleTicketButton(interaction);
+                    } else if (interaction.customId === 'iniciar_review_promoping') {
+                        // Iniciar fluxo de review quando clicar no botão do painel
+                        await this.handleReviewButton(interaction);
+                    } else if (interaction.customId.startsWith('review_anonimo_')) {
+                        // Handler para botões de anonimato do review
+                        const parts = interaction.customId.split('_');
+                        const isAnonimo = parts[2] === 'sim';
+                        const tipo = parts[3];
+                        const tipoNomes = {
+                            'site': 'Site',
+                            'bot': 'Bot',
+                            'suporte': 'Suporte'
+                        };
+                        await this.handleReviewAnonimoChoice(interaction, tipo, tipoNomes[tipo], isAnonimo);
                     } else if (interaction.customId.startsWith('ticket_confirmar_')) {
                         // Extrair categoria do customId: ticket_confirmar_userId_categoriaCode
                         const parts = interaction.customId.split('_');
@@ -293,6 +333,390 @@ class PromoPingBot {
                     content: 'Ocorreu um erro ao processar sua solicitação.', 
                     ephemeral: true 
                 });
+            }
+        }
+    }
+
+    async handleReviewButton(interaction) {
+        try {
+            const userId = interaction.user.id;
+
+            // Criar embed inicial (mesmo do comando review)
+            const initialEmbed = new EmbedBuilder()
+                .setTitle('Sistema de Avaliações')
+                .setDescription('Escolha o que deseja avaliar:')
+                .setColor(0xffa500)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Avaliações' });
+
+            // Criar menu de seleção para escolher o que avaliar
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId(`review_tipo_${userId}`)
+                .setPlaceholder('Selecione o que deseja avaliar...')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Site')
+                        .setDescription('Avaliar o site PromoPing')
+                        .setValue(`site_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Bot')
+                        .setDescription('Avaliar o bot Discord')
+                        .setValue(`bot_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Suporte')
+                        .setDescription('Avaliar o atendimento de suporte')
+                        .setValue(`suporte_${userId}`)
+                );
+
+            const row = new ActionRowBuilder()
+                .addComponents(selectMenu);
+
+            // Responder à interação
+            await interaction.reply({
+                embeds: [initialEmbed],
+                components: [row],
+                ephemeral: true
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar botão de review:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleReviewTypeSelection(interaction) {
+        try {
+            const userId = interaction.user.id;
+            const selectedValue = interaction.values[0];
+            const parts = selectedValue.split('_');
+            const tipo = parts[0]; // site, bot, ou suporte
+            
+            // Verificar se é o usuário correto
+            if (userId !== parts[1]) {
+                return await interaction.reply({ 
+                    content: 'Esta interação não é para você!', 
+                    ephemeral: true 
+                });
+            }
+            
+            const tipoNomes = {
+                'site': 'Site',
+                'bot': 'Bot',
+                'suporte': 'Suporte'
+            };
+
+            // Perguntar se quer ser anónimo
+            const anonimoEmbed = new EmbedBuilder()
+                .setTitle('Anonimato')
+                .setDescription(`Você está avaliando: **${tipoNomes[tipo]}**\n\nDeseja que sua avaliação seja anónima?`)
+                .setColor(0x5865F2)
+                .setTimestamp();
+
+            const anonimoRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`review_anonimo_sim_${tipo}_${userId}`)
+                        .setLabel('Sim, Anónimo')
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId(`review_anonimo_nao_${tipo}_${userId}`)
+                        .setLabel('Não, Mostrar Nome')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            // Verificar se a interação já foi reconhecida
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    embeds: [anonimoEmbed],
+                    components: [anonimoRow],
+                    ephemeral: true
+                });
+            } else {
+                await interaction.update({
+                    embeds: [anonimoEmbed],
+                    components: [anonimoRow]
+                });
+            }
+
+            // Configurar collector para escolha de anonimato
+            const anonimoFilter = (btnInteraction) => {
+                return btnInteraction.user.id === userId && 
+                       (btnInteraction.customId.startsWith(`review_anonimo_sim_${tipo}_${userId}`) ||
+                        btnInteraction.customId.startsWith(`review_anonimo_nao_${tipo}_${userId}`));
+            };
+
+            const anonimoCollector = interaction.channel.createMessageComponentCollector({
+                filter: anonimoFilter,
+                time: 60000,
+                max: 1
+            });
+
+            anonimoCollector.on('collect', async (btnInteraction) => {
+                try {
+                    const isAnonimo = btnInteraction.customId.includes('anonimo_sim');
+                    
+                    // Continuar fluxo usando a lógica do comando review
+                    await this.handleReviewAnonimoChoice(btnInteraction, tipo, tipoNomes[tipo], isAnonimo);
+
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao processar escolha de anonimato:', error);
+                    // Verificar se já foi respondido antes de tentar responder
+                    if (!btnInteraction.replied && !btnInteraction.deferred) {
+                        await btnInteraction.reply({ 
+                            content: 'Erro ao processar sua escolha. Tente novamente.', 
+                            ephemeral: true 
+                        }).catch(() => {});
+                    }
+                }
+            });
+
+            anonimoCollector.on('end', (collected) => {
+                if (collected.size === 0) {
+                    const timeoutEmbed = new EmbedBuilder()
+                        .setTitle('Tempo Esgotado')
+                        .setDescription('Você não escolheu se deseja ser anónimo a tempo. Use `!review` novamente para começar.')
+                        .setColor(0xff0000)
+                        .setTimestamp();
+                    
+                    interaction.channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
+                }
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar seleção de tipo de review:', error);
+            await interaction.reply({ 
+                content: 'Erro ao processar sua seleção. Tente novamente.', 
+                ephemeral: true 
+            });
+        }
+    }
+
+    async handleReviewAnonimoChoice(interaction, tipo, tipoNome, isAnonimo) {
+        try {
+            const userId = interaction.user.id;
+            const userName = interaction.user.username;
+            const userAvatar = interaction.user.displayAvatarURL({ dynamic: true });
+
+            // Perguntar pela avaliação e rating
+            const avaliacaoEmbed = new EmbedBuilder()
+                .setTitle('Avaliação')
+                .setDescription(
+                    `**Avaliando:** ${tipoNome}\n**Anónimo:** ${isAnonimo ? 'Sim' : 'Não'}\n\n` +
+                    `**Por favor, envie sua avaliação:**\n• Use o comando \`!review-texto <sua avaliação>\`\n` +
+                    `• Ou responda a esta mensagem com sua avaliação\n\n` +
+                    `**Exemplo:** \`!review-texto Excelente serviço! Muito útil.\``
+                )
+                .addFields({
+                    name: 'Dica',
+                    value: 'Você também pode incluir uma nota de 1 a 5 estrelas usando: `!review-texto 5 Estrelas Excelente!`',
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            // Verificar se a interação já foi reconhecida
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    embeds: [avaliacaoEmbed],
+                    components: [],
+                    ephemeral: true
+                });
+            } else {
+                await interaction.update({
+                    embeds: [avaliacaoEmbed],
+                    components: []
+                });
+            }
+
+            // Aguardar resposta do utilizador
+            const textoFilter = (msg) => {
+                if (msg.author.id !== userId) return false;
+                
+                // Verificar se é comando review-texto
+                if (msg.content.startsWith('!review-texto ')) return true;
+                
+                // Verificar se é resposta à mensagem
+                if (msg.reference) {
+                    const referencedMsgId = msg.reference.messageId;
+                    if (referencedMsgId === interaction.message?.id) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            };
+
+            const textoCollector = interaction.channel.createMessageCollector({
+                filter: textoFilter,
+                time: 300000, // 5 minutos
+                max: 1
+            });
+
+            textoCollector.on('collect', async (reviewMessage) => {
+                try {
+                    // Extrair texto da avaliação
+                    let reviewText = reviewMessage.content;
+                    if (reviewText.startsWith('!review-texto ')) {
+                        reviewText = reviewText.replace('!review-texto ', '');
+                    }
+
+                    // Extrair rating (estrelas) se houver
+                    let rating = null;
+                    const starMatch = reviewText.match(/(\d+)\s*[⭐🌟]/);
+                    if (starMatch) {
+                        rating = parseInt(starMatch[1]);
+                        rating = Math.max(1, Math.min(5, rating)); // Limitar entre 1-5
+                        reviewText = reviewText.replace(/(\d+)\s*[⭐🌟]/, '').trim();
+                    }
+
+                    // Criar embed final da review
+                    const reviewEmbed = new EmbedBuilder()
+                        .setTitle(`Avaliação - ${tipoNome}`)
+                        .setDescription(reviewText || '*Sem texto*')
+                        .setColor(rating ? (rating >= 4 ? 0x00ff00 : rating >= 3 ? 0xffa500 : 0xff0000) : 0x5865F2)
+                        .setTimestamp()
+                        .setFooter({ text: 'PromoPing - Avaliações' });
+
+                    if (rating) {
+                        const stars = '*'.repeat(rating) + '-'.repeat(5 - rating);
+                        reviewEmbed.addFields({
+                            name: 'Avaliação',
+                            value: `${stars} (${rating}/5)`,
+                            inline: false
+                        });
+                    }
+
+                    if (isAnonimo) {
+                        reviewEmbed.setAuthor({ 
+                            name: 'Avaliação Anónima'
+                        });
+                    } else {
+                        reviewEmbed.setAuthor({
+                            name: userName,
+                            iconURL: userAvatar
+                        });
+                    }
+
+                    // Encontrar canal de reviews
+                    const reviewsChannelId = process.env.DISCORD_REVIEWS_CHANNEL_ID || null;
+                    let reviewsChannel = null;
+
+                    if (reviewsChannelId) {
+                        reviewsChannel = await this.client.channels.fetch(reviewsChannelId).catch(() => null);
+                    }
+
+                    // Se não encontrar pelo ID, procurar por nome
+                    if (!reviewsChannel) {
+                        reviewsChannel = interaction.guild.channels.cache.find(
+                            channel => channel.name === 'reviews' && channel.type === 0
+                        );
+                    }
+
+                    if (reviewsChannel) {
+                        await reviewsChannel.send({ embeds: [reviewEmbed] });
+                        
+                        // Deletar mensagem do utilizador
+                        try {
+                            await reviewMessage.delete().catch(() => {});
+                        } catch {}
+                        
+                        // Enviar confirmação via DM (mensagem privada) para o utilizador
+                        const confirmEmbed = new EmbedBuilder()
+                            .setTitle('Avaliação Enviada!')
+                            .setDescription(`Sua avaliação foi enviada para ${reviewsChannel}`)
+                            .setColor(0x00ff00)
+                            .setTimestamp();
+                        
+                        try {
+                            await interaction.user.send({ embeds: [confirmEmbed] });
+                        } catch (dmError) {
+                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                            const confirmMsg = await interaction.channel.send({ 
+                                content: `${interaction.user} - Sua avaliação foi enviada!`,
+                                embeds: [confirmEmbed]
+                            }).catch(() => null);
+                            
+                            // Deletar mensagem de confirmação após 5 segundos
+                            if (confirmMsg) {
+                                setTimeout(async () => {
+                                    try {
+                                        await confirmMsg.delete().catch(() => {});
+                                    } catch {}
+                                }, 5000);
+                            }
+                        }
+                    } else {
+                        // Se não encontrar canal de reviews, enviar no canal atual
+                        await interaction.channel.send({ embeds: [reviewEmbed] });
+                        
+                        // Deletar mensagem do utilizador
+                        try {
+                            await reviewMessage.delete().catch(() => {});
+                        } catch {}
+                        
+                        // Enviar confirmação via DM (mensagem privada) para o utilizador
+                        const confirmEmbed = new EmbedBuilder()
+                            .setTitle('Avaliação Enviada!')
+                            .setDescription('Sua avaliação foi enviada!')
+                            .setColor(0x00ff00)
+                            .setTimestamp();
+                        
+                        try {
+                            await interaction.user.send({ embeds: [confirmEmbed] });
+                        } catch (dmError) {
+                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                            const confirmMsg = await interaction.channel.send({ 
+                                content: `${interaction.user} - Sua avaliação foi enviada!`,
+                                embeds: [confirmEmbed]
+                            }).catch(() => null);
+                            
+                            // Deletar mensagem de confirmação após 5 segundos
+                            if (confirmMsg) {
+                                setTimeout(async () => {
+                                    try {
+                                        await confirmMsg.delete().catch(() => {});
+                                    } catch {}
+                                }, 5000);
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao processar avaliação:', error);
+                    await reviewMessage.reply('Erro ao processar sua avaliação. Tente novamente.');
+                }
+            });
+
+            textoCollector.on('end', (collected) => {
+                if (collected.size === 0) {
+                    const timeoutEmbed = new EmbedBuilder()
+                        .setTitle('Tempo Esgotado')
+                        .setDescription('Você não enviou sua avaliação a tempo. Use `!review` novamente para começar.')
+                        .setColor(0xff0000)
+                        .setTimestamp();
+                    
+                    interaction.channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
+                }
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar escolha de anonimato:', error);
+            // Verificar se já foi respondido antes de tentar responder
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Erro ao processar sua escolha. Tente novamente.', 
+                    ephemeral: true 
+                }).catch(() => {});
             }
         }
     }
@@ -851,7 +1275,7 @@ class PromoPingBot {
 
             // Verificar permissões
             const isTicketOwner = userId === ticketOwnerId;
-            const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+            const isAdmin = this.isAdmin(interaction.member);
             const supportRoleId = '1442655668904398980';
             const hasSupportRole = interaction.member.roles.cache.has(supportRoleId);
 
@@ -1326,9 +1750,38 @@ class PromoPingBot {
             console.log('[DISCORD] Token da Twitch obtido com sucesso');
 
             // Buscar informações dos canais (máximo 100 por requisição)
-            // Construir query string corretamente
-            const channelNames = channels.map(c => c.ChannelName);
-            const queryParams = channelNames.map(name => `user_login=${encodeURIComponent(name)}`).join('&');
+            // Extrair apenas o nome do canal (remover URLs se houver)
+            const extractChannelName = (channelName) => {
+                if (!channelName) return null;
+                
+                // Se for uma URL, extrair o nome do canal
+                const urlMatch = channelName.match(/(?:twitch\.tv\/|^)([^\/\s?]+)/i);
+                if (urlMatch) {
+                    return urlMatch[1].toLowerCase();
+                }
+                
+                // Se já for apenas o nome, retornar em lowercase
+                return channelName.toLowerCase().trim();
+            };
+            
+            const channelNames = channels
+                .map(c => extractChannelName(c.ChannelName))
+                .filter(name => name !== null && name.length > 0);
+            
+            // Se não houver canais válidos, não fazer requisição
+            if (channelNames.length === 0) {
+                console.log('[DISCORD] Nenhum nome de canal válido encontrado');
+                await connection.end();
+                return;
+            }
+            
+            // Construir query params corretamente - múltiplos user_login separados por &
+            // API Twitch aceita até 100 user_login por requisição
+            const queryParams = channelNames
+                .slice(0, 100) // Limitar a 100 canais por requisição
+                .map(name => `user_login=${encodeURIComponent(name)}`)
+                .join('&');
+            
             const streamsResponse = await fetch(
                 `https://api.twitch.tv/helix/streams?${queryParams}`,
                 {
@@ -1352,14 +1805,21 @@ class PromoPingBot {
 
             // Verificar cada canal e enviar notificação se necessário
             for (const channelData of channels) {
-                const channelName = channelData.ChannelName.toLowerCase();
+                // Extrair nome do canal (pode ser URL ou nome simples)
+                const extractedChannelName = extractChannelName(channelData.ChannelName);
+                if (!extractedChannelName) {
+                    console.log(`[DISCORD] Nome de canal inválido ignorado: ${channelData.ChannelName}`);
+                    continue;
+                }
+                
+                const channelName = extractedChannelName;
                 const isLive = liveChannels.has(channelName);
                 const wasLive = channelData.IsLive;
 
-                // Atualizar status no banco
+                // Atualizar status no banco (usar ChannelName original para WHERE)
                 await connection.execute(
                     'UPDATE twitch_channels SET IsLive = ?, LastLiveCheck = NOW() WHERE ChannelName = ?',
-                    [isLive, channelName]
+                    [isLive, channelData.ChannelName]
                 );
 
                 console.log(`[DISCORD] Canal ${channelName}: ${isLive ? 'AO VIVO' : 'Offline'} (era: ${wasLive ? 'AO VIVO' : 'Offline'})`);
@@ -1802,7 +2262,10 @@ class PromoPingBot {
                     .addStringOption(option =>
                         option.setName('mensagem')
                             .setDescription('Descrição do seu problema ou dúvida')
-                            .setRequired(false))
+                            .setRequired(false)),
+                new SlashCommandBuilder()
+                    .setName('review')
+                    .setDescription('Deixa uma avaliação sobre o site, bot ou suporte')
             ].map(command => command.toJSON());
 
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
@@ -1930,7 +2393,8 @@ class PromoPingBot {
                 'unlock': 'unlock',
                 'counting': 'counting',
                 'clear': 'clear',
-                'suporte': 'suporte'
+                'suporte': 'suporte',
+                'review': 'review'
             };
 
             const comandoNome = comandoMap[commandName];

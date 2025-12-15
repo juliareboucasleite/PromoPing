@@ -14,7 +14,7 @@ module.exports = {
             }
 
             // Verificar se o usuário é administrador
-            if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            if (!botInstance.isAdmin(message.member)) {
                 const embed = new EmbedBuilder()
                     .setTitle('❌ Sem Permissão')
                     .setDescription('Apenas administradores podem configurar o sistema de tickets!')

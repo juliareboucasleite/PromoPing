@@ -29,7 +29,7 @@ module.exports = {
 
             // Verificar se o usuário é o criador do ticket ou tem permissões de administrador
             const isTicketOwner = channel.name.includes(message.author.username.toLowerCase().replace(/[^a-z0-9]/g, ''));
-            const isAdmin = message.member.permissions.has(PermissionFlagsBits.Administrator);
+            const isAdmin = botInstance.isAdmin(message.member);
             const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
             const hasSupportRole = supportRoleId && message.member.roles.cache.has(supportRoleId);
 

@@ -10,7 +10,7 @@ module.exports = {
     execute: async (client, message, args, botInstance) => {
         try {
             // Verificar permissões de administrador
-            if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            if (!botInstance.isAdmin(message.member)) {
                 return await message.reply('❌ Você precisa de permissões de administrador para usar este comando.');
             }
 

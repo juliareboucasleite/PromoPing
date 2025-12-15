@@ -13,15 +13,15 @@ module.exports = {
             
             // Para ação de sincronizar, verificar cargo específico
             if (action === 'sincronizar' || action === 'sync') {
-                const allowedRoleId = '1442655601682419722';
-                const hasAllowedRole = message.member.roles.cache.has(allowedRoleId);
+                const allowedRoleIds = ['1442655601682419722', '1442937735253065758'];
+                const hasAllowedRole = allowedRoleIds.some(roleId => message.member.roles.cache.has(roleId));
                 
                 if (!hasAllowedRole) {
                     return await message.channel.send('❌ Você não tem permissão para sincronizar releases. Apenas membros com o cargo específico podem usar esta função.');
                 }
             } else {
                 // Para outras ações, verificar permissões de administrador
-                if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                if (!botInstance.isAdmin(message.member)) {
                     return await message.channel.send('❌ Você precisa de permissões de administrador para usar este comando.');
                 }
             }
