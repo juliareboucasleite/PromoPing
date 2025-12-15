@@ -720,6 +720,114 @@ def monitor_loop():
     finally:
         safe_quit(driver)
         logger.info("Driver fechado")
+        
+def extract_product_info(driver, url):
+    """
+    Extrai informações relevantes do produto da página.
+    Retorna título e texto relevante limitado para análise pela IA.
+    """
+    try:
+        driver.get(url)
+        aceitar_cookies(driver)
+        sleep(2)
+        
+        # Extrair título (preferencialmente h1)
+        title = ""
+        try:
+            # Tentar h1 primeiro
+            title = driver.find_element(By.TAG_NAME, "h1").text.strip()
+        except:
+            try:
+                # Fallback para outros seletores de título
+                title_selectors = [
+                    "h1.product-title",
+                    "h1[class*='title']",
+                    ".product-title",
+                    "h2.product-name",
+                    "[data-testid*='title']"
+                ]
+                for selector in title_selectors:
+                    try:
+                        title = driver.find_element(By.CSS_SELECTOR, selector).text.strip()
+                        if title:
+                            break
+                    except:
+                        continue
+            except:
+                pass
+        
+        # Extrair texto relevante da página (limitado)
+        # Priorizar elementos com informações do produto
+        relevant_text_parts = []
+        
+        # Tentar extrair descrição do produto
+        try:
+            desc_selectors = [
+                "#productDescription",
+                ".product-description",
+                "[data-testid*='description']",
+                ".description",
+                "#description"
+            ]
+            for selector in desc_selectors:
+                try:
+                    desc = driver.find_element(By.CSS_SELECTOR, selector).text.strip()
+                    if desc and len(desc) > 20:
+                        relevant_text_parts.append(desc[:1000])  # Limitar descrição
+                        break
+                except:
+                    continue
+        except:
+            pass
+        
+        # Extrair informações técnicas se disponíveis
+        try:
+            spec_selectors = [
+                ".product-specs",
+                ".specifications",
+                "[data-testid*='spec']",
+                ".technical-details"
+            ]
+            for selector in spec_selectors:
+                try:
+                    specs = driver.find_element(By.CSS_SELECTOR, selector).text.strip()
+                    if specs and len(specs) > 20:
+                        relevant_text_parts.append(specs[:500])
+                        break
+                except:
+                    continue
+        except:
+            pass
+        
+        # Se não encontrou elementos específicos, usar parte do page_source
+        if not relevant_text_parts:
+            # Extrair texto visível da página (mais relevante que HTML completo)
+            try:
+                body_text = driver.find_element(By.TAG_NAME, "body").text.strip()
+                # Limitar a primeiras linhas relevantes
+                relevant_text_parts.append(body_text[:3000])
+            except:
+                # Último fallback: page_source limitado
+                relevant_text_parts.append(driver.page_source[:3000])
+        
+        # Combinar todo o texto relevante
+        raw_text = " ".join(relevant_text_parts)
+        # Limitar tamanho total (máximo 5000 caracteres para economia de tokens)
+        raw_text = raw_text[:5000]
+        
+        return {
+            "title": title,
+            "url": url,
+            "raw_text": raw_text
+        }
+    except Exception as e:
+        logger.error(f"Erro ao extrair informações do produto: {e}")
+        # Retornar estrutura mínima em caso de erro
+        return {
+            "title": "",
+            "url": url,
+            "raw_text": ""
+        }
 
 # ==================== CLASSE WRAPPER PARA SCHEDULER ====================
 
@@ -797,3 +905,6 @@ class PriceScraper:
 
 if __name__ == "__main__":
     monitor_loop()
+
+
+    
