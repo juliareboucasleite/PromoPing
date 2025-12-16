@@ -353,6 +353,40 @@ def aceitar_cookies(driver):
             except:
                 pass
         
+        # Continente
+        if "continente" in driver.current_url.lower():
+            try:
+                # Tentar vários seletores de botão de cookies do Continente
+                cookie_selectors = [
+                    "//button[contains(text(), 'Aceitar')]",
+                    "//button[contains(text(), 'Aceitar todos')]",
+                    "//button[contains(text(), 'Aceitar Cookies')]",
+                    "//button[@id='onetrust-accept-btn-handler']",
+                    "button#onetrust-accept-btn-handler",
+                    ".onetrust-accept-btn-handler"
+                ]
+                
+                for selector in cookie_selectors:
+                    try:
+                        if selector.startswith("//") or selector.startswith(".//"):
+                            # XPath
+                            button = WebDriverWait(driver, 2).until(
+                                EC.element_to_be_clickable((By.XPATH, selector))
+                            )
+                        else:
+                            # CSS Selector
+                            button = WebDriverWait(driver, 2).until(
+                                EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                            )
+                        button.click()
+                        sleep(1)
+                        logger.info("[CONTINENTE] Cookies aceitos")
+                        return
+                    except:
+                        continue
+            except:
+                pass
+        
         # Black Market / Back Market
         if "blackmarket" in driver.current_url.lower() or "backmarket" in driver.current_url.lower():
             try:
@@ -564,6 +598,146 @@ def extract_price(driver, url):
                 import traceback
                 traceback.print_exc()
             return "Worten", None, None
+        
+        # Continente
+        elif "continente.pt" in u:
+            try:
+                sleep(3)  # Aguarda carregamento completo
+                aceitar_cookies(driver)
+                sleep(2)
+                
+                # Verificar se o produto está disponível (não marcar como indisponível se estiver disponível)
+                disponivel = True
+                try:
+                    # Seletores que indicam produto indisponível
+                    indisponivel_selectors = [
+                        ".out-of-stock",
+                        "[class*='unavailable']",
+                        "[class*='esgotado']",
+                        ".product-unavailable",
+                        "[data-testid*='unavailable']",
+                        ".ct-product-unavailable"
+                    ]
+                    
+                    for selector in indisponivel_selectors:
+                        try:
+                            el = driver.find_element(By.CSS_SELECTOR, selector)
+                            if el.is_displayed():
+                                # Verificar se realmente está indisponível (não apenas oculto)
+                                texto = el.text.lower()
+                                if any(palavra in texto for palavra in ['esgotado', 'indisponível', 'unavailable', 'out of stock']):
+                                    disponivel = False
+                                    logger.warning(f"[CONTINENTE] Produto pode estar indisponível: {texto}")
+                                    break
+                        except:
+                            continue
+                except:
+                    pass  # Se não encontrar indicadores, assumir disponível
+                
+                # Seletores para o preço do Continente (ordem de prioridade)
+                selectors = [
+                    "span.ct-price-formatted",
+                    ".ct-price-formatted",
+                    "span.price",
+                    ".price",
+                    ".product-price",
+                    ".current-price",
+                    "[class*='ct-price']",
+                    "[data-testid*='price']",
+                    ".ct-product-price"
+                ]
+                
+                for selector in selectors:
+                    try:
+                        WebDriverWait(driver, 5).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                        )
+                        elementos = driver.find_elements(By.CSS_SELECTOR, selector)
+                        
+                        # Tentar todos os elementos encontrados
+                        for el in elementos:
+                            try:
+                                if el.is_displayed():
+                                    texto_preco = el.text.strip()
+                                    preco = clean_price_text(texto_preco)
+                                    if preco and float(preco) > 0:
+                                        logger.info(f"[CONTINENTE] Preço encontrado com seletor {selector}: €{preco}")
+                                        return "Continente", preco, None
+                            except:
+                                continue
+                    except:
+                        continue
+                
+                # Tentar buscar por atributos data-* ou aria-*
+                try:
+                    price_elements = driver.find_elements(By.CSS_SELECTOR, "[data-price], [aria-label*='€'], [data-testid*='price']")
+                    for el in price_elements:
+                        try:
+                            # Tentar atributo data-price
+                            data_price = el.get_attribute("data-price")
+                            if data_price:
+                                preco = clean_price_text(data_price)
+                                if preco and float(preco) > 0:
+                                    logger.info(f"[CONTINENTE] Preço encontrado via data-price: €{preco}")
+                                    return "Continente", preco, None
+                            
+                            # Tentar aria-label
+                            aria_label = el.get_attribute("aria-label")
+                            if aria_label and "€" in aria_label:
+                                price_match = re.search(r'(\d+[,\.]\d{2})', aria_label)
+                                if price_match:
+                                    preco = clean_price_text(price_match.group(1))
+                                    if preco and float(preco) > 0:
+                                        logger.info(f"[CONTINENTE] Preço encontrado via aria-label: €{preco}")
+                                        return "Continente", preco, None
+                        except:
+                            continue
+                except:
+                    pass
+                
+                # Fallback: busca por padrão de preço no texto da página
+                page_text = driver.page_source
+                # Padrões mais específicos para Continente
+                price_patterns = [
+                    r'ct-price-formatted[^>]*>([^<]*\d+[,\.]\d{2}[^<]*)',  # Dentro de ct-price-formatted
+                    r'data-price="(\d+[,\.]\d{2})"',  # Atributo data-price
+                    r'(\d+[,\.]\d{2})\s*€',  # Padrão genérico
+                    r'€\s*(\d+[,\.]\d{2})',  # € seguido de número
+                ]
+                
+                for pattern in price_patterns:
+                    price_match = re.search(pattern, page_text, re.IGNORECASE)
+                    if price_match:
+                        preco = clean_price_text(price_match.group(1))
+                        if preco and float(preco) > 0:
+                            logger.info(f"[CONTINENTE] Preço encontrado via regex: €{preco}")
+                            return "Continente", preco, None
+                
+                # Se chegou aqui e o produto está disponível, logar aviso mas não retornar None imediatamente
+                if disponivel:
+                    logger.warning(f"[CONTINENTE] Produto parece disponível mas preço não foi encontrado. Tentando busca mais ampla...")
+                    
+                    # Última tentativa: buscar qualquer número que pareça preço na página
+                    try:
+                        body_text = driver.find_element(By.TAG_NAME, "body").text
+                        # Procurar padrões de preço no texto visível
+                        price_matches = re.findall(r'(\d+[,\.]\d{2})\s*€', body_text)
+                        for match in price_matches:
+                            preco = clean_price_text(match)
+                            if preco and 0.01 <= float(preco) <= 99999:  # Preço razoável
+                                logger.info(f"[CONTINENTE] Preço encontrado via texto da página: €{preco}")
+                                return "Continente", preco, None
+                    except:
+                        pass
+                        
+            except Exception as e:
+                logger.error(f"Erro Continente: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # Se não encontrou preço mas produto está disponível, retornar None (será tratado como erro)
+            logger.warning(f"[CONTINENTE] Preço não encontrado para produto (pode estar disponível mas sem preço visível)")
+            return "Continente", None, None
         
         # Black Market / Back Market
         elif "blackmarket" in u or "backmarket" in u:
