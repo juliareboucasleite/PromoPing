@@ -42,6 +42,11 @@ class PromoPingBot {
         this.lastTwitchCheck = new Date();
         this.twitchLiveStatus = new Map(); // channelName -> { isLive: boolean, lastNotification: Date }
 
+        // Monitoramento de Notícias
+        this.newsCheckInterval = null;
+        this.lastNewsCheck = new Date();
+        this.newsService = null; // Será carregado dinamicamente
+
         // IDs de administradores com acesso total a todos os comandos
         this.adminIds = [
             '1448056767253708821' // ID com acesso total
@@ -72,9 +77,10 @@ class PromoPingBot {
         // Quando o bot se conecta
         this.client.once('ready', async () => {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
-            console.log(`[DISCORD] Iniciando monitoramento de preços e Twitch...`);
+            console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
             this.startMonitoring();
             this.startTwitchMonitoring();
+            this.startNewsMonitoring();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
@@ -1691,6 +1697,131 @@ class PromoPingBot {
 
         // Verificar imediatamente ao iniciar
         await this.checkTwitchLives();
+    }
+
+    async startNewsMonitoring() {
+        try {
+            // Carregar newsService dinamicamente (ES module)
+            const newsServiceModule = await import('../services/newsService.js');
+            this.newsService = newsServiceModule.default;
+            
+            // Verificar notícias a cada 60 minutos (ou conforme configurado)
+            this.newsCheckInterval = setInterval(async () => {
+                try {
+                    await this.checkNews();
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao verificar notícias:', error);
+                }
+            }, 60 * 60 * 1000); // 60 minutos
+
+            // Verificar imediatamente ao iniciar (com delay para não sobrecarregar)
+            setTimeout(async () => {
+                await this.checkNews();
+            }, 2 * 60 * 1000); // Aguardar 2 minutos após iniciar
+        } catch (error) {
+            console.error('[DISCORD] Erro ao carregar newsService:', error);
+        }
+    }
+
+    async checkNews() {
+        if (!this.newsService) {
+            console.error('[DISCORD] newsService não carregado');
+            return;
+        }
+        try {
+            console.log('[DISCORD] Verificando notícias impactantes...');
+            
+            const news = await this.newsService.fetchNews();
+            
+            if (news.length === 0) {
+                console.log('[DISCORD] Nenhuma notícia impactante encontrada');
+                return;
+            }
+
+            // Buscar configuração do canal de notícias
+            const connection = await mysql.createConnection(this.dbConfig);
+            const [configs] = await connection.execute(
+                'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
+            );
+
+            if (configs.length === 0) {
+                console.log('[DISCORD] Sistema de notícias não configurado');
+                await connection.end();
+                return;
+            }
+
+            const config = configs[0];
+            const channel = await this.client.channels.fetch(config.ChannelId).catch(() => null);
+            
+            if (!channel) {
+                console.error('[DISCORD] Canal de notícias não encontrado!');
+                await connection.end();
+                return;
+            }
+
+            // Enviar cada notícia impactante
+            for (const article of news) {
+                // Verificar se já foi enviada
+                const alreadySent = await this.newsService.isNewsAlreadySent(article.url);
+                if (alreadySent) {
+                    console.log(`[DISCORD] Notícia já enviada: ${article.title.substring(0, 50)}...`);
+                    continue;
+                }
+
+                // Enviar notícia
+                await this.sendNewsNotification(channel, article);
+                
+                // Marcar como enviada
+                await this.newsService.markNewsAsSent(article);
+                
+                // Aguardar 2 segundos entre notícias para evitar spam
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            await connection.end();
+            this.lastNewsCheck = new Date();
+            console.log(`[DISCORD] ${news.length} notícia(s) impactante(s) processada(s)`);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao verificar notícias:', error);
+        }
+    }
+
+    async sendNewsNotification(discordChannel, article) {
+        try {
+            // Determinar cor baseada no score de impacto
+            let color = 0x5865F2; // Azul padrão
+            if (article.impactScore >= 9) {
+                color = 0xff0000; // Vermelho para muito impactante
+            } else if (article.impactScore >= 8) {
+                color = 0xff9900; // Laranja para impactante
+            } else {
+                color = 0x5865F2; // Azul para moderado
+            }
+
+            const embed = new EmbedBuilder()
+                .setTitle(`📰 ${article.title}`)
+                .setDescription(article.description || 'Sem descrição disponível')
+                .addFields(
+                    { name: 'Categoria', value: article.category, inline: true },
+                    { name: 'Impacto', value: `${article.impactScore}/10`, inline: true },
+                    { name: 'Fonte', value: article.source, inline: true }
+                )
+                .setURL(article.url)
+                .setColor(color)
+                .setTimestamp(new Date(article.publishedAt))
+                .setFooter({ text: 'PromoPing - Notícias Automáticas' });
+
+            if (article.image) {
+                embed.setImage(article.image);
+            }
+
+            await discordChannel.send({ embeds: [embed] });
+            console.log(`[DISCORD] Notícia enviada: ${article.title.substring(0, 50)}...`);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao enviar notificação de notícia:', error);
+        }
     }
 
     async checkTwitchLives() {

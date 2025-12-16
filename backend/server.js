@@ -67,6 +67,7 @@ import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
+import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
 import { verifyToken} from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
@@ -336,6 +337,7 @@ app.use("/api/payment", paymentRoutes); // Pagamentos
 app.use("/api/exportar", exportRoutes); // Exportação
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
+app.use("/api/newsletter", newsletterRoutes); // Newsletter
 app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
