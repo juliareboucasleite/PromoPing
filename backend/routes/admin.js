@@ -10,6 +10,7 @@ import {
 import {
     verifyToken
 } from "../middleware/auth.js";
+import { google } from "googleapis";
 
 const router = express.Router();
 
@@ -63,8 +64,21 @@ async function verifyAdmin(req, res, next) {
 
 // Aplicar verificação de admin em todas as rotas
 // IMPORTANTE: verifyToken deve ser aplicado primeiro
-router.use(verifyToken);
-router.use(verifyAdmin);
+// EXCEÇÃO: /calendar/google-callback não precisa de autenticação (é callback do Google)
+router.use((req, res, next) => {
+    // Excluir callback do Google da verificação de token
+    if (req.path === '/calendar/google-callback') {
+        return next();
+    }
+    verifyToken(req, res, next);
+});
+router.use((req, res, next) => {
+    // Excluir callback do Google da verificação de admin
+    if (req.path === '/calendar/google-callback') {
+        return next();
+    }
+    verifyAdmin(req, res, next);
+});
 
 // ================== UTILIZADORES ==================
 router.get("/users", async (req, res) => {
@@ -472,5 +486,919 @@ async function ensureUpdatesTable() {
 
     await pool.query(sql);
 }
+
+// ================== CALENDÁRIO ADMINISTRATIVO ==================
+/**
+ * Garante que a tabela admin_events existe
+ */
+/**
+ * Garante que a tabela google_oauth_tokens existe
+ */
+async function ensureGoogleOAuthTokensTable() {
+    try {
+        const [tables] = await pool.query(
+            "SHOW TABLES LIKE 'google_oauth_tokens'"
+        );
+
+        if (tables.length === 0) {
+            console.log("[ADMIN] Criando tabela google_oauth_tokens...");
+            const sql = `CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                access_token TEXT NOT NULL,
+                refresh_token TEXT,
+                token_type VARCHAR(50) DEFAULT 'Bearer',
+                expires_at TIMESTAMP NULL,
+                scope TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_user_id (user_id),
+                INDEX idx_expires_at (expires_at),
+                FOREIGN KEY (user_id) REFERENCES Utilizadores(Id) ON DELETE CASCADE,
+                UNIQUE KEY unique_user_token (user_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
+            await pool.query(sql);
+            console.log("[ADMIN] Tabela google_oauth_tokens criada com sucesso");
+        }
+    } catch (err) {
+        console.error("[ADMIN] Erro ao verificar/criar tabela google_oauth_tokens:", err);
+        throw err;
+    }
+}
+
+/**
+ * Renovar token do Google usando refresh_token
+ */
+async function refreshGoogleToken(userId, refreshToken) {
+    try {
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.GOOGLE_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`
+        );
+
+        oauth2Client.setCredentials({
+            refresh_token: refreshToken
+        });
+
+        const { credentials } = await oauth2Client.refreshAccessToken();
+        
+        // Atualizar tokens no banco
+        await pool.query(
+            `UPDATE google_oauth_tokens 
+             SET access_token = ?, 
+                 expires_at = ?,
+                 updated_at = NOW()
+             WHERE user_id = ?`,
+            [
+                credentials.access_token,
+                credentials.expiry_date ? new Date(credentials.expiry_date) : null,
+                userId
+            ]
+        );
+
+        return credentials.access_token;
+    } catch (err) {
+        console.error("[ADMIN] Erro ao renovar token:", err);
+        throw new Error("Erro ao renovar token do Google");
+    }
+}
+
+/**
+ * Sincronizar eventos do Google Calendar
+ */
+async function syncGoogleCalendarEvents(userId, accessToken) {
+    try {
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.GOOGLE_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`
+        );
+
+        oauth2Client.setCredentials({
+            access_token: accessToken
+        });
+
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+        // Buscar eventos dos próximos 90 dias
+        const timeMin = new Date().toISOString();
+        const timeMax = new Date();
+        timeMax.setDate(timeMax.getDate() + 90);
+        const timeMaxISO = timeMax.toISOString();
+
+        const response = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: timeMin,
+            timeMax: timeMaxISO,
+            maxResults: 100,
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+
+        const events = response.data.items || [];
+        const syncedEvents = [];
+
+        for (const googleEvent of events) {
+            try {
+                // Verificar se o evento já existe (por google_event_id)
+                const [existing] = await pool.query(
+                    `SELECT id FROM admin_events 
+                     WHERE description LIKE ? OR title = ? 
+                     LIMIT 1`,
+                    [`%${googleEvent.id}%`, googleEvent.summary || '']
+                );
+
+                const startDate = googleEvent.start?.dateTime || googleEvent.start?.date;
+                const endDate = googleEvent.end?.dateTime || googleEvent.end?.date;
+
+                if (!startDate) continue;
+
+                const eventData = {
+                    title: googleEvent.summary || 'Evento sem título',
+                    description: `${googleEvent.description || ''}\n\n[Google Calendar ID: ${googleEvent.id}]`,
+                    type: 'maintenance', // Padrão, pode ser melhorado com categorias
+                    start_date: new Date(startDate).toISOString().slice(0, 19).replace('T', ' '),
+                    end_date: endDate ? new Date(endDate).toISOString().slice(0, 19).replace('T', ' ') : null,
+                    status: 'scheduled',
+                    created_by: userId
+                };
+
+                if (existing.length > 0) {
+                    // Atualizar evento existente
+                    await pool.query(
+                        `UPDATE admin_events 
+                         SET title = ?, description = ?, start_date = ?, end_date = ?, updated_at = NOW()
+                         WHERE id = ?`,
+                        [
+                            eventData.title,
+                            eventData.description,
+                            eventData.start_date,
+                            eventData.end_date,
+                            existing[0].id
+                        ]
+                    );
+                    syncedEvents.push({ id: existing[0].id, action: 'updated', title: eventData.title });
+                } else {
+                    // Criar novo evento
+                    const [result] = await pool.query(
+                        `INSERT INTO admin_events (title, description, type, start_date, end_date, status, created_by) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            eventData.title,
+                            eventData.description,
+                            eventData.type,
+                            eventData.start_date,
+                            eventData.end_date,
+                            eventData.status,
+                            eventData.created_by
+                        ]
+                    );
+                    syncedEvents.push({ id: result.insertId, action: 'created', title: eventData.title });
+                }
+            } catch (eventErr) {
+                console.error(`[ADMIN] Erro ao sincronizar evento ${googleEvent.id}:`, eventErr);
+                // Continuar com próximo evento
+            }
+        }
+
+        return syncedEvents;
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar eventos do Google Calendar:", err);
+        throw new Error(`Erro ao sincronizar eventos: ${err.message}`);
+    }
+}
+
+async function ensureAdminEventsTable() {
+    try {
+        const [tables] = await pool.query(
+            "SHOW TABLES LIKE 'admin_events'"
+        );
+
+        if (tables.length === 0) {
+            console.log("[ADMIN] Criando tabela admin_events...");
+            const sql = `CREATE TABLE IF NOT EXISTS admin_events (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(200) NOT NULL,
+                description TEXT,
+                type ENUM('scraper', 'bug', 'maintenance', 'deploy', 'milestone') DEFAULT 'maintenance',
+                start_date DATETIME NOT NULL,
+                end_date DATETIME NULL,
+                status ENUM('scheduled', 'in-progress', 'completed', 'cancelled') DEFAULT 'scheduled',
+                created_by INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_start_date (start_date),
+                INDEX idx_end_date (end_date),
+                INDEX idx_type (type),
+                INDEX idx_status (status),
+                INDEX idx_created_by (created_by)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
+            await pool.query(sql);
+            console.log("[ADMIN] Tabela admin_events criada com sucesso");
+        } else {
+            console.log("[ADMIN] Tabela admin_events já existe");
+        }
+    } catch (err) {
+        console.error("[ADMIN] Erro ao verificar/criar tabela admin_events:", err);
+        throw err;
+    }
+}
+
+/**
+ * GET /api/admin/calendar/events
+ * Lista todos os eventos do calendário
+ */
+router.get("/calendar/events", async (req, res) => {
+    console.log("[ADMIN] GET /api/admin/calendar/events chamado");
+    try {
+        await ensureAdminEventsTable();
+
+        const { start, end } = req.query;
+
+        let query = `
+            SELECT 
+                e.id,
+                e.title,
+                e.description,
+                e.type,
+                e.start_date,
+                e.end_date,
+                e.status,
+                e.created_by,
+                e.created_at,
+                e.updated_at,
+                u.Nome as created_by_name,
+                u.Email as created_by_email
+            FROM admin_events e
+            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            WHERE 1=1
+        `;
+        const params = [];
+
+        // Filtrar por intervalo de datas se fornecido
+        if (start && end) {
+            query += ` AND (
+                (e.start_date >= ? AND e.start_date <= ?) OR
+                (e.end_date >= ? AND e.end_date <= ?) OR
+                (e.start_date <= ? AND e.end_date >= ?)
+            )`;
+            params.push(start, end, start, end, start, end);
+        }
+
+        query += ` ORDER BY e.start_date ASC`;
+
+        const [events] = await pool.query(query, params);
+
+        // Formatar eventos para FullCalendar
+        const formattedEvents = events.map(event => ({
+            id: event.id,
+            title: event.title,
+            description: event.description || '',
+            type: event.type,
+            start: event.start_date,
+            end: event.end_date || null,
+            status: event.status,
+            createdBy: event.created_by,
+            createdByName: event.created_by_name || 'Admin',
+            createdAt: event.created_at,
+            updatedAt: event.updated_at
+        }));
+
+        res.json({
+            status: "ok",
+            events: formattedEvents
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar eventos:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar eventos do calendário");
+    }
+});
+
+/**
+ * POST /api/admin/calendar/events
+ * Cria um novo evento
+ */
+router.post("/calendar/events", async (req, res) => {
+    console.log("[ADMIN] POST /api/admin/calendar/events chamado");
+    try {
+        await ensureAdminEventsTable();
+
+        const { title, description, type, start_date, end_date, status } = req.body;
+        const userId = req.user && req.user.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                status: "error",
+                error: "Não autenticado"
+            });
+        }
+
+        if (!title || !start_date) {
+            return res.status(400).json({
+                status: "error",
+                error: "Título e data de início são obrigatórios"
+            });
+        }
+
+        // Validar tipo
+        const validTypes = ['scraper', 'bug', 'maintenance', 'deploy', 'milestone'];
+        const eventType = validTypes.includes(type) ? type : 'maintenance';
+
+        // Validar status
+        const validStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
+        const eventStatus = validStatuses.includes(status) ? status : 'scheduled';
+
+        const [result] = await pool.query(
+            `INSERT INTO admin_events (title, description, type, start_date, end_date, status, created_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                title,
+                description || null,
+                eventType,
+                start_date,
+                end_date || null,
+                eventStatus,
+                userId
+            ]
+        );
+
+        // Buscar o evento criado
+        const [newEvent] = await pool.query(
+            `SELECT 
+                e.*,
+                u.Nome as created_by_name,
+                u.Email as created_by_email
+            FROM admin_events e
+            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            WHERE e.id = ?`,
+            [result.insertId]
+        );
+
+        res.json({
+            status: "ok",
+            id: result.insertId,
+            event: {
+                id: newEvent[0].id,
+                title: newEvent[0].title,
+                description: newEvent[0].description || '',
+                type: newEvent[0].type,
+                start: newEvent[0].start_date,
+                end: newEvent[0].end_date || null,
+                status: newEvent[0].status,
+                createdBy: newEvent[0].created_by,
+                createdByName: newEvent[0].created_by_name || 'Admin',
+                createdAt: newEvent[0].created_at,
+                updatedAt: newEvent[0].updated_at
+            },
+            message: "Evento criado com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao criar evento:", err);
+        return handleDatabaseError(err, res, "Erro ao criar evento");
+    }
+});
+
+/**
+ * PUT /api/admin/calendar/events/:id
+ * Atualiza um evento existente
+ */
+router.put("/calendar/events/:id", async (req, res) => {
+    console.log("[ADMIN] PUT /api/admin/calendar/events/:id chamado");
+    try {
+        await ensureAdminEventsTable();
+
+        const { id } = req.params;
+        const { title, description, type, start_date, end_date, status } = req.body;
+
+        // Verificar se o evento existe
+        const [existing] = await pool.query(
+            "SELECT * FROM admin_events WHERE id = ?",
+            [id]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Evento não encontrado"
+            });
+        }
+
+        // Construir query de atualização dinamicamente
+        const updates = [];
+        const values = [];
+
+        if (title !== undefined) {
+            updates.push("title = ?");
+            values.push(title);
+        }
+        if (description !== undefined) {
+            updates.push("description = ?");
+            values.push(description);
+        }
+        if (type !== undefined) {
+            const validTypes = ['scraper', 'bug', 'maintenance', 'deploy', 'milestone'];
+            if (validTypes.includes(type)) {
+                updates.push("type = ?");
+                values.push(type);
+            }
+        }
+        if (start_date !== undefined) {
+            updates.push("start_date = ?");
+            values.push(start_date);
+        }
+        if (end_date !== undefined) {
+            updates.push("end_date = ?");
+            values.push(end_date);
+        }
+        if (status !== undefined) {
+            const validStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
+            if (validStatuses.includes(status)) {
+                updates.push("status = ?");
+                values.push(status);
+            }
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Nenhum campo para atualizar"
+            });
+        }
+
+        values.push(id);
+
+        await pool.query(
+            `UPDATE admin_events SET ${updates.join(", ")} WHERE id = ?`,
+            values
+        );
+
+        // Buscar o evento atualizado
+        const [updated] = await pool.query(
+            `SELECT 
+                e.*,
+                u.Nome as created_by_name,
+                u.Email as created_by_email
+            FROM admin_events e
+            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            WHERE e.id = ?`,
+            [id]
+        );
+
+        res.json({
+            status: "ok",
+            event: {
+                id: updated[0].id,
+                title: updated[0].title,
+                description: updated[0].description || '',
+                type: updated[0].type,
+                start: updated[0].start_date,
+                end: updated[0].end_date || null,
+                status: updated[0].status,
+                createdBy: updated[0].created_by,
+                createdByName: updated[0].created_by_name || 'Admin',
+                createdAt: updated[0].created_at,
+                updatedAt: updated[0].updated_at
+            },
+            message: "Evento atualizado com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar evento:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar evento");
+    }
+});
+
+/**
+ * DELETE /api/admin/calendar/events/:id
+ * Remove um evento
+ */
+router.delete("/calendar/events/:id", async (req, res) => {
+    console.log("[ADMIN] DELETE /api/admin/calendar/events/:id chamado");
+    try {
+        await ensureAdminEventsTable();
+
+        const { id } = req.params;
+
+        // Verificar se o evento existe
+        const [existing] = await pool.query(
+            "SELECT * FROM admin_events WHERE id = ?",
+            [id]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Evento não encontrado"
+            });
+        }
+
+        await pool.query("DELETE FROM admin_events WHERE id = ?", [id]);
+
+        res.json({
+            status: "ok",
+            message: "Evento removido com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao remover evento:", err);
+        return handleDatabaseError(err, res, "Erro ao remover evento");
+    }
+});
+
+/**
+ * POST /api/admin/calendar/sync-google
+ * Sincroniza eventos do Google Calendar (read-only)
+ */
+router.post("/calendar/sync-google", async (req, res) => {
+    console.log("[ADMIN] POST /api/admin/calendar/sync-google chamado");
+    try {
+        await ensureAdminEventsTable();
+
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({
+                status: "error",
+                error: "Não autenticado"
+            });
+        }
+
+        // Verificar se Google OAuth está configurado
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+            return res.status(400).json({
+                status: "error",
+                error: "Google OAuth não está configurado. Configure GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env"
+            });
+        }
+
+        // Garantir que a tabela de tokens existe
+        await ensureGoogleOAuthTokensTable();
+
+        // Buscar tokens OAuth do usuário
+        const [tokenRows] = await pool.query(
+            `SELECT access_token, refresh_token, expires_at 
+             FROM google_oauth_tokens 
+             WHERE user_id = ? AND (expires_at IS NULL OR expires_at > NOW())`,
+            [userId]
+        );
+
+        if (tokenRows.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Tokens OAuth não encontrados. Faça login com Google OAuth primeiro e autorize o acesso ao calendário."
+            });
+        }
+
+        const tokenData = tokenRows[0];
+        let accessToken = tokenData.access_token;
+
+        // Verificar se o token expirou e renovar se necessário
+        if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
+            if (!tokenData.refresh_token) {
+                return res.status(400).json({
+                    status: "error",
+                    error: "Token expirado e sem refresh token. Faça login novamente com Google OAuth."
+                });
+            }
+            accessToken = await refreshGoogleToken(userId, tokenData.refresh_token);
+        }
+
+        // Sincronizar eventos do Google Calendar
+        const syncedEvents = await syncGoogleCalendarEvents(userId, accessToken);
+
+        res.json({
+            status: "ok",
+            message: "Sincronização concluída com sucesso",
+            synced: syncedEvents.length,
+            events: syncedEvents
+        });
+
+    } catch (err) {
+        console.error("[ADMIN] Erro ao sincronizar Google Calendar:", err);
+        return res.status(500).json({
+            status: "error",
+            error: err.message || "Erro ao sincronizar Google Calendar"
+        });
+    }
+});
+
+/**
+ * GET /api/admin/calendar/connect-google
+ * Inicia o processo de conexão com Google Calendar para usuário autenticado
+ */
+router.get("/calendar/connect-google", verifyToken, async (req, res) => {
+    console.log("[ADMIN] GET /api/admin/calendar/connect-google chamado");
+    try {
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({
+                status: "error",
+                error: "Não autenticado"
+            });
+        }
+
+        // Verificar se Google OAuth está configurado
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+            return res.status(400).json({
+                status: "error",
+                error: "Google OAuth não está configurado"
+            });
+        }
+
+        // Redirecionar para Google OAuth com state contendo userId
+        const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+        const callbackUrl = `${baseUrl}/api/admin/calendar/google-callback`;
+        
+        // Criar state com userId para segurança
+        const state = Buffer.from(JSON.stringify({ userId, source: 'calendar' })).toString('base64');
+        
+        // Construir URL de autorização do Google
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
+            `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
+            `response_type=code&` +
+            `scope=${encodeURIComponent('profile email https://www.googleapis.com/auth/calendar.readonly')}&` +
+            `access_type=offline&` +
+            `prompt=consent&` +
+            `state=${state}`;
+
+        res.json({
+            status: "ok",
+            authUrl: authUrl
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao iniciar conexão Google:", err);
+        return res.status(500).json({
+            status: "error",
+            error: err.message || "Erro ao iniciar conexão com Google"
+        });
+    }
+});
+
+/**
+ * GET /api/admin/calendar/google-callback
+ * Callback do Google OAuth para salvar tokens
+ */
+router.get("/calendar/google-callback", async (req, res) => {
+    console.log("[ADMIN] GET /api/admin/calendar/google-callback chamado");
+    try {
+        const { code, state, error } = req.query;
+
+        if (error) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Erro de Autorização</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f10; color: #e6e6e6; }
+                        .error { color: #fca5a5; }
+                        button { padding: 10px 20px; background: #ff9800; color: #0f0f10; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Erro de Autorização</h1>
+                    <p>${error}</p>
+                    <button onclick="window.close()">Fechar</button>
+                </body>
+                </html>
+            `);
+        }
+
+        if (!code || !state) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Erro</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f10; color: #e6e6e6; }
+                        .error { color: #fca5a5; }
+                        button { padding: 10px 20px; background: #ff9800; color: #0f0f10; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Erro</h1>
+                    <p>Código de autorização não recebido</p>
+                    <button onclick="window.close()">Fechar</button>
+                </body>
+                </html>
+            `);
+        }
+
+        // Decodificar state
+        const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+        const userId = stateData.userId;
+
+        if (!userId) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Erro</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f10; color: #e6e6e6; }
+                        .error { color: #fca5a5; }
+                        button { padding: 10px 20px; background: #ff9800; color: #0f0f10; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Erro</h1>
+                    <p>ID de usuário não encontrado</p>
+                    <button onclick="window.close()">Fechar</button>
+                </body>
+                </html>
+            `);
+        }
+
+        // Trocar código por tokens
+        const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+        const callbackUrl = `${baseUrl}/api/admin/calendar/google-callback`;
+
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                code: code,
+                grant_type: 'authorization_code',
+                redirect_uri: callbackUrl
+            })
+        });
+
+        const tokenData = await tokenResponse.json();
+
+        if (!tokenData.access_token) {
+            return res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Erro</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f10; color: #e6e6e6; }
+                        .error { color: #fca5a5; }
+                        button { padding: 10px 20px; background: #ff9800; color: #0f0f10; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="error">Erro</h1>
+                    <p>Não foi possível obter tokens do Google</p>
+                    <button onclick="window.close()">Fechar</button>
+                </body>
+                </html>
+            `);
+        }
+
+        // Garantir que a tabela existe
+        await ensureGoogleOAuthTokensTable();
+
+        // Calcular data de expiração
+        const expiresAt = tokenData.expires_in 
+            ? new Date(Date.now() + tokenData.expires_in * 1000)
+            : new Date(Date.now() + 3600 * 1000); // 1 hora padrão
+
+        // Salvar tokens no banco
+        await pool.query(
+            `INSERT INTO google_oauth_tokens (user_id, access_token, refresh_token, expires_at, scope, token_type)
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE 
+                 access_token = VALUES(access_token),
+                 refresh_token = VALUES(refresh_token),
+                 expires_at = VALUES(expires_at),
+                 scope = VALUES(scope),
+                 updated_at = NOW()`,
+            [
+                userId,
+                tokenData.access_token,
+                tokenData.refresh_token || null,
+                expiresAt,
+                tokenData.scope || 'calendar.readonly',
+                tokenData.token_type || 'Bearer'
+            ]
+        );
+
+        console.log("[ADMIN] Tokens Google salvos para usuário:", userId);
+
+        // Retornar página de sucesso que fecha a janela e atualiza a página pai
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Conta Conectada</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        text-align: center; 
+                        padding: 50px; 
+                        background: #0f0f10; 
+                        color: #e6e6e6; 
+                    }
+                    .success { 
+                        color: #86efac; 
+                        font-size: 24px;
+                        margin-bottom: 20px;
+                    }
+                    p { 
+                        margin: 20px 0; 
+                    }
+                    button { 
+                        padding: 10px 20px; 
+                        background: #ff9800; 
+                        color: #0f0f10; 
+                        border: none; 
+                        border-radius: 6px; 
+                        cursor: pointer; 
+                        margin-top: 20px; 
+                        font-weight: 600;
+                    }
+                    button:hover {
+                        background: #ffa726;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="success">✓</div>
+                <h1>Conta Google Conectada!</h1>
+                <p>Sua conta do Google foi conectada com sucesso.</p>
+                <p>Agora você pode sincronizar eventos do seu calendário.</p>
+                <button onclick="window.opener ? window.opener.location.reload() : window.close(); window.close();">
+                    Fechar e Atualizar
+                </button>
+                <script>
+                    // Tentar fechar a janela após 2 segundos
+                    setTimeout(() => {
+                        if (window.opener) {
+                            window.opener.location.reload();
+                        }
+                        window.close();
+                    }, 2000);
+                </script>
+            </body>
+            </html>
+        `);
+    } catch (err) {
+        console.error("[ADMIN] Erro no callback Google:", err);
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Erro</title>
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f10; color: #e6e6e6; }
+                    .error { color: #fca5a5; }
+                    button { padding: 10px 20px; background: #ff9800; color: #0f0f10; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                </style>
+            </head>
+            <body>
+                <h1 class="error">Erro</h1>
+                <p>${err.message || 'Erro ao conectar conta Google'}</p>
+                <button onclick="window.close()">Fechar</button>
+            </body>
+            </html>
+        `);
+    }
+});
+
+/**
+ * GET /api/admin/calendar/google-status
+ * Verifica se o usuário tem tokens Google salvos
+ */
+router.get("/calendar/google-status", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({
+                status: "error",
+                error: "Não autenticado"
+            });
+        }
+
+        await ensureGoogleOAuthTokensTable();
+
+        const [tokenRows] = await pool.query(
+            `SELECT expires_at, created_at 
+             FROM google_oauth_tokens 
+             WHERE user_id = ?`,
+            [userId]
+        );
+
+        const isConnected = tokenRows.length > 0;
+        const isExpired = isConnected && tokenRows[0].expires_at && new Date(tokenRows[0].expires_at) < new Date();
+
+        res.json({
+            status: "ok",
+            connected: isConnected,
+            expired: isExpired,
+            connectedAt: isConnected ? tokenRows[0].created_at : null
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao verificar status Google:", err);
+        return res.status(500).json({
+            status: "error",
+            error: err.message || "Erro ao verificar status"
+        });
+    }
+});
 
 export default router;

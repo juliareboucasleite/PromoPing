@@ -11,6 +11,15 @@ body {
     color: #e6e6e6;
     min-height: 100vh;
     line-height: 1.6;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ==== LOGIN PAGE ==== */
@@ -1267,4 +1276,352 @@ body {
     font-weight: 600;
     min-width: 24px;
     text-align: center;
+}
+
+/* ================== CALENDÁRIO ADMINISTRATIVO ================== */
+.calendar-container {
+    background: #18181a;
+    border: 1px solid #232326;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    min-height: 600px;
+}
+
+#calendar {
+    min-height: 500px;
+    width: 100%;
+}
+
+/* FullCalendar Dark Theme Override */
+.fc {
+    color: #e6e6e6;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: #232326;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border-color: #232326;
+}
+
+.fc-col-header-cell {
+    background: #0f0f10;
+    color: #e6e6e6;
+    font-weight: 600;
+    padding: 0.75rem 0.5rem;
+}
+
+.fc-daygrid-day {
+    background: #18181a;
+}
+
+.fc-daygrid-day:hover {
+    background: #1a1a1c;
+}
+
+.fc-day-today {
+    background: #1a1a1c !important;
+}
+
+.fc-daygrid-day-number {
+    color: #e6e6e6;
+    padding: 0.5rem;
+}
+
+.fc-daygrid-day-top {
+    flex-direction: row;
+}
+
+.fc-button {
+    background: #232326;
+    border: 1px solid #333;
+    color: #e6e6e6;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.fc-button:hover {
+    background: #2a2a2d;
+    border-color: #ff9800;
+    color: #fff;
+}
+
+.fc-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fc-button-active {
+    background: #ff9800;
+    border-color: #ff9800;
+    color: #0f0f10;
+}
+
+.fc-button-active:hover {
+    background: #ffa726;
+    border-color: #ffa726;
+}
+
+.fc-toolbar-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.fc-event {
+    border-radius: 4px;
+    padding: 2px 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-width: 2px;
+}
+
+.fc-event:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+.fc-event-title {
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+}
+
+.fc-daygrid-event {
+    margin: 2px 4px;
+}
+
+.fc-timegrid-event {
+    border-radius: 4px;
+}
+
+.fc-timegrid-slot {
+    border-color: #232326;
+}
+
+.fc-timegrid-slot-label {
+    color: #aaa;
+    border-color: #232326;
+}
+
+.fc-timegrid-now-indicator-line {
+    border-color: #ff9800;
+}
+
+.fc-timegrid-now-indicator-arrow {
+    border-color: #ff9800;
+}
+
+/* Modal de Evento */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #18181a;
+    border: 1px solid #232326;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #232326;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #232326;
+    color: #fff;
+}
+
+.modal-content form {
+    padding: 1.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1.5rem;
+    border-top: 1px solid #232326;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.button-primary,
+.button-secondary,
+.button-danger {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-width: 100px;
+}
+
+.button-primary {
+    background: #ff9800;
+    color: #0f0f10;
+}
+
+.button-primary:hover {
+    background: #ffa726;
+}
+
+.button-secondary {
+    background: #232326;
+    color: #e6e6e6;
+}
+
+.button-secondary:hover {
+    background: #2a2a2d;
+}
+
+.button-danger {
+    background: #ef4444;
+    color: #fff;
+}
+
+.button-danger:hover {
+    background: #f87171;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar personalizado para modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #0f0f10;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #232326;
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #333;
 }

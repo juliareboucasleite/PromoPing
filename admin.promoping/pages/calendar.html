@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    
+    <!-- FullCalendar CSS - Versão Local -->
+    <link href="../lib/fullcalendar/main.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing Logo" class="logo-placeholder">
+                    <h2>PromoPing Admin</h2>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="tabelas.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="calendar.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Calendário</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Calendário Administrativo</h1>
+                    <div class="header-actions">
+                        <button id="connectGoogleBtn" class="refresh-button" title="Conectar conta do Google">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0-3-3 3 3 0 0 0-3-3z"/>
+                            </svg>
+                            <span id="connectGoogleBtnText">Conectar Google</span>
+                        </button>
+                        <button id="syncGoogleBtn" class="refresh-button" title="Sincronizar eventos do Google Calendar" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                            </svg>
+                            Sincronizar Eventos
+                        </button>
+                        <button id="newEventBtn" class="refresh-button">Novo Evento</button>
+                        <button id="refreshCalendarBtn" class="refresh-button">Atualizar</button>
+                    </div>
+                </div>
+
+                <!-- Calendar Container -->
+                <div class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para criar/editar evento -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Evento</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle" class="form-label">Título *</label>
+                    <input type="text" id="eventTitle" class="form-input" required placeholder="Ex: Manutenção do servidor">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription" class="form-label">Descrição</label>
+                    <textarea id="eventDescription" class="form-input" rows="3" placeholder="Descrição detalhada do evento"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventType" class="form-label">Tipo *</label>
+                        <select id="eventType" class="form-input" required>
+                            <option value="maintenance">Manutenção</option>
+                            <option value="scraper">Scraper</option>
+                            <option value="bug">Bug</option>
+                            <option value="deploy">Deploy</option>
+                            <option value="milestone">Marco/Milestone</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventStatus" class="form-label">Status</label>
+                        <select id="eventStatus" class="form-input">
+                            <option value="scheduled">Agendado</option>
+                            <option value="in-progress">Em Progresso</option>
+                            <option value="completed">Concluído</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventStartDate" class="form-label">Data/Hora Início *</label>
+                        <input type="datetime-local" id="eventStartDate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventEndDate" class="form-label">Data/Hora Fim</label>
+                        <input type="datetime-local" id="eventEndDate" class="form-input">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelBtn" class="button-secondary">Cancelar</button>
+                    <button type="submit" id="saveBtn" class="button-primary">Salvar</button>
+                    <button type="button" id="deleteBtn" class="button-danger" style="display: none;">Excluir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FullCalendar JS - Versão Local -->
+    <script src="../lib/fullcalendar/main.min.js"></script>
+    <script src="../lib/fullcalendar/locales-pt-br.js"></script>
+    <script src="../script/calendar.js"></script>
+</body>
+
+</html>
+

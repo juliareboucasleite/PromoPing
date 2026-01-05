@@ -87,6 +87,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         emails: profile.emails ? profile.emails.map(e => e.value) : [],
                         photos: profile.photos ? profile.photos.length : 0
                     });
+                    console.log("[GOOGLE STRATEGY] Tokens recebidos:", {
+                        hasAccessToken: !!accessToken,
+                        hasRefreshToken: !!refreshToken
+                    });
 
                     // Verificar se profile tem emails
                     if (!profile.emails || profile.emails.length === 0) {
@@ -258,12 +262,58 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         [userId, "email"]
                     );
 
+                    // Salvar tokens OAuth para sincronização de calendário
+                    if (accessToken) {
+                        try {
+                            // Garantir que a tabela existe
+                            await pool.query(`
+                                CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    user_id INT NOT NULL,
+                                    access_token TEXT NOT NULL,
+                                    refresh_token TEXT,
+                                    token_type VARCHAR(50) DEFAULT 'Bearer',
+                                    expires_at TIMESTAMP NULL,
+                                    scope TEXT,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    INDEX idx_user_id (user_id),
+                                    INDEX idx_expires_at (expires_at),
+                                    FOREIGN KEY (user_id) REFERENCES Utilizadores(Id) ON DELETE CASCADE,
+                                    UNIQUE KEY unique_user_token (user_id)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                            `);
+
+                            // Calcular data de expiração (tokens do Google geralmente expiram em 1 hora)
+                            const expiresAt = new Date();
+                            expiresAt.setHours(expiresAt.getHours() + 1);
+
+                            await pool.query(
+                                `INSERT INTO google_oauth_tokens (user_id, access_token, refresh_token, expires_at, scope)
+                                 VALUES (?, ?, ?, ?, ?)
+                                 ON DUPLICATE KEY UPDATE 
+                                     access_token = VALUES(access_token),
+                                     refresh_token = VALUES(refresh_token),
+                                     expires_at = VALUES(expires_at),
+                                     scope = VALUES(scope),
+                                     updated_at = NOW()`,
+                                [userId, accessToken, refreshToken || null, expiresAt, 'calendar.readonly']
+                            );
+                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronização de calendário");
+                        } catch (tokenErr) {
+                            console.error("[GOOGLE STRATEGY] Erro ao salvar tokens OAuth:", tokenErr);
+                            // Não falhar o login se não conseguir salvar tokens
+                        }
+                    }
+
                     return done(null, {
                         id: userId,
                         email,
                         nome,
                         fotoPerfil,
-                        googleId: googleId // Incluir googleId para uso no callback
+                        googleId: googleId, // Incluir googleId para uso no callback
+                        accessToken: accessToken, // Incluir para uso no callback
+                        refreshToken: refreshToken
                     });
                 } catch (err) {
                     return done(err, null);
@@ -1545,7 +1595,7 @@ router.get("/google", (req, res) => {
         console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
         console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
         passport.authenticate("google", {
-            scope: ["profile", "email"]
+            scope: ["profile", "email", "https://www.googleapis.com/auth/calendar.readonly"]
         })(req, res);
     } else {
         console.error(" Google OAuth não configurado:");
@@ -1638,6 +1688,48 @@ router.get("/google/callback", (req, res) => {
                     } catch (dbError) {
                         console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode não existir):", dbError.message);
                         // Continuar mesmo se falhar - não é crítico
+                    }
+                }
+
+                // Salvar tokens OAuth se disponíveis
+                if (user.accessToken) {
+                    try {
+                        await pool.query(`
+                            CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                user_id INT NOT NULL,
+                                access_token TEXT NOT NULL,
+                                refresh_token TEXT,
+                                token_type VARCHAR(50) DEFAULT 'Bearer',
+                                expires_at TIMESTAMP NULL,
+                                scope TEXT,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                INDEX idx_user_id (user_id),
+                                INDEX idx_expires_at (expires_at),
+                                FOREIGN KEY (user_id) REFERENCES Utilizadores(Id) ON DELETE CASCADE,
+                                UNIQUE KEY unique_user_token (user_id)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                        `);
+
+                        const expiresAt = new Date();
+                        expiresAt.setHours(expiresAt.getHours() + 1);
+
+                        await pool.query(
+                            `INSERT INTO google_oauth_tokens (user_id, access_token, refresh_token, expires_at, scope)
+                             VALUES (?, ?, ?, ?, ?)
+                             ON DUPLICATE KEY UPDATE 
+                                 access_token = VALUES(access_token),
+                                 refresh_token = VALUES(refresh_token),
+                                 expires_at = VALUES(expires_at),
+                                 scope = VALUES(scope),
+                                 updated_at = NOW()`,
+                            [user.id, user.accessToken, user.refreshToken || null, expiresAt, 'calendar.readonly']
+                        );
+                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronização");
+                    } catch (tokenErr) {
+                        console.error("[GOOGLE CALLBACK] Erro ao salvar tokens OAuth:", tokenErr);
+                        // Não falhar o login se não conseguir salvar tokens
                     }
                 }
 
