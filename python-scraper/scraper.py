@@ -63,9 +63,9 @@ def save_price_history(product_id, price):
     cur = conn.cursor()
     try:
         # Inserir no histórico (a tabela já existe)
-        # Usar Produtold conforme a estrutura real da tabela
+        # Usar ProdutoId (com 'I' maiúsculo) conforme a estrutura real da tabela
         cur.execute("""
-            INSERT INTO historicoprecos (Produtold, Preco, DataRegisto)
+            INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto)
             VALUES (%s, %s, NOW())
         """, (product_id, price))
         conn.commit()
@@ -78,17 +78,17 @@ def save_price_history(product_id, price):
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS historicoprecos (
                         Id INT AUTO_INCREMENT PRIMARY KEY,
-                        Produtold INT NOT NULL,
+                        ProdutoId INT NOT NULL,
                         Preco DECIMAL(10,2) NOT NULL,
                         DataRegisto DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        INDEX idx_produto (Produtold),
+                        INDEX idx_produto (ProdutoId),
                         INDEX idx_data (DataRegisto)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """)
                 conn.commit()
                 # Tentar inserir novamente
                 cur.execute("""
-                    INSERT INTO historicoprecos (Produtold, Preco, DataRegisto)
+                    INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto)
                     VALUES (%s, %s, NOW())
                 """, (product_id, price))
                 conn.commit()
