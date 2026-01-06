@@ -63,13 +63,44 @@
     }
 
     function generateStarRating(rating) {
-        const filledStar = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#ffd700" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#ffd700" stroke-width="1.5" stroke-linejoin="round"/></svg>';
-        const emptyStar = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#666" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+        if (!rating || rating === 0) return '<span style="color: #666;">Sem avaliação</span>';
+        const filledStar = '⭐';
+        const emptyStar = '☆';
         let stars = '';
         for (let i = 0; i < 5; i++) {
             stars += i < rating ? filledStar : emptyStar;
         }
-        return stars;
+        return `<span style="font-size: 1.2em;">${stars} (${rating}/5)</span>`;
+    }
+
+    function getTipoLabel(tipo) {
+        const tipos = {
+            'site': 'Site',
+            'bot': 'Bot',
+            'suporte': 'Suporte'
+        };
+        return tipos[tipo] || tipo;
+    }
+
+    function getTipoColor(tipo) {
+        const cores = {
+            'site': '#3b82f6',
+            'bot': '#8b5cf6',
+            'suporte': '#10b981'
+        };
+        return cores[tipo] || '#666';
+    }
+
+    function formatDateTime(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleString('pt-PT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     async function loadReviews() {
@@ -83,15 +114,41 @@
             const data = await response.json();
 
             if (!data.reviews || data.reviews.length === 0) {
-                reviewsList.innerHTML = '<div class="loading-state">Sistema de avaliações em desenvolvimento</div>';
+                reviewsList.innerHTML = `
+                    <div class="loading-state">
+                        <p>Nenhuma avaliação encontrada.</p>
+                        <p style="color: #9ca3af; font-size: 0.9em; margin-top: 0.5em;">
+                            As avaliações feitas no Discord aparecerão aqui.
+                        </p>
+                    </div>
+                `;
                 return;
             }
 
-            reviewsList.innerHTML = `
+            // Estatísticas
+            let statsHtml = '';
+            if (data.stats && data.stats.length > 0) {
+                statsHtml = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        ${data.stats.map(stat => `
+                            <div style="background: #1f2937; padding: 1rem; border-radius: 8px; border-left: 4px solid ${getTipoColor(stat.tipo)};">
+                                <div style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 0.5rem;">${getTipoLabel(stat.tipo)}</div>
+                                <div style="font-size: 1.5rem; font-weight: 600; color: #fff;">${stat.total}</div>
+                                <div style="font-size: 0.875rem; color: #9ca3af; margin-top: 0.25rem;">
+                                    Média: ${stat.media_rating ? parseFloat(stat.media_rating).toFixed(1) : 'N/A'} ⭐
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            reviewsList.innerHTML = statsHtml + `
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Utilizador</th>
+                            <th>Tipo</th>
                             <th>Avaliação</th>
                             <th>Comentário</th>
                             <th>Data</th>
@@ -100,14 +157,37 @@
                     <tbody>
                         ${data.reviews.map(review => `
                             <tr>
-                                <td>${escapeHtml(review.userName || 'N/A')}</td>
-                                <td>${generateStarRating(review.rating || 0)}</td>
-                                <td>${escapeHtml(review.comment || 'N/A')}</td>
-                                <td>${formatDate(review.date)}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        ${review.is_anonimo ? 
+                                            `<img src="../assets/images/fotodefault.png" alt="Anónimo" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">` : 
+                                            (review.discord_avatar_url ? 
+                                                `<img src="${escapeHtml(review.discord_avatar_url)}" alt="${escapeHtml(review.discord_username)}" onerror="this.src='../assets/images/fotodefault.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">` : 
+                                                `<img src="../assets/images/fotodefault.png" alt="${escapeHtml(review.discord_username)}" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`
+                                            )
+                                        }
+                                        <span style="color: ${review.is_anonimo ? '#9ca3af' : '#fff'};">
+                                            ${review.is_anonimo ? 'Anónimo' : escapeHtml(review.discord_username)}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="background: ${getTipoColor(review.tipo)}20; color: ${getTipoColor(review.tipo)}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">
+                                        ${getTipoLabel(review.tipo)}
+                                    </span>
+                                </td>
+                                <td>${generateStarRating(review.rating)}</td>
+                                <td style="max-width: 400px; word-wrap: break-word;">${escapeHtml(review.texto || 'Sem comentário')}</td>
+                                <td>${formatDateTime(review.created_at)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
+                ${data.totalPages > 1 ? `
+                    <div style="margin-top: 1rem; text-align: center; color: #9ca3af;">
+                        Página ${data.page} de ${data.totalPages} (Total: ${data.total} avaliações)
+                    </div>
+                ` : ''}
             `;
         } catch (error) {
             console.error('[AVALIACOES] Erro ao carregar avaliações:', error);
