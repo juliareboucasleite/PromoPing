@@ -91,16 +91,41 @@ def clean_price_text(text):
     if not text:
         return None
 
-    text = text.replace("€", "").replace("EUR", "").replace("\xa0", " ")
-    match = re.search(r'(\d{1,6}[,\.]\d{2})', text)
-    if not match:
-        return None
-
-    value = match.group(1).replace(".", "").replace(",", ".")
-    try:
-        return round(float(value), 2)
-    except:
-        return None
+    # Remover símbolos de moeda e espaços
+    text = text.replace("€", "").replace("EUR", "").replace("\xa0", " ").strip()
+    
+    # Procurar padrão de preço: números com separador decimal (vírgula ou ponto)
+    # Aceita: 379,99 ou 379.99 ou 3.799,99 (milhar) ou 3,799.99
+    match = re.search(r'(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})|(\d+[.,]\d{2})', text)
+    if match:
+        value_str = match.group(0)
+        # Se tem vírgula como separador decimal, substituir ponto de milhar e vírgula decimal por ponto
+        if ',' in value_str and '.' in value_str:
+            # Formato: 3.799,99 (ponto = milhar, vírgula = decimal)
+            value_str = value_str.replace('.', '').replace(',', '.')
+        elif ',' in value_str:
+            # Formato: 379,99 (vírgula = decimal)
+            value_str = value_str.replace(',', '.')
+        # Se só tem ponto, assumir que é decimal (379.99)
+        # value_str já está correto
+        
+        try:
+            value = float(value_str)
+            return round(value, 2)
+        except:
+            pass
+    
+    # Fallback: procurar qualquer número com vírgula ou ponto
+    match = re.search(r'(\d+[,\.]\d+)', text)
+    if match:
+        value_str = match.group(1).replace(',', '.')
+        try:
+            value = float(value_str)
+            return round(value, 2)
+        except:
+            pass
+    
+    return None
 
 def aceitar_cookies(driver):
     try:
