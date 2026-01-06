@@ -229,8 +229,9 @@ def fechar_modais(driver):
 
 def extract_leroy_price(driver):
     selectors = [
-        "span.m-price_line",
-        ".m-price_line",
+        "span.m-price__line",
+        ".m-price__line",
+        "span.kl-hidden-accessibility",
         "span.ct-price-formatted",
         "span.value"
     ]
@@ -444,7 +445,8 @@ def extract_price(driver, url):
             try:
                 WebDriverWait(driver, 10).until(
                     EC.any_of(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.m-price_line")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.m-price__line")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.kl-hidden-accessibility")),
                         EC.presence_of_element_located((By.CSS_SELECTOR, "p.m-price")),
                         EC.presence_of_element_located((By.CSS_SELECTOR, "[class*='price']"))
                     )
@@ -452,7 +454,8 @@ def extract_price(driver, url):
             except:
                 logger.warning("[LEROY] Elementos de preço não apareceram, tentando continuar...")
             
-            # Estrutura Leroy: span.m-price_line contém "28" + span.m-price_decimal contém ",09€"
+            # Estrutura Leroy: span.m-price__line (duplo underscore) contém "28" + span.m-price_decimal contém ",09€"
+            # Alternativa: span.kl-hidden-accessibility contém "Vendido 28,09 €"
             price_line = None
             
             # Tentativa 1: Buscar dentro de p.m-price primeiro
@@ -461,7 +464,7 @@ def extract_price(driver, url):
                 price_container = WebDriverWait(driver, 8).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "p.m-price.-main, p.m-price"))
                 )
-                price_line = price_container.find_element(By.CSS_SELECTOR, "span.m-price_line")
+                price_line = price_container.find_element(By.CSS_SELECTOR, "span.m-price__line")
                 logger.debug("[LEROY] Encontrado dentro de p.m-price")
             except Exception as e:
                 logger.debug(f"[LEROY] Tentativa 1 falhou: {e}")
@@ -471,7 +474,7 @@ def extract_price(driver, url):
                 try:
                     logger.debug("[LEROY] Tentativa 2: Buscar span.m-price_line diretamente")
                     price_line = WebDriverWait(driver, 8).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.m-price_line"))
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.m-price__line"))
                     )
                     logger.debug("[LEROY] Encontrado span.m-price_line diretamente")
                 except Exception as e:
@@ -482,14 +485,33 @@ def extract_price(driver, url):
                 try:
                     logger.debug("[LEROY] Tentativa 3: Buscar [class*='m-price_line']")
                     price_line = WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "[class*='m-price_line']"))
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "[class*='m-price__line']"))
                     )
                     logger.debug("[LEROY] Encontrado via [class*='m-price_line']")
                 except Exception as e:
                     logger.debug(f"[LEROY] Tentativa 3 falhou: {e}")
             
+            # Tentativa 4: Buscar span.kl-hidden-accessibility (contém preço completo como fallback)
             if not price_line:
-                logger.error("[LEROY] Não foi possível encontrar span.m-price_line após todas as tentativas")
+                try:
+                    logger.debug("[LEROY] Tentativa 4: Buscar span.kl-hidden-accessibility")
+                    accessibility_span = driver.find_element(By.CSS_SELECTOR, "span.kl-hidden-accessibility")
+                    accessibility_text = accessibility_span.text.strip()
+                    logger.debug(f"[LEROY] Texto de kl-hidden-accessibility: '{accessibility_text}'")
+                    
+                    # Extrair preço do texto (ex: "Vendido 28,09 €")
+                    price_match = re.search(r'(\d+[,\.]\d{2})\s*€?', accessibility_text)
+                    if price_match:
+                        price_str = price_match.group(1)
+                        price = clean_price_text(price_str)
+                        if price:
+                            logger.info(f"[LEROY] Preço encontrado via kl-hidden-accessibility: €{price}")
+                            return "Leroy Merlin", price
+                except Exception as e:
+                    logger.debug(f"[LEROY] Tentativa 4 (kl-hidden-accessibility) falhou: {e}")
+            
+            if not price_line:
+                logger.error("[LEROY] Não foi possível encontrar span.m-price__line após todas as tentativas")
                 # Tentar fallback
                 return "Leroy Merlin", extract_leroy_price(driver)
             
@@ -498,7 +520,7 @@ def extract_price(driver, url):
                 
                 # O texto do price_line contém o número inteiro diretamente (ex: "28")
                 texto_completo = price_line.text.strip()
-                logger.debug(f"[LEROY] Texto completo do m-price_line: '{texto_completo}'")
+                logger.debug(f"[LEROY] Texto completo do m-price__line: '{texto_completo}'")
                 
                 # Extrair inteiro do texto (pode ter espaços ou outros caracteres)
                 inteiro_match = re.search(r'(\d+)', texto_completo)
@@ -550,7 +572,7 @@ def extract_price(driver, url):
                     logger.warning(f"[LEROY] Inteiro não encontrado! Texto completo: '{texto_completo}'")
                     
             except Exception as e:
-                logger.error(f"[LEROY] Erro ao buscar estrutura m-price_line: {e}")
+                logger.error(f"[LEROY] Erro ao buscar estrutura m-price__line: {e}")
                 import traceback
                 traceback.print_exc()
                 pass
