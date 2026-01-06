@@ -542,62 +542,44 @@ def extract_price(driver, url):
                     except:
                         continue
                 
-                # Tentar capturar preço com inteiro e decimal separados (como Amazon)
+                # Tentar capturar preço com inteiro e decimal separados (estrutura Worten)
                 try:
-                    WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.value, .price, [class*='price']"))
-                    )
-                    
-                    # Procurar por elementos de preço inteiro e decimal separados
+                    # Buscar span.value que contém o número inteiro
                     try:
-                        # Seletores para parte inteira
-                        inteiro_selectors = [
-                            "span.value sup.integer",
-                            ".price sup.integer",
-                            "[class*='price'] sup.integer",
-                            "span.value .integer",
-                            ".price .integer"
-                        ]
+                        value_element = driver.find_element(By.CSS_SELECTOR, "span.value")
+                        inteiro = value_element.text.strip()
                         
-                        # Seletores para parte decimal
-                        decimal_selectors = [
-                            "span.value sup.decimal",
-                            ".price sup.decimal",
-                            "[class*='price'] sup.decimal",
-                            "span.value .decimal",
-                            ".price .decimal"
-                        ]
-                        
-                        inteiro = ""
-                        decimal = ""
-                        
-                        # Tentar encontrar parte inteira
-                        for selector in inteiro_selectors:
+                        # Buscar sup.decimal que contém a parte decimal
+                        try:
+                            decimal_element = value_element.find_element(By.CSS_SELECTOR, "sup.decimal")
+                            decimal = decimal_element.text.strip()
+                            # Remover vírgula ou ponto se houver
+                            decimal = decimal.replace(",", "").replace(".", "").replace("€", "").strip()
+                        except:
+                            # Tentar buscar sup.decimal próximo ao span.value
                             try:
-                                el = driver.find_element(By.CSS_SELECTOR, selector)
-                                inteiro = el.text.strip()
-                                if inteiro:
-                                    break
+                                decimal_element = driver.find_element(By.CSS_SELECTOR, "sup.decimal")
+                                decimal = decimal_element.text.strip()
+                                decimal = decimal.replace(",", "").replace(".", "").replace("€", "").strip()
                             except:
-                                continue
+                                decimal = ""
                         
-                        # Tentar encontrar parte decimal
-                        for selector in decimal_selectors:
-                            try:
-                                el = driver.find_element(By.CSS_SELECTOR, selector)
-                                decimal = el.text.strip()
-                                if decimal:
-                                    break
-                            except:
-                                continue
-                        
-                        # Se encontrou ambas as partes, combinar
-                        if inteiro and decimal:
-                            preco = clean_price_text(f"{inteiro},{decimal}")
-                            if preco:
-                                logger.info(f"[WORTEN] Preço encontrado (inteiro+decimal): €{preco}")
+                        # Se encontrou inteiro, tentar combinar
+                        if inteiro:
+                            # Limpar inteiro (remover € e espaços)
+                            inteiro = inteiro.replace("€", "").replace(",", "").replace(".", "").strip()
+                            
+                            if decimal:
+                                preco = clean_price_text(f"{inteiro},{decimal}")
+                            else:
+                                # Se não tem decimal, usar só o inteiro
+                                preco = clean_price_text(inteiro)
+                            
+                            if preco and float(preco) > 0:
+                                logger.info(f"[WORTEN] Preço encontrado (span.value + sup.decimal): €{preco}")
                                 return "Worten", preco, None
-                    except:
+                    except Exception as e:
+                        logger.debug(f"[WORTEN] Erro ao buscar span.value/sup.decimal: {e}")
                         pass
                     
                     # Se não encontrou separado, tentar elemento completo
@@ -858,8 +840,56 @@ def extract_price(driver, url):
                 aceitar_cookies(driver)
                 sleep(2)
                 
-                # Seletores para Leroy Merlin
+                # Estrutura Leroy Merlin: span.m-price_line contém o inteiro e span.m-price_decimal contém a parte decimal
+                try:
+                    # Buscar span.m-price_line que contém o preço principal
+                    price_line = driver.find_element(By.CSS_SELECTOR, "span.m-price_line")
+                    
+                    # O texto do span.m-price_line contém o número inteiro
+                    texto_completo = price_line.text.strip()
+                    
+                    # Tentar buscar span.m-price_decimal dentro do price_line
+                    try:
+                        decimal_element = price_line.find_element(By.CSS_SELECTOR, "span.m-price_decimal")
+                        decimal_text = decimal_element.text.strip()
+                        # Extrair apenas números da parte decimal (pode ter vírgula e €)
+                        decimal_match = re.search(r'(\d{2})', decimal_text)
+                        if decimal_match:
+                            decimal = decimal_match.group(1)
+                        else:
+                            decimal = ""
+                    except:
+                        decimal = ""
+                    
+                    # Extrair número inteiro do texto
+                    inteiro_match = re.search(r'(\d+)', texto_completo)
+                    if inteiro_match:
+                        inteiro = inteiro_match.group(1)
+                        
+                        if decimal:
+                            preco = clean_price_text(f"{inteiro},{decimal}")
+                        else:
+                            preco = clean_price_text(inteiro)
+                        
+                        if preco and float(preco) > 0:
+                            logger.info(f"[LEROY] Preço encontrado (m-price_line + m-price_decimal): €{preco}")
+                            return "Leroy Merlin", preco, None
+                    else:
+                        # Se não encontrou padrão, tentar limpar o texto completo
+                        preco = clean_price_text(texto_completo)
+                        if preco and float(preco) > 0:
+                            logger.info(f"[LEROY] Preço encontrado (m-price_line completo): €{preco}")
+                            return "Leroy Merlin", preco, None
+                except Exception as e:
+                    logger.debug(f"[LEROY] Erro ao buscar m-price_line: {e}")
+                    pass
+                
+                # Seletores alternativos para Leroy Merlin
                 selectors = [
+                    "span.m-price_line",
+                    ".m-price_line",
+                    ".kl-price",
+                    ".m-price.-main",
                     ".price-value",
                     ".product-price",
                     ".price",
@@ -870,10 +900,6 @@ def extract_price(driver, url):
                     "[class*='Price']",
                     ".lm-price",
                     "[data-price]"
-                    "m-price__decimal",
-                    "m-price__line",
-                    "kl-price",
-                    "m-price -main"
                 ]
                 
                 for selector in selectors:
