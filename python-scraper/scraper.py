@@ -57,6 +57,55 @@ def update_price(product_id, price):
     cur.close()
     conn.close()
 
+def save_price_history(product_id, price):
+    """Salva o preço no histórico de preços"""
+    conn = connect_db()
+    cur = conn.cursor()
+    try:
+        # Inserir no histórico (a tabela já existe)
+        # Usar Produtold conforme a estrutura real da tabela
+        cur.execute("""
+            INSERT INTO historicoprecos (Produtold, Preco, DataRegisto)
+            VALUES (%s, %s, NOW())
+        """, (product_id, price))
+        conn.commit()
+        logger.info(f"[HISTORICO] Preço €{price} salvo no histórico para produto {product_id}")
+    except mysql.connector.Error as e:
+        # Se a tabela não existir ou houver erro de estrutura, tentar criar
+        if e.errno == 1146:  # Table doesn't exist
+            logger.warning(f"[HISTORICO] Tabela não existe, tentando criar...")
+            try:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS historicoprecos (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Produtold INT NOT NULL,
+                        Preco DECIMAL(10,2) NOT NULL,
+                        DataRegisto DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_produto (Produtold),
+                        INDEX idx_data (DataRegisto)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """)
+                conn.commit()
+                # Tentar inserir novamente
+                cur.execute("""
+                    INSERT INTO historicoprecos (Produtold, Preco, DataRegisto)
+                    VALUES (%s, %s, NOW())
+                """, (product_id, price))
+                conn.commit()
+                logger.info(f"[HISTORICO] Tabela criada e preço €{price} salvo para produto {product_id}")
+            except Exception as e2:
+                logger.error(f"[HISTORICO] Erro ao criar tabela ou inserir: {e2}")
+                conn.rollback()
+        else:
+            logger.error(f"[HISTORICO] Erro ao salvar histórico: {e}")
+            conn.rollback()
+    except Exception as e:
+        logger.error(f"[HISTORICO] Erro inesperado ao salvar histórico: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+
 # ==================== DRIVER ====================
 
 def create_driver():
@@ -543,6 +592,7 @@ def monitor_loop():
             if preco:
                 logger.info(f"[OK] {p['Nome']} ({loja}) €{preco}")
                 update_price(p["Id"], preco)
+                save_price_history(p["Id"], preco)  # Salvar no histórico da base de dados
             else:
                 logger.warning(f"[FAIL] {p['Nome']} sem preço ({loja})")
 
