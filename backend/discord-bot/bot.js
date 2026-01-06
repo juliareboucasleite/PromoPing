@@ -409,10 +409,13 @@ class PromoPingBot {
             
             // Verificar se é o usuário correto
             if (userId !== parts[1]) {
-                return await interaction.reply({ 
-                    content: 'Esta interação não é para você!', 
-                    ephemeral: true 
-                });
+                if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ 
+                        content: 'Esta interação não é para você!', 
+                        ephemeral: true 
+                    }).catch(() => {});
+                }
+                return;
             }
             
             const tipoNomes = {
@@ -440,21 +443,33 @@ class PromoPingBot {
                         .setStyle(ButtonStyle.Primary)
                 );
 
-            // Verificar se a interação já foi reconhecida
+            // Responder à interação primeiro para evitar expiração
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({
                     embeds: [anonimoEmbed],
                     components: [anonimoRow],
                     ephemeral: true
-                });
+                }).catch(() => {});
             } else {
                 await interaction.update({
                     embeds: [anonimoEmbed],
                     components: [anonimoRow]
+                }).catch(async (err) => {
+                    // Se update falhar, tentar reply
+                    if (err.code === 10062 || err.code === 40060) {
+                        try {
+                            await interaction.reply({
+                                embeds: [anonimoEmbed],
+                                components: [anonimoRow],
+                                ephemeral: true
+                            }).catch(() => {});
+                        } catch {}
+                    }
                 });
             }
 
             // Configurar collector para escolha de anonimato
+            // Nota: O collector deve ser criado no canal, mas a interação do botão precisa ser respondida imediatamente
             const anonimoFilter = (btnInteraction) => {
                 return btnInteraction.user.id === userId && 
                        (btnInteraction.customId.startsWith(`review_anonimo_sim_${tipo}_${userId}`) ||
@@ -469,6 +484,11 @@ class PromoPingBot {
 
             anonimoCollector.on('collect', async (btnInteraction) => {
                 try {
+                    // Deferir a interação primeiro para evitar expiração
+                    if (!btnInteraction.replied && !btnInteraction.deferred) {
+                        await btnInteraction.deferUpdate().catch(() => {});
+                    }
+                    
                     const isAnonimo = btnInteraction.customId.includes('anonimo_sim');
                     
                     // Continuar fluxo usando a lógica do comando review
@@ -479,6 +499,11 @@ class PromoPingBot {
                     // Verificar se já foi respondido antes de tentar responder
                     if (!btnInteraction.replied && !btnInteraction.deferred) {
                         await btnInteraction.reply({ 
+                            content: 'Erro ao processar sua escolha. Tente novamente.', 
+                            ephemeral: true 
+                        }).catch(() => {});
+                    } else if (btnInteraction.deferred) {
+                        await btnInteraction.followUp({ 
                             content: 'Erro ao processar sua escolha. Tente novamente.', 
                             ephemeral: true 
                         }).catch(() => {});
@@ -500,10 +525,13 @@ class PromoPingBot {
 
         } catch (error) {
             console.error('[DISCORD] Erro ao processar seleção de tipo de review:', error);
-            await interaction.reply({ 
-                content: 'Erro ao processar sua seleção. Tente novamente.', 
-                ephemeral: true 
-            });
+            // Verificar se já foi respondido antes de tentar responder
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Erro ao processar sua seleção. Tente novamente.', 
+                    ephemeral: true 
+                }).catch(() => {});
+            }
         }
     }
 
@@ -530,17 +558,28 @@ class PromoPingBot {
                 .setColor(0x00ff00)
                 .setTimestamp();
 
-            // Verificar se a interação já foi reconhecida
+            // Responder à interação primeiro para evitar expiração
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({
                     embeds: [avaliacaoEmbed],
                     components: [],
                     ephemeral: true
-                });
+                }).catch(() => {});
             } else {
                 await interaction.update({
                     embeds: [avaliacaoEmbed],
                     components: []
+                }).catch(async (err) => {
+                    // Se update falhar, tentar reply
+                    if (err.code === 10062 || err.code === 40060) {
+                        try {
+                            await interaction.reply({
+                                embeds: [avaliacaoEmbed],
+                                components: [],
+                                ephemeral: true
+                            }).catch(() => {});
+                        } catch {}
+                    }
                 });
             }
 
@@ -628,72 +667,110 @@ class PromoPingBot {
                         );
                     }
 
-                    if (reviewsChannel) {
-                        await reviewsChannel.send({ embeds: [reviewEmbed] });
+                    // Salvar avaliação no banco de dados
+                    let savedReviewId = null;
+                    let discordMessageId = null;
+                    let discordChannelId = null;
+
+                    try {
+                        const connection = await mysql.createConnection(this.dbConfig);
                         
-                        // Deletar mensagem do utilizador
-                        try {
-                            await reviewMessage.delete().catch(() => {});
-                        } catch {}
-                        
-                        // Enviar confirmação via DM (mensagem privada) para o utilizador
-                        const confirmEmbed = new EmbedBuilder()
-                            .setTitle('Avaliação Enviada!')
-                            .setDescription(`Sua avaliação foi enviada para ${reviewsChannel}`)
-                            .setColor(0x00ff00)
-                            .setTimestamp();
-                        
-                        try {
-                            await interaction.user.send({ embeds: [confirmEmbed] });
-                        } catch (dmError) {
-                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
-                            const confirmMsg = await interaction.channel.send({ 
-                                content: `${interaction.user} - Sua avaliação foi enviada!`,
-                                embeds: [confirmEmbed]
-                            }).catch(() => null);
-                            
-                            // Deletar mensagem de confirmação após 5 segundos
-                            if (confirmMsg) {
-                                setTimeout(async () => {
-                                    try {
-                                        await confirmMsg.delete().catch(() => {});
-                                    } catch {}
-                                }, 5000);
-                            }
+                        // Garantir que a tabela existe
+                        await connection.execute(`
+                            CREATE TABLE IF NOT EXISTS reviews (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                discord_user_id VARCHAR(20) NOT NULL,
+                                discord_username VARCHAR(100) NOT NULL,
+                                discord_avatar_url VARCHAR(500) NULL,
+                                tipo ENUM('site', 'bot', 'suporte') NOT NULL,
+                                texto TEXT NOT NULL,
+                                rating INT NULL,
+                                is_anonimo TINYINT(1) DEFAULT 0,
+                                discord_channel_id VARCHAR(20) NULL,
+                                discord_message_id VARCHAR(20) NULL,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                INDEX idx_discord_user_id (discord_user_id),
+                                INDEX idx_tipo (tipo),
+                                INDEX idx_rating (rating),
+                                INDEX idx_created_at (created_at),
+                                INDEX idx_is_anonimo (is_anonimo)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                        `);
+
+                        // Enviar mensagem para o canal de reviews primeiro para obter o message ID
+                        let sentMessage = null;
+                        if (reviewsChannel) {
+                            sentMessage = await reviewsChannel.send({ embeds: [reviewEmbed] });
+                            discordMessageId = sentMessage.id;
+                            discordChannelId = reviewsChannel.id;
+                        } else {
+                            sentMessage = await interaction.channel.send({ embeds: [reviewEmbed] });
+                            discordMessageId = sentMessage.id;
+                            discordChannelId = interaction.channel.id;
                         }
-                    } else {
-                        // Se não encontrar canal de reviews, enviar no canal atual
-                        await interaction.channel.send({ embeds: [reviewEmbed] });
+
+                        // Salvar no banco de dados
+                        const [result] = await connection.execute(`
+                            INSERT INTO reviews (
+                                discord_user_id, 
+                                discord_username, 
+                                discord_avatar_url, 
+                                tipo, 
+                                texto, 
+                                rating, 
+                                is_anonimo, 
+                                discord_channel_id, 
+                                discord_message_id
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `, [
+                            userId,
+                            isAnonimo ? 'Anónimo' : userName,
+                            isAnonimo ? null : userAvatar,
+                            tipo,
+                            reviewText || '',
+                            rating,
+                            isAnonimo ? 1 : 0,
+                            discordChannelId,
+                            discordMessageId
+                        ]);
+
+                        savedReviewId = result.insertId;
+                        await connection.end();
+                        console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
+                    } catch (dbError) {
+                        console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
+                        // Continuar mesmo se falhar ao salvar no banco
+                    }
+                    
+                    // Deletar mensagem do utilizador
+                    try {
+                        await reviewMessage.delete().catch(() => {});
+                    } catch {}
+                    
+                    // Enviar confirmação via DM (mensagem privada) para o utilizador
+                    const confirmEmbed = new EmbedBuilder()
+                        .setTitle('Avaliação Enviada!')
+                        .setDescription(reviewsChannel ? `Sua avaliação foi enviada para ${reviewsChannel}` : 'Sua avaliação foi enviada!')
+                        .setColor(0x00ff00)
+                        .setTimestamp();
+                    
+                    try {
+                        await interaction.user.send({ embeds: [confirmEmbed] });
+                    } catch (dmError) {
+                        // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                        const confirmMsg = await interaction.channel.send({ 
+                            content: `${interaction.user} - Sua avaliação foi enviada!`,
+                            embeds: [confirmEmbed]
+                        }).catch(() => null);
                         
-                        // Deletar mensagem do utilizador
-                        try {
-                            await reviewMessage.delete().catch(() => {});
-                        } catch {}
-                        
-                        // Enviar confirmação via DM (mensagem privada) para o utilizador
-                        const confirmEmbed = new EmbedBuilder()
-                            .setTitle('Avaliação Enviada!')
-                            .setDescription('Sua avaliação foi enviada!')
-                            .setColor(0x00ff00)
-                            .setTimestamp();
-                        
-                        try {
-                            await interaction.user.send({ embeds: [confirmEmbed] });
-                        } catch (dmError) {
-                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
-                            const confirmMsg = await interaction.channel.send({ 
-                                content: `${interaction.user} - Sua avaliação foi enviada!`,
-                                embeds: [confirmEmbed]
-                            }).catch(() => null);
-                            
-                            // Deletar mensagem de confirmação após 5 segundos
-                            if (confirmMsg) {
-                                setTimeout(async () => {
-                                    try {
-                                        await confirmMsg.delete().catch(() => {});
-                                    } catch {}
-                                }, 5000);
-                            }
+                        // Deletar mensagem de confirmação após 5 segundos
+                        if (confirmMsg) {
+                            setTimeout(async () => {
+                                try {
+                                    await confirmMsg.delete().catch(() => {});
+                                } catch {}
+                            }, 5000);
                         }
                     }
 

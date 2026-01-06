@@ -1,6 +1,16 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const path = require('path');
+const mysql = require('mysql2/promise');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+
+// Configuração do banco de dados
+const dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'pap',
+    port: parseInt(process.env.DB_PORT) || 3306
+};
 
 module.exports = {
     name: 'review',
@@ -225,72 +235,117 @@ module.exports = {
                                         );
                                     }
 
-                                    if (reviewsChannel) {
-                                        await reviewsChannel.send({ embeds: [reviewEmbed] });
+                                    // Salvar avaliação no banco de dados
+                                    let savedReviewId = null;
+                                    let discordMessageId = null;
+                                    let discordChannelId = null;
+
+                                    try {
+                                        const connection = await mysql.createConnection(dbConfig);
                                         
-                                        // Deletar mensagem do utilizador
-                                        try {
-                                            await reviewMessage.delete().catch(() => {});
-                                        } catch {}
-                                        
-                                        // Enviar confirmação via DM (mensagem privada) para o utilizador
-                                        const confirmEmbed = new EmbedBuilder()
-                                            .setTitle('Avaliação Enviada!')
-                                            .setDescription(`Sua avaliação foi enviada para ${reviewsChannel}`)
-                                            .setColor(0x00ff00)
-                                            .setTimestamp();
-                                        
-                                        try {
-                                            await message.author.send({ embeds: [confirmEmbed] });
-                                        } catch (dmError) {
-                                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
-                                            const confirmMsg = await message.channel.send({ 
-                                                content: `${message.author} - Sua avaliação foi enviada!`,
-                                                embeds: [confirmEmbed]
-                                            }).catch(() => null);
-                                            
-                                            // Deletar mensagem de confirmação após 5 segundos
-                                            if (confirmMsg) {
-                                                setTimeout(async () => {
-                                                    try {
-                                                        await confirmMsg.delete().catch(() => {});
-                                                    } catch {}
-                                                }, 5000);
-                                            }
+                                        // Garantir que a tabela existe
+                                        await connection.execute(`
+                                            CREATE TABLE IF NOT EXISTS reviews (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                discord_user_id VARCHAR(20) NOT NULL,
+                                                discord_username VARCHAR(100) NOT NULL,
+                                                discord_avatar_url VARCHAR(500) NULL,
+                                                tipo ENUM('site', 'bot', 'suporte') NOT NULL,
+                                                texto TEXT NOT NULL,
+                                                rating INT NULL,
+                                                is_anonimo TINYINT(1) DEFAULT 0,
+                                                discord_channel_id VARCHAR(20) NULL,
+                                                discord_message_id VARCHAR(20) NULL,
+                                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                INDEX idx_discord_user_id (discord_user_id),
+                                                INDEX idx_tipo (tipo),
+                                                INDEX idx_rating (rating),
+                                                INDEX idx_created_at (created_at),
+                                                INDEX idx_is_anonimo (is_anonimo)
+                                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                                        `);
+
+                                        // Enviar mensagem para o canal de reviews primeiro para obter o message ID
+                                        let sentMessage = null;
+                                        if (reviewsChannel) {
+                                            sentMessage = await reviewsChannel.send({ embeds: [reviewEmbed] });
+                                            discordMessageId = sentMessage.id;
+                                            discordChannelId = reviewsChannel.id;
+                                        } else {
+                                            sentMessage = await message.channel.send({ embeds: [reviewEmbed] });
+                                            discordMessageId = sentMessage.id;
+                                            discordChannelId = message.channel.id;
                                         }
-                                    } else {
-                                        // Se não encontrar canal de reviews, enviar no canal atual
-                                        await message.channel.send({ embeds: [reviewEmbed] });
+
+                                        // Salvar no banco de dados
+                                        const [result] = await connection.execute(`
+                                            INSERT INTO reviews (
+                                                discord_user_id, 
+                                                discord_username, 
+                                                discord_avatar_url, 
+                                                tipo, 
+                                                texto, 
+                                                rating, 
+                                                is_anonimo, 
+                                                discord_channel_id, 
+                                                discord_message_id
+                                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                        `, [
+                                            userId,
+                                            isAnonimo ? 'Anónimo' : userName,
+                                            isAnonimo ? null : userAvatar,
+                                            tipo,
+                                            reviewText || '',
+                                            rating,
+                                            isAnonimo ? 1 : 0,
+                                            discordChannelId,
+                                            discordMessageId
+                                        ]);
+
+                                        savedReviewId = result.insertId;
+                                        await connection.end();
+                                        console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
+                                    } catch (dbError) {
+                                        console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
+                                        // Continuar mesmo se falhar ao salvar no banco
                                         
-                                        // Deletar mensagem do utilizador
-                                        try {
-                                            await reviewMessage.delete().catch(() => {});
-                                        } catch {}
+                                        // Enviar mensagem mesmo se falhar ao salvar
+                                        if (reviewsChannel) {
+                                            await reviewsChannel.send({ embeds: [reviewEmbed] });
+                                        } else {
+                                            await message.channel.send({ embeds: [reviewEmbed] });
+                                        }
+                                    }
+                                    
+                                    // Deletar mensagem do utilizador
+                                    try {
+                                        await reviewMessage.delete().catch(() => {});
+                                    } catch {}
+                                    
+                                    // Enviar confirmação via DM (mensagem privada) para o utilizador
+                                    const confirmEmbed = new EmbedBuilder()
+                                        .setTitle('Avaliação Enviada!')
+                                        .setDescription(reviewsChannel ? `Sua avaliação foi enviada para ${reviewsChannel}` : 'Sua avaliação foi enviada!')
+                                        .setColor(0x00ff00)
+                                        .setTimestamp();
+                                    
+                                    try {
+                                        await message.author.send({ embeds: [confirmEmbed] });
+                                    } catch (dmError) {
+                                        // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                                        const confirmMsg = await message.channel.send({ 
+                                            content: `${message.author} - Sua avaliação foi enviada!`,
+                                            embeds: [confirmEmbed]
+                                        }).catch(() => null);
                                         
-                                        // Enviar confirmação via DM (mensagem privada) para o utilizador
-                                        const confirmEmbed = new EmbedBuilder()
-                                            .setTitle('Avaliação Enviada!')
-                                            .setDescription('Sua avaliação foi enviada!')
-                                            .setColor(0x00ff00)
-                                            .setTimestamp();
-                                        
-                                        try {
-                                            await message.author.send({ embeds: [confirmEmbed] });
-                                        } catch (dmError) {
-                                            // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
-                                            const confirmMsg = await message.channel.send({ 
-                                                content: `${message.author} - Sua avaliação foi enviada!`,
-                                                embeds: [confirmEmbed]
-                                            }).catch(() => null);
-                                            
-                                            // Deletar mensagem de confirmação após 5 segundos
-                                            if (confirmMsg) {
-                                                setTimeout(async () => {
-                                                    try {
-                                                        await confirmMsg.delete().catch(() => {});
-                                                    } catch {}
-                                                }, 5000);
-                                            }
+                                        // Deletar mensagem de confirmação após 5 segundos
+                                        if (confirmMsg) {
+                                            setTimeout(async () => {
+                                                try {
+                                                    await confirmMsg.delete().catch(() => {});
+                                                } catch {}
+                                            }, 5000);
                                         }
                                     }
 
