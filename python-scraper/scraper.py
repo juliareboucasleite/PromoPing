@@ -11,8 +11,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
-
-# Importar configurações
 from config import DB_CONFIG, SCRAPER_CONFIG, NOTIFICATION_CONFIG, LOGGING_CONFIG
 
 # Garantir que o diretório do arquivo de log existe
@@ -111,18 +109,32 @@ def should_update_product(product_id, plan_interval_hours):
     cur = conn.cursor(dictionary=True)
     
     try:
-        cur.execute("SELECT UpdatedAt FROM produtos WHERE Id = %s", (product_id,))
+        cur.execute("SELECT UpdatedAt, PrecoAtual FROM produtos WHERE Id = %s", (product_id,))
         result = cur.fetchone()
         
         if not result or not result['UpdatedAt']:
+            logger.info(f"[CHECK] Produto {product_id}: Sem UpdatedAt, deve atualizar")
+            return True
+        
+        # Se não tem preço atual, sempre atualizar
+        if not result.get('PrecoAtual'):
+            logger.info(f"[CHECK] Produto {product_id}: Sem PrecoAtual, deve atualizar")
             return True
         
         last_update = result['UpdatedAt']
         time_since_update = datetime.now() - last_update
         hours_since_update = time_since_update.total_seconds() / 3600
         
-        return hours_since_update >= plan_interval_hours
-    except Exception:
+        should_update = hours_since_update >= plan_interval_hours
+        
+        if should_update:
+            logger.info(f"[CHECK] Produto {product_id}: {hours_since_update:.2f}h >= {plan_interval_hours}h, deve atualizar")
+        else:
+            logger.debug(f"[CHECK] Produto {product_id}: {hours_since_update:.2f}h < {plan_interval_hours}h, aguardando")
+        
+        return should_update
+    except Exception as e:
+        logger.error(f"[CHECK] Erro ao verificar produto {product_id}: {e}")
         return True
     finally:
         cur.close()
@@ -281,20 +293,19 @@ def clean_price_text(text):
 def create_driver():
     """Cria driver Chrome otimizado"""
     opts = uc.ChromeOptions()
+    
+    # Sempre rodar em modo headless (invisível) para não abrir janela do Chrome
+    opts.add_argument("--headless=new")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
     opts.add_argument("--disable-blink-features=AutomationControlled")
-    opts.add_argument("--start-maximized")
     opts.add_argument("--disable-popup-blocking")
     opts.add_argument("--disable-notifications")
-    opts.add_argument("--disable-gpu")
     opts.add_argument("--incognito")
     opts.add_argument("--lang=pt-PT")
     opts.add_argument("--window-size=1280,900")
     opts.add_argument(f"user-agent={SCRAPER_CONFIG['user_agent']}")
-    
-    if SCRAPER_CONFIG['headless']:
-        opts.add_argument("--headless=new")
     
     driver = uc.Chrome(options=opts, use_subprocess=True)
     try:
@@ -419,12 +430,16 @@ def extract_price(driver, url):
     u = url.lower()
     
     try:
+        logger.info(f"[EXTRACT] Acessando URL: {url}")
         driver.get(url)
+        sleep(2)  # Aguardar carregamento inicial
         aceitar_cookies(driver)
+        logger.debug(f"[EXTRACT] Página carregada, procurando preço...")
         
         # Amazon
         if "amazon." in u:
             try:
+                logger.debug("[EXTRACT] Tentando extrair preço da Amazon...")
                 WebDriverWait(driver, SCRAPER_CONFIG['max_wait']).until(
                     EC.visibility_of_element_located((By.CSS_SELECTOR, "span.a-price-whole"))
                 )
@@ -435,9 +450,16 @@ def extract_price(driver, url):
                 except:
                     pass
                 preco = clean_price_text(f"{inteiro},{decimal}" if decimal else inteiro)
-                return "Amazon", preco, None
-            except:
-                return "Amazon", None, None
+                if preco:
+                    logger.info(f"[EXTRACT] Preço Amazon encontrado: €{preco}")
+                    return "Amazon", preco, None
+                else:
+                    logger.warning(f"[EXTRACT] Preço Amazon não pôde ser limpo: {inteiro},{decimal}")
+            except Exception as e:
+                logger.error(f"[EXTRACT] Erro ao extrair preço Amazon: {e}")
+                import traceback
+                traceback.print_exc()
+            return "Amazon", None, None
         
         # FNAC
         elif "fnac" in u:
@@ -480,9 +502,45 @@ def extract_price(driver, url):
         # Worten
         elif "worten" in u:
             try:
-                sleep(2)  # Aguarda carregamento
+                logger.debug("[EXTRACT] Tentando extrair preço da Worten...")
+                sleep(3)  # Aguarda carregamento
                 aceitar_cookies(driver)
-                sleep(1)
+                sleep(2)
+                
+                # Seletores mais específicos da Worten (ordem de prioridade)
+                worten_selectors = [
+                    "span.w-product-price__main",
+                    ".w-product-price__main",
+                    "[data-testid*='price']",
+                    ".product-price",
+                    "span.value",
+                    "sup.decimal",
+                    ".price",
+                    "[class*='w-product-price']",
+                    "[class*='price']",
+                    ".current-price"
+                ]
+                
+                # Tentar seletores específicos primeiro
+                for selector in worten_selectors:
+                    try:
+                        WebDriverWait(driver, 5).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                        )
+                        elementos = driver.find_elements(By.CSS_SELECTOR, selector)
+                        
+                        for el in elementos:
+                            try:
+                                if el.is_displayed():
+                                    texto_preco = el.text.strip()
+                                    preco = clean_price_text(texto_preco)
+                                    if preco and float(preco) > 0:
+                                        logger.info(f"[WORTEN] Preço encontrado com seletor {selector}: €{preco}")
+                                        return "Worten", preco, None
+                            except:
+                                continue
+                    except:
+                        continue
                 
                 # Tentar capturar preço com inteiro e decimal separados (como Amazon)
                 try:
@@ -572,15 +630,19 @@ def extract_price(driver, url):
                 
                 # Fallback: busca por padrão de preço no texto da página (com decimais)
                 page_text = driver.page_source
+                logger.debug(f"[WORTEN] Tentando regex no page_source (tamanho: {len(page_text)} chars)")
+                
                 # Padrão mais específico: número com vírgula/ponto e 2 decimais seguido de €
                 price_patterns = [
-                    r'(\d+[,\.]\d{2})\s*€',  # 122,57 € ou 122.57 €
-                    r'€\s*(\d+[,\.]\d{2})',  # € 122,57 ou € 122.57
-                    r'(\d+)\s*[,\.]\s*(\d{2})\s*€',  # 122 , 57 €
+                    r'(\d{1,6}[,\.]\d{2})\s*€',  # 122,57 € ou 122.57 €
+                    r'€\s*(\d{1,6}[,\.]\d{2})',  # € 122,57 ou € 122.57
+                    r'(\d{1,6})\s*[,\.]\s*(\d{2})\s*€',  # 122 , 57 €
+                    r'price["\']?\s*:\s*["\']?(\d{1,6}[,\.]\d{2})',  # price: "122.57"
+                    r'data-price["\']?\s*=\s*["\']?(\d{1,6}[,\.]\d{2})',  # data-price="122.57"
                 ]
                 
                 for pattern in price_patterns:
-                    price_match = re.search(pattern, page_text)
+                    price_match = re.search(pattern, page_text, re.IGNORECASE)
                     if price_match:
                         if len(price_match.groups()) == 2:
                             # Caso com grupos separados
@@ -589,12 +651,21 @@ def extract_price(driver, url):
                             # Caso com grupo único
                             preco = clean_price_text(price_match.group(1))
                         
-                        if preco:
+                        if preco and float(preco) > 0:
                             logger.info(f"[WORTEN] Preço encontrado via regex: €{preco}")
                             return "Worten", preco, None
+                
+                # Último fallback: salvar HTML para debug
+                logger.warning(f"[WORTEN] Preço não encontrado. Salvando HTML para debug...")
+                try:
+                    with open("worten_debug.html", "w", encoding="utf-8") as f:
+                        f.write(page_text)
+                    logger.warning(f"[WORTEN] HTML salvo em worten_debug.html")
+                except:
+                    pass
                         
             except Exception as e:
-                logger.error(f"Erro Worten: {e}")
+                logger.error(f"[WORTEN] Erro ao extrair preço: {e}")
                 import traceback
                 traceback.print_exc()
             return "Worten", None, None
@@ -779,16 +850,103 @@ def extract_price(driver, url):
                 logger.error(f"Erro Black Market: {e}")
             return "Black Market", None, None
         
+        # Leroy Merlin
+        elif "leroymerlin" in u or "leroy-merlin" in u:
+            try:
+                logger.debug("[EXTRACT] Tentando extrair preço da Leroy Merlin...")
+                sleep(3)  # Aguarda carregamento
+                aceitar_cookies(driver)
+                sleep(2)
+                
+                # Seletores para Leroy Merlin
+                selectors = [
+                    ".price-value",
+                    ".product-price",
+                    ".price",
+                    "[data-testid*='price']",
+                    ".current-price",
+                    "span.price",
+                    "[class*='price']",
+                    "[class*='Price']",
+                    ".lm-price",
+                    "[data-price]"
+                    "m-price__decimal",
+                    "m-price__line",
+                    "kl-price",
+                    "m-price -main"
+                ]
+                
+                for selector in selectors:
+                    try:
+                        WebDriverWait(driver, 5).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                        )
+                        elementos = driver.find_elements(By.CSS_SELECTOR, selector)
+                        
+                        for el in elementos:
+                            try:
+                                if el.is_displayed():
+                                    texto_preco = el.text.strip()
+                                    preco = clean_price_text(texto_preco)
+                                    if preco and float(preco) > 0:
+                                        logger.info(f"[LEROY] Preço encontrado com seletor {selector}: €{preco}")
+                                        return "Leroy Merlin", preco, None
+                            except:
+                                continue
+                    except:
+                        continue
+                
+                # Tentar atributo data-price
+                try:
+                    price_elements = driver.find_elements(By.CSS_SELECTOR, "[data-price]")
+                    for el in price_elements:
+                        try:
+                            data_price = el.get_attribute("data-price")
+                            if data_price:
+                                preco = clean_price_text(data_price)
+                                if preco and float(preco) > 0:
+                                    logger.info(f"[LEROY] Preço encontrado via data-price: €{preco}")
+                                    return "Leroy Merlin", preco, None
+                        except:
+                            continue
+                except:
+                    pass
+                
+                # Fallback: busca por padrão de preço no texto da página
+                page_text = driver.page_source
+                price_patterns = [
+                    r'(\d{1,6}[,\.]\d{2})\s*€',
+                    r'€\s*(\d{1,6}[,\.]\d{2})',
+                    r'price["\']?\s*:\s*["\']?(\d{1,6}[,\.]\d{2})',
+                ]
+                
+                for pattern in price_patterns:
+                    price_match = re.search(pattern, page_text, re.IGNORECASE)
+                    if price_match:
+                        preco = clean_price_text(price_match.group(1))
+                        if preco and float(preco) > 0:
+                            logger.info(f"[LEROY] Preço encontrado via regex: €{preco}")
+                            return "Leroy Merlin", preco, None
+                            
+            except Exception as e:
+                logger.error(f"[LEROY] Erro ao extrair preço: {e}")
+                import traceback
+                traceback.print_exc()
+            return "Leroy Merlin", None, None
+        
         # Fallback genérico
         else:
             try:
+                logger.debug("[EXTRACT] Loja não reconhecida, tentando fallback genérico...")
                 page_text = driver.page_source
-                price_match = re.search(r'(\d+[,\.]\d{2})\s*€', page_text)
+                price_match = re.search(r'(\d{1,6}[,\.]\d{2})\s*€', page_text)
                 if price_match:
                     preco = clean_price_text(price_match.group(1))
                     if preco:
+                        logger.info(f"[GENÉRICO] Preço encontrado: €{preco}")
                         return "Genérico", preco, None
-            except:
+            except Exception as e:
+                logger.debug(f"[GENÉRICO] Erro no fallback: {e}")
                 pass
             
     except Exception as e:
@@ -829,12 +987,14 @@ def monitor_loop():
                 # Verifica se deve atualizar
                 if not should_update_product(pid, plano_intervalo):
                     aguardando += 1
+                    logger.debug(f"[SKIP] {nome}: aguardando intervalo de {plano_intervalo}h")
                     continue
                 
                 atualizados += 1
                 started = time()
                 
                 try:
+                    logger.info(f"[SCRAPING] Extraindo preço de {nome} ({link})...")
                     loja, preco, flag = extract_price(driver, link)
                     
                     if preco is not None:
@@ -845,7 +1005,8 @@ def monitor_loop():
                         if check_target_reached(pid, preco, preco_alvo):
                             metas += 1
                     else:
-                        logger.warning(f"[ERRO] {nome}: preço não encontrado")
+                        logger.warning(f"[ERRO] {nome}: preço não encontrado em {link}")
+                        logger.warning(f"[ERRO] Loja detectada: {loja}, Flag: {flag}")
                         
                 except Exception as e:
                     logger.error(f"[ERRO] {nome}: {e}")

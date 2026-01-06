@@ -1,7 +1,3 @@
-"""
-Módulo principal para comparação de produtos entre lojas.
-Integra extração de informações, normalização, pesquisa e matching.
-"""
 import logging
 from scraper import extract_product_info, create_driver, safe_quit
 from ai_product_matcher import normalize_product, generate_search_query, match_products

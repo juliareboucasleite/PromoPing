@@ -17,7 +17,7 @@ def test_system():
         
         # Teste produtos
         produtos = fetch_products()
-        print(f"✓ {len(produtos)} produtos encontrados")
+        print(f"{len(produtos)} produtos encontrados")
         
         return True
     except Exception as e:
