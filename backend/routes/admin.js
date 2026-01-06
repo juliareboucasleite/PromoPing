@@ -166,21 +166,110 @@ router.get("/products", async (req, res) => {
 });
 
 // ================== AVALIAÇÕES ==================
-router.get("/reviews", async (req, res) => {
+// Função para garantir que a tabela reviews existe
+async function ensureReviewsTable() {
     try {
-        // Por enquanto, retornar estrutura vazia até criar tabela de avaliações
-        // Pode ser implementado depois
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                discord_user_id VARCHAR(20) NOT NULL,
+                discord_username VARCHAR(100) NOT NULL,
+                discord_avatar_url VARCHAR(500) NULL,
+                tipo ENUM('site', 'bot', 'suporte') NOT NULL,
+                texto TEXT NOT NULL,
+                rating INT NULL,
+                is_anonimo TINYINT(1) DEFAULT 0,
+                discord_channel_id VARCHAR(20) NULL,
+                discord_message_id VARCHAR(20) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_discord_user_id (discord_user_id),
+                INDEX idx_tipo (tipo),
+                INDEX idx_rating (rating),
+                INDEX idx_created_at (created_at),
+                INDEX idx_is_anonimo (is_anonimo)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+    } catch (err) {
+        console.error("[ADMIN] Erro ao criar tabela reviews:", err);
+    }
+}
+
+router.get("/reviews", verifyToken, async (req, res) => {
+    try {
+        await ensureReviewsTable();
+
+        // Parâmetros de filtro e paginação
+        const tipo = req.query.tipo; // 'site', 'bot', 'suporte'
+        const rating = req.query.rating; // 1-5
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = (page - 1) * limit;
+
+        // Construir query
+        let query = "SELECT * FROM reviews WHERE 1=1";
+        const params = [];
+
+        if (tipo) {
+            query += " AND tipo = ?";
+            params.push(tipo);
+        }
+
+        if (rating) {
+            query += " AND rating = ?";
+            params.push(parseInt(rating));
+        }
+
+        query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        params.push(limit, offset);
+
+        const [reviews] = await pool.query(query, params);
+
+        // Contar total
+        let countQuery = "SELECT COUNT(*) as total FROM reviews WHERE 1=1";
+        const countParams = [];
+
+        if (tipo) {
+            countQuery += " AND tipo = ?";
+            countParams.push(tipo);
+        }
+
+        if (rating) {
+            countQuery += " AND rating = ?";
+            countParams.push(parseInt(rating));
+        }
+
+        const [countResult] = await pool.query(countQuery, countParams);
+        const total = countResult[0].total;
+
+        // Calcular estatísticas
+        const [statsResult] = await pool.query(`
+            SELECT 
+                tipo,
+                COUNT(*) as total,
+                AVG(rating) as media_rating,
+                SUM(CASE WHEN rating >= 4 THEN 1 ELSE 0 END) as positivas,
+                SUM(CASE WHEN rating <= 2 THEN 1 ELSE 0 END) as negativas
+            FROM reviews
+            WHERE rating IS NOT NULL
+            GROUP BY tipo
+        `);
+
         res.json({
             status: "ok",
-            reviews: [],
-            total: 0,
-            message: "Sistema de avaliações em desenvolvimento"
+            reviews: reviews,
+            total: total,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(total / limit),
+            stats: statsResult
         });
     } catch (err) {
         console.error("[ADMIN] Erro ao buscar avaliações:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao buscar avaliações"
+            error: "Erro ao buscar avaliações",
+            message: err.message
         });
     }
 });
