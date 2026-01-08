@@ -80,39 +80,94 @@
 
     async function loadOverview() {
         try {
+            console.log('[OVERVIEW] Carregando estatísticas...');
+            
+            // Carregar estatísticas com autenticação
             const [usersRes, productsRes, supportRes, bugsRes] = await Promise.all([
-                fetchAuth('/api/admin/users?limit=1').catch(() => null),
-                fetchAuth('/api/admin/products?limit=1').catch(() => null),
-                fetch(`${API_BASE}/api/support/messages/admin`).catch(() => null),
-                fetchAuth('/api/admin/bugs').catch(() => null)
+                fetchAuth('/api/admin/users?limit=1').catch(err => {
+                    console.error('[OVERVIEW] Erro ao buscar usuários:', err);
+                    return null;
+                }),
+                fetchAuth('/api/admin/products?limit=1').catch(err => {
+                    console.error('[OVERVIEW] Erro ao buscar produtos:', err);
+                    return null;
+                }),
+                fetchAuth('/api/support/messages/admin').catch(err => {
+                    console.error('[OVERVIEW] Erro ao buscar suporte:', err);
+                    return null;
+                }),
+                fetchAuth('/api/admin/bugs').catch(err => {
+                    console.error('[OVERVIEW] Erro ao buscar bugs:', err);
+                    return null;
+                })
             ]);
 
-            const usersData = usersRes ? await usersRes.json().catch(() => ({
-                total: 0
-            })) : {
-                total: 0
-            };
-            const productsData = productsRes ? await productsRes.json().catch(() => ({
-                total: 0
-            })) : {
-                total: 0
-            };
-            const supportData = supportRes ? await supportRes.json().catch(() => ({
-                items: []
-            })) : {
-                items: []
-            };
-            const bugsData = bugsRes ? await bugsRes.json().catch(() => ({
-                bugs: []
-            })) : {
-                bugs: []
-            };
+            // Processar dados de usuários
+            let usersTotal = 0;
+            if (usersRes) {
+                try {
+                    const usersData = await usersRes.json();
+                    usersTotal = usersData.total || 0;
+                    console.log('[OVERVIEW] Usuários ativos:', usersTotal);
+                } catch (err) {
+                    console.error('[OVERVIEW] Erro ao processar dados de usuários:', err);
+                }
+            }
 
-            document.getElementById('statUsersActive').textContent = usersData.total || 0;
-            document.getElementById('statProductsMonitored').textContent = productsData.total || 0;
-            document.getElementById('statSupportThreads').textContent = (supportData.items || []).length;
-            document.getElementById('statBugsOpen').textContent = (bugsData.bugs || []).filter(b => b.Status === 'open').length;
+            // Processar dados de produtos
+            let productsTotal = 0;
+            if (productsRes) {
+                try {
+                    const productsData = await productsRes.json();
+                    productsTotal = productsData.total || 0;
+                    console.log('[OVERVIEW] Produtos monitorados:', productsTotal);
+                } catch (err) {
+                    console.error('[OVERVIEW] Erro ao processar dados de produtos:', err);
+                }
+            }
 
+            // Processar dados de suporte
+            let supportThreads = 0;
+            if (supportRes) {
+                try {
+                    const supportData = await supportRes.json();
+                    supportThreads = (supportData.items || []).length;
+                    console.log('[OVERVIEW] Conversas de suporte:', supportThreads);
+                } catch (err) {
+                    console.error('[OVERVIEW] Erro ao processar dados de suporte:', err);
+                }
+            }
+
+            // Processar dados de bugs
+            let bugsOpen = 0;
+            if (bugsRes) {
+                try {
+                    const bugsData = await bugsRes.json();
+                    // Contar bugs com status "Aberto" ou "Em Progresso"
+                    bugsOpen = (bugsData.bugs || []).filter(b => {
+                        const status = (b.Status || '').toLowerCase();
+                        return status === 'open' || status === 'aberto' || 
+                               status === 'em progresso' || status === 'em_progresso' ||
+                               status === 'in progress' || status === 'in_progress';
+                    }).length;
+                    console.log('[OVERVIEW] Bugs abertos:', bugsOpen);
+                } catch (err) {
+                    console.error('[OVERVIEW] Erro ao processar dados de bugs:', err);
+                }
+            }
+
+            // Atualizar cards
+            const statUsersEl = document.getElementById('statUsersActive');
+            const statProductsEl = document.getElementById('statProductsMonitored');
+            const statSupportEl = document.getElementById('statSupportThreads');
+            const statBugsEl = document.getElementById('statBugsOpen');
+
+            if (statUsersEl) statUsersEl.textContent = usersTotal;
+            if (statProductsEl) statProductsEl.textContent = productsTotal;
+            if (statSupportEl) statSupportEl.textContent = supportThreads;
+            if (statBugsEl) statBugsEl.textContent = bugsOpen;
+
+            // Carregar atividade recente
             await loadRecentActivity();
         } catch (error) {
             console.error('[OVERVIEW] Erro ao carregar overview:', error);
@@ -148,7 +203,7 @@
                     icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
                     title: 'Novo utilizador registado',
                     description: `${user.Nome} (${user.Email})`,
-                    time: user.Data_Registo
+                    time: user.DataRegisto || user.Data_Registo
                 });
             });
 

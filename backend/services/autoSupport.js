@@ -174,6 +174,11 @@ Por favor, forneça:
 2. Seu email cadastrado
 3. Qual é a sua dúvida ou problema?
 
+Exemplo de como responder:
+Nome: João Silva
+Email: joao.silva@exemplo.com
+Dúvida: Não consigo fazer login na minha conta
+
 Com essas informações, posso direcioná-lo melhor e fornecer uma solução mais precisa.
 
 Aguardo suas informações! 😊`
@@ -315,6 +320,11 @@ Por favor, forneça:
 2. Seu email cadastrado
 3. Qual é a sua dúvida ou problema?
 
+Exemplo de como responder:
+Nome: João Silva
+Email: joao.silva@exemplo.com
+Dúvida: Não consigo fazer login na minha conta
+
 Com essas informações, posso direcioná-lo melhor e fornecer uma solução mais precisa.
 
 Aguardo suas informações! 😊`;
@@ -350,12 +360,21 @@ export async function sendAutoResponse(threadId, userMessage, referenciaID) {
                 if (!userInfo.hasQuestion) missingInfo.push('qual é a sua dúvida ou problema');
                 
                 if (missingInfo.length > 0) {
+                    // Criar exemplo baseado nas informações faltantes
+                    let exemplo = '';
+                    if (!userInfo.hasName) exemplo += 'Nome: João Silva\n';
+                    if (!userInfo.hasEmail) exemplo += 'Email: joao.silva@exemplo.com\n';
+                    if (!userInfo.hasQuestion) exemplo += 'Dúvida: Não consigo fazer login na minha conta';
+                    
                     autoResponse = `Olá! Obrigado por entrar em contato. 
 
 Para melhor atendê-lo, ainda preciso de algumas informações:
 
 Por favor, forneça:
 ${missingInfo.map((info, index) => `${index + 1}. ${info}`).join('\n')}
+
+Exemplo de como responder:
+${exemplo}
 
 Com essas informações, posso direcioná-lo melhor e fornecer uma solução mais precisa.
 
