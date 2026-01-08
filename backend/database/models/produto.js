@@ -44,10 +44,13 @@ export default (sequelize, DataTypes) => {
           isUrl: true,
         },
       },
-      userId: {
-        type: DataTypes.INTEGER,
+      ReferenciaID: {
+        type: DataTypes.STRING(13),
         allowNull: false,
-        defaultValue: 1,
+        validate: {
+          notEmpty: true,
+          len: [13, 13],
+        },
       },
       createdAt: {
         type: DataTypes.DATE,
