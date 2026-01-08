@@ -11,10 +11,10 @@ import { pool as db } from "../database/db.js";
  */
 export async function exportarExcel(req, res) {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(` Exportando Excel para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando Excel para usuário ${referenciaID} (plano: ${userPlano})`);
 
     //  Definir o intervalo do histórico conforme o plano
     const dias = userPlano === "Basic" ? 30 : null;
@@ -32,9 +32,9 @@ export async function exportarExcel(req, res) {
         DataCriacao,
         Status
       FROM produtos 
-      WHERE UserId = ? 
+      WHERE ReferenciaID = ? 
       ORDER BY DataCriacao DESC
-    `, [userId]);
+    `, [referenciaID]);
 
     if (produtos.length === 0) {
       return res.status(404).json({
@@ -96,10 +96,10 @@ export async function exportarExcel(req, res) {
  */
 export async function exportarPDF(req, res) {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(` Exportando PDF para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando PDF para usuário ${referenciaID} (plano: ${userPlano})`);
 
     //  Definir o intervalo do histórico conforme o plano
     const dias = userPlano === "Basic" ? 30 : null;
@@ -117,9 +117,9 @@ export async function exportarPDF(req, res) {
         DataCriacao,
         Status
       FROM produtos 
-      WHERE UserId = ? 
+      WHERE ReferenciaID = ? 
       ORDER BY DataCriacao DESC
-    `, [userId]);
+    `, [referenciaID]);
 
     if (produtos.length === 0) {
       return res.status(404).json({
@@ -181,10 +181,10 @@ export async function exportarPDF(req, res) {
  */
 export async function exportarIncidentesExcel(req, res) {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(` Exportando incidentes Excel para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando incidentes Excel para usuário ${referenciaID} (plano: ${userPlano})`);
 
     // Buscar incidentes (todos os incidentes do sistema para admin, ou apenas relacionados ao usuário)
     const [incidentes] = await db.query(`
@@ -240,16 +240,16 @@ export async function exportarIncidentesExcel(req, res) {
  */
 export async function exportarRelatorioCompleto(req, res) {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const userPlano = req.user?.plano?.nome || "Free";
     
-    console.log(` Exportando relatório completo para usuário ${userId} (plano: ${userPlano})`);
+    console.log(` Exportando relatório completo para usuário ${referenciaID} (plano: ${userPlano})`);
 
     // Buscar dados completos
     const [produtos] = await db.query(`
       SELECT Nome, Link, PrecoAtual, PrecoAlvo, Loja, DataCriacao, Status
-      FROM produtos WHERE UserId = ? ORDER BY DataCriacao DESC
-    `, [userId]);
+      FROM produtos WHERE ReferenciaID = ? ORDER BY DataCriacao DESC
+    `, [referenciaID]);
 
     const [incidentes] = await db.query(`
       SELECT i.Id, i.Titulo, i.Descricao, i.Impacto, i.DataInicio, i.DataFim, i.Status, c.Nome AS Componente
@@ -299,15 +299,15 @@ export async function exportarRelatorioCompleto(req, res) {
  */
 export async function obterPlanoUsuario(req, res) {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     
     // Buscar informações do usuário e plano
     const [usuarios] = await db.query(`
       SELECT c.*, p.Nome as plano_nome, p.Preco, p.LimiteProdutos, p.PermiteSMS, p.Relatorios
       FROM configutilizador c
       LEFT JOIN planos p ON c.PlanoAtualId = p.Id
-      WHERE c.UserId = ?
-    `, [userId]);
+      WHERE c.ReferenciaID = ?
+    `, [referenciaID]);
 
     if (usuarios.length === 0) {
       return res.status(404).json({
@@ -336,10 +336,10 @@ export async function obterPlanoUsuario(req, res) {
       const [stripeData] = await db.query(`
         SELECT customer_id, subscription_id, subscription_status, grace_period_end, status, plan_name
         FROM stripe_subscriptions 
-        WHERE user_id = ? AND (status = 'active' OR status = 'canceled')
+        WHERE ReferenciaID = ? AND (status = 'active' OR status = 'canceled')
         ORDER BY created_at DESC 
         LIMIT 1
-      `, [userId]);
+      `, [referenciaID]);
       
       if (stripeData.length > 0) {
         const data = stripeData[0];
@@ -353,7 +353,7 @@ export async function obterPlanoUsuario(req, res) {
             isInGracePeriod = true;
             gracePeriodEnd = data.grace_period_end;
             originalPlan = data.plan_name; // Nome do plano original
-            console.log(` [PLANO] Usuário ${userId} em período de graça até ${graceEnd.toISOString()}`);
+            console.log(` [PLANO] Usuário ${referenciaID} em período de graça até ${graceEnd.toISOString()}`);
             console.log(` [PLANO] Plano original durante graça: ${originalPlan}`);
           }
         }
@@ -397,7 +397,7 @@ export async function obterPlanoUsuario(req, res) {
       status: "ok",
       plano: plano,
       usuario: {
-        id: usuario.UserId,
+        ReferenciaID: referenciaID,
         nome: usuario.Nome,
         email: usuario.Email
       },
