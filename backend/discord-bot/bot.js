@@ -1903,19 +1903,16 @@ class PromoPingBot {
 
     async checkTwitchLives() {
         try {
-            console.log('[DISCORD] Verificando lives da Twitch...');
             const connection = await mysql.createConnection(this.dbConfig);
+            // Selecionar apenas colunas que existem (TwitchUserId pode não existir)
             const [channels] = await connection.execute(
-                'SELECT ChannelName, IsLive, TwitchUserId FROM twitch_channels'
+                'SELECT ChannelName, IsLive FROM twitch_channels'
             );
 
             if (channels.length === 0) {
-                console.log('[DISCORD] Nenhum canal Twitch configurado para monitorar');
                 await connection.end();
                 return;
             }
-
-            console.log(`[DISCORD] Verificando ${channels.length} canal(is) da Twitch: ${channels.map(c => c.ChannelName).join(', ')}`);
 
             const SOCIAL_FEED_CHANNEL_ID = '1442931610927366284';
             const channel = await this.client.channels.fetch(SOCIAL_FEED_CHANNEL_ID);
@@ -1955,7 +1952,6 @@ class PromoPingBot {
 
             const tokenData = await tokenResponse.json();
             const accessToken = tokenData.access_token;
-            console.log('[DISCORD] Token da Twitch obtido com sucesso');
 
             // Buscar informações dos canais (máximo 100 por requisição)
             // Extrair apenas o nome do canal (remover URLs se houver)
@@ -2008,7 +2004,6 @@ class PromoPingBot {
             }
 
             const streamsData = await streamsResponse.json();
-            console.log(`[DISCORD] Resposta da API Twitch: ${streamsData.data?.length || 0} stream(s) encontrado(s)`);
             const liveChannels = new Set(streamsData.data.map(s => s.user_login.toLowerCase()));
 
             // Verificar cada canal e enviar notificação se necessário
@@ -2016,7 +2011,6 @@ class PromoPingBot {
                 // Extrair nome do canal (pode ser URL ou nome simples)
                 const extractedChannelName = extractChannelName(channelData.ChannelName);
                 if (!extractedChannelName) {
-                    console.log(`[DISCORD] Nome de canal inválido ignorado: ${channelData.ChannelName}`);
                     continue;
                 }
                 
@@ -2030,24 +2024,16 @@ class PromoPingBot {
                     [isLive, channelData.ChannelName]
                 );
 
-                console.log(`[DISCORD] Canal ${channelName}: ${isLive ? 'AO VIVO' : 'Offline'} (era: ${wasLive ? 'AO VIVO' : 'Offline'})`);
-
                 // Se ficou ao vivo e não estava antes, enviar notificação
                 if (isLive && !wasLive) {
-                    console.log(`[DISCORD] Canal ${channelName} ficou ao vivo! Enviando notificação...`);
                     // Sempre notificar quando canal fica ao vivo (se estava offline antes)
                     // O controle de spam é feito verificando wasLive no banco
                     const streamInfo = streamsData.data.find(s => s.user_login.toLowerCase() === channelName);
                     await this.sendTwitchLiveNotification(channel, channelName, streamInfo);
                     this.twitchLiveStatus.set(channelName, { isLive: true, lastNotification: new Date() });
-                    console.log(`[DISCORD] Notificação enviada para ${channelName}`);
                 } else if (!isLive && wasLive) {
                     // Canal saiu do ar - limpar status completamente para permitir nova notificação quando voltar
-                    console.log(`[DISCORD] Canal ${channelName} saiu do ar - status limpo`);
                     this.twitchLiveStatus.delete(channelName);
-                } else if (isLive && wasLive) {
-                    // Canal continua ao vivo - apenas atualizar timestamp da última verificação
-                    console.log(`[DISCORD] Canal ${channelName} continua ao vivo`);
                 }
             }
 
@@ -2086,10 +2072,10 @@ class PromoPingBot {
         try {
             const connection = await mysql.createConnection(this.dbConfig);
             const [rows] = await connection.execute(`
-                SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.UserId,
+                SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.ReferenciaID,
                        u.discord_id as DiscordId, hp.Preco as PrecoAnterior, hp.DataRegisto as UpdatedAt
                 FROM produtos p
-                JOIN utilizadores u ON p.UserId = u.Id
+                JOIN utilizadores u ON p.ReferenciaID = u.ReferenciaID
                 LEFT JOIN historicoprecos hp ON p.Id = hp.ProdutoId
                 WHERE hp.DataRegisto > ?
                 AND u.discord_id IS NOT NULL AND u.discord_id != ''
@@ -2264,7 +2250,7 @@ class PromoPingBot {
             
             // Desativar notificações para este produto específico
             await connection.execute(
-                'UPDATE produtos SET DeletedAt = ? WHERE Id = ? AND UserId = (SELECT Id FROM utilizadores WHERE discord_id = ?)',
+                'UPDATE produtos SET DeletedAt = ? WHERE Id = ? AND ReferenciaID = (SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?)',
                 [new Date(), product.Id, user.id]
             );
             

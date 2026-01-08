@@ -32,7 +32,7 @@ module.exports = {
 
             // Buscar usuário
             const [users] = await connection.execute(
-                'SELECT Id, Email, SenhaHash, discord_id FROM utilizadores WHERE Email = ?',
+                'SELECT ReferenciaID, Email, SenhaHash, discord_id FROM utilizadores WHERE Email = ?',
                 [email]
             );
 
@@ -59,23 +59,23 @@ module.exports = {
             // Atualizar Discord ID se necessário
             if (!user.discord_id) {
                 await connection.execute(
-                    'UPDATE utilizadores SET discord_id = ?, ultimo_login = ? WHERE Id = ?',
-                    [message.author.id, new Date(), user.Id]
+                    'UPDATE utilizadores SET discord_id = ?, ultimo_login = ? WHERE ReferenciaID = ?',
+                    [message.author.id, new Date(), user.ReferenciaID]
                 );
             }
 
             // Buscar estatísticas do usuário
             const [produtos] = await connection.execute(
-                'SELECT COUNT(*) as total FROM produtos WHERE UserId = ? AND DeletedAt IS NULL',
-                [user.Id]
+                'SELECT COUNT(*) as total FROM produtos WHERE ReferenciaID = ? AND DeletedAt IS NULL',
+                [user.ReferenciaID]
             );
 
             const [mudancasHoje] = await connection.execute(`
                 SELECT COUNT(*) as total 
                 FROM historicoprecos hp 
                 JOIN produtos p ON hp.ProdutoId = p.Id 
-                WHERE p.UserId = ? AND DATE(hp.DataRegisto) = CURDATE()
-            `, [user.Id]);
+                WHERE p.ReferenciaID = ? AND DATE(hp.DataRegisto) = CURDATE()
+            `, [user.ReferenciaID]);
 
             await connection.end();
 

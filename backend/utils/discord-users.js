@@ -66,7 +66,7 @@ export function registerDiscordUser(discordData) {
     email: discordData.email,
     avatar: discordData.avatar,
     registeredAt: new Date().toISOString(),
-    userId: null // Será preenchido quando associar com usuário do banco
+    ReferenciaID: null // Será preenchido quando associar com usuário do banco
   };
   
   data.users.push(newUser);
@@ -81,16 +81,16 @@ export function registerDiscordUser(discordData) {
 }
 
 // Associar usuário Discord com usuário do banco
-export function linkDiscordUser(discordId, userId) {
+export function linkDiscordUser(discordId, ReferenciaID) {
   const data = loadDiscordUsers();
   const user = data.users.find(u => u.discordId === discordId);
   
   if (user) {
-    user.userId = userId;
+    user.ReferenciaID = ReferenciaID;
     user.linkedAt = new Date().toISOString();
     
     if (saveDiscordUsers(data)) {
-      console.log(' Usuário Discord associado com ID:', userId);
+      console.log(' Usuário Discord associado com ReferenciaID:', ReferenciaID);
       return true;
     }
   }
