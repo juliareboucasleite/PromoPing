@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import twilio from "twilio";
 import dotenv from "dotenv";
 dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
@@ -7,8 +6,8 @@ dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 // ===== EMAIL =====
 export async function sendEmail(to, subject, message) {
   try {
-    console.log(`📧 [EMAIL] Iniciando envio de email para: ${to}`);
-    console.log(`📧 [EMAIL] Assunto: ${subject}`);
+    console.log(`Iniciando envio de email para: ${to}`);
+    console.log(`Assunto: ${subject}`);
     
     // Verificar se as credenciais de email estão configuradas
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -17,15 +16,15 @@ export async function sendEmail(to, subject, message) {
       throw new Error(errorMsg);
     }
 
-    console.log(`📧 [EMAIL] Credenciais encontradas: EMAIL_USER=${process.env.EMAIL_USER}`);
-    console.log(`📧 [EMAIL] EMAIL_HOST: ${process.env.EMAIL_HOST || 'não configurado (usando serviço padrão)'}`);
-    console.log(`📧 [EMAIL] EMAIL_PORT: ${process.env.EMAIL_PORT || 'não configurado (usando serviço padrão)'}`);
+    console.log(`Credenciais encontradas: EMAIL_USER=${process.env.EMAIL_USER}`);
+    console.log(`EMAIL_HOST: ${process.env.EMAIL_HOST || 'não configurado (usando serviço padrão)'}`);
+    console.log(`EMAIL_PORT: ${process.env.EMAIL_PORT || 'não configurado (usando serviço padrão)'}`);
 
     // Configurar transporter - usar SMTP customizado se EMAIL_HOST estiver configurado
     let transporterConfig;
     
     if (process.env.EMAIL_HOST && process.env.EMAIL_PORT) {
-      console.log(`📧 [EMAIL] Usando configuração SMTP customizada: ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
+      console.log(`Usando configuração SMTP customizada: ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
       // Usar configuração SMTP customizada
       const port = parseInt(process.env.EMAIL_PORT, 10);
       const isSecure = port === 465 || process.env.EMAIL_SECURE === 'true';
@@ -47,11 +46,11 @@ export async function sendEmail(to, subject, message) {
       // Se não for SSL (porta 465), usar STARTTLS
       if (port === 587) {
         transporterConfig.requireTLS = true;
-        console.log(`📧 [EMAIL] STARTTLS habilitado para porta 587`);
+        console.log(`STARTTLS habilitado para porta 587`);
       }
       
       if (isSecure) {
-        console.log(`📧 [EMAIL] SSL habilitado para porta ${port}`);
+        console.log(`SSL habilitado para porta ${port}`);
       }
     } else {
       // Usar serviço pré-configurado (Gmail, Outlook, etc.)
@@ -65,7 +64,7 @@ export async function sendEmail(to, subject, message) {
       };
       
       const service = serviceMap[emailDomain] || 'gmail';
-      console.log(`📧 [EMAIL] Usando serviço pré-configurado: ${service} (detectado de ${emailDomain || 'não detectado'})`);
+      console.log(`Usando serviço pré-configurado: ${service} (detectado de ${emailDomain || 'não detectado'})`);
       
       transporterConfig = {
         service: service,
@@ -76,19 +75,19 @@ export async function sendEmail(to, subject, message) {
       };
     }
 
-    console.log(`📧 [EMAIL] Criando transporter...`);
+    console.log(`Criando transporter...`);
     const transporter = nodemailer.createTransport(transporterConfig);
     
     // Verificar conexão antes de enviar
-    console.log(`📧 [EMAIL] Verificando conexão com servidor de email...`);
+    console.log(`Verificando conexão com servidor de email...`);
     await transporter.verify();
     console.log(` [EMAIL] Conexão com servidor de email verificada com sucesso`);
 
     // Detectar se a mensagem é HTML (contém tags HTML)
     const isHtml = /<[a-z][\s\S]*>/i.test(message);
-    console.log(`📧 [EMAIL] Tipo de mensagem: ${isHtml ? 'HTML' : 'Texto'}`);
+    console.log(`Tipo de mensagem: ${isHtml ? 'HTML' : 'Texto'}`);
 
-    console.log(`📧 [EMAIL] Enviando email...`);
+    console.log(`Enviando email...`);
     const info = await transporter.sendMail({
       from: `"PromoPing" <${process.env.EMAIL_USER}>`,
       to,
@@ -97,46 +96,27 @@ export async function sendEmail(to, subject, message) {
       html: isHtml ? message : undefined, // Enviar como HTML se detectado
     });
 
-    console.log(` [EMAIL] Email enviado com sucesso!`);
-    console.log(` [EMAIL] Message ID: ${info.messageId}`);
-    console.log(` [EMAIL] Enviado para: ${to} via ${process.env.EMAIL_HOST || 'serviço pré-configurado'}`);
+    console.log(`Email enviado com sucesso!`);
+    console.log(`Message ID: ${info.messageId}`);
+    console.log(`Enviado para: ${to} via ${process.env.EMAIL_HOST || 'serviço pré-configurado'}`);
     
     return info;
   } catch (err) {
-    console.error(` [EMAIL] ========== ERRO DETALHADO ==========`);
-    console.error(` [EMAIL] Tipo: ${err.name}`);
-    console.error(` [EMAIL] Mensagem: ${err.message}`);
-    console.error(` [EMAIL] Código: ${err.code || 'N/A'}`);
+    console.error(`Tipo: ${err.name}`);
+    console.error(`Mensagem: ${err.message}`);
+    console.error(`Código: ${err.code || 'N/A'}`);
     if (err.response) {
-      console.error(` [EMAIL] Resposta do servidor:`, err.response);
+      console.error(`Resposta do servidor:`, err.response);
     }
     if (err.responseCode) {
-      console.error(` [EMAIL] Código de resposta: ${err.responseCode}`);
+      console.error(`Código de resposta: ${err.responseCode}`);
     }
     if (err.command) {
-      console.error(` [EMAIL] Comando: ${err.command}`);
+      console.error(`Comando: ${err.command}`);
     }
-    console.error(` [EMAIL] Stack trace:`);
+    console.error(`Stack trace:`);
     console.error(err.stack);
-    console.error(` [EMAIL] ===================================`);
     throw err; // Re-lançar o erro para que o chamador possa tratá-lo
-  }
-}
-
-// ===== SMS =====
-export async function sendSMS(to, message) {
-  try {
-    const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
-
-    await client.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE, // número fornecido pela Twilio
-      to, // número destino (+351... ou +55...)
-    });
-
-    console.log(` SMS enviado para ${to}`);
-  } catch (err) {
-    console.error(" Erro ao enviar SMS:", err.message);
   }
 }
 
