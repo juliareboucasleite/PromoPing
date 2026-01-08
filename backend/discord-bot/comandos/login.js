@@ -59,7 +59,7 @@ module.exports = {
             // Atualizar Discord ID se necessário
             if (!user.discord_id) {
                 await connection.execute(
-                    'UPDATE utilizadores SET discord_id = ?, ultimo_login = ? WHERE ReferenciaID = ?',
+                    'UPDATE utilizadores SET discord_id = ?, UltimoLogin = ? WHERE ReferenciaID = ?',
                     [message.author.id, new Date(), user.ReferenciaID]
                 );
             }

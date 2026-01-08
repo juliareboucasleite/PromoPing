@@ -672,31 +672,46 @@ class PromoPingBot {
                     let discordMessageId = null;
                     let discordChannelId = null;
 
+                    // Flag para evitar inserção duplicada (por usuário e tipo)
+                    if (!this._savingReviews) {
+                        this._savingReviews = new Set();
+                    }
+                    const reviewKey = `${userId}_${tipo}`;
+                    if (this._savingReviews.has(reviewKey)) {
+                        return;
+                    }
+                    this._savingReviews.add(reviewKey);
+
                     try {
                         const connection = await mysql.createConnection(this.dbConfig);
                         
-                        // Garantir que a tabela existe
-                        await connection.execute(`
-                            CREATE TABLE IF NOT EXISTS reviews (
-                                id INT AUTO_INCREMENT PRIMARY KEY,
-                                discord_user_id VARCHAR(20) NOT NULL,
-                                discord_username VARCHAR(100) NOT NULL,
-                                discord_avatar_url VARCHAR(500) NULL,
-                                tipo ENUM('site', 'bot', 'suporte') NOT NULL,
-                                texto TEXT NOT NULL,
-                                rating INT NULL,
-                                is_anonimo TINYINT(1) DEFAULT 0,
-                                discord_channel_id VARCHAR(20) NULL,
-                                discord_message_id VARCHAR(20) NULL,
-                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                INDEX idx_discord_user_id (discord_user_id),
-                                INDEX idx_tipo (tipo),
-                                INDEX idx_rating (rating),
-                                INDEX idx_created_at (created_at),
-                                INDEX idx_is_anonimo (is_anonimo)
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                        `);
+                        // Buscar ReferenciaID do usuário pelo discord_id
+                        const [users] = await connection.execute(
+                            'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                            [userId]
+                        );
+
+                        if (users.length === 0) {
+                            await connection.end();
+                            this._savingReviews.delete(reviewKey);
+                            await reviewMessage.reply('❌ Você precisa estar registado no sistema. Use `/registar` primeiro.');
+                            return;
+                        }
+
+                        const referenciaID = users[0].ReferenciaID;
+
+                        // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
+                        const [existingReviews] = await connection.execute(
+                            'SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
+                            [referenciaID, tipo]
+                        );
+
+                        if (existingReviews.length > 0) {
+                            await connection.end();
+                            this._savingReviews.delete(reviewKey);
+                            await reviewMessage.reply('⏱️ Você já enviou uma avaliação recentemente. Aguarde alguns minutos.');
+                            return;
+                        }
 
                         // Enviar mensagem para o canal de reviews primeiro para obter o message ID
                         let sentMessage = null;
@@ -710,35 +725,29 @@ class PromoPingBot {
                             discordChannelId = interaction.channel.id;
                         }
 
-                        // Salvar no banco de dados
+                        // Salvar no banco de dados usando apenas as colunas existentes
                         const [result] = await connection.execute(`
                             INSERT INTO reviews (
-                                discord_user_id, 
-                                discord_username, 
-                                discord_avatar_url, 
-                                tipo, 
-                                texto, 
-                                rating, 
-                                is_anonimo, 
-                                discord_channel_id, 
-                                discord_message_id
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                ReferenciaID, 
+                                Tipo, 
+                                Texto, 
+                                Rating, 
+                                IsAnonimo
+                            ) VALUES (?, ?, ?, ?, ?)
                         `, [
-                            userId,
-                            isAnonimo ? 'Anónimo' : userName,
-                            isAnonimo ? null : userAvatar,
+                            referenciaID,
                             tipo,
                             reviewText || '',
                             rating,
-                            isAnonimo ? 1 : 0,
-                            discordChannelId,
-                            discordMessageId
+                            isAnonimo ? 1 : 0
                         ]);
 
                         savedReviewId = result.insertId;
                         await connection.end();
+                        this._savingReviews.delete(reviewKey);
                         console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
                     } catch (dbError) {
+                        this._savingReviews.delete(reviewKey);
                         console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
                         // Continuar mesmo se falhar ao salvar no banco
                     }

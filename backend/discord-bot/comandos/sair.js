@@ -34,7 +34,7 @@ module.exports = {
 
             // Desvincular Discord ID
             await connection.execute(
-                'UPDATE utilizadores SET discord_id = NULL, ultimo_login = ? WHERE ReferenciaID = ?',
+                'UPDATE utilizadores SET discord_id = NULL, UltimoLogin = ? WHERE ReferenciaID = ?',
                 [new Date(), user.ReferenciaID]
             );
 
