@@ -129,7 +129,15 @@ router.patch("/users/:referenciaID", async (req, res) => {
     console.log("[ADMIN] PATCH /api/admin/users/:referenciaID chamado");
     try {
         const { referenciaID } = req.params;
-        const { Nome, Email, Ativo, EmailVerificado } = req.body;
+        const { Nome, Email, Ativo, EmailVerificado, ReferenciaID } = req.body;
+
+        // Garantir que ReferenciaID não pode ser alterada
+        if (ReferenciaID && ReferenciaID !== referenciaID) {
+            return res.status(400).json({
+                status: "error",
+                error: "A ReferenciaID não pode ser alterada"
+            });
+        }
 
         if (!Nome || !Email) {
             return res.status(400).json({

@@ -118,9 +118,75 @@
                     </tbody>
                 </table>
             `;
+
+            // Adicionar event listeners aos botões de editar
+            document.querySelectorAll('.edit-user-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const referenciaID = btn.dataset.referencia;
+                    openEditModal(referenciaID, data.users);
+                });
+            });
         } catch (error) {
             console.error('Erro ao carregar utilizadores:', error);
             usersList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    function openEditModal(referenciaID, users) {
+        const user = users.find(u => u.ReferenciaID === referenciaID);
+        if (!user) {
+            alert('Utilizador não encontrado');
+            return;
+        }
+
+        document.getElementById('editReferenciaID').value = user.ReferenciaID || '';
+        document.getElementById('editNome').value = user.Nome || '';
+        document.getElementById('editEmail').value = user.Email || '';
+        document.getElementById('editAtivo').value = user.Ativo ? '1' : '0';
+        document.getElementById('editEmailVerificado').value = user.EmailVerificado ? '1' : '0';
+
+        const modal = document.getElementById('editUserModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editUserModal');
+        const form = document.getElementById('editUserForm');
+        if (modal) modal.classList.remove('show');
+        if (form) form.reset();
+    }
+
+    async function updateUser() {
+        const referenciaID = document.getElementById('editReferenciaID').value;
+        const nome = document.getElementById('editNome').value.trim();
+        const email = document.getElementById('editEmail').value.trim();
+        const ativo = document.getElementById('editAtivo').value === '1';
+        const emailVerificado = document.getElementById('editEmailVerificado').value === '1';
+
+        if (!nome || !email) {
+            alert('Por favor, preencha nome e email');
+            return;
+        }
+
+        try {
+            const response = await fetchAuth(`/api/admin/users/${referenciaID}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    Nome: nome,
+                    Email: email,
+                    Ativo: ativo,
+                    EmailVerificado: emailVerificado
+                })
+            });
+
+            const data = await response.json();
+
+            alert('Utilizador atualizado com sucesso!');
+            closeEditModal();
+            await loadUsers();
+        } catch (error) {
+            console.error('[UTILIZADORES] Erro ao atualizar utilizador:', error);
+            alert(`Erro ao atualizar utilizador: ${error.message}`);
         }
     }
 
