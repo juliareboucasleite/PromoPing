@@ -17,18 +17,18 @@ const CATEGORIES = {
                 condition: (msg) => msg.toLowerCase().includes('esqueci') || msg.toLowerCase().includes('esquec'),
                 response: `Olá! Vejo que está com problemas para acessar sua conta. Aqui estão algumas dicas para recuperar sua senha:
 
-1. **Recuperação de Senha:**
+1. Recuperação de Senha:
    - Acesse a página de login e clique em "Esqueci minha senha"
    - Digite o email cadastrado na sua conta
    - Verifique sua caixa de entrada (e spam) para o email de recuperação
    - O link de recuperação é válido por 1 hora
 
-2. **Verifique seu Email:**
+2. Verifique seu Email:
    - Certifique-se de usar o mesmo email cadastrado
    - Verifique a pasta de spam/lixo eletrônico
    - Aguarde alguns minutos, o email pode demorar a chegar
 
-3. **Ainda com problemas?**
+3. Ainda com problemas?
    - Verifique se digitou o email corretamente
    - Tente novamente após alguns minutos
    - Se o problema persistir, nossa equipe de suporte entrará em contato em breve!`
@@ -37,23 +37,23 @@ const CATEGORIES = {
                 condition: (msg) => msg.toLowerCase().includes('erro') || msg.toLowerCase().includes('não funciona') || msg.toLowerCase().includes('nao funciona'),
                 response: `Olá! Vejo que está tendo problemas para fazer login. Aqui estão algumas soluções comuns:
 
-1. **Verifique suas Credenciais:**
+1. Verifique suas Credenciais:
    - Confirme que está usando o email correto
    - Verifique se a senha está correta (maiúsculas/minúsculas importam)
    - Tente copiar e colar a senha para evitar erros de digitação
 
-2. **Limpe o Cache do Navegador:**
+2. Limpe o Cache do Navegador:
    - Pressione Ctrl+Shift+Delete (Windows) ou Cmd+Shift+Delete (Mac)
    - Selecione "Cookies e dados de sites"
    - Clique em "Limpar dados"
    - Tente fazer login novamente
 
-3. **Tente em Modo Anônimo:**
+3. Tente em Modo Anônimo:
    - Abra uma janela anônima/privada
    - Acesse o site e tente fazer login
    - Isso ajuda a identificar problemas com cache ou extensões
 
-4. **Verifique sua Conexão:**
+4. Verifique sua Conexão:
    - Certifique-se de que está conectado à internet
    - Tente recarregar a página (F5 ou Ctrl+R)
 
@@ -63,13 +63,13 @@ Se nenhuma dessas soluções funcionar, nossa equipe de suporte entrará em cont
                 condition: () => true, // Default para login
                 response: `Olá! Vejo que está com dúvidas sobre login. Aqui estão algumas informações úteis:
 
-**Como fazer login:**
+Como fazer login:
 1. Acesse a página de login
 2. Digite seu email cadastrado
 3. Digite sua senha
 4. Clique em "Entrar"
 
-**Problemas comuns:**
+Problemas comuns:
 - Esqueci minha senha: Use a opção "Recuperar senha" na página de login
 - Email não verificado: Verifique sua caixa de entrada e confirme seu email
 - Conta bloqueada: Entre em contato conosco para desbloquear
@@ -85,19 +85,19 @@ Se precisar de mais ajuda, nossa equipe de suporte entrará em contato!`
                 condition: () => true,
                 response: `Olá! Vejo que tem dúvidas sobre produtos. Aqui estão algumas informações:
 
-**Adicionar Produto:**
+Adicionar Produto:
 1. Acesse a página de produtos no seu dashboard
 2. Clique em "Adicionar Produto"
 3. Cole o link do produto que deseja monitorar
 4. Defina o preço alvo desejado
 5. Salve o produto
 
-**Monitorização:**
+Monitorização:
 - Os produtos são verificados automaticamente conforme seu plano
 - Você receberá notificações quando o preço atingir seu alvo
 - O histórico de preços fica disponível na página do produto
 
-**Limites de Produtos:**
+Limites de Produtos:
 - Plano Free: até 5 produtos
 - Plano Basic: até 25 produtos
 - Plano Premium: até 50 produtos
@@ -113,17 +113,17 @@ Se precisar de mais ajuda, nossa equipe de suporte entrará em contato!`
                 condition: () => true,
                 response: `Olá! Vejo que tem dúvidas sobre pagamentos e planos. Aqui estão algumas informações:
 
-**Nossos Planos:**
-- **Free:** Grátis - até 5 produtos, histórico de 7 dias
-- **Basic:** €4,99/mês - até 25 produtos, histórico de 30 dias
-- **Premium:** €15,30/mês - até 50 produtos, histórico de 50 dias
+Nossos Planos:
+- Free: Grátis - até 5 produtos, histórico de 7 dias
+- Basic: €4,99/mês - até 25 produtos, histórico de 30 dias
+- Premium: €15,30/mês - até 50 produtos, histórico de 50 dias
 
-**Formas de Pagamento:**
+Formas de Pagamento:
 - Aceitamos cartões de crédito/débito através do Stripe
 - Pagamento seguro e criptografado
 - Renovação automática mensal
 
-**Gerenciar Assinatura:**
+Gerenciar Assinatura:
 - Acesse seu perfil no dashboard
 - Vá em "Configurações" > "Plano"
 - Você pode atualizar, cancelar ou alterar seu plano a qualquer momento
@@ -139,18 +139,18 @@ Se precisar de mais ajuda com pagamentos, nossa equipe de suporte entrará em co
                 condition: () => true,
                 response: `Olá! Vejo que tem dúvidas sobre notificações. Aqui estão algumas informações:
 
-**Canais de Notificação:**
+Canais de Notificação:
 - Email: Notificações enviadas para seu email cadastrado
 - Discord: Notificações no servidor do Discord (se conectado)
 - SMS: Disponível em planos pagos
 
-**Configurar Notificações:**
+Configurar Notificações:
 1. Acesse seu perfil no dashboard
 2. Vá em "Preferências" > "Notificações"
 3. Escolha seus canais preferidos
 4. Salve as alterações
 
-**Não está recebendo notificações?**
+Não está recebendo notificações?
 - Verifique se o produto atingiu o preço alvo
 - Confirme que as notificações estão ativadas
 - Verifique sua caixa de spam (para emails)
@@ -169,7 +169,7 @@ Se o problema persistir, nossa equipe de suporte entrará em contato!`
 
 Para melhor atendê-lo, preciso de algumas informações:
 
-**Por favor, forneça:**
+Por favor, forneça:
 1. Seu nome completo
 2. Seu email cadastrado
 3. Qual é a sua dúvida ou problema?
@@ -310,10 +310,10 @@ const WELCOME_MESSAGE = `Olá! Bem-vindo ao suporte do PromoPing!
 
 Para melhor atendê-lo, preciso de algumas informações:
 
-**Por favor, forneça:**
-1. **Seu nome completo**
-2. **Seu email cadastrado**
-3. **Qual é a sua dúvida ou problema?**
+Por favor, forneça:
+1. Seu nome completo
+2. Seu email cadastrado
+3. Qual é a sua dúvida ou problema?
 
 Com essas informações, posso direcioná-lo melhor e fornecer uma solução mais precisa.
 
@@ -354,8 +354,8 @@ export async function sendAutoResponse(threadId, userMessage, referenciaID) {
 
 Para melhor atendê-lo, ainda preciso de algumas informações:
 
-**Por favor, forneça:**
-${missingInfo.map((info, index) => `${index + 1}. **${info}**`).join('\n')}
+Por favor, forneça:
+${missingInfo.map((info, index) => `${index + 1}. ${info}`).join('\n')}
 
 Com essas informações, posso direcioná-lo melhor e fornecer uma solução mais precisa.
 
