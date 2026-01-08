@@ -11,14 +11,14 @@ async function fetchPreco(link) {
 }
 
 // Atualiza todos os produtos de um utilizador respeitando plano
-export async function atualizarPrecos(userId) {
+export async function atualizarPrecos(referenciaID) {
   // Buscar plano do utilizador
   const [config] = await pool.query(
     `SELECT p.Nome as plano_nome
-     FROM ConfigUtilizador c
+     FROM configutilizador c
      JOIN Planos p ON p.Id = c.PlanoAtualId
-     WHERE c.UserId = ?`,
-    [userId]
+     WHERE c.ReferenciaID = ?`,
+    [referenciaID]
   );
 
   if (!config.length) return { error: "Plano não encontrado" };
@@ -28,8 +28,8 @@ export async function atualizarPrecos(userId) {
 
   // Buscar produtos do utilizador
   const [produtos] = await pool.query(
-    "SELECT * FROM Produtos WHERE UserId = ?",
-    [userId]
+    "SELECT * FROM Produtos WHERE ReferenciaID = ?",
+    [referenciaID]
   );
 
   let atualizados = [];

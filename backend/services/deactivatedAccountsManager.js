@@ -16,39 +16,28 @@ export class DeactivatedAccountsManager {
             console.log(`[DEACTIVATED_ACCOUNTS] Verificando contas desativadas expiradas...`);
 
             // Buscar contas desativadas há mais de 20 dias
-            // Primeiro, tentar com DataDesativacao, se não existir usar Data_Registo como fallback
+            // Primeiro, tentar com DataDesativacao, se não existir usar DataRegisto como fallback
             let expiredAccounts = [];
 
             try {
                 // Tentar buscar com DataDesativacao
                 const [accountsWithDate] = await pool.query(`
           SELECT 
-            Id,
+            ReferenciaID,
             Nome,
             Email,
             DataDesativacao,
-            Data_Registo
-          FROM Utilizadores 
+            DataRegisto
+          FROM utilizadores 
           WHERE Ativo = 0 
             AND DataDesativacao IS NOT NULL 
             AND DataDesativacao <= DATE_SUB(NOW(), INTERVAL 20 DAY)
         `);
                 expiredAccounts = accountsWithDate;
             } catch (error) {
-                // Se a coluna não existir, usar Data_Registo como fallback
-                console.log('[DEACTIVATED_ACCOUNTS] Coluna DataDesativacao não encontrada, usando Data_Registo');
-                const [accountsFallback] = await pool.query(`
-          SELECT 
-            Id,
-            Nome,
-            Email,
-            NULL as DataDesativacao,
-            Data_Registo
-          FROM Utilizadores 
-          WHERE Ativo = 0 
-            AND Data_Registo <= DATE_SUB(NOW(), INTERVAL 20 DAY)
-        `);
-                expiredAccounts = accountsFallback;
+                // Se a coluna não existir, não há contas para deletar (sem data de desativação)
+                console.log('[DEACTIVATED_ACCOUNTS] Coluna DataDesativacao não encontrada, nenhuma conta para deletar');
+                expiredAccounts = [];
             }
 
             if (expiredAccounts.length === 0) {
@@ -66,7 +55,7 @@ export class DeactivatedAccountsManager {
             // Deletar cada conta expirada
             for (const account of expiredAccounts) {
                 try {
-                    const userId = account.Id;
+                    const referenciaID = account.ReferenciaID;
 
                     // Iniciar transação
                     const connection = await pool.getConnection();
@@ -74,31 +63,31 @@ export class DeactivatedAccountsManager {
 
                     try {
                         // Deletar todos os dados relacionados (mesma lógica da rota de exclusão)
-                        await connection.query("DELETE FROM Produtos WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM configutilizador WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM preferenciasnotificacao WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM contasconectadas WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM stripe_subscriptions WHERE user_id = ?", [userId]);
-                        await connection.query("DELETE FROM notificacoes WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM supportmessages WHERE userId = ?", [userId]);
-                        await connection.query("DELETE FROM recuperar_senha WHERE UserId = ?", [userId]);
-                        await connection.query("DELETE FROM Utilizadores WHERE Id = ?", [userId]);
+                        await connection.query("DELETE FROM Produtos WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM configutilizador WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM preferenciasnotificacao WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM contasconectadas WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM stripe_subscriptions WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM notificacoes WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM supportmessages WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM recuperar_senha WHERE ReferenciaID = ?", [referenciaID]);
+                        await connection.query("DELETE FROM utilizadores WHERE ReferenciaID = ?", [referenciaID]);
 
                         await connection.commit();
                         connection.release();
 
                         deletedAccounts.push({
-                            id: userId,
+                            ReferenciaID: referenciaID,
                             email: account.Email
                         });
                         // Log removido - apenas resultado final será logado
                     } catch (error) {
                         await connection.rollback();
                         connection.release();
-                        console.error(`[DEACTIVATED_ACCOUNTS] Erro ao deletar conta ${userId}:`, error);
+                        console.error(`[DEACTIVATED_ACCOUNTS] Erro ao deletar conta ${referenciaID}:`, error);
                     }
                 } catch (error) {
-                    console.error(`[DEACTIVATED_ACCOUNTS] Erro ao processar conta ${account.Id}:`, error);
+                    console.error(`[DEACTIVATED_ACCOUNTS] Erro ao processar conta ${account.ReferenciaID}:`, error);
                 }
             }
 
