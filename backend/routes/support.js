@@ -447,6 +447,28 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
 
         console.log(" [SUPPORT] Resposta inserida:", result.insertId);
 
+        // Se for mensagem do usuário, verificar se precisa de resposta automática (assíncrono, não bloqueia a resposta)
+        if (senderType === 'user') {
+            setImmediate(async () => {
+                try {
+                    const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
+                    
+                    // Verificar se deve escalar para suporte humano
+                    const shouldEscalate = await shouldEscalateToHuman(threadId);
+                    
+                    if (shouldEscalate) {
+                        await escalateToHuman(threadId, referenciaIDParaResposta);
+                    } else {
+                        // Enviar resposta automática apenas se não houver resposta recente do suporte
+                        await sendAutoResponse(threadId, message.trim(), referenciaIDParaResposta);
+                    }
+                } catch (autoSupportError) {
+                    console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
+                    // Não falhar a requisição se a resposta automática falhar
+                }
+            });
+        }
+
         res.status(201).json({
             id: result.insertId,
             message: message.trim(),
@@ -522,6 +544,26 @@ router.post("/messages", verifyToken, async (req, res) => {
         );
 
         console.log(" [SUPPORT] Nova thread criada:", newMessageId);
+
+        // Enviar resposta automática (assíncrono, não bloqueia a resposta)
+        setImmediate(async () => {
+            try {
+                const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
+                
+                // Verificar se deve escalar para suporte humano
+                const shouldEscalate = await shouldEscalateToHuman(newMessageId);
+                
+                if (shouldEscalate) {
+                    await escalateToHuman(newMessageId, referenciaID);
+                } else {
+                    // Enviar resposta automática
+                    await sendAutoResponse(newMessageId, message.trim(), referenciaID);
+                }
+            } catch (autoSupportError) {
+                console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
+                // Não falhar a requisição se a resposta automática falhar
+            }
+        });
 
         res.status(201).json({
             id: newMessageId,
