@@ -61,11 +61,15 @@ const TABLE_DEFINITIONS = {
             CodigoEmail VARCHAR(6) DEFAULT NULL,
             DinheiroPoupado DECIMAL(10,2) DEFAULT 0.00,
             DataNascimento DATE DEFAULT NULL,
+            discord_id VARCHAR(50) DEFAULT NULL,
+            google_id VARCHAR(50) DEFAULT NULL,
             FotoPerfil VARCHAR(500) DEFAULT NULL COMMENT 'URL da foto de perfil do usuário (GitHub, Google, etc.)',
             CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UpdatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_email (Email),
             INDEX idx_perfil (PerfilId),
+            UNIQUE KEY idx_discord_id (discord_id),
+            INDEX idx_google_id (google_id),
             FOREIGN KEY (PerfilId) REFERENCES perfis(Id) ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: true,
@@ -82,7 +86,7 @@ const TABLE_DEFINITIONS = {
             Shipping VARCHAR(100) DEFAULT '',
             PrecoAlvo DECIMAL(10,2) DEFAULT NULL,
             DataLimite DATE DEFAULT NULL,
-            DataCriacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UpdatedAt TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
             DeletedAt TIMESTAMP NULL DEFAULT NULL,
             LojaId INT(11) DEFAULT NULL,
@@ -208,26 +212,21 @@ const TABLE_DEFINITIONS = {
 
     'reviews': {
         definition: `CREATE TABLE IF NOT EXISTS reviews (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            discord_user_id VARCHAR(20) NOT NULL,
-            discord_username VARCHAR(100) NOT NULL,
-            discord_avatar_url VARCHAR(500) NULL,
-            tipo ENUM('site', 'bot', 'suporte') NOT NULL,
-            texto TEXT NOT NULL,
-            rating INT NULL,
-            is_anonimo TINYINT(1) DEFAULT 0,
-            discord_channel_id VARCHAR(20) NULL,
-            discord_message_id VARCHAR(20) NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            INDEX idx_discord_user_id (discord_user_id),
-            INDEX idx_tipo (tipo),
-            INDEX idx_rating (rating),
-            INDEX idx_created_at (created_at),
-            INDEX idx_is_anonimo (is_anonimo)
+            Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            ReferenciaID VARCHAR(13) NOT NULL,
+            Tipo ENUM('site','bot','suporte') NOT NULL,
+            Texto TEXT NOT NULL,
+            Rating INT DEFAULT NULL,
+            IsAnonimo TINYINT(1) DEFAULT 0,
+            CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_ReferenciaID (ReferenciaID),
+            INDEX idx_Tipo (Tipo),
+            INDEX idx_Rating (Rating),
+            INDEX idx_CreatedAt (CreatedAt),
+            FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-        usesReferenciaID: false,
-        source: 'scripts/create-reviews-table.js - usa discord_user_id (ID externo)'
+        usesReferenciaID: true,
+        source: 'sql/pap (1).sql - estrutura real da base de dados'
     },
 
     'planos': {
