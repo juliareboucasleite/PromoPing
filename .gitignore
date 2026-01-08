@@ -47,7 +47,5 @@ jspm_packages/
 
 # Project specific
 discord-users.json
-ANALISE_SEGURANCA.md
-Painel_Administrativo/Painel_Administrativo/
 *.sql
 *.mwb
