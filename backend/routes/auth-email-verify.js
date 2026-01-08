@@ -1,4 +1,3 @@
-// @ts-nocheck
 import express from "express";
 import { pool } from "../database/db.js";
 import { sendEmail } from "../services/notify.js";
