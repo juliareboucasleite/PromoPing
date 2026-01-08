@@ -113,6 +113,9 @@
             const response = await fetchAuth('/api/admin/reviews');
             const data = await response.json();
 
+            console.log('[AVALIACOES] Dados recebidos:', data);
+            console.log('[AVALIACOES] Primeira review:', data.reviews?.[0]);
+
             if (!data.reviews || data.reviews.length === 0) {
                 reviewsList.innerHTML = `
                     <div class="loading-state">
@@ -159,15 +162,12 @@
                             <tr>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        ${review.is_anonimo ? 
+                                        ${(review.is_anonimo == 1 || review.is_anonimo === true) ? 
                                             `<img src="../assets/images/fotodefault.png" alt="Anónimo" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">` : 
-                                            (review.discord_avatar_url ? 
-                                                `<img src="${escapeHtml(review.discord_avatar_url)}" alt="${escapeHtml(review.discord_username)}" onerror="this.src='../assets/images/fotodefault.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">` : 
-                                                `<img src="../assets/images/fotodefault.png" alt="${escapeHtml(review.discord_username)}" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`
-                                            )
+                                            `<img src="../assets/images/fotodefault.png" alt="${escapeHtml(review.user_nome || review.user_email || 'Utilizador')}" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`
                                         }
-                                        <span style="color: ${review.is_anonimo ? '#9ca3af' : '#fff'};">
-                                            ${review.is_anonimo ? 'Anónimo' : escapeHtml(review.discord_username)}
+                                        <span style="color: ${(review.is_anonimo == 1 || review.is_anonimo === true) ? '#9ca3af' : '#fff'};">
+                                            ${(review.is_anonimo == 1 || review.is_anonimo === true) ? 'Anónimo' : (escapeHtml(review.user_nome) || escapeHtml(review.user_email) || 'Utilizador')}
                                         </span>
                                     </div>
                                 </td>

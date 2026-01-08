@@ -57,7 +57,12 @@
         try {
             threadsList.innerHTML = '<div class="loading-state">Carregando conversas...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?limit=50`);
+            const response = await fetch(`${API_BASE}/api/support/messages/admin?limit=50`, {
+                headers: {
+                    'Authorization': `Bearer ${TOKEN}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
@@ -130,7 +135,12 @@
         try {
             chatMessages.innerHTML = '<div class="loading-state">Carregando mensagens...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?threadId=${threadId}`);
+            const response = await fetch(`${API_BASE}/api/support/messages/admin?threadId=${threadId}`, {
+                headers: {
+                    'Authorization': `Bearer ${TOKEN}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {

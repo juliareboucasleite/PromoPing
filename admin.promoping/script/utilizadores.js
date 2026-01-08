@@ -81,26 +81,37 @@
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th>Referência</th>
                             <th>Nome</th>
                             <th>Email</th>
                             <th>Registado</th>
                             <th>Produtos</th>
                             <th>Notificações</th>
                             <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${data.users.map(user => `
                             <tr>
+                                <td><code style="background: #232326; padding: 0.25rem 0.5rem; border-radius: 4px; color: #ff9800;">${escapeHtml(user.ReferenciaID || 'N/A')}</code></td>
                                 <td>${escapeHtml(user.Nome || 'N/A')}</td>
                                 <td>${escapeHtml(user.Email || 'N/A')}</td>
-                                <td>${formatDate(user.Data_Registo)}</td>
+                                <td>${formatDate(user.DataRegisto)}</td>
                                 <td>${user.produtosCount || 0}</td>
                                 <td>${user.notificacoesCount || 0}</td>
                                 <td>
                                     <span style="color: ${user.Ativo ? '#86efac' : '#fca5a5'}">
-                                        ${user.Ativo ? '✓ Ativo' : '✗ Inativo'}
+                                        ${user.Ativo ? 'Ativo' : 'Inativo'}
                                     </span>
+                                </td>
+                                <td>
+                                    <button class="edit-user-btn" data-referencia="${escapeHtml(user.ReferenciaID)}" title="Editar utilizador">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -108,7 +119,7 @@
                 </table>
             `;
         } catch (error) {
-            console.error('[UTILIZADORES] Erro ao carregar utilizadores:', error);
+            console.error('Erro ao carregar utilizadores:', error);
             usersList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
         }
     }
@@ -118,6 +129,10 @@
 
         const refreshBtn = document.getElementById('refreshUsersBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const editUserForm = document.getElementById('editUserForm');
+        const closeEditUserModal = document.getElementById('closeEditUserModal');
+        const cancelEditUserBtn = document.getElementById('cancelEditUserBtn');
+        const editUserModal = document.getElementById('editUserModal');
 
         if (refreshBtn) refreshBtn.addEventListener('click', loadUsers);
         if (logoutBtn) {
@@ -126,6 +141,29 @@
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
+                }
+            });
+        }
+
+        if (editUserForm) {
+            editUserForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                updateUser();
+            });
+        }
+
+        if (closeEditUserModal) {
+            closeEditUserModal.addEventListener('click', closeEditModal);
+        }
+
+        if (cancelEditUserBtn) {
+            cancelEditUserBtn.addEventListener('click', closeEditModal);
+        }
+
+        if (editUserModal) {
+            editUserModal.addEventListener('click', (e) => {
+                if (e.target === editUserModal) {
+                    closeEditModal();
                 }
             });
         }
