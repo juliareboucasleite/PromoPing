@@ -153,7 +153,7 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
           u.Email as userEmail,
           u.PerfilId as userPerfilId
          FROM supportmessages sm
-         LEFT JOIN utilizadores u ON sm.ReferenciaID = u.ReferenciaID
+         LEFT JOIN utilizadores u ON sm.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
          WHERE sm.id = ? OR sm.threadId = ?
          ORDER BY sm.createdAt ASC`,
                 [threadId, threadId]
@@ -180,6 +180,7 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
         const [threads] = await pool.query(
             `SELECT 
         m.id, 
+        m.threadId,
         m.message, 
         m.senderType,
         m.createdAt,
@@ -191,9 +192,9 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
         MAX(r.createdAt) as lastReplyAt
        FROM supportmessages m
        LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
-       LEFT JOIN utilizadores u ON m.ReferenciaID = u.ReferenciaID
+       LEFT JOIN utilizadores u ON m.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
        WHERE m.threadId IS NULL OR m.id = m.threadId
-       GROUP BY m.id
+       GROUP BY m.id, m.threadId, m.message, m.senderType, m.createdAt, m.ReferenciaID, u.Nome, u.Email, u.PerfilId
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
        LIMIT ?`,
             [limit]

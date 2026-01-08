@@ -1106,7 +1106,7 @@ router.get("/api/stats/users", async (req, res) => {
     
     // Contar novos utilizadores hoje
     const [utilizadoresNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM utilizadores WHERE DATE(DataCriacao) = CURDATE()"
+      "SELECT COUNT(*) as total FROM utilizadores WHERE DATE(DataRegisto) = CURDATE()"
     );
 
     res.json({
@@ -1142,7 +1142,7 @@ router.get("/api/stats/products", async (req, res) => {
     
     // Contar produtos adicionados hoje
     const [produtosNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM produtos WHERE DATE(DataCriacao) = CURDATE()"
+      "SELECT COUNT(*) as total FROM produtos WHERE DATE(CreatedAt) = CURDATE()"
     );
 
     res.json({

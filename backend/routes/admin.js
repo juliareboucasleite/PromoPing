@@ -125,6 +125,90 @@ router.get("/users", async (req, res) => {
     }
 });
 
+router.patch("/users/:referenciaID", async (req, res) => {
+    console.log("[ADMIN] PATCH /api/admin/users/:referenciaID chamado");
+    try {
+        const { referenciaID } = req.params;
+        const { Nome, Email, Ativo, EmailVerificado } = req.body;
+
+        if (!Nome || !Email) {
+            return res.status(400).json({
+                status: "error",
+                error: "Nome e Email são obrigatórios"
+            });
+        }
+
+        // Verificar se o usuário existe
+        const [existing] = await pool.query(
+            "SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Utilizador não encontrado"
+            });
+        }
+
+        // Verificar se o email já está em uso por outro usuário
+        const [emailCheck] = await pool.query(
+            "SELECT ReferenciaID FROM utilizadores WHERE Email = ? AND ReferenciaID != ?",
+            [Email, referenciaID]
+        );
+
+        if (emailCheck.length > 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Este email já está em uso por outro utilizador"
+            });
+        }
+
+        // Atualizar o usuário
+        const updates = [];
+        const values = [];
+
+        if (Nome !== undefined) {
+            updates.push("Nome = ?");
+            values.push(Nome);
+        }
+        if (Email !== undefined) {
+            updates.push("Email = ?");
+            values.push(Email);
+        }
+        if (Ativo !== undefined) {
+            updates.push("Ativo = ?");
+            values.push(Ativo ? 1 : 0);
+        }
+        if (EmailVerificado !== undefined) {
+            updates.push("EmailVerificado = ?");
+            values.push(EmailVerificado ? 1 : 0);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Nenhum campo para atualizar"
+            });
+        }
+
+        values.push(referenciaID);
+
+        await pool.query(
+            `UPDATE utilizadores SET ${updates.join(", ")} WHERE ReferenciaID = ?`,
+            values
+        );
+
+        res.json({
+            status: "ok",
+            message: "Utilizador atualizado com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar utilizador:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar utilizador");
+    }
+});
+
 // ================== PRODUTOS ==================
 router.get("/products", async (req, res) => {
     console.log("[ADMIN] GET /api/admin/products chamado");
@@ -139,15 +223,16 @@ router.get("/products", async (req, res) => {
                 p.Link,
                 p.PrecoAtual,
                 p.PrecoAlvo,
-                p.DataCriacao,
-                p.Loja,
+                p.CreatedAt as DataCriacao,
+                l.nome as Loja,
                 u.Nome as UserName,
                 u.Email as UserEmail,
                 (SELECT COUNT(*) FROM historicoprecos WHERE ProdutoId = p.Id) as historicoCount
             FROM produtos p
             LEFT JOIN utilizadores u ON u.ReferenciaID = p.ReferenciaID
+            LEFT JOIN lojas l ON l.id = p.LojaId
             WHERE p.DeletedAt IS NULL
-            ORDER BY p.DataCriacao DESC
+            ORDER BY p.CreatedAt DESC
             LIMIT ? OFFSET ?`,
             [limit, offset]
         );
@@ -208,21 +293,33 @@ router.get("/reviews", verifyToken, async (req, res) => {
         const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
 
-        // Construir query
-        let query = "SELECT * FROM reviews WHERE 1=1";
+        // Construir query com JOIN para pegar dados do usuário
+        let query = `SELECT 
+            r.Id,
+            r.ReferenciaID,
+            r.Tipo as tipo,
+            r.Texto as texto,
+            r.Rating as rating,
+            CASE WHEN r.IsAnonimo = 1 THEN 1 ELSE 0 END as is_anonimo,
+            r.CreatedAt as created_at,
+            u.Nome as user_nome,
+            u.Email as user_email
+        FROM reviews r
+        LEFT JOIN utilizadores u ON r.ReferenciaID = u.ReferenciaID
+        WHERE 1=1`;
         const params = [];
 
         if (tipo) {
-            query += " AND tipo = ?";
+            query += " AND r.Tipo = ?";
             params.push(tipo);
         }
 
         if (rating) {
-            query += " AND rating = ?";
+            query += " AND r.Rating = ?";
             params.push(parseInt(rating));
         }
 
-        query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        query += " ORDER BY r.CreatedAt DESC LIMIT ? OFFSET ?";
         params.push(limit, offset);
 
         const [reviews] = await pool.query(query, params);
@@ -232,12 +329,12 @@ router.get("/reviews", verifyToken, async (req, res) => {
         const countParams = [];
 
         if (tipo) {
-            countQuery += " AND tipo = ?";
+            countQuery += " AND Tipo = ?";
             countParams.push(tipo);
         }
 
         if (rating) {
-            countQuery += " AND rating = ?";
+            countQuery += " AND Rating = ?";
             countParams.push(parseInt(rating));
         }
 
@@ -247,14 +344,14 @@ router.get("/reviews", verifyToken, async (req, res) => {
         // Calcular estatísticas
         const [statsResult] = await pool.query(`
             SELECT 
-                tipo,
+                Tipo as tipo,
                 COUNT(*) as total,
-                AVG(rating) as media_rating,
-                SUM(CASE WHEN rating >= 4 THEN 1 ELSE 0 END) as positivas,
-                SUM(CASE WHEN rating <= 2 THEN 1 ELSE 0 END) as negativas
+                AVG(Rating) as media_rating,
+                SUM(CASE WHEN Rating >= 4 THEN 1 ELSE 0 END) as positivas,
+                SUM(CASE WHEN Rating <= 2 THEN 1 ELSE 0 END) as negativas
             FROM reviews
-            WHERE rating IS NOT NULL
-            GROUP BY tipo
+            WHERE Rating IS NOT NULL
+            GROUP BY Tipo
         `);
 
         res.json({
@@ -810,20 +907,20 @@ router.get("/calendar/events", async (req, res) => {
 
         let query = `
             SELECT 
-                e.id,
-                e.title,
-                e.description,
-                e.type,
-                e.start_date,
-                e.end_date,
-                e.status,
-                e.created_by,
-                e.created_at,
-                e.updated_at,
+                e.Id as id,
+                e.Titulo as title,
+                e.Descricao as description,
+                e.Tipo as type,
+                e.StartDate as start_date,
+                e.EndDate as end_date,
+                e.Status as status,
+                e.CreatedBy as created_by,
+                e.CreatedAt as created_at,
+                e.UpdatedAt as updated_at,
                 u.Nome as created_by_name,
                 u.Email as created_by_email
             FROM admin_events e
-            LEFT JOIN utilizadores u ON u.ReferenciaID = e.created_by
+            LEFT JOIN utilizadores u ON u.ReferenciaID = e.CreatedBy
             WHERE 1=1
         `;
         const params = [];
@@ -831,14 +928,14 @@ router.get("/calendar/events", async (req, res) => {
         // Filtrar por intervalo de datas se fornecido
         if (start && end) {
             query += ` AND (
-                (e.start_date >= ? AND e.start_date <= ?) OR
-                (e.end_date >= ? AND e.end_date <= ?) OR
-                (e.start_date <= ? AND e.end_date >= ?)
+                (e.StartDate >= ? AND e.StartDate <= ?) OR
+                (e.EndDate >= ? AND e.EndDate <= ?) OR
+                (e.StartDate <= ? AND e.EndDate >= ?)
             )`;
             params.push(start, end, start, end, start, end);
         }
 
-        query += ` ORDER BY e.start_date ASC`;
+        query += ` ORDER BY e.StartDate ASC`;
 
         const [events] = await pool.query(query, params);
 
@@ -902,7 +999,7 @@ router.post("/calendar/events", async (req, res) => {
         const eventStatus = validStatuses.includes(status) ? status : 'scheduled';
 
         const [result] = await pool.query(
-            `INSERT INTO admin_events (title, description, type, start_date, end_date, status, created_by) 
+            `INSERT INTO admin_events (Titulo, Descricao, Tipo, StartDate, EndDate, Status, CreatedBy) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 title,
@@ -918,12 +1015,21 @@ router.post("/calendar/events", async (req, res) => {
         // Buscar o evento criado
         const [newEvent] = await pool.query(
             `SELECT 
-                e.*,
+                e.Id as id,
+                e.Titulo as title,
+                e.Descricao as description,
+                e.Tipo as type,
+                e.StartDate as start_date,
+                e.EndDate as end_date,
+                e.Status as status,
+                e.CreatedBy as created_by,
+                e.CreatedAt as created_at,
+                e.UpdatedAt as updated_at,
                 u.Nome as created_by_name,
                 u.Email as created_by_email
             FROM admin_events e
-            LEFT JOIN utilizadores u ON u.ReferenciaID = e.created_by
-            WHERE e.id = ?`,
+            LEFT JOIN utilizadores u ON u.ReferenciaID = e.CreatedBy
+            WHERE e.Id = ?`,
             [result.insertId]
         );
 
@@ -965,7 +1071,7 @@ router.put("/calendar/events/:id", async (req, res) => {
 
         // Verificar se o evento existe
         const [existing] = await pool.query(
-            "SELECT * FROM admin_events WHERE id = ?",
+            "SELECT * FROM admin_events WHERE Id = ?",
             [id]
         );
 
@@ -981,32 +1087,32 @@ router.put("/calendar/events/:id", async (req, res) => {
         const values = [];
 
         if (title !== undefined) {
-            updates.push("title = ?");
+            updates.push("Titulo = ?");
             values.push(title);
         }
         if (description !== undefined) {
-            updates.push("description = ?");
+            updates.push("Descricao = ?");
             values.push(description);
         }
         if (type !== undefined) {
             const validTypes = ['scraper', 'bug', 'maintenance', 'deploy', 'milestone'];
             if (validTypes.includes(type)) {
-                updates.push("type = ?");
+                updates.push("Tipo = ?");
                 values.push(type);
             }
         }
         if (start_date !== undefined) {
-            updates.push("start_date = ?");
+            updates.push("StartDate = ?");
             values.push(start_date);
         }
         if (end_date !== undefined) {
-            updates.push("end_date = ?");
+            updates.push("EndDate = ?");
             values.push(end_date);
         }
         if (status !== undefined) {
             const validStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
             if (validStatuses.includes(status)) {
-                updates.push("status = ?");
+                updates.push("Status = ?");
                 values.push(status);
             }
         }
@@ -1021,7 +1127,7 @@ router.put("/calendar/events/:id", async (req, res) => {
         values.push(id);
 
         await pool.query(
-            `UPDATE admin_events SET ${updates.join(", ")} WHERE id = ?`,
+            `UPDATE admin_events SET ${updates.join(", ")} WHERE Id = ?`,
             values
         );
 
@@ -1073,7 +1179,7 @@ router.delete("/calendar/events/:id", async (req, res) => {
 
         // Verificar se o evento existe
         const [existing] = await pool.query(
-            "SELECT * FROM admin_events WHERE id = ?",
+            "SELECT * FROM admin_events WHERE Id = ?",
             [id]
         );
 
@@ -1084,7 +1190,7 @@ router.delete("/calendar/events/:id", async (req, res) => {
             });
         }
 
-        await pool.query("DELETE FROM admin_events WHERE id = ?", [id]);
+        await pool.query("DELETE FROM admin_events WHERE Id = ?", [id]);
 
         res.json({
             status: "ok",
