@@ -13,14 +13,9 @@ const execAsync = promisify(exec);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// import { atualizarPrecos } from "../services/atualizarPrecos.js"; // Removido - sem atualização automática
-// import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
-
 const router = express.Router();
 
-// Função auxiliar para salvar preço no histórico - REMOVIDA
-// Não há mais atualização automática de preços
-
+//! Não há mais atualização automática de preços
 //  Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
     try {
@@ -47,8 +42,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
-            "SELECT PlanoAtualId, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
-            [req.user.id]
+            "SELECT PlanoAtualId, LimiteProdutos FROM configutilizador WHERE ReferenciaID=?",
+            [req.user.ReferenciaID]
         );
 
         let limite = 5; // default do plano free
@@ -58,8 +53,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         // contar quantos produtos já cadastrados
         const [countRows] = await pool.query(
-            "SELECT COUNT(*) as total FROM Produtos WHERE UserId=?",
-            [req.user.id]
+            "SELECT COUNT(*) as total FROM produtos WHERE ReferenciaID=?",
+            [req.user.ReferenciaID]
         );
         const total = countRows[0].total;
 
@@ -78,8 +73,8 @@ router.post("/", verifyToken, async (req, res) => {
         // inserir produto com loja detectada (apenas data é opcional)
         console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
-            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-            [req.user.id, nome, link, data || null, store.name, Number(precoAlvo)]
+            "INSERT INTO Produtos (ReferenciaID, Nome, Link, DataLimite, Loja, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+            [req.user.ReferenciaID, nome, link, data || null, store.name, Number(precoAlvo)]
         );
         const productId = result.insertId;
         console.log(" Produto inserido com ID:", productId);
@@ -137,14 +132,14 @@ router.post("/", verifyToken, async (req, res) => {
 //  Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
-        console.log(" [BACKEND] Buscando produtos para userId:", req.user.id);
+        console.log(" [BACKEND] Buscando produtos para ReferenciaID:", req.user.ReferenciaID);
         
         // Buscar produtos com data criada e link
         const [produtos] = await pool.query(
             `SELECT Id, Nome, Link, PrecoAtual, PrecoAlvo, DataCriacao, DataLimite, Loja 
-             FROM Produtos 
-             WHERE UserId = ?`,
-            [req.user.id]
+             FROM produtos 
+             WHERE ReferenciaID = ?`,
+            [req.user.ReferenciaID]
         );
 
         console.log(" [BACKEND] Produtos encontrados:", produtos.length);
@@ -154,7 +149,7 @@ router.get("/", verifyToken, async (req, res) => {
         if (produtos.length > 0) {
             const [historicosResult] = await pool.query(
                 `SELECT ProdutoId, Preco, DataRegisto 
-                 FROM HistoricoPrecos 
+                 FROM historicoprecos 
                  WHERE ProdutoId IN (?)`,
                 [produtos.map(p => p.Id)]
             );
@@ -204,7 +199,7 @@ router.get("/:id/historico", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const [rows] = await pool.query(
-            "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId = ? ORDER BY DataRegisto DESC",
+            "SELECT Preco, DataRegisto FROM historicoprecos WHERE ProdutoId = ? ORDER BY DataRegisto DESC",
             [id]
         );
 
@@ -230,8 +225,8 @@ router.put("/:id", verifyToken, async (req, res) => {
         const dataVal = data ?? null;
 
         const [result] = await pool.query(
-            "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND UserId=?",
-            [nomeVal, linkVal, dataVal, id, req.user.id]
+            "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND ReferenciaID=?",
+            [nomeVal, linkVal, dataVal, id, req.user.ReferenciaID]
         );
 
         if (result.affectedRows === 0) {
@@ -258,8 +253,8 @@ router.delete("/:id", verifyToken, async (req, res) => {
         const { id } = req.params;
 
         const [result] = await pool.query(
-            "DELETE FROM Produtos WHERE Id=? AND UserId=?",
-            [id, req.user.id]
+            "DELETE FROM produtos WHERE Id=? AND ReferenciaID=?",
+            [id, req.user.ReferenciaID]
         );
 
         if (result.affectedRows === 0) {
@@ -292,8 +287,8 @@ router.post("/:id/compare", verifyToken, async (req, res) => {
         
         // Verificar se produto pertence ao usuário
         const [productRows] = await pool.query(
-            "SELECT Link FROM Produtos WHERE Id = ? AND UserId = ? AND DeletedAt IS NULL",
-            [id, req.user.id]
+            "SELECT Link FROM produtos WHERE Id = ? AND ReferenciaID = ? AND DeletedAt IS NULL",
+            [id, req.user.ReferenciaID]
         );
         
         if (productRows.length === 0) {
@@ -377,15 +372,15 @@ router.post("/:id/compare", verifyToken, async (req, res) => {
 //  Verificar se há produtos atualizados recentemente
 router.get("/sync", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const { lastSync } = req.query;
         
         let query = `
             SELECT Id, Nome, PrecoAtual, UpdatedAt 
             FROM produtos 
-            WHERE UserId = ?
+            WHERE ReferenciaID = ?
         `;
-        let params = [userId];
+        let params = [referenciaID];
         
         // Validar e sanitizar lastSync se fornecido
         if (lastSync) {

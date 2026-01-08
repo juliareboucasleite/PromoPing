@@ -15,8 +15,8 @@ const router = express.Router();
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT Nome, Email, Telefone FROM Utilizadores WHERE Id=?",
-      [req.user.id]
+      "SELECT Nome, Email, Telefone FROM utilizadores WHERE ReferenciaID=?",
+      [req.user.ReferenciaID]
     );
     res.json({ status: "ok", profile: rows[0] || {} });
   } catch (err) {
@@ -30,8 +30,8 @@ router.put("/profile", verifyToken, async (req, res) => {
   try {
     const { nome, email, telefone } = req.body;
     await pool.query(
-      `UPDATE Utilizadores SET Nome=?, Email=?, Telefone=? WHERE Id=?`,
-      [nome, email, telefone, req.user.id]
+      `UPDATE Utilizadores SET Nome=?, Email=?, Telefone=? WHERE ReferenciaID=?`,
+      [nome, email, telefone, req.user.ReferenciaID]
     );
     res.json({ status: "ok" });
   } catch (err) {
@@ -50,8 +50,8 @@ router.put("/profile", verifyToken, async (req, res) => {
 router.get("/preferences", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE UserId=?",
-      [req.user.id]
+      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID=?",
+      [req.user.ReferenciaID]
     );
     res.json({ status: "ok", preferencias: rows });
   } catch (err) {
@@ -70,10 +70,10 @@ router.put("/preferences", verifyToken, async (req, res) => {
 
     for (const p of preferences) {
       await pool.query(
-        `INSERT INTO PreferenciasNotificacao (UserId, Tipo, Ativo) 
+        `INSERT INTO PreferenciasNotificacao (ReferenciaID, Tipo, Ativo) 
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
-        [req.user.id, p.tipo, p.ativo]
+        [req.user.ReferenciaID, p.tipo, p.ativo]
       );
     }
 
@@ -92,18 +92,18 @@ router.put("/preferences", verifyToken, async (req, res) => {
 router.get("/stats", verifyToken, async (req, res) => {
   try {
     const [[{ totalProdutos }]] = await pool.query(
-      "SELECT COUNT(*) AS totalProdutos FROM Produtos WHERE UserId=?",
-      [req.user.id]
+      "SELECT COUNT(*) AS totalProdutos FROM produtos WHERE ReferenciaID=?",
+      [req.user.ReferenciaID]
     );
 
     const [[{ totalNotificacoes }]] = await pool.query(
-      "SELECT COUNT(*) AS totalNotificacoes FROM Notificacoes WHERE UserId=?",
-      [req.user.id]
+      "SELECT COUNT(*) AS totalNotificacoes FROM notificacoes WHERE ReferenciaID=?",
+      [req.user.ReferenciaID]
     );
 
     const [[{ membroDesde }]] = await pool.query(
-      "SELECT MIN(DataRegisto) AS membroDesde FROM Utilizadores WHERE Id=?",
-      [req.user.id]
+      "SELECT MIN(DataRegisto) AS membroDesde FROM utilizadores WHERE ReferenciaID=?",
+      [req.user.ReferenciaID]
     );
 
     res.json({

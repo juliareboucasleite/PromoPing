@@ -33,16 +33,16 @@ router.get('/check', verifyToken, async (req, res) => {
 });
 
 /**
- * GET /api/grace-period/status/:userId
+ * GET /api/grace-period/status/:referenciaID
  * Verifica o status do período de graça de um usuário específico
  */
-router.get('/status/:userId', verifyToken, async (req, res) => {
+router.get('/status/:referenciaID', verifyToken, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { referenciaID } = req.params;
     
-    console.log(` [API] Verificando período de graça do usuário ${userId}`);
+    console.log(` [API] Verificando período de graça do usuário ${referenciaID}`);
     
-    const gracePeriod = await GracePeriodManager.checkUserGracePeriod(parseInt(userId));
+    const gracePeriod = await GracePeriodManager.checkUserGracePeriod(referenciaID);
     
     if (gracePeriod) {
       res.json({

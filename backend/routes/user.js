@@ -13,39 +13,39 @@ const router = express.Router();
 
 router.get("/me", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     // Info do utilizador
     const [users] = await pool.query(
-      "SELECT Id, Nome, Email, Telefone, Data_Registo, FotoPerfil FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
     const user = users[0];
 
     // Estatísticas
     const [statsRows] = await pool.query(
       `SELECT 
-          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
-          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
-          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
-      [userId, userId, userId]
+          (SELECT COUNT(*) FROM produtos WHERE ReferenciaID = ?) AS produtos_total,
+          (SELECT COUNT(*) FROM notificacoes WHERE ReferenciaID = ?) AS notificacoes_total,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM notificacoes WHERE ReferenciaID = ?) AS dinheiro_poupado`,
+      [referenciaID, referenciaID, referenciaID]
     );
 
     // Histórico notificações
     const [notificacoes] = await pool.query(
       `SELECT Id, Tipo, Mensagem, DataEnvio, ValorPoupado 
-       FROM Notificacoes 
-       WHERE UserId = ? 
+       FROM notificacoes 
+       WHERE ReferenciaID = ? 
        ORDER BY DataEnvio DESC 
        LIMIT 20`,
-      [userId]
+      [referenciaID]
     );
 
     res.json({
       status: "ok",
       user: {
         ...user,
-        DataCriacao: user.Data_Registo ? new Date(user.Data_Registo).toLocaleDateString('pt-BR') : 'N/A' //  Data formatada
+        DataCriacao: user.DataRegisto ? new Date(user.DataRegisto).toLocaleDateString('pt-BR') : 'N/A' //  Data formatada
       },
       stats: {
         ...statsRows[0],
@@ -65,19 +65,19 @@ router.get("/me", verifyToken, async (req, res) => {
 // GET perfil completo com contas conectadas e preferências
 router.get("/profile", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    console.log(" [BACKEND] Buscando perfil para userId:", userId);
+    const referenciaID = req.user.ReferenciaID;
+    console.log(" [BACKEND] Buscando perfil para ReferenciaID:", referenciaID);
 
     // Dados pessoais
     const [userRows] = await pool.query(
-      "SELECT Nome, Email, Telefone, FotoPerfil FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT Nome, Email, Telefone, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     console.log(" [BACKEND] Dados do usuário encontrados:", userRows);
 
     if (userRows.length === 0) {
-      console.log(" [BACKEND] Usuário não encontrado para userId:", userId);
+      console.log(" [BACKEND] Usuário não encontrado para ReferenciaID:", referenciaID);
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
@@ -86,16 +86,16 @@ router.get("/profile", verifyToken, async (req, res) => {
     try {
       // Verificar se a coluna discord_id existe antes de usar
       const [contasRows] = await pool.query(
-        "SELECT 'email' as Tipo, CASE WHEN Email IS NOT NULL AND Email != '' THEN 1 ELSE 0 END as Conectado FROM Utilizadores WHERE Id = ? " +
-        "UNION SELECT 'telefone', CASE WHEN Telefone IS NOT NULL AND Telefone != '' THEN 1 ELSE 0 END FROM Utilizadores WHERE Id = ?",
-        [userId, userId]
+        "SELECT 'email' as Tipo, CASE WHEN Email IS NOT NULL AND Email != '' THEN 1 ELSE 0 END as Conectado FROM utilizadores WHERE ReferenciaID = ? " +
+        "UNION SELECT 'telefone', CASE WHEN Telefone IS NOT NULL AND Telefone != '' THEN 1 ELSE 0 END FROM utilizadores WHERE ReferenciaID = ?",
+        [referenciaID, referenciaID]
       );
       
       // Tentar adicionar verificação do Discord (pode falhar se a coluna não existir)
       try {
         const [discordRow] = await pool.query(
-          "SELECT 'discord' as Tipo, CASE WHEN discord_id IS NOT NULL AND discord_id != '' THEN 1 ELSE 0 END as Conectado FROM Utilizadores WHERE Id = ?",
-          [userId]
+          "SELECT 'discord' as Tipo, CASE WHEN discord_id IS NOT NULL AND discord_id != '' THEN 1 ELSE 0 END as Conectado FROM utilizadores WHERE ReferenciaID = ?",
+          [referenciaID]
         );
         contas = [...contasRows, ...discordRow];
       } catch (discordError) {
@@ -117,8 +117,8 @@ router.get("/profile", verifyToken, async (req, res) => {
 
     // Preferências
     const [prefs] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE UserId = ?",
-      [userId]
+      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     const response = {
@@ -144,7 +144,7 @@ router.get("/profile", verifyToken, async (req, res) => {
 // PUT atualizar perfil
 router.put("/profile", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { nome, email, telefone, fotoPerfil, photo_url } = req.body;
 
     // Usar photo_url se fornecido, senão usar fotoPerfil
@@ -178,9 +178,9 @@ router.put("/profile", verifyToken, async (req, res) => {
       });
     }
 
-    values.push(userId);
+    values.push(referenciaID);
 
-    const query = `UPDATE Utilizadores SET ${updates.join(", ")} WHERE Id = ?`;
+    const query = `UPDATE Utilizadores SET ${updates.join(", ")} WHERE ReferenciaID = ?`;
     
     try {
       await pool.query(query, values);
@@ -193,8 +193,8 @@ router.put("/profile", verifyToken, async (req, res) => {
         const updatesWithoutPhoto = updates.filter(u => !u.includes('FotoPerfil'));
         if (updatesWithoutPhoto.length > 0) {
           const valuesWithoutPhoto = values.slice(0, -1).filter((v, i) => !updates[i].includes('FotoPerfil'));
-          valuesWithoutPhoto.push(userId);
-          const queryWithoutPhoto = `UPDATE Utilizadores SET ${updatesWithoutPhoto.join(", ")} WHERE Id = ?`;
+          valuesWithoutPhoto.push(referenciaID);
+          const queryWithoutPhoto = `UPDATE Utilizadores SET ${updatesWithoutPhoto.join(", ")} WHERE ReferenciaID = ?`;
           await pool.query(queryWithoutPhoto, valuesWithoutPhoto);
           res.json({ 
             status: "ok", 
@@ -219,9 +219,9 @@ router.put("/me", verifyToken, async (req, res) => {
     const { nome } = req.body;
     if (!nome) return res.status(400).json({ error: "Nome é obrigatório" });
 
-    await pool.query("UPDATE Utilizadores SET Nome=? WHERE Id=?", [
+    await pool.query("UPDATE Utilizadores SET Nome=? WHERE ReferenciaID=?", [
       nome,
-      req.user.id,
+      req.user.ReferenciaID,
     ]);
 
     res.json({ status: "ok", message: "Perfil atualizado com sucesso" });
@@ -236,13 +236,13 @@ router.put("/me", verifyToken, async (req, res) => {
 // mas DEPOIS de rotas específicas como /admins, /profile, etc.
 router.put("/admin/:id", verifyToken, async (req, res) => {
   try {
-    const targetUserId = parseInt(req.params.id);
-    const currentUserId = req.user.id;
+    const targetReferenciaID = req.params.id;
+    const currentReferenciaID = req.user.ReferenciaID;
     
     // Verificar se o usuário atual é admin
     const [currentUser] = await pool.query(
-      "SELECT PerfilId FROM Utilizadores WHERE Id = ?",
-      [currentUserId]
+      "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+      [currentReferenciaID]
     );
     
     if (currentUser.length === 0 || currentUser[0].PerfilId !== 1) {
@@ -254,8 +254,8 @@ router.put("/admin/:id", verifyToken, async (req, res) => {
     
     // Verificar se o usuário alvo existe
     const [targetUser] = await pool.query(
-      "SELECT Id FROM Utilizadores WHERE Id = ?",
-      [targetUserId]
+      "SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ?",
+      [targetReferenciaID]
     );
     
     if (targetUser.length === 0) {
@@ -277,8 +277,8 @@ router.put("/admin/:id", verifyToken, async (req, res) => {
     
     // Verificar se o email já está em uso por outro usuário
     const [emailCheck] = await pool.query(
-      "SELECT Id FROM Utilizadores WHERE Email = ? AND Id != ?",
-      [email, targetUserId]
+      "SELECT ReferenciaID FROM utilizadores WHERE Email = ? AND ReferenciaID != ?",
+      [email, targetReferenciaID]
     );
     
     if (emailCheck.length > 0) {
@@ -290,22 +290,22 @@ router.put("/admin/:id", verifyToken, async (req, res) => {
     
     // Atualizar usuário
     await pool.query(
-      "UPDATE Utilizadores SET Nome = ?, Email = ?, Telefone = ? WHERE Id = ?",
-      [nome, email, telefone || null, targetUserId]
+      "UPDATE Utilizadores SET Nome = ?, Email = ?, Telefone = ? WHERE ReferenciaID = ?",
+      [nome, email, telefone || null, targetReferenciaID]
     );
     
     // Buscar usuário atualizado
     const [updatedUser] = await pool.query(
       `SELECT 
-         u.Id,
+         u.ReferenciaID,
          u.Nome,
          u.Email,
-         u.Data_Registo AS DataRegisto,
+         u.DataRegisto AS DataRegisto,
          p.Nome AS Perfil
-       FROM Utilizadores u
+       FROM utilizadores u
        LEFT JOIN perfis p ON p.Id = u.PerfilId
-       WHERE u.Id = ?`,
-      [targetUserId]
+       WHERE u.ReferenciaID = ?`,
+      [targetReferenciaID]
     );
     
     res.json({
@@ -327,35 +327,35 @@ router.put("/admin/:id", verifyToken, async (req, res) => {
 router.get("/stats", verifyToken, async (req, res) => {
   console.log("[STATS] ===== ROTA /api/user/stats CHAMADA =====");
   try {
-    const userId = req.user.id;
-    console.log("[STATS] UserId extraído do token:", userId);
+    const referenciaID = req.user.ReferenciaID;
+    console.log("[STATS] ReferenciaID extraído do token:", referenciaID);
 
     // Buscar estatísticas e data de registro separadamente
     const [statsRows] = await pool.query(
       `SELECT 
-          (SELECT COUNT(*) FROM Produtos WHERE UserId = ?) AS produtos_total,
-          (SELECT COUNT(*) FROM Notificacoes WHERE UserId = ?) AS notificacoes_total,
-          (SELECT COALESCE(SUM(ValorPoupado),0) FROM Notificacoes WHERE UserId = ?) AS dinheiro_poupado`,
-      [userId, userId, userId]
+          (SELECT COUNT(*) FROM produtos WHERE ReferenciaID = ?) AS produtos_total,
+          (SELECT COUNT(*) FROM notificacoes WHERE ReferenciaID = ?) AS notificacoes_total,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM notificacoes WHERE ReferenciaID = ?) AS dinheiro_poupado`,
+      [referenciaID, referenciaID, referenciaID]
     );
 
     // Buscar data de registro diretamente
     const [userRows] = await pool.query(
-      "SELECT Data_Registo FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT DataRegisto FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
-    console.log("[STATS] UserId usado:", userId);
+    console.log("[STATS] ReferenciaID usado:", referenciaID);
     console.log("[STATS] Dados de estatísticas:", statsRows[0]);
     console.log("[STATS] userRows completo:", userRows);
     console.log("[STATS] userRows[0]:", userRows[0]);
-    console.log("[STATS] Data_Registo raw:", userRows[0]?.Data_Registo);
-    console.log("[STATS] Tipo de Data_Registo:", typeof userRows[0]?.Data_Registo);
+    console.log("[STATS] DataRegisto raw:", userRows[0]?.DataRegisto);
+    console.log("[STATS] Tipo de DataRegisto:", typeof userRows[0]?.DataRegisto);
 
     // Formatar data de registro
     let membro_desde = "N/A";
     if (userRows && userRows.length > 0 && userRows[0]) {
-      const dataRegistoRaw = userRows[0].Data_Registo;
+      const dataRegistoRaw = userRows[0].DataRegisto;
       
       if (dataRegistoRaw) {
         try {
@@ -390,7 +390,7 @@ router.get("/stats", verifyToken, async (req, res) => {
           console.error("[STATS] Stack:", dateErr.stack);
         }
       } else {
-        console.log("[STATS] Data_Registo é null, undefined ou vazio");
+        console.log("[STATS] DataRegisto é null, undefined ou vazio");
       }
     } else {
       console.log("[STATS] userRows vazio ou não encontrado");
@@ -427,17 +427,17 @@ router.get("/admins", async (_req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT 
-         u.Id,
+         u.ReferenciaID,
          u.Nome,
          u.Email,
-         u.Data_Registo AS DataRegisto,
+         u.DataRegisto AS DataRegisto,
          u.FotoPerfil,
          u.discord_id,
          p.Nome AS Perfil
-       FROM Utilizadores u
+       FROM utilizadores u
        LEFT JOIN perfis p ON p.Id = u.PerfilId
        WHERE (p.Nome LIKE 'Admin%' OR u.PerfilId = 1) AND u.Ativo = 1
-       ORDER BY COALESCE(u.Data_Registo, NOW()) DESC
+       ORDER BY COALESCE(u.DataRegisto, NOW()) DESC
        LIMIT 200`
     );
 
@@ -451,7 +451,7 @@ router.get("/admins", async (_req, res) => {
 // POST alterar senha do utilizador (requer senha atual)
 router.post("/change-password", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -470,8 +470,8 @@ router.post("/change-password", verifyToken, async (req, res) => {
 
     // Buscar senha atual do usuário
     const [users] = await pool.query(
-      "SELECT SenhaHash FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT SenhaHash FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     if (users.length === 0) {
@@ -516,8 +516,8 @@ router.post("/change-password", verifyToken, async (req, res) => {
 
     // Atualizar senha na base de dados
     await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
-      [hashedPassword, userId]
+      "UPDATE Utilizadores SET SenhaHash = ? WHERE ReferenciaID = ?",
+      [hashedPassword, referenciaID]
     );
 
     res.json({ 
@@ -536,7 +536,7 @@ router.post("/change-password", verifyToken, async (req, res) => {
 // POST configurar senha para utilizador (primeira vez - sem senha atual)
 router.post("/set-password", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { password } = req.body;
 
     if (!password || password.length < 6) {
@@ -548,8 +548,8 @@ router.post("/set-password", verifyToken, async (req, res) => {
 
     // Verificar se já tem senha
     const [users] = await pool.query(
-      "SELECT SenhaHash FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT SenhaHash FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     if (users.length > 0 && users[0].SenhaHash) {
@@ -566,8 +566,8 @@ router.post("/set-password", verifyToken, async (req, res) => {
 
     // Atualizar senha na base de dados
     await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
-      [hashedPassword, userId]
+      "UPDATE Utilizadores SET SenhaHash = ? WHERE ReferenciaID = ?",
+      [hashedPassword, referenciaID]
     );
 
     res.json({ 
@@ -587,9 +587,9 @@ router.post("/set-password", verifyToken, async (req, res) => {
 router.post("/upload-photo", verifyToken, async (req, res) => {
   try {
     console.log("[UPLOAD-PHOTO] Rota chamada");
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { photo_url } = req.body;
-    console.log("[UPLOAD-PHOTO] UserId:", userId, "Photo URL length:", photo_url?.length || 0);
+    console.log("[UPLOAD-PHOTO] ReferenciaID:", referenciaID, "Photo URL length:", photo_url?.length || 0);
 
     if (!photo_url) {
       return res.status(400).json({ 
@@ -601,8 +601,8 @@ router.post("/upload-photo", verifyToken, async (req, res) => {
     // Verificar se a coluna FotoPerfil existe antes de atualizar
     try {
       await pool.query(
-        "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-        [photo_url, userId]
+        "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+        [photo_url, referenciaID]
       );
       
       res.json({ 
@@ -633,8 +633,8 @@ router.post("/upload-photo", verifyToken, async (req, res) => {
 // ================== RESETAR HISTÓRICO ==================
 router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    await pool.query("DELETE FROM Notificacoes WHERE UserId = ?", [userId]);
+    const referenciaID = req.user.ReferenciaID;
+    await pool.query("DELETE FROM notificacoes WHERE ReferenciaID = ?", [referenciaID]);
     res.json({ status: "ok", message: "Histórico de notificações limpo com sucesso!" });
   } catch (err) {
     console.error("Erro ao resetar notificações:", err);
@@ -645,7 +645,7 @@ router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
 // ================== INFORMAÇÕES DO PLANO ==================
 router.get("/plano", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id; // vindo do middleware de autenticação
+    const referenciaID = req.user.ReferenciaID; // vindo do middleware de autenticação
 
     // Primeiro, verificar se há cancelamento ativo
     const [stripeRows] = await pool.query(`
@@ -655,10 +655,10 @@ router.get("/plano", verifyToken, async (req, res) => {
         grace_period_end,
         status
       FROM stripe_subscriptions 
-      WHERE user_id = ? AND status = 'canceled' AND grace_period_end > NOW()
-    `, [userId]);
+      WHERE ReferenciaID = ? AND status = 'canceled' AND grace_period_end > NOW()
+    `, [referenciaID]);
 
-    console.log(" [BACKEND] Verificando cancelamentos para userId:", userId);
+    console.log(" [BACKEND] Verificando cancelamentos para ReferenciaID:", referenciaID);
     console.log(" [BACKEND] Stripe rows encontradas:", stripeRows.length);
 
     if (stripeRows.length > 0) {
@@ -708,8 +708,8 @@ router.get("/plano", verifyToken, async (req, res) => {
         c.DataExpiracao AS expiracao
       FROM configutilizador c
       JOIN planos p ON c.PlanoAtualId = p.Id
-      WHERE c.UserId = ?;
-    `, [userId]);
+      WHERE c.ReferenciaID = ?;
+    `, [referenciaID]);
 
     if (rows.length === 0) {
       return res.json({ status: "erro", message: "Utilizador sem plano ativo." });
@@ -719,8 +719,8 @@ router.get("/plano", verifyToken, async (req, res) => {
     const [customerRows] = await pool.query(`
       SELECT customer_id, subscription_id
       FROM stripe_subscriptions 
-      WHERE user_id = ? AND status = 'active'
-    `, [userId]);
+      WHERE ReferenciaID = ? AND status = 'active'
+    `, [referenciaID]);
 
     res.json({
       status: "ok",
@@ -739,10 +739,10 @@ router.get("/plano", verifyToken, async (req, res) => {
 // ================== ALTERAR PLANO ==================
 router.post("/plano/alterar", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { planoId, session_id } = req.body;
 
-    console.log(" Alterando plano para userId:", userId, "planoId:", planoId);
+    console.log(" Alterando plano para ReferenciaID:", referenciaID, "planoId:", planoId);
 
     // Validar plano
     const [planoRows] = await pool.query(
@@ -764,8 +764,8 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
       await pool.query(
         `UPDATE configutilizador 
          SET PlanoAtualId = ?, LimiteProdutos = ?
-         WHERE UserId = ?`,
-        [planoId, plano.LimiteProdutos, userId]
+         WHERE ReferenciaID = ?`,
+        [planoId, plano.LimiteProdutos, referenciaID]
       );
 
       return res.json({
@@ -802,8 +802,8 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
     await pool.query(
       `UPDATE configutilizador 
        SET PlanoAtualId = ?, LimiteProdutos = ?, StripeSubscriptionId = ?
-       WHERE UserId = ?`,
-      [planoId, plano.LimiteProdutos, session.subscription, userId]
+       WHERE ReferenciaID = ?`,
+      [planoId, plano.LimiteProdutos, session.subscription, referenciaID]
     );
 
     console.log(" Plano alterado com sucesso");
@@ -829,7 +829,7 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
 // ================== BUSCAR PLANOS ==================
 router.get("/planos", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     // Buscar todos os planos
     const [planos] = await pool.query(
@@ -838,8 +838,8 @@ router.get("/planos", verifyToken, async (req, res) => {
 
     // Buscar plano atual do usuário
     const [userConfig] = await pool.query(
-      "SELECT PlanoAtualId FROM configutilizador WHERE UserId = ?",
-      [userId]
+      "SELECT PlanoAtualId FROM configutilizador WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     const userPlanId = userConfig.length > 0 ? userConfig[0].PlanoAtualId : 1;
@@ -864,7 +864,7 @@ router.get("/planos", verifyToken, async (req, res) => {
 // ================== ALTERAR PLANO ==================
 router.post("/change-plan", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { planId } = req.body;
 
     if (!planId) {
@@ -891,11 +891,11 @@ router.post("/change-plan", verifyToken, async (req, res) => {
 
     // Atualizar plano do usuário
     await pool.query(
-      "UPDATE configutilizador SET PlanoAtualId = ?, LimiteProdutos = ? WHERE UserId = ?",
-      [planId, plano.LimiteProdutos, userId]
+      "UPDATE configutilizador SET PlanoAtualId = ?, LimiteProdutos = ? WHERE ReferenciaID = ?",
+      [planId, plano.LimiteProdutos, referenciaID]
     );
 
-    console.log(` Plano alterado para ${plano.Nome} (ID: ${planId}) para usuário ${userId}`);
+    console.log(` Plano alterado para ${plano.Nome} (ID: ${planId}) para usuário ${referenciaID}`);
 
     res.json({
       status: "success",
@@ -919,12 +919,12 @@ router.post("/change-plan", verifyToken, async (req, res) => {
 // ================== CANCELAR ASSINATURA ==================
 router.post("/cancel-subscription", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     // Buscar configuração atual do usuário
     const [userConfig] = await pool.query(
-      "SELECT * FROM configutilizador WHERE UserId = ?",
-      [userId]
+      "SELECT * FROM configutilizador WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     if (userConfig.length === 0) {
@@ -954,11 +954,11 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
        SET StatusAssinatura = 'PeriodoGraca', 
            DataExpiracao = ?,
            DataCancelamento = NOW()
-       WHERE UserId = ?`,
-      [gracePeriodEnd, userId]
+       WHERE ReferenciaID = ?`,
+      [gracePeriodEnd, referenciaID]
     );
 
-    console.log(` Assinatura cancelada para usuário ${userId}. Período de graça até: ${gracePeriodEnd}`);
+    console.log(` Assinatura cancelada para usuário ${referenciaID}. Período de graça até: ${gracePeriodEnd}`);
 
     res.json({
       status: "success",
@@ -977,12 +977,12 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
 // ================== DESATIVAR CONTA ==================
 router.post("/deactivate", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     // Buscar dados do usuário antes de desativar
     const [userRows] = await pool.query(
-      "SELECT Nome, Email FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT Nome, Email FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     if (userRows.length === 0) {
@@ -1039,8 +1039,8 @@ router.post("/deactivate", verifyToken, async (req, res) => {
     try {
       // Tentar atualizar com DataDesativacao
       await pool.query(
-        "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE Id = ?",
-        [expirationDateStr, userId]
+        "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE ReferenciaID = ?",
+        [expirationDateStr, referenciaID]
       );
     } catch (error) {
       // Se a coluna não existir (erro 1054 = Unknown column), criar
@@ -1052,29 +1052,29 @@ router.post("/deactivate", verifyToken, async (req, res) => {
           );
           // Tentar atualizar novamente
           await pool.query(
-            "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE Id = ?",
-            [expirationDateStr, userId]
+            "UPDATE Utilizadores SET Ativo = 0, DataDesativacao = ? WHERE ReferenciaID = ?",
+            [expirationDateStr, referenciaID]
           );
           console.log("[USER] Coluna DataDesativacao criada e conta desativada com sucesso");
         } catch (alterError) {
           // Se falhar ao criar (pode já existir), apenas desativar
           console.warn("[USER] Erro ao criar DataDesativacao:", alterError.message);
           await pool.query(
-            "UPDATE Utilizadores SET Ativo = 0 WHERE Id = ?",
-            [userId]
+            "UPDATE Utilizadores SET Ativo = 0 WHERE ReferenciaID = ?",
+            [referenciaID]
           );
         }
       } else {
         // Outro tipo de erro, apenas desativar
         console.error("[USER] Erro ao desativar conta com data:", error.message);
         await pool.query(
-          "UPDATE Utilizadores SET Ativo = 0 WHERE Id = ?",
-          [userId]
+          "UPDATE Utilizadores SET Ativo = 0 WHERE ReferenciaID = ?",
+          [referenciaID]
         );
       }
     }
 
-    console.log(`[USER] Conta desativada para usuário ${userId}. Expira em: ${expirationDateStr}`);
+    console.log(`[USER] Conta desativada para usuário ${referenciaID}. Expira em: ${expirationDateStr}`);
 
     res.json({
       status: "ok",
@@ -1094,12 +1094,12 @@ router.post("/deactivate", verifyToken, async (req, res) => {
 // ================== EXCLUIR CONTA ==================
 router.delete("/delete", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     // Buscar dados do usuário ANTES de deletar (precisamos do email para enviar confirmação)
     const [userRows] = await pool.query(
-      "SELECT Nome, Email FROM Utilizadores WHERE Id = ?",
-      [userId]
+      "SELECT Nome, Email FROM utilizadores WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     if (userRows.length === 0) {
@@ -1159,36 +1159,36 @@ router.delete("/delete", verifyToken, async (req, res) => {
 
     try {
       // 1. Deletar produtos do usuário
-      await connection.query("DELETE FROM Produtos WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM produtos WHERE ReferenciaID = ?", [referenciaID]);
 
       // 2. Deletar configurações do usuário
-      await connection.query("DELETE FROM configutilizador WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM configutilizador WHERE ReferenciaID = ?", [referenciaID]);
 
       // 3. Deletar preferências de notificação
-      await connection.query("DELETE FROM preferenciasnotificacao WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM preferenciasnotificacao WHERE ReferenciaID = ?", [referenciaID]);
 
       // 4. Deletar contas conectadas
-      await connection.query("DELETE FROM contasconectadas WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM contasconectadas WHERE ReferenciaID = ?", [referenciaID]);
 
       // 5. Deletar assinaturas Stripe relacionadas
-      await connection.query("DELETE FROM stripe_subscriptions WHERE user_id = ?", [userId]);
+      await connection.query("DELETE FROM stripe_subscriptions WHERE ReferenciaID = ?", [referenciaID]);
 
       // 6. Deletar histórico de notificações
-      await connection.query("DELETE FROM notificacoes WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM notificacoes WHERE ReferenciaID = ?", [referenciaID]);
 
       // 7. Deletar mensagens de suporte
-      await connection.query("DELETE FROM supportmessages WHERE userId = ?", [userId]);
+      await connection.query("DELETE FROM supportmessages WHERE ReferenciaID = ?", [referenciaID]);
 
       // 8. Deletar tokens de recuperação de senha (já tem CASCADE, mas deletamos explicitamente para garantir)
-      await connection.query("DELETE FROM recuperar_senha WHERE UserId = ?", [userId]);
+      await connection.query("DELETE FROM recuperar_senha WHERE ReferenciaID = ?", [referenciaID]);
 
       // 9. Finalmente, deletar o usuário (isso também deleta automaticamente via CASCADE: recuperar_senha, historicoprecos via produtos)
-      await connection.query("DELETE FROM Utilizadores WHERE Id = ?", [userId]);
+      await connection.query("DELETE FROM utilizadores WHERE ReferenciaID = ?", [referenciaID]);
 
       await connection.commit();
       connection.release();
 
-      console.log(`[USER] Conta completamente excluída para usuário ${userId}`);
+      console.log(`[USER] Conta completamente excluída para usuário ${referenciaID}`);
 
       res.json({
         status: "ok",

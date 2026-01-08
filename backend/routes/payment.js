@@ -19,7 +19,7 @@ const router = express.Router();
 router.post("/create-checkout-session", verifyToken, async (req, res) => {
   try {
     const { planoId } = req.body;
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const userEmail = req.user.email;
 
     if (!planoId) {
@@ -29,7 +29,7 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
       });
     }
 
-    const resultado = await criarSessaoCheckout(userId, parseInt(planoId), userEmail);
+    const resultado = await criarSessaoCheckout(referenciaID, parseInt(planoId), userEmail);
 
     console.log(`[PAYMENT ROUTE] Resultado recebido:`, {
       tipo: resultado.tipo,
@@ -79,7 +79,7 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
 router.post("/verify-session", verifyToken, async (req, res) => {
   try {
     const { session_id } = req.body;
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     if (!session_id) {
       return res.status(400).json({
@@ -114,7 +114,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         
         const planoNome = planoData.length > 0 ? planoData[0].nome : 'Unknown';
         
-        console.log(` [PAYMENT] Salvando assinatura para usuário ${userId}:`, {
+        console.log(` [PAYMENT] Salvando assinatura para usuário ${referenciaID}:`, {
           subscription_id: resultado.session.subscription_id,
           customer_id: resultado.session.customer_id,
           plan_name: planoNome
@@ -123,7 +123,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         // Salvar na tabela stripe_subscriptions
         await db.query(`
           INSERT INTO stripe_subscriptions 
-          (user_id, customer_id, subscription_id, subscription_status, price_id, plan_name, status)
+          (ReferenciaID, customer_id, subscription_id, subscription_status, price_id, plan_name, status)
           VALUES (?, ?, ?, ?, ?, ?, 'active')
           ON DUPLICATE KEY UPDATE
           subscription_status = VALUES(subscription_status),
@@ -132,7 +132,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
           status = VALUES(status),
           updated_at = NOW()
         `, [
-          userId,
+          referenciaID,
           resultado.session.customer_id,
           resultado.session.subscription_id,
           subscription.status,
@@ -147,10 +147,10 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         await db.query(`
           UPDATE configutilizador 
           SET PlanoAtualId = ? 
-          WHERE UserId = ?
-        `, [planoId, userId]);
-        
-        console.log(` [PAYMENT] Assinatura salva e usuário ${userId} atualizado para plano ${planoNome} (ID: ${planoId})`);
+          WHERE ReferenciaID = ?
+        `, [planoId, referenciaID]);
+
+        console.log(` [PAYMENT] Assinatura salva e usuário ${referenciaID} atualizado para plano ${planoNome} (ID: ${planoId})`);
         
       } catch (saveError) {
         console.error(" [PAYMENT] Erro ao salvar assinatura:", saveError);
@@ -179,7 +179,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
 router.post("/cancel-subscription", verifyToken, async (req, res) => {
   try {
     const { subscription_id, cancel_type, reason } = req.body;
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
 
     if (!subscription_id) {
       return res.status(400).json({
@@ -188,7 +188,7 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
       });
     }
 
-    console.log(` [CANCEL] Iniciando cancelamento para usuário ${userId}, subscription ${subscription_id}`);
+    console.log(` [CANCEL] Iniciando cancelamento para usuário ${referenciaID}, subscription ${subscription_id}`);
 
     // 1. Cancelar no Stripe
     const resultado = await cancelarAssinatura(subscription_id);
@@ -207,17 +207,17 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
           grace_period_end = ?, 
           cancellation_reason = ?,
           updated_at = NOW()
-      WHERE subscription_id = ? AND user_id = ?
-    `, [gracePeriodEnd, reason || 'canceled_by_user', subscription_id, userId]);
+      WHERE subscription_id = ? AND ReferenciaID = ?
+    `, [gracePeriodEnd, reason || 'canceled_by_user', subscription_id, referenciaID]);
 
     // 4. Atualizar plano do usuário para Free
     await db.query(`
       UPDATE configutilizador 
       SET PlanoAtualId = 1 
-      WHERE UserId = ?
-    `, [userId]);
+      WHERE ReferenciaID = ?
+    `, [referenciaID]);
 
-    console.log(` [CANCEL] Usuário ${userId} movido para plano Free com período de graça até ${gracePeriodEnd.toISOString()}`);
+    console.log(` [CANCEL] Usuário ${referenciaID} movido para plano Free com período de graça até ${gracePeriodEnd.toISOString()}`);
 
     res.json({
       status: "ok",

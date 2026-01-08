@@ -32,9 +32,9 @@ function handleDatabaseError(err, res, defaultMessage) {
 async function verifyAdmin(req, res, next) {
     console.log("[ADMIN] verifyAdmin chamado para:", req.path);
     try {
-        const userId = req.user && req.user.id;
-        console.log("[ADMIN] UserId:", userId);
-        if (!userId) {
+        const referenciaID = req.user && req.user.ReferenciaID;
+        console.log("[ADMIN] ReferenciaID:", referenciaID);
+        if (!referenciaID) {
             console.log("[ADMIN] Usuário não autenticado");
             return res.status(401).json({
                 status: "error",
@@ -43,8 +43,8 @@ async function verifyAdmin(req, res, next) {
         }
 
         const [rows] = await pool.query(
-            "SELECT PerfilId FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (rows.length === 0 || (rows[0].PerfilId !== 1)) {
@@ -54,7 +54,7 @@ async function verifyAdmin(req, res, next) {
             });
         }
 
-        console.log(`[ADMIN] Usuário ${userId} é admin. Acesso permitido.`);
+        console.log(`[ADMIN] Usuário ${referenciaID} é admin. Acesso permitido.`);
         next();
     } catch (err) {
         console.error("[ADMIN] Erro ao verificar admin:", err);
@@ -72,11 +72,13 @@ router.use((req, res, next) => {
     }
     verifyToken(req, res, next);
 });
+
 router.use((req, res, next) => {
     // Excluir callback do Google da verificação de admin
     if (req.path === '/calendar/google-callback') {
         return next();
     }
+    // verifyAdmin é async mas usa res.json() diretamente, então não precisa await
     verifyAdmin(req, res, next);
 });
 
@@ -89,27 +91,27 @@ router.get("/users", async (req, res) => {
 
         const [users] = await pool.query(
             `SELECT 
-                u.Id,
+                u.ReferenciaID,
                 u.Nome,
                 u.Email,
-                u.Data_Registo,
+                u.DataRegisto,
                 u.Ativo,
                 u.EmailVerificado,
                 u.PerfilId,
                 COUNT(DISTINCT p.Id) as produtosCount,
                 COUNT(DISTINCT n.Id) as notificacoesCount
-            FROM Utilizadores u
-            LEFT JOIN Produtos p ON p.UserId = u.Id AND p.DeletedAt IS NULL
-            LEFT JOIN Notificacoes n ON n.UserId = u.Id
+            FROM utilizadores u
+            LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
+            LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
             WHERE u.Ativo = 1
-            GROUP BY u.Id
-            ORDER BY u.Data_Registo DESC
+            GROUP BY u.ReferenciaID
+            ORDER BY u.DataRegisto DESC
             LIMIT ? OFFSET ?`,
             [limit, offset]
         );
 
         const [total] = await pool.query(
-            "SELECT COUNT(*) as total FROM Utilizadores WHERE Ativo = 1"
+            "SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1"
         );
 
         res.json({
@@ -141,9 +143,9 @@ router.get("/products", async (req, res) => {
                 p.Loja,
                 u.Nome as UserName,
                 u.Email as UserEmail,
-                (SELECT COUNT(*) FROM HistoricoPrecos WHERE ProdutoId = p.Id) as historicoCount
-            FROM Produtos p
-            LEFT JOIN Utilizadores u ON u.Id = p.UserId
+                (SELECT COUNT(*) FROM historicoprecos WHERE ProdutoId = p.Id) as historicoCount
+            FROM produtos p
+            LEFT JOIN utilizadores u ON u.ReferenciaID = p.ReferenciaID
             WHERE p.DeletedAt IS NULL
             ORDER BY p.DataCriacao DESC
             LIMIT ? OFFSET ?`,
@@ -151,7 +153,7 @@ router.get("/products", async (req, res) => {
         );
 
         const [total] = await pool.query(
-            "SELECT COUNT(*) as total FROM Produtos WHERE DeletedAt IS NULL"
+            "SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL"
         );
 
         res.json({
@@ -280,7 +282,7 @@ router.get("/bugs", async (req, res) => {
         await ensureBugsTable();
 
         const [bugs] = await pool.query(
-            `SELECT * FROM BugsProjetos 
+            `SELECT * FROM bugsprojetos 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
         );
@@ -316,7 +318,7 @@ router.post("/bugs", async (req, res) => {
         }
 
         const [result] = await pool.query(
-            `INSERT INTO BugsProjetos (Titulo, Descricao, Tipo, Prioridade, Status) 
+            `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status) 
             VALUES (?, ?, ?, ?, ?)`,
             [
                 titulo,
@@ -333,7 +335,7 @@ router.post("/bugs", async (req, res) => {
             message: "Bug/Projeto criado com sucesso"
         });
     } catch (err) {
-        console.error("[ADMIN] Erro ao criar bug:", err);
+        console.error("Erro ao criar bug:", err);
         return handleDatabaseError(err, res, "Erro ao criar bug");
     }
 });
@@ -372,7 +374,7 @@ router.patch("/bugs/:id", async (req, res) => {
         values.push(id);
 
         await pool.query(
-            `UPDATE BugsProjetos SET ${updates.join(", ")} WHERE Id = ?`,
+            `UPDATE bugsprojetos SET ${updates.join(", ")} WHERE Id = ?`,
             values
         );
 
@@ -388,7 +390,7 @@ router.patch("/bugs/:id", async (req, res) => {
 
 // ================== INCIDENTES ==================
 router.get("/incidents", async (req, res) => {
-    console.log("[ADMIN] GET /api/admin/incidents chamado");
+    console.log("GET /api/admin/incidents chamado");
     try {
         await ensureIncidentsTable();
 
@@ -398,7 +400,7 @@ router.get("/incidents", async (req, res) => {
             LIMIT 100`
         );
 
-        console.log("[ADMIN] Incidentes encontrados:", incidents.length);
+        console.log("Incidentes encontrados:", incidents.length);
 
         res.json({
             status: "ok",
@@ -406,7 +408,7 @@ router.get("/incidents", async (req, res) => {
             total: incidents ? incidents.length : 0
         });
     } catch (err) {
-        console.error("[ADMIN] Erro ao buscar incidentes:", err);
+        console.error("Erro ao buscar incidentes:", err);
         return handleDatabaseError(err, res, "Erro ao buscar incidentes");
     }
 });
@@ -509,7 +511,7 @@ router.post("/updates", async (req, res) => {
 
 // ================== UTILITÁRIOS ==================
 async function ensureBugsTable() {
-    const sql = `CREATE TABLE IF NOT EXISTS BugsProjetos (
+    const sql = `CREATE TABLE IF NOT EXISTS bugsprojetos (
         Id INT AUTO_INCREMENT PRIMARY KEY,
         Titulo VARCHAR(200) NOT NULL,
         Descricao TEXT,
@@ -593,7 +595,7 @@ async function ensureGoogleOAuthTokensTable() {
             console.log("[ADMIN] Criando tabela google_oauth_tokens...");
             const sql = `CREATE TABLE IF NOT EXISTS google_oauth_tokens (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
+                ReferenciaID VARCHAR(13) NOT NULL,
                 access_token TEXT NOT NULL,
                 refresh_token TEXT,
                 token_type VARCHAR(50) DEFAULT 'Bearer',
@@ -601,10 +603,10 @@ async function ensureGoogleOAuthTokensTable() {
                 scope TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_user_id (user_id),
+                INDEX idx_ReferenciaID (ReferenciaID),
                 INDEX idx_expires_at (expires_at),
-                FOREIGN KEY (user_id) REFERENCES Utilizadores(Id) ON DELETE CASCADE,
-                UNIQUE KEY unique_user_token (user_id)
+                FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
+                UNIQUE KEY unique_user_token (ReferenciaID)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
             await pool.query(sql);
             console.log("[ADMIN] Tabela google_oauth_tokens criada com sucesso");
@@ -618,7 +620,7 @@ async function ensureGoogleOAuthTokensTable() {
 /**
  * Renovar token do Google usando refresh_token
  */
-async function refreshGoogleToken(userId, refreshToken) {
+async function refreshGoogleToken(referenciaID, refreshToken) {
     try {
         const oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID,
@@ -638,11 +640,11 @@ async function refreshGoogleToken(userId, refreshToken) {
              SET access_token = ?, 
                  expires_at = ?,
                  updated_at = NOW()
-             WHERE user_id = ?`,
+             WHERE ReferenciaID = ?`,
             [
                 credentials.access_token,
                 credentials.expiry_date ? new Date(credentials.expiry_date) : null,
-                userId
+                referenciaID
             ]
         );
 
@@ -656,7 +658,7 @@ async function refreshGoogleToken(userId, refreshToken) {
 /**
  * Sincronizar eventos do Google Calendar
  */
-async function syncGoogleCalendarEvents(userId, accessToken) {
+async function syncGoogleCalendarEvents(referenciaID, accessToken) {
     try {
         const oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID,
@@ -710,7 +712,7 @@ async function syncGoogleCalendarEvents(userId, accessToken) {
                     start_date: new Date(startDate).toISOString().slice(0, 19).replace('T', ' '),
                     end_date: endDate ? new Date(endDate).toISOString().slice(0, 19).replace('T', ' ') : null,
                     status: 'scheduled',
-                    created_by: userId
+                    created_by: referenciaID
                 };
 
                 if (existing.length > 0) {
@@ -774,14 +776,15 @@ async function ensureAdminEventsTable() {
                 start_date DATETIME NOT NULL,
                 end_date DATETIME NULL,
                 status ENUM('scheduled', 'in-progress', 'completed', 'cancelled') DEFAULT 'scheduled',
-                created_by INT NOT NULL,
+                created_by VARCHAR(13) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 INDEX idx_start_date (start_date),
                 INDEX idx_end_date (end_date),
                 INDEX idx_type (type),
                 INDEX idx_status (status),
-                INDEX idx_created_by (created_by)
+                INDEX idx_created_by (created_by),
+                FOREIGN KEY (created_by) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
             await pool.query(sql);
             console.log("[ADMIN] Tabela admin_events criada com sucesso");
@@ -820,7 +823,7 @@ router.get("/calendar/events", async (req, res) => {
                 u.Nome as created_by_name,
                 u.Email as created_by_email
             FROM admin_events e
-            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            LEFT JOIN utilizadores u ON u.ReferenciaID = e.created_by
             WHERE 1=1
         `;
         const params = [];
@@ -874,9 +877,9 @@ router.post("/calendar/events", async (req, res) => {
         await ensureAdminEventsTable();
 
         const { title, description, type, start_date, end_date, status } = req.body;
-        const userId = req.user && req.user.id;
+        const referenciaID = req.user && req.user.ReferenciaID;
 
-        if (!userId) {
+        if (!referenciaID) {
             return res.status(401).json({
                 status: "error",
                 error: "Não autenticado"
@@ -908,7 +911,7 @@ router.post("/calendar/events", async (req, res) => {
                 start_date,
                 end_date || null,
                 eventStatus,
-                userId
+                referenciaID
             ]
         );
 
@@ -919,7 +922,7 @@ router.post("/calendar/events", async (req, res) => {
                 u.Nome as created_by_name,
                 u.Email as created_by_email
             FROM admin_events e
-            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            LEFT JOIN utilizadores u ON u.ReferenciaID = e.created_by
             WHERE e.id = ?`,
             [result.insertId]
         );
@@ -1029,7 +1032,7 @@ router.put("/calendar/events/:id", async (req, res) => {
                 u.Nome as created_by_name,
                 u.Email as created_by_email
             FROM admin_events e
-            LEFT JOIN Utilizadores u ON u.Id = e.created_by
+            LEFT JOIN utilizadores u ON u.ReferenciaID = e.created_by
             WHERE e.id = ?`,
             [id]
         );
@@ -1102,8 +1105,8 @@ router.post("/calendar/sync-google", async (req, res) => {
     try {
         await ensureAdminEventsTable();
 
-        const userId = req.user && req.user.id;
-        if (!userId) {
+        const referenciaID = req.user && req.user.ReferenciaID;
+        if (!referenciaID) {
             return res.status(401).json({
                 status: "error",
                 error: "Não autenticado"
@@ -1125,8 +1128,8 @@ router.post("/calendar/sync-google", async (req, res) => {
         const [tokenRows] = await pool.query(
             `SELECT access_token, refresh_token, expires_at 
              FROM google_oauth_tokens 
-             WHERE user_id = ? AND (expires_at IS NULL OR expires_at > NOW())`,
-            [userId]
+             WHERE ReferenciaID = ? AND (expires_at IS NULL OR expires_at > NOW())`,
+            [referenciaID]
         );
 
         if (tokenRows.length === 0) {
@@ -1147,11 +1150,11 @@ router.post("/calendar/sync-google", async (req, res) => {
                     error: "Token expirado e sem refresh token. Faça login novamente com Google OAuth."
                 });
             }
-            accessToken = await refreshGoogleToken(userId, tokenData.refresh_token);
+            accessToken = await refreshGoogleToken(referenciaID, tokenData.refresh_token);
         }
 
         // Sincronizar eventos do Google Calendar
-        const syncedEvents = await syncGoogleCalendarEvents(userId, accessToken);
+        const syncedEvents = await syncGoogleCalendarEvents(referenciaID, accessToken);
 
         res.json({
             status: "ok",
@@ -1176,8 +1179,8 @@ router.post("/calendar/sync-google", async (req, res) => {
 router.get("/calendar/connect-google", verifyToken, async (req, res) => {
     console.log("[ADMIN] GET /api/admin/calendar/connect-google chamado");
     try {
-        const userId = req.user && req.user.id;
-        if (!userId) {
+        const referenciaID = req.user && req.user.ReferenciaID;
+        if (!referenciaID) {
             return res.status(401).json({
                 status: "error",
                 error: "Não autenticado"
@@ -1192,12 +1195,12 @@ router.get("/calendar/connect-google", verifyToken, async (req, res) => {
             });
         }
 
-        // Redirecionar para Google OAuth com state contendo userId
+        // Redirecionar para Google OAuth com state contendo ReferenciaID
         const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
         const callbackUrl = `${baseUrl}/api/admin/calendar/google-callback`;
         
-        // Criar state com userId para segurança
-        const state = Buffer.from(JSON.stringify({ userId, source: 'calendar' })).toString('base64');
+        // Criar state com ReferenciaID para segurança
+        const state = Buffer.from(JSON.stringify({ ReferenciaID: referenciaID, source: 'calendar' })).toString('base64');
         
         // Construir URL de autorização do Google
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -1275,9 +1278,9 @@ router.get("/calendar/google-callback", async (req, res) => {
 
         // Decodificar state
         const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
-        const userId = stateData.userId;
+        const referenciaID = stateData.ReferenciaID;
 
-        if (!userId) {
+        if (!referenciaID) {
             return res.send(`
                 <!DOCTYPE html>
                 <html>
@@ -1349,7 +1352,7 @@ router.get("/calendar/google-callback", async (req, res) => {
 
         // Salvar tokens no banco
         await pool.query(
-            `INSERT INTO google_oauth_tokens (user_id, access_token, refresh_token, expires_at, scope, token_type)
+            `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope, token_type)
              VALUES (?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE 
                  access_token = VALUES(access_token),
@@ -1358,7 +1361,7 @@ router.get("/calendar/google-callback", async (req, res) => {
                  scope = VALUES(scope),
                  updated_at = NOW()`,
             [
-                userId,
+                referenciaID,
                 tokenData.access_token,
                 tokenData.refresh_token || null,
                 expiresAt,
@@ -1367,7 +1370,7 @@ router.get("/calendar/google-callback", async (req, res) => {
             ]
         );
 
-        console.log("[ADMIN] Tokens Google salvos para usuário:", userId);
+        console.log("[ADMIN] Tokens Google salvos para usuário:", referenciaID);
 
         // Retornar página de sucesso que fecha a janela e atualiza a página pai
         res.send(`
@@ -1455,8 +1458,8 @@ router.get("/calendar/google-callback", async (req, res) => {
  */
 router.get("/calendar/google-status", verifyToken, async (req, res) => {
     try {
-        const userId = req.user && req.user.id;
-        if (!userId) {
+        const referenciaID = req.user && req.user.ReferenciaID;
+        if (!referenciaID) {
             return res.status(401).json({
                 status: "error",
                 error: "Não autenticado"
@@ -1468,8 +1471,8 @@ router.get("/calendar/google-status", verifyToken, async (req, res) => {
         const [tokenRows] = await pool.query(
             `SELECT expires_at, created_at 
              FROM google_oauth_tokens 
-             WHERE user_id = ?`,
-            [userId]
+             WHERE ReferenciaID = ?`,
+            [referenciaID]
         );
 
         const isConnected = tokenRows.length > 0;

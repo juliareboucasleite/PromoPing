@@ -8,12 +8,12 @@ const router = express.Router();
 // GET notificações do utilizador logado
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     
     const [rows] = await pool.query(
-      "SELECT Tipo, Mensagem, DataEnvio, ValorPoupado FROM Notificacoes WHERE UserId = ? ORDER BY DataEnvio DESC",
-      [userId]
+      "SELECT Tipo, Mensagem, DataEnvio, ValorPoupado FROM notificacoes WHERE ReferenciaID = ? ORDER BY DataEnvio DESC",
+      [referenciaID]
     );
     
     res.json({ status: "ok", notificacoes: rows });
@@ -26,9 +26,9 @@ router.get("/", verifyToken, async (req, res) => {
 // Marcar uma notificação como lida
 router.put("/:id/lida", verifyToken, async (req, res) => {
   try {
-    await pool.query("UPDATE Notificacoes SET Enviada=1 WHERE Id=? AND UserId=?", [
+    await pool.query("UPDATE Notificacoes SET Enviada=1 WHERE Id=? AND ReferenciaID=?", [
       req.params.id,
-      req.user.id,
+      req.user.ReferenciaID,
     ]);
     res.json({ status: "ok", message: "Notificação marcada como lida" });
   } catch (err) {

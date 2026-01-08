@@ -8,11 +8,11 @@ const router = express.Router();
 // GET preferências do utilizador
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     
     const [prefs] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE UserId = ?",
-      [userId]
+      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     res.json({
@@ -28,7 +28,7 @@ router.get("/", verifyToken, async (req, res) => {
 // PUT atualizar preferências
 router.put("/", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const referenciaID = req.user.ReferenciaID;
     const { preferences } = req.body; // [{ tipo, ativo }]
 
     if (!Array.isArray(preferences)) {
@@ -47,10 +47,10 @@ router.put("/", verifyToken, async (req, res) => {
       }
 
       await pool.query(
-        `INSERT INTO PreferenciasNotificacao (UserId, Tipo, Ativo)
+        `INSERT INTO PreferenciasNotificacao (ReferenciaID, Tipo, Ativo)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
-        [userId, pref.tipo, pref.ativo ? 1 : 0]
+        [referenciaID, pref.tipo, pref.ativo ? 1 : 0]
       );
     }
 

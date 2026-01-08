@@ -113,7 +113,7 @@ router.get("/teste/plano", verifyToken, obterInfoPlano, (req, res) => {
     message: "Teste de verificação de plano",
     plano: req.planoInfo,
     usuario: {
-      id: req.user.id,
+      ReferenciaID: req.user.ReferenciaID,
       email: req.user.email
     },
     timestamp: new Date().toISOString()
