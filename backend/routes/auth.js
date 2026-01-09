@@ -510,12 +510,22 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         // Garantir que discord_id está salvo no banco (caso não esteja)
                         try {
                             await pool.query(
-                                "UPDATE Utilizadores SET discord_id = ? WHERE ReferenciaID = ? AND (discord_id IS NULL OR discord_id = '')",
+                                "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ? AND (discord_id IS NULL OR discord_id = '')",
                                 [discordId, discordUser.ReferenciaID]
                             );
                         } catch (dbError) {
                             console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
                             // Continuar mesmo se falhar
+                        }
+
+                        // Garantir que está na tabela contasconectadas
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                [discordUser.ReferenciaID]
+                            );
+                        } catch (contasError) {
+                            console.log(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
 
                         const token = jwt.sign({
@@ -567,13 +577,24 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         // Atualizar discord_id no banco de dados (se a coluna existir)
                         try {
                             await pool.query(
-                                "UPDATE Utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
+                                "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
                                 [discordId, referenciaID]
                             );
                             console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${referenciaID}`);
                         } catch (dbError) {
                             console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode não existir):", dbError.message);
                             // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                        }
+
+                        // Inserir ou atualizar na tabela contasconectadas
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                [referenciaID]
+                            );
+                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuário ${referenciaID}`);
+                        } catch (contasError) {
+                            console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
                     } else {
                         // Gerar ReferenciaID para novo usuário
@@ -585,7 +606,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         try {
                             // Tentar criar com discord_id
                             [result] = await pool.query(
-                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id) VALUES (?, ?, ?, 1, ?)",
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id) VALUES (?, ?, ?, 1, ?)",
                                 [novaReferenciaID, username, email, discordId]
                             );
                             console.log(` [DISCORD STRATEGY] Novo usuário criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
@@ -593,11 +614,22 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                             // Se falhar (coluna não existe), criar sem discord_id
                             console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
                             [result] = await pool.query(
-                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Ativo) VALUES (?, ?, ?, 1)",
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo) VALUES (?, ?, ?, 1)",
                                 [novaReferenciaID, username, email]
                             );
                         }
                         referenciaID = novaReferenciaID;
+
+                        // Inserir Discord na tabela contasconectadas para novo usuário
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
+                                [referenciaID]
+                            );
+                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuário ${referenciaID}`);
+                        } catch (contasError) {
+                            console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
+                        }
 
                         // Buscar ID do plano FREE
                         const [planoFree] = await pool.query(
@@ -2057,12 +2089,24 @@ router.get("/discord/callback", async (req, res) => {
                     // Atualizar discord_id no banco de dados (se a coluna existir)
                     try {
                         await pool.query(
-                            "UPDATE Utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
+                            "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
                             [discordIdToLink, loggedInReferenciaID]
                         );
                     } catch (dbError) {
                         console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
                         // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                    }
+
+                    // Inserir ou atualizar na tabela contasconectadas
+                    try {
+                        await pool.query(
+                            "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                            [loggedInReferenciaID]
+                        );
+                        console.log(" [DISCORD CALLBACK] Discord inserido/atualizado em contasconectadas");
+                    } catch (contasError) {
+                        console.error(" [DISCORD CALLBACK] Erro ao inserir em contasconectadas:", contasError.message);
+                        // Continuar mesmo se falhar
                     }
 
                     console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInReferenciaID}`);

@@ -81,30 +81,59 @@ router.get("/profile", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
-    // Contas conectadas - verificando email, telefone e discord_id
+    // Contas conectadas - verificando email, telefone e discord
     let contas = [];
     try {
-      // Verificar se a coluna discord_id existe antes de usar
+      // Verificar email e telefone da tabela utilizadores
       const [contasRows] = await pool.query(
         "SELECT 'email' as Tipo, CASE WHEN Email IS NOT NULL AND Email != '' THEN 1 ELSE 0 END as Conectado FROM utilizadores WHERE ReferenciaID = ? " +
         "UNION SELECT 'telefone', CASE WHEN Telefone IS NOT NULL AND Telefone != '' THEN 1 ELSE 0 END FROM utilizadores WHERE ReferenciaID = ?",
         [referenciaID, referenciaID]
       );
       
-      // Tentar adicionar verificação do Discord (pode falhar se a coluna não existir)
+      // Verificar Discord: primeiro na tabela contasconectadas, depois na coluna discord_id
+      let discordConectado = 0;
       try {
-        const [discordRow] = await pool.query(
-          "SELECT 'discord' as Tipo, CASE WHEN discord_id IS NOT NULL AND discord_id != '' THEN 1 ELSE 0 END as Conectado FROM utilizadores WHERE ReferenciaID = ?",
+        // Verificar na tabela contasconectadas
+        const [contasConectadasRows] = await pool.query(
+          "SELECT Conectado FROM contasconectadas WHERE ReferenciaID = ? AND Tipo = 'discord'",
           [referenciaID]
         );
-        contas = [...contasRows, ...discordRow];
+        
+        if (contasConectadasRows && contasConectadasRows.length > 0) {
+          discordConectado = contasConectadasRows[0].Conectado === 1 ? 1 : 0;
+          console.log(" [BACKEND] Discord encontrado em contasconectadas:", discordConectado);
+        } else {
+          // Se não estiver na tabela contasconectadas, verificar se há discord_id na tabela utilizadores
+          try {
+            const [discordRow] = await pool.query(
+              "SELECT CASE WHEN discord_id IS NOT NULL AND discord_id != '' THEN 1 ELSE 0 END as Conectado FROM utilizadores WHERE ReferenciaID = ?",
+              [referenciaID]
+            );
+            if (discordRow && discordRow.length > 0 && discordRow[0].Conectado === 1) {
+              discordConectado = 1;
+              console.log(" [BACKEND] Discord verificado via discord_id, mas não está em contasconectadas. Inserindo...");
+              // Inserir na tabela contasconectadas para sincronizar
+              try {
+                await pool.query(
+                  "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
+                  [referenciaID]
+                );
+                console.log(" [BACKEND] Discord inserido em contasconectadas para sincronização");
+              } catch (insertError) {
+                console.log(" [BACKEND] Erro ao inserir Discord em contasconectadas:", insertError.message);
+              }
+            }
+          } catch (discordIdError) {
+            console.log(" [BACKEND] Coluna discord_id não encontrada:", discordIdError.message);
+          }
+        }
       } catch (discordError) {
-        // Se a coluna discord_id não existir, apenas usar email e telefone
-        console.log(" [BACKEND] Coluna discord_id não encontrada, usando apenas email e telefone");
-        contas = contasRows;
-        // Adicionar Discord como não conectado
-        contas.push({ Tipo: 'discord', Conectado: 0 });
+        console.log(" [BACKEND] Erro ao verificar Discord:", discordError.message);
       }
+      
+      contas = [...contasRows, { Tipo: 'discord', Conectado: discordConectado }];
+      console.log(" [BACKEND] Contas conectadas:", contas);
     } catch (err) {
       console.error(" [BACKEND] Erro ao buscar contas conectadas:", err);
       // Retornar valores padrão em caso de erro
