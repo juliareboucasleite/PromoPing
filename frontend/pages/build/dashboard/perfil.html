@@ -829,8 +829,14 @@
 
     // Atualiza status de contas conectadas na UI
     function updateConnectedAccounts(contas) {
+      console.log(" [PERFIL] Contas recebidas:", contas);
       const contasMap = {};
-      contas.forEach(c => contasMap[c.Tipo.toLowerCase()] = c.Conectado);
+      contas.forEach(c => {
+        const tipo = c.Tipo ? c.Tipo.toLowerCase() : '';
+        const conectado = c.Conectado === 1 || c.Conectado === '1' || c.Conectado === true;
+        contasMap[tipo] = conectado;
+        console.log(` [PERFIL] Conta ${tipo}: Conectado = ${c.Conectado} (${typeof c.Conectado}) -> ${conectado}`);
+      });
 
       document.querySelectorAll('.account-item').forEach(item => {
         const nome = item.querySelector('.account-name').textContent.toLowerCase();
@@ -841,7 +847,10 @@
         else if (nome.includes('sms')) tipo = 'sms';
         else if (nome.includes('discord')) tipo = 'discord';
 
-        if (contasMap[tipo] === 1) {
+        const isConnected = contasMap[tipo] === true || contasMap[tipo] === 1 || contasMap[tipo] === '1';
+        console.log(` [PERFIL] Verificando ${tipo}: isConnected = ${isConnected}`);
+
+        if (isConnected) {
           button.textContent = "Conectado";
           button.className = "account-status connected";
           button.onclick = null; // Remove evento de clique se conectado
