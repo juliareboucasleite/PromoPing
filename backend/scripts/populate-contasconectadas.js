@@ -41,7 +41,7 @@ async function populateContasConectadas() {
         inserted++;
         console.log(`Inserido: ${user.ReferenciaID} (discord_id: ${user.discord_id})`);
       } catch (error) {
-        console.error(`❌ Erro ao inserir ${user.ReferenciaID}:`, error.message);
+        console.error(`Erro ao inserir ${user.ReferenciaID}:`, error.message);
       }
     }
 
