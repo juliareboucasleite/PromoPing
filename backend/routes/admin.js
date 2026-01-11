@@ -11,6 +11,7 @@ import {
     verifyToken
 } from "../middleware/auth.js";
 import { google } from "googleapis";
+import { sendResolvedBugToDiscord } from "../utils/discord-notifications.js";
 
 const router = express.Router();
 
@@ -125,6 +126,50 @@ router.get("/users", async (req, res) => {
     }
 });
 
+// Exportar utilizadores em PDF
+router.get("/users/export/pdf", async (req, res) => {
+    console.log("[ADMIN] GET /api/admin/users/export/pdf chamado");
+    try {
+        // Buscar todos os utilizadores ativos (sem limite para PDF)
+        const [users] = await pool.query(
+            `SELECT 
+                u.ReferenciaID,
+                u.Nome,
+                u.Email,
+                u.DataRegisto,
+                u.Ativo,
+                u.EmailVerificado,
+                u.PerfilId,
+                COUNT(DISTINCT p.Id) as produtosCount,
+                COUNT(DISTINCT n.Id) as notificacoesCount
+            FROM utilizadores u
+            LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
+            LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
+            WHERE u.Ativo = 1
+            GROUP BY u.ReferenciaID
+            ORDER BY u.DataRegisto DESC`
+        );
+
+        // Importar função de geração de PDF
+        const { gerarPDFUtilizadores } = await import("../utils/gerarPDF.js");
+        
+        // Gerar PDF
+        const pdfBuffer = await gerarPDFUtilizadores(users);
+
+        // Configurar headers para download
+        const filename = `utilizadores_${new Date().toISOString().split('T')[0]}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', pdfBuffer.length);
+
+        console.log(`[ADMIN] PDF gerado com sucesso: ${users.length} utilizadores`);
+        res.send(pdfBuffer);
+    } catch (err) {
+        console.error("[ADMIN] Erro ao exportar utilizadores em PDF:", err);
+        return handleDatabaseError(err, res, "Erro ao exportar utilizadores em PDF");
+    }
+});
+
 router.patch("/users/:referenciaID", async (req, res) => {
     console.log("[ADMIN] PATCH /api/admin/users/:referenciaID chamado");
     try {
@@ -232,13 +277,13 @@ router.get("/products", async (req, res) => {
                 p.PrecoAtual,
                 p.PrecoAlvo,
                 p.CreatedAt as DataCriacao,
-                l.nome as Loja,
+                l.Nome as Loja,
                 u.Nome as UserName,
                 u.Email as UserEmail,
                 (SELECT COUNT(*) FROM historicoprecos WHERE ProdutoId = p.Id) as historicoCount
             FROM produtos p
             LEFT JOIN utilizadores u ON u.ReferenciaID = p.ReferenciaID
-            LEFT JOIN lojas l ON l.id = p.LojaId
+            LEFT JOIN lojas l ON l.Id = p.LojaId
             WHERE p.DeletedAt IS NULL
             ORDER BY p.CreatedAt DESC
             LIMIT ? OFFSET ?`,
@@ -445,6 +490,95 @@ router.post("/bugs", async (req, res) => {
     }
 });
 
+router.get("/bugs/:id", async (req, res) => {
+    try {
+        await ensureBugsTable();
+
+        const { id } = req.params;
+
+        const [bugs] = await pool.query(
+            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            [id]
+        );
+
+        if (bugs.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Bug/Projeto não encontrado"
+            });
+        }
+
+        res.json({
+            status: "ok",
+            bug: bugs[0]
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar bug:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar bug");
+    }
+});
+
+router.put("/bugs/:id", async (req, res) => {
+    try {
+        await ensureBugsTable();
+
+        const { id } = req.params;
+        const {
+            titulo,
+            descricao,
+            tipo,
+            prioridade,
+            status
+        } = req.body;
+
+        if (!titulo || !descricao) {
+            return res.status(400).json({
+                status: "error",
+                error: "Título e descrição são obrigatórios"
+            });
+        }
+
+        // Buscar bug atual para verificar se o status mudou para "resolved"
+        const [currentBug] = await pool.query(
+            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            [id]
+        );
+
+        const oldStatus = currentBug.length > 0 ? currentBug[0].Status : null;
+        const newStatus = status || 'open';
+
+        await pool.query(
+            `UPDATE bugsprojetos 
+             SET Titulo = ?, Descricao = ?, Tipo = ?, Prioridade = ?, Status = ? 
+             WHERE Id = ?`,
+            [titulo, descricao, tipo || 'bug', prioridade || 'medium', newStatus, id]
+        );
+
+        // Se o status mudou para "resolved", enviar para o Discord
+        if (newStatus === 'resolved' && oldStatus !== 'resolved') {
+            const [updatedBug] = await pool.query(
+                `SELECT * FROM bugsprojetos WHERE Id = ?`,
+                [id]
+            );
+            
+            if (updatedBug.length > 0) {
+                // Enviar para Discord de forma assíncrona (não bloquear resposta)
+                sendResolvedBugToDiscord(updatedBug[0]).catch(err => {
+                    console.error('[ADMIN] Erro ao enviar bug resolvido para Discord:', err);
+                });
+            }
+        }
+
+        res.json({
+            status: "ok",
+            message: "Bug/Projeto atualizado com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar bug:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar bug");
+    }
+});
+
 router.patch("/bugs/:id", async (req, res) => {
     try {
         await ensureBugsTable();
@@ -456,6 +590,15 @@ router.patch("/bugs/:id", async (req, res) => {
             status,
             prioridade
         } = req.body;
+
+        // Buscar bug atual para verificar se o status mudou para "resolved"
+        const [currentBug] = await pool.query(
+            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            [id]
+        );
+
+        const oldStatus = currentBug.length > 0 ? currentBug[0].Status : null;
+        const newStatus = status || oldStatus;
 
         const updates = [];
         const values = [];
@@ -483,6 +626,21 @@ router.patch("/bugs/:id", async (req, res) => {
             values
         );
 
+        // Se o status mudou para "resolved", enviar para o Discord
+        if (newStatus === 'resolved' && oldStatus !== 'resolved' && currentBug.length > 0) {
+            const [updatedBug] = await pool.query(
+                `SELECT * FROM bugsprojetos WHERE Id = ?`,
+                [id]
+            );
+            
+            if (updatedBug.length > 0) {
+                // Enviar para Discord de forma assíncrona (não bloquear resposta)
+                sendResolvedBugToDiscord(updatedBug[0]).catch(err => {
+                    console.error('[ADMIN] Erro ao enviar bug resolvido para Discord:', err);
+                });
+            }
+        }
+
         res.json({
             status: "ok",
             message: "Bug/Projeto atualizado com sucesso"
@@ -490,6 +648,191 @@ router.patch("/bugs/:id", async (req, res) => {
     } catch (err) {
         console.error("[ADMIN] Erro ao atualizar bug:", err);
         return handleDatabaseError(err, res, "Erro ao atualizar bug");
+    }
+});
+
+router.delete("/bugs/:id", async (req, res) => {
+    try {
+        await ensureBugsTable();
+
+        const { id } = req.params;
+
+        const [result] = await pool.query(
+            `DELETE FROM bugsprojetos WHERE Id = ?`,
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Bug/Projeto não encontrado"
+            });
+        }
+
+        res.json({
+            status: "ok",
+            message: "Bug/Projeto removido com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao remover bug:", err);
+        return handleDatabaseError(err, res, "Erro ao remover bug");
+    }
+});
+
+// ================== SUGESTÕES ==================
+router.get("/sugestoes", async (req, res) => {
+    try {
+        await ensureSugestoesTable();
+
+        const [sugestoes] = await pool.query(
+            `SELECT * FROM sugestoes 
+            ORDER BY DataCriacao DESC 
+            LIMIT 100`
+        );
+
+        res.json({
+            status: "ok",
+            sugestoes: sugestoes,
+            total: sugestoes.length
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar sugestões:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar sugestões");
+    }
+});
+
+router.get("/sugestoes/:id", async (req, res) => {
+    try {
+        await ensureSugestoesTable();
+
+        const { id } = req.params;
+
+        const [sugestoes] = await pool.query(
+            `SELECT * FROM sugestoes WHERE Id = ?`,
+            [id]
+        );
+
+        if (sugestoes.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Sugestão não encontrada"
+            });
+        }
+
+        res.json({
+            status: "ok",
+            sugestao: sugestoes[0]
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar sugestão:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar sugestão");
+    }
+});
+
+router.post("/sugestoes", async (req, res) => {
+    try {
+        await ensureSugestoesTable();
+
+        const {
+            titulo,
+            descricao,
+            plataforma,
+            prioridade,
+            status
+        } = req.body;
+
+        if (!titulo || !descricao) {
+            return res.status(400).json({
+                status: "error",
+                error: "Título e descrição são obrigatórios"
+            });
+        }
+
+        const [result] = await pool.query(
+            `INSERT INTO sugestoes (Titulo, Descricao, Plataforma, Prioridade, Status) 
+            VALUES (?, ?, ?, ?, ?)`,
+            [
+                titulo,
+                descricao,
+                plataforma || 'ambos',
+                prioridade || 'medium',
+                status || 'pendente'
+            ]
+        );
+
+        res.json({
+            status: "ok",
+            id: result.insertId,
+            message: "Sugestão criada com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao criar sugestão:", err);
+        return handleDatabaseError(err, res, "Erro ao criar sugestão");
+    }
+});
+
+router.put("/sugestoes/:id", async (req, res) => {
+    try {
+        await ensureSugestoesTable();
+
+        const { id } = req.params;
+        const {
+            titulo,
+            descricao,
+            plataforma,
+            prioridade,
+            status
+        } = req.body;
+
+        if (!titulo || !descricao) {
+            return res.status(400).json({
+                status: "error",
+                error: "Título e descrição são obrigatórios"
+            });
+        }
+
+        await pool.query(
+            `UPDATE sugestoes 
+             SET Titulo = ?, Descricao = ?, Plataforma = ?, Prioridade = ?, Status = ? 
+             WHERE Id = ?`,
+            [titulo, descricao, plataforma || 'ambos', prioridade || 'medium', status || 'pendente', id]
+        );
+
+        res.json({
+            status: "ok",
+            message: "Sugestão atualizada com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar sugestão:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar sugestão");
+    }
+});
+
+router.delete("/sugestoes/:id", async (req, res) => {
+    try {
+        await ensureSugestoesTable();
+
+        const { id } = req.params;
+
+        const [result] = await pool.query(
+            `DELETE FROM sugestoes WHERE Id = ?`,
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Sugestão não encontrada"
+            });
+        }
+
+        res.json({
+            status: "ok",
+            message: "Sugestão removida com sucesso"
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao remover sugestão:", err);
+        return handleDatabaseError(err, res, "Erro ao remover sugestão");
     }
 });
 
@@ -629,6 +972,25 @@ async function ensureBugsTable() {
         INDEX idx_tipo (Tipo),
         INDEX idx_data_criacao (DataCriacao)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
+
+    await pool.query(sql);
+}
+
+async function ensureSugestoesTable() {
+    const sql = `CREATE TABLE IF NOT EXISTS sugestoes (
+        Id INT AUTO_INCREMENT PRIMARY KEY,
+        Titulo VARCHAR(200) NOT NULL,
+        Descricao TEXT,
+        Plataforma ENUM('site', 'bot', 'ambos') DEFAULT 'ambos',
+        Prioridade ENUM('low', 'medium', 'high') DEFAULT 'medium',
+        Status ENUM('pendente', 'em-analise', 'aprovada', 'em-desenvolvimento', 'implementada', 'rejeitada') DEFAULT 'pendente',
+        Votos INT DEFAULT 0,
+        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_status (Status),
+        INDEX idx_plataforma (Plataforma),
+        INDEX idx_data_criacao (DataCriacao)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
 
     await pool.query(sql);
 }
