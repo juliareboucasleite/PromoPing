@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const comandos = require('./comandos');
@@ -237,6 +237,18 @@ class PromoPingBot {
                         await this.handleChamarModerador(interaction);
                     } else if (interaction.customId === 'aceitar_regras_promoping') {
                         await this.handleAceitarRegras(interaction);
+                    } else if (interaction.customId === 'abrir_formulario_bug') {
+                        await this.handleReportarBugButton(interaction);
+                    } else if (interaction.customId === 'abrir_formulario_sugestao') {
+                        await this.handleSugerirButton(interaction);
+                    }
+                }
+                // Lidar com modais
+                else if (interaction.isModalSubmit()) {
+                    if (interaction.customId === 'formulario_reportar_bug') {
+                        await this.handleReportarBugModal(interaction);
+                    } else if (interaction.customId === 'formulario_sugerir') {
+                        await this.handleSugerirModal(interaction);
                     }
                 }
             } catch (error) {
@@ -2797,6 +2809,381 @@ class PromoPingBot {
         } catch (error) {
             console.error('[DISCORD] Erro ao processar counting:', error);
             return false;
+        }
+    }
+
+    async handleReportarBugButton(interaction) {
+        try {
+            // Criar modal para reportar bug
+            const modal = new ModalBuilder()
+                .setCustomId('formulario_reportar_bug')
+                .setTitle('Reportar Bug');
+
+            // Campo de título
+            const tituloInput = new TextInputBuilder()
+                .setCustomId('bug_titulo')
+                .setLabel('Título do Bug')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Ex: Botão de login não funciona')
+                .setRequired(true)
+                .setMaxLength(200)
+                .setMinLength(3);
+
+            // Campo de descrição
+            const descricaoInput = new TextInputBuilder()
+                .setCustomId('bug_descricao')
+                .setLabel('Descrição Detalhada')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Descreva o bug em detalhes: o que aconteceu, quando aconteceu, passos para reproduzir, etc.')
+                .setRequired(true)
+                .setMaxLength(2000)
+                .setMinLength(10);
+
+            // Adicionar campos ao modal
+            const tituloRow = new ActionRowBuilder().addComponents(tituloInput);
+            const descricaoRow = new ActionRowBuilder().addComponents(descricaoInput);
+
+            modal.addComponents(tituloRow, descricaoRow);
+
+            await interaction.showModal(modal);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao mostrar modal de reportar bug:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao abrir o formulário. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleReportarBugModal(interaction) {
+        try {
+            await interaction.deferReply({ ephemeral: true });
+
+            const titulo = interaction.fields.getTextInputValue('bug_titulo');
+            const descricao = interaction.fields.getTextInputValue('bug_descricao');
+
+            // Validar
+            if (!titulo || titulo.length < 3) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** O título deve ter pelo menos 3 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            if (!descricao || descricao.length < 10) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** A descrição deve ter pelo menos 10 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            const connection = await mysql.createConnection(this.dbConfig);
+
+            try {
+                // Verificar se a tabela existe, se não, criar
+                await connection.execute(`
+                    CREATE TABLE IF NOT EXISTS bugsprojetos (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Titulo VARCHAR(200) NOT NULL,
+                        Descricao TEXT,
+                        Tipo ENUM('bug', 'projeto', 'melhoria') DEFAULT 'bug',
+                        Prioridade ENUM('low', 'medium', 'high', 'critical') DEFAULT 'medium',
+                        Status ENUM('open', 'in-progress', 'resolved', 'closed') DEFAULT 'open',
+                        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_status (Status),
+                        INDEX idx_tipo (Tipo),
+                        INDEX idx_data_criacao (DataCriacao)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                `);
+
+                // Buscar informações do usuário (opcional - para rastreamento)
+                let userInfo = null;
+                try {
+                    const [users] = await connection.execute(
+                        'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
+                        [interaction.user.id]
+                    );
+                    if (users.length > 0) {
+                        userInfo = users[0];
+                    }
+                } catch (userError) {
+                    console.log('[REPORTAR] Usuário não encontrado ou erro ao buscar:', userError.message);
+                }
+
+                // Adicionar informações do usuário à descrição se disponível
+                let descricaoCompleta = descricao;
+                if (userInfo) {
+                    descricaoCompleta += `\n\n---\n**Reportado por:** ${userInfo.Nome} (${userInfo.ReferenciaID})\n**Discord:** ${interaction.user.tag} (${interaction.user.id})`;
+                } else {
+                    descricaoCompleta += `\n\n---\n**Reportado por:** ${interaction.user.tag} (${interaction.user.id})\n**Discord ID:** ${interaction.user.id}`;
+                }
+
+                // Inserir bug na base de dados
+                const [result] = await connection.execute(
+                    `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status) 
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        titulo,
+                        descricaoCompleta,
+                        'bug', // Sempre bug quando reportado pelo Discord
+                        'medium', // Prioridade média por padrão
+                        'open' // Sempre aberto quando criado
+                    ]
+                );
+
+                await connection.end();
+
+                // Criar embed de confirmação
+                const embed = new EmbedBuilder()
+                    .setTitle('✅ Bug Reportado com Sucesso!')
+                    .setDescription(
+                        `Seu bug foi reportado e será analisado pela equipe.\n\n` +
+                        `**Título:** ${titulo}\n` +
+                        `**ID do Bug:** #${result.insertId}\n\n` +
+                        `O bug aparecerá no painel administrativo e será tratado o mais breve possível.`
+                    )
+                    .setColor(0x4CAF50)
+                    .setTimestamp()
+                    .setFooter({ 
+                        text: `©PromoPing • Bug #${result.insertId}`,
+                        iconURL: interaction.user.displayAvatarURL()
+                    });
+
+                await interaction.followUp({ embeds: [embed], ephemeral: true });
+
+                // Log para console
+                console.log(`[REPORTAR] Bug reportado por ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${result.insertId})`);
+
+            } catch (dbError) {
+                await connection.end();
+                console.error('[REPORTAR] Erro ao inserir bug na base de dados:', dbError);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Erro ao Reportar Bug')
+                    .setDescription(
+                        'Ocorreu um erro ao reportar o bug. Por favor, tente novamente mais tarde ou entre em contato com o suporte.'
+                    )
+                    .setColor(0xFF0000)
+                    .setTimestamp();
+
+                return await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+            }
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar modal de reportar bug:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar seu reporte. Tente novamente.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar seu reporte. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleSugerirButton(interaction) {
+        try {
+            // Criar modal para sugerir funcionalidade
+            const modal = new ModalBuilder()
+                .setCustomId('formulario_sugerir')
+                .setTitle('Sugerir Funcionalidade');
+
+            // Campo de título
+            const tituloInput = new TextInputBuilder()
+                .setCustomId('sugestao_titulo')
+                .setLabel('Título da Sugestão')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Ex: Adicionar notificações por email')
+                .setRequired(true)
+                .setMaxLength(200)
+                .setMinLength(3);
+
+            // Campo de descrição
+            const descricaoInput = new TextInputBuilder()
+                .setCustomId('sugestao_descricao')
+                .setLabel('Descrição Detalhada')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Descreva sua sugestão em detalhes: o que você gostaria de ver, como funcionaria, etc.')
+                .setRequired(true)
+                .setMaxLength(2000)
+                .setMinLength(10);
+
+            // Campo de plataforma
+            const plataformaInput = new TextInputBuilder()
+                .setCustomId('sugestao_plataforma')
+                .setLabel('Plataforma (site/bot/ambos)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('site, bot ou ambos')
+                .setRequired(true)
+                .setMaxLength(10)
+                .setMinLength(3);
+
+            // Adicionar campos ao modal
+            const tituloRow = new ActionRowBuilder().addComponents(tituloInput);
+            const descricaoRow = new ActionRowBuilder().addComponents(descricaoInput);
+            const plataformaRow = new ActionRowBuilder().addComponents(plataformaInput);
+
+            modal.addComponents(tituloRow, descricaoRow, plataformaRow);
+
+            await interaction.showModal(modal);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao mostrar modal de sugestão:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao abrir o formulário. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleSugerirModal(interaction) {
+        try {
+            await interaction.deferReply({ ephemeral: true });
+
+            const titulo = interaction.fields.getTextInputValue('sugestao_titulo');
+            const descricao = interaction.fields.getTextInputValue('sugestao_descricao');
+            let plataforma = interaction.fields.getTextInputValue('sugestao_plataforma').toLowerCase().trim();
+
+            // Validar
+            if (!titulo || titulo.length < 3) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** O título deve ter pelo menos 3 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            if (!descricao || descricao.length < 10) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** A descrição deve ter pelo menos 10 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            // Normalizar plataforma
+            if (plataforma === 'site' || plataforma === 'web' || plataforma === 'sítio') {
+                plataforma = 'site';
+            } else if (plataforma === 'bot' || plataforma === 'discord') {
+                plataforma = 'bot';
+            } else {
+                plataforma = 'ambos';
+            }
+
+            const connection = await mysql.createConnection(this.dbConfig);
+
+            try {
+                // Verificar se a tabela existe, se não, criar
+                await connection.execute(`
+                    CREATE TABLE IF NOT EXISTS sugestoes (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Titulo VARCHAR(200) NOT NULL,
+                        Descricao TEXT,
+                        Plataforma ENUM('site', 'bot', 'ambos') DEFAULT 'ambos',
+                        Prioridade ENUM('low', 'medium', 'high') DEFAULT 'medium',
+                        Status ENUM('pendente', 'em-analise', 'aprovada', 'em-desenvolvimento', 'implementada', 'rejeitada') DEFAULT 'pendente',
+                        Votos INT DEFAULT 0,
+                        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_status (Status),
+                        INDEX idx_plataforma (Plataforma),
+                        INDEX idx_data_criacao (DataCriacao)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                `);
+
+                // Buscar informações do usuário (opcional - para rastreamento)
+                let userInfo = null;
+                try {
+                    const [users] = await connection.execute(
+                        'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
+                        [interaction.user.id]
+                    );
+                    if (users.length > 0) {
+                        userInfo = users[0];
+                    }
+                } catch (userError) {
+                    console.log('[SUGERIR] Usuário não encontrado ou erro ao buscar:', userError.message);
+                }
+
+                // Adicionar informações do usuário à descrição se disponível
+                let descricaoCompleta = descricao;
+                if (userInfo) {
+                    descricaoCompleta += `\n\n---\n**Sugerido por:** ${userInfo.Nome} (${userInfo.ReferenciaID})\n**Discord:** ${interaction.user.tag} (${interaction.user.id})`;
+                } else {
+                    descricaoCompleta += `\n\n---\n**Sugerido por:** ${interaction.user.tag} (${interaction.user.id})\n**Discord ID:** ${interaction.user.id}`;
+                }
+
+                // Inserir sugestão na base de dados
+                const [result] = await connection.execute(
+                    `INSERT INTO sugestoes (Titulo, Descricao, Plataforma, Prioridade, Status) 
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        titulo,
+                        descricaoCompleta,
+                        plataforma,
+                        'medium', // Prioridade média por padrão
+                        'pendente' // Sempre pendente quando criado
+                    ]
+                );
+
+                await connection.end();
+
+                // Criar embed de confirmação
+                const embed = new EmbedBuilder()
+                    .setTitle('✅ Sugestão Enviada com Sucesso!')
+                    .setDescription(
+                        `Sua sugestão foi enviada e será analisada pela equipe.\n\n` +
+                        `**Título:** ${titulo}\n` +
+                        `**Plataforma:** ${plataforma === 'site' ? 'Site' : plataforma === 'bot' ? 'Bot Discord' : 'Ambos'}\n` +
+                        `**ID da Sugestão:** #${result.insertId}\n\n` +
+                        `A sugestão aparecerá no painel administrativo e será avaliada o mais breve possível.`
+                    )
+                    .setColor(0x3B82F6)
+                    .setTimestamp()
+                    .setFooter({ 
+                        text: `©PromoPing • Sugestão #${result.insertId}`,
+                        iconURL: interaction.user.displayAvatarURL()
+                    });
+
+                await interaction.followUp({ embeds: [embed], ephemeral: true });
+
+                // Log para console
+                console.log(`[SUGERIR] Sugestão enviada por ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${result.insertId})`);
+
+            } catch (dbError) {
+                await connection.end();
+                console.error('[SUGERIR] Erro ao inserir sugestão na base de dados:', dbError);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Erro ao Enviar Sugestão')
+                    .setDescription(
+                        'Ocorreu um erro ao enviar a sugestão. Por favor, tente novamente mais tarde ou entre em contato com o suporte.'
+                    )
+                    .setColor(0xFF0000)
+                    .setTimestamp();
+
+                return await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+            }
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar modal de sugestão:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
         }
     }
 
