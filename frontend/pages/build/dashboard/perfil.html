@@ -1136,16 +1136,16 @@
             document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
             document.getElementById("plano-produtos").textContent = "Não (25 produtos)";
           } else if (plano.id === 3) {
-            // PREMIUM
-            document.getElementById("plano-nome").textContent = "Premium";
-            document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
-            document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
-            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
-          } else if (plano.id === 4) {
             // STANDARD
             document.getElementById("plano-nome").textContent = "Standard";
             document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avançadas";
             document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
+            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+          } else if (plano.id === 4) {
+            // PREMIUM
+            document.getElementById("plano-nome").textContent = "Premium";
+            document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
+            document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
             document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
           } else {
             // FALLBACK se id não reconhecido
