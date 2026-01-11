@@ -599,6 +599,62 @@ def extract_price(driver, url):
 
     return "Desconhecida", None
 
+# ==================== SINGLE PRODUCT ====================
+
+def scrape_single_product(url, is_initial=False):
+    """
+    Faz scraping de um único produto por URL
+    Útil para verificação inicial quando um produto é adicionado
+    """
+    driver = None
+    try:
+        logger.info(f"[SINGLE] Iniciando scraping para: {url}")
+        driver = create_driver()
+        
+        # Extrair preço
+        loja, preco = extract_price(driver, url)
+        
+        if preco:
+            logger.info(f"[SINGLE] Preço encontrado: €{preco} ({loja})")
+            
+            # Buscar produto na base de dados pelo link
+            conn = connect_db()
+            cur = conn.cursor(dictionary=True)
+            cur.execute("""
+                SELECT Id, ReferenciaID, Nome, PrecoAtual, PrecoAlvo
+                FROM produtos
+                WHERE Link = %s AND DeletedAt IS NULL
+                LIMIT 1
+            """, (url,))
+            produto = cur.fetchone()
+            
+            if produto:
+                produto_id = produto["Id"]
+                preco_anterior = produto.get("PrecoAtual")
+                
+                # Atualizar preço atual
+                update_price(produto_id, preco)
+                
+                # Salvar no histórico
+                save_price_history(produto_id, preco)
+                
+                logger.info(f"[SINGLE] Produto {produto['Nome']} atualizado: €{preco_anterior} → €{preco}")
+            else:
+                logger.warning(f"[SINGLE] Produto não encontrado na base de dados para URL: {url}")
+            
+            cur.close()
+            conn.close()
+        else:
+            logger.warning(f"[SINGLE] Não foi possível extrair preço de {url}")
+            
+    except Exception as e:
+        logger.error(f"[SINGLE] Erro ao fazer scraping: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        if driver:
+            safe_quit(driver)
+
 # ==================== MAIN ====================
 
 def monitor_loop():
