@@ -83,21 +83,20 @@ const TABLE_DEFINITIONS = {
             Nome VARCHAR(150) NOT NULL,
             Link VARCHAR(500) NOT NULL,
             PrecoAtual DECIMAL(10,2) DEFAULT NULL,
-            Shipping VARCHAR(100) DEFAULT '',
             PrecoAlvo DECIMAL(10,2) DEFAULT NULL,
             DataLimite DATE DEFAULT NULL,
+            Shipping VARCHAR(100) DEFAULT '',
+            LojaId INT(10) UNSIGNED DEFAULT NULL,
             CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UpdatedAt TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
             DeletedAt TIMESTAMP NULL DEFAULT NULL,
-            LojaId INT(11) DEFAULT NULL,
-            Loja VARCHAR(60) DEFAULT NULL,
             INDEX idx_ReferenciaID (ReferenciaID),
             INDEX idx_DeletedAt (DeletedAt),
             FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
-            FOREIGN KEY (LojaId) REFERENCES lojas(id)
+            FOREIGN KEY (LojaId) REFERENCES lojas(Id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: true,
-        source: 'sql/pap (1).sql - atualizado para ReferenciaID'
+        source: 'sql/PAPv5.sql - estrutura real da base de dados'
     },
 
     'notificacoes': {
@@ -255,14 +254,14 @@ const TABLE_DEFINITIONS = {
 
     'lojas': {
         definition: `CREATE TABLE IF NOT EXISTS lojas (
-            id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            nome VARCHAR(100) NOT NULL,
-            dominio VARCHAR(255) NOT NULL,
-            css_selector_preco VARCHAR(500) NOT NULL,
-            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            Id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            Nome VARCHAR(100) NOT NULL,
+            Dominio VARCHAR(255) NOT NULL,
+            CssSelectorPreco VARCHAR(500) NOT NULL,
+            CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: false,
-        source: 'sql/pap (1).sql - estrutura real da base de dados'
+        source: 'sql/PAPv5.sql - estrutura real da base de dados'
     },
 
     'metricas_sistema': {
@@ -515,6 +514,40 @@ const TABLE_DEFINITIONS = {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
         usesReferenciaID: true,
         source: 'sql/pap (1).sql - atualizado para ReferenciaID (FK adicionadas separadamente)'
+    },
+
+    'newsletter_subscribers': {
+        definition: `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+            id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            newsletter BOOLEAN DEFAULT TRUE,
+            promotions BOOLEAN DEFAULT TRUE,
+            articles BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: false,
+        source: 'backend/routes/newsletter.js - estrutura da tabela'
+    },
+
+    'sugestoes': {
+        definition: `CREATE TABLE IF NOT EXISTS sugestoes (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            Titulo VARCHAR(200) NOT NULL,
+            Descricao TEXT,
+            Plataforma ENUM('site', 'bot', 'ambos') DEFAULT 'ambos',
+            Prioridade ENUM('low', 'medium', 'high') DEFAULT 'medium',
+            Status ENUM('pendente', 'em-analise', 'aprovada', 'em-desenvolvimento', 'implementada', 'rejeitada') DEFAULT 'pendente',
+            Votos INT DEFAULT 0,
+            DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_status (Status),
+            INDEX idx_plataforma (Plataforma),
+            INDEX idx_data_criacao (DataCriacao)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: false,
+        source: 'backend/routes/admin.js - painel de sugestões'
     }
 };
 
@@ -757,7 +790,9 @@ export async function initializeAllTables() {
         'atualizacoes',    // Sem dependências
         'atualizacoes_sistema', // Sem dependências
         'bugsprojetos',    // Sem dependências
-        'reviews'          // Sem dependências (usa discord_id, não ReferenciaID)
+        'reviews',         // Sem dependências (usa discord_id, não ReferenciaID)
+        'newsletter_subscribers', // Sem dependências
+        'sugestoes'        // Sem dependências
     ];
 
     // Processar tabelas na ordem definida
