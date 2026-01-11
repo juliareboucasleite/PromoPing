@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugestões - PromoPing Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing Logo" class="logo-placeholder">
+                    <h2>PromoPing Admin</h2>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="produtos.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Produtos</span>
+                </a>
+                <a href="avaliacoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Avaliações</span>
+                </a>
+                <a href="suporte.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Suporte</span>
+                </a>
+                <a href="bugs.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Bugs & Projetos</span>
+                </a>
+                <a href="sugestoes.html" class="nav-item active">
+                    <span class="nav-icon"></span>
+                    <span>Sugestões</span>
+                </a>
+                <a href="tabelas.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="calendar.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Calendário</span>
+                </a>
+                <a href="perfil.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Perfil</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <h1>Sugestões</h1>
+                    <button id="newSugestaoBtn" class="refresh-button">+ Nova Sugestão</button>
+                </div>
+                <div id="sugestoesList" class="data-table-container">
+                    <div class="loading-state">Carregando sugestões...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Nova/Editar Sugestão -->
+    <div id="sugestaoModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="sugestaoModalTitle">Nova Sugestão</h2>
+                <button class="modal-close" id="closeSugestaoModal">&times;</button>
+            </div>
+            <form id="sugestaoForm">
+                <input type="hidden" id="sugestaoId" value="">
+                <div class="form-group">
+                    <label class="form-label">Título</label>
+                    <input type="text" id="sugestaoTitle" class="form-input" required placeholder="Ex: Adicionar notificações por email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="sugestaoDescription" class="form-input" rows="4" required placeholder="Descreva a sugestão em detalhes..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Plataforma</label>
+                    <select id="sugestaoPlataforma" class="form-input" required>
+                        <option value="site">Site</option>
+                        <option value="bot">Bot Discord</option>
+                        <option value="ambos" selected>Ambos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridade</label>
+                    <select id="sugestaoPriority" class="form-input" required>
+                        <option value="low">Baixa</option>
+                        <option value="medium" selected>Média</option>
+                        <option value="high">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="sugestaoStatus" class="form-input" required>
+                        <option value="pendente" selected>Pendente</option>
+                        <option value="em-analise">Em Análise</option>
+                        <option value="aprovada">Aprovada</option>
+                        <option value="em-desenvolvimento">Em Desenvolvimento</option>
+                        <option value="implementada">Implementada</option>
+                        <option value="rejeitada">Rejeitada</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button" id="sugestaoSubmitBtn">Criar Sugestão</button>
+                    <button type="button" class="modal-cancel-button" id="cancelSugestaoBtn">Cancelar</button>
+                    <button type="button" class="modal-delete-button" id="deleteSugestaoBtn" style="display: none; background: #dc2626; color: white;">Remover</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../script/sugestoes.js"></script>
+</body>
+
+</html>
