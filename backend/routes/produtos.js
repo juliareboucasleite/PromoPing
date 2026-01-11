@@ -70,11 +70,44 @@ router.post("/", verifyToken, async (req, res) => {
         const store = detectStore(link);
         console.log(" Loja detectada:", store);
 
+        // Buscar ou criar loja na tabela lojas para obter LojaId
+        let lojaId = null;
+        if (store && store.domain) {
+            try {
+                // Buscar loja pelo domínio (usando nomes corretos das colunas: PascalCase)
+                const [lojaRows] = await pool.query(
+                    "SELECT Id FROM lojas WHERE Dominio = ? LIMIT 1",
+                    [store.domain]
+                );
+                
+                if (lojaRows.length > 0) {
+                    lojaId = lojaRows[0].Id;
+                    console.log(" Loja encontrada na base de dados, ID:", lojaId);
+                } else {
+                    // Se não encontrar, tentar buscar pelo nome
+                    const [lojaNomeRows] = await pool.query(
+                        "SELECT Id FROM lojas WHERE Nome = ? LIMIT 1",
+                        [store.name]
+                    );
+                    
+                    if (lojaNomeRows.length > 0) {
+                        lojaId = lojaNomeRows[0].Id;
+                        console.log(" Loja encontrada pelo nome, ID:", lojaId);
+                    } else {
+                        console.log(" Loja não encontrada na base de dados, usando NULL");
+                    }
+                }
+            } catch (lojaError) {
+                console.error(" Erro ao buscar loja:", lojaError.message);
+                // Continuar com lojaId = null se houver erro
+            }
+        }
+
         // inserir produto com loja detectada (apenas data é opcional)
         console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
-            "INSERT INTO Produtos (ReferenciaID, Nome, Link, DataLimite, Loja, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-            [req.user.ReferenciaID, nome, link, data || null, store.name, Number(precoAlvo)]
+            "INSERT INTO produtos (ReferenciaID, Nome, Link, DataLimite, LojaId, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+            [req.user.ReferenciaID, nome, link, data || null, lojaId, Number(precoAlvo)]
         );
         const productId = result.insertId;
         console.log(" Produto inserido com ID:", productId);
@@ -136,9 +169,11 @@ router.get("/", verifyToken, async (req, res) => {
         
         // Buscar produtos com data criada e link
         const [produtos] = await pool.query(
-            `SELECT Id, Nome, Link, PrecoAtual, PrecoAlvo, DataCriacao, DataLimite, Loja 
-             FROM produtos 
-             WHERE ReferenciaID = ?`,
+            `SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.CreatedAt as DataCriacao, p.DataLimite, 
+                    COALESCE(l.Nome, 'Loja') as Loja
+             FROM produtos p
+             LEFT JOIN lojas l ON l.Id = p.LojaId
+             WHERE p.ReferenciaID = ? AND p.DeletedAt IS NULL`,
             [req.user.ReferenciaID]
         );
 
