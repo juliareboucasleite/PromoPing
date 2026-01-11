@@ -20,18 +20,74 @@ Para entender melhor como o projeto PromoPing é gerido e como colaborar, recome
 
 ```text
 PromoPing/
-├── backend/           # API Node.js/Express
-│   ├── routes/        # Rotas da API
-│   ├── middleware/    # Middlewares
-│   ├── services/      # Serviços de negócio
-│   └── database/      # Modelos e conexão DB
-├── frontend/          # Interface web
-│   └── pages/         # Páginas HTML
-├── python-scraper/    # Scraper Python
-│   ├── scraper.py     # Lógica principal
-│   └── scheduler.py   # Agendador
-├── sql/               # Scripts SQL
-└── docs/              # Documentação
+├── backend/                    # API Node.js/Express
+│   ├── config/                 # Configurações (Stripe, etc.)
+│   ├── controllers/            # Controladores (exportação, etc.)
+│   ├── database/               # Banco de dados
+│   │   ├── migrations/         # Migrações SQL
+│   │   ├── models/            # Modelos de dados
+│   │   ├── db.js              # Conexão com DB
+│   │   └── tableManager.js    # Gerenciador de tabelas
+│   ├── discord-bot/            # Bot do Discord
+│   │   ├── comandos/          # Comandos do bot
+│   │   ├── bot.js             # Lógica principal do bot
+│   │   └── run.js             # Script de execução
+│   ├── middleware/             # Middlewares (auth, verificação de plano)
+│   ├── routes/                 # Rotas da API
+│   │   ├── admin.js           # Rotas administrativas
+│   │   ├── auth.js            # Autenticação
+│   │   ├── produtos.js        # Produtos
+│   │   ├── user.js            # Usuários
+│   │   └── ...
+│   ├── scripts/                # Scripts utilitários
+│   ├── services/               # Serviços de negócio
+│   │   ├── autoSupport.js     # Suporte automático
+│   │   ├── alerts.js          # Alertas
+│   │   ├── notify.js          # Notificações
+│   │   └── ...
+│   ├── utils/                  # Utilitários
+│   │   ├── gerarExcel.js      # Exportação Excel
+│   │   ├── gerarPDF.js        # Exportação PDF
+│   │   └── ...
+│   └── server.js              # Servidor principal
+├── admin.promoping/            # Painel administrativo
+│   ├── pages/                  # Páginas HTML do admin
+│   ├── script/                 # Scripts JavaScript do admin
+│   ├── css/                    # Estilos CSS
+│   └── assets/                 # Recursos (imagens, etc.)
+├── frontend/                   # Interface web pública
+│   └── pages/                  # Páginas HTML
+│       ├── build/              # Build de produção
+│       │   ├── dashboard/      # Dashboard do usuário
+│       │   ├── About/          # Páginas sobre
+│       │   ├── docs/            # Documentação
+│       │   └── assets/         # Recursos (CSS, JS, imagens)
+│       └── *.md                # Documentação Markdown
+├── python-scraper/             # Scraper Python
+│   ├── scraper.py              # Lógica principal de scraping
+│   ├── scheduler.py            # Agendador de tarefas
+│   ├── product_search.py       # Busca de produtos
+│   ├── product_comparison.py    # Comparação de produtos
+│   ├── notifications.py        # Notificações
+│   └── start.py                # Script de inicialização
+├── scripts/                    # Scripts de setup e manutenção
+│   ├── setup.js                # Setup inicial
+│   ├── migrate-db.js           # Migração de banco
+│   ├── create-admin-user.js    # Criar usuário admin
+│   └── ...
+├── config-files/               # Arquivos de configuração
+│   ├── discord-config.js       # Config do Discord
+│   ├── ecosystem.config.js     # PM2 config
+│   └── nginx-promoping.pt.conf # Config Nginx
+├── deploy-files/               # Scripts de deploy
+├── docker-files/               # Configuração Docker
+│   ├── Dockerfile              # Dockerfile produção
+│   ├── Dockerfile.dev          # Dockerfile desenvolvimento
+│   └── docker-compose.yml      # Docker Compose
+├── sql/                        # Scripts SQL
+│   └── pap (1).sql            # Dump da base de dados
+├── docs/                       # Documentação adicional
+└── openapi.yaml                # Especificação OpenAPI
 ```
 
 ## Checklist para Pull Requests
