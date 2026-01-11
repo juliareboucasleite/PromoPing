@@ -190,10 +190,64 @@
         }
     }
 
+    async function exportUsersPDF() {
+        try {
+            const exportBtn = document.getElementById('exportPDFBtn');
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.textContent = 'Gerando PDF...';
+            }
+
+            const response = await fetch(`${API_BASE}/api/admin/users/export/pdf`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${TOKEN}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);
+            }
+
+            // Obter o blob do PDF
+            const blob = await response.blob();
+            
+            // Criar link de download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `utilizadores_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            console.log('[UTILIZADORES] PDF exportado com sucesso');
+        } catch (error) {
+            console.error('[UTILIZADORES] Erro ao exportar PDF:', error);
+            alert(`Erro ao exportar PDF: ${error.message}`);
+        } finally {
+            const exportBtn = document.getElementById('exportPDFBtn');
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Exportar PDF
+                `;
+            }
+        }
+    }
+
     function init() {
         if (!checkAuth()) return;
 
         const refreshBtn = document.getElementById('refreshUsersBtn');
+        const exportPDFBtn = document.getElementById('exportPDFBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const editUserForm = document.getElementById('editUserForm');
         const closeEditUserModal = document.getElementById('closeEditUserModal');
@@ -201,6 +255,7 @@
         const editUserModal = document.getElementById('editUserModal');
 
         if (refreshBtn) refreshBtn.addEventListener('click', loadUsers);
+        if (exportPDFBtn) exportPDFBtn.addEventListener('click', exportUsersPDF);
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 if (confirm('Tem certeza que deseja sair?')) {

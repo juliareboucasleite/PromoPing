@@ -47,6 +47,10 @@
                     <span class="nav-icon"></span>
                     <span>Bugs & Projetos</span>
                 </a>
+                <a href="sugestoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Sugestões</span>
+                </a>
                 <a href="tabelas.html" class="nav-item">
                     <span class="nav-icon"></span>
                     <span>Incidentes</span>
@@ -79,14 +83,15 @@
         </main>
     </div>
 
-    <!-- Modal para Novo Bug -->
+    <!-- Modal para Novo/Editar Bug -->
     <div id="bugModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2>Novo Bug / Projeto</h2>
+                <h2 id="bugModalTitle">Novo Bug / Projeto</h2>
                 <button class="modal-close" id="closeBugModal">&times;</button>
             </div>
             <form id="bugForm">
+                <input type="hidden" id="bugId" value="">
                 <div class="form-group">
                     <label class="form-label">Título</label>
                     <input type="text" id="bugTitle" class="form-input" required placeholder="Ex: Botão de login não funciona">
@@ -122,8 +127,9 @@
                     </select>
                 </div>
                 <div class="modal-actions">
-                    <button type="submit" class="modal-submit-button">Criar Bug/Projeto</button>
+                    <button type="submit" class="modal-submit-button" id="bugSubmitBtn">Criar Bug/Projeto</button>
                     <button type="button" class="modal-cancel-button" id="cancelBugBtn">Cancelar</button>
+                    <button type="button" class="modal-delete-button" id="deleteBugBtn" style="display: none; background: #dc2626; color: white;">Remover</button>
                 </div>
             </form>
         </div>
