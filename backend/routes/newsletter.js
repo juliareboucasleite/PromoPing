@@ -240,7 +240,7 @@ router.get("/stats", async (req, res) => {
 
       // Contar utilizadores totais (ativos)
       const [usersCount] = await connection.query(`
-        SELECT COUNT(*) as total FROM Utilizadores WHERE Ativo = 1
+        SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1
       `);
 
       // Contar produtos monitorizados (ativos)
