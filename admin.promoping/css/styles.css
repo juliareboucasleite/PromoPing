@@ -916,6 +916,36 @@ html {
     color: #86efac;
 }
 
+.bug-status.pendente {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+}
+
+.bug-status.em-analise {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.bug-status.aprovada {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.bug-status.em-desenvolvimento {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+}
+
+.bug-status.implementada {
+    background: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+}
+
+.bug-status.rejeitada {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
 .bug-description {
     color: #aaa;
     font-size: 0.9rem;
@@ -1029,6 +1059,7 @@ html {
     display: flex;
     gap: 0.75rem;
     margin-top: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .modal-submit-button {
@@ -1083,6 +1114,31 @@ html {
     background: #2a2a2e;
     border-color: #ff9800;
     color: #fff;
+}
+
+.modal-delete-button {
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+.modal-delete-button:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modal-delete-button:active {
+    transform: translateY(0);
 }
 
 /* ==== TABS ==== */
