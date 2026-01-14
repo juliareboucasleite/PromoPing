@@ -193,6 +193,9 @@ class NewsService {
             // Ordenar por score de impacto (maior primeiro)
             filteredNews.sort((a, b) => b.impactScore - a.impactScore);
 
+            // Salvar todas as notícias filtradas na tabela blog_articles
+            await this.saveNewsToBlog(filteredNews, connection);
+
             // Limitar a 5 notícias mais impactantes
             const topNews = filteredNews.slice(0, 5);
 
@@ -262,6 +265,82 @@ class NewsService {
             await connection.end();
         } catch (error) {
             console.error('[NEWS] Erro ao marcar notícia como enviada:', error);
+        }
+    }
+
+    /**
+     * Salva notícias na tabela blog_articles
+     */
+    async saveNewsToBlog(newsArray, connection = null) {
+        const shouldCloseConnection = !connection;
+        
+        try {
+            if (!connection) {
+                connection = await mysql.createConnection(this.dbConfig);
+            }
+
+            // Criar tabela se não existir
+            await connection.execute(`
+                CREATE TABLE IF NOT EXISTS blog_articles (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Title VARCHAR(500) NOT NULL,
+                    Description TEXT,
+                    Url VARCHAR(500) NOT NULL UNIQUE,
+                    ImageUrl VARCHAR(500) DEFAULT NULL,
+                    Source VARCHAR(200) DEFAULT NULL,
+                    Category VARCHAR(100) DEFAULT NULL,
+                    ImpactScore INT DEFAULT 0,
+                    PublishedAt DATETIME NOT NULL,
+                    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    IsVisible TINYINT(1) DEFAULT 1,
+                    Views INT DEFAULT 0,
+                    INDEX idx_category (Category),
+                    INDEX idx_impact_score (ImpactScore),
+                    INDEX idx_published_at (PublishedAt),
+                    INDEX idx_created_at (CreatedAt),
+                    INDEX idx_is_visible (IsVisible),
+                    INDEX idx_url (Url(255))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            `);
+
+            // Inserir ou atualizar cada notícia
+            for (const news of newsArray) {
+                const publishedDate = news.publishedAt ? new Date(news.publishedAt) : new Date();
+                
+                await connection.execute(`
+                    INSERT INTO blog_articles 
+                        (Title, Description, Url, ImageUrl, Source, Category, ImpactScore, PublishedAt, IsVisible)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                    ON DUPLICATE KEY UPDATE
+                        Title = VALUES(Title),
+                        Description = VALUES(Description),
+                        ImageUrl = VALUES(ImageUrl),
+                        Source = VALUES(Source),
+                        Category = VALUES(Category),
+                        ImpactScore = VALUES(ImpactScore),
+                        PublishedAt = VALUES(PublishedAt),
+                        UpdatedAt = CURRENT_TIMESTAMP
+                `, [
+                    news.title,
+                    news.description || null,
+                    news.url,
+                    news.image || null,
+                    news.source || null,
+                    news.category || 'Geral',
+                    news.impactScore || 0,
+                    publishedDate
+                ]);
+            }
+
+            if (shouldCloseConnection) {
+                await connection.end();
+            }
+        } catch (error) {
+            console.error('[NEWS] Erro ao salvar notícias no blog:', error);
+            if (shouldCloseConnection && connection) {
+                await connection.end();
+            }
         }
     }
 }
