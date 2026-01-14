@@ -49,3 +49,4 @@ jspm_packages/
 discord-users.json
 *.sql
 *.mwb
+node_modules/eslint/
