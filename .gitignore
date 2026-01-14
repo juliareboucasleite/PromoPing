@@ -49,4 +49,5 @@ jspm_packages/
 discord-users.json
 *.sql
 *.mwb
-node_modules/eslint/
+*node_modules/eslint/
+*node_modules/@eslint/
