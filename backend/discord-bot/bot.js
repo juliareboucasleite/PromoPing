@@ -15,8 +15,22 @@ class PromoPingBot {
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildPresences
             ],
-            partials: ['CHANNEL']
+            partials: ['CHANNEL'],
+            // Configurações para melhorar a conexão
+            rest: {
+                timeout: 30000, // 30 segundos
+                retries: 3
+            },
+            ws: {
+                large_threshold: 250,
+                compress: false
+            }
         });
+        
+        // Controle de reconexão
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 10;
+        this.reconnectDelay = 5000; // 5 segundos inicial
 
         // Configurações de banco de dados
         this.dbConfig = {
@@ -78,6 +92,7 @@ class PromoPingBot {
         this.client.once('ready', async () => {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
             console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
+            this.reconnectAttempts = 0; // Reset contador de reconexão
             this.startMonitoring();
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
@@ -100,6 +115,26 @@ class PromoPingBot {
             
             // Registrar comandos de barra (slash commands)
             await this.registerSlashCommands();
+        });
+
+        // Handler para erros de conexão
+        this.client.on('error', (error) => {
+            console.error('[DISCORD] Erro do cliente Discord:', error);
+        });
+
+        // Handler para desconexão
+        this.client.on('disconnect', () => {
+            console.warn('[DISCORD] Bot desconectado do Discord');
+        });
+
+        // Handler para reconexão
+        this.client.on('reconnecting', () => {
+            console.log('[DISCORD] Tentando reconectar ao Discord...');
+        });
+
+        // Handler para rate limits
+        this.client.on('rateLimit', (rateLimitInfo) => {
+            console.warn('[DISCORD] Rate limit atingido:', rateLimitInfo);
         });
 
         // Quando alguém envia uma mensagem
@@ -1766,10 +1801,50 @@ class PromoPingBot {
 
     async connect() {
         try {
-            await this.client.login(process.env.DISCORD_BOT_TOKEN);
+            // Verificar se o token existe
+            if (!process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_BOT_TOKEN === 'SEU_TOKEN_AQUI') {
+                throw new Error('DISCORD_BOT_TOKEN não configurado no arquivo .env');
+            }
+
+            // Tentar conectar com timeout
+            const loginPromise = this.client.login(process.env.DISCORD_BOT_TOKEN);
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout na conexão com Discord (60s)')), 60000);
+            });
+
+            await Promise.race([loginPromise, timeoutPromise]);
+            console.log('[DISCORD] Conexão estabelecida com sucesso');
         } catch (error) {
-            console.error('[DISCORD] Falha ao conectar ao Discord:', error);
-            throw error;
+            console.error('[DISCORD] Falha ao conectar ao Discord:', error.message);
+            
+            // Tentar reconectar automaticamente
+            if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                this.reconnectAttempts++;
+                const delay = this.reconnectDelay * Math.min(this.reconnectAttempts, 5); // Max 25 segundos
+                console.log(`[DISCORD] Tentando reconectar em ${delay/1000} segundos... (tentativa ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+                
+                setTimeout(() => {
+                    this.connect().catch(err => {
+                        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                            console.error('[DISCORD] Número máximo de tentativas de reconexão atingido. Parando...');
+                            throw err;
+                        }
+                    });
+                }, delay);
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    async disconnect() {
+        try {
+            if (this.client && this.client.isReady()) {
+                this.client.destroy();
+                console.log('[DISCORD] Bot desconectado');
+            }
+        } catch (error) {
+            console.error('[DISCORD] Erro ao desconectar:', error);
         }
     }
 

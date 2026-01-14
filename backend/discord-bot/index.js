@@ -86,15 +86,35 @@ process.on('uncaughtException', (error) => {
     process.exit(1);
 });
 
-// Iniciar o bot
+// Iniciar o bot com retry
 async function startBot() {
-    try {
-        console.log('Iniciando bot Discord...');
-        await bot.connect();
-        console.log('Bot Discord conectado com sucesso!');
-    } catch (error) {
-        console.error('Falha ao iniciar bot:', error);
-        process.exit(1);
+    const maxRetries = 3;
+    let retries = 0;
+    
+    while (retries < maxRetries) {
+        try {
+            console.log(`[DISCORD] Tentando iniciar bot Discord... (tentativa ${retries + 1}/${maxRetries})`);
+            await bot.connect();
+            console.log('[DISCORD] Bot Discord conectado com sucesso!');
+            return; // Sucesso, sair do loop
+        } catch (error) {
+            retries++;
+            console.error(`[DISCORD] Falha ao iniciar bot (tentativa ${retries}/${maxRetries}):`, error.message);
+            
+            if (retries >= maxRetries) {
+                console.error('[DISCORD] Número máximo de tentativas atingido. Verifique:');
+                console.error('  1. Se o DISCORD_BOT_TOKEN está correto no arquivo .env');
+                console.error('  2. Se há problemas de conexão com a internet');
+                console.error('  3. Se há firewall bloqueando conexões WebSocket');
+                console.error('  4. Se o bot está sendo executado em outro processo');
+                process.exit(1);
+            }
+            
+            // Aguardar antes de tentar novamente
+            const delay = 10000 * retries; // 10s, 20s, 30s
+            console.log(`[DISCORD] Aguardando ${delay/1000} segundos antes de tentar novamente...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
 }
 
