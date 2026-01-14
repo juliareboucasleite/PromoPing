@@ -68,6 +68,7 @@ import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
 import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
+import blogRoutes from "./routes/blog.js"; // Blog
 import { verifyToken} from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
@@ -338,6 +339,7 @@ app.use("/api/exportar", exportRoutes); // Exportação
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
+app.use("/api/blog", blogRoutes); // Blog
 app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
@@ -565,6 +567,13 @@ if (!isProduction) {
         const filePath = buildExists ?
             path.join(buildPath, "About/blog.html") :
             path.join(__dirname, "../frontend/pages/inc/blog.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/blog/article/:id", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "About/blog-article.html") :
+            path.join(__dirname, "../frontend/pages/About/blog-article.html");
         res.sendFile(filePath);
     });
 
