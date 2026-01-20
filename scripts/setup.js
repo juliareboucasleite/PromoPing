@@ -55,7 +55,7 @@ PORT=3000
 
 function setupDatabase() {
   log('\n Configurando base de dados...', 'blue');
-  const sqlFile = path.join(projectRoot, 'sql', 'promoping.sql');
+  const sqlFile = path.join(projectRoot, 'sql', 'PAPv5.sql');
 
   if (!fs.existsSync(sqlFile)) {
     log(' Arquivo SQL não encontrado, pulando configuração da BD', 'yellow');
