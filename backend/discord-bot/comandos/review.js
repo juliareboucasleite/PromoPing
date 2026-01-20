@@ -153,18 +153,26 @@ module.exports = {
                                 components: []
                             });
 
+                            // Armazenar ID da mensagem de avaliação para referência
+                            const avaliacaoMessageId = btnInteraction.message?.id;
+
                             // Aguardar resposta do utilizador
                             const textoFilter = (msg) => {
                                 if (msg.author.id !== userId) return false;
                                 
-                                // Verificar se é comando review-texto
+                                // Verificar se é comando review-texto (deve ser permitido)
                                 if (msg.content.startsWith('!review-texto ')) return true;
                                 
-                                // Verificar se é resposta à mensagem
+                                // Ignorar outros comandos do bot (mas não review-texto)
+                                if (msg.content.startsWith('!review') && !msg.content.startsWith('!review-texto ')) {
+                                    return false;
+                                }
+                                
+                                // Verificar se é resposta à mensagem de avaliação
                                 if (msg.reference) {
                                     const referencedMsgId = msg.reference.messageId;
-                                    if (referencedMsgId === initialMessage.id || 
-                                        referencedMsgId === btnInteraction.message?.id) {
+                                    if (referencedMsgId === avaliacaoMessageId || 
+                                        referencedMsgId === initialMessage.id) {
                                         return true;
                                     }
                                 }
@@ -180,188 +188,304 @@ module.exports = {
 
                             textoCollector.on('collect', async (reviewMessage) => {
                                 try {
+                                    // Parar o collector imediatamente para evitar duplicação
+                                    textoCollector.stop('collected');
+                                    
                                     // Extrair texto da avaliação
                                     let reviewText = reviewMessage.content;
                                     if (reviewText.startsWith('!review-texto ')) {
                                         reviewText = reviewText.replace('!review-texto ', '');
                                     }
 
-                                    // Extrair rating (estrelas) se houver
-                                    let rating = null;
-                                    const starMatch = reviewText.match(/(\d+)\s*[⭐🌟]/); // ainda permite o usuário digitar "5 ⭐"
-                                    if (starMatch) {
-                                        rating = parseInt(starMatch[1]);
-                                        rating = Math.max(1, Math.min(5, rating)); // Limitar entre 1-5
-                                        reviewText = reviewText.replace(/(\d+)\s*[⭐🌟]/, '').trim();
-                                    }
+                                    // Remover qualquer menção de estrelas do texto (caso o usuário tenha colocado)
+                                    reviewText = reviewText.replace(/(\d+)\s*[⭐🌟★☆]/g, '').trim();
 
-                                    // Criar embed final da review
-                                    const reviewEmbed = new EmbedBuilder()
-                                        .setTitle(`Avaliação - ${tipoNomes[tipo]}`)
-                                        .setDescription(reviewText || '*Sem texto*')
-                                        .setColor(rating ? (rating >= 4 ? 0x00ff00 : rating >= 3 ? 0xffa500 : 0xff0000) : 0x5865F2)
-                                        .setTimestamp()
-                                        .setFooter({ text: 'PromoPing - Avaliações' });
-
-                                    if (rating) {
-                                        const stars = '*'.repeat(rating) + '-'.repeat(5 - rating);
-                                        reviewEmbed.addFields({
-                                            name: 'Avaliação',
-                                            value: `${stars} (${rating}/5)`,
-                                            inline: false
-                                        });
-                                    }
-
-                                    if (isAnonimo) {
-                                        reviewEmbed.setAuthor({ 
-                                            name: 'Avaliação Anónima'
-                                        });
-                                    } else {
-                                        reviewEmbed.setAuthor({
-                                            name: userName,
-                                            iconURL: userAvatar
-                                        });
-                                    }
-
-                                    // Encontrar canal de reviews
-                                    const reviewsChannelId = process.env.DISCORD_REVIEWS_CHANNEL_ID || null;
-                                    let reviewsChannel = null;
-
-                                    if (reviewsChannelId) {
-                                        reviewsChannel = await client.channels.fetch(reviewsChannelId).catch(() => null);
-                                    }
-
-                                    // Se não encontrar pelo ID, procurar por nome
-                                    if (!reviewsChannel) {
-                                        reviewsChannel = message.guild.channels.cache.find(
-                                            channel => channel.name === 'reviews' && channel.type === 0
-                                        );
-                                    }
-
-                                    // Salvar avaliação no banco de dados
-                                    let savedReviewId = null;
-                                    let discordMessageId = null;
-                                    let discordChannelId = null;
-
-                                    // Flag para evitar inserção duplicada
-                                    const reviewKey = `${userId}_${tipo}`;
-                                    if (savingReviews.has(reviewKey)) {
+                                    // Validar se há texto
+                                    if (!reviewText || reviewText.trim().length === 0) {
+                                        await reviewMessage.reply('Por favor, envie uma avaliação com texto.').catch(() => {});
                                         return;
                                     }
-                                    savingReviews.add(reviewKey);
 
-                                    try {
-                                        const connection = await mysql.createConnection(dbConfig);
-                                        
-                                        // Buscar ReferenciaID do usuário pelo discord_id
-                                        const [users] = await connection.execute(
-                                            'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
-                                            [userId]
-                                        );
-
-                                        if (users.length === 0) {
-                                            await connection.end();
-                                            savingReviews.delete(reviewKey);
-                                            await reviewMessage.reply('Você precisa estar registado no sistema. Use `/registar` primeiro.');
-                                            return;
-                                        }
-
-                                        const referenciaID = users[0].ReferenciaID;
-
-                                        // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
-                                        const [existingReviews] = await connection.execute(
-                                            'SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
-                                            [referenciaID, tipo]
-                                        );
-
-                                        if (existingReviews.length > 0) {
-                                            await connection.end();
-                                            savingReviews.delete(reviewKey);
-                                            await reviewMessage.reply('Você já enviou uma avaliação recentemente. Aguarde alguns minutos.');
-                                            return;
-                                        }
-
-                                        // Enviar mensagem para o canal de reviews primeiro para obter o message ID
-                                        let sentMessage = null;
-                                        if (reviewsChannel) {
-                                            sentMessage = await reviewsChannel.send({ embeds: [reviewEmbed] });
-                                            discordMessageId = sentMessage.id;
-                                            discordChannelId = reviewsChannel.id;
-                                        } else {
-                                            sentMessage = await message.channel.send({ embeds: [reviewEmbed] });
-                                            discordMessageId = sentMessage.id;
-                                            discordChannelId = message.channel.id;
-                                        }
-
-                                        // Salvar no banco de dados usando apenas as colunas existentes
-                                        const [result] = await connection.execute(`
-                                            INSERT INTO reviews (
-                                                ReferenciaID, 
-                                                Tipo, 
-                                                Texto, 
-                                                Rating, 
-                                                IsAnonimo
-                                            ) VALUES (?, ?, ?, ?, ?)
-                                        `, [
-                                            referenciaID,
-                                            tipo,
-                                            reviewText || '',
-                                            rating,
-                                            isAnonimo ? 1 : 0
-                                        ]);
-
-                                        savedReviewId = result.insertId;
-                                        await connection.end();
-                                        savingReviews.delete(reviewKey);
-                                        console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
-                                    } catch (dbError) {
-                                        savingReviews.delete(reviewKey);
-                                        console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
-                                        // Continuar mesmo se falhar ao salvar no banco
-                                        
-                                        // Enviar mensagem mesmo se falhar ao salvar
-                                        if (reviewsChannel) {
-                                            await reviewsChannel.send({ embeds: [reviewEmbed] });
-                                        } else {
-                                            await message.channel.send({ embeds: [reviewEmbed] });
-                                        }
-                                    }
-                                    
                                     // Deletar mensagem do utilizador
                                     try {
                                         await reviewMessage.delete().catch(() => {});
                                     } catch {}
-                                    
-                                    // Enviar confirmação via DM (mensagem privada) para o utilizador
-                                    const confirmEmbed = new EmbedBuilder()
-                                        .setTitle('Avaliação Enviada!')
-                                        .setDescription(reviewsChannel ? `Sua avaliação foi enviada para ${reviewsChannel}` : 'Sua avaliação foi enviada!')
-                                        .setColor(0x00ff00)
-                                        .setTimestamp();
-                                    
-                                    try {
-                                        await message.author.send({ embeds: [confirmEmbed] });
-                                    } catch (dmError) {
-                                        // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
-                                        const confirmMsg = await message.channel.send({ 
-                                            content: `${message.author} - Sua avaliação foi enviada!`,
-                                            embeds: [confirmEmbed]
-                                        }).catch(() => null);
-                                        
-                                        // Deletar mensagem de confirmação após 5 segundos
-                                        if (confirmMsg) {
-                                            setTimeout(async () => {
-                                                try {
-                                                    await confirmMsg.delete().catch(() => {});
-                                                } catch {}
-                                            }, 5000);
-                                        }
-                                    }
 
-                                    // Deletar mensagem inicial se possível
-                                    try {
-                                        await initialMessage.delete().catch(() => {});
-                                    } catch {}
+                                    // Perguntar pelas estrelas (rating)
+                                    const ratingEmbed = new EmbedBuilder()
+                                        .setTitle('Avaliação de Estrelas')
+                                        .setDescription(
+                                            `**Sua avaliação:**\n"${reviewText}"\n\n` +
+                                            `**Agora, quantas estrelas você dá?**\n` +
+                                            `Escolha de 1 a 5 estrelas (★★★★★ é o máximo)`
+                                        )
+                                        .setColor(0xffa500)
+                                        .setTimestamp()
+                                        .setFooter({ text: 'PromoPing - Avaliações' });
+
+                                    const ratingRow = new ActionRowBuilder()
+                                        .addComponents(
+                                            new ButtonBuilder()
+                                                .setCustomId(`review_rating_1_${tipo}_${userId}`)
+                                                .setLabel('1 ⭐')
+                                                .setStyle(ButtonStyle.Danger),
+                                            new ButtonBuilder()
+                                                .setCustomId(`review_rating_2_${tipo}_${userId}`)
+                                                .setLabel('2 ⭐⭐')
+                                                .setStyle(ButtonStyle.Danger),
+                                            new ButtonBuilder()
+                                                .setCustomId(`review_rating_3_${tipo}_${userId}`)
+                                                .setLabel('3 ⭐⭐⭐')
+                                                .setStyle(ButtonStyle.Secondary),
+                                            new ButtonBuilder()
+                                                .setCustomId(`review_rating_4_${tipo}_${userId}`)
+                                                .setLabel('4 ⭐⭐⭐⭐')
+                                                .setStyle(ButtonStyle.Success),
+                                            new ButtonBuilder()
+                                                .setCustomId(`review_rating_5_${tipo}_${userId}`)
+                                                .setLabel('5 ⭐⭐⭐⭐⭐')
+                                                .setStyle(ButtonStyle.Success)
+                                        );
+
+                                    // Enviar mensagem pedindo rating
+                                    const ratingMessage = await message.channel.send({
+                                        content: `${message.author}`,
+                                        embeds: [ratingEmbed],
+                                        components: [ratingRow]
+                                    });
+
+                                    // Configurar collector para escolha de rating
+                                    const ratingFilter = (btnInteraction) => {
+                                        return btnInteraction.user.id === userId && 
+                                               btnInteraction.customId.startsWith(`review_rating_`) &&
+                                               btnInteraction.customId.includes(`_${tipo}_${userId}`);
+                                    };
+
+                                    const ratingCollector = message.channel.createMessageComponentCollector({
+                                        filter: ratingFilter,
+                                        time: 60000, // 1 minuto
+                                        max: 1
+                                    });
+
+                                    // Armazenar dados da review para usar depois
+                                    const reviewData = {
+                                        text: reviewText,
+                                        tipo: tipo,
+                                        isAnonimo: isAnonimo,
+                                        tipoNomes: tipoNomes,
+                                        userName: userName,
+                                        userAvatar: userAvatar,
+                                        userId: userId,
+                                        initialMessage: initialMessage,
+                                        message: message,
+                                        client: client
+                                    };
+
+                                    ratingCollector.on('collect', async (ratingInteraction) => {
+                                        try {
+                                            // Extrair rating do customId
+                                            const ratingMatch = ratingInteraction.customId.match(/review_rating_(\d+)_/);
+                                            const rating = ratingMatch ? parseInt(ratingMatch[1]) : null;
+
+                                            // Criar embed final da review
+                                            const reviewEmbed = new EmbedBuilder()
+                                                .setTitle(`Avaliação - ${reviewData.tipoNomes[reviewData.tipo]}`)
+                                                .setDescription(reviewData.text || '*Sem texto*')
+                                                .setColor(rating ? (rating >= 4 ? 0x00ff00 : rating >= 3 ? 0xffa500 : 0xff0000) : 0x5865F2)
+                                                .setTimestamp()
+                                                .setFooter({ text: 'PromoPing - Avaliações' });
+
+                                            if (rating) {
+                                                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                                                reviewEmbed.addFields({
+                                                    name: 'Avaliação',
+                                                    value: `${stars} (${rating}/5)`,
+                                                    inline: false
+                                                });
+                                            }
+
+                                            if (reviewData.isAnonimo) {
+                                                reviewEmbed.setAuthor({ 
+                                                    name: 'Avaliação Anónima'
+                                                });
+                                            } else {
+                                                reviewEmbed.setAuthor({
+                                                    name: reviewData.userName,
+                                                    iconURL: reviewData.userAvatar
+                                                });
+                                            }
+
+                                            // Atualizar mensagem de rating para mostrar confirmação
+                                            await ratingInteraction.update({
+                                                embeds: [ratingEmbed.setDescription(`**Rating selecionado:** ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} (${rating}/5)`)],
+                                                components: []
+                                            });
+
+                                            // Encontrar canal de reviews
+                                            const reviewsChannelId = process.env.DISCORD_REVIEWS_CHANNEL_ID || null;
+                                            let reviewsChannel = null;
+
+                                            if (reviewsChannelId) {
+                                                reviewsChannel = await reviewData.client.channels.fetch(reviewsChannelId).catch(() => null);
+                                            }
+
+                                            // Se não encontrar pelo ID, procurar por nome
+                                            if (!reviewsChannel) {
+                                                reviewsChannel = reviewData.message.guild.channels.cache.find(
+                                                    channel => channel.name === 'reviews' && channel.type === 0
+                                                );
+                                            }
+
+                                            // Salvar avaliação no banco de dados
+                                            let savedReviewId = null;
+                                            let discordMessageId = null;
+                                            let discordChannelId = null;
+
+                                            // Flag para evitar inserção duplicada
+                                            const reviewKey = `${reviewData.userId}_${reviewData.tipo}`;
+                                            if (savingReviews.has(reviewKey)) {
+                                                return;
+                                            }
+                                            savingReviews.add(reviewKey);
+
+                                            try {
+                                                const connection = await mysql.createConnection(dbConfig);
+                                                
+                                                // Buscar ReferenciaID do usuário pelo discord_id
+                                                const [users] = await connection.execute(
+                                                    'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                                                    [reviewData.userId]
+                                                );
+
+                                                if (users.length === 0) {
+                                                    await connection.end();
+                                                    savingReviews.delete(reviewKey);
+                                                    await ratingInteraction.followUp({ 
+                                                        content: 'Você precisa estar registado no sistema. Use `/registar` primeiro.',
+                                                        ephemeral: true 
+                                                    });
+                                                    return;
+                                                }
+
+                                                const referenciaID = users[0].ReferenciaID;
+
+                                                // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
+                                                const [existingReviews] = await connection.execute(
+                                                    'SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
+                                                    [referenciaID, reviewData.tipo]
+                                                );
+
+                                                if (existingReviews.length > 0) {
+                                                    await connection.end();
+                                                    savingReviews.delete(reviewKey);
+                                                    await ratingInteraction.followUp({ 
+                                                        content: 'Você já enviou uma avaliação recentemente. Aguarde alguns minutos.',
+                                                        ephemeral: true 
+                                                    });
+                                                    return;
+                                                }
+
+                                                // Enviar mensagem para o canal de reviews primeiro para obter o message ID
+                                                let sentMessage = null;
+                                                if (reviewsChannel) {
+                                                    sentMessage = await reviewsChannel.send({ embeds: [reviewEmbed] });
+                                                    discordMessageId = sentMessage.id;
+                                                    discordChannelId = reviewsChannel.id;
+                                                } else {
+                                                    sentMessage = await reviewData.message.channel.send({ embeds: [reviewEmbed] });
+                                                    discordMessageId = sentMessage.id;
+                                                    discordChannelId = reviewData.message.channel.id;
+                                                }
+
+                                                // Salvar no banco de dados usando apenas as colunas existentes
+                                                const [result] = await connection.execute(`
+                                                    INSERT INTO reviews (
+                                                        ReferenciaID, 
+                                                        Tipo, 
+                                                        Texto, 
+                                                        Rating, 
+                                                        IsAnonimo
+                                                    ) VALUES (?, ?, ?, ?, ?)
+                                                `, [
+                                                    referenciaID,
+                                                    reviewData.tipo,
+                                                    reviewData.text || '',
+                                                    rating,
+                                                    reviewData.isAnonimo ? 1 : 0
+                                                ]);
+
+                                                savedReviewId = result.insertId;
+                                                await connection.end();
+                                                savingReviews.delete(reviewKey);
+                                                console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
+                                            } catch (dbError) {
+                                                savingReviews.delete(reviewKey);
+                                                console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
+                                                // Continuar mesmo se falhar ao salvar no banco
+                                                
+                                                // Enviar mensagem mesmo se falhar ao salvar
+                                                if (reviewsChannel) {
+                                                    await reviewsChannel.send({ embeds: [reviewEmbed] });
+                                                } else {
+                                                    await reviewData.message.channel.send({ embeds: [reviewEmbed] });
+                                                }
+                                            }
+                                            
+                                            // Enviar confirmação via DM (mensagem privada) para o utilizador
+                                            const confirmEmbed = new EmbedBuilder()
+                                                .setTitle('Avaliação Enviada!')
+                                                .setDescription(reviewsChannel ? `Sua avaliação foi enviada para ${reviewsChannel}` : 'Sua avaliação foi enviada!')
+                                                .setColor(0x00ff00)
+                                                .setTimestamp();
+                                            
+                                            try {
+                                                await reviewData.message.author.send({ embeds: [confirmEmbed] });
+                                            } catch (dmError) {
+                                                // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                                                const confirmMsg = await reviewData.message.channel.send({ 
+                                                    content: `${reviewData.message.author} - Sua avaliação foi enviada!`,
+                                                    embeds: [confirmEmbed]
+                                                }).catch(() => null);
+                                                
+                                                // Deletar mensagem de confirmação após 5 segundos
+                                                if (confirmMsg) {
+                                                    setTimeout(async () => {
+                                                        try {
+                                                            await confirmMsg.delete().catch(() => {});
+                                                        } catch {}
+                                                    }, 5000);
+                                                }
+                                            }
+
+                                            // Deletar mensagem inicial e de rating se possível
+                                            try {
+                                                await reviewData.initialMessage.delete().catch(() => {});
+                                                await ratingMessage.delete().catch(() => {});
+                                            } catch {}
+
+                                        } catch (error) {
+                                            console.error('[DISCORD] Erro ao processar rating:', error);
+                                            await ratingInteraction.reply({ 
+                                                content: 'Erro ao processar sua avaliação. Tente novamente.',
+                                                ephemeral: true 
+                                            });
+                                        }
+                                    });
+
+                                    ratingCollector.on('end', (collected) => {
+                                        if (collected.size === 0) {
+                                            const timeoutEmbed = new EmbedBuilder()
+                                                .setTitle('Tempo Esgotado')
+                                                .setDescription('Você não selecionou as estrelas a tempo. Use `!review` novamente para começar.')
+                                                .setColor(0xff0000)
+                                                .setTimestamp();
+                                            
+                                            message.channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
+                                            try {
+                                                ratingMessage.delete().catch(() => {});
+                                            } catch {}
+                                        }
+                                    });
 
                                 } catch (error) {
                                     console.error('[DISCORD] Erro ao processar avaliação:', error);
