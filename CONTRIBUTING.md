@@ -77,7 +77,6 @@ PromoPing/
 │   └── ...
 ├── config-files/               # Arquivos de configuração
 │   ├── discord-config.js       # Config do Discord
-│   ├── ecosystem.config.js     # PM2 config
 │   └── nginx-promoping.pt.conf # Config Nginx
 ├── deploy-files/               # Scripts de deploy
 ├── docker-files/               # Configuração Docker
