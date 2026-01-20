@@ -19,6 +19,8 @@
   <script src="assets/scripts/header-modals.js"></script>
   <script src="inc/load-includes-index.js"></script>
   <script src="assets/scripts/cookie-banner.js"></script>
+  <script src="assets/scripts/partner-carousel.js"></script>
+  <script src="assets/scripts/testimonials.js"></script>
   <script>
     // Verificar parâmetros de erro na URL e abrir modal de login se necessário
     document.addEventListener("DOMContentLoaded", function () {
@@ -744,39 +746,35 @@
             Algumas marcas<span class="text-[#FFA54B] drop-shadow font-black"> que estão</span> a monitorizar no PromoPing.
           </span>
         </h2>
-        <div class="partner-grid max-w-[1100px] mx-auto">
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            Pingo Doce
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            Continente
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            Auchan
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            Worten
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            FNAC
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            IKEA
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            Radio Popular
-          </h3>
-          <h3
-            class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-            PcDiga
-          </h3>
+        <div class="partner-carousel-wrapper">
+          <div class="partner-carousel">
+            <div class="partner-carousel-track">
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                Pingo Doce
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                Continente
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                Auchan
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                Worten
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                FNAC
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                IKEA
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                Radio Popular
+              </h3>
+              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
+                PcDiga
+              </h3>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -923,17 +921,18 @@
         </div>
       </div>
     </section>
-    <section class="pp-cta">
-      <div class="cta-box">
-        <h2>Pronto para poupar dinheiro?</h2>
-        <p>Junte-se a milhares de portugueses que já poupam com o PromoPing</p>
-        <a href="#" onclick="if(window.openRegisterModal) { window.openRegisterModal(); } return false;">
-          Começar agora grátis
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </a>
+    <section class="pp-testimonials">
+      <div class="testimonials-container">
+        <div class="testimonials-header">
+          <span class="testimonials-badge">Depoimentos</span>
+          <h2 class="testimonials-title">Confiança de quem poupa todos os dias</h2>
+          <p class="testimonials-subtitle">Milhares de portugueses já economizam com o PromoPing</p>
+        </div>
+        <div class="testimonials-columns-wrapper">
+          <div class="testimonials-column" id="testimonials-track">
+            <!-- Os depoimentos serão carregados dinamicamente via JavaScript -->
+          </div>
+        </div>
       </div>
     </section>
   </main>
