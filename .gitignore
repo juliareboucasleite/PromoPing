@@ -50,3 +50,4 @@ discord-users.json
 *.sql
 *.mwb
 node_modules/.bin/eslint
+node_modules/.bin/eslint
