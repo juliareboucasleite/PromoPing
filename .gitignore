@@ -47,6 +47,7 @@ jspm_packages/
 
 # Project specific
 discord-users.json
-ANALISE_SEGURANCA.md
-Painel_Administrativo/Painel_Administrativo/
-promoping-mobile
+*.sql
+*.mwb
+node_modules/.bin/eslint
+node_modules/.bin/eslint

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Sistema de Notificações PromoPing
-Discord, Slack, Email e Webhook
-"""
-
 import requests
 import smtplib
 from email.mime.text import MimeText

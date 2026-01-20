@@ -60,9 +60,9 @@ router.get("/api/charts/overview", async (req, res) => {
     `, [months - 1]);
 
     const [usersMes] = await db.query(`
-      SELECT DATE_FORMAT(Data_Registo, '%Y-%m') as periodo, COUNT(*) as total
+      SELECT DATE_FORMAT(DataRegisto, '%Y-%m') as periodo, COUNT(*) as total
       FROM Utilizadores
-      WHERE Data_Registo >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE DataRegisto >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);

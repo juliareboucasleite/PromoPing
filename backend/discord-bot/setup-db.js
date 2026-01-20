@@ -55,10 +55,10 @@ async function setupDatabase() {
         }
 
         // Inserir dados de exemplo se não existirem
-        const [existingData] = await connection.execute('SELECT COUNT(*) as count FROM historico_precos');
+        const [existingData] = await connection.execute('SELECT COUNT(*) as count FROM historicoprecos');
         if (existingData[0].count === 0) {
             await connection.execute(`
-                INSERT INTO historico_precos (ProdutoId, Preco, PrecoAnterior, Loja, Status, Observacoes) VALUES
+                INSERT INTO historicoprecos (ProdutoId, Preco, PrecoAnterior, Loja, Status, Observacoes) VALUES
                 (1, 299.99, 319.99, 'Amazon', 'Ativo', 'Preço atualizado via scraper'),
                 (1, 319.99, 299.99, 'Amazon', 'Ativo', 'Preço aumentou'),
                 (2, 199.99, 219.99, 'Fnac', 'Ativo', 'Desconto aplicado')

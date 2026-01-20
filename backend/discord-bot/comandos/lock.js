@@ -8,7 +8,7 @@ module.exports = {
         try {
             // Verificar permissões de administrador ou gerenciar canais
             if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels) && 
-                !message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                !botInstance.isAdmin(message.member)) {
                 return await message.reply('❌ Você precisa de permissão para gerenciar canais para usar este comando.');
             }
 

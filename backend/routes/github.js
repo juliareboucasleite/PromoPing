@@ -794,4 +794,71 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     }
 });
 
+// ================== DISCORD WEBHOOKS ==================
+// Rota para receber webhooks do Discord Developer Portal
+// Eventos: Application Authorized, Application Deauthorized, Entitlement Create/Update/Delete
+router.post("/api/webhooks/discord", express.json(), async (req, res) => {
+    try {
+        console.log('[DISCORD WEBHOOK] Evento recebido:', JSON.stringify(req.body, null, 2));
+        
+        const eventType = req.body.type;
+        const eventData = req.body.data;
+
+        if (!eventType) {
+            return res.status(400).json({
+                error: 'Tipo de evento não fornecido'
+            });
+        }
+
+        // Processar diferentes tipos de eventos
+        switch (eventType) {
+            case 'APPLICATION_AUTHORIZED':
+                console.log('[DISCORD WEBHOOK] Aplicação autorizada:', eventData);
+                // Aqui você pode processar quando um usuário autoriza sua aplicação
+                // eventData contém: application_id, user_id, etc.
+                break;
+
+            case 'APPLICATION_DEAUTHORIZED':
+                console.log('[DISCORD WEBHOOK] Aplicação desautorizada:', eventData);
+                // Aqui você pode processar quando um usuário desautoriza sua aplicação
+                break;
+
+            case 'ENTITLEMENT_CREATE':
+                console.log('[DISCORD WEBHOOK] Entitlement criado:', eventData);
+                // Aqui você pode processar quando um entitlement é criado
+                // eventData contém: id, sku_id, user_id, etc.
+                break;
+
+            case 'ENTITLEMENT_UPDATE':
+                console.log('[DISCORD WEBHOOK] Entitlement atualizado:', eventData);
+                // Aqui você pode processar quando um entitlement é atualizado
+                break;
+
+            case 'ENTITLEMENT_DELETE':
+                console.log('[DISCORD WEBHOOK] Entitlement deletado:', eventData);
+                // Aqui você pode processar quando um entitlement é deletado
+                break;
+
+            default:
+                console.log('[DISCORD WEBHOOK] Tipo de evento desconhecido:', eventType);
+        }
+
+        // Sempre retornar 200 para o Discord
+        res.status(200).json({
+            status: 'ok',
+            message: 'Webhook processado',
+            eventType: eventType
+        });
+
+    } catch (err) {
+        console.error('[DISCORD WEBHOOK] Erro ao processar webhook:', err);
+        // Retornar 200 mesmo em caso de erro para evitar retries do Discord
+        res.status(200).json({
+            status: 'error',
+            error: 'Erro ao processar webhook',
+            message: err.message
+        });
+    }
+});
+
 export default router;

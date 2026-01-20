@@ -8,7 +8,7 @@ module.exports = {
         try {
             // Verificar permissões
             if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages) && 
-                !message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                !botInstance.isAdmin(message.member)) {
                 return await message.reply('❌ Você precisa de permissão para gerenciar mensagens para usar este comando.');
             }
 

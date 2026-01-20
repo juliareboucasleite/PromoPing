@@ -20,8 +20,8 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
     
     // Buscar dados do usuário
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE Id = ?",
-      [product.UserId]
+      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+      [product.ReferenciaID]
     );
 
     const user = userRows[0] || {};
@@ -85,8 +85,8 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
 
     // Gravar notificação no banco
     await pool.query(
-      "INSERT INTO Notificacoes (UserId, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [product.UserId, product.Id, 'email', messageHtml, true, savings]
+      "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+      [product.ReferenciaID, product.Id, 'email', messageHtml, true, savings]
     );
 
   } catch (error) {
@@ -155,14 +155,14 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
 
     // Buscar configurações de notificação do utilizador
     const [configRows] = await pool.query(
-      "SELECT CanalPreferido FROM ConfigUtilizador WHERE UserId = ?",
-      [product.UserId]
+      "SELECT CanalPreferido FROM configutilizador WHERE ReferenciaID = ?",
+      [product.ReferenciaID]
     );
 
     // Buscar email e telefone da tabela Utilizadores
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE Id = ?",
-      [product.UserId]
+      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+      [product.ReferenciaID]
     );
 
     const config = configRows[0] || {};
@@ -193,8 +193,8 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
 
     // Gravar notificação no banco
     await pool.query(
-      "INSERT INTO Notificacoes (UserId, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [product.UserId, product.Id, canal, messageHtml, true, Math.abs(diferenca)]
+      "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+      [product.ReferenciaID, product.Id, canal, messageHtml, true, Math.abs(diferenca)]
     );
 
     console.log(` Alerta de mudança de preço enviado para ${product.Nome} (${canal})`);

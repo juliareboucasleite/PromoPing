@@ -60,7 +60,7 @@ module.exports = {
 
             // Verificar se o Discord já está vinculado
             const [existingDiscord] = await connection.execute(
-                'SELECT Id, Email FROM utilizadores WHERE discord_id = ?',
+                'SELECT ReferenciaID, Email FROM utilizadores WHERE discord_id = ?',
                 [message.author.id]
             );
 
@@ -93,7 +93,7 @@ module.exports = {
 
             // Verificar se email já existe
             const [existingEmail] = await connection.execute(
-                'SELECT Id, discord_id FROM utilizadores WHERE Email = ?',
+                'SELECT ReferenciaID, discord_id FROM utilizadores WHERE Email = ?',
                 [email]
             );
 
@@ -143,9 +143,16 @@ module.exports = {
                 }
             } catch { /* ignora erro, cai pro valor padrão */ }
 
+            // Gerar ReferenciaID
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let referenciaID = 'REF-';
+            for (let i = 0; i < 9; i++) {
+                referenciaID += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
             await connection.execute(
-                'INSERT INTO utilizadores (Email, SenhaHash, discord_id, Data_Registo, Nome, Ativo, PerfilId) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [email, hashedPassword, message.author.id, now, message.author.username, 1, userPerfilId]
+                'INSERT INTO utilizadores (ReferenciaID, Email, SenhaHash, discord_id, DataRegisto, Nome, Ativo, PerfilId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [referenciaID, email, hashedPassword, message.author.id, now, message.author.username, 1, userPerfilId]
             );
 
             await connection.end();

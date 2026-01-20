@@ -7,12 +7,12 @@ const router = express.Router();
 // Obter contas conectadas
 router.get("/", async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: "Não autenticado" });
+    const referenciaID = req.user?.ReferenciaID;
+    if (!referenciaID) return res.status(401).json({ error: "Não autenticado" });
 
     const [rows] = await pool.query(
-      "SELECT Tipo, Conectado FROM contasconectadas WHERE UserId = ?",
-      [userId]
+      "SELECT Tipo, Conectado FROM contasconectadas WHERE ReferenciaID = ?",
+      [referenciaID]
     );
 
     res.json({ status: "ok", contas: rows });
@@ -25,13 +25,13 @@ router.get("/", async (req, res) => {
 // Conectar conta
 router.post("/:tipo", async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const referenciaID = req.user?.ReferenciaID;
     const { tipo } = req.params;
-    if (!userId) return res.status(401).json({ error: "Não autenticado" });
+    if (!referenciaID) return res.status(401).json({ error: "Não autenticado" });
 
     await pool.query(
-      "INSERT INTO contasconectadas (UserId, Tipo, Conectado, DataConexao) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
-      [userId, tipo]
+      "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+      [referenciaID, tipo]
     );
 
     res.json({ status: "ok", message: `Conta ${tipo} conectada` });
@@ -44,13 +44,13 @@ router.post("/:tipo", async (req, res) => {
 // Desconectar conta
 router.delete("/:tipo", async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const referenciaID = req.user?.ReferenciaID;
     const { tipo } = req.params;
-    if (!userId) return res.status(401).json({ error: "Não autenticado" });
+    if (!referenciaID) return res.status(401).json({ error: "Não autenticado" });
 
     await pool.query(
-      "UPDATE contasconectadas SET Conectado = 0 WHERE UserId = ? AND Tipo = ?",
-      [userId, tipo]
+      "UPDATE contasconectadas SET Conectado = 0 WHERE ReferenciaID = ? AND Tipo = ?",
+      [referenciaID, tipo]
     );
 
     res.json({ status: "ok", message: `Conta ${tipo} desconectada` });

@@ -47,9 +47,17 @@
                     <span class="nav-icon"></span>
                     <span>Bugs & Projetos</span>
                 </a>
+                <a href="sugestoes.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Sugestões</span>
+                </a>
                 <a href="tabelas.html" class="nav-item">
                     <span class="nav-icon"></span>
                     <span>Incidentes</span>
+                </a>
+                <a href="calendar.html" class="nav-item">
+                    <span class="nav-icon"></span>
+                    <span>Calendário</span>
                 </a>
                 <a href="perfil.html" class="nav-item">
                     <span class="nav-icon"></span>
@@ -66,13 +74,66 @@
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
                 <div class="section-header">
                     <h1>Utilizadores Ativos</h1>
-                    <button id="refreshUsersBtn" class="refresh-button">Atualizar</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="exportPDFBtn" class="refresh-button" style="background: #dc2626; color: white;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Exportar PDF
+                        </button>
+                        <button id="refreshUsersBtn" class="refresh-button">Atualizar</button>
+                    </div>
                 </div>
                 <div id="usersList" class="data-table-container">
                     <div class="loading-state">Carregando utilizadores...</div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal para Editar Utilizador -->
+    <div id="editUserModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Editar Utilizador</h2>
+                <button class="modal-close" id="closeEditUserModal">&times;</button>
+            </div>
+            <form id="editUserForm">
+                <div class="form-group">
+                    <label class="form-label">Referência</label>
+                    <input type="text" id="editReferenciaID" class="form-input" readonly disabled style="background: #1a1a1b; color: #666; cursor: not-allowed; border-color: #333;">
+                    <small style="color: #666; font-size: 0.75rem; margin-top: 0.25rem; display: block;">A referência não pode ser alterada</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" id="editNome" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="editEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="editAtivo" class="form-input" required>
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Verificado</label>
+                    <select id="editEmailVerificado" class="form-input" required>
+                        <option value="1">Sim</option>
+                        <option value="0">Não</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Salvar Alterações</button>
+                    <button type="button" class="modal-cancel-button" id="cancelEditUserBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="../script/utilizadores.js"></script>

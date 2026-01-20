@@ -10,7 +10,7 @@ module.exports = {
     execute: async (client, message, args, botInstance) => {
         try {
             // Verificar permissões de administrador
-            if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            if (!botInstance.isAdmin(message.member)) {
                 return await message.reply('❌ Você precisa de permissões de administrador para usar este comando.');
             }
 
@@ -70,16 +70,32 @@ module.exports = {
 
             } else if (action === 'adicionar' || action === 'add') {
                 // Adicionar canal
-                const channelName = args[1];
-                if (!channelName) {
+                const channelInput = args[1];
+                if (!channelInput) {
                     await connection.end();
-                    return await message.reply('❌ Por favor, forneça o nome do canal da Twitch.\n**Uso:** `!social-feed adicionar <nome-do-canal>`');
+                    return await message.reply('❌ Por favor, forneça o nome do canal da Twitch ou a URL.\n**Uso:** `!social-feed adicionar <nome-do-canal>` ou `!social-feed adicionar https://twitch.tv/nome-do-canal`');
                 }
 
-                // Verificar se já existe
+                // Extrair nome do canal (pode ser URL ou nome simples)
+                const extractChannelName = (input) => {
+                    if (!input) return null;
+                    const urlMatch = input.match(/(?:twitch\.tv\/|^)([^\/\s?]+)/i);
+                    if (urlMatch) {
+                        return urlMatch[1].toLowerCase();
+                    }
+                    return input.toLowerCase().trim();
+                };
+
+                const channelName = extractChannelName(channelInput);
+                if (!channelName) {
+                    await connection.end();
+                    return await message.reply('❌ Nome de canal inválido. Use apenas o nome do canal ou a URL completa.');
+                }
+
+                // Verificar se já existe (buscar por nome extraído ou URL completa)
                 const [existing] = await connection.execute(
-                    'SELECT Id FROM twitch_channels WHERE ChannelName = ?',
-                    [channelName.toLowerCase()]
+                    'SELECT Id FROM twitch_channels WHERE ChannelName = ? OR ChannelName = ? OR ChannelName LIKE ?',
+                    [channelName, channelInput.toLowerCase(), `%${channelName}%`]
                 );
 
                 if (existing.length > 0) {
@@ -87,11 +103,14 @@ module.exports = {
                     return await message.reply(`❌ O canal **${channelName}** já está sendo monitorado.`);
                 }
 
-                // Verificar se o canal existe na Twitch (opcional - pode ser feito depois)
-                // Por enquanto, apenas adiciona ao banco
+                // Adicionar ao banco (salvar como URL se foi fornecido URL, senão apenas o nome)
+                const channelToSave = channelInput.toLowerCase().includes('twitch.tv') 
+                    ? channelInput.toLowerCase() 
+                    : channelName;
+                
                 await connection.execute(
                     'INSERT INTO twitch_channels (ChannelName) VALUES (?)',
-                    [channelName.toLowerCase()]
+                    [channelToSave]
                 );
 
                 const embed = new EmbedBuilder()
@@ -110,20 +129,33 @@ module.exports = {
 
             } else if (action === 'remover' || action === 'remove' || action === 'rem') {
                 // Remover canal
-                const channelName = args[1];
-                if (!channelName) {
+                const channelInput = args[1];
+                if (!channelInput) {
                     await connection.end();
-                    return await message.reply('❌ Por favor, forneça o nome do canal da Twitch.\n**Uso:** `!social-feed remover <nome-do-canal>`');
+                    return await message.reply('❌ Por favor, forneça o nome do canal da Twitch ou a URL.\n**Uso:** `!social-feed remover <nome-do-canal>`');
                 }
 
+                // Extrair nome do canal (pode ser URL ou nome simples)
+                const extractChannelName = (input) => {
+                    if (!input) return null;
+                    const urlMatch = input.match(/(?:twitch\.tv\/|^)([^\/\s?]+)/i);
+                    if (urlMatch) {
+                        return urlMatch[1].toLowerCase();
+                    }
+                    return input.toLowerCase().trim();
+                };
+
+                const channelName = extractChannelName(channelInput);
+                
+                // Tentar remover por nome extraído ou URL completa
                 const [result] = await connection.execute(
-                    'DELETE FROM twitch_channels WHERE ChannelName = ?',
-                    [channelName.toLowerCase()]
+                    'DELETE FROM twitch_channels WHERE ChannelName = ? OR ChannelName = ? OR ChannelName LIKE ?',
+                    [channelName, channelInput.toLowerCase(), `%${channelName}%`]
                 );
 
                 if (result.affectedRows === 0) {
                     await connection.end();
-                    return await message.reply(`❌ O canal **${channelName}** não está sendo monitorado.`);
+                    return await message.reply(`❌ O canal **${channelName || channelInput}** não está sendo monitorado.`);
                 }
 
                 const embed = new EmbedBuilder()

@@ -17,6 +17,7 @@ module.exports = {
                     '6. **Siga os Termos de Uso** do PromoPing e do Discord.',
                     '7. **Dúvidas ou problemas:** Abra um ticket pelo comando `!suporte` no privado do bot ou nesse canal <#1442960813563449516>.'
                 ].join('\n')
+                
             }
         ];
 

@@ -21,7 +21,7 @@ module.exports = {
 
             // Buscar usuário pelo Discord ID
             const [users] = await connection.execute(
-                'SELECT Id, Email FROM utilizadores WHERE discord_id = ?',
+                'SELECT ReferenciaID, Email FROM utilizadores WHERE discord_id = ?',
                 [message.author.id]
             );
 
@@ -39,9 +39,9 @@ module.exports = {
                         WHERE hp.ProdutoId = p.Id 
                         ORDER BY hp.DataRegisto DESC LIMIT 1 OFFSET 1) as PrecoAnterior
                 FROM produtos p 
-                WHERE p.UserId = ? AND p.DeletedAt IS NULL 
+                WHERE p.ReferenciaID = ? AND p.DeletedAt IS NULL 
                 ORDER BY p.UpdatedAt DESC
-            `, [user.Id]);
+            `, [user.ReferenciaID]);
 
             await connection.end();
 

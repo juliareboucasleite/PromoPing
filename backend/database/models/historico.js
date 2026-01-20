@@ -6,7 +6,7 @@ export async function salvarPreco(produtoId, preco) {
   // Buscar preço anterior antes de inserir o novo
   const [produtoRows] = await pool.query(
     `SELECT p.*, 
-     (SELECT Preco FROM HistoricoPrecos WHERE ProdutoId = p.Id ORDER BY DataRegisto DESC LIMIT 1) as PrecoAnterior
+     (SELECT Preco FROM historicoprecos WHERE ProdutoId = p.Id ORDER BY DataRegisto DESC LIMIT 1) as PrecoAnterior
      FROM Produtos p WHERE p.Id = ?`,
     [produtoId]
   );
@@ -16,7 +16,7 @@ export async function salvarPreco(produtoId, preco) {
 
   // Inserir novo preço no histórico
   await pool.query(
-    `INSERT INTO HistoricoPrecos (ProdutoId, Preco, DataRegisto) 
+    `INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto) 
      VALUES (?, ?, NOW())`,
     [produtoId, preco]
   );
@@ -41,7 +41,7 @@ export async function salvarPreco(produtoId, preco) {
 export async function ultimoPreco(produtoId) {
   const [rows] = await pool.query(
     `SELECT Preco 
-     FROM HistoricoPrecos 
+     FROM historicoprecos 
      WHERE ProdutoId = ? 
      ORDER BY DataRegisto DESC 
      LIMIT 1`,

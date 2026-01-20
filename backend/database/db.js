@@ -1,4 +1,5 @@
 import mysql from "mysql2/promise";
+import { queryWithTableRecovery } from "./tableManager.js";
 
 // Debug removido para logs mais limpos
 
@@ -13,6 +14,19 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+// Guardar referência ao query original para uso interno ANTES de modificar pool.query
+// Isso evita referências circulares e permite que tableManager use a query original
+const originalQuery = pool.query.bind(pool);
+
+// Exportar query original para uso interno do tableManager ANTES de modificar pool.query
+pool._originalQuery = originalQuery;
+
+// Wrapper para pool.query que automaticamente recria tabelas se necessário
+// Usa queryWithTableRecovery que já tem proteção contra loops infinitos
+pool.query = async function(sql, params) {
+  return await queryWithTableRecovery(sql, params);
+};
 
 // Testar conexão inicial (silencioso)
 pool.getConnection()

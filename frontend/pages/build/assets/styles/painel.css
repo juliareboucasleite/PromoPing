@@ -747,6 +747,7 @@
     color: #fff;
 }
 
+
 .status-tag {
     background: #6c757d;
     color: #fff;
@@ -1797,7 +1798,7 @@ input:checked + .toggle-slider:before {
 /* Overlay fora da área com blur */
 .product-card-dashboard.blurred .product-upgrade-overlay {
   position: absolute;
-  top: 50%;
+  top: 16%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.98);

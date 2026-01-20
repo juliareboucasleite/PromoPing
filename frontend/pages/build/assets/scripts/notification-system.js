@@ -44,8 +44,14 @@ class NotificationSystem {
     const id = this.generateId();
     const notification = this.createNotification(id, type, title, message, closable);
     
+    // Limpar notificações anteriores
+    this.clear();
+    
     this.container.appendChild(notification);
     this.notifications.set(id, notification);
+
+    // Ativar container
+    this.container.classList.add('active');
 
     // Animar entrada
     requestAnimationFrame(() => {
@@ -73,6 +79,11 @@ class NotificationSystem {
     notification.classList.remove('show');
     notification.classList.add('hide');
 
+    // Desativar container
+    setTimeout(() => {
+      this.container.classList.remove('active');
+    }, 200);
+
     // Remover do DOM após animação
     setTimeout(() => {
       if (notification.parentNode) {
@@ -87,8 +98,16 @@ class NotificationSystem {
    */
   clear() {
     this.notifications.forEach((notification, id) => {
-      this.hide(id);
+      notification.classList.remove('show');
+      notification.classList.add('hide');
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+        this.notifications.delete(id);
+      }, 400);
     });
+    this.container.classList.remove('active');
   }
 
   /**
@@ -104,14 +123,8 @@ class NotificationSystem {
 
     notification.innerHTML = `
       <div class="notification-header">
-        <h4 class="notification-title">
-          ${icon}
-          ${title}
-        </h4>
-        ${closeButton}
+        <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="notification-logo">
       </div>
-      <p class="notification-message">${message}</p>
-      <div class="notification-progress"></div>
     `;
 
     return notification;

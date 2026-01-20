@@ -6,8 +6,6 @@ Esta página mantém um registo completo de todos os incidentes, atualizações 
 
 Todos os sistemas operacionais
 
-Última atualização: Carregando...
-
 ### Incidentes Recentes
 
 <details>

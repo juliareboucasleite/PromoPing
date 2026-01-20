@@ -73,7 +73,7 @@ export function verificarPlanoPago() {
 export function verificarLimiteUso(tipoRecurso) {
   return async (req, res, next) => {
     try {
-      const userId = req.user.id;
+      const referenciaID = req.user.ReferenciaID;
       const userPlano = req.user?.plano?.nome || "Free";
       
       // Definir limites por plano

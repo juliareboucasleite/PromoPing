@@ -238,15 +238,23 @@ module.exports = {
             files: imageAttachment ? [imageAttachment] : []
         });
 
+        // Obter ID da mensagem (pode ser do objeto retornado ou do ID se for Message)
+        const mensagemId = mensagemInicial.id || (mensagemInicial.message ? mensagemInicial.message.id : null);
+
         // Configurar coletor de interações
         const filter = (interaction) => {
-            return interaction.user.id === message.author.id && 
-                   (interaction.customId.startsWith(`ajuda_anterior_${message.author.id}`) ||
-                    interaction.customId.startsWith(`ajuda_proximo_${message.author.id}`) ||
-                    interaction.customId.startsWith(`ajuda_fechar_${message.author.id}`));
+            // Verificar se é o usuário correto e se a interação é para esta mensagem
+            const isCorrectUser = interaction.user.id === message.author.id;
+            const isCorrectMessage = !mensagemId || interaction.message?.id === mensagemId;
+            const isCorrectButton = interaction.customId.startsWith(`ajuda_anterior_${message.author.id}`) ||
+                                   interaction.customId.startsWith(`ajuda_proximo_${message.author.id}`) ||
+                                   interaction.customId.startsWith(`ajuda_fechar_${message.author.id}`);
+            
+            return isCorrectUser && isCorrectMessage && isCorrectButton;
         };
 
-        const collector = mensagemInicial.createMessageComponentCollector({ 
+        // Criar collector usando o canal (funciona tanto para mensagens normais quanto slash commands)
+        const collector = message.channel.createMessageComponentCollector({ 
             filter, 
             time: 300000 // 5 minutos
         });

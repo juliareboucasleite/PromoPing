@@ -6,21 +6,21 @@ const NAVIGATION_HTML = `
     <nav>
       <ul>
         <li class="sidebar-nav-about">
-          <a href="docs.html">Sobre o PromoPing</a>
+          <a href="/docs">Sobre o PromoPing</a>
         </li>
         <li class="sidebar-nav-section"><span>COMEÇAR</span></li>
-        <li><a href="FirstLaunch.html" class="sidebar-nav-link">Primeiro Lançamento</a></li>
-        <li><a href="installation.html" class="sidebar-nav-link">Guia de Instalação</a></li>
-        <li><a href="usage-guide.html" class="sidebar-nav-link">Guia de Utilização</a></li>
+        <li><a href="/docs/FirstLaunch" class="sidebar-nav-link">Primeiro Lançamento</a></li>
+        <li><a href="/docs/installation" class="sidebar-nav-link">Guia de Instalação</a></li>
+        <li><a href="/docs/usage-guide" class="sidebar-nav-link">Guia de Utilização</a></li>
         <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
-        <li><a href="api-reference.html" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
+        <li><a href="/docs/api-reference" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
         <li class="sidebar-nav-item"><span>SUPORTE</span></li>
-        <li><a href="support.html" class="sidebar-nav-link">Suporte</a></li>
-        <li><a href="faq.html" class="sidebar-nav-link">FAQ</a></li>
-        <li><a href="changelog.html" class="sidebar-nav-link">Changelog</a></li>
-        <li><a href="service-status.html" class="sidebar-nav-link">Status do Serviço</a></li>
-        <li><a href="incident-history.html" class="sidebar-nav-link">Histórico de Incidentes</a></li>
-        <li><a href="terms.html" class="sidebar-nav-link">Termos de Uso</a></li>
+        <li><a href="/docs/support" class="sidebar-nav-link">Suporte</a></li>
+        <li><a href="/docs/faq" class="sidebar-nav-link">FAQ</a></li>
+        <li><a href="/docs/changelog" class="sidebar-nav-link">Changelog</a></li>
+        <li><a href="/docs/service-status" class="sidebar-nav-link">Status do Serviço</a></li>
+        <li><a href="/docs/incident-history" class="sidebar-nav-link">Histórico de Incidentes</a></li>
+        <li><a href="/docs/terms" class="sidebar-nav-link">Termos de Uso</a></li>
       </ul>
     </nav>
     <div class="powered"><p>Made by PromoPingg</p></div>
@@ -52,7 +52,7 @@ async function loadNavigation() {
   
   try {
     // Tentar carregar nav.html - sempre do mesmo diretório
-    const navPath = 'nav.html';
+    const navPath = 'docs/nav.html';
     const response = await fetch(`${navPath}?t=${Date.now()}`, {
       cache: 'no-cache',
       headers: {

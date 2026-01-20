@@ -13,15 +13,15 @@ module.exports = {
             
             // Para ação de sincronizar, verificar cargo específico
             if (action === 'sincronizar' || action === 'sync') {
-                const allowedRoleId = '1442655601682419722';
-                const hasAllowedRole = message.member.roles.cache.has(allowedRoleId);
+                const allowedRoleIds = ['1442655601682419722', '1442937735253065758'];
+                const hasAllowedRole = allowedRoleIds.some(roleId => message.member.roles.cache.has(roleId));
                 
                 if (!hasAllowedRole) {
                     return await message.channel.send('❌ Você não tem permissão para sincronizar releases. Apenas membros com o cargo específico podem usar esta função.');
                 }
             } else {
                 // Para outras ações, verificar permissões de administrador
-                if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+                if (!botInstance.isAdmin(message.member)) {
                     return await message.channel.send('❌ Você precisa de permissões de administrador para usar este comando.');
                 }
             }
@@ -42,7 +42,7 @@ module.exports = {
 
             if (!channel) {
                 await connection.end();
-                return await message.channel.send('❌ Canal announcements não encontrado!');
+                return await message.channel.send('Canal announcements não encontrado!');
             }
 
             if (!action || action === 'status' || action === 'info') {
@@ -53,15 +53,15 @@ module.exports = {
                 );
 
                 const embed = new EmbedBuilder()
-                    .setTitle('📢 Configuração de Announcements')
+                    .setTitle('Configuração de Announcements')
                     .setDescription('Notificações de releases do GitHub')
-                    .setColor(0x24292e)
+                    .setColor(0xf4af55)
                     .setTimestamp();
 
                 if (configs.length === 0) {
                     embed.addFields({
                         name: 'Status',
-                        value: '❌ Webhook não configurado',
+                        value: 'Webhook não configurado',
                         inline: false
                     });
                 } else {
@@ -94,7 +94,7 @@ module.exports = {
                 if (!webhookUrl) {
                     await connection.end();
                     return await message.channel.send(
-                        '❌ Por favor, forneça a URL do webhook.\n**Uso:** `!announcements configurar <webhook-url>`'
+                        'Por favor, forneça a URL do webhook.\n**Uso:** `!announcements configurar <webhook-url>`'
                     );
                 }
 
@@ -141,18 +141,18 @@ module.exports = {
                         { name: 'Autor', value: 'Teste', inline: true },
                         { name: 'Notas da Release', value: 'Esta é uma notificação de teste para verificar o sistema de announcements.', inline: false }
                     )
-                    .setColor(0x24292e)
+                    .setColor(0xf4af55)
                     .setThumbnail('https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
                     .setTimestamp()
                     .setFooter({ text: 'PromoPing - GitHub Releases' });
 
                 await channel.send({ embeds: [embed] });
                 await connection.end();
-                return await message.channel.send('✅ Notificação de teste enviada no canal announcements!');
+                return await message.channel.send('Notificação de teste enviada no canal announcements!');
 
             } else if (action === 'sincronizar' || action === 'sync') {
                 // Sincronizar todas as releases do GitHub
-                const loadingMsg = await message.channel.send('🔄 Sincronizando releases do GitHub... Isso pode levar alguns segundos.');
+                const loadingMsg = await message.channel.send('Sincronizando releases do GitHub... Isso pode levar alguns segundos.');
                 
                 try {
                     // Chamar API de sincronização
@@ -170,7 +170,7 @@ module.exports = {
                     
                     if (result.success) {
                         const embed = new EmbedBuilder()
-                            .setTitle('✅ Sincronização Concluída')
+                            .setTitle('Sincronização Concluída')
                             .setDescription('Todas as releases do GitHub foram sincronizadas.')
                             .addFields(
                                 { name: 'Total de Releases', value: result.total.toString(), inline: true },
@@ -185,15 +185,15 @@ module.exports = {
                         return;
                     } else {
                         await connection.end();
-                        await loadingMsg.edit(`❌ Erro ao sincronizar: ${result.error || 'Erro desconhecido'}`);
+                        await loadingMsg.edit(`Erro ao sincronizar: ${result.error || 'Erro desconhecido'}`);
                         return;
                     }
                 } catch (error) {
                     console.error('[DISCORD] Erro ao sincronizar releases:', error);
                     await connection.end();
-                    await loadingMsg.edit(`❌ Erro ao sincronizar releases: ${error.message}`).catch(() => {
+                    await loadingMsg.edit(`Erro ao sincronizar releases: ${error.message}`).catch(() => {
                         // Se não conseguir editar, enviar nova mensagem
-                        message.channel.send(`❌ Erro ao sincronizar releases: ${error.message}`).catch(console.error);
+                        message.channel.send(`Erro ao sincronizar releases: ${error.message}`).catch(console.error);
                     });
                     return;
                 }
@@ -201,7 +201,7 @@ module.exports = {
             } else {
                 await connection.end();
                 return await message.channel.send(
-                    '❌ Ação inválida!\n\n' +
+                    'Ação inválida!\n\n' +
                     '**Ações disponíveis:**\n' +
                     '• `status` - Mostra status da configuração\n' +
                     '• `configurar <url>` - Configura webhook URL (opcional)\n' +
@@ -257,7 +257,7 @@ module.exports = {
                 console.error('[DISCORD] Erro ao registrar erro no banco:', dbError);
             }
             
-            return await message.channel.send('❌ Ocorreu um erro ao processar o comando. Tente novamente.').catch(() => {
+            return await message.channel.send('Ocorreu um erro ao processar o comando. Tente novamente.').catch(() => {
                 // Se não conseguir enviar, apenas logar
                 console.error('[DISCORD] Não foi possível enviar mensagem de erro');
             });

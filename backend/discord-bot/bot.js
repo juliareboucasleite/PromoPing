@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const comandos = require('./comandos');
@@ -15,8 +15,22 @@ class PromoPingBot {
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildPresences
             ],
-            partials: ['CHANNEL']
+            partials: ['CHANNEL'],
+            // Configurações para melhorar a conexão
+            rest: {
+                timeout: 30000, // 30 segundos
+                retries: 3
+            },
+            ws: {
+                large_threshold: 250,
+                compress: false
+            }
         });
+        
+        // Controle de reconexão
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 10;
+        this.reconnectDelay = 5000; // 5 segundos inicial
 
         // Configurações de banco de dados
         this.dbConfig = {
@@ -42,16 +56,46 @@ class PromoPingBot {
         this.lastTwitchCheck = new Date();
         this.twitchLiveStatus = new Map(); // channelName -> { isLive: boolean, lastNotification: Date }
 
+        // Monitoramento de Notícias
+        this.newsCheckInterval = null;
+        this.lastNewsCheck = new Date();
+        this.newsService = null; // Será carregado dinamicamente
+
+        // IDs de administradores com acesso total a todos os comandos
+        this.adminIds = [
+            '1448056767253708821' // ID com acesso total
+        ];
+
         this.setupEventHandlers();
+    }
+
+    /**
+     * Verifica se um usuário tem acesso de administrador (permissoes do Discord OU ID na lista)
+     * @param {GuildMember} member - Membro do servidor
+     * @returns {boolean} - True se tem acesso de admin
+     */
+    isAdmin(member) {
+        if (!member) return false;
+        
+        // Verificar se tem permissões de administrador no Discord
+        if (member.permissions && member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return true;
+        }
+        
+        // Verificar se o ID está na lista de administradores
+        const userId = member.user ? member.user.id : member.id;
+        return this.adminIds.includes(userId);
     }
 
     setupEventHandlers() {
         // Quando o bot se conecta
         this.client.once('ready', async () => {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
-            console.log(`[DISCORD] Iniciando monitoramento de preços e Twitch...`);
+            console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
+            this.reconnectAttempts = 0; // Reset contador de reconexão
             this.startMonitoring();
             this.startTwitchMonitoring();
+            this.startNewsMonitoring();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
@@ -71,6 +115,26 @@ class PromoPingBot {
             
             // Registrar comandos de barra (slash commands)
             await this.registerSlashCommands();
+        });
+
+        // Handler para erros de conexão
+        this.client.on('error', (error) => {
+            console.error('[DISCORD] Erro do cliente Discord:', error);
+        });
+
+        // Handler para desconexão
+        this.client.on('disconnect', () => {
+            console.warn('[DISCORD] Bot desconectado do Discord');
+        });
+
+        // Handler para reconexão
+        this.client.on('reconnecting', () => {
+            console.log('[DISCORD] Tentando reconectar ao Discord...');
+        });
+
+        // Handler para rate limits
+        this.client.on('rateLimit', (rateLimitInfo) => {
+            console.warn('[DISCORD] Rate limit atingido:', rateLimitInfo);
         });
 
         // Quando alguém envia uma mensagem
@@ -161,12 +225,29 @@ class PromoPingBot {
                             'outros': 'Outros'
                         };
                         await this.handleTicketCategory(interaction, categoriaNomes[categoriaCode] || categoriaCode, categoriaCode);
+                    } else if (interaction.customId.startsWith('review_tipo_')) {
+                        // Handler para menu de seleção de review
+                        await this.handleReviewTypeSelection(interaction);
                     }
                 }
                 // Lidar com botões
                 else if (interaction.isButton()) {
                     if (interaction.customId === 'abrir_ticket_promoping') {
                         await this.handleTicketButton(interaction);
+                    } else if (interaction.customId === 'iniciar_review_promoping') {
+                        // Iniciar fluxo de review quando clicar no botão do painel
+                        await this.handleReviewButton(interaction);
+                    } else if (interaction.customId.startsWith('review_anonimo_')) {
+                        // Handler para botões de anonimato do review
+                        const parts = interaction.customId.split('_');
+                        const isAnonimo = parts[2] === 'sim';
+                        const tipo = parts[3];
+                        const tipoNomes = {
+                            'site': 'Site',
+                            'bot': 'Bot',
+                            'suporte': 'Suporte'
+                        };
+                        await this.handleReviewAnonimoChoice(interaction, tipo, tipoNomes[tipo], isAnonimo);
                     } else if (interaction.customId.startsWith('ticket_confirmar_')) {
                         // Extrair categoria do customId: ticket_confirmar_userId_categoriaCode
                         const parts = interaction.customId.split('_');
@@ -191,6 +272,18 @@ class PromoPingBot {
                         await this.handleChamarModerador(interaction);
                     } else if (interaction.customId === 'aceitar_regras_promoping') {
                         await this.handleAceitarRegras(interaction);
+                    } else if (interaction.customId === 'abrir_formulario_bug') {
+                        await this.handleReportarBugButton(interaction);
+                    } else if (interaction.customId === 'abrir_formulario_sugestao') {
+                        await this.handleSugerirButton(interaction);
+                    }
+                }
+                // Lidar com modais
+                else if (interaction.isModalSubmit()) {
+                    if (interaction.customId === 'formulario_reportar_bug') {
+                        await this.handleReportarBugModal(interaction);
+                    } else if (interaction.customId === 'formulario_sugerir') {
+                        await this.handleSugerirModal(interaction);
                     }
                 }
             } catch (error) {
@@ -293,6 +386,476 @@ class PromoPingBot {
                     content: 'Ocorreu um erro ao processar sua solicitação.', 
                     ephemeral: true 
                 });
+            }
+        }
+    }
+
+    async handleReviewButton(interaction) {
+        try {
+            const userId = interaction.user.id;
+
+            // Criar embed inicial (mesmo do comando review)
+            const initialEmbed = new EmbedBuilder()
+                .setTitle('Sistema de Avaliações')
+                .setDescription('Escolha o que deseja avaliar:')
+                .setColor(0xffa500)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing - Avaliações' });
+
+            // Criar menu de seleção para escolher o que avaliar
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId(`review_tipo_${userId}`)
+                .setPlaceholder('Selecione o que deseja avaliar...')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Site')
+                        .setDescription('Avaliar o site PromoPing')
+                        .setValue(`site_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Bot')
+                        .setDescription('Avaliar o bot Discord')
+                        .setValue(`bot_${userId}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('Suporte')
+                        .setDescription('Avaliar o atendimento de suporte')
+                        .setValue(`suporte_${userId}`)
+                );
+
+            const row = new ActionRowBuilder()
+                .addComponents(selectMenu);
+
+            // Responder à interação
+            await interaction.reply({
+                embeds: [initialEmbed],
+                components: [row],
+                ephemeral: true
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar botão de review:', error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar sua solicitação.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleReviewTypeSelection(interaction) {
+        try {
+            const userId = interaction.user.id;
+            const selectedValue = interaction.values[0];
+            const parts = selectedValue.split('_');
+            const tipo = parts[0]; // site, bot, ou suporte
+            
+            // Verificar se é o usuário correto
+            if (userId !== parts[1]) {
+                if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ 
+                        content: 'Esta interação não é para você!', 
+                        ephemeral: true 
+                    }).catch(() => {});
+                }
+                return;
+            }
+            
+            const tipoNomes = {
+                'site': 'Site',
+                'bot': 'Bot',
+                'suporte': 'Suporte'
+            };
+
+            // Perguntar se quer ser anónimo
+            const anonimoEmbed = new EmbedBuilder()
+                .setTitle('Anonimato')
+                .setDescription(`Você está avaliando: **${tipoNomes[tipo]}**\n\nDeseja que sua avaliação seja anónima?`)
+                .setColor(0x5865F2)
+                .setTimestamp();
+
+            const anonimoRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`review_anonimo_sim_${tipo}_${userId}`)
+                        .setLabel('Sim, Anónimo')
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId(`review_anonimo_nao_${tipo}_${userId}`)
+                        .setLabel('Não, Mostrar Nome')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            // Responder à interação primeiro para evitar expiração
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    embeds: [anonimoEmbed],
+                    components: [anonimoRow],
+                    ephemeral: true
+                }).catch(() => {});
+            } else {
+                await interaction.update({
+                    embeds: [anonimoEmbed],
+                    components: [anonimoRow]
+                }).catch(async (err) => {
+                    // Se update falhar, tentar reply
+                    if (err.code === 10062 || err.code === 40060) {
+                        try {
+                            await interaction.reply({
+                                embeds: [anonimoEmbed],
+                                components: [anonimoRow],
+                                ephemeral: true
+                            }).catch(() => {});
+                        } catch {}
+                    }
+                });
+            }
+
+            // Configurar collector para escolha de anonimato
+            // Nota: O collector deve ser criado no canal, mas a interação do botão precisa ser respondida imediatamente
+            const anonimoFilter = (btnInteraction) => {
+                return btnInteraction.user.id === userId && 
+                       (btnInteraction.customId.startsWith(`review_anonimo_sim_${tipo}_${userId}`) ||
+                        btnInteraction.customId.startsWith(`review_anonimo_nao_${tipo}_${userId}`));
+            };
+
+            const anonimoCollector = interaction.channel.createMessageComponentCollector({
+                filter: anonimoFilter,
+                time: 60000,
+                max: 1
+            });
+
+            anonimoCollector.on('collect', async (btnInteraction) => {
+                try {
+                    // Deferir a interação primeiro para evitar expiração
+                    if (!btnInteraction.replied && !btnInteraction.deferred) {
+                        await btnInteraction.deferUpdate().catch(() => {});
+                    }
+                    
+                    const isAnonimo = btnInteraction.customId.includes('anonimo_sim');
+                    
+                    // Continuar fluxo usando a lógica do comando review
+                    await this.handleReviewAnonimoChoice(btnInteraction, tipo, tipoNomes[tipo], isAnonimo);
+
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao processar escolha de anonimato:', error);
+                    // Verificar se já foi respondido antes de tentar responder
+                    if (!btnInteraction.replied && !btnInteraction.deferred) {
+                        await btnInteraction.reply({ 
+                            content: 'Erro ao processar sua escolha. Tente novamente.', 
+                            ephemeral: true 
+                        }).catch(() => {});
+                    } else if (btnInteraction.deferred) {
+                        await btnInteraction.followUp({ 
+                            content: 'Erro ao processar sua escolha. Tente novamente.', 
+                            ephemeral: true 
+                        }).catch(() => {});
+                    }
+                }
+            });
+
+            anonimoCollector.on('end', (collected) => {
+                if (collected.size === 0) {
+                    const timeoutEmbed = new EmbedBuilder()
+                        .setTitle('Tempo Esgotado')
+                        .setDescription('Você não escolheu se deseja ser anónimo a tempo. Use `!review` novamente para começar.')
+                        .setColor(0xff0000)
+                        .setTimestamp();
+                    
+                    interaction.channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
+                }
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar seleção de tipo de review:', error);
+            // Verificar se já foi respondido antes de tentar responder
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Erro ao processar sua seleção. Tente novamente.', 
+                    ephemeral: true 
+                }).catch(() => {});
+            }
+        }
+    }
+
+    async handleReviewAnonimoChoice(interaction, tipo, tipoNome, isAnonimo) {
+        try {
+            const userId = interaction.user.id;
+            const userName = interaction.user.username;
+            const userAvatar = interaction.user.displayAvatarURL({ dynamic: true });
+
+            // Perguntar pela avaliação e rating
+            const avaliacaoEmbed = new EmbedBuilder()
+                .setTitle('Avaliação')
+                .setDescription(
+                    `**Avaliando:** ${tipoNome}\n**Anónimo:** ${isAnonimo ? 'Sim' : 'Não'}\n\n` +
+                    `**Por favor, envie sua avaliação:**\n• Use o comando \`!review-texto <sua avaliação>\`\n` +
+                    `• Ou responda a esta mensagem com sua avaliação\n\n` +
+                    `**Exemplo:** \`!review-texto Excelente serviço! Muito útil.\``
+                )
+                .addFields({
+                    name: 'Dica',
+                    value: 'Você também pode incluir uma nota de 1 a 5 estrelas usando: `!review-texto 5 Estrelas Excelente!`',
+                    inline: false
+                })
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            // Responder à interação primeiro para evitar expiração
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    embeds: [avaliacaoEmbed],
+                    components: [],
+                    ephemeral: true
+                }).catch(() => {});
+            } else {
+                await interaction.update({
+                    embeds: [avaliacaoEmbed],
+                    components: []
+                }).catch(async (err) => {
+                    // Se update falhar, tentar reply
+                    if (err.code === 10062 || err.code === 40060) {
+                        try {
+                            await interaction.reply({
+                                embeds: [avaliacaoEmbed],
+                                components: [],
+                                ephemeral: true
+                            }).catch(() => {});
+                        } catch {}
+                    }
+                });
+            }
+
+            // Aguardar resposta do utilizador
+            const textoFilter = (msg) => {
+                if (msg.author.id !== userId) return false;
+                
+                // Verificar se é comando review-texto
+                if (msg.content.startsWith('!review-texto ')) return true;
+                
+                // Verificar se é resposta à mensagem
+                if (msg.reference) {
+                    const referencedMsgId = msg.reference.messageId;
+                    if (referencedMsgId === interaction.message?.id) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            };
+
+            const textoCollector = interaction.channel.createMessageCollector({
+                filter: textoFilter,
+                time: 300000, // 5 minutos
+                max: 1
+            });
+
+            textoCollector.on('collect', async (reviewMessage) => {
+                try {
+                    // Extrair texto da avaliação
+                    let reviewText = reviewMessage.content;
+                    if (reviewText.startsWith('!review-texto ')) {
+                        reviewText = reviewText.replace('!review-texto ', '');
+                    }
+
+                    // Extrair rating (estrelas) se houver
+                    let rating = null;
+                    const starMatch = reviewText.match(/(\d+)\s*[⭐🌟]/);
+                    if (starMatch) {
+                        rating = parseInt(starMatch[1]);
+                        rating = Math.max(1, Math.min(5, rating)); // Limitar entre 1-5
+                        reviewText = reviewText.replace(/(\d+)\s*[⭐🌟]/, '').trim();
+                    }
+
+                    // Criar embed final da review
+                    const reviewEmbed = new EmbedBuilder()
+                        .setTitle(`Avaliação - ${tipoNome}`)
+                        .setDescription(reviewText || '*Sem texto*')
+                        .setColor(rating ? (rating >= 4 ? 0x00ff00 : rating >= 3 ? 0xffa500 : 0xff0000) : 0x5865F2)
+                        .setTimestamp()
+                        .setFooter({ text: 'PromoPing - Avaliações' });
+
+                    if (rating) {
+                        const stars = '*'.repeat(rating) + '-'.repeat(5 - rating);
+                        reviewEmbed.addFields({
+                            name: 'Avaliação',
+                            value: `${stars} (${rating}/5)`,
+                            inline: false
+                        });
+                    }
+
+                    if (isAnonimo) {
+                        reviewEmbed.setAuthor({ 
+                            name: 'Avaliação Anónima'
+                        });
+                    } else {
+                        reviewEmbed.setAuthor({
+                            name: userName,
+                            iconURL: userAvatar
+                        });
+                    }
+
+                    // Encontrar canal de reviews
+                    const reviewsChannelId = process.env.DISCORD_REVIEWS_CHANNEL_ID || null;
+                    let reviewsChannel = null;
+
+                    if (reviewsChannelId) {
+                        reviewsChannel = await this.client.channels.fetch(reviewsChannelId).catch(() => null);
+                    }
+
+                    // Se não encontrar pelo ID, procurar por nome
+                    if (!reviewsChannel) {
+                        reviewsChannel = interaction.guild.channels.cache.find(
+                            channel => channel.name === 'reviews' && channel.type === 0
+                        );
+                    }
+
+                    // Salvar avaliação no banco de dados
+                    let savedReviewId = null;
+                    let discordMessageId = null;
+                    let discordChannelId = null;
+
+                    // Flag para evitar inserção duplicada (por usuário e tipo)
+                    if (!this._savingReviews) {
+                        this._savingReviews = new Set();
+                    }
+                    const reviewKey = `${userId}_${tipo}`;
+                    if (this._savingReviews.has(reviewKey)) {
+                        return;
+                    }
+                    this._savingReviews.add(reviewKey);
+
+                    try {
+                        const connection = await mysql.createConnection(this.dbConfig);
+                        
+                        // Buscar ReferenciaID do usuário pelo discord_id
+                        const [users] = await connection.execute(
+                            'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                            [userId]
+                        );
+
+                        if (users.length === 0) {
+                            await connection.end();
+                            this._savingReviews.delete(reviewKey);
+                            await reviewMessage.reply('❌ Você precisa estar registado no sistema. Use `/registar` primeiro.');
+                            return;
+                        }
+
+                        const referenciaID = users[0].ReferenciaID;
+
+                        // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
+                        const [existingReviews] = await connection.execute(
+                            'SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
+                            [referenciaID, tipo]
+                        );
+
+                        if (existingReviews.length > 0) {
+                            await connection.end();
+                            this._savingReviews.delete(reviewKey);
+                            await reviewMessage.reply('⏱️ Você já enviou uma avaliação recentemente. Aguarde alguns minutos.');
+                            return;
+                        }
+
+                        // Enviar mensagem para o canal de reviews primeiro para obter o message ID
+                        let sentMessage = null;
+                        if (reviewsChannel) {
+                            sentMessage = await reviewsChannel.send({ embeds: [reviewEmbed] });
+                            discordMessageId = sentMessage.id;
+                            discordChannelId = reviewsChannel.id;
+                        } else {
+                            sentMessage = await interaction.channel.send({ embeds: [reviewEmbed] });
+                            discordMessageId = sentMessage.id;
+                            discordChannelId = interaction.channel.id;
+                        }
+
+                        // Salvar no banco de dados usando apenas as colunas existentes
+                        const [result] = await connection.execute(`
+                            INSERT INTO reviews (
+                                ReferenciaID, 
+                                Tipo, 
+                                Texto, 
+                                Rating, 
+                                IsAnonimo
+                            ) VALUES (?, ?, ?, ?, ?)
+                        `, [
+                            referenciaID,
+                            tipo,
+                            reviewText || '',
+                            rating,
+                            isAnonimo ? 1 : 0
+                        ]);
+
+                        savedReviewId = result.insertId;
+                        await connection.end();
+                        this._savingReviews.delete(reviewKey);
+                        console.log(`[DISCORD] Avaliação salva no banco de dados (ID: ${savedReviewId})`);
+                    } catch (dbError) {
+                        this._savingReviews.delete(reviewKey);
+                        console.error('[DISCORD] Erro ao salvar avaliação no banco:', dbError);
+                        // Continuar mesmo se falhar ao salvar no banco
+                    }
+                    
+                    // Deletar mensagem do utilizador
+                    try {
+                        await reviewMessage.delete().catch(() => {});
+                    } catch {}
+                    
+                    // Enviar confirmação via DM (mensagem privada) para o utilizador
+                    const confirmEmbed = new EmbedBuilder()
+                        .setTitle('Avaliação Enviada!')
+                        .setDescription(reviewsChannel ? `Sua avaliação foi enviada para ${reviewsChannel}` : 'Sua avaliação foi enviada!')
+                        .setColor(0x00ff00)
+                        .setTimestamp();
+                    
+                    try {
+                        await interaction.user.send({ embeds: [confirmEmbed] });
+                    } catch (dmError) {
+                        // Se não conseguir enviar DM, enviar no canal mas deletar após alguns segundos
+                        const confirmMsg = await interaction.channel.send({ 
+                            content: `${interaction.user} - Sua avaliação foi enviada!`,
+                            embeds: [confirmEmbed]
+                        }).catch(() => null);
+                        
+                        // Deletar mensagem de confirmação após 5 segundos
+                        if (confirmMsg) {
+                            setTimeout(async () => {
+                                try {
+                                    await confirmMsg.delete().catch(() => {});
+                                } catch {}
+                            }, 5000);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao processar avaliação:', error);
+                    await reviewMessage.reply('Erro ao processar sua avaliação. Tente novamente.');
+                }
+            });
+
+            textoCollector.on('end', (collected) => {
+                if (collected.size === 0) {
+                    const timeoutEmbed = new EmbedBuilder()
+                        .setTitle('Tempo Esgotado')
+                        .setDescription('Você não enviou sua avaliação a tempo. Use `!review` novamente para começar.')
+                        .setColor(0xff0000)
+                        .setTimestamp();
+                    
+                    interaction.channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
+                }
+            });
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar escolha de anonimato:', error);
+            // Verificar se já foi respondido antes de tentar responder
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Erro ao processar sua escolha. Tente novamente.', 
+                    ephemeral: true 
+                }).catch(() => {});
             }
         }
     }
@@ -851,7 +1414,7 @@ class PromoPingBot {
 
             // Verificar permissões
             const isTicketOwner = userId === ticketOwnerId;
-            const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+            const isAdmin = this.isAdmin(interaction.member);
             const supportRoleId = '1442655668904398980';
             const hasSupportRole = interaction.member.roles.cache.has(supportRoleId);
 
@@ -1238,10 +1801,50 @@ class PromoPingBot {
 
     async connect() {
         try {
-            await this.client.login(process.env.DISCORD_BOT_TOKEN);
+            // Verificar se o token existe
+            if (!process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_BOT_TOKEN === 'SEU_TOKEN_AQUI') {
+                throw new Error('DISCORD_BOT_TOKEN não configurado no arquivo .env');
+            }
+
+            // Tentar conectar com timeout
+            const loginPromise = this.client.login(process.env.DISCORD_BOT_TOKEN);
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout na conexão com Discord (60s)')), 60000);
+            });
+
+            await Promise.race([loginPromise, timeoutPromise]);
+            console.log('[DISCORD] Conexão estabelecida com sucesso');
         } catch (error) {
-            console.error('[DISCORD] Falha ao conectar ao Discord:', error);
-            throw error;
+            console.error('[DISCORD] Falha ao conectar ao Discord:', error.message);
+            
+            // Tentar reconectar automaticamente
+            if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                this.reconnectAttempts++;
+                const delay = this.reconnectDelay * Math.min(this.reconnectAttempts, 5); // Max 25 segundos
+                console.log(`[DISCORD] Tentando reconectar em ${delay/1000} segundos... (tentativa ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+                
+                setTimeout(() => {
+                    this.connect().catch(err => {
+                        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                            console.error('[DISCORD] Número máximo de tentativas de reconexão atingido. Parando...');
+                            throw err;
+                        }
+                    });
+                }, delay);
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    async disconnect() {
+        try {
+            if (this.client && this.client.isReady()) {
+                this.client.destroy();
+                console.log('[DISCORD] Bot desconectado');
+            }
+        } catch (error) {
+            console.error('[DISCORD] Erro ao desconectar:', error);
         }
     }
 
@@ -1269,21 +1872,143 @@ class PromoPingBot {
         await this.checkTwitchLives();
     }
 
-    async checkTwitchLives() {
+    async startNewsMonitoring() {
         try {
-            console.log('[DISCORD] Verificando lives da Twitch...');
+            // Carregar newsService dinamicamente (ES module)
+            const newsServiceModule = await import('../services/newsService.js');
+            this.newsService = newsServiceModule.default;
+            
+            // Verificar notícias a cada 60 minutos (ou conforme configurado)
+            this.newsCheckInterval = setInterval(async () => {
+                try {
+                    await this.checkNews();
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao verificar notícias:', error);
+                }
+            }, 60 * 60 * 1000); // 60 minutos
+
+            // Verificar imediatamente ao iniciar (com delay para não sobrecarregar)
+            setTimeout(async () => {
+                await this.checkNews();
+            }, 2 * 60 * 1000); // Aguardar 2 minutos após iniciar
+        } catch (error) {
+            console.error('[DISCORD] Erro ao carregar newsService:', error);
+        }
+    }
+
+    async checkNews() {
+        if (!this.newsService) {
+            console.error('[DISCORD] newsService não carregado');
+            return;
+        }
+        try {
+            console.log('[DISCORD] Verificando notícias impactantes...');
+            
+            const news = await this.newsService.fetchNews();
+            
+            if (news.length === 0) {
+                console.log('[DISCORD] Nenhuma notícia impactante encontrada');
+                return;
+            }
+
+            // Buscar configuração do canal de notícias
             const connection = await mysql.createConnection(this.dbConfig);
-            const [channels] = await connection.execute(
-                'SELECT ChannelName, IsLive, TwitchUserId FROM twitch_channels'
+            const [configs] = await connection.execute(
+                'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
             );
 
-            if (channels.length === 0) {
-                console.log('[DISCORD] Nenhum canal Twitch configurado para monitorar');
+            if (configs.length === 0) {
+                console.log('[DISCORD] Sistema de notícias não configurado');
                 await connection.end();
                 return;
             }
 
-            console.log(`[DISCORD] Verificando ${channels.length} canal(is) da Twitch: ${channels.map(c => c.ChannelName).join(', ')}`);
+            const config = configs[0];
+            const channel = await this.client.channels.fetch(config.ChannelId).catch(() => null);
+            
+            if (!channel) {
+                console.error('[DISCORD] Canal de notícias não encontrado!');
+                await connection.end();
+                return;
+            }
+
+            // Enviar cada notícia impactante
+            for (const article of news) {
+                // Verificar se já foi enviada
+                const alreadySent = await this.newsService.isNewsAlreadySent(article.url);
+                if (alreadySent) {
+                    console.log(`[DISCORD] Notícia já enviada: ${article.title.substring(0, 50)}...`);
+                    continue;
+                }
+
+                // Enviar notícia
+                await this.sendNewsNotification(channel, article);
+                
+                // Marcar como enviada
+                await this.newsService.markNewsAsSent(article);
+                
+                // Aguardar 2 segundos entre notícias para evitar spam
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            await connection.end();
+            this.lastNewsCheck = new Date();
+            console.log(`[DISCORD] ${news.length} notícia(s) impactante(s) processada(s)`);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao verificar notícias:', error);
+        }
+    }
+
+    async sendNewsNotification(discordChannel, article) {
+        try {
+            // Determinar cor baseada no score de impacto
+            let color = 0x5865F2; // Azul padrão
+            if (article.impactScore >= 9) {
+                color = 0xff0000; // Vermelho para muito impactante
+            } else if (article.impactScore >= 8) {
+                color = 0xff9900; // Laranja para impactante
+            } else {
+                color = 0x5865F2; // Azul para moderado
+            }
+
+            const embed = new EmbedBuilder()
+                .setTitle(`📰 ${article.title}`)
+                .setDescription(article.description || 'Sem descrição disponível')
+                .addFields(
+                    { name: 'Categoria', value: article.category, inline: true },
+                    { name: 'Impacto', value: `${article.impactScore}/10`, inline: true },
+                    { name: 'Fonte', value: article.source, inline: true }
+                )
+                .setURL(article.url)
+                .setColor(color)
+                .setTimestamp(new Date(article.publishedAt))
+                .setFooter({ text: 'PromoPing - Notícias Automáticas' });
+
+            if (article.image) {
+                embed.setImage(article.image);
+            }
+
+            await discordChannel.send({ embeds: [embed] });
+            console.log(`[DISCORD] Notícia enviada: ${article.title.substring(0, 50)}...`);
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao enviar notificação de notícia:', error);
+        }
+    }
+
+    async checkTwitchLives() {
+        try {
+            const connection = await mysql.createConnection(this.dbConfig);
+            // Selecionar apenas colunas que existem (TwitchUserId pode não existir)
+            const [channels] = await connection.execute(
+                'SELECT ChannelName, IsLive FROM twitch_channels'
+            );
+
+            if (channels.length === 0) {
+                await connection.end();
+                return;
+            }
 
             const SOCIAL_FEED_CHANNEL_ID = '1442931610927366284';
             const channel = await this.client.channels.fetch(SOCIAL_FEED_CHANNEL_ID);
@@ -1323,12 +2048,40 @@ class PromoPingBot {
 
             const tokenData = await tokenResponse.json();
             const accessToken = tokenData.access_token;
-            console.log('[DISCORD] Token da Twitch obtido com sucesso');
 
             // Buscar informações dos canais (máximo 100 por requisição)
-            // Construir query string corretamente
-            const channelNames = channels.map(c => c.ChannelName);
-            const queryParams = channelNames.map(name => `user_login=${encodeURIComponent(name)}`).join('&');
+            // Extrair apenas o nome do canal (remover URLs se houver)
+            const extractChannelName = (channelName) => {
+                if (!channelName) return null;
+                
+                // Se for uma URL, extrair o nome do canal
+                const urlMatch = channelName.match(/(?:twitch\.tv\/|^)([^\/\s?]+)/i);
+                if (urlMatch) {
+                    return urlMatch[1].toLowerCase();
+                }
+                
+                // Se já for apenas o nome, retornar em lowercase
+                return channelName.toLowerCase().trim();
+            };
+            
+            const channelNames = channels
+                .map(c => extractChannelName(c.ChannelName))
+                .filter(name => name !== null && name.length > 0);
+            
+            // Se não houver canais válidos, não fazer requisição
+            if (channelNames.length === 0) {
+                console.log('[DISCORD] Nenhum nome de canal válido encontrado');
+                await connection.end();
+                return;
+            }
+            
+            // Construir query params corretamente - múltiplos user_login separados por &
+            // API Twitch aceita até 100 user_login por requisição
+            const queryParams = channelNames
+                .slice(0, 100) // Limitar a 100 canais por requisição
+                .map(name => `user_login=${encodeURIComponent(name)}`)
+                .join('&');
+            
             const streamsResponse = await fetch(
                 `https://api.twitch.tv/helix/streams?${queryParams}`,
                 {
@@ -1347,39 +2100,36 @@ class PromoPingBot {
             }
 
             const streamsData = await streamsResponse.json();
-            console.log(`[DISCORD] Resposta da API Twitch: ${streamsData.data?.length || 0} stream(s) encontrado(s)`);
             const liveChannels = new Set(streamsData.data.map(s => s.user_login.toLowerCase()));
 
             // Verificar cada canal e enviar notificação se necessário
             for (const channelData of channels) {
-                const channelName = channelData.ChannelName.toLowerCase();
+                // Extrair nome do canal (pode ser URL ou nome simples)
+                const extractedChannelName = extractChannelName(channelData.ChannelName);
+                if (!extractedChannelName) {
+                    continue;
+                }
+                
+                const channelName = extractedChannelName;
                 const isLive = liveChannels.has(channelName);
                 const wasLive = channelData.IsLive;
 
-                // Atualizar status no banco
+                // Atualizar status no banco (usar ChannelName original para WHERE)
                 await connection.execute(
                     'UPDATE twitch_channels SET IsLive = ?, LastLiveCheck = NOW() WHERE ChannelName = ?',
-                    [isLive, channelName]
+                    [isLive, channelData.ChannelName]
                 );
-
-                console.log(`[DISCORD] Canal ${channelName}: ${isLive ? 'AO VIVO' : 'Offline'} (era: ${wasLive ? 'AO VIVO' : 'Offline'})`);
 
                 // Se ficou ao vivo e não estava antes, enviar notificação
                 if (isLive && !wasLive) {
-                    console.log(`[DISCORD] Canal ${channelName} ficou ao vivo! Enviando notificação...`);
                     // Sempre notificar quando canal fica ao vivo (se estava offline antes)
                     // O controle de spam é feito verificando wasLive no banco
                     const streamInfo = streamsData.data.find(s => s.user_login.toLowerCase() === channelName);
                     await this.sendTwitchLiveNotification(channel, channelName, streamInfo);
                     this.twitchLiveStatus.set(channelName, { isLive: true, lastNotification: new Date() });
-                    console.log(`[DISCORD] Notificação enviada para ${channelName}`);
                 } else if (!isLive && wasLive) {
                     // Canal saiu do ar - limpar status completamente para permitir nova notificação quando voltar
-                    console.log(`[DISCORD] Canal ${channelName} saiu do ar - status limpo`);
                     this.twitchLiveStatus.delete(channelName);
-                } else if (isLive && wasLive) {
-                    // Canal continua ao vivo - apenas atualizar timestamp da última verificação
-                    console.log(`[DISCORD] Canal ${channelName} continua ao vivo`);
                 }
             }
 
@@ -1418,10 +2168,10 @@ class PromoPingBot {
         try {
             const connection = await mysql.createConnection(this.dbConfig);
             const [rows] = await connection.execute(`
-                SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.UserId,
+                SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.ReferenciaID,
                        u.discord_id as DiscordId, hp.Preco as PrecoAnterior, hp.DataRegisto as UpdatedAt
                 FROM produtos p
-                JOIN utilizadores u ON p.UserId = u.Id
+                JOIN utilizadores u ON p.ReferenciaID = u.ReferenciaID
                 LEFT JOIN historicoprecos hp ON p.Id = hp.ProdutoId
                 WHERE hp.DataRegisto > ?
                 AND u.discord_id IS NOT NULL AND u.discord_id != ''
@@ -1596,7 +2346,7 @@ class PromoPingBot {
             
             // Desativar notificações para este produto específico
             await connection.execute(
-                'UPDATE produtos SET DeletedAt = ? WHERE Id = ? AND UserId = (SELECT Id FROM utilizadores WHERE discord_id = ?)',
+                'UPDATE produtos SET DeletedAt = ? WHERE Id = ? AND ReferenciaID = (SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?)',
                 [new Date(), product.Id, user.id]
             );
             
@@ -1802,7 +2552,10 @@ class PromoPingBot {
                     .addStringOption(option =>
                         option.setName('mensagem')
                             .setDescription('Descrição do seu problema ou dúvida')
-                            .setRequired(false))
+                            .setRequired(false)),
+                new SlashCommandBuilder()
+                    .setName('review')
+                    .setDescription('Deixa uma avaliação sobre o site, bot ou suporte')
             ].map(command => command.toJSON());
 
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
@@ -1930,7 +2683,8 @@ class PromoPingBot {
                 'unlock': 'unlock',
                 'counting': 'counting',
                 'clear': 'clear',
-                'suporte': 'suporte'
+                'suporte': 'suporte',
+                'review': 'review'
             };
 
             const comandoNome = comandoMap[commandName];
@@ -2130,6 +2884,381 @@ class PromoPingBot {
         } catch (error) {
             console.error('[DISCORD] Erro ao processar counting:', error);
             return false;
+        }
+    }
+
+    async handleReportarBugButton(interaction) {
+        try {
+            // Criar modal para reportar bug
+            const modal = new ModalBuilder()
+                .setCustomId('formulario_reportar_bug')
+                .setTitle('Reportar Bug');
+
+            // Campo de título
+            const tituloInput = new TextInputBuilder()
+                .setCustomId('bug_titulo')
+                .setLabel('Título do Bug')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Ex: Botão de login não funciona')
+                .setRequired(true)
+                .setMaxLength(200)
+                .setMinLength(3);
+
+            // Campo de descrição
+            const descricaoInput = new TextInputBuilder()
+                .setCustomId('bug_descricao')
+                .setLabel('Descrição Detalhada')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Descreva o bug em detalhes: o que aconteceu, quando aconteceu, passos para reproduzir, etc.')
+                .setRequired(true)
+                .setMaxLength(2000)
+                .setMinLength(10);
+
+            // Adicionar campos ao modal
+            const tituloRow = new ActionRowBuilder().addComponents(tituloInput);
+            const descricaoRow = new ActionRowBuilder().addComponents(descricaoInput);
+
+            modal.addComponents(tituloRow, descricaoRow);
+
+            await interaction.showModal(modal);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao mostrar modal de reportar bug:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao abrir o formulário. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleReportarBugModal(interaction) {
+        try {
+            await interaction.deferReply({ ephemeral: true });
+
+            const titulo = interaction.fields.getTextInputValue('bug_titulo');
+            const descricao = interaction.fields.getTextInputValue('bug_descricao');
+
+            // Validar
+            if (!titulo || titulo.length < 3) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** O título deve ter pelo menos 3 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            if (!descricao || descricao.length < 10) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** A descrição deve ter pelo menos 10 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            const connection = await mysql.createConnection(this.dbConfig);
+
+            try {
+                // Verificar se a tabela existe, se não, criar
+                await connection.execute(`
+                    CREATE TABLE IF NOT EXISTS bugsprojetos (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Titulo VARCHAR(200) NOT NULL,
+                        Descricao TEXT,
+                        Tipo ENUM('bug', 'projeto', 'melhoria') DEFAULT 'bug',
+                        Prioridade ENUM('low', 'medium', 'high', 'critical') DEFAULT 'medium',
+                        Status ENUM('open', 'in-progress', 'resolved', 'closed') DEFAULT 'open',
+                        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_status (Status),
+                        INDEX idx_tipo (Tipo),
+                        INDEX idx_data_criacao (DataCriacao)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                `);
+
+                // Buscar informações do usuário (opcional - para rastreamento)
+                let userInfo = null;
+                try {
+                    const [users] = await connection.execute(
+                        'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
+                        [interaction.user.id]
+                    );
+                    if (users.length > 0) {
+                        userInfo = users[0];
+                    }
+                } catch (userError) {
+                    console.log('[REPORTAR] Usuário não encontrado ou erro ao buscar:', userError.message);
+                }
+
+                // Adicionar informações do usuário à descrição se disponível
+                let descricaoCompleta = descricao;
+                if (userInfo) {
+                    descricaoCompleta += `\n\n---\n**Reportado por:** ${userInfo.Nome} (${userInfo.ReferenciaID})\n**Discord:** ${interaction.user.tag} (${interaction.user.id})`;
+                } else {
+                    descricaoCompleta += `\n\n---\n**Reportado por:** ${interaction.user.tag} (${interaction.user.id})\n**Discord ID:** ${interaction.user.id}`;
+                }
+
+                // Inserir bug na base de dados
+                const [result] = await connection.execute(
+                    `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status) 
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        titulo,
+                        descricaoCompleta,
+                        'bug', // Sempre bug quando reportado pelo Discord
+                        'medium', // Prioridade média por padrão
+                        'open' // Sempre aberto quando criado
+                    ]
+                );
+
+                await connection.end();
+
+                // Criar embed de confirmação
+                const embed = new EmbedBuilder()
+                    .setTitle('✅ Bug Reportado com Sucesso!')
+                    .setDescription(
+                        `Seu bug foi reportado e será analisado pela equipe.\n\n` +
+                        `**Título:** ${titulo}\n` +
+                        `**ID do Bug:** #${result.insertId}\n\n` +
+                        `O bug aparecerá no painel administrativo e será tratado o mais breve possível.`
+                    )
+                    .setColor(0x4CAF50)
+                    .setTimestamp()
+                    .setFooter({ 
+                        text: `©PromoPing • Bug #${result.insertId}`,
+                        iconURL: interaction.user.displayAvatarURL()
+                    });
+
+                await interaction.followUp({ embeds: [embed], ephemeral: true });
+
+                // Log para console
+                console.log(`[REPORTAR] Bug reportado por ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${result.insertId})`);
+
+            } catch (dbError) {
+                await connection.end();
+                console.error('[REPORTAR] Erro ao inserir bug na base de dados:', dbError);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Erro ao Reportar Bug')
+                    .setDescription(
+                        'Ocorreu um erro ao reportar o bug. Por favor, tente novamente mais tarde ou entre em contato com o suporte.'
+                    )
+                    .setColor(0xFF0000)
+                    .setTimestamp();
+
+                return await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+            }
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar modal de reportar bug:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar seu reporte. Tente novamente.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar seu reporte. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleSugerirButton(interaction) {
+        try {
+            // Criar modal para sugerir funcionalidade
+            const modal = new ModalBuilder()
+                .setCustomId('formulario_sugerir')
+                .setTitle('Sugerir Funcionalidade');
+
+            // Campo de título
+            const tituloInput = new TextInputBuilder()
+                .setCustomId('sugestao_titulo')
+                .setLabel('Título da Sugestão')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Ex: Adicionar notificações por email')
+                .setRequired(true)
+                .setMaxLength(200)
+                .setMinLength(3);
+
+            // Campo de descrição
+            const descricaoInput = new TextInputBuilder()
+                .setCustomId('sugestao_descricao')
+                .setLabel('Descrição Detalhada')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Descreva sua sugestão em detalhes: o que você gostaria de ver, como funcionaria, etc.')
+                .setRequired(true)
+                .setMaxLength(2000)
+                .setMinLength(10);
+
+            // Campo de plataforma
+            const plataformaInput = new TextInputBuilder()
+                .setCustomId('sugestao_plataforma')
+                .setLabel('Plataforma (site/bot/ambos)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('site, bot ou ambos')
+                .setRequired(true)
+                .setMaxLength(10)
+                .setMinLength(3);
+
+            // Adicionar campos ao modal
+            const tituloRow = new ActionRowBuilder().addComponents(tituloInput);
+            const descricaoRow = new ActionRowBuilder().addComponents(descricaoInput);
+            const plataformaRow = new ActionRowBuilder().addComponents(plataformaInput);
+
+            modal.addComponents(tituloRow, descricaoRow, plataformaRow);
+
+            await interaction.showModal(modal);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao mostrar modal de sugestão:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao abrir o formulário. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
+        }
+    }
+
+    async handleSugerirModal(interaction) {
+        try {
+            await interaction.deferReply({ ephemeral: true });
+
+            const titulo = interaction.fields.getTextInputValue('sugestao_titulo');
+            const descricao = interaction.fields.getTextInputValue('sugestao_descricao');
+            let plataforma = interaction.fields.getTextInputValue('sugestao_plataforma').toLowerCase().trim();
+
+            // Validar
+            if (!titulo || titulo.length < 3) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** O título deve ter pelo menos 3 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            if (!descricao || descricao.length < 10) {
+                return await interaction.followUp({ 
+                    content: '❌ **Erro:** A descrição deve ter pelo menos 10 caracteres.', 
+                    ephemeral: true 
+                });
+            }
+
+            // Normalizar plataforma
+            if (plataforma === 'site' || plataforma === 'web' || plataforma === 'sítio') {
+                plataforma = 'site';
+            } else if (plataforma === 'bot' || plataforma === 'discord') {
+                plataforma = 'bot';
+            } else {
+                plataforma = 'ambos';
+            }
+
+            const connection = await mysql.createConnection(this.dbConfig);
+
+            try {
+                // Verificar se a tabela existe, se não, criar
+                await connection.execute(`
+                    CREATE TABLE IF NOT EXISTS sugestoes (
+                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Titulo VARCHAR(200) NOT NULL,
+                        Descricao TEXT,
+                        Plataforma ENUM('site', 'bot', 'ambos') DEFAULT 'ambos',
+                        Prioridade ENUM('low', 'medium', 'high') DEFAULT 'medium',
+                        Status ENUM('pendente', 'em-analise', 'aprovada', 'em-desenvolvimento', 'implementada', 'rejeitada') DEFAULT 'pendente',
+                        Votos INT DEFAULT 0,
+                        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_status (Status),
+                        INDEX idx_plataforma (Plataforma),
+                        INDEX idx_data_criacao (DataCriacao)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                `);
+
+                // Buscar informações do usuário (opcional - para rastreamento)
+                let userInfo = null;
+                try {
+                    const [users] = await connection.execute(
+                        'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
+                        [interaction.user.id]
+                    );
+                    if (users.length > 0) {
+                        userInfo = users[0];
+                    }
+                } catch (userError) {
+                    console.log('[SUGERIR] Usuário não encontrado ou erro ao buscar:', userError.message);
+                }
+
+                // Adicionar informações do usuário à descrição se disponível
+                let descricaoCompleta = descricao;
+                if (userInfo) {
+                    descricaoCompleta += `\n\n---\n**Sugerido por:** ${userInfo.Nome} (${userInfo.ReferenciaID})\n**Discord:** ${interaction.user.tag} (${interaction.user.id})`;
+                } else {
+                    descricaoCompleta += `\n\n---\n**Sugerido por:** ${interaction.user.tag} (${interaction.user.id})\n**Discord ID:** ${interaction.user.id}`;
+                }
+
+                // Inserir sugestão na base de dados
+                const [result] = await connection.execute(
+                    `INSERT INTO sugestoes (Titulo, Descricao, Plataforma, Prioridade, Status) 
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        titulo,
+                        descricaoCompleta,
+                        plataforma,
+                        'medium', // Prioridade média por padrão
+                        'pendente' // Sempre pendente quando criado
+                    ]
+                );
+
+                await connection.end();
+
+                // Criar embed de confirmação
+                const embed = new EmbedBuilder()
+                    .setTitle('✅ Sugestão Enviada com Sucesso!')
+                    .setDescription(
+                        `Sua sugestão foi enviada e será analisada pela equipe.\n\n` +
+                        `**Título:** ${titulo}\n` +
+                        `**Plataforma:** ${plataforma === 'site' ? 'Site' : plataforma === 'bot' ? 'Bot Discord' : 'Ambos'}\n` +
+                        `**ID da Sugestão:** #${result.insertId}\n\n` +
+                        `A sugestão aparecerá no painel administrativo e será avaliada o mais breve possível.`
+                    )
+                    .setColor(0x3B82F6)
+                    .setTimestamp()
+                    .setFooter({ 
+                        text: `©PromoPing • Sugestão #${result.insertId}`,
+                        iconURL: interaction.user.displayAvatarURL()
+                    });
+
+                await interaction.followUp({ embeds: [embed], ephemeral: true });
+
+                // Log para console
+                console.log(`[SUGERIR] Sugestão enviada por ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${result.insertId})`);
+
+            } catch (dbError) {
+                await connection.end();
+                console.error('[SUGERIR] Erro ao inserir sugestão na base de dados:', dbError);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Erro ao Enviar Sugestão')
+                    .setDescription(
+                        'Ocorreu um erro ao enviar a sugestão. Por favor, tente novamente mais tarde ou entre em contato com o suporte.'
+                    )
+                    .setColor(0xFF0000)
+                    .setTimestamp();
+
+                return await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+            }
+
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar modal de sugestão:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ 
+                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
+                    ephemeral: true 
+                });
+            } else {
+                await interaction.followUp({ 
+                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
+                    ephemeral: true 
+                });
+            }
         }
     }
 

@@ -9,6 +9,84 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const router = express.Router();
 
+// ================== REVIEWS PÚBLICAS ==================
+/**
+ * GET /api/status/reviews/public
+ * Busca reviews públicas para exibir na página inicial
+ * Query params: limit (padrão: 4), tipo (opcional: 'site', 'bot', 'suporte'), minRating (opcional: 1-5)
+ */
+router.get("/api/status/reviews/public", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 4;
+    const tipo = req.query.tipo; // 'site', 'bot', 'suporte'
+    const minRating = parseInt(req.query.minRating); // Opcional: filtrar por rating mínimo
+
+    let query = `
+      SELECT 
+        r.Id,
+        r.ReferenciaID,
+        r.Tipo as tipo,
+        r.Texto as texto,
+        r.Rating as rating,
+        CASE WHEN r.IsAnonimo = 1 THEN 1 ELSE 0 END as is_anonimo,
+        r.CreatedAt as created_at,
+        u.Nome as user_nome,
+        u.Email as user_email
+      FROM reviews r
+      LEFT JOIN utilizadores u ON r.ReferenciaID = u.ReferenciaID
+      WHERE 1=1
+    `;
+    const params = [];
+
+    // Filtrar por rating mínimo apenas se especificado
+    if (minRating && !isNaN(minRating)) {
+      query += " AND (r.Rating >= ? OR r.Rating IS NULL)";
+      params.push(minRating);
+    }
+
+    if (tipo) {
+      query += " AND r.Tipo = ?";
+      params.push(tipo);
+    }
+
+    // Ordenar: primeiro por rating (mais altos primeiro), depois por data (mais recentes primeiro)
+    // Reviews sem rating vão para o final
+    query += " ORDER BY CASE WHEN r.Rating IS NULL THEN 1 ELSE 0 END, r.Rating DESC, r.CreatedAt DESC LIMIT ?";
+    params.push(limit);
+
+    const [reviews] = await db.query(query, params);
+    
+    console.log(`[STATUS] Reviews encontradas: ${reviews.length}`);
+
+    // Formatar reviews para o frontend
+    const formattedReviews = reviews.map(review => ({
+      id: review.Id,
+      text: review.texto,
+      rating: review.rating,
+      author: {
+        name: review.is_anonimo ? 'Anónimo' : (review.user_nome || 'Utilizador'),
+        email: review.is_anonimo ? null : review.user_email,
+        isAnonymous: review.is_anonimo === 1
+      },
+      type: review.tipo,
+      createdAt: review.created_at
+    }));
+
+    res.json({
+      status: "ok",
+      reviews: formattedReviews,
+      count: formattedReviews.length
+    });
+  } catch (err) {
+    console.error("[STATUS] Erro ao buscar reviews públicas:", err);
+    res.status(500).json({
+      status: "error",
+      error: "Erro ao buscar avaliações",
+      message: err.message
+    });
+  }
+});
+
 // ================== FUNÇÃO: ATUALIZAR MÉTRICAS AUTOMATICAMENTE ==================
 async function atualizarMetricasAutomaticamente() {
   try {
@@ -1106,7 +1184,7 @@ router.get("/api/stats/users", async (req, res) => {
     
     // Contar novos utilizadores hoje
     const [utilizadoresNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM utilizadores WHERE DATE(DataCriacao) = CURDATE()"
+      "SELECT COUNT(*) as total FROM utilizadores WHERE DATE(DataRegisto) = CURDATE()"
     );
 
     res.json({
@@ -1142,7 +1220,7 @@ router.get("/api/stats/products", async (req, res) => {
     
     // Contar produtos adicionados hoje
     const [produtosNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM produtos WHERE DATE(DataCriacao) = CURDATE()"
+      "SELECT COUNT(*) as total FROM produtos WHERE DATE(CreatedAt) = CURDATE()"
     );
 
     res.json({

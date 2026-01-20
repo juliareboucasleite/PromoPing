@@ -21,7 +21,7 @@ module.exports = {
 
             // Verificar se o usuário está registado
             const [users] = await connection.execute(
-                'SELECT Id, Email, Nome FROM utilizadores WHERE discord_id = ?',
+                'SELECT ReferenciaID, Email, Nome FROM utilizadores WHERE discord_id = ?',
                 [message.author.id]
             );
 
@@ -34,8 +34,8 @@ module.exports = {
 
             // Desvincular Discord ID
             await connection.execute(
-                'UPDATE utilizadores SET discord_id = NULL, ultimo_login = ? WHERE Id = ?',
-                [new Date(), user.Id]
+                'UPDATE utilizadores SET discord_id = NULL, UltimoLogin = ? WHERE ReferenciaID = ?',
+                [new Date(), user.ReferenciaID]
             );
 
             await connection.end();

@@ -4,20 +4,18 @@ import { formatDate } from "../utils/format.js";
 import { exec } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { promisify } from "util";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
 
+const execAsync = promisify(exec);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// import { atualizarPrecos } from "../services/atualizarPrecos.js"; // Removido - sem atualização automática
-// import { enviarWhatsApp } from "./auth-whatsApp.js"; // WhatsApp desabilitado
-
 const router = express.Router();
 
-// Função auxiliar para salvar preço no histórico - REMOVIDA
-// Não há mais atualização automática de preços
-
+//! Não há mais atualização automática de preços
 //  Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
     try {
@@ -44,8 +42,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
-            "SELECT PlanoAtualId, LimiteProdutos FROM ConfigUtilizador WHERE UserId=?",
-            [req.user.id]
+            "SELECT PlanoAtualId, LimiteProdutos FROM configutilizador WHERE ReferenciaID=?",
+            [req.user.ReferenciaID]
         );
 
         let limite = 5; // default do plano free
@@ -55,8 +53,8 @@ router.post("/", verifyToken, async (req, res) => {
 
         // contar quantos produtos já cadastrados
         const [countRows] = await pool.query(
-            "SELECT COUNT(*) as total FROM Produtos WHERE UserId=?",
-            [req.user.id]
+            "SELECT COUNT(*) as total FROM produtos WHERE ReferenciaID=?",
+            [req.user.ReferenciaID]
         );
         const total = countRows[0].total;
 
@@ -72,11 +70,44 @@ router.post("/", verifyToken, async (req, res) => {
         const store = detectStore(link);
         console.log(" Loja detectada:", store);
 
+        // Buscar ou criar loja na tabela lojas para obter LojaId
+        let lojaId = null;
+        if (store && store.domain) {
+            try {
+                // Buscar loja pelo domínio (usando nomes corretos das colunas: PascalCase)
+                const [lojaRows] = await pool.query(
+                    "SELECT Id FROM lojas WHERE Dominio = ? LIMIT 1",
+                    [store.domain]
+                );
+                
+                if (lojaRows.length > 0) {
+                    lojaId = lojaRows[0].Id;
+                    console.log(" Loja encontrada na base de dados, ID:", lojaId);
+                } else {
+                    // Se não encontrar, tentar buscar pelo nome
+                    const [lojaNomeRows] = await pool.query(
+                        "SELECT Id FROM lojas WHERE Nome = ? LIMIT 1",
+                        [store.name]
+                    );
+                    
+                    if (lojaNomeRows.length > 0) {
+                        lojaId = lojaNomeRows[0].Id;
+                        console.log(" Loja encontrada pelo nome, ID:", lojaId);
+                    } else {
+                        console.log(" Loja não encontrada na base de dados, usando NULL");
+                    }
+                }
+            } catch (lojaError) {
+                console.error(" Erro ao buscar loja:", lojaError.message);
+                // Continuar com lojaId = null se houver erro
+            }
+        }
+
         // inserir produto com loja detectada (apenas data é opcional)
         console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
-            "INSERT INTO Produtos (UserId, Nome, Link, DataLimite, Loja, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-            [req.user.id, nome, link, data || null, store.name, Number(precoAlvo)]
+            "INSERT INTO produtos (ReferenciaID, Nome, Link, DataLimite, LojaId, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+            [req.user.ReferenciaID, nome, link, data || null, lojaId, Number(precoAlvo)]
         );
         const productId = result.insertId;
         console.log(" Produto inserido com ID:", productId);
@@ -100,6 +131,10 @@ router.post("/", verifyToken, async (req, res) => {
             if (stderr) console.error(" [SCRAPER] Stderr:", stderr);
         });
 
+        // Executar comparação de produtos em background (opcional, não bloqueia resposta)
+        // Pode ser acionado posteriormente via rota /produtos/:id/compare
+        const comparisonResults = null; // Será preenchido se usuário solicitar
+        
         res.json({ 
             status: "ok", 
             message: "Produto adicionado. Verificação inicial iniciada!", 
@@ -109,7 +144,8 @@ router.post("/", verifyToken, async (req, res) => {
                 PrecoAtual: null,
                 Loja: store.name
             },
-            storeInfo: store
+            storeInfo: store,
+            comparisonAvailable: true // Indica que comparação está disponível
         });
     } catch (err) {
         console.error(" Erro ao adicionar produto:", err);
@@ -129,14 +165,16 @@ router.post("/", verifyToken, async (req, res) => {
 //  Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {
-        console.log(" [BACKEND] Buscando produtos para userId:", req.user.id);
+        console.log(" [BACKEND] Buscando produtos para ReferenciaID:", req.user.ReferenciaID);
         
         // Buscar produtos com data criada e link
         const [produtos] = await pool.query(
-            `SELECT Id, Nome, Link, PrecoAtual, PrecoAlvo, DataCriacao, DataLimite, Loja 
-             FROM Produtos 
-             WHERE UserId = ?`,
-            [req.user.id]
+            `SELECT p.Id, p.Nome, p.Link, p.PrecoAtual, p.PrecoAlvo, p.CreatedAt as DataCriacao, p.DataLimite, 
+                    COALESCE(l.Nome, 'Loja') as Loja
+             FROM produtos p
+             LEFT JOIN lojas l ON l.Id = p.LojaId
+             WHERE p.ReferenciaID = ? AND p.DeletedAt IS NULL`,
+            [req.user.ReferenciaID]
         );
 
         console.log(" [BACKEND] Produtos encontrados:", produtos.length);
@@ -146,7 +184,7 @@ router.get("/", verifyToken, async (req, res) => {
         if (produtos.length > 0) {
             const [historicosResult] = await pool.query(
                 `SELECT ProdutoId, Preco, DataRegisto 
-                 FROM HistoricoPrecos 
+                 FROM historicoprecos 
                  WHERE ProdutoId IN (?)`,
                 [produtos.map(p => p.Id)]
             );
@@ -196,7 +234,7 @@ router.get("/:id/historico", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const [rows] = await pool.query(
-            "SELECT Preco, DataRegisto FROM HistoricoPrecos WHERE ProdutoId = ? ORDER BY DataRegisto DESC",
+            "SELECT Preco, DataRegisto FROM historicoprecos WHERE ProdutoId = ? ORDER BY DataRegisto DESC",
             [id]
         );
 
@@ -222,8 +260,8 @@ router.put("/:id", verifyToken, async (req, res) => {
         const dataVal = data ?? null;
 
         const [result] = await pool.query(
-            "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND UserId=?",
-            [nomeVal, linkVal, dataVal, id, req.user.id]
+            "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND ReferenciaID=?",
+            [nomeVal, linkVal, dataVal, id, req.user.ReferenciaID]
         );
 
         if (result.affectedRows === 0) {
@@ -250,8 +288,8 @@ router.delete("/:id", verifyToken, async (req, res) => {
         const { id } = req.params;
 
         const [result] = await pool.query(
-            "DELETE FROM Produtos WHERE Id=? AND UserId=?",
-            [id, req.user.id]
+            "DELETE FROM produtos WHERE Id=? AND ReferenciaID=?",
+            [id, req.user.ReferenciaID]
         );
 
         if (result.affectedRows === 0) {
@@ -277,18 +315,107 @@ router.delete("/:id", verifyToken, async (req, res) => {
 //  Atualizar preço de produto específico - REMOVIDO
 // Funcionalidade de atualização automática de preços removida
 
+//  Comparar produto em múltiplas lojas (novo fluxo isolado)
+router.post("/:id/compare", verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Verificar se produto pertence ao usuário
+        const [productRows] = await pool.query(
+            "SELECT Link FROM produtos WHERE Id = ? AND ReferenciaID = ? AND DeletedAt IS NULL",
+            [id, req.user.ReferenciaID]
+        );
+        
+        if (productRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "Produto não encontrado"
+            });
+        }
+        
+        const productLink = productRows[0].Link;
+        
+        // Executar comparação via Python
+        const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
+        const escapedLink = productLink.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+        const isWindows = process.platform === 'win32';
+        const pythonCmd = isWindows ? 'python' : 'python3';
+        const command = `${pythonCmd} "${scraperPath}" --compare-simple "${escapedLink}"`;
+        
+        console.log(`[COMPARE] Comparando produto ${id} em múltiplas lojas...`);
+        
+        try {
+            const { stdout, stderr } = await execAsync(command, {
+                cwd: path.join(__dirname, '../../'),
+                timeout: 120000 // 2 minutos de timeout
+            });
+            
+            if (stderr && !stderr.includes('INFO')) {
+                console.error(`[COMPARE] Stderr: ${stderr}`);
+            }
+            
+            // Parse JSON do stdout
+            let comparisons = [];
+            try {
+                const jsonOutput = stdout.trim();
+                // Tentar extrair JSON do output (pode ter logs antes)
+                const jsonMatch = jsonOutput.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    comparisons = JSON.parse(jsonMatch[0]);
+                } else {
+                    // Tentar parse direto
+                    comparisons = JSON.parse(jsonOutput);
+                }
+            } catch (parseError) {
+                console.error(`[COMPARE] Erro ao parsear JSON: ${parseError.message}`);
+                console.error(`[COMPARE] Output recebido: ${stdout.substring(0, 500)}`);
+                return res.status(500).json({
+                    status: "error",
+                    message: "Erro ao processar resultados da comparação",
+                    comparisons: []
+                });
+            }
+            
+            console.log(`[COMPARE] Encontrados ${comparisons.length} produtos comparáveis`);
+            
+            res.json({
+                status: "ok",
+                message: "Comparação concluída",
+                comparisons: comparisons,
+                count: comparisons.length
+            });
+            
+        } catch (execError) {
+            console.error(`[COMPARE] Erro na execução: ${execError.message}`);
+            return res.status(500).json({
+                status: "error",
+                message: "Erro ao executar comparação de produtos",
+                error: execError.message,
+                comparisons: []
+            });
+        }
+        
+    } catch (err) {
+        console.error("Erro ao comparar produto:", err);
+        res.status(500).json({
+            status: "error",
+            message: "Erro interno do servidor"
+        });
+    }
+});
+
 //  Verificar se há produtos atualizados recentemente
 router.get("/sync", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const { lastSync } = req.query;
         
         let query = `
             SELECT Id, Nome, PrecoAtual, UpdatedAt 
             FROM produtos 
-            WHERE UserId = ?
+            WHERE ReferenciaID = ?
         `;
-        let params = [userId];
+        let params = [referenciaID];
         
         // Validar e sanitizar lastSync se fornecido
         if (lastSync) {

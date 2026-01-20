@@ -35,6 +35,10 @@ import {
     getCachedDiscordUser,
     setCachedDiscordUser
 } from "../utils/discord-cache.js";
+import {
+    gerarReferenciaID,
+    validarReferenciaID
+} from "../utils/referenciaId.js";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -87,6 +91,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         emails: profile.emails ? profile.emails.map(e => e.value) : [],
                         photos: profile.photos ? profile.photos.length : 0
                     });
+                    console.log("[GOOGLE STRATEGY] Tokens recebidos:", {
+                        hasAccessToken: !!accessToken,
+                        hasRefreshToken: !!refreshToken
+                    });
 
                     // Verificar se profile tem emails
                     if (!profile.emails || profile.emails.length === 0) {
@@ -107,27 +115,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         [email]
                     );
 
-                    let userId;
+                    let referenciaID;
                     if (rows.length > 0) {
-                        userId = rows[0].Id;
+                        referenciaID = rows[0].ReferenciaID;
                         // Atualizar foto de perfil e google_id se fornecidos
                         if (fotoPerfil || googleId) {
                             try {
                                 // Tentar atualizar com google_id e FotoPerfil
                                 if (fotoPerfil && googleId) {
                                     await pool.query(
-                                        "UPDATE Utilizadores SET FotoPerfil = ?, google_id = ? WHERE Id = ?",
-                                        [fotoPerfil, googleId, userId]
+                                        "UPDATE Utilizadores SET FotoPerfil = ?, google_id = ? WHERE ReferenciaID = ?",
+                                        [fotoPerfil, googleId, referenciaID]
                                     );
                                 } else if (fotoPerfil) {
                                     await pool.query(
-                                        "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                                        [fotoPerfil, userId]
+                                        "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+                                        [fotoPerfil, referenciaID]
                                     );
                                 } else if (googleId) {
                                     await pool.query(
-                                        "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                                        [googleId, userId]
+                                        "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                                        [googleId, referenciaID]
                                     );
                                 }
                             } catch (updateErr) {
@@ -136,8 +144,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 try {
                                     if (fotoPerfil) {
                                         await pool.query(
-                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                                            [fotoPerfil, userId]
+                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+                                            [fotoPerfil, referenciaID]
                                         );
                                     }
                                 } catch (fotoErr) {
@@ -146,8 +154,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 try {
                                     if (googleId) {
                                         await pool.query(
-                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                                            [googleId, userId]
+                                            "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                                            [googleId, referenciaID]
                                         );
                                     }
                                 } catch (googleIdErr) {
@@ -163,15 +171,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         );
                         const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
                         
+                        // Gerar ReferenciaID para novo usuário
+                        const novaReferenciaID = gerarReferenciaID();
+                        
                         // Inserir novo usuário com foto de perfil, google_id e campos necessários
                         try {
                             // Tentar inserir com google_id, FotoPerfil, Ativo e PerfilId
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, google_id, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
-                                [nome, email, null, fotoPerfil, googleId, perfilId]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, google_id, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                [novaReferenciaID, nome, email, null, fotoPerfil, googleId, perfilId]
                             );
-                            userId = result.insertId;
-                            console.log("[GOOGLE STRATEGY] Novo usuário criado com google_id:", googleId);
+                            referenciaID = novaReferenciaID;
+                            console.log("[GOOGLE STRATEGY] Novo usuário criado com ReferenciaID:", referenciaID);
                             
                             // Atualizar métricas automaticamente
                             try {
@@ -184,17 +195,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                             // Se campos não existem, tentar inserir sem eles
                             try {
                                 const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, ?, 1, ?, NOW(), 1)",
-                                    [nome, email, null, fotoPerfil, perfilId]
+                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [novaReferenciaID, nome, email, null, fotoPerfil, perfilId]
                                 );
-                                userId = result.insertId;
+                                referenciaID = novaReferenciaID;
                                 
                                 // Tentar atualizar google_id separadamente se possível
                                 if (googleId) {
                                     try {
                                         await pool.query(
-                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                                            [googleId, userId]
+                                            "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                                            [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
                                         console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
@@ -211,17 +222,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                             } catch (insertErr2) {
                                 // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
                                 const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (Nome, Email, Telefone, Ativo, PerfilId, Data_Registo, EmailVerificado) VALUES (?, ?, ?, 1, ?, NOW(), 1)",
-                                    [nome, email, null, perfilId]
+                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [novaReferenciaID, nome, email, null, perfilId]
                                 );
-                                userId = result.insertId;
+                                referenciaID = novaReferenciaID;
                                 
                                 // Tentar atualizar google_id separadamente se possível
                                 if (googleId) {
                                     try {
                                         await pool.query(
-                                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                                            [googleId, userId]
+                                            "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                                            [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
                                         console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
@@ -232,8 +243,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 if (fotoPerfil) {
                                     try {
                                         await pool.query(
-                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                                            [fotoPerfil, userId]
+                                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+                                            [fotoPerfil, referenciaID]
                                         );
                                     } catch (fotoErr) {
                                         console.log("[GOOGLE STRATEGY] Campo FotoPerfil não existe, ignorando");
@@ -252,18 +263,64 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     }
 
                     await pool.query(
-                        `INSERT INTO configutilizador (UserId, CanalPreferido) 
+                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido) 
              VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
-                        [userId, "email"]
+                        [referenciaID, "email"]
                     );
 
+                    // Salvar tokens OAuth para sincronização de calendário
+                    if (accessToken) {
+                        try {
+                            // Garantir que a tabela existe
+                            await pool.query(`
+                                CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    ReferenciaID VARCHAR(13) NOT NULL,
+                                    access_token TEXT NOT NULL,
+                                    refresh_token TEXT,
+                                    token_type VARCHAR(50) DEFAULT 'Bearer',
+                                    expires_at TIMESTAMP NULL,
+                                    scope TEXT,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    INDEX idx_ReferenciaID (ReferenciaID),
+                                    INDEX idx_expires_at (expires_at),
+                                    FOREIGN KEY (ReferenciaID) REFERENCES Utilizadores(ReferenciaID) ON DELETE CASCADE,
+                                    UNIQUE KEY unique_user_token (ReferenciaID)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                            `);
+
+                            // Calcular data de expiração (tokens do Google geralmente expiram em 1 hora)
+                            const expiresAt = new Date();
+                            expiresAt.setHours(expiresAt.getHours() + 1);
+
+                            await pool.query(
+                                `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope)
+                                 VALUES (?, ?, ?, ?, ?)
+                                 ON DUPLICATE KEY UPDATE 
+                                     access_token = VALUES(access_token),
+                                     refresh_token = VALUES(refresh_token),
+                                     expires_at = VALUES(expires_at),
+                                     scope = VALUES(scope),
+                                     updated_at = NOW()`,
+                                [referenciaID, accessToken, refreshToken || null, expiresAt, 'calendar.readonly']
+                            );
+                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronização de calendário");
+                        } catch (tokenErr) {
+                            console.error("[GOOGLE STRATEGY] Erro ao salvar tokens OAuth:", tokenErr);
+                            // Não falhar o login se não conseguir salvar tokens
+                        }
+                    }
+
                     return done(null, {
-                        id: userId,
+                        ReferenciaID: referenciaID,
                         email,
                         nome,
                         fotoPerfil,
-                        googleId: googleId // Incluir googleId para uso no callback
+                        googleId: googleId, // Incluir googleId para uso no callback
+                        accessToken: accessToken, // Incluir para uso no callback
+                        refreshToken: refreshToken
                     });
                 } catch (err) {
                     return done(err, null);
@@ -328,15 +385,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                         [email]
                     );
 
-                    let userId;
+                    let referenciaID;
                     if (rows.length > 0) {
-                        userId = rows[0].Id;
+                        referenciaID = rows[0].ReferenciaID;
                         // Atualizar foto de perfil se fornecida
                         if (fotoPerfil) {
                             try {
                                 await pool.query(
-                                    "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                                    [fotoPerfil, userId]
+                                    "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+                                    [fotoPerfil, referenciaID]
                                 );
                             } catch (updateErr) {
                                 console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
@@ -344,13 +401,16 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                         }
                         console.log("Usuário GitHub já existe:", email);
                     } else {
+                        // Gerar ReferenciaID para novo usuário
+                        const novaReferenciaID = gerarReferenciaID();
+                        
                         // Inserir novo usuário com foto de perfil se disponível
                         try {
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?)",
-                                [nome, email, null, fotoPerfil]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?, ?)",
+                                [novaReferenciaID, nome, email, null, fotoPerfil]
                             );
-                            userId = result.insertId;
+                            referenciaID = novaReferenciaID;
 
                             // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
                             try {
@@ -363,10 +423,10 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                         } catch (insertErr) {
                             // Se campo FotoPerfil não existe, inserir sem ele
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Telefone) VALUES (?, ?, ?)",
-                                [nome, email, null]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone) VALUES (?, ?, ?, ?)",
+                                [novaReferenciaID, nome, email, null]
                             );
-                            userId = result.insertId;
+                            referenciaID = novaReferenciaID;
 
                             // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
                             try {
@@ -380,14 +440,14 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                     }
 
                     await pool.query(
-                        `INSERT INTO configutilizador (UserId, CanalPreferido) 
+                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido) 
              VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
-                        [userId, "email"]
+                        [referenciaID, "email"]
                     );
 
                     return done(null, {
-                        id: userId,
+                        ReferenciaID: referenciaID,
                         email,
                         nome,
                         fotoPerfil
@@ -443,23 +503,33 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     // Verificar se usuário Discord já existe no JSON
                     let discordUser = findDiscordUser(discordId);
 
-                    if (discordUser && discordUser.userId) {
+                    if (discordUser && discordUser.ReferenciaID) {
                         // Usuário Discord já existe e está associado - LOGIN DIRETO
                         console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
 
                         // Garantir que discord_id está salvo no banco (caso não esteja)
                         try {
                             await pool.query(
-                                "UPDATE Utilizadores SET discord_id = ? WHERE Id = ? AND (discord_id IS NULL OR discord_id = '')",
-                                [discordId, discordUser.userId]
+                                "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ? AND (discord_id IS NULL OR discord_id = '')",
+                                [discordId, discordUser.ReferenciaID]
                             );
                         } catch (dbError) {
                             console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
                             // Continuar mesmo se falhar
                         }
 
+                        // Garantir que está na tabela contasconectadas
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                [discordUser.ReferenciaID]
+                            );
+                        } catch (contasError) {
+                            console.log(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
+                        }
+
                         const token = jwt.sign({
-                                id: discordUser.userId,
+                                ReferenciaID: discordUser.ReferenciaID,
                                 email: discordUser.email
                             },
                             process.env.JWT_SECRET, {
@@ -467,9 +537,9 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                             }
                         );
 
-                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.userId);
+                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.ReferenciaID);
                         const userObject = {
-                            userId: discordUser.userId,
+                            ReferenciaID: discordUser.ReferenciaID,
                             email: discordUser.email,
                             token,
                             discordId: discordId // Incluir discordId para uso no callback
@@ -495,46 +565,71 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         [email]
                     );
 
-                    let userId;
+                    let referenciaID;
                     if (rows.length > 0) {
                         // Usuário já existe no banco - ASSOCIAR DISCORD
                         console.log(" Usuário existente encontrado - Associando Discord:", rows[0].Nome);
-                        userId = rows[0].Id;
+                        referenciaID = rows[0].ReferenciaID;
 
                         // Associar Discord com usuário do banco
-                        linkDiscordUser(discordId, userId);
+                        linkDiscordUser(discordId, referenciaID);
                         
                         // Atualizar discord_id no banco de dados (se a coluna existir)
                         try {
                             await pool.query(
-                                "UPDATE Utilizadores SET discord_id = ? WHERE Id = ?",
-                                [discordId, userId]
+                                "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
+                                [discordId, referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${userId}`);
+                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${referenciaID}`);
                         } catch (dbError) {
                             console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode não existir):", dbError.message);
                             // Continuar mesmo se falhar - o linkDiscordUser já foi feito
                         }
+
+                        // Inserir ou atualizar na tabela contasconectadas
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                [referenciaID]
+                            );
+                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuário ${referenciaID}`);
+                        } catch (contasError) {
+                            console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
+                        }
                     } else {
+                        // Gerar ReferenciaID para novo usuário
+                        const novaReferenciaID = gerarReferenciaID();
+                        
                         // Criar novo usuário no banco (tentar com discord_id, se falhar, criar sem)
                         console.log("🆕 Criando novo usuário no banco:", username);
                         let result;
                         try {
                             // Tentar criar com discord_id
                             [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Ativo, discord_id) VALUES (?, ?, 1, ?)",
-                                [username, email, discordId]
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id) VALUES (?, ?, ?, 1, ?)",
+                                [novaReferenciaID, username, email, discordId]
                             );
-                            console.log(` [DISCORD STRATEGY] Novo usuário criado com discord_id ${discordId}`);
+                            console.log(` [DISCORD STRATEGY] Novo usuário criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
                         } catch (dbError) {
                             // Se falhar (coluna não existe), criar sem discord_id
                             console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
                             [result] = await pool.query(
-                                "INSERT INTO Utilizadores (Nome, Email, Ativo) VALUES (?, ?, 1)",
-                                [username, email]
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo) VALUES (?, ?, ?, 1)",
+                                [novaReferenciaID, username, email]
                             );
                         }
-                        userId = result.insertId;
+                        referenciaID = novaReferenciaID;
+
+                        // Inserir Discord na tabela contasconectadas para novo usuário
+                        try {
+                            await pool.query(
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
+                                [referenciaID]
+                            );
+                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuário ${referenciaID}`);
+                        } catch (contasError) {
+                            console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
+                        }
 
                         // Buscar ID do plano FREE
                         const [planoFree] = await pool.query(
@@ -545,14 +640,14 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         // Criar configuração do usuário com plano FREE
                         await pool.query(
-                            "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
-                            [userId, "discord", planoFreeId]
+                            "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+                            [referenciaID, "discord", planoFreeId]
                         );
 
                         console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
 
                         // Associar Discord com novo usuário
-                        linkDiscordUser(discordId, userId);
+                        linkDiscordUser(discordId, referenciaID);
 
                         // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
                         try {
@@ -565,7 +660,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     }
 
                     const token = jwt.sign({
-                            id: userId,
+                            ReferenciaID: referenciaID,
                             email
                         },
                         process.env.JWT_SECRET, {
@@ -573,9 +668,9 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         }
                     );
 
-                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", userId);
+                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", referenciaID);
                     const userObject = {
-                        userId,
+                        ReferenciaID: referenciaID,
                         email,
                         token,
                         discordId: discordId // Incluir discordId para uso no callback
@@ -607,7 +702,7 @@ router.get('/discord/check/:discordId', async (req, res) => {
         } = req.params;
         const discordUser = findDiscordUser(discordId);
 
-        if (discordUser && discordUser.userId) {
+        if (discordUser && discordUser.ReferenciaID) {
             // Usuário já existe - pode fazer login direto
             res.json({
                 exists: true,
@@ -640,10 +735,10 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         } = req.params;
         const discordUser = findDiscordUser(discordId);
 
-        if (discordUser && discordUser.userId) {
+        if (discordUser && discordUser.ReferenciaID) {
             // Gerar token diretamente
             const token = jwt.sign({
-                    id: discordUser.userId,
+                    ReferenciaID: discordUser.ReferenciaID,
                     email: discordUser.email
                 },
                 process.env.JWT_SECRET, {
@@ -651,7 +746,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
                 }
             );
 
-            console.log(" Login direto via rota alternativa para usuário:", discordUser.userId);
+            console.log(" Login direto via rota alternativa para usuário:", discordUser.ReferenciaID);
 
             // Criar página HTML que salva no localStorage e redireciona
             const html = `
@@ -664,7 +759,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
           <script>
             // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
-              id: ${discordUser.userId},
+              ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
               token: '${token}',
               loginMethod: 'discord'
@@ -749,7 +844,7 @@ router.get("/search-accounts", async (req, res) => {
             }
 
             return {
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 nome: user.Nome,
                 email: email, // Email real para envio
                 maskedEmail: maskedEmail, // Email mascarado para exibição
@@ -786,7 +881,7 @@ router.post("/forgot-password", async (req, res) => {
 
         // Buscar usuário
         const [userRows] = await pool.query(
-            "SELECT Id, Nome, Email FROM Utilizadores WHERE Email = ?",
+            "SELECT ReferenciaID, Nome, Email FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
@@ -812,29 +907,30 @@ router.post("/forgot-password", async (req, res) => {
         await pool.query(`
       CREATE TABLE IF NOT EXISTS password_reset_tokens (
         Id INT AUTO_INCREMENT PRIMARY KEY,
-        UserId INT(10) UNSIGNED NOT NULL,
+        ReferenciaID VARCHAR(13) NOT NULL,
         Token VARCHAR(255) NOT NULL UNIQUE,
         Email VARCHAR(255) NOT NULL,
         ExpiresAt TIMESTAMP NOT NULL,
         Used BOOLEAN DEFAULT FALSE,
         CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_token (Token),
-        INDEX idx_user_id (UserId),
+        INDEX idx_ReferenciaID (ReferenciaID),
         INDEX idx_email (Email),
-        INDEX idx_expires_at (ExpiresAt)
+        INDEX idx_expires_at (ExpiresAt),
+        FOREIGN KEY (ReferenciaID) REFERENCES Utilizadores(ReferenciaID) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
         // Invalidar tokens anteriores do usuário
         await pool.query(
-            "UPDATE password_reset_tokens SET Used = TRUE WHERE UserId = ? AND Used = FALSE",
-            [user.Id]
+            "UPDATE password_reset_tokens SET Used = TRUE WHERE ReferenciaID = ? AND Used = FALSE",
+            [user.ReferenciaID]
         );
 
         // Salvar novo token
         await pool.query(
-            "INSERT INTO password_reset_tokens (UserId, Token, Email, ExpiresAt) VALUES (?, ?, ?, ?)",
-            [user.Id, token, user.Email, expiresAt]
+            "INSERT INTO password_reset_tokens (ReferenciaID, Token, Email, ExpiresAt) VALUES (?, ?, ?, ?)",
+            [user.ReferenciaID, token, user.Email, expiresAt]
         );
 
         // URL de reset (ajustar conforme ambiente)
@@ -947,7 +1043,7 @@ router.get("/reset-password/:token", async (req, res) => {
         const [tokenRows] = await pool.query(
             `SELECT prt.*, u.Email 
        FROM password_reset_tokens prt
-       INNER JOIN Utilizadores u ON prt.UserId = u.Id
+       INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
        WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
             [token]
         );
@@ -997,9 +1093,9 @@ router.post("/reset-password", async (req, res) => {
 
         // Buscar token válido
         const [tokenRows] = await pool.query(
-            `SELECT prt.*, u.Id as UserId
+            `SELECT prt.*, u.ReferenciaID
        FROM password_reset_tokens prt
-       INNER JOIN Utilizadores u ON prt.UserId = u.Id
+       INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
        WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
             [token]
         );
@@ -1019,8 +1115,8 @@ router.post("/reset-password", async (req, res) => {
 
         // Atualizar senha
         await pool.query(
-            "UPDATE Utilizadores SET SenhaHash = ? WHERE Id = ?",
-            [hashedPassword, tokenData.UserId]
+            "UPDATE Utilizadores SET SenhaHash = ? WHERE ReferenciaID = ?",
+            [hashedPassword, tokenData.ReferenciaID]
         );
 
         // Marcar token como usado
@@ -1029,7 +1125,7 @@ router.post("/reset-password", async (req, res) => {
             [token]
         );
 
-        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.UserId}`);
+        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.ReferenciaID}`);
 
         res.json({
             status: "ok",
@@ -1106,8 +1202,8 @@ router.post("/login", async (req, res) => {
             try {
                 // Verificar se DataDesativacao existe e não expirou
                 const [deactivatedInfo] = await pool.query(
-                    "SELECT DataDesativacao FROM Utilizadores WHERE Id = ?",
-                    [user.Id]
+                    "SELECT DataDesativacao FROM Utilizadores WHERE ReferenciaID = ?",
+                    [user.ReferenciaID]
                 );
 
                 if (deactivatedInfo.length > 0 && deactivatedInfo[0].DataDesativacao) {
@@ -1115,8 +1211,8 @@ router.post("/login", async (req, res) => {
                     const now = new Date();
                     canReactivate = expirationDate > now;
                 } else {
-                    // Se não tem DataDesativacao, usar Data_Registo como fallback (20 dias)
-                    const registerDate = new Date(user.Data_Registo);
+                    // Se não tem DataDesativacao, usar DataRegisto como fallback (20 dias)
+                    const registerDate = new Date(user.DataRegisto);
                     const expirationDateFallback = new Date(registerDate);
                     expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
                     canReactivate = expirationDateFallback > new Date();
@@ -1131,10 +1227,10 @@ router.post("/login", async (req, res) => {
             if (canReactivate) {
                 // Reativar conta automaticamente ao fazer login
                 await pool.query(
-                    "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE Id = ?",
-                    [user.Id]
+                    "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE ReferenciaID = ?",
+                    [user.ReferenciaID]
                 );
-                console.log(`[AUTH] Conta ${user.Id} reativada automaticamente via login`);
+                console.log(`[AUTH] Conta ${user.ReferenciaID} reativada automaticamente via login`);
 
                 // Marcar que a conta foi reativada para mostrar modal no frontend
                 user.accountReactivated = true;
@@ -1183,7 +1279,7 @@ router.post("/login", async (req, res) => {
 
         // Gera token JWT
         const token = jwt.sign({
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 email: user.Email
             },
             process.env.JWT_SECRET, {
@@ -1195,7 +1291,7 @@ router.post("/login", async (req, res) => {
             status: "ok",
             token,
             user: {
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 email: user.Email,
                 nome: user.Nome,
                 perfilId: user.PerfilId || user.perfilId
@@ -1289,7 +1385,7 @@ router.post("/register", async (req, res) => {
 
         console.log("[REGISTRO] Verificando se email já existe...");
         const [existing] = await pool.query(
-            "SELECT Id FROM Utilizadores WHERE Email = ?",
+            "SELECT ReferenciaID FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
@@ -1313,19 +1409,23 @@ router.post("/register", async (req, res) => {
         const perfilId = (adminCountRows[0] ?.total || 0) === 0 ? 1 : 2;
         console.log(`[REGISTRO] PerfilId determinado: ${perfilId}`);
 
+        console.log("[REGISTRO] Gerando ReferenciaID...");
+        const referenciaID = gerarReferenciaID();
+        console.log(`[REGISTRO] ReferenciaID gerado: ${referenciaID}`);
+
         console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
 
         // Tentar inserir com data_nascimento e/ou google_id se fornecidos
         let result;
         try {
             // Construir query dinamicamente baseado nos campos disponíveis
-            const fields = ['Nome', 'Email', 'SenhaHash', 'EmailVerificado', 'Telefone', 'PerfilId', 'Ativo', 'Data_Registo'];
-            const values = [nome, email, hashedPassword, 0, telefone || null, perfilId, 1];
-            const placeholders = ['?', '?', '?', '?', '?', '?', '?', 'NOW()'];
+            const fields = ['ReferenciaID', 'Nome', 'Email', 'SenhaHash', 'EmailVerificado', 'Telefone', 'PerfilId', 'Ativo', 'DataRegisto'];
+            const values = [referenciaID, nome, email, hashedPassword, 0, telefone || null, perfilId, 1];
+            const placeholders = ['?', '?', '?', '?', '?', '?', '?', '?', 'NOW()'];
             
             // Adicionar campos opcionais
             if (data_nascimento) {
-                fields.push('data_nascimento');
+                fields.push('DataNascimento');
                 values.push(data_nascimento);
                 placeholders.push('?');
             }
@@ -1354,17 +1454,17 @@ router.post("/register", async (req, res) => {
             // Tentar inserir apenas com campos básicos
             try {
                 const [insertResult] = await pool.query(
-                    "INSERT INTO Utilizadores (Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, Data_Registo) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-                    [nome, email, hashedPassword, 0, telefone || null, perfilId]
+                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, DataRegisto) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW())",
+                    [referenciaID, nome, email, hashedPassword, 0, telefone || null, perfilId]
                 );
                 result = insertResult;
                 
                 // Tentar atualizar google_id separadamente se disponível
-                if (oauthProvider === 'google' && oauthId && result.insertId) {
+                if (oauthProvider === 'google' && oauthId) {
                     try {
                         await pool.query(
-                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                            [oauthId, result.insertId]
+                            "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                            [oauthId, referenciaID]
                         );
                         console.log("[REGISTRO] google_id atualizado após criação:", oauthId);
                     } catch (googleIdErr) {
@@ -1373,11 +1473,11 @@ router.post("/register", async (req, res) => {
                 }
                 
                 // Tentar atualizar FotoPerfil separadamente se disponível
-                if (fotoPerfil && result.insertId) {
+                if (fotoPerfil) {
                     try {
                         await pool.query(
-                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE Id = ?",
-                            [fotoPerfil, result.insertId]
+                            "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
+                            [fotoPerfil, referenciaID]
                         );
                         console.log("[REGISTRO] FotoPerfil atualizado após criação");
                     } catch (fotoErr) {
@@ -1389,8 +1489,7 @@ router.post("/register", async (req, res) => {
             }
         }
 
-        const userId = result.insertId;
-        console.log(`[REGISTRO] Usuário criado com ID: ${userId}`);
+        console.log(`[REGISTRO] Usuário criado com ReferenciaID: ${referenciaID}`);
 
         // Buscar ID do plano FREE
         console.log("[REGISTRO] Buscando plano FREE...");
@@ -1406,24 +1505,24 @@ router.post("/register", async (req, res) => {
         try {
             // Verificar se já existe configuração para este usuário
             const [existingConfig] = await pool.query(
-                "SELECT Id FROM configutilizador WHERE UserId = ?",
-                [userId]
+                "SELECT Id FROM configutilizador WHERE ReferenciaID = ?",
+                [referenciaID]
             );
 
             if (existingConfig.length > 0) {
                 // Atualizar configuração existente
                 console.log("[REGISTRO] Configuração já existe, atualizando...");
                 await pool.query(
-                    "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE UserId = ?",
-                    ["email", planoFreeId, userId]
+                    "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE ReferenciaID = ?",
+                    ["email", planoFreeId, referenciaID]
                 );
                 console.log("[REGISTRO] Configuração do usuário atualizada");
             } else {
                 // Inserir nova configuração
                 console.log("[REGISTRO] Inserindo nova configuração...");
                 await pool.query(
-                    "INSERT INTO configutilizador (UserId, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
-                    [userId, "email", planoFreeId]
+                    "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+                    [referenciaID, "email", planoFreeId]
                 );
                 console.log("[REGISTRO] Configuração do usuário criada");
             }
@@ -1442,9 +1541,9 @@ router.post("/register", async (req, res) => {
         console.log(`[REGISTRO] Código gerado: ${codigo}`);
 
         console.log("[REGISTRO] Salvando código no banco de dados...");
-        await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE Id=?", [
+        await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE ReferenciaID=?", [
             codigo,
-            userId,
+            referenciaID,
         ]);
         console.log("[REGISTRO] Código salvo no banco de dados");
 
@@ -1545,7 +1644,7 @@ router.get("/google", (req, res) => {
         console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
         console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
         passport.authenticate("google", {
-            scope: ["profile", "email"]
+            scope: ["profile", "email", "https://www.googleapis.com/auth/calendar.readonly"]
         })(req, res);
     } else {
         console.error(" Google OAuth não configurado:");
@@ -1601,9 +1700,9 @@ router.get("/google/callback", (req, res) => {
             }
 
             // Verificar se user tem os campos necessários
-            if (!user.id || !user.email) {
+            if (!user.ReferenciaID || !user.email) {
                 console.error("[GOOGLE CALLBACK] user não tem campos necessários:", {
-                    hasId: !!user.id,
+                    hasReferenciaID: !!user.ReferenciaID,
                     hasEmail: !!user.email,
                     user: user
                 });
@@ -1631,8 +1730,8 @@ router.get("/google/callback", (req, res) => {
                 if (user.googleId) {
                     try {
                         await pool.query(
-                            "UPDATE Utilizadores SET google_id = ? WHERE Id = ?",
-                            [user.googleId, user.id]
+                            "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
+                            [user.googleId, user.ReferenciaID]
                         );
                         console.log("[GOOGLE CALLBACK] google_id salvo no banco:", user.googleId);
                     } catch (dbError) {
@@ -1641,8 +1740,50 @@ router.get("/google/callback", (req, res) => {
                     }
                 }
 
+                // Salvar tokens OAuth se disponíveis
+                if (user.accessToken) {
+                    try {
+                        await pool.query(`
+                            CREATE TABLE IF NOT EXISTS google_oauth_tokens (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                ReferenciaID VARCHAR(13) NOT NULL,
+                                access_token TEXT NOT NULL,
+                                refresh_token TEXT,
+                                token_type VARCHAR(50) DEFAULT 'Bearer',
+                                expires_at TIMESTAMP NULL,
+                                scope TEXT,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                INDEX idx_ReferenciaID (ReferenciaID),
+                                INDEX idx_expires_at (expires_at),
+                                FOREIGN KEY (ReferenciaID) REFERENCES Utilizadores(ReferenciaID) ON DELETE CASCADE,
+                                UNIQUE KEY unique_user_token (ReferenciaID)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                        `);
+
+                        const expiresAt = new Date();
+                        expiresAt.setHours(expiresAt.getHours() + 1);
+
+                        await pool.query(
+                            `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope)
+                             VALUES (?, ?, ?, ?, ?)
+                             ON DUPLICATE KEY UPDATE 
+                                 access_token = VALUES(access_token),
+                                 refresh_token = VALUES(refresh_token),
+                                 expires_at = VALUES(expires_at),
+                                 scope = VALUES(scope),
+                                 updated_at = NOW()`,
+                            [user.ReferenciaID, user.accessToken, user.refreshToken || null, expiresAt, 'calendar.readonly']
+                        );
+                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronização");
+                    } catch (tokenErr) {
+                        console.error("[GOOGLE CALLBACK] Erro ao salvar tokens OAuth:", tokenErr);
+                        // Não falhar o login se não conseguir salvar tokens
+                    }
+                }
+
                 const token = jwt.sign({
-                        id: user.id,
+                        ReferenciaID: user.ReferenciaID,
                         email: user.email,
                         nome: user.nome || user.name
                     },
@@ -1651,7 +1792,7 @@ router.get("/google/callback", (req, res) => {
                     }
                 );
 
-                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.id);
+                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.ReferenciaID);
 
                 // Criar página HTML que salva o token no localStorage e redireciona para o dashboard
                 // Similar ao que o Discord faz
@@ -1672,7 +1813,7 @@ router.get("/google/callback", (req, res) => {
             
             // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
-              id: ${user.id},
+              ReferenciaID: '${user.ReferenciaID}',
               email: '${escapedEmail}',
               nome: '${escapedNome}',
               loginMethod: 'google'
@@ -1757,7 +1898,7 @@ router.get("/github/callback", (req, res) => {
 
             try {
                 const token = jwt.sign({
-                        id: req.user.id,
+                        ReferenciaID: req.user.ReferenciaID,
                         email: req.user.email,
                         nome: req.user.nome || req.user.name
                     },
@@ -1881,7 +2022,7 @@ router.get("/discord/callback", async (req, res) => {
 
             console.log(" [DISCORD CALLBACK] Usuário Discord autenticado com sucesso!");
             console.log(" [DISCORD CALLBACK] Email:", discordUser.email);
-            console.log(" [DISCORD CALLBACK] UserId:", discordUser.userId);
+            console.log(" [DISCORD CALLBACK] ReferenciaID:", discordUser.ReferenciaID);
             console.log(" [DISCORD CALLBACK] DiscordId:", discordUser.discordId);
 
             // Verificar se veio do perfil (usuário já logado querendo conectar)
@@ -1907,9 +2048,9 @@ router.get("/discord/callback", async (req, res) => {
                     
                     // Verificar token JWT do usuário logado
                     const decoded = jwt.verify(tokenFromProfile, process.env.JWT_SECRET);
-                    const loggedInUserId = decoded.id;
+                    const loggedInReferenciaID = decoded.ReferenciaID;
                     
-                    console.log(` Associando Discord ao usuário logado: ${loggedInUserId}`);
+                    console.log(` Associando Discord ao usuário logado: ${loggedInReferenciaID}`);
 
                     // Obter discordId do objeto retornado pela estratégia (agora incluído)
                     const discordIdToLink = discordUser.discordId;
@@ -1922,7 +2063,7 @@ router.get("/discord/callback", async (req, res) => {
                     // Verificar se o Discord já está associado a outro usuário
                     const existingDiscordUser = findDiscordUser(discordIdToLink);
                     
-                    if (existingDiscordUser && existingDiscordUser.userId && existingDiscordUser.userId !== loggedInUserId) {
+                    if (existingDiscordUser && existingDiscordUser.ReferenciaID && existingDiscordUser.ReferenciaID !== loggedInReferenciaID) {
                         // Discord já está associado a outro usuário
                         const html = `
                             <!DOCTYPE html>
@@ -1943,20 +2084,32 @@ router.get("/discord/callback", async (req, res) => {
                     }
 
                     // Associar Discord ao usuário logado
-                    linkDiscordUser(discordIdToLink, loggedInUserId);
+                    linkDiscordUser(discordIdToLink, loggedInReferenciaID);
                     
                     // Atualizar discord_id no banco de dados (se a coluna existir)
                     try {
                         await pool.query(
-                            "UPDATE Utilizadores SET discord_id = ? WHERE Id = ?",
-                            [discordIdToLink, loggedInUserId]
+                            "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
+                            [discordIdToLink, loggedInReferenciaID]
                         );
                     } catch (dbError) {
                         console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
                         // Continuar mesmo se falhar - o linkDiscordUser já foi feito
                     }
 
-                    console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInUserId}`);
+                    // Inserir ou atualizar na tabela contasconectadas
+                    try {
+                        await pool.query(
+                            "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                            [loggedInReferenciaID]
+                        );
+                        console.log(" [DISCORD CALLBACK] Discord inserido/atualizado em contasconectadas");
+                    } catch (contasError) {
+                        console.error(" [DISCORD CALLBACK] Erro ao inserir em contasconectadas:", contasError.message);
+                        // Continuar mesmo se falhar
+                    }
+
+                    console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInReferenciaID}`);
 
                     // Redirecionar de volta ao perfil
                     const html = `
@@ -1995,7 +2148,7 @@ router.get("/discord/callback", async (req, res) => {
           <script>
             // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
-              id: ${discordUser.userId},
+              ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
               token: '${discordUser.token}',
               loginMethod: 'discord'
@@ -2027,13 +2180,13 @@ router.get("/discord/callback", async (req, res) => {
 // Verificar telefone - enviar código por WhatsApp
 router.post("/verificar/telefone", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const codigo = gerarCodigo();
 
         // Buscar telefone do usuário
         const [userRows] = await pool.query(
-            "SELECT Telefone, Nome FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (userRows.length === 0) {
@@ -2054,8 +2207,8 @@ router.post("/verificar/telefone", verifyToken, async (req, res) => {
 
         // Salvar código no banco
         await pool.query(
-            "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
-            [codigo, userId]
+            "UPDATE Utilizadores SET CodigoTelefone = ? WHERE ReferenciaID = ?",
+            [codigo, referenciaID]
         );
 
         // Enviar WhatsApp
@@ -2087,13 +2240,13 @@ router.post("/verificar/telefone", verifyToken, async (req, res) => {
 // Verificar email - enviar código por email
 router.post("/verificar/email", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const codigo = gerarCodigo();
 
         // Buscar email do usuário
         const [userRows] = await pool.query(
-            "SELECT Email, Nome FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT Email, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (userRows.length === 0) {
@@ -2107,8 +2260,8 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
 
         // Salvar código no banco
         await pool.query(
-            "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-            [codigo, userId]
+            "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
+            [codigo, referenciaID]
         );
 
         // Enviar email
@@ -2153,7 +2306,7 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
             codigo,
             tipo
         } = req.body; // tipo: 'email' ou 'telefone'
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
 
         if (!codigo || !tipo) {
             return res.status(400).json({
@@ -2172,8 +2325,8 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         // Buscar usuário e verificar código
         const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
         const [userRows] = await pool.query(
-            `SELECT * FROM Utilizadores WHERE Id = ? AND ${campoCodigo} = ?`,
-            [userId, codigo]
+            `SELECT * FROM Utilizadores WHERE ReferenciaID = ? AND ${campoCodigo} = ?`,
+            [referenciaID, codigo]
         );
 
         if (userRows.length === 0) {
@@ -2186,18 +2339,18 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         // Marcar como verificado
         if (tipo === 'email') {
             await pool.query(
-                "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
-                [userId]
+                "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE ReferenciaID = ?",
+                [referenciaID]
             );
         } else {
             // Para telefone, podemos adicionar um campo TelefoneVerificado se necessário
             await pool.query(
-                "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE Id = ?",
-                [userId]
+                "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE ReferenciaID = ?",
+                [referenciaID]
             );
         }
 
-        console.log(` ${tipo} verificado com sucesso para usuário ${userId}`);
+        console.log(` ${tipo} verificado com sucesso para usuário ${referenciaID}`);
 
         res.json({
             status: "ok",
@@ -2260,13 +2413,13 @@ router.post("/esqueci-senha", async (req, res) => {
         // Salvar código no campo apropriado
         if (isEmail) {
             await pool.query(
-                "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-                [codigo, user.Id]
+                "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
+                [codigo, user.ReferenciaID]
             );
         } else {
             await pool.query(
-                "UPDATE Utilizadores SET CodigoTelefone = ? WHERE Id = ?",
-                [codigo, user.Id]
+                "UPDATE Utilizadores SET CodigoTelefone = ? WHERE ReferenciaID = ?",
+                [codigo, user.ReferenciaID]
             );
         }
 
@@ -2369,11 +2522,11 @@ router.post("/resetar-senha", async (req, res) => {
 
         // Atualizar senha e limpar códigos
         await pool.query(
-            "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE Id = ?",
-            [hashedPassword, user.Id]
+            "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE ReferenciaID = ?",
+            [hashedPassword, user.ReferenciaID]
         );
 
-        console.log(` Senha redefinida com sucesso para usuário ${user.Id} via ${isEmail ? 'email' : 'WhatsApp'}`);
+        console.log(` Senha redefinida com sucesso para usuário ${user.ReferenciaID} via ${isEmail ? 'email' : 'WhatsApp'}`);
 
         res.json({
             status: "ok",
@@ -2429,8 +2582,8 @@ router.post("/reenviar-codigo", async (req, res) => {
 
         const codigo = gerarCodigo();
         await pool.query(
-            "UPDATE Utilizadores SET CodigoEmail = ? WHERE Id = ?",
-            [codigo, user.Id]
+            "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
+            [codigo, user.ReferenciaID]
         );
 
         // Enviar por email
@@ -2514,13 +2667,13 @@ router.post("/verificar-codigo", async (req, res) => {
 
         // Marcar como verificado
         await pool.query(
-            "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE Id = ?",
-            [user.Id]
+            "UPDATE Utilizadores SET EmailVerificado = 1, CodigoEmail = NULL WHERE ReferenciaID = ?",
+            [user.ReferenciaID]
         );
 
         // Gerar token JWT
         const token = jwt.sign({
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 email: user.Email
             },
             process.env.JWT_SECRET, {
@@ -2528,14 +2681,14 @@ router.post("/verificar-codigo", async (req, res) => {
             }
         );
 
-        console.log(` Email verificado com sucesso para usuário ${user.Id}`);
+        console.log(` Email verificado com sucesso para usuário ${user.ReferenciaID}`);
 
         res.json({
             status: "ok",
             message: "Email verificado com sucesso!",
             token,
             user: {
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 email: user.Email,
                 nome: user.Nome
             },
@@ -2557,7 +2710,7 @@ router.put("/telefone", verifyToken, async (req, res) => {
         const {
             telefone
         } = req.body;
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
 
         if (!telefone) {
             return res.status(400).json({
@@ -2576,8 +2729,8 @@ router.put("/telefone", verifyToken, async (req, res) => {
         }
 
         await pool.query(
-            "UPDATE Utilizadores SET Telefone = ? WHERE Id = ?",
-            [telefone, userId]
+            "UPDATE Utilizadores SET Telefone = ? WHERE ReferenciaID = ?",
+            [telefone, referenciaID]
         );
 
         res.json({
@@ -2596,11 +2749,11 @@ router.put("/telefone", verifyToken, async (req, res) => {
 // Buscar dados do usuário
 router.get("/profile", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
 
         const [rows] = await pool.query(
-            "SELECT Id, Nome, Email, Telefone, EmailVerificado FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT ReferenciaID, Nome, Email, Telefone, EmailVerificado FROM Utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (rows.length === 0) {
@@ -2614,7 +2767,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         res.json({
             status: "ok",
             user: {
-                id: user.Id,
+                ReferenciaID: user.ReferenciaID,
                 nome: user.Nome,
                 email: user.Email,
                 telefone: user.Telefone,

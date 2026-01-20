@@ -28,19 +28,10 @@ services:
       - MYSQL_PASSWORD=promoping_password
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./sql/promoping.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sql/PAPv5.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
 volumes:
   mysql_data:
-  redis_data:

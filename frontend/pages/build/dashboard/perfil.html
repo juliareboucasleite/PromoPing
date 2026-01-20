@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil — PromoPing</title>
+  <title>Perfil PromoPing | promoping.pt</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/perfil.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
@@ -829,8 +829,14 @@
 
     // Atualiza status de contas conectadas na UI
     function updateConnectedAccounts(contas) {
+      console.log("Contas recebidas:", contas);
       const contasMap = {};
-      contas.forEach(c => contasMap[c.Tipo.toLowerCase()] = c.Conectado);
+      contas.forEach(c => {
+        const tipo = c.Tipo ? c.Tipo.toLowerCase() : '';
+        const conectado = c.Conectado === 1 || c.Conectado === '1' || c.Conectado === true;
+        contasMap[tipo] = conectado;
+        console.log(` [PERFIL] Conta ${tipo}: Conectado = ${c.Conectado} (${typeof c.Conectado}) -> ${conectado}`);
+      });
 
       document.querySelectorAll('.account-item').forEach(item => {
         const nome = item.querySelector('.account-name').textContent.toLowerCase();
@@ -841,7 +847,10 @@
         else if (nome.includes('sms')) tipo = 'sms';
         else if (nome.includes('discord')) tipo = 'discord';
 
-        if (contasMap[tipo] === 1) {
+        const isConnected = contasMap[tipo] === true || contasMap[tipo] === 1 || contasMap[tipo] === '1';
+        console.log(` [PERFIL] Verificando ${tipo}: isConnected = ${isConnected}`);
+
+        if (isConnected) {
           button.textContent = "Conectado";
           button.className = "account-status connected";
           button.onclick = null; // Remove evento de clique se conectado
@@ -1032,7 +1041,7 @@
           btn.textContent = originalText;
         }
       } catch (error) {
-        console.error('[PERFIL] Erro ao excluir conta:', error);
+        console.error('Erro ao excluir conta:', error);
         alert('Erro ao excluir conta. Tente novamente mais tarde.');
         btn.disabled = false;
         btn.textContent = originalText;
@@ -1127,16 +1136,16 @@
             document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
             document.getElementById("plano-produtos").textContent = "Não (25 produtos)";
           } else if (plano.id === 3) {
-            // PREMIUM
-            document.getElementById("plano-nome").textContent = "Premium";
-            document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
-            document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
-            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
-          } else if (plano.id === 4) {
             // STANDARD
             document.getElementById("plano-nome").textContent = "Standard";
             document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avançadas";
             document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
+            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+          } else if (plano.id === 4) {
+            // PREMIUM
+            document.getElementById("plano-nome").textContent = "Premium";
+            document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
+            document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
             document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
           } else {
             // FALLBACK se id não reconhecido
@@ -1164,10 +1173,10 @@
     // Busca o nome do usuário e preenche no topo do painel (nav)
     async function carregarNomeUsuario() {
       try {
-        console.log(" [PERFIL] Carregando nome do usuário...");
+        console.log("Carregando nome do usuário...");
         const token = localStorage.getItem("token");
         if (!token) {
-          console.error(" [PERFIL] Token não encontrado para carregar nome");
+          console.error("Token não encontrado para carregar nome");
           return;
         }
 
@@ -1175,28 +1184,28 @@
           headers: { Authorization: "Bearer " + token }
         });
 
-        console.log(" [PERFIL] Resposta do perfil recebida:", response.status);
+        console.log("Resposta do perfil recebida:", response.status);
 
         if (response.ok) {
           const data = await response.json();
-          console.log(" [PERFIL] Dados do perfil:", data);
+          console.log("Dados do perfil:", data);
 
           if (data.status === "ok" && data.profile) {
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
               userNameEl.textContent = data.profile.nome || 'Utilizador';
-              console.log(" [PERFIL] Nome do usuário atualizado:", data.profile.nome);
+              console.log("Nome do usuário atualizado:", data.profile.nome);
             } else {
-              console.error(" [PERFIL] Elemento userName não encontrado");
+              console.error("Elemento userName não encontrado");
             }
           } else {
-            console.error(" [PERFIL] Estrutura de dados incorreta:", data);
+            console.error("Estrutura de dados incorreta:", data);
           }
         } else {
-          console.error(" [PERFIL] Erro na resposta:", response.status);
+          console.error("Erro na resposta:", response.status);
         }
       } catch (error) {
-        console.error(" [PERFIL] Erro ao carregar nome do usuário:", error);
+        console.error("Erro ao carregar nome do usuário:", error);
       }
     }
 

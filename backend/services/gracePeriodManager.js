@@ -16,13 +16,13 @@ export class GracePeriodManager {
       // Buscar usuários com período de graça expirado
       const [expiredUsers] = await pool.query(`
         SELECT 
-          s.user_id,
+          s.ReferenciaID,
           s.plan_name,
           s.grace_period_end,
           c.StatusAssinatura,
           c.PlanoAtualId
         FROM stripe_subscriptions s
-        JOIN configutilizador c ON s.user_id = c.UserId
+        JOIN configutilizador c ON s.ReferenciaID = c.ReferenciaID
         WHERE s.status = 'canceled' 
           AND s.grace_period_end IS NOT NULL 
           AND s.grace_period_end <= NOW()
@@ -49,8 +49,8 @@ export class GracePeriodManager {
             StatusAssinatura = 'Gratuita',
             DataExpiracao = NULL,
             DataCancelamento = NOW()
-          WHERE UserId = ?
-        `, [user.user_id]);
+          WHERE ReferenciaID = ?
+        `, [user.ReferenciaID]);
         
         // Atualizar stripe_subscriptions para expirado
         await pool.query(`
@@ -59,11 +59,11 @@ export class GracePeriodManager {
             status = 'expired',
             subscription_status = 'expired',
             updated_at = NOW()
-          WHERE user_id = ? AND status = 'canceled'
-        `, [user.user_id]);
+          WHERE ReferenciaID = ? AND status = 'canceled'
+        `, [user.ReferenciaID]);
         
         updatedUsers.push({
-          userId: user.user_id,
+          ReferenciaID: user.ReferenciaID,
           planName: user.plan_name,
           previousStatus: user.StatusAssinatura
         });
@@ -84,20 +84,20 @@ export class GracePeriodManager {
   /**
    * Verifica se um usuário específico tem período de graça ativo
    */
-  static async checkUserGracePeriod(userId) {
+  static async checkUserGracePeriod(referenciaID) {
     try {
       const [gracePeriod] = await pool.query(`
         SELECT 
-          user_id,
+          ReferenciaID,
           plan_name,
           grace_period_end,
           status
         FROM stripe_subscriptions 
-        WHERE user_id = ? 
+        WHERE ReferenciaID = ? 
           AND status = 'canceled' 
           AND grace_period_end IS NOT NULL 
           AND grace_period_end > NOW()
-      `, [userId]);
+      `, [referenciaID]);
       
       return gracePeriod.length > 0 ? gracePeriod[0] : null;
       

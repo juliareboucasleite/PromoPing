@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <title>FAQ | PromoPing Docs</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
 </head>
@@ -19,7 +19,7 @@
       <div class="header-left">
         <div class="logo">
           <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="../index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
+          <a href="/" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
             Docs</a>
         </div>
       </div>
@@ -92,7 +92,7 @@
         </div>
       </div>
 
-      <h2>Perguntas Gerais</h2>
+      <h2 id="perguntas-gerais">Perguntas Gerais</h2>
 
       <div class="faq-item">
         <h3>O que é o PromoPing?</h3>
@@ -103,9 +103,7 @@
 
       <div class="faq-item">
         <h3>Como funciona o sistema de monitoramento?</h3>
-        <p>O PromoPing utiliza um sistema Python Scraper que verifica periodicamente os preços dos produtos nas lojas
-          suportadas. Quando um preço atinge a meta definida pelo utilizador, o sistema envia notificações via Discord,
-          email ou SMS.</p>
+        <p>O PromoPing verifica periodicamente os preços dos produtos nas lojas suportadas. Quando um preço atinge a meta definida pelo utilizador, o sistema envia notificações via Discord ou email.</p>
       </div>
 
       <div class="faq-item">
@@ -115,7 +113,7 @@
         </p>
       </div>
 
-      <h2>Conta e Autenticação</h2>
+      <h2 id="conta-autenticacao">Conta e Autenticação</h2>
 
       <div class="faq-item">
         <h3>Como criar uma conta?</h3>
@@ -135,7 +133,7 @@
           login.</p>
       </div>
 
-      <h2>Planos e Limites</h2>
+      <h2 id="planos-limites">Planos e Limites</h2>
 
       <div class="faq-item">
         <h3>Quais são os planos disponíveis?</h3>
@@ -160,12 +158,11 @@
           O sistema continuará a monitorizar os produtos dentro do limite.</p>
       </div>
 
-      <h2>Notificações</h2>
+      <h2 id="notificacoes">Notificações</h2>
 
       <div class="faq-item">
         <h3>Como configurar notificações?</h3>
-        <p>No dashboard, vá para "Preferências" e configure os canais de notificação desejados (Discord, email, SMS).
-          Pode personalizar a frequência e tipos de alertas.</p>
+        <p>No dashboard, vá para "Preferências" e configure os canais de notificação desejados (Discord ou email). Pode personalizar a frequência e tipos de alertas.</p>
       </div>
 
       <div class="faq-item">
@@ -184,7 +181,7 @@
         <p>Sim, pode pausar as notificações nas preferências ou desativar notificações para produtos específicos.</p>
       </div>
 
-      <h2>Problemas Técnicos</h2>
+      <h2 id="problemas-tecnicos">Problemas Técnicos</h2>
 
       <div class="faq-item">
         <h3>O site não carrega. O que fazer?</h3>
@@ -215,7 +212,7 @@
           Inclua detalhes sobre o problema e screenshots se possível.</p>
       </div>
 
-      <h2>Privacidade e Segurança</h2>
+      <h2 id="privacidade-seguranca">Privacidade e Segurança</h2>
 
       <div class="faq-item">
         <h3>Os meus dados estão seguros?</h3>
@@ -241,7 +238,7 @@
           para mais detalhes.</p>
       </div>
 
-      <h2>Funcionalidades Avançadas</h2>
+      <h2 id="funcionalidades-avancadas">Funcionalidades Avançadas</h2>
 
       <div class="faq-item">
         <h3>Como funciona a detecção automática de loja?</h3>
@@ -261,7 +258,7 @@
           pelo sistema.</p>
       </div>
 
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='support.html'">
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='/docs/support'">
         <div class="next-content">
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Suporte</span>
@@ -283,8 +280,20 @@
   <div id="footer-placeholder"></div>
 
   <!-- SCRIPTS -->
-  <script src="script.js"></script>
-  <script src="search.js"></script>
+  <script src="docs/script.js"></script>
+  <script src="docs/search.js"></script>
+  <script>
+    // Toggle FAQ items
+    document.addEventListener('DOMContentLoaded', function() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const question = item.querySelector('h3');
+        question.addEventListener('click', function() {
+          item.classList.toggle('active');
+        });
+      });
+    });
+  </script>
 
   <style>
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
@@ -309,27 +318,58 @@
     }
 
     .faq-item {
-      margin-bottom: 2rem;
-      padding: 1.5rem;
+      margin-bottom: 0.5rem;
+      padding: 1rem 1.5rem;
       background: #18181a;
       border-radius: 8px;
       border: 1px solid #232326;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .faq-item:hover {
+      background: #1f1f21;
+      border-color: #2a2a2d;
     }
 
     .faq-item h3 {
-      color: #ffc72d;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
+      color: #fff;
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .faq-item p {
-      margin-bottom: 1rem;
+    .faq-item h3::before {
+      content: '>';
+      color: #999;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+    }
+
+    .faq-item.active h3::before {
+      transform: rotate(90deg);
+      color: #ffc72d;
+    }
+
+    .faq-item p,
+    .faq-item ul {
+      display: none;
+      margin-top: 1rem;
+      margin-bottom: 0;
       line-height: 1.6;
+      color: #ccc;
+    }
+
+    .faq-item.active p,
+    .faq-item.active ul {
+      display: block;
     }
 
     .faq-item ul {
       margin-left: 1.5rem;
-      margin-bottom: 1rem;
     }
 
     .faq-item li {

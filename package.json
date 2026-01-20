@@ -14,7 +14,7 @@
         "migrate": "node scripts/migrate-db.js",
         "docker:dev": "docker-compose -f docker-files/docker-compose.dev.yml up --build",
         "docker:prod": "docker-compose -f docker-files/docker-compose.yml up --build",
-        "db:init": "mysql -u root -p < sql/pap.sql",
+        "db:init": "mysql -u root -p < sql/PAPv5.sql",
         "db:migrate": "npm run migrate",
         "db:reset": "mysql -u root -p -e 'DROP DATABASE IF EXISTS pap; CREATE DATABASE pap;' && npm run db:init && npm run db:migrate",
         "install:all": "npm install && npm run setup && npm run db:migrate",
@@ -30,6 +30,9 @@
     "author": "Julia Rebouças Leite",
     "license": "GPL-2.0",
     "dependencies": {
+        "@discordjs/opus": "^0.10.0",
+        "@discordjs/voice": "^0.19.0",
+        "@distube/ytdl-core": "^4.16.12",
         "axios": "^1.12.2",
         "bcrypt": "^6.0.0",
         "cookie-parser": "^1.4.7",
@@ -40,6 +43,7 @@
         "exceljs": "^4.4.0",
         "express": "^5.1.0",
         "express-rate-limit": "^8.1.0",
+        "googleapis": "^169.0.0",
         "jsonwebtoken": "^9.0.2",
         "mysql2": "^3.15.3",
         "node-fetch": "^3.3.2",
@@ -50,12 +54,13 @@
         "passport-github2": "^0.1.12",
         "passport-google-oauth20": "^2.0.0",
         "pdfkit": "^0.17.2",
-        "sequelize": "^6.37.7",
         "stripe": "^19.0.0",
-        "twilio": "^5.10.1"
+        "twilio": "^5.10.1",
+        "ytpl": "^2.3.0"
     },
     "devDependencies": {
-        "eslint": "^9.32.0",
+        "@eslint/js": "^9.39.2",
+        "eslint": "^9.39.2",
         "nodemon": "^3.1.0"
     }
 }

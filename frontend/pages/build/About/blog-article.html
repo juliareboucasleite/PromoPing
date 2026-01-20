@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <title>Artigo | PromoPing</title>
+  <link rel="stylesheet" href="About/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="logo">
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing About</a>
+        </div>
+      </div>
+      <div class="header-right">
+        <a href="/blog" style="color: #fff; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #232326; border-radius: 6px; transition: all 0.2s ease;">
+          ← Voltar ao Blog
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <div id="sidebar-nav-placeholder"></div>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <div id="article-loading" style="text-align: center; padding: 3rem; color: #888;">
+        <p>A carregar artigo...</p>
+      </div>
+      
+      <div id="article-error" style="display: none; text-align: center; padding: 3rem; color: #ff6b35;">
+        <p>Artigo não encontrado ou erro ao carregar.</p>
+        <a href="/blog" style="color: #fff; text-decoration: underline; margin-top: 1rem; display: inline-block;">Voltar ao Blog</a>
+      </div>
+
+      <article id="article-content" style="display: none;">
+        <!-- Imagem do artigo -->
+        <div class="article-detail-image" id="article-detail-image">
+          <div class="article-detail-category" id="article-detail-category"></div>
+        </div>
+
+        <!-- Conteúdo do artigo -->
+        <div class="article-detail-content">
+          <h1 class="article-detail-title" id="article-detail-title"></h1>
+          
+          <div class="article-detail-meta">
+            <span class="article-detail-source" id="article-detail-source"></span>
+            <span class="article-detail-date" id="article-detail-date"></span>
+            <span class="article-detail-score" id="article-detail-score"></span>
+            <span class="article-detail-views" id="article-detail-views"></span>
+          </div>
+
+          <div class="article-detail-description" id="article-detail-description"></div>
+
+          <div class="article-detail-actions">
+            <a id="article-detail-link" target="_blank" rel="noopener noreferrer" class="article-detail-btn">
+              Ler artigo completo →
+            </a>
+          </div>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="About/script.js"></script>
+  <script src="About/search.js"></script>
+  <script>
+    // Obter ID do artigo da URL
+    function getArticleIdFromUrl() {
+      const path = window.location.pathname;
+      const match = path.match(/\/blog\/article\/(\d+)/);
+      return match ? match[1] : null;
+    }
+
+    // Carregar artigo
+    async function loadArticle() {
+      const articleId = getArticleIdFromUrl();
+      const loadingEl = document.getElementById('article-loading');
+      const errorEl = document.getElementById('article-error');
+      const contentEl = document.getElementById('article-content');
+
+      if (!articleId) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/blog/articles/${articleId}`);
+        const data = await response.json();
+
+        if (!data.success || !data.article) {
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        const article = data.article;
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+        // Preencher dados do artigo
+        document.getElementById('article-detail-title').textContent = article.title;
+        document.getElementById('article-detail-source').textContent = article.source || 'PromoPing';
+        document.getElementById('article-detail-date').textContent = new Date(article.publishedAt).toLocaleDateString('pt-PT', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        });
+        document.getElementById('article-detail-score').textContent = `Impacto ${article.impactScore}/10`;
+        document.getElementById('article-detail-views').textContent = `${article.views} visualizações`;
+        document.getElementById('article-detail-description').textContent = article.description || '';
+        document.getElementById('article-detail-link').href = article.url;
+        document.getElementById('article-detail-category').textContent = article.category || 'Geral';
+
+        // Configurar imagem
+        const imageEl = document.getElementById('article-detail-image');
+        if (article.imageUrl) {
+          imageEl.style.backgroundImage = `url('${article.imageUrl}')`;
+          imageEl.style.backgroundSize = 'cover';
+          imageEl.style.backgroundPosition = 'center';
+        } else {
+          imageEl.style.background = 'linear-gradient(135deg, #2a2a2d 0%, #1a1a1c 100%)';
+        }
+
+        // Atualizar título da página
+        document.title = `${article.title} | PromoPing Blog`;
+
+      } catch (error) {
+        console.error('Erro ao carregar artigo:', error);
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadArticle();
+    });
+  </script>
+
+  <style>
+    /* Esconder scrollbar */
+    main.content {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    main.content::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    /* Estilos do artigo */
+    .article-detail-image {
+      width: 100%;
+      height: 400px;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 2rem;
+      background: linear-gradient(135deg, #2a2a2d 0%, #1a1a1c 100%);
+    }
+
+    .article-detail-category {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .article-detail-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .article-detail-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .article-detail-meta {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #2a2a2d;
+    }
+
+    .article-detail-source,
+    .article-detail-date,
+    .article-detail-score,
+    .article-detail-views {
+      display: flex;
+      align-items: center;
+    }
+
+    .article-detail-description {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #bbb;
+      margin-bottom: 2rem;
+      white-space: pre-wrap;
+    }
+
+    .article-detail-actions {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #2a2a2d;
+    }
+
+    .article-detail-btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: #fff;
+      color: #0f0f10;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .article-detail-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .article-detail-title {
+        font-size: 1.8rem;
+      }
+
+      .article-detail-image {
+        height: 250px;
+      }
+
+      .article-detail-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</body>
+
+</html>

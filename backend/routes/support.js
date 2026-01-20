@@ -27,19 +27,20 @@ const router = express.Router();
 // ============================================================================
 
 /**
- * Garante que a tabela SupportMessages existe e está atualizada
+ * Garante que a tabela supportmessages existe e está atualizada
  * Cria a tabela se não existir e adiciona colunas/índices necessários
  */
 async function ensureTable() {
-    const sql = `CREATE TABLE IF NOT EXISTS SupportMessages (
+    const sql = `CREATE TABLE IF NOT EXISTS supportmessages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    userId INT NOT NULL,
+    ReferenciaID VARCHAR(13) NOT NULL,
     message TEXT NOT NULL,
     senderType ENUM('user', 'support') DEFAULT 'user',
     replyTo INT NULL,
     threadId INT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_userId (userId),
+    INDEX idx_ReferenciaID (ReferenciaID),
+    FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
     INDEX idx_replyTo (replyTo),
     INDEX idx_threadId (threadId),
     INDEX idx_createdAt (createdAt)
@@ -49,11 +50,11 @@ async function ensureTable() {
 
     // Migrações: adicionar colunas se não existirem
     const migrations = [
-        "ALTER TABLE SupportMessages ADD COLUMN senderType ENUM('user', 'support') DEFAULT 'user'",
-        "ALTER TABLE SupportMessages ADD COLUMN replyTo INT NULL",
-        "ALTER TABLE SupportMessages ADD COLUMN threadId INT NULL",
-        "ALTER TABLE SupportMessages ADD INDEX idx_replyTo (replyTo)",
-        "ALTER TABLE SupportMessages ADD INDEX idx_threadId (threadId)"
+        "ALTER TABLE supportmessages ADD COLUMN senderType ENUM('user', 'support') DEFAULT 'user'",
+        "ALTER TABLE supportmessages ADD COLUMN replyTo INT NULL",
+        "ALTER TABLE supportmessages ADD COLUMN threadId INT NULL",
+        "ALTER TABLE supportmessages ADD INDEX idx_replyTo (replyTo)",
+        "ALTER TABLE supportmessages ADD INDEX idx_threadId (threadId)"
     ];
 
     for (const migration of migrations) {
@@ -66,21 +67,56 @@ async function ensureTable() {
 
     // Foreign keys (podem falhar se já existirem ou houver dados inconsistentes)
     try {
-        await pool.query("ALTER TABLE SupportMessages ADD CONSTRAINT fk_replyTo FOREIGN KEY (replyTo) REFERENCES SupportMessages(id) ON DELETE CASCADE");
+        await pool.query("ALTER TABLE supportmessages ADD CONSTRAINT fk_replyTo FOREIGN KEY (replyTo) REFERENCES supportmessages(id) ON DELETE CASCADE");
     } catch (e) {
         // Foreign key já existe ou não pode ser criada
     }
 
     try {
-        await pool.query("ALTER TABLE SupportMessages ADD CONSTRAINT fk_threadId FOREIGN KEY (threadId) REFERENCES SupportMessages(id) ON DELETE SET NULL");
+        await pool.query("ALTER TABLE supportmessages ADD CONSTRAINT fk_threadId FOREIGN KEY (threadId) REFERENCES supportmessages(id) ON DELETE SET NULL");
     } catch (e) {
         // Foreign key já existe ou não pode ser criada
     }
 }
 
 // ============================================================================
-// ENDPOINTS ADMINISTRATIVOS (Sem autenticação JWT - para Painel Admin)
+// ENDPOINTS ADMINISTRATIVOS (Com autenticação JWT - para Painel Admin)
 // ============================================================================
+
+/**
+ * Verificar se o usuário é admin
+ */
+async function verifyAdminSupport(req, res, next) {
+    try {
+        const referenciaID = req.user && req.user.ReferenciaID;
+        if (!referenciaID) {
+            return res.status(401).json({
+                status: "error",
+                error: "Não autenticado"
+            });
+        }
+
+        const [rows] = await pool.query(
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+
+        if (rows.length === 0 || (rows[0].PerfilId !== 1)) {
+            return res.status(403).json({
+                status: "error",
+                error: "Acesso negado. Apenas administradores."
+            });
+        }
+
+        next();
+    } catch (err) {
+        console.error("[SUPPORT] Erro ao verificar admin:", err);
+        return res.status(500).json({
+            status: "error",
+            error: "Erro ao verificar permissões"
+        });
+    }
+}
 
 /**
  * GET /api/support/messages/admin
@@ -92,7 +128,7 @@ async function ensureTable() {
  * - limit: Número máximo de threads (padrão: 20, máximo: 100)
  * - threadId: Se fornecido, retorna mensagens dessa thread específica
  */
-router.get("/messages/admin", async (req, res) => {
+router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) => {
     try {
         await ensureTable();
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -112,12 +148,12 @@ router.get("/messages/admin", async (req, res) => {
           sm.replyTo, 
           sm.threadId, 
           sm.createdAt,
-          sm.userId,
+          sm.ReferenciaID,
           u.Nome as userName,
           u.Email as userEmail,
           u.PerfilId as userPerfilId
-         FROM SupportMessages sm
-         LEFT JOIN Utilizadores u ON sm.userId = u.Id
+         FROM supportmessages sm
+         LEFT JOIN utilizadores u ON sm.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
          WHERE sm.id = ? OR sm.threadId = ?
          ORDER BY sm.createdAt ASC`,
                 [threadId, threadId]
@@ -128,7 +164,7 @@ router.get("/messages/admin", async (req, res) => {
                 threadId: msg.threadId || msg.id,
                 message: msg.message,
                 senderType: msg.senderType,
-                userId: msg.userId,
+                ReferenciaID: msg.ReferenciaID,
                 userName: msg.userName || "Usuário",
                 userEmail: msg.userEmail || "",
                 userPerfilId: msg.userPerfilId || null,
@@ -144,20 +180,21 @@ router.get("/messages/admin", async (req, res) => {
         const [threads] = await pool.query(
             `SELECT 
         m.id, 
+        m.threadId,
         m.message, 
         m.senderType,
         m.createdAt,
-        m.userId,
+        m.ReferenciaID,
         u.Nome as userName,
         u.Email as userEmail,
         u.PerfilId as userPerfilId,
         COUNT(DISTINCT r.id) as replyCount,
         MAX(r.createdAt) as lastReplyAt
-       FROM SupportMessages m
-       LEFT JOIN SupportMessages r ON (r.threadId = m.id OR r.replyTo = m.id)
-       LEFT JOIN Utilizadores u ON m.userId = u.Id
+       FROM supportmessages m
+       LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
+       LEFT JOIN utilizadores u ON m.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
        WHERE m.threadId IS NULL OR m.id = m.threadId
-       GROUP BY m.id
+       GROUP BY m.id, m.threadId, m.message, m.senderType, m.createdAt, m.ReferenciaID, u.Nome, u.Email, u.PerfilId
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
        LIMIT ?`,
             [limit]
@@ -168,7 +205,7 @@ router.get("/messages/admin", async (req, res) => {
             threadId: thread.threadId || thread.id,
             message: thread.message,
             senderType: thread.senderType,
-            userId: thread.userId,
+            ReferenciaID: thread.ReferenciaID,
             userName: thread.userName || "Usuário",
             userEmail: thread.userEmail || "",
             userPerfilId: thread.userPerfilId || null,
@@ -211,22 +248,22 @@ router.get("/messages/admin", async (req, res) => {
 router.get("/messages", verifyToken, async (req, res) => {
     try {
         await ensureTable();
-        const userId = req.user.id; // userId do token JWT
+        const referenciaID = req.user.ReferenciaID; // ReferenciaID do token JWT
         const limit = Math.min(parseInt(req.query.limit) || 10, 50);
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const offset = (page - 1) * limit;
         const threadId = req.query.threadId;
 
-        console.log(" [SUPPORT] Listando mensagens para userId:", userId, "page:", page);
+        console.log(" [SUPPORT] Listando mensagens para ReferenciaID:", referenciaID, "page:", page);
 
         if (threadId) {
             // Buscar mensagens de uma thread específica do utilizador
             const [messages] = await pool.query(
                 `SELECT id, message, senderType, replyTo, threadId, createdAt 
-         FROM SupportMessages 
-         WHERE (id = ? OR threadId = ?) AND userId = ?
+         FROM supportmessages 
+         WHERE (id = ? OR threadId = ?) AND ReferenciaID = ?
          ORDER BY createdAt ASC`,
-                [threadId, threadId, userId]
+                [threadId, threadId, referenciaID]
             );
 
             return res.json({
@@ -240,9 +277,9 @@ router.get("/messages", verifyToken, async (req, res) => {
         // Query para contar total de threads (para paginação)
         const [countResult] = await pool.query(
             `SELECT COUNT(DISTINCT m.id) as total
-       FROM SupportMessages m
-       WHERE m.userId = ? AND (m.threadId IS NULL OR m.id = m.threadId)`,
-            [userId]
+       FROM supportmessages m
+       WHERE m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId)`,
+            [referenciaID]
         );
         const totalThreads = (countResult[0] && countResult[0].total) ? countResult[0].total : 0;
         const totalPages = Math.ceil(totalThreads / limit);
@@ -256,13 +293,13 @@ router.get("/messages", verifyToken, async (req, res) => {
         m.createdAt,
         COUNT(DISTINCT r.id) as replyCount,
         MAX(r.createdAt) as lastReplyAt
-       FROM SupportMessages m
-       LEFT JOIN SupportMessages r ON (r.threadId = m.id OR r.replyTo = m.id)
-       WHERE m.userId = ? AND (m.threadId IS NULL OR m.id = m.threadId)
+       FROM supportmessages m
+       LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
+       WHERE m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId)
        GROUP BY m.id
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
        LIMIT ? OFFSET ?`,
-            [userId, limit, offset]
+            [referenciaID, limit, offset]
         );
 
         res.json({
@@ -293,15 +330,15 @@ router.get("/messages", verifyToken, async (req, res) => {
 router.get("/messages/:id", verifyToken, async (req, res) => {
     try {
         await ensureTable();
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const messageId = parseInt(req.params.id);
 
         // Buscar mensagem principal
         const [messages] = await pool.query(
             `SELECT id, message, senderType, replyTo, threadId, createdAt 
-       FROM SupportMessages 
-       WHERE id = ? AND userId = ?`,
-            [messageId, userId]
+       FROM supportmessages 
+       WHERE id = ? AND ReferenciaID = ?`,
+            [messageId, referenciaID]
         );
 
         if (messages.length === 0) {
@@ -316,7 +353,7 @@ router.get("/messages/:id", verifyToken, async (req, res) => {
         // Buscar todas as respostas da thread
         const [replies] = await pool.query(
             `SELECT id, message, senderType, replyTo, threadId, createdAt 
-       FROM SupportMessages 
+       FROM supportmessages 
        WHERE (threadId = ? OR replyTo = ?) AND id != ?
        ORDER BY createdAt ASC`,
             [threadId, messageId, messageId]
@@ -346,7 +383,7 @@ router.get("/messages/:id", verifyToken, async (req, res) => {
 router.post("/messages/:id/reply", verifyToken, async (req, res) => {
     try {
         await ensureTable();
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const messageId = parseInt(req.params.id);
         const {
             message,
@@ -355,7 +392,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
 
         console.log(" [SUPPORT] Resposta de mensagem:", {
             messageId,
-            userId,
+            referenciaID,
             senderType
         });
 
@@ -374,7 +411,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
 
         // Buscar mensagem original
         const [originalMessage] = await pool.query(
-            "SELECT id, userId, threadId FROM SupportMessages WHERE id = ?",
+            "SELECT id, ReferenciaID, threadId FROM supportmessages WHERE id = ?",
             [messageId]
         );
 
@@ -388,27 +425,49 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
         const threadId = originalMessage[0].threadId || originalMessage[0].id;
 
         // Validação de permissão: usuários só podem responder suas próprias threads
-        if (senderType === 'user' && originalMessage[0].userId !== userId) {
+        if (senderType === 'user' && originalMessage[0].ReferenciaID !== referenciaID) {
             return res.status(403).json({
                 error: "Você não pode responder esta mensagem"
             });
         }
 
-        // Determinar userId para a resposta
-        // Se for suporte, mantém o userId da mensagem original
-        // Se for usuário, usa o userId do token
-        const userIdParaResposta = senderType === 'support' ?
-            originalMessage[0].userId :
-            userId;
+        // Determinar ReferenciaID para a resposta
+        // Se for suporte, mantém o ReferenciaID da mensagem original
+        // Se for usuário, usa o ReferenciaID do token
+        const referenciaIDParaResposta = senderType === 'support' ?
+            originalMessage[0].ReferenciaID :
+            referenciaID;
 
         // Inserir resposta
         const [result] = await pool.query(
-            `INSERT INTO SupportMessages (userId, message, senderType, replyTo, threadId) 
-       VALUES (?, ?, ?, ?, ?)`,
-            [userIdParaResposta, message.trim(), senderType, messageId, threadId]
+            `INSERT INTO supportmessages (ReferenciaID, message, senderType, replyTo, threadId)
+             VALUES (?, ?, ?, ?, ?)`,
+            [referenciaIDParaResposta, message.trim(), senderType, messageId, threadId]
         );
 
         console.log(" [SUPPORT] Resposta inserida:", result.insertId);
+
+        // Se for mensagem do usuário, verificar se precisa de resposta automática (assíncrono, não bloqueia a resposta)
+        if (senderType === 'user') {
+            setImmediate(async () => {
+                try {
+                    const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
+                    
+                    // Verificar se deve escalar para suporte humano
+                    const shouldEscalate = await shouldEscalateToHuman(threadId);
+                    
+                    if (shouldEscalate) {
+                        await escalateToHuman(threadId, referenciaIDParaResposta);
+                    } else {
+                        // Enviar resposta automática apenas se não houver resposta recente do suporte
+                        await sendAutoResponse(threadId, message.trim(), referenciaIDParaResposta);
+                    }
+                } catch (autoSupportError) {
+                    console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
+                    // Não falhar a requisição se a resposta automática falhar
+                }
+            });
+        }
 
         res.status(201).json({
             id: result.insertId,
@@ -416,7 +475,7 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
             senderType: senderType,
             replyTo: messageId,
             threadId: threadId,
-            userId: userIdParaResposta
+            ReferenciaID: referenciaIDParaResposta
         });
     } catch (error) {
         console.error(" [SUPPORT] Erro ao criar resposta:", error);
@@ -440,12 +499,12 @@ router.post("/messages/:id/reply", verifyToken, async (req, res) => {
 router.post("/messages", verifyToken, async (req, res) => {
     try {
         await ensureTable();
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
         const {
             message
         } = req.body || {};
 
-        console.log(" [SUPPORT] Nova mensagem de userId:", userId);
+        console.log(" [SUPPORT] Nova mensagem de ReferenciaID:", referenciaID);
 
         // Validações
         if (!message || typeof message !== "string" || !message.trim()) {
@@ -456,14 +515,14 @@ router.post("/messages", verifyToken, async (req, res) => {
 
         // Buscar informações do utilizador para logs
         const [userInfo] = await pool.query(
-            "SELECT Id, Nome, Email, PerfilId FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT ReferenciaID, Nome, Email, PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (userInfo.length > 0) {
             const perfil = userInfo[0].PerfilId === 1 ? 'Admin' : userInfo[0].PerfilId === 2 ? 'User' : 'Desconhecido';
             console.log(" [SUPPORT] Utilizador:", {
-                id: userInfo[0].Id,
+                ReferenciaID: userInfo[0].ReferenciaID,
                 nome: userInfo[0].Nome,
                 perfil
             });
@@ -471,8 +530,8 @@ router.post("/messages", verifyToken, async (req, res) => {
 
         // Inserir nova mensagem (primeira mensagem da thread)
         const [result] = await pool.query(
-            "INSERT INTO SupportMessages (userId, message, senderType) VALUES (?, ?, 'user')",
-            [userId, message.trim()]
+            "INSERT INTO supportmessages (ReferenciaID, message, senderType) VALUES (?, ?, 'user')",
+            [referenciaID, message.trim()]
         );
 
         const newMessageId = result.insertId;
@@ -480,18 +539,38 @@ router.post("/messages", verifyToken, async (req, res) => {
         // CRÍTICO: Definir threadId como o próprio ID da mensagem
         // Isso cria uma nova thread - cada mensagem inicial = nova conversa
         await pool.query(
-            "UPDATE SupportMessages SET threadId = ? WHERE id = ?",
+            "UPDATE supportmessages SET threadId = ? WHERE id = ?",
             [newMessageId, newMessageId]
         );
 
         console.log(" [SUPPORT] Nova thread criada:", newMessageId);
+
+        // Enviar resposta automática (assíncrono, não bloqueia a resposta)
+        setImmediate(async () => {
+            try {
+                const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
+                
+                // Verificar se deve escalar para suporte humano
+                const shouldEscalate = await shouldEscalateToHuman(newMessageId);
+                
+                if (shouldEscalate) {
+                    await escalateToHuman(newMessageId, referenciaID);
+                } else {
+                    // Enviar resposta automática
+                    await sendAutoResponse(newMessageId, message.trim(), referenciaID);
+                }
+            } catch (autoSupportError) {
+                console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
+                // Não falhar a requisição se a resposta automática falhar
+            }
+        });
 
         res.status(201).json({
             id: newMessageId,
             message: message.trim(),
             senderType: 'user',
             threadId: newMessageId, // threadId = id (primeira mensagem = thread)
-            userId: userId
+            ReferenciaID: referenciaID
         });
     } catch (error) {
         console.error(" [SUPPORT] Erro ao criar mensagem:", error);
@@ -511,12 +590,12 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
     try {
         await ensureTable();
         const threadId = parseInt(req.params.id);
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
 
         // Verificar se o usuário é admin
         const [userRows] = await pool.query(
-            "SELECT PerfilId FROM Utilizadores WHERE Id = ?",
-            [userId]
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
         );
 
         if (userRows.length === 0 || userRows[0].PerfilId !== 1) {
@@ -527,7 +606,7 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
 
         // Verificar se a thread existe
         const [threadRows] = await pool.query(
-            "SELECT id FROM SupportMessages WHERE id = ? OR threadId = ? LIMIT 1",
+            "SELECT id FROM supportmessages WHERE id = ? OR threadId = ? LIMIT 1",
             [threadId, threadId]
         );
 
@@ -539,11 +618,11 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
 
         // Excluir todas as mensagens da thread
         await pool.query(
-            "DELETE FROM SupportMessages WHERE id = ? OR threadId = ?",
+            "DELETE FROM supportmessages WHERE id = ? OR threadId = ?",
             [threadId, threadId]
         );
 
-        console.log(`[SUPPORT] Thread ${threadId} excluída por admin ${userId}`);
+        console.log(`[SUPPORT] Thread ${threadId} excluída por admin ${referenciaID}`);
 
         res.json({
             status: "ok",

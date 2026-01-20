@@ -4,11 +4,11 @@ import { PLANOS_STRIPE } from '../config/stripe.js';
 /**
  * Criar sessão de checkout do Stripe
  */
-export async function criarSessaoCheckout(userId, planoId, userEmail) {
+export async function criarSessaoCheckout(referenciaID, planoId, userEmail) {
   try {
     const plano = PLANOS_STRIPE[planoId];
     
-    console.log(` [PAYMENT] Criando checkout para usuário ${userId}, plano ${planoId}`);
+    console.log(` [PAYMENT] Criando checkout para usuário ${referenciaID}, plano ${planoId}`);
     console.log(` [PAYMENT] Plano encontrado:`, {
       nome: plano?.nome,
       preco: plano?.preco,
@@ -127,12 +127,12 @@ export async function criarSessaoCheckout(userId, planoId, userEmail) {
       cancel_url: cancelUrl,
       customer_email: userEmail,
       metadata: {
-        userId: userId.toString(),
+        ReferenciaID: referenciaID,
         planoId: planoId.toString()
       },
       subscription_data: {
         metadata: {
-          userId: userId.toString(),
+          ReferenciaID: referenciaID,
           planoId: planoId.toString()
         }
       }

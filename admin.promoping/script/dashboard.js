@@ -152,7 +152,14 @@
             document.getElementById('statUsersActive').textContent = usersData.total || 0;
             document.getElementById('statProductsMonitored').textContent = productsData.total || 0;
             document.getElementById('statSupportThreads').textContent = (supportData.items || []).length;
-            document.getElementById('statBugsOpen').textContent = (bugsData.bugs || []).filter(b => b.Status === 'open').length;
+            // Contar bugs com status "Aberto" ou "Em Progresso"
+            const bugsOpen = (bugsData.bugs || []).filter(b => {
+                const status = (b.Status || '').toLowerCase();
+                return status === 'open' || status === 'aberto' || 
+                       status === 'em progresso' || status === 'em_progresso' ||
+                       status === 'in progress' || status === 'in_progress';
+            }).length;
+            document.getElementById('statBugsOpen').textContent = bugsOpen;
 
             // Carregar atividade recente
             await loadRecentActivity();

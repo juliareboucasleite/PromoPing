@@ -67,6 +67,8 @@ import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
+import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
+import blogRoutes from "./routes/blog.js"; // Blog
 import { verifyToken} from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
@@ -252,13 +254,13 @@ app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 // ================== ROTAS ==================
 app.get("/api/user/me", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const referenciaID = req.user.ReferenciaID;
 
         // Buscar dados completos do usuário incluindo foto de perfil e PerfilId
         try {
             const [rows] = await pool.query(
-                "SELECT Id, Nome, Email, Telefone, FotoPerfil, Data_Registo, cidade, location, PerfilId FROM Utilizadores WHERE Id = ?",
-                [userId]
+                "SELECT ReferenciaID, Nome, Email, Telefone, FotoPerfil, DataRegisto, cidade, location, PerfilId FROM Utilizadores WHERE ReferenciaID = ?",
+                [referenciaID]
             );
 
             if (rows.length > 0) {
@@ -266,7 +268,7 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
                 return res.json({
                     status: "ok",
                     user: {
-                        id: user.Id,
+                        ReferenciaID: user.ReferenciaID,
                         nome: user.Nome || user.name,
                         name: user.Nome || user.name,
                         email: user.Email || user.email,
@@ -284,8 +286,8 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
             // Se campo FotoPerfil não existe, buscar sem ele mas com PerfilId
             try {
                 const [rows] = await pool.query(
-                    "SELECT Id, Nome, Email, Telefone, Data_Registo, PerfilId FROM Utilizadores WHERE Id = ?",
-                    [userId]
+                    "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, PerfilId FROM Utilizadores WHERE ReferenciaID = ?",
+                    [referenciaID]
                 );
 
                 if (rows.length > 0) {
@@ -293,7 +295,7 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
                     return res.json({
                         status: "ok",
                         user: {
-                            id: user.Id,
+                            ReferenciaID: user.ReferenciaID,
                             nome: user.Nome || user.name,
                             name: user.Nome || user.name,
                             email: user.Email || user.email,
@@ -336,6 +338,8 @@ app.use("/api/payment", paymentRoutes); // Pagamentos
 app.use("/api/exportar", exportRoutes); // Exportação
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
+app.use("/api/newsletter", newsletterRoutes); // Newsletter
+app.use("/api/blog", blogRoutes); // Blog
 app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
@@ -563,6 +567,13 @@ if (!isProduction) {
         const filePath = buildExists ?
             path.join(buildPath, "About/blog.html") :
             path.join(__dirname, "../frontend/pages/inc/blog.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/blog/article/:id", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "About/blog-article.html") :
+            path.join(__dirname, "../frontend/pages/About/blog-article.html");
         res.sendFile(filePath);
     });
 
@@ -916,15 +927,26 @@ import {
 import {
     DeactivatedAccountsManager
 } from './services/deactivatedAccountsManager.js';
+import {
+    initializeAllTables
+} from './database/tableManager.js';
 
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
 
 // ================== INICIAR SERVIDOR ==================
-const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
     console.log(`\nPromoPing rodando em http://${HOST}:${PORT}`);
+    
+    // Inicializar todas as tabelas definidas
+    try {
+        await initializeAllTables();
+    } catch (error) {
+        console.error('[INIT] Erro ao inicializar tabelas (sistema continuará):', error.message);
+        // Não bloquear inicialização do servidor se houver erro nas tabelas
+    }
+    
     if (process.env.NODE_ENV === 'development') {
         // Mostrar também o IP local da rede para acesso via dispositivos móveis
         const os = await import('os');
