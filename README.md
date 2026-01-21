@@ -2,6 +2,7 @@
 [![LICENSE](https://img.shields.io/badge/LICENSE-GPL--2.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
 [![Site](https://img.shields.io/badge/site-Promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
+[![Apresentação](https://img.shields.io/badge/apresentacao-brightgreen?logo=Canva&logoColor=white&label=Site)](https://www.canva.com/design/DAG9u04cSXY/S5BJ6T8clNUSVyWbkucElg/view?utm_content=DAG9u04cSXY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h52d685fdd2)
 
 # PromoPing
 O PromoPing é um sistema de monitoramento de preços para consumidores portugueses e futuramente para todo mundo. Permite acompanhar produtos em diversas lojas online e receber notificações automáticas quando os preços atingem metas definidas. Inicialmente a ideia surgiu como apenas "Bot Fiscal de preço" e o nome “PromoPing” apareceu num daqueles momentos em que o desespero e criatividade forçada onde se busca nomes no ChatGpt. Parece significar “ping de promoções” e até soa profissional. Nos dias normais, lembra mais “pinga promoções”, porque resolve disparar alertas todos de uma vez. E quando alguma loja muda o HTML sem avisar, o nome transforma-se facilmente em “programa maldito que só pinga quando quer”. No fim, ficou porque funciona… e porque nenhum nome melhor surgiu antes da paciência acabar.
