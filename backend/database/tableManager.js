@@ -16,6 +16,11 @@ import { pool } from './db.js';
 /**
  * Obter query original para uso interno (evitar recursão)
  * Acessa pool._originalQuery de forma lazy para evitar referência circular
+ * 
+ * ===== ATENÇÃO: NÃO MEXA NESSA FUNÇÃO =====
+ * Essa função aqui evita loops infinitos quando recria tabelas
+ * Se tu mudar isso, pode criar um loop infinito e derrubar o servidor
+ * Deixa essa merda quieta, ela faz o trabalho dela perfeitamente
  */
 function getOriginalQuery() {
     // pool._originalQuery é definido em db.js antes de modificar pool.query
@@ -701,12 +706,21 @@ export async function handleTableError(error, tableName = null) {
  * 
  * IMPORTANTE: Query é reexecutada apenas UMA vez após recriação.
  * Erros subsequentes são propagados normalmente.
+ * 
+ * CARALHO, NÃO MEXA NESSA FUNÇÃO SEM ENTENDER O QUE ELA FAZ
+ * Essa função aqui é mágica: quando uma tabela não existe, ela recria automaticamente
+ * Se tu fuder a lógica de prevenção de loops, pode criar um loop infinito
+ * E aí o servidor vai ficar travado tentando recriar tabela infinitamente
+ * A parte do queriesInRecovery é ESSENCIAL, não remove ela
  */
 export async function queryWithTableRecovery(sql, params = []) {
     // Criar uma chave única para esta query (para prevenir loops)
+    // ESSA CHAVE AQUI É O QUE PREVINE LOOPS INFINITOS
+    // Se tu mudar a forma de gerar a chave, pode quebrar a proteção
     const queryKey = `${sql.substring(0, 50)}_${JSON.stringify(params).substring(0, 50)}`;
     
     // Se esta query já está em processo de recuperação, não tentar novamente
+    // ESSA VERIFICAÇÃO AQUI É CRÍTICA, sem ela pode ter loop infinito
     if (queriesInRecovery.has(queryKey)) {
         throw new Error(
             `[TABLE MANAGER] Query já está em processo de recuperação. ` +
@@ -716,12 +730,15 @@ export async function queryWithTableRecovery(sql, params = []) {
     
     try {
         // Usar query original para evitar recursão infinita
+        // NÃO MUDE ISSO, usa originalQuery pra não criar loop
         const originalQuery = getOriginalQuery();
         return await originalQuery(sql, params);
     } catch (error) {
         // Verificar se é ER_NO_SUCH_TABLE antes de tentar recuperação
+        // Só recria tabela se for esse erro específico, outros erros são propagados
         if (error.code === 'ER_NO_SUCH_TABLE') {
             // Marcar query como em recuperação
+            // ESSA LINHA AQUI PREVINE QUE A MESMA QUERY TENTE RECRIAR A TABELA VÁRIAS VEZES
             queriesInRecovery.add(queryKey);
             
             try {
