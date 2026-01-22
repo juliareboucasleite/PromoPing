@@ -1,9 +1,15 @@
-// ================== MIDDLEWARE DE VERIFICAÇÃO DE PLANOS ==================
+// Essa merda aqui controla quem pode acessar o quê baseado no plano
+// Se tu fuder isso, pode dar acesso premium pra quem não pagou
+// Ou bloquear quem pagou, e aí vai ter cliente puto reclamando
+// NÃO MEXA NESSA PORRA SEM ENTENDER A LÓGICA DE PLANOS
 
 /**
  * Middleware para verificar se o usuário tem permissão para acessar recursos baseado no plano
  * @param {Array} planosPermitidos - Array com os nomes dos planos permitidos
  * @returns {Function} Middleware function
+ * 
+ * ATENÇÃO: Os nomes dos planos são: 'Free', 'Basic', 'Standard', 'Premium'
+ * NÃO MUDE ESSES NOMES SEM ATUALIZAR TODA A BASE DE DADOS
  */
 export function verificarPlanoPermitido(planosPermitidos = []) {
   return (req, res, next) => {
@@ -77,6 +83,11 @@ export function verificarLimiteUso(tipoRecurso) {
       const userPlano = req.user?.plano?.nome || "Free";
       
       // Definir limites por plano
+      // ESSES LIMITES AQUI SÃO O QUE DEFINE O QUE CADA PLANO PODE FAZER
+      // Se tu mudar esses números, pode dar mais ou menos do que o plano permite
+      // E aí vai ter cliente reclamando ou aproveitando de graça
+      // -1 = ilimitado, qualquer outro número = limite máximo
+      // NÃO MUDE ESSES VALORES SEM CONSULTAR A EQUIPE PRIMEIRO
       const limites = {
         Free: { incidentes: 5, exportacoes: 0, relatorios: 0 },
         Basic: { incidentes: 100, exportacoes: 10, relatorios: 5 },
