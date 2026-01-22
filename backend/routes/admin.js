@@ -1,6 +1,6 @@
 /**
- * Rotas Administrativas - PromoPing Admin
- * Endpoints para o painel administrativo
+ * Rotas Administrativas
+ * Endpoints para o painel administrativo porfavor nao mexa nisso caso nao saiba :)
  */
 
 import express from "express";
