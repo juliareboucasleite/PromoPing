@@ -91,6 +91,10 @@ router.post("/verify-session", verifyToken, async (req, res) => {
     const resultado = await verificarSessaoCheckout(session_id);
     
     // Se o pagamento foi bem-sucedido, salvar a assinatura
+    // ATENÇÃO: Essa parte aqui salva a assinatura no banco DEPOIS do pagamento
+    // Se tu fuder isso, o usuário paga mas não recebe o plano
+    // E aí vai ter que lidar com cliente puto reclamando
+    // NÃO MEXA NESSA MERDA SEM ENTENDER O FLUXO COMPLETO
     if (resultado.session.status === 'paid' && resultado.session.subscription_id) {
       try {
         // Buscar informações da assinatura no Stripe
@@ -98,6 +102,8 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         const customer = await stripe.customers.retrieve(resultado.session.customer_id);
         
         // Buscar informações do plano baseado no price_id
+        // ESSE PRICE_ID É O QUE DEFINE QUAL PLANO O CARA COMPROU
+        // Se tu pegar errado, vai dar o plano errado pro usuário
         const priceId = subscription.items.data[0].price.id;
         const [planoData] = await db.query(`
           SELECT p.nome, p.preco, p.limite_produtos, p.verificacao_intervalo, p.permite_sms, p.relatorios
@@ -140,7 +146,13 @@ router.post("/verify-session", verifyToken, async (req, res) => {
           planoNome
         ]);
         
+        // ===== ATUALIZANDO PLANO DO USUÁRIO =====
         // Atualizar plano do usuário na tabela configutilizador
+        // ESSA PARTE AQUI É CRÍTICA: atualiza o plano do usuário DEPOIS do pagamento
+        // Se tu fuder essa query, o usuário paga mas continua no plano Free
+        // E aí ele vai reclamar que pagou e não recebeu o plano
+        // Os IDs dos planos são: 1=Free, 2=Basic, 3=Standard, 4=Premium
+        // NÃO MUDE ESSES NÚMEROS SEM SABER O QUE TÁ FAZENDO
         const planoId = planoData.length > 0 ? 
           (planoNome === 'Basic' ? 2 : planoNome === 'Standard' ? 3 : planoNome === 'Premium' ? 4 : 1) : 1;
           
