@@ -412,9 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = document.getElementById('loginPassword').value;
 
         if (!email || !password) {
-          if (typeof window.showError === 'function') {
-            window.showError('Erro', 'Por favor, preencha todos os campos');
-          }
+          // Mensagem de erro removida - não mostrar notificação
+          // Apenas mostrar no elemento de erro do modal se necessário
           return;
         }
 
@@ -453,8 +452,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.accountReactivated) {
               localStorage.setItem("accountReactivated", "true");
             }
+            // Mostrar apenas logo pulsando (sem texto)
             if (typeof window.showSuccess === 'function') {
-              window.showSuccess("Bem-vindo!", "Bem-vindo ao PromoPing! Redirecionando...");
+              window.showSuccess("", "", 2000);
             }
             setTimeout(() => {
               window.location.href = "/dashboard";

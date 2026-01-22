@@ -809,11 +809,12 @@ body.login-page {
 }
 
 .notification.success {
-  border-left: 4px solid #10b981 !important;
+  border-left: none !important;
+  border: none !important;
 }
 
 .notification.success::before {
-  background: linear-gradient(90deg, #10b981, #059669) !important;
+  display: none !important;
 }
 
 .notification.warning {

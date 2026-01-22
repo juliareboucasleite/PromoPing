@@ -2073,13 +2073,27 @@ body.theme-promoping::before {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: background 0.3s ease;
 }
 
 .notification-container.active {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   pointer-events: auto;
+}
+
+/* Quando é apenas logo, não mostrar fundo escuro - ESPECIFICIDADE MÁXIMA */
+.notification-container.logo-only-mode,
+.notification-container.active.logo-only-mode,
+.notification-container.logo-only-mode.active,
+body .notification-container.logo-only-mode.active {
+  background: rgba(0, 0, 0, 0) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
 }
 
 .notification {
@@ -2120,7 +2134,15 @@ body.theme-promoping::before {
 .notification.info {
   background: transparent !important;
   border: none !important;
+  border-left: none !important;
   box-shadow: none !important;
+}
+
+/* Remover qualquer pseudo-elemento verde */
+.notification.success::before,
+.notification.success::after {
+  display: none !important;
+  content: none !important;
 }
 
 .notification-header {
@@ -2137,6 +2159,15 @@ body.theme-promoping::before {
   height: auto;
   animation: pulse 2s ease-in-out infinite;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+/* Quando é apenas logo (sem título/mensagem), centralizar melhor */
+.notification.logo-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  min-height: 200px;
 }
 
 @keyframes pulse {

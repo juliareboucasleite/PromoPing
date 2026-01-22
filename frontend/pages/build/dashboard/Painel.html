@@ -213,7 +213,13 @@
     }
 
     .notification.success {
-      border-left: 4px solid #28a745;
+      border-left: none !important;
+      border: none !important;
+    }
+    
+    .notification.success::before,
+    .notification.success::after {
+      display: none !important;
     }
 
     .notification-content {

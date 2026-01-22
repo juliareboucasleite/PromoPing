@@ -44,14 +44,29 @@ class NotificationSystem {
     const id = this.generateId();
     const notification = this.createNotification(id, type, title, message, closable);
     
-    // Limpar notificações anteriores
+    // Limpar notificações anteriores (mas manter classes do container)
+    const isLogoOnly = !title && !message;
     this.clear();
     
     this.container.appendChild(notification);
     this.notifications.set(id, notification);
 
-    // Ativar container
-    this.container.classList.add('active');
+    // Ativar container - se for apenas logo, não adicionar fundo escuro
+    // Adicionar logo-only-mode ANTES de active para garantir que o CSS funcione
+    if (isLogoOnly) {
+      this.container.classList.add('logo-only-mode', 'active');
+      // Forçar remoção do blur via JavaScript também
+      this.container.style.background = 'rgba(0, 0, 0, 0)';
+      this.container.style.backdropFilter = 'none';
+      this.container.style.webkitBackdropFilter = 'none';
+    } else {
+      this.container.classList.remove('logo-only-mode');
+      this.container.classList.add('active');
+      // Restaurar estilos padrão
+      this.container.style.background = '';
+      this.container.style.backdropFilter = '';
+      this.container.style.webkitBackdropFilter = '';
+    }
 
     // Animar entrada
     requestAnimationFrame(() => {
@@ -81,7 +96,7 @@ class NotificationSystem {
 
     // Desativar container
     setTimeout(() => {
-      this.container.classList.remove('active');
+      this.container.classList.remove('active', 'logo-only-mode');
     }, 200);
 
     // Remover do DOM após animação
@@ -107,7 +122,7 @@ class NotificationSystem {
         this.notifications.delete(id);
       }, 400);
     });
-    this.container.classList.remove('active');
+    this.container.classList.remove('active', 'logo-only-mode');
   }
 
   /**
@@ -118,14 +133,27 @@ class NotificationSystem {
     notification.className = `notification ${type}`;
     notification.dataset.id = id;
 
-    const icon = this.getIcon(type);
     const closeButton = closable ? this.createCloseButton(id) : '';
 
-    notification.innerHTML = `
-      <div class="notification-header">
-        <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="notification-logo">
-      </div>
-    `;
+    // Se não tiver título nem mensagem, mostrar apenas o logo (estilo de loading)
+    if (!title && !message) {
+      notification.classList.add('logo-only');
+      notification.innerHTML = `
+        <div class="notification-header">
+          <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="notification-logo">
+        </div>
+      `;
+    } else {
+      // Notificação normal com título e mensagem
+      notification.innerHTML = `
+        <div class="notification-header">
+          <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="notification-logo">
+        </div>
+        ${title ? `<div class="notification-title">${title}</div>` : ''}
+        ${message ? `<div class="notification-message">${message}</div>` : ''}
+        ${closeButton}
+      `;
+    }
 
     return notification;
   }
@@ -144,42 +172,6 @@ class NotificationSystem {
     `;
   }
 
-  /**
-   * Retorna ícone baseado no tipo
-   */
-  getIcon(type) {
-    const icons = {
-      success: `
-        <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22,4 12,14.01 9,11.01"></polyline>
-        </svg>
-      `,
-      error: `
-        <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="15" y1="9" x2="9" y2="15"></line>
-          <line x1="9" y1="9" x2="15" y2="15"></line>
-        </svg>
-      `,
-      warning: `
-        <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-          <line x1="12" y1="9" x2="12" y2="13"></line>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-      `,
-      info: `
-        <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-      `
-    };
-
-    return icons[type] || icons.info;
-  }
 
   /**
    * Gera ID único para notificação
@@ -236,4 +228,4 @@ window.alert = (message) => {
   window.notificationSystem.error('Aviso', message, 5000);
 };
 
-console.log('🔔 Sistema de notificações PromoPing carregado');
+console.log('Sistema de notificações PromoPing carregado');
