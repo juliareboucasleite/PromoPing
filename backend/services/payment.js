@@ -1,8 +1,14 @@
 import stripe from '../config/stripe.js';
 import { PLANOS_STRIPE } from '../config/stripe.js';
 
+// ATENÇÃO: Essa função lida com DINHEIRO REAL
+// Se tu fuder isso aqui, pode dar dinheiro de graça ou quebrar pagamentos
+// NÃO MEXA NESSA MERDA SEM SABER EXATAMENTE O QUE TÁ FAZENDO
+// Se der merda, a culpa é tua, não minha
+
 /**
  * Criar sessão de checkout do Stripe
+ * CARALHO, NÃO MEXA NESSA FUNÇÃO SEM ENTENDER STRIPE PRIMEIRO
  */
 export async function criarSessaoCheckout(referenciaID, planoId, userEmail) {
   try {
@@ -114,25 +120,29 @@ export async function criarSessaoCheckout(referenciaID, planoId, userEmail) {
       cancelUrl 
     });
     
+    // Essa parte aqui cria a sessão de pagamento no Stripe
+    // Se tu mudar os metadata ou os URLs, pode quebrar a associação com o usuário
+    // E aí o pagamento vai pro Stripe mas não vai associar com a conta certa
+    // DEIXA ESSA MERDA QUIETA
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price: plano.stripe_price_id,
+          price: plano.stripe_price_id, // NÃO MEXA NESSE PRICE_ID, é o que define o plano
           quantity: 1,
         },
       ],
-      mode: 'subscription',
-      success_url: successUrl,
+      mode: 'subscription', // NÃO MUDE PRA 'payment', vai quebrar tudo
+      success_url: successUrl, // Esses URLs são importantes, não mexe
       cancel_url: cancelUrl,
       customer_email: userEmail,
       metadata: {
-        ReferenciaID: referenciaID,
+        ReferenciaID: referenciaID, // ESSE METADATA É ESSENCIAL, sem ele não associa o pagamento
         planoId: planoId.toString()
       },
       subscription_data: {
         metadata: {
-          ReferenciaID: referenciaID,
+          ReferenciaID: referenciaID, // Duplicado mas necessário, não remove
           planoId: planoId.toString()
         }
       }
