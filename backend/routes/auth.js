@@ -332,7 +332,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     // Google OAuth não configurado - silencioso
 }
 
-// ================== GITHUB STRATEGY ==================
+// estrategia do github
 if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     // Construir callback URL dinamicamente
     const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
@@ -462,7 +462,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     // GitHub OAuth não configurado - silencioso
 }
 
-// ================== DISCORD STRATEGY ==================
+// uma estrategia que eu peguei de um bot q usei em 2020 usando js
 if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
     // Construir callback URL dinamicamente
     const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
@@ -1182,7 +1182,11 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // Verifica senha
+        // Verifica senha usando bcrypt
+        // ESSA PARTE AQUI É CRÍTICA: valida se a senha está correta
+        // Se tu mudar a lógica, pode deixar qualquer um fazer login
+        // Ou bloquear quem tem a senha certa
+        // NÃO MEXA NESSA MERDA
         const validPassword = await bcrypt.compare(password, user.SenhaHash);
         console.log(" Senha válida?:", validPassword);
 
@@ -1252,9 +1256,13 @@ router.post("/login", async (req, res) => {
                 email: user.Email
             });
         }
-
         // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
         // Se a requisição vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
+        // CARALHO, NÃO MEXA NESSA PARTE
+        // Se tu fuder isso, qualquer zé ruela pode acessar o painel admin
+        // E aí pode foder tudo: deletar usuários, mudar planos, ver dados sensíveis
+        // PerfilId = 1 é ADMIN, qualquer outro número NÃO É ADMIN
+        // NÃO MUDE ESSA LÓGICA SEM ENTENDER AS CONSEQUÊNCIAS
         const referer = req.headers['referer'] || '';
         const origin = req.headers['origin'] || '';
         const adminPanelHeader = req.headers['x-admin-panel'] || req.headers['X-Admin-Panel'] || '';
@@ -1267,6 +1275,8 @@ router.post("/login", async (req, res) => {
 
         if (isAdminPanel) {
             const perfilId = user.PerfilId || user.perfilId;
+            // ESSA VERIFICAÇÃO AQUI É O QUE IMPEDE NÃO-ADMINS DE ACESSAR O PAINEL
+            // Se tu mudar !== 1 pra outra coisa, pode dar acesso ou bloquear admins
             if (perfilId !== 1) {
                 console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} não é admin (PerfilId=${perfilId})`);
                 return res.status(403).json({
@@ -1277,13 +1287,18 @@ router.post("/login", async (req, res) => {
             }
         }
 
-        // Gera token JWT
+        // Gera token JWT após login bem-sucedido
+        // ESSA PARTE AQUI É CRÍTICA: gera o token que permite acesso ao sistema
+        // Se tu mudar o payload (ReferenciaID, email) ou o expiresIn, pode quebrar tudo
+        // O token precisa ter ReferenciaID e email, sem isso não funciona
+        // expiresIn de 7 dias tá perfeito, não mexe nisso
+        // NÃO MEXA NESSA MERDA
         const token = jwt.sign({
-                ReferenciaID: user.ReferenciaID,
-                email: user.Email
+                ReferenciaID: user.ReferenciaID, // ESSE CAMPO É OBRIGATÓRIO, não remove
+                email: user.Email // ESSE TAMBÉM É OBRIGATÓRIO
             },
             process.env.JWT_SECRET, {
-                expiresIn: "7d"
+                expiresIn: "7d" // 7 dias tá bom, não mexe
             }
         );
 
@@ -1637,7 +1652,7 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// ================== ROTAS GOOGLE ==================
+// rotas do google
 router.get("/google", (req, res) => {
     if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         console.log(" Google OAuth configurado:");
@@ -1827,11 +1842,11 @@ router.get("/google/callback", (req, res) => {
         </html>
       `;
                 
-                console.log("[GOOGLE CALLBACK] Redirecionando para dashboard via HTML");
+                console.log("Redirecionando para dashboard via HTML");
                 res.send(html);
             } catch (tokenError) {
-                console.error("[GOOGLE CALLBACK] Erro ao gerar token:", tokenError);
-                console.error("[GOOGLE CALLBACK] Stack trace:", tokenError.stack);
+                console.error("Erro ao gerar token:", tokenError);
+                console.error("Stack trace:", tokenError.stack);
                 
                 // Salvar dados OAuth antes de redirecionar com erro
                 const oauthData = {
@@ -1854,14 +1869,14 @@ router.get("/google/callback", (req, res) => {
             }
         });
     } else {
-        console.error("[GOOGLE CALLBACK] Google OAuth não configurado");
+        console.error("Google OAuth não configurado");
         res.status(400).json({
             error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
-// ================== ROTAS GITHUB ==================
+//rotas onde é usado o github
 router.get("/github", (req, res) => {
     if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         console.log(" GitHub OAuth configurado:");
@@ -1927,7 +1942,6 @@ router.get("/github/callback", (req, res) => {
     }
 });
 
-// ================== ROTAS DISCORD ==================
 
 router.get("/discord", (req, res) => {
     if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
@@ -2175,67 +2189,10 @@ router.get("/discord/callback", async (req, res) => {
     }
 });
 
-// ================== ROTAS DE VERIFICAÇÃO ==================
 
-// Verificar telefone - enviar código por WhatsApp
-router.post("/verificar/telefone", verifyToken, async (req, res) => {
-    try {
-        const referenciaID = req.user.ReferenciaID;
-        const codigo = gerarCodigo();
-
-        // Buscar telefone do usuário
-        const [userRows] = await pool.query(
-            "SELECT Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
-            [referenciaID]
-        );
-
-        if (userRows.length === 0) {
-            return res.status(404).json({
-                status: "error",
-                error: "Usuário não encontrado",
-            });
-        }
-
-        const user = userRows[0];
-
-        if (!user.Telefone) {
-            return res.status(400).json({
-                status: "error",
-                error: "Telefone não cadastrado. Adicione um telefone no perfil primeiro.",
-            });
-        }
-
-        // Salvar código no banco
-        await pool.query(
-            "UPDATE Utilizadores SET CodigoTelefone = ? WHERE ReferenciaID = ?",
-            [codigo, referenciaID]
-        );
-
-        // Enviar WhatsApp
-        const telefoneLimpo = user.Telefone.replace(/[^\d]/g, ''); // Remove caracteres não numéricos
-        const resultadoWhatsApp = await enviarWhatsApp(
-            telefoneLimpo,
-            ` Seu código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-        );
-
-        if (resultadoWhatsApp.success) {
-            console.log(` Código de verificação enviado para ${user.Telefone}: ${codigo}`);
-        } else {
-            console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
-        }
-
-        res.json({
-            status: "ok",
-            message: "Código enviado!",
-        });
-    } catch (err) {
-        console.error("Erro ao enviar código:", err);
-        res.status(500).json({
-            status: "error",
-            error: "Erro ao enviar código de verificação",
-        });
-    }
-});
+// ===== ROTA DE VERIFICAÇÃO DE TELEFONE REMOVIDA =====
+// WhatsApp foi removido do sistema - apenas Email e Discord disponíveis
+// Se precisar verificar telefone, use a rota de verificação de email
 
 // Verificar email - enviar código por email
 router.post("/verificar/email", verifyToken, async (req, res) => {
@@ -2381,81 +2338,55 @@ router.post("/esqueci-senha", async (req, res) => {
             });
         }
 
-        // Determinar se é email ou telefone
-        const isEmail = emailOuTelefone.includes('@');
-        let user = null;
-
-        if (isEmail) {
-            // Buscar por email
-            const [userRows] = await pool.query(
-                "SELECT * FROM Utilizadores WHERE Email = ?",
-                [emailOuTelefone]
-            );
-            user = userRows[0];
-        } else {
-            // Buscar por telefone
-            const [userRows] = await pool.query(
-                "SELECT * FROM Utilizadores WHERE Telefone = ?",
-                [emailOuTelefone]
-            );
-            user = userRows[0];
+        // ===== ATENÇÃO: APENAS EMAIL SUPORTADO =====
+        // WhatsApp foi removido - apenas email disponível para recuperação de senha
+        // Verificar se é email válido
+        if (!emailOuTelefone.includes('@')) {
+            return res.status(400).json({
+                status: "error",
+                error: "Apenas email é suportado para recuperação de senha. WhatsApp foi removido.",
+            });
         }
 
-        if (!user) {
+        // Buscar por email
+        const [userRows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ?",
+            [emailOuTelefone]
+        );
+
+        if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
                 error: "Usuário não encontrado",
             });
         }
 
+        const user = userRows[0];
         const codigo = gerarCodigo();
 
-        // Salvar código no campo apropriado
-        if (isEmail) {
-            await pool.query(
-                "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
-                [codigo, user.ReferenciaID]
-            );
+        // Salvar código no banco
+        await pool.query(
+            "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
+            [codigo, user.ReferenciaID]
+        );
+
+        // Enviar por email
+        const emailResult = await enviarEmail(
+            user.Email,
+            "PromoPing - Recuperação de senha",
+            `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
+        );
+
+        if (emailResult.success) {
+            console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
         } else {
-            await pool.query(
-                "UPDATE Utilizadores SET CodigoTelefone = ? WHERE ReferenciaID = ?",
-                [codigo, user.ReferenciaID]
-            );
-        }
-
-        // Enviar código pelo canal apropriado
-        if (isEmail) {
-            // Enviar por email
-            const emailResult = await enviarEmail(
-                user.Email,
-                "PromoPing - Recuperação de senha",
-                `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
-            );
-
-            if (emailResult.success) {
-                console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
-            } else {
-                console.log(" Email não configurado, mas código salvo:", codigo);
-            }
-        } else {
-            // Enviar por WhatsApp
-            const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
-            const resultadoWhatsApp = await enviarWhatsApp(
-                telefoneLimpo,
-                ` Seu código de recuperação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-            );
-
-            if (resultadoWhatsApp.success) {
-                console.log(` Código de recuperação enviado para ${user.Telefone}: ${codigo}`);
-            } else {
-                console.error(` Erro ao enviar WhatsApp para ${user.Telefone}:`, resultadoWhatsApp.error);
-            }
+            console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
         res.json({
             status: "ok",
-            message: `Código enviado por ${isEmail ? 'email' : 'WhatsApp'}!`,
-            canal: isEmail ? 'email' : 'whatsapp'
+            message: "Código enviado por email!",
+            canal: 'email'
         });
     } catch (err) {
         console.error(" Erro na recuperação de senha:", err);
@@ -2489,32 +2420,30 @@ router.post("/resetar-senha", async (req, res) => {
             });
         }
 
-        // Determinar se é email ou telefone
-        const isEmail = emailOuTelefone.includes('@');
-        let user = null;
-
-        if (isEmail) {
-            // Buscar por email e verificar código de email
-            const [userRows] = await pool.query(
-                "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
-                [emailOuTelefone, codigo]
-            );
-            user = userRows[0];
-        } else {
-            // Buscar por telefone e verificar código de telefone
-            const [userRows] = await pool.query(
-                "SELECT * FROM Utilizadores WHERE Telefone = ? AND CodigoTelefone = ?",
-                [emailOuTelefone, codigo]
-            );
-            user = userRows[0];
+        // ===== ATENÇÃO: APENAS EMAIL SUPORTADO =====
+        // WhatsApp foi removido - apenas email disponível para reset de senha
+        // Verificar se é email válido
+        if (!emailOuTelefone.includes('@')) {
+            return res.status(400).json({
+                status: "error",
+                error: "Apenas email é suportado para reset de senha. WhatsApp foi removido.",
+            });
         }
 
-        if (!user) {
+        // Buscar por email e verificar código de email
+        const [userRows] = await pool.query(
+            "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
+            [emailOuTelefone, codigo]
+        );
+
+        if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
                 error: "Código inválido ou expirado",
             });
         }
+
+        const user = userRows[0];
 
         // Hash da nova senha
         const saltRounds = 10;
@@ -2526,7 +2455,7 @@ router.post("/resetar-senha", async (req, res) => {
             [hashedPassword, user.ReferenciaID]
         );
 
-        console.log(` Senha redefinida com sucesso para usuário ${user.ReferenciaID} via ${isEmail ? 'email' : 'WhatsApp'}`);
+        console.log(` Senha redefinida com sucesso para usuário ${user.ReferenciaID} via email`);
 
         res.json({
             status: "ok",
@@ -2541,7 +2470,6 @@ router.post("/resetar-senha", async (req, res) => {
     }
 });
 
-// ================== ROTAS DE VERIFICAÇÃO ADICIONAIS ==================
 
 // Reenviar código de verificação (para usuários não logados)
 router.post("/reenviar-codigo", async (req, res) => {
@@ -2608,19 +2536,8 @@ router.post("/reenviar-codigo", async (req, res) => {
             console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
-        // Se tem telefone, também enviar por WhatsApp
-        if (user.Telefone) {
-            try {
-                const telefoneLimpo = user.Telefone.replace(/[^\d]/g, '');
-                await enviarWhatsApp(
-                    telefoneLimpo,
-                    ` Seu novo código de verificação é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore esta mensagem.`
-                );
-                console.log(` Novo código de verificação enviado para ${user.Telefone}: ${codigo}`);
-            } catch (whatsappError) {
-                console.log(" WhatsApp não configurado");
-            }
-        }
+        // ===== WHATSAPP REMOVIDO =====
+        // WhatsApp foi removido do sistema - apenas email disponível
 
         res.json({
             status: "ok",
@@ -2702,7 +2619,6 @@ router.post("/verificar-codigo", async (req, res) => {
     }
 });
 
-// ================== ROTAS DE PERFIL ==================
 
 // Atualizar telefone do usuário
 router.put("/telefone", verifyToken, async (req, res) => {
