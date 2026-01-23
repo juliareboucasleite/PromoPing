@@ -202,7 +202,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ===== PASSWORD TOGGLE =====
+
 function toggleLoginPassword() {
   const passwordInput = document.getElementById("loginPassword");
   const toggleBtn = document.querySelector("#loginModal .password-toggle");
@@ -452,13 +452,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.accountReactivated) {
               localStorage.setItem("accountReactivated", "true");
             }
-            // Mostrar apenas logo pulsando (sem texto)
-            if (typeof window.showSuccess === 'function') {
-              window.showSuccess("", "", 2000);
-            }
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 2000);
+            // Redirecionar diretamente para o dashboard
+            window.location.href = "/dashboard";
           } else {
             // Tratar erros do servidor
             const errorMessage = data.error || data.message || "Email ou senha incorretos";
@@ -468,12 +463,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (errorElement) {
               errorElement.textContent = errorMessage;
               errorElement.style.display = 'block';
-            }
-            
-            if (typeof window.showError === 'function') {
-              window.showError("Erro de Login", errorMessage);
-            } else {
-              alert("Erro: " + errorMessage);
             }
           }
         } catch (err) {
@@ -485,12 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
           if (errorElement) {
             errorElement.textContent = errorMessage;
             errorElement.style.display = 'block';
-          }
-          
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", errorMessage);
-          } else {
-            alert("Erro: " + errorMessage);
           }
         } finally {
           // Reabilitar botão
