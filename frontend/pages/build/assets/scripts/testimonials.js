@@ -8,6 +8,30 @@
   const API_ENDPOINT = '/api/status/reviews/public';
   const DEFAULT_LIMIT = 4;
 
+  // Traduções para inglês britânico
+  const translations = {
+    'A carregar depoimentos...': 'Loading testimonials...',
+    'Ainda não há depoimentos disponíveis.': 'No testimonials available yet.',
+    'Erro ao carregar depoimentos.': 'Error loading testimonials.',
+    'Anónimo': 'Anonymous',
+    'Utilizador': 'User',
+    'Utilizador do Bot': 'Bot User'
+  };
+
+  // Verifica se está em inglês
+  function isEnglish() {
+    const langText = document.getElementById('lang-text');
+    return langText && langText.textContent.trim() === 'EN';
+  }
+
+  // Traduz texto se estiver em inglês
+  function translate(text) {
+    if (isEnglish() && translations[text]) {
+      return translations[text];
+    }
+    return text;
+  }
+
   /**
    * Gera estrelas baseado no rating (verdes como no exemplo)
    */
@@ -26,7 +50,12 @@
    * Gera iniciais do nome
    */
   function getInitials(name) {
-    if (!name || name === 'Anónimo' || name === 'Utilizador') {
+    const anonymousPT = 'Anónimo';
+    const anonymousEN = 'Anonymous';
+    const userPT = 'Utilizador';
+    const userEN = 'User';
+    
+    if (!name || name === anonymousPT || name === anonymousEN || name === userPT || name === userEN) {
       return 'U';
     }
     const parts = name.trim().split(' ');
@@ -57,11 +86,17 @@
     const stars = generateStars(rating);
     const initials = getInitials(review.author.name);
     const text = formatTestimonialText(review.text);
-    const authorName = review.author.isAnonymous ? 'Anónimo' : (review.author.name || 'Utilizador');
-    const role = review.type === 'site' ? 'Utilizador' : 
-                 review.type === 'bot' ? 'Utilizador do Bot' : 
-                 review.type === 'suporte' ? 'Utilizador' :
-                 'Utilizador';
+    
+    // Determina o nome do autor (com tradução)
+    let authorName = review.author.isAnonymous ? 'Anónimo' : (review.author.name || 'Utilizador');
+    authorName = translate(authorName);
+    
+    // Determina o role (com tradução)
+    let role = review.type === 'site' ? 'Utilizador' : 
+               review.type === 'bot' ? 'Utilizador do Bot' : 
+               review.type === 'suporte' ? 'Utilizador' :
+               'Utilizador';
+    role = translate(role);
 
     card.innerHTML = `
       <div class="testimonial-stars">
@@ -101,8 +136,9 @@
     }
 
     try {
-      // Mostrar loading state
-      track.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">A carregar depoimentos...</div>';
+      // Mostrar loading state (com tradução)
+      const loadingText = translate('A carregar depoimentos...');
+      track.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">${loadingText}</div>`;
 
       // Buscar reviews
       const response = await fetch(`${API_ENDPOINT}?limit=30`);
@@ -118,7 +154,8 @@
 
       if (data.status !== 'ok' || !data.reviews || data.reviews.length === 0) {
         console.warn('[TESTIMONIALS] Nenhuma review encontrada. Status:', data.status, 'Count:', data.count);
-        track.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">Ainda não há depoimentos disponíveis.</div>';
+        const noTestimonialsText = translate('Ainda não há depoimentos disponíveis.');
+        track.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">${noTestimonialsText}</div>`;
         return;
       }
 
@@ -151,7 +188,8 @@
 
     } catch (error) {
       console.error('Erro ao carregar depoimentos:', error);
-      track.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">Erro ao carregar depoimentos.</div>';
+      const errorText = translate('Erro ao carregar depoimentos.');
+      track.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 40px; min-width: 100%;">${errorText}</div>`;
     }
   }
 
@@ -172,6 +210,32 @@
   }
 
   init();
+
+  // Recarrega os depoimentos quando o idioma muda (para atualizar traduções)
+  function reloadOnLanguageChange() {
+    // Observa mudanças no texto do idioma
+    const langText = document.getElementById('lang-text');
+    if (langText) {
+      let lastLang = langText.textContent.trim();
+      const observer = new MutationObserver(() => {
+        const currentLang = langText.textContent.trim();
+        // Só recarrega se o idioma realmente mudou (PT <-> EN)
+        if (currentLang !== lastLang && (currentLang === 'PT' || currentLang === 'EN')) {
+          lastLang = currentLang;
+          // Quando o idioma muda, recarrega os depoimentos para atualizar traduções
+          loadTestimonials();
+        }
+      });
+      observer.observe(langText, { childList: true, characterData: true, subtree: true });
+    }
+  }
+
+  // Inicializa observador de mudança de idioma
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reloadOnLanguageChange);
+  } else {
+    reloadOnLanguageChange();
+  }
 
   // Expõe função para recarregar manualmente se necessário
   window.loadTestimonials = loadTestimonials;
