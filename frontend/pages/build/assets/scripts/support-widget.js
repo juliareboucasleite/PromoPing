@@ -1,10 +1,7 @@
 /**
- * PromoPing Support Widget
- * 
  * Widget flutuante para suporte ao cliente com sistema de threads.
  * Cada utilizador pode criar múltiplas conversas (threads) distintas.
  * 
- * Funcionalidades:
  * - Criar nova conversa (nova thread)
  * - Responder à conversa existente
  * - Visualizar histórico de mensagens
@@ -13,10 +10,6 @@
 
 (function () {
   'use strict';
-
-  // ============================================================================
-  // CONFIGURAÇÃO E UTILITÁRIOS
-  // ============================================================================
 
   /**
    * Obtém o token JWT do localStorage
@@ -84,9 +77,6 @@
     }
   }
 
-  // ============================================================================
-  // GESTÃO DE THREADS E MENSAGENS
-  // ============================================================================
 
   /**
    * Carrega todas as mensagens de uma thread específica
@@ -218,9 +208,6 @@
     }
   }
 
-  // ============================================================================
-  // WIDGET PRINCIPAL
-  // ============================================================================
 
   /**
    * Inicializa o widget de suporte no frontend
@@ -264,9 +251,6 @@
     let paginationInfo = null;
     const threadsPerPage = 10;
 
-    // ========================================================================
-    // FUNÇÕES DE GESTÃO DE THREAD
-    // ========================================================================
 
     /**
      * Atualiza o indicador visual da thread atual
@@ -433,9 +417,6 @@
         let result;
 
         if (currentThreadId) {
-          // ============================================================
-          // RESPOSTA À THREAD EXISTENTE
-          // ============================================================
           console.log(' [Support Widget] Respondendo à thread:', currentThreadId);
           
           // Carrega a thread completa para obter a última mensagem
@@ -455,9 +436,6 @@
 
           console.log(' [Support Widget] Resposta enviada à thread:', currentThreadId);
         } else {
-          // ============================================================
-          // CRIAR NOVA THREAD (NOVA CONVERSA)
-          // ============================================================
           console.log(' [Support Widget] Criando nova thread');
           
           result = await fetchJSON('/api/support/messages', {
@@ -489,10 +467,6 @@
         fb.style.color = '#c62828';
       }
     }
-
-    // ========================================================================
-    // EVENT LISTENERS
-    // ========================================================================
 
     // Abrir/fechar widget
     btn.addEventListener('click', async () => {
@@ -554,9 +528,6 @@
     });
   }
 
-  // ============================================================================
-  // FUNÇÕES AUXILIARES DE CRIAÇÃO DE ELEMENTOS
-  // ============================================================================
 
   /**
    * Cria o botão flutuante do widget
@@ -658,9 +629,6 @@
     return modal;
   }
 
-  // ============================================================================
-  // EXPOSIÇÃO GLOBAL
-  // ============================================================================
 
   window.initSupportWidgetFront = initSupportWidgetFront;
 })();

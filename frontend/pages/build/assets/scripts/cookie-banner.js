@@ -1,5 +1,3 @@
-// ===== COOKIE CONSENT BANNER =====
-
 (function() {
   'use strict';
 

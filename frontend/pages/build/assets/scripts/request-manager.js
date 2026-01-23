@@ -1,4 +1,4 @@
-// ===== REQUEST MANAGER - CONTROLE DE REQUISIÇÕES =====
+
 // Sistema centralizado para evitar rate limiting e múltiplas requisições simultâneas
 
 class RequestManager {
