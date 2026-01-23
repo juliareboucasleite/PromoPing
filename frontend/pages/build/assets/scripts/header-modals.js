@@ -1,21 +1,22 @@
 // ===== MODAL CONTROL =====
-// Garantir que as funções estejam no escopo global
+// Garantir que as funções estejam no escopo global - tipo window pra não dar merda depois
 window.openLoginModal = function() {
   const overlay = document.getElementById('modalOverlay');
   const loginModal = document.getElementById('loginModal');
   const registerModal = document.getElementById('registerModal');
   
+  // Se não tiver os elementos essenciais, vaza logo pra não quebrar tudo
   if (!overlay || !loginModal) {
     console.error('Elementos não encontrados:', { overlay, loginModal });
     return;
   }
   
-  // Ocultar modal de registro
+  // Fecha o modal de registro se tiver aberto (não pode ter dois modais abertos ao mesmo tempo)
   if (registerModal) {
     registerModal.style.display = 'none';
   }
   
-  // Limpar mensagens de erro ao abrir o modal
+  // Limpa as mensagens de erro/sucesso anteriores - tipo resetar o estado do modal
   const errorElement = document.getElementById('loginErrorMessage');
   const successElement = document.getElementById('loginSuccessMessage');
   if (errorElement) {
@@ -27,11 +28,11 @@ window.openLoginModal = function() {
     successElement.style.display = 'none';
   }
   
-  // Mostrar modal de login
+  // Mostra o modal e bloqueia o scroll da página (pra não rolar enquanto o modal tá aberto)
   loginModal.style.display = 'block';
   overlay.style.display = 'flex';
   overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden'; // trava o scroll do body
 };
 
 window.openRegisterModal = function() {
@@ -39,6 +40,7 @@ window.openRegisterModal = function() {
   const loginModal = document.getElementById('loginModal');
   const registerModal = document.getElementById('registerModal');
   
+  // Se não tiver os elementos essenciais, vaza logo pra não quebrar tudo
   if (!overlay || !registerModal) {
     console.error('Elementos não encontrados:', { overlay, registerModal });
     return;
@@ -55,13 +57,13 @@ window.openRegisterModal = function() {
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   
-  // Re-initialize tooltip positioning
+  // Re-inicializa o posicionamento dos tooltips (tem que dar um delayzinho pro DOM renderizar direito)
   setTimeout(() => {
     positionInfoTooltip();
   }, 100);
 };
 
-// Manter compatibilidade com chamadas diretas
+// Funções wrapper pra manter compatibilidade com código antigo que chama direto (sem window.)
 function openLoginModal() {
   window.openLoginModal();
 }
@@ -70,6 +72,7 @@ function openRegisterModal() {
   window.openRegisterModal();
 }
 
+// Fecha TODOS os modais de uma vez - tipo reset geral
 window.closeModals = function() {
   const overlay = document.getElementById('modalOverlay');
   const loginModal = document.getElementById('loginModal');
@@ -82,11 +85,12 @@ window.closeModals = function() {
     if (loginModal) loginModal.style.display = 'none';
     if (registerModal) registerModal.style.display = 'none';
     if (verificationModal) verificationModal.style.display = 'none';
-    document.body.style.overflow = '';
+    document.body.style.overflow = ''; // libera o scroll de novo
   }
 };
 
 // ===== QR CODE MODAL =====
+// Modal do QR code pra login (tipo autenticação por QR)
 window.openQRModal = function() {
   const qrModal = document.getElementById('qrModal');
   if (!qrModal) {
@@ -94,7 +98,7 @@ window.openQRModal = function() {
     return;
   }
   
-  // Fechar outros modais
+  // Fecha qualquer outro modal que esteja aberto antes
   window.closeModals();
   
   // Mostrar modal QR
@@ -118,7 +122,7 @@ function closeQRModal() {
   window.closeQRModal();
 }
 
-// Abrir modal de verificação
+// Abre o modal de verificação de email (quando o user se registra, precisa verificar o email)
 window.openVerificationModal = function(email) {
   const overlay = document.getElementById('modalOverlay');
   const verificationModal = document.getElementById('verificationModal');
@@ -140,7 +144,7 @@ window.openVerificationModal = function(email) {
     emailSpan.textContent = email;
   }
   
-  // Limpar campos
+  // Limpa os campos e mensagens anteriores (reset completo)
   const codeInput = document.getElementById('verificationCode');
   if (codeInput) codeInput.value = '';
   
@@ -149,13 +153,13 @@ window.openVerificationModal = function(email) {
   if (errorMsg) errorMsg.textContent = '';
   if (successMsg) successMsg.textContent = '';
   
-  // Mostrar modal de verificação
+  // Mostra o modal e trava o scroll
   verificationModal.style.display = 'block';
   overlay.style.display = 'flex';
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   
-  // Focar no input de código
+  // Foca no input do código automaticamente (UX melhor - user já pode começar a digitar)
   setTimeout(() => {
     if (codeInput) codeInput.focus();
   }, 100);
@@ -166,7 +170,7 @@ function closeModals() {
   window.closeModals();
 }
 
-// Função para inicializar modais quando o header for carregado
+// Inicializa os modais quando a página carrega - garante que começam todos fechados
 function initializeModals() {
   const overlay = document.getElementById('modalOverlay');
   const loginModal = document.getElementById('loginModal');
@@ -184,18 +188,18 @@ function initializeModals() {
   }
 }
 
-// Garantir que os modais estejam ocultos ao carregar
+// Garante que os modais estejam todos fechados quando a página carrega
 document.addEventListener('DOMContentLoaded', function() {
   initializeModals();
   
-  // Também inicializar após um delay para garantir que o header foi carregado
+  // Faz de novo depois de um tempo porque o header pode carregar depois (async loading e essas merdas)
   setTimeout(initializeModals, 500);
 });
 
 // Tornar a função disponível globalmente
 window.initializeModals = initializeModals;
 
-// Fechar modal com ESC
+// Fecha os modais quando o user aperta ESC (padrão de UX - todo mundo espera isso funcionar)
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeModals();
@@ -203,11 +207,13 @@ document.addEventListener('keydown', function(e) {
 });
 
 
+// Mostra/esconde a senha no login (aquele olhinho que todo mundo usa)
 function toggleLoginPassword() {
   const passwordInput = document.getElementById("loginPassword");
   const toggleBtn = document.querySelector("#loginModal .password-toggle");
 
   if (passwordInput && toggleBtn) {
+    // Se tá escondida, mostra (troca pra text)
     if (passwordInput.type === "password") {
       passwordInput.type = "text";
       toggleBtn.innerHTML = `
@@ -251,14 +257,16 @@ function toggleRegisterPassword() {
   }
 }
 
-// Password Strength Checker
+// Verifica a força da senha enquanto o user digita (pra ele saber se a senha é uma merda ou não)
 function checkPasswordStrength(password) {
   const indicator = document.getElementById('passwordStrengthIndicator');
   const fill = document.getElementById('passwordStrengthFill');
   const status = document.getElementById('passwordStrengthStatus');
 
+  // Se não tiver os elementos, vaza
   if (!indicator || !fill || !status) return;
 
+  // Se não tiver senha, esconde o indicador
   if (!password || password.length === 0) {
     indicator.style.display = 'none';
     return;
@@ -270,35 +278,35 @@ function checkPasswordStrength(password) {
   let strengthClass = 'weak';
   let statusText = 'Complica ainda mais';
 
-  // Length check
+  // Conta pontos baseado no tamanho (quanto maior, melhor)
   if (password.length >= 8) strength += 1;
   if (password.length >= 12) strength += 1;
 
-  // Character variety checks
+  // Conta pontos baseado na variedade de caracteres (tem minúscula? maiúscula? número? símbolo?)
   if (/[a-z]/.test(password)) strength += 1;
   if (/[A-Z]/.test(password)) strength += 1;
   if (/[0-9]/.test(password)) strength += 1;
   if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
 
-  // Determine strength level
+  // Define o nível de força baseado na pontuação (quanto mais pontos, mais forte)
   if (strength <= 2) {
-    strengthClass = 'weak';
+    strengthClass = 'weak'; // senha fraca pra caralho
     statusText = 'Complica ainda mais';
   } else if (strength === 3) {
-    strengthClass = 'fair';
+    strengthClass = 'fair'; // ainda tá fraco
     statusText = 'Complica ainda mais';
   } else if (strength === 4) {
-    strengthClass = 'good';
+    strengthClass = 'good'; // tá começando a ficar bom
     statusText = 'Está com bom aspeto';
   } else if (strength === 5) {
-    strengthClass = 'strong';
+    strengthClass = 'strong'; // agora sim tá forte
     statusText = 'Está com bom aspeto';
   } else if (strength >= 6) {
-    strengthClass = 'perfect';
+    strengthClass = 'perfect'; // perfeito, senha do caralho
     statusText = 'Perfeito!';
   }
 
-  // Update UI
+  // Atualiza a UI com a classe e texto correspondentes
   fill.className = 'password-strength-fill ' + strengthClass;
   status.textContent = statusText;
 }
@@ -306,7 +314,7 @@ function checkPasswordStrength(password) {
 // Make function globally available
 window.checkPasswordStrength = checkPasswordStrength;
 
-// Tooltip positioning to prevent horizontal scroll
+// Posiciona os tooltips de forma inteligente pra não causar scroll horizontal (que é uma merda)
 function positionInfoTooltip() {
   const iconWrappers = document.querySelectorAll('.info-icon-wrapper');
   
@@ -323,21 +331,21 @@ function positionInfoTooltip() {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       
-      // Calcular posição ideal
+      // Calcula a posição ideal (começa tentando colocar à direita do ícone)
       let left = iconRect.right + spacing;
       let top = iconRect.top + (iconRect.height / 2);
       
-      // Se não cabe à direita, colocar à esquerda
+      // Se não cabe à direita (vai sair da tela), tenta colocar à esquerda
       if (left + tooltipWidth > viewportWidth - 20) {
         left = iconRect.left - tooltipWidth - spacing;
       }
       
-      // Se não cabe à esquerda também, centralizar
+      // Se não cabe à esquerda também (tela muito pequena), centraliza na tela
       if (left < 20) {
         left = Math.max(20, (viewportWidth - tooltipWidth) / 2);
       }
       
-      // Ajustar verticalmente se necessário
+      // Ajusta verticalmente se o tooltip vai sair da tela em cima ou embaixo
       const tooltipHeight = tooltip.offsetHeight || 100;
       if (top + tooltipHeight / 2 > viewportHeight - 20) {
         top = viewportHeight - tooltipHeight / 2 - 20;
@@ -370,12 +378,14 @@ window.addEventListener('registerModalOpened', () => {
 });
 
 // ===== LOGIN FUNCTIONALITY =====
+// Toda a lógica de login, registro e verificação fica aqui
 document.addEventListener('DOMContentLoaded', function() {
-  // Aguardar makeRequest estar disponível
+  // Espera o makeRequest estar disponível (pode carregar depois, então tem que esperar)
   function waitForMakeRequest(callback, maxAttempts = 50) {
     if (typeof makeRequest === 'function') {
       callback();
     } else if (maxAttempts > 0) {
+      // Tenta de novo depois de 100ms (tipo polling até o script carregar)
       setTimeout(() => waitForMakeRequest(callback, maxAttempts - 1), 100);
     }
   }
@@ -384,11 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Login Form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-      // Limpar mensagens de erro quando o usuário começar a digitar
+      // Limpa as mensagens de erro quando o user começa a digitar de novo (UX melhor)
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
       const errorElement = document.getElementById('loginErrorMessage');
       
+      // Função pra limpar o erro (reutilizável)
       const clearError = () => {
         if (errorElement) {
           errorElement.textContent = '';
@@ -406,18 +417,18 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordInput.addEventListener('focus', clearError);
       }
       
+      // Handler do submit do formulário de login
       loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // previne o submit padrão (não queremos reload da página)
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
 
+        // Validação básica - se não tiver email ou senha, nem tenta fazer request
         if (!email || !password) {
-          // Mensagem de erro removida - não mostrar notificação
-          // Apenas mostrar no elemento de erro do modal se necessário
           return;
         }
 
-        // Desabilitar botão durante o login
+        // Desabilita o botão durante o login pra evitar múltiplos submits (que é uma merda)
         const submitButton = loginForm.querySelector('button[type="submit"]');
         const originalButtonText = submitButton ? submitButton.querySelector('.button-text')?.textContent : null;
         
@@ -429,6 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
+          // Usa makeRequest se disponível, senão usa fetch normal (fallback)
           const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
           const res = await requestFn("/api/auth/login", {
             method: "POST",
@@ -436,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ email, password })
           });
 
-          // Verificar status HTTP antes de fazer parse do JSON
+          // Tenta fazer parse do JSON (pode dar erro se a resposta não for JSON válido)
           let data;
           try {
             data = await res.json();
@@ -445,20 +457,19 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error("Resposta inválida do servidor");
           }
 
-          // Verificar se a resposta foi bem-sucedida
+          // Se deu tudo certo e tem token, salva e redireciona
           if (res.ok && data.status === "ok" && data.token) {
-            localStorage.setItem("token", data.token);
-            // Salvar informação de reativação se a conta foi reativada
+            localStorage.setItem("token", data.token); // salva o token pra usar depois
+            // Se a conta foi reativada, marca isso (pra mostrar mensagem no dashboard)
             if (data.accountReactivated) {
               localStorage.setItem("accountReactivated", "true");
             }
-            // Redirecionar diretamente para o dashboard
+            // Redireciona direto pro dashboard (sem notificação chata)
             window.location.href = "/dashboard";
           } else {
-            // Tratar erros do servidor
+            // Se deu erro, mostra a mensagem de erro no modal
             const errorMessage = data.error || data.message || "Email ou senha incorretos";
             
-            // Mostrar mensagem de erro no elemento de erro do modal
             const errorElement = document.getElementById('loginErrorMessage');
             if (errorElement) {
               errorElement.textContent = errorMessage;
@@ -466,17 +477,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
         } catch (err) {
+          // Erro de rede ou qualquer outra merda que deu errado
           console.error("Erro no login:", err);
           const errorMessage = err.message || "Erro de ligação com o servidor";
           
-          // Mostrar mensagem de erro no elemento de erro do modal
           const errorElement = document.getElementById('loginErrorMessage');
           if (errorElement) {
             errorElement.textContent = errorMessage;
             errorElement.style.display = 'block';
           }
         } finally {
-          // Reabilitar botão
+          // Sempre reabilita o botão, mesmo se deu erro (pra user poder tentar de novo)
           if (submitButton) {
             submitButton.disabled = false;
             if (submitButton.querySelector('.button-text') && originalButtonText) {
@@ -487,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Google Login
+    // Login com Google - redireciona direto pro endpoint OAuth
     const btnGoogleLogin = document.getElementById('btnGoogleLogin');
     if (btnGoogleLogin) {
       btnGoogleLogin.addEventListener('click', () => {
@@ -495,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Discord Login
+    // Login com Discord - primeiro verifica se o user já existe, depois redireciona
     const btnDiscordLogin = document.getElementById('btnDiscordLogin');
     if (btnDiscordLogin) {
       btnDiscordLogin.addEventListener('click', async () => {
@@ -504,12 +515,14 @@ document.addEventListener('DOMContentLoaded', function() {
           const response = await requestFn(`/api/auth/discord/check/916737425978589235`);
           const data = await response.json();
 
+          // Se já existe, faz login direto. Se não, vai pro fluxo de registro
           if (data.exists) {
             window.location.href = "/api/auth/discord/direct/916737425978589235";
           } else {
             window.location.href = "/auth/discord";
           }
         } catch (error) {
+          // Se der erro, tenta o fluxo normal mesmo
           console.error("Erro ao verificar usuário Discord:", error);
           window.location.href = "/auth/discord";
         }
@@ -602,15 +615,17 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
-        // Validar idade mínima (13 anos)
+        // Valida idade mínima (13 anos - GDPR e essas merdas legais)
         const birthDate = new Date(birthdate);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
+        // Ajusta se ainda não fez aniversário esse ano
         const monthDiff = today.getMonth() - birthDate.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
 
+        // Se for menor de 13, não deixa criar conta
         if (age < 13) {
           if (typeof window.showError === 'function') {
             window.showError("Erro", "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing");
@@ -631,11 +646,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
           const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
           
-          // Incluir dados OAuth se disponíveis
+          // Se o user veio de OAuth (Google/Discord/GitHub), inclui os dados OAuth no registro
           const registerData = { nome, email, password, telefone: null, data_nascimento: birthdate };
           if (window.oauthTempData) {
             registerData.oauthProvider = window.oauthTempData.provider;
-            // Mapear o ID do OAuth baseado no provider
+            // Mapeia o ID do OAuth baseado no provider (cada um tem um campo diferente)
             if (window.oauthTempData.provider === 'google') {
               registerData.oauthId = window.oauthTempData.googleId;
             } else if (window.oauthTempData.provider === 'discord') {
@@ -643,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (window.oauthTempData.provider === 'github') {
               registerData.oauthId = window.oauthTempData.githubId;
             }
-            registerData.fotoPerfil = window.oauthTempData.fotoPerfil;
+            registerData.fotoPerfil = window.oauthTempData.fotoPerfil; // foto do perfil do OAuth
           }
           
           const res = await requestFn("/api/auth/register", {
@@ -652,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(registerData),
           });
           
-          // Limpar dados OAuth temporários após registro bem-sucedido
+          // Limpa os dados OAuth temporários se o registro deu certo (não precisa mais)
           if (res.ok) {
             if (window.oauthTempData) {
               fetch('/api/auth/oauth-temp-data/clear', { method: 'POST' });
@@ -663,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const data = await res.json();
 
           if (data.status === "ok") {
-            // Fechar modal de registro e abrir modal de verificação
+            // Fecha o modal de registro e abre o de verificação (user precisa verificar o email)
             closeModals();
             openVerificationModal(email);
           } else {
@@ -735,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const data = await res.json();
           
           if (data.status === "ok" && data.token) {
-            // Salvar token
+            // Salva o token e mostra mensagem de sucesso
             localStorage.setItem("token", data.token);
             
             if (successMsg) {
@@ -743,11 +758,12 @@ document.addEventListener('DOMContentLoaded', function() {
               successMsg.style.display = 'block';
             }
             
+            // Mostra notificação (ainda tem aqui, mas pode remover depois se quiser)
             if (typeof window.showSuccess === 'function') {
               window.showSuccess("Sucesso", "Email verificado! Redirecionando...");
             }
             
-            // Redirecionar para o dashboard após 1 segundo
+            // Redireciona pro dashboard depois de 1 segundo (dá tempo de ver a mensagem)
             setTimeout(() => {
               window.location.href = "/dashboard";
             }, 1000);
@@ -803,8 +819,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (successMsg) successMsg.textContent = '';
         
         try {
-          // Nota: O backend precisa ter um endpoint para reenviar código
-          // Por enquanto, vamos apenas mostrar uma mensagem
+          // TODO: O backend precisa ter um endpoint pra reenviar código de verdade
+          // Por enquanto só mostra uma mensagem pro user (não faz request real)
           if (typeof window.showSuccess === 'function') {
             window.showSuccess("Info", "Se o código não chegou, verifica a pasta de spam ou tenta fazer login novamente.");
           }
