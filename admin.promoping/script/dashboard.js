@@ -6,8 +6,8 @@
 (function() {
     'use strict';
 
-    // Configuração
-    const API_BASE = (localStorage.getItem('PROMOPING_API') || 'http://localhost:3000').replace(/\/+$/, '');
+    // Configuração - usar APIUtils para validação segura
+    const API_BASE = window.APIUtils ? window.APIUtils.getSafeApiBase() : 'http://localhost:3000';
     const TOKEN = localStorage.getItem('PROMOPING_TOKEN');
 
     // Estado
@@ -32,7 +32,9 @@
      */
     async function fetchAuth(url, options = {}) {
         try {
-            const response = await fetch(`${API_BASE}${url}`, {
+            // Usar APIUtils para construir URL de forma segura
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(url) : `${API_BASE}${url}`;
+            const response = await fetch(safeUrl, {
                 ...options,
                 headers: {
                     'Authorization': `Bearer ${TOKEN}`,
@@ -121,9 +123,13 @@
             const [usersRes, productsRes, supportRes, bugsRes, statsRes] = await Promise.all([
                 fetchAuth('/api/admin/users?limit=1').catch(() => null),
                 fetchAuth('/api/admin/products?limit=1').catch(() => null),
-                fetch(`${API_BASE}/api/support/messages/admin`).catch(() => null),
+                fetch(window.APIUtils ? window.APIUtils.buildSafeUrl('/api/support/messages/admin') : `${API_BASE}/api/support/messages/admin`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+                }).catch(() => null),
                 fetchAuth('/api/admin/bugs').catch(() => null),
-                fetch(`${API_BASE}/api/stats/users`).catch(() => null)
+                fetch(window.APIUtils ? window.APIUtils.buildSafeUrl('/api/stats/users') : `${API_BASE}/api/stats/users`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+                }).catch(() => null)
             ]);
 
             const usersData = usersRes ? await usersRes.json().catch(() => ({
@@ -478,7 +484,10 @@
         try {
             threadsList.innerHTML = '<div class="loading-state">Carregando conversas...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?limit=50`);
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl('/api/support/messages/admin?limit=50') : `${API_BASE}/api/support/messages/admin?limit=50`;
+            const response = await fetch(safeUrl, {
+                headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+            });
 
             // Verificar se a resposta é JSON
             const contentType = response.headers.get('content-type');
@@ -552,7 +561,10 @@
         try {
             chatMessages.innerHTML = '<div class="loading-state">Carregando mensagens...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?threadId=${threadId}`);
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/admin?threadId=${encodeURIComponent(threadId)}`) : `${API_BASE}/api/support/messages/admin?threadId=${threadId}`;
+            const response = await fetch(safeUrl, {
+                headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+            });
 
             // Verificar se a resposta é JSON
             const contentType = response.headers.get('content-type');
@@ -612,7 +624,8 @@
         sendBtn.textContent = 'Enviando...';
 
         try {
-            const response = await fetch(`${API_BASE}/api/support/messages/${currentThreadId}/reply`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/${encodeURIComponent(currentThreadId)}/reply`) : `${API_BASE}/api/support/messages/${currentThreadId}/reply`;
+            const response = await fetch(safeUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
