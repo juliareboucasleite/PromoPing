@@ -6,7 +6,7 @@
 (function() {
     'use strict';
 
-    const API_BASE = (localStorage.getItem('PROMOPING_API') || 'http://localhost:3000').replace(/\/+$/, '');
+    const API_BASE = window.APIUtils ? window.APIUtils.getSafeApiBase() : 'http://localhost:3000';
     const TOKEN = localStorage.getItem('PROMOPING_TOKEN');
 
     let currentThreadId = null;
@@ -57,7 +57,8 @@
         try {
             threadsList.innerHTML = '<div class="loading-state">Carregando conversas...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?limit=50`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl('/api/support/messages/admin?limit=50') : `${API_BASE}/api/support/messages/admin?limit=50`;
+            const response = await fetch(safeUrl, {
                 headers: {
                     'Authorization': `Bearer ${TOKEN}`,
                     'Content-Type': 'application/json'
@@ -135,7 +136,8 @@
         try {
             chatMessages.innerHTML = '<div class="loading-state">Carregando mensagens...</div>';
 
-            const response = await fetch(`${API_BASE}/api/support/messages/admin?threadId=${threadId}`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/admin?threadId=${encodeURIComponent(threadId)}`) : `${API_BASE}/api/support/messages/admin?threadId=${threadId}`;
+            const response = await fetch(safeUrl, {
                 headers: {
                     'Authorization': `Bearer ${TOKEN}`,
                     'Content-Type': 'application/json'
@@ -230,7 +232,8 @@
         messageInput.placeholder = 'Enviando...';
 
         try {
-            const response = await fetch(`${API_BASE}/api/support/messages/${currentThreadId}/reply`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/${encodeURIComponent(currentThreadId)}/reply`) : `${API_BASE}/api/support/messages/${currentThreadId}/reply`;
+            const response = await fetch(safeUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -270,7 +273,8 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}/api/support/messages/${currentThreadId}`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/${encodeURIComponent(currentThreadId)}`) : `${API_BASE}/api/support/messages/${currentThreadId}`;
+            const response = await fetch(safeUrl, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${TOKEN}`,
