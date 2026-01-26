@@ -9,15 +9,66 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 
+/**
+ * Sanitiza e valida a versão para prevenir command injection
+ * @param {string} version - Versão a ser validada
+ * @returns {string} Versão sanitizada
+ * @throws {Error} Se a versão for inválida
+ */
+function sanitizeVersion(version) {
+  if (!version || typeof version !== 'string') {
+    throw new Error('Versão é obrigatória');
+  }
+  
+  // Remove caracteres perigosos
+  const sanitized = version.trim().replace(/[;&|`$(){}[\]<>'"\\]/g, '');
+  
+  // Valida formato: v1.2.3 ou v1.2.3-beta.1
+  if (!/^v\d+\.\d+\.\d+(-[\w.\-]+)?$/.test(sanitized)) {
+    throw new Error('Formato inválido. Use: v2.4.0, v2.4.0-beta, v2.4.0-rc.1, etc.');
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Valida URL do GitHub para prevenir SSRF
+ * @param {string} url - URL a ser validada
+ * @returns {boolean} True se a URL é segura
+ */
+function isValidGitHubUrl(url) {
+  try {
+    const parsed = new URL(url);
+    // Permitir apenas HTTPS
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    // Permitir apenas api.github.com
+    if (parsed.hostname !== 'api.github.com') {
+      return false;
+    }
+    // Bloquear IPs privados e localhost
+    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const versionArg = process.argv[2];
 if (!versionArg) {
   console.error("\nUso correto: npm run release v2.4.0 ou v2.4.0-beta.1\n");
   process.exit(1);
 }
 
-// Verifica formato da versão
-if (!/^v\d+\.\d+\.\d+(-[\w.\-]+)?$/.test(versionArg)) {
-  console.error("\nFormato inválido. Use: v2.4.0, v2.4.0-beta, v2.4.0-rc.1, etc.\n");
+// Sanitizar e validar versão
+let safeVersion;
+try {
+  safeVersion = sanitizeVersion(versionArg);
+} catch (error) {
+  console.error(`\n${error.message}\n`);
   process.exit(1);
 }
 
@@ -32,7 +83,7 @@ console.log(`\n Iniciando processo de release para ${versionArg}...\n`);
 
 // 1. Atualizar versão no package.json
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
-packageJson.version = versionArg.replace(/^v/, "");
+packageJson.version = safeVersion.replace(/^v/, "");
 fs.writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
 console.log("package.json atualizado.\n");
 
@@ -44,16 +95,20 @@ if (!fs.existsSync(changelogPath)) {
 
 let changelog = fs.readFileSync(changelogPath, "utf-8");
 const currentDate = new Date().toISOString().split("T")[0];
-if (!changelog.includes(`## ${versionArg}`)) {
+if (!changelog.includes(`## ${safeVersion}`)) {
   console.log("Nova versão não encontrada no CHANGELOG.md. Adicionando cabeçalho...\n");
-  const newEntry = `## ${versionArg} (${currentDate})\n- Notas ainda não adicionadas.\n\n` + changelog;
+  const newEntry = `## ${safeVersion} (${currentDate})\n- Notas ainda não adicionadas.\n\n` + changelog;
   fs.writeFileSync(changelogPath, newEntry);
 }
 
 // 3. Commit se necessário
-execSync("git add -A", { stdio: "inherit" });
+execSync("git add -A", { stdio: "inherit", shell: false });
 try {
-  execSync(`git diff --cached --quiet || git commit -m "chore(release): update to ${versionArg}"`, { stdio: "inherit", shell: true });
+  // Usar array de argumentos ao invés de string para prevenir injection
+  execSync("git", ["diff", "--cached", "--quiet"], { stdio: "ignore" });
+  // Se chegou aqui, há alterações - fazer commit
+  const commitMessage = `chore(release): update to ${safeVersion}`;
+  execSync("git", ["commit", "-m", commitMessage], { stdio: "inherit" });
   console.log("Commit criado.\n");
 } catch {
   console.log("Nenhuma alteração a commitar.\n");
@@ -61,37 +116,52 @@ try {
 
 // 4. Remover tag existente
 try {
-  execSync(`git tag -d ${versionArg}`, { stdio: "ignore" });
-  execSync(`git push origin :refs/tags/${versionArg}`, { stdio: "ignore" });
-  console.log(`Tag antiga ${versionArg} removida.\n`);
+  execSync("git", ["tag", "-d", safeVersion], { stdio: "ignore" });
+  execSync("git", ["push", "origin", `:refs/tags/${safeVersion}`], { stdio: "ignore" });
+  console.log(`Tag antiga ${safeVersion} removida.\n`);
 } catch {}
 
 // 5. Criar e enviar tag
-execSync(`git tag -a ${versionArg} -m "Release ${versionArg}"`, { stdio: "inherit" });
-execSync(`git push origin main --tags`, { stdio: "inherit" });
-console.log(`Tag ${versionArg} criada e enviada.\n`);
+const tagMessage = `Release ${safeVersion}`;
+execSync("git", ["tag", "-a", safeVersion, "-m", tagMessage], { stdio: "inherit" });
+execSync("git", ["push", "origin", "main", "--tags"], { stdio: "inherit" });
+console.log(`Tag ${safeVersion} criada e enviada.\n`);
 
 // 6. Extrair notas do CHANGELOG.md
 changelog = fs.readFileSync(changelogPath, "utf-8");
-const regex = new RegExp(`## ${versionArg}[\\s\\S]*?(?=\\n## |$)`, "m");
+// Escapar caracteres especiais na versão para uso em regex
+const escapedVersion = safeVersion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const regex = new RegExp(`## ${escapedVersion}[\\s\\S]*?(?=\\n## |$)`, "m");
 const match = changelog.match(regex);
-const releaseNotes = match ? match[0].replace(`## ${versionArg}`, "").trim() : "Sem notas disponíveis.";
+const releaseNotes = match ? match[0].replace(`## ${safeVersion}`, "").trim() : "Sem notas disponíveis.";
 
 // 7. Detectar se é pré-lançamento
-const isPreRelease = /-(beta|rc|alpha|dev)/i.test(versionArg);
+const isPreRelease = /-(beta|rc|alpha|dev)/i.test(safeVersion);
 console.log(isPreRelease ? "Publicando como pré-lançamento (pré-release)..." : "Publicando como release final...");
 
 // 8. Determinar repositório GitHub
-const repoUrl = execSync("git config --get remote.origin.url").toString().trim();
-const repoMatch = repoUrl.match(/github\.com[:/](.+\/.+?)(?:\.git)?$/);
+const repoUrl = execSync("git", ["config", "--get", "remote.origin.url"], { encoding: "utf-8" }).trim();
+const repoMatch = repoUrl.match(/github\.com[:/]([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+?)(?:\.git)?$/);
 if (!repoMatch) {
   console.error("Não foi possível determinar o repositório GitHub.");
   process.exit(1);
 }
 const repo = repoMatch[1];
 
-// 9. Criar release via API
-const response = await fetch(`https://api.github.com/repos/${repo}/releases`, {
+// Validar formato do repositório (apenas alfanuméricos, pontos, hífens e underscores)
+if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo)) {
+  console.error("Formato de repositório inválido.");
+  process.exit(1);
+}
+
+// Criar release via API - Validar URL antes de fazer fetch
+const apiUrl = `https://api.github.com/repos/${repo}/releases`;
+if (!isValidGitHubUrl(apiUrl)) {
+  console.error("URL da API GitHub inválida ou insegura.");
+  process.exit(1);
+}
+
+const response = await fetch(apiUrl, {
   method: "POST",
   headers: {
     Authorization: `token ${token}`,
@@ -99,8 +169,8 @@ const response = await fetch(`https://api.github.com/repos/${repo}/releases`, {
     "User-Agent": "PromoPing-Release-Script"
   },
   body: JSON.stringify({
-    tag_name: versionArg,
-    name: versionArg,
+    tag_name: safeVersion,
+    name: safeVersion,
     body: releaseNotes,
     draft: false,
     prerelease: isPreRelease
@@ -108,7 +178,7 @@ const response = await fetch(`https://api.github.com/repos/${repo}/releases`, {
 });
 
 if (response.ok) {
-  console.log(` Release ${versionArg} publicada com sucesso no GitHub.\n`);
+  console.log(` Release ${safeVersion} publicada com sucesso no GitHub.\n`);
 } else {
   const error = await response.text();
   console.error("Erro ao criar release:");
