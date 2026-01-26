@@ -7,7 +7,7 @@
     'use strict';
 
     // Configuração
-    const API_BASE = (localStorage.getItem('PROMOPING_API') || 'http://localhost:3000').replace(/\/+$/, '');
+    const API_BASE = window.APIUtils ? window.APIUtils.getSafeApiBase() : 'http://localhost:3000';
     const TOKEN = localStorage.getItem('PROMOPING_TOKEN');
 
     // Estado
@@ -32,7 +32,8 @@
      */
     async function fetchAuth(url, options = {}) {
         try {
-            const response = await fetch(`${API_BASE}${url}`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(url) : `${API_BASE}${url}`;
+            const response = await fetch(safeUrl, {
                 ...options,
                 headers: {
                     'Authorization': `Bearer ${TOKEN}`,
