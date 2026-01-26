@@ -170,7 +170,7 @@ router.get("/users/export/pdf", async (req, res) => {
     }
 });
 
-router.patch("/users/:referenciaID", async (req, res) => {
+router.patch("/users/:referenciaID", verifyToken, async (req, res) => {
     console.log("[ADMIN] PATCH /api/admin/users/:referenciaID chamado");
     try {
         const { referenciaID } = req.params;
@@ -923,7 +923,7 @@ router.get("/updates", async (req, res) => {
     }
 });
 
-router.post("/updates", async (req, res) => {
+router.post("/updates", verifyToken, async (req, res) => {
     try {
         await ensureUpdatesTable();
 
