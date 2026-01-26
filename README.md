@@ -2,7 +2,7 @@
 [![LICENSE](https://img.shields.io/badge/LICENSE-GPL--2.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
 [![Site](https://img.shields.io/badge/site-Promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
-[![Presentation](https://img.shields.io/badge/presentation-brightgreen?logo=Canva&logoColor=white&label=Site)](https://www.canva.com/design/DAG9u04cSXY/S5BJ6T8clNUSVyWbkucElg/view?utm_content=DAG9u04cSXY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h52d685fdd2)
+[![Canva Presentation](https://img.shields.io/badge/Presentation-Canva-blueviolet?logo=Canva&logoColor=white)](https://www.canva.com/design/DAG9u04cSXY/S5BJ6T8clNUSVyWbkucElg/view?utm_content=DAG9u04cSXY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h52d685fdd2)
 
 # PromoPing
 PromoPing is a price monitoring system for Portuguese consumers and, in the future, for everyone. It allows users to track products across various online shops and receive automatic notifications when prices reach defined targets. Initially, the idea emerged as simply "Price Fiscal Bot" and the name "PromoPing" appeared during one of those moments of desperation and forced creativity when searching for names on ChatGPT. It seems to mean "promotion ping" and even sounds professional. On normal days, it's more reminiscent of "drops promotions", because it resolves to fire alerts all at once. And when some shop changes the HTML without warning, the name easily transforms into "cursed programme that only pings when it wants to". In the end, it stuck because it works… and because no better name came up before patience ran out.
