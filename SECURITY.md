@@ -1,18 +1,18 @@
-# Política de Segurança do PromoPing
-### Reportar uma Vulnerabilidade
-A segurança é uma prioridade para o PromoPing. Se descobrir uma vulnerabilidade de segurança, agradecemos que nos informe de forma responsável.
-Envie um email detalhado para **corporation.promoping@gmail.com** para reportar vulnerabilidades no PromoPing. Mesmo que não tenha certeza se um bug é uma vulnerabilidade explorável, recomendamos enviar o reporte para **corporation.promoping@gmail.com** e não discutir o problema em outro lugar.
-Discuta vulnerabilidades apenas por email, e não em público, até um anúncio oficial na lista de discussão do PromoPing na data de lançamento.
+# PromoPing Security Policy
+### Reporting a Vulnerability
+Security is a priority for PromoPing. If you discover a security vulnerability, we appreciate you informing us responsibly.
+Send a detailed email to **corporation.promoping@gmail.com** to report vulnerabilities in PromoPing. Even if you're not certain whether a bug is an exploitable vulnerability, we recommend sending the report to **corporation.promoping@gmail.com** and not discussing the issue elsewhere.
+Discuss vulnerabilities only via email, and not publicly, until an official announcement on PromoPing's discussion list on the release date.
 
-Exemplos de detalhes para incluir:
-- Idealmente uma breve descrição (ou um script) para demonstrar uma exploração
-- As plataformas e cenários afetados (a vulnerabilidade pode afetar apenas configurações específicas, por exemplo)
-- O nome e a afiliação dos pesquisadores de segurança que estão envolvidos na descoberta, se houver
-- Se a vulnerabilidade já foi divulgada
-- Quanto tempo um embargo seria necessário para ser seguro
-Receberá uma confirmação do recebimento do reporte em até 48 horas, uma resposta inicial com avaliação da vulnerabilidade em até 7 dias, atualizações sobre o progresso da correção conforme necessário e reconhecimento público (se desejar) após a correção ser implementada.
+Examples of details to include:
+- Ideally a brief description (or a script) to demonstrate an exploitation
+- The affected platforms and scenarios (the vulnerability may only affect specific configurations, for example)
+- The name and affiliation of security researchers involved in the discovery, if any
+- Whether the vulnerability has already been disclosed
+- How long an embargo would be necessary to be safe
+You will receive confirmation of receipt of the report within 48 hours, an initial response with vulnerability assessment within 7 days, updates on the progress of the fix as needed, and public recognition (if desired) after the fix is implemented.
 
-## Versões Suportadas
-Não há versões de "Suporte a longo prazo" oficiais no PromoPing. As correções são feitas para a branch de manutenção da versão de feature mais recente (também conhecida como versão ".0") e recebem atualizações ocasionais com correções de bugs.
-As correções para vulnerabilidades são feitas para a branch de manutenção da versão de feature mais recente e mescladas nas branches de desenvolvimento. O projeto PromoPing não oferece garantia formal de que branches de manutenção mais antigas receberão atualizações, mas na prática, correções críticas de vulnerabilidades são aplicadas não apenas à branch mais recente, mas a pelo menos uma ou duas tracks de manutenção mais antigas.
-Isso é normalmente feito aplicando a correção à branch de manutenção mais antiga ainda relevante e mesclando-a para cima para tracks de manutenção mais novas e mais recentes.
+## Supported Versions
+There are no official "Long-term Support" versions in PromoPing. Fixes are made to the maintenance branch of the most recent feature version (also known as ".0" version) and receive occasional updates with bug fixes.
+Vulnerability fixes are made to the maintenance branch of the most recent feature version and merged into development branches. The PromoPing project does not offer a formal guarantee that older maintenance branches will receive updates, but in practice, critical vulnerability fixes are applied not only to the most recent branch, but to at least one or two older maintenance tracks.
+This is normally done by applying the fix to the oldest still relevant maintenance branch and merging it upwards to newer and more recent maintenance tracks.
