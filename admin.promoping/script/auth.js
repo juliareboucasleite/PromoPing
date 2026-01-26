@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Sistema de Autenticação - PromoPing Admin
  * Login simples com email e senha
  */
@@ -6,8 +6,8 @@
 (function() {
     'use strict';
 
-    // Configuração da API
-    const API_BASE = (localStorage.getItem('PROMOPING_API') || 'http://localhost:3000').replace(/\/+$/, '');
+    // Configuração da API - usar APIUtils para validação segura
+    const API_BASE = window.APIUtils ? window.APIUtils.getSafeApiBase() : 'http://localhost:3000';
 
     // Elementos do DOM
     const loginForm = document.getElementById('loginForm');
@@ -89,7 +89,8 @@
                 api: API_BASE
             });
 
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
+            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl('/api/auth/login') : `${API_BASE}/api/auth/login`;
+            const response = await fetch(safeUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
