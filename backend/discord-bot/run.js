@@ -64,10 +64,26 @@ function sanitizeCommand(command) {
 function checkCommand(command) {
     try {
         const safeCommand = sanitizeCommand(command);
+        
+        // Para Node.js, verificar diretamente executando --version
+        if (command === 'node') {
+            try {
+                execSync('node --version', {
+                    stdio: 'ignore',
+                    shell: true
+                });
+                return true;
+            } catch {
+                return false;
+            }
+        }
+        
+        // Para outros comandos, usar where/which
         if (process.platform === 'win32') {
-            execSync('where', [safeCommand], {
+            // No Windows, 'where' precisa ser chamado como string no shell
+            execSync(`where ${safeCommand}`, {
                 stdio: 'ignore',
-                shell: false
+                shell: true
             });
         } else {
             execSync('which', [safeCommand], {
@@ -161,6 +177,9 @@ function runLocal() {
     // Verificar dependências
     if (!checkCommand('node')) {
         log('Node.js não encontrado. Instale Node.js primeiro.', 'red');
+        log('Dica: Se você tem um ambiente virtual Python ativo (.venv), tente desativá-lo primeiro.', 'yellow');
+        log('No PowerShell: deactivate', 'yellow');
+        log('No CMD: deactivate.bat', 'yellow');
         process.exit(1);
     }
 
