@@ -1,101 +1,101 @@
-# Contribuindo para o PromoPing
-Obrigado por considerar contribuir para o PromoPing! A comunidade do PromoPing utiliza o GitHub para receber contribuições através de issues e pull requests.
-Para reportar bugs ou sugerir melhorias, utilize as [Issues do GitHub](https://github.com/juliareboucasleite/PromoPing/issues). Verifique se já existe uma issue similar antes de criar uma nova. Para bugs, inclua título descritivo, descrição detalhada, passos para reproduzir, comportamento esperado vs. atual, screenshots (se aplicável) e informações do ambiente.
-Para contribuir com código, faça fork do repositório, clone o seu fork, instale as dependências (npm install para backend, pip install -r requirements.txt para Python scraper), configure as variáveis de ambiente e o banco de dados. Crie uma branch para sua feature ou correção, siga os padrões de código do projeto (JavaScript/Node.js com ESLint, Python seguindo PEP 8, HTML/CSS com indentação consistente), teste suas mudanças e abra um Pull Request com descrição clara das mudanças.
-Se encontrar um bug, verifique se já foi reportado nas [Issues do GitHub](https://github.com/juliareboucasleite/PromoPing/issues). Se não foi reportado, crie uma nova issue com um título claro, descrição detalhada do problema, passos para reproduzir, comportamento esperado vs. atual, screenshots (se aplicável) e detalhes do ambiente (SO, versão do Node.js, Python, etc.).
-Sugestões são sempre bem-vindas! Verifique se já existe uma sugestão similar nas Issues. Crie uma issue com a tag `enhancement` ou `feature request`, descrevendo claramente o problema que a melhoria resolve, como você imagina que funcionaria e os benefícios para os usuários.
+# Contributing to PromoPing
+Thank you for considering contributing to PromoPing! The PromoPing community uses GitHub to receive contributions through issues and pull requests.
+To report bugs or suggest improvements, use the [GitHub Issues](https://github.com/juliareboucasleite/PromoPing/issues). Check if a similar issue already exists before creating a new one. For bugs, include a descriptive title, detailed description, steps to reproduce, expected vs. current behaviour, screenshots (if applicable), and environment information.
+To contribute code, fork the repository, clone your fork, install dependencies (npm install for backend, pip install -r requirements.txt for Python scraper), configure environment variables and the database. Create a branch for your feature or fix, follow the project's code standards (JavaScript/Node.js with ESLint, Python following PEP 8, HTML/CSS with consistent indentation), test your changes, and open a Pull Request with a clear description of the changes.
+If you find a bug, check if it has already been reported in the [GitHub Issues](https://github.com/juliareboucasleite/PromoPing/issues). If it hasn't been reported, create a new issue with a clear title, detailed description of the problem, steps to reproduce, expected vs. current behaviour, screenshots (if applicable), and environment details (OS, Node.js version, Python, etc.).
+Suggestions are always welcome! Check if a similar suggestion already exists in the Issues. Create an issue with the `enhancement` or `feature request` tag, clearly describing the problem the improvement solves, how you imagine it would work, and the benefits for users.
 
-## Contribuir com Código
-**Configuração do Ambiente de Desenvolvimento**: Faça fork do repositório, clone o seu fork, instale as dependências (npm install para backend, pip install -r requirements.txt para o scraper Python), configure as variáveis de ambiente (copie .env.example para .env se existir) e configure o banco de dados (execute os scripts SQL em sql/).
+## Contributing Code
+**Development Environment Setup**: Fork the repository, clone your fork, install dependencies (npm install for backend, pip install -r requirements.txt for the Python scraper), configure environment variables (copy .env.example to .env if it exists), and configure the database (execute the SQL scripts in sql/).
 
-**Processo de Desenvolvimento**: Crie uma branch para sua feature/correção (feature/nome-da-feature ou fix/nome-do-bug), siga os padrões de código (JavaScript/Node.js com ESLint, Python seguindo PEP 8, HTML/CSS com indentação consistente), escreva código limpo (funções pequenas e focadas, nomes descritivos, comentários quando necessário, evite duplicidade), teste suas mudanças manualmente e verifique se não quebrou funcionalidades existentes. Faça commit seguindo a convenção (feat, fix, docs, style, refactor, test, chore), faça push para seu fork e abra um Pull Request com descrição clara das mudanças, issues relacionadas (se houver), screenshots (se aplicável) e checklist de verificação.
-Para entender melhor como o projeto PromoPing é gerido e como colaborar, recomendamos revisar o [README.md](README.md) e as diretrizes de submissão.
+**Development Process**: Create a branch for your feature/fix (feature/feature-name or fix/bug-name), follow code standards (JavaScript/Node.js with ESLint, Python following PEP 8, HTML/CSS with consistent indentation), write clean code (small, focused functions, descriptive names, comments when necessary, avoid duplication), test your changes manually and verify you haven't broken existing functionality. Make commits following the convention (feat, fix, docs, style, refactor, test, chore), push to your fork, and open a Pull Request with a clear description of the changes, related issues (if any), screenshots (if applicable), and verification checklist.
+To better understand how the PromoPing project is managed and how to collaborate, we recommend reviewing [README.md](README.md) and the submission guidelines.
 
-## Padrões de Código
-**JavaScript/Node.js**: Use const por padrão, let quando necessário, evite var. Use arrow functions quando apropriado. Prefira async/await. Variáveis e funções em camelCase; classes em PascalCase. Ponto e vírgula ao final das linhas. Indentação: 2 espaços.
-**Python**: Siga PEP 8. Use type hints quando possível. Docstrings para funções e classes. snake_case para funções/variáveis, PascalCase para classes. Indentação: 4 espaços.
-**HTML/CSS**: Indentação consistente (2 espaços). Use atributos semânticos. Comente seções complexas. Use classes descritivas (BEM quando apropriado).
+## Code Standards
+**JavaScript/Node.js**: Use const by default, let when necessary, avoid var. Use arrow functions when appropriate. Prefer async/await. Variables and functions in camelCase; classes in PascalCase. Semicolon at the end of lines. Indentation: 2 spaces.
+**Python**: Follow PEP 8. Use type hints when possible. Docstrings for functions and classes. snake_case for functions/variables, PascalCase for classes. Indentation: 4 spaces.
+**HTML/CSS**: Consistent indentation (2 spaces). Use semantic attributes. Comment complex sections. Use descriptive classes (BEM when appropriate).
 
-## Estrutura do Projeto
+## Project Structure
 
 ```text
 PromoPing/
-├── backend/                    # API Node.js/Express
-│   ├── config/                 # Configurações (Stripe, etc.)
-│   ├── controllers/            # Controladores (exportação, etc.)
-│   ├── database/               # Banco de dados
-│   │   ├── migrations/         # Migrações SQL
-│   │   ├── models/            # Modelos de dados
-│   │   ├── db.js              # Conexão com DB
-│   │   └── tableManager.js    # Gerenciador de tabelas
-│   ├── discord-bot/            # Bot do Discord
-│   │   ├── comandos/          # Comandos do bot
-│   │   ├── bot.js             # Lógica principal do bot
-│   │   └── run.js             # Script de execução
-│   ├── middleware/             # Middlewares (auth, verificação de plano)
-│   ├── routes/                 # Rotas da API
-│   │   ├── admin.js           # Rotas administrativas
-│   │   ├── auth.js            # Autenticação
-│   │   ├── produtos.js        # Produtos
-│   │   ├── user.js            # Usuários
+├── backend/                    # Node.js/Express API
+│   ├── config/                 # Configuration (Stripe, etc.)
+│   ├── controllers/            # Controllers (export, etc.)
+│   ├── database/               # Database
+│   │   ├── migrations/         # SQL migrations
+│   │   ├── models/            # Data models
+│   │   ├── db.js              # DB connection
+│   │   └── tableManager.js    # Table manager
+│   ├── discord-bot/            # Discord Bot
+│   │   ├── comandos/          # Bot commands
+│   │   ├── bot.js             # Main bot logic
+│   │   └── run.js             # Execution script
+│   ├── middleware/             # Middlewares (auth, plan verification)
+│   ├── routes/                 # API routes
+│   │   ├── admin.js           # Administrative routes
+│   │   ├── auth.js            # Authentication
+│   │   ├── produtos.js        # Products
+│   │   ├── user.js            # Users
 │   │   └── ...
-│   ├── scripts/                # Scripts utilitários
-│   ├── services/               # Serviços de negócio
-│   │   ├── autoSupport.js     # Suporte automático
-│   │   ├── alerts.js          # Alertas
-│   │   ├── notify.js          # Notificações
+│   ├── scripts/                # Utility scripts
+│   ├── services/               # Business services
+│   │   ├── autoSupport.js     # Auto support
+│   │   ├── alerts.js          # Alerts
+│   │   ├── notify.js          # Notifications
 │   │   └── ...
-│   ├── utils/                  # Utilitários
-│   │   ├── gerarExcel.js      # Exportação Excel
-│   │   ├── gerarPDF.js        # Exportação PDF
+│   ├── utils/                  # Utilities
+│   │   ├── gerarExcel.js      # Excel export
+│   │   ├── gerarPDF.js        # PDF export
 │   │   └── ...
-│   └── server.js              # Servidor principal
-├── admin.promoping/            # Painel administrativo
-│   ├── pages/                  # Páginas HTML do admin
-│   ├── script/                 # Scripts JavaScript do admin
-│   ├── css/                    # Estilos CSS
-│   └── assets/                 # Recursos (imagens, etc.)
-├── frontend/                   # Interface web pública
-│   └── pages/                  # Páginas HTML
-│       ├── build/              # Build de produção
-│       │   ├── dashboard/      # Dashboard do usuário
-│       │   ├── About/          # Páginas sobre
-│       │   ├── docs/            # Documentação
-│       │   └── assets/         # Recursos (CSS, JS, imagens)
-│       └── *.md                # Documentação Markdown
-├── python-scraper/             # Scraper Python
-│   ├── scraper.py              # Lógica principal de scraping
-│   ├── scheduler.py            # Agendador de tarefas
-│   ├── product_search.py       # Busca de produtos
-│   ├── product_comparison.py    # Comparação de produtos
-│   ├── notifications.py        # Notificações
-│   └── start.py                # Script de inicialização
-├── scripts/                    # Scripts de setup e manutenção
-│   ├── setup.js                # Setup inicial
-│   ├── migrate-db.js           # Migração de banco
-│   ├── create-admin-user.js    # Criar usuário admin
+│   └── server.js              # Main server
+├── admin.promoping/            # Administrative panel
+│   ├── pages/                  # Admin HTML pages
+│   ├── script/                 # Admin JavaScript scripts
+│   ├── css/                    # CSS styles
+│   └── assets/                 # Resources (images, etc.)
+├── frontend/                   # Public web interface
+│   └── pages/                  # HTML pages
+│       ├── build/              # Production build
+│       │   ├── dashboard/      # User dashboard
+│       │   ├── About/          # About pages
+│       │   ├── docs/            # Documentation
+│       │   └── assets/         # Resources (CSS, JS, images)
+│       └── *.md                # Markdown documentation
+├── python-scraper/             # Python scraper
+│   ├── scraper.py              # Main scraping logic
+│   ├── scheduler.py            # Task scheduler
+│   ├── product_search.py       # Product search
+│   ├── product_comparison.py    # Product comparison
+│   ├── notifications.py        # Notifications
+│   └── start.py                # Initialisation script
+├── scripts/                    # Setup and maintenance scripts
+│   ├── setup.js                # Initial setup
+│   ├── migrate-db.js           # Database migration
+│   ├── create-admin-user.js    # Create admin user
 │   └── ...
-├── config-files/               # Arquivos de configuração
-│   ├── discord-config.js       # Config do Discord
-│   └── nginx-promoping.pt.conf # Config Nginx
-├── deploy-files/               # Scripts de deploy
-├── docker-files/               # Configuração Docker
-│   ├── Dockerfile              # Dockerfile produção
-│   ├── Dockerfile.dev          # Dockerfile desenvolvimento
+├── config-files/               # Configuration files
+│   ├── discord-config.js       # Discord config
+│   └── nginx-promoping.pt.conf # Nginx config
+├── deploy-files/               # Deploy scripts
+├── docker-files/               # Docker configuration
+│   ├── Dockerfile              # Production Dockerfile
+│   ├── Dockerfile.dev          # Development Dockerfile
 │   └── docker-compose.yml      # Docker Compose
-├── sql/                        # Scripts SQL
-│   └── pap (1).sql            # Dump da base de dados
-├── docs/                       # Documentação adicional
-└── openapi.yaml                # Especificação OpenAPI
+├── sql/                        # SQL scripts
+│   └── pap (1).sql            # Database dump
+├── docs/                       # Additional documentation
+└── openapi.yaml                # OpenAPI specification
 ```
 
-## Checklist para Pull Requests
-Antes de submeter um PR, verifique: código segue os padrões do projeto, funcionalidade testada manualmente, não há erros de lint/console, documentação atualizada (se necessário), commits seguem a convenção, branch está atualizada com main/master, PR tem descrição clara e screenshots (se aplicável).
+## Pull Request Checklist
+Before submitting a PR, verify: code follows project standards, functionality tested manually, no lint/console errors, documentation updated (if necessary), commits follow the convention, branch is up to date with main/master, PR has a clear description and screenshots (if applicable).
 
-## Processo de Revisão
-Mantenedores revisarão seu PR verificando se o código segue os padrões, testando as mudanças e sugerindo melhorias se necessário. Responda aos comentários, faça as alterações solicitadas e atualize o PR conforme necessário. Após aprovação, o PR será mergeado e você será creditado como contribuidor.
+## Review Process
+Maintainers will review your PR by checking if the code follows standards, testing the changes, and suggesting improvements if necessary. Respond to comments, make requested changes, and update the PR as needed. After approval, the PR will be merged and you will be credited as a contributor.
 
-## Perguntas?
-Se tiver dúvidas sobre como contribuir, abra uma issue com a tag `question` ou entre em contato através de <corporation.promoping@gmail.com>
-Sua simpática comunidade PromoPing!
-Obrigado por contribuir para tornar o PromoPing melhor!
+## Questions?
+If you have questions about how to contribute, open an issue with the `question` tag or contact us at <corporation.promoping@gmail.com>
+Your friendly PromoPing community!
+Thank you for contributing to make PromoPing better!
