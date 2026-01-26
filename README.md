@@ -2,32 +2,32 @@
 [![LICENSE](https://img.shields.io/badge/LICENSE-GPL--2.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
 [![Site](https://img.shields.io/badge/site-Promoping.pt-brightgreen?logo=Google-Chrome&logoColor=white&label=Site)](http://promoping.pt/)
-[![Apresentação](https://img.shields.io/badge/apresentacao-brightgreen?logo=Canva&logoColor=white&label=Site)](https://www.canva.com/design/DAG9u04cSXY/S5BJ6T8clNUSVyWbkucElg/view?utm_content=DAG9u04cSXY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h52d685fdd2)
+[![Presentation](https://img.shields.io/badge/presentation-brightgreen?logo=Canva&logoColor=white&label=Site)](https://www.canva.com/design/DAG9u04cSXY/S5BJ6T8clNUSVyWbkucElg/view?utm_content=DAG9u04cSXY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h52d685fdd2)
 
 # PromoPing
-O PromoPing é um sistema de monitoramento de preços para consumidores portugueses e futuramente para todo mundo. Permite acompanhar produtos em diversas lojas online e receber notificações automáticas quando os preços atingem metas definidas. Inicialmente a ideia surgiu como apenas "Bot Fiscal de preço" e o nome “PromoPing” apareceu num daqueles momentos em que o desespero e criatividade forçada onde se busca nomes no ChatGpt. Parece significar “ping de promoções” e até soa profissional. Nos dias normais, lembra mais “pinga promoções”, porque resolve disparar alertas todos de uma vez. E quando alguma loja muda o HTML sem avisar, o nome transforma-se facilmente em “programa maldito que só pinga quando quer”. No fim, ficou porque funciona… e porque nenhum nome melhor surgiu antes da paciência acabar.
+PromoPing is a price monitoring system for Portuguese consumers and, in the future, for everyone. It allows users to track products across various online shops and receive automatic notifications when prices reach defined targets. Initially, the idea emerged as simply "Price Fiscal Bot" and the name "PromoPing" appeared during one of those moments of desperation and forced creativity when searching for names on ChatGPT. It seems to mean "promotion ping" and even sounds professional. On normal days, it's more reminiscent of "drops promotions", because it resolves to fire alerts all at once. And when some shop changes the HTML without warning, the name easily transforms into "cursed programme that only pings when it wants to". In the end, it stuck because it works… and because no better name came up before patience ran out.
 
-O sistema inclui uma interface web responsiva com gráficos de evolução de preços, um mecanismo de autenticação seguro via JWT, Google OAuth e Discord, e notificações automáticas enviadas por email e Discord Bot. Conta ainda com monitorização contínua para mais de vinte lojas online, planos de subscrição com diferentes intervalos de verificação e uma API RESTful que permite integração e gestão completa dos produtos monitorizados.
+The system includes a responsive web interface with price evolution charts, a secure authentication mechanism via JWT, Google OAuth and Discord, and automatic notifications sent via email and Discord Bot. It also features continuous monitoring for over twenty online shops, subscription plans with different verification intervals, and a RESTful API that allows integration and complete management of monitored products.
 
-> **Nota:** O PromoPing monitora produtos escolhidos pelo utilizador e não compara preços entre lojas.
+> **Note:** PromoPing monitors products chosen by the user and does not compare prices between shops.
 
-## Arquitetura
-A Arquitetura do PromoPing foi pensada usando essas linguagens: 
-HTML5, CSS3, JavaScript ES6+ (SPA responsiva)
+## Architecture
+PromoPing's Architecture was designed using these technologies: 
+HTML5, CSS3, JavaScript ES6+ (responsive SPA)
 Node.js 18+, Express.js 5.x, MySQL 8.0+
 Python 3.8+, Selenium WebDriver, BeautifulSoup4
 Docker, PM2, Nginx, GitHub Actions
 
-## Segurança
-O sistema implementa múltiplas camadas de proteção:
-Autenticação JWT com refresh tokens
-Rate limiting e CORS configurado
-Sanitização de entradas e prepared statements
-Logging estruturado e auditoria completa
+## Security
+The system implements multiple layers of protection:
+JWT authentication with refresh tokens
+Rate limiting and configured CORS
+Input sanitisation and prepared statements
+Structured logging and complete auditing
 
-Questões que são relevantes para a segurança devem ser divulgadas de forma privada contacte <corporation.promoping@gmail.com> e para reportar vulnerabilidades, consulte [SECURITY.md](SECURITY.md).
+Security-related matters should be disclosed privately by contacting <corporation.promoping@gmail.com> and to report vulnerabilities, please consult [SECURITY.md](SECURITY.md).
 
-Contribuições são bem-vindas mediante contato por email. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) e [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) para diretrizes.
-Este projeto está licenciado sob a **GNU General Public License v2.0 (GPL-2.0)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Contributions are welcome via email contact. Please consult [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for guidelines.
+This project is licensed under the **GNU General Public License v2.0 (GPL-2.0)**. See the [LICENSE](LICENSE) file for more details.
 
-Para suporte, dúvidas, envio de sugestões ou reporte de problemas, o projeto disponibiliza vários canais oficiais. O contacto direto pode ser feito através do email <corporation.promoping@gmail.com>. Questões técnicas, bugs ou pedidos de funcionalidades devem ser encaminhados pela página de Issues no GitHub. A comunidade também pode interagir e acompanhar novidades por meio do servidor oficial no Discord. A documentação completa, incluindo guias e referências do sistema, encontra-se disponível no GitBook do PromoPing.
+For support, questions, suggestions, or problem reports, the project provides several official channels. Direct contact can be made via email <corporation.promoping@gmail.com>. Technical questions, bugs, or feature requests should be submitted through the Issues page on GitHub. The community can also interact and follow news through the official Discord server. Complete documentation, including system guides and references, is available on PromoPing's GitBook.
