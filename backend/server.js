@@ -69,6 +69,7 @@ import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
 import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
 import blogRoutes from "./routes/blog.js"; // Blog
+import heraldRoutes from "./routes/herald.js"; // Herald API
 import { verifyToken} from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
@@ -340,6 +341,7 @@ app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específ
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
 app.use("/api/blog", blogRoutes); // Blog
+app.use("/api/herald", heraldRoutes); // Herald API
 app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
