@@ -2077,20 +2077,45 @@ class PromoPingBot {
             
             // Construir query params corretamente - múltiplos user_login separados por &
             // API Twitch aceita até 100 user_login por requisição
-            const queryParams = channelNames
+            // Sanitizar nomes de canais para prevenir SSRF
+            const safeChannelNames = channelNames
                 .slice(0, 100) // Limitar a 100 canais por requisição
+                .filter(name => {
+                    // Validar que o nome contém apenas caracteres seguros
+                    return name && typeof name === 'string' && /^[a-zA-Z0-9_]{1,25}$/.test(name.trim());
+                })
+                .map(name => name.trim());
+            
+            if (safeChannelNames.length === 0) {
+                console.log('[DISCORD] Nenhum nome de canal válido após sanitização');
+                await connection.end();
+                return;
+            }
+            
+            const queryParams = safeChannelNames
                 .map(name => `user_login=${encodeURIComponent(name)}`)
                 .join('&');
             
-            const streamsResponse = await fetch(
-                `https://api.twitch.tv/helix/streams?${queryParams}`,
-                {
-                    headers: {
-                        'Client-ID': TWITCH_CLIENT_ID,
-                        'Authorization': `Bearer ${accessToken}`
-                    }
+            // Validar URL antes de fazer requisição (prevenir SSRF)
+            const twitchApiUrl = `https://api.twitch.tv/helix/streams?${queryParams}`;
+            try {
+                const urlObj = new URL(twitchApiUrl);
+                // Garantir que é apenas api.twitch.tv
+                if (urlObj.hostname !== 'api.twitch.tv' || urlObj.protocol !== 'https:') {
+                    throw new Error('URL inválida');
                 }
-            );
+            } catch (urlError) {
+                console.error('[DISCORD] URL da API Twitch inválida:', urlError);
+                await connection.end();
+                return;
+            }
+            
+            const streamsResponse = await fetch(twitchApiUrl, {
+                headers: {
+                    'Client-ID': TWITCH_CLIENT_ID,
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
 
             if (!streamsResponse.ok) {
                 const errorText = await streamsResponse.text();
