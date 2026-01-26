@@ -51,3 +51,7 @@ discord-users.json
 *.mwb
 node_modules/.bin/eslint
 node_modules/.bin/eslint
+
+docs
+src/generated
+**/*.min.js
