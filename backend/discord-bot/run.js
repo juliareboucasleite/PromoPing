@@ -43,15 +43,36 @@ function log(message, color = 'reset') {
     console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
+/**
+ * Sanitiza um comando para prevenir command injection
+ * @param {string} command - Nome do comando
+ * @returns {string} Comando sanitizado
+ */
+function sanitizeCommand(command) {
+    if (!command || typeof command !== 'string') {
+        throw new Error('Comando inválido');
+    }
+    // Remove caracteres perigosos e permite apenas alfanuméricos, hífens e underscores
+    const sanitized = command.trim().replace(/[;&|`$(){}[\]<>'"\\\s]/g, '');
+    // Valida que contém apenas caracteres seguros
+    if (!/^[a-zA-Z0-9_-]+$/.test(sanitized)) {
+        throw new Error('Comando contém caracteres inválidos');
+    }
+    return sanitized;
+}
+
 function checkCommand(command) {
     try {
+        const safeCommand = sanitizeCommand(command);
         if (process.platform === 'win32') {
-            execSync(`where ${command}`, {
-                stdio: 'ignore'
+            execSync('where', [safeCommand], {
+                stdio: 'ignore',
+                shell: false
             });
         } else {
-            execSync(`which ${command}`, {
-                stdio: 'ignore'
+            execSync('which', [safeCommand], {
+                stdio: 'ignore',
+                shell: false
             });
         }
         return true;
@@ -78,16 +99,46 @@ function runSetup() {
     }
 }
 
+/**
+ * Sanitiza e valida um caminho de arquivo para prevenir command injection
+ * @param {string} filePath - Caminho do arquivo
+ * @returns {string} Caminho sanitizado
+ */
+function sanitizeFilePath(filePath) {
+    if (!filePath || typeof filePath !== 'string') {
+        throw new Error('Caminho de arquivo inválido');
+    }
+    // Normaliza o caminho
+    const normalized = path.normalize(filePath);
+    // Garante que está dentro do diretório raiz
+    const fullPath = path.join(rootDir, normalized);
+    const resolved = path.resolve(fullPath);
+    
+    if (!resolved.startsWith(rootDir)) {
+        throw new Error('Caminho de arquivo fora do diretório do projeto');
+    }
+    
+    // Remove caracteres perigosos
+    return normalized.replace(/[;&|`$(){}[\]<>'"\\]/g, '');
+}
+
 function runDocker() {
     log('Iniciando com Docker...', 'blue');
     log('Isso pode demorar alguns minutos na primeira vez...', 'yellow');
 
-    const dockerComposeFile = checkFile('docker-files/docker-compose.dev.yml') ? 'docker-files/docker-compose.dev.yml' : 'docker-files/docker-compose.yml';
+    const dockerComposeFile = checkFile('docker-files/docker-compose.dev.yml') 
+        ? 'docker-files/docker-compose.dev.yml' 
+        : 'docker-files/docker-compose.yml';
 
     try {
-        execSync(`docker-compose -f ${dockerComposeFile} up --build`, {
+        // Sanitizar caminho antes de usar
+        const safeFile = sanitizeFilePath(dockerComposeFile);
+        
+        // Usar array de argumentos ao invés de string interpolada
+        execSync('docker-compose', ['-f', safeFile, 'up', '--build'], {
             stdio: 'inherit',
-            cwd: rootDir
+            cwd: rootDir,
+            shell: false // Desabilitar shell previne injection
         });
     } catch (error) {
         log('Erro ao executar Docker', 'red');
