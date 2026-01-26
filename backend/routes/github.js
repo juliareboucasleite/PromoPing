@@ -1,4 +1,4 @@
-﻿// github.js - Rotas para acessar a API do GitHub (para repositórios privados)
+// github.js - Rotas para acessar a API do GitHub (para repositórios privados)
 
 import express from "express";
 import fetch from "node-fetch";
@@ -625,8 +625,20 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
                 });
             }
 
+            // Garantir que req.body é um Buffer ou string para o HMAC
+            // rawBodyMiddleware já deve fornecer um Buffer, mas validar para segurança
+            let bodyForHmac;
+            if (Buffer.isBuffer(req.body)) {
+                bodyForHmac = req.body;
+            } else if (typeof req.body === 'string') {
+                bodyForHmac = Buffer.from(req.body, 'utf-8');
+            } else {
+                // Se for objeto, converter para JSON string e depois para Buffer
+                bodyForHmac = Buffer.from(JSON.stringify(req.body), 'utf-8');
+            }
+            
             const hmac = crypto.createHmac('sha256', githubSecret);
-            const digest = 'sha256=' + hmac.update(req.body).digest('hex');
+            const digest = 'sha256=' + hmac.update(bodyForHmac).digest('hex');
 
             if (signature !== digest) {
                 console.error('[GITHUB WEBHOOK] Assinatura inválida');
