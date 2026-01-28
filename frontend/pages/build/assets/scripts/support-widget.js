@@ -618,7 +618,7 @@
             <div id="pp-support-thread-info" style="margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:6px;font-size:12px;color:#e65100;display:none;">
               <strong>Respondendo à conversa:</strong> <span id="pp-support-thread-preview"></span>
             </div>
-            <textarea id="pp-support-text" rows="2" placeholder="Digite sua mensagem..." style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:none;font-size:14px;margin-bottom:8px;font-family:inherit;"></textarea>
+            <textarea id="pp-support-text" rows="2" placeholder="Digite sua mensagem..." style="width:90%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:none;font-size:14px;margin-bottom:8px;font-family:inherit;"></textarea>
             <button id="pp-support-send" style="width:100%;background:#f17603;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.2s;">Enviar</button>
             <div id="pp-support-feedback" style="margin-top:6px;font-size:12px;color:#666;text-align:center;"></div>
           </div>
