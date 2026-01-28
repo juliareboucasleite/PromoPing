@@ -12,6 +12,7 @@
     let currentThreadId = null;
     let threads = [];
     let messages = [];
+    let attachedFiles = [];
 
     function checkAuth() {
         if (!TOKEN) {
@@ -187,13 +188,28 @@
             }
 
             chatMessages.innerHTML = messages.map(msg => {
+                // Extrair URLs de imagens/GIFs da mensagem
+                let messageText = msg.message || '';
+                const imageMatches = messageText.match(/\[(?:GIF|Imagem):\s*([^\]]+)\]/g);
+                let imagesHtml = '';
+                
+                if (imageMatches) {
+                    imageMatches.forEach(match => {
+                        const url = match.match(/\[(?:GIF|Imagem):\s*([^\]]+)\]/)[1];
+                        imagesHtml += `<div class="message-attachment"><img src="${escapeHtml(url)}" alt="Anexo" style="max-width: 300px; border-radius: 8px; margin-top: 0.5rem;"></div>`;
+                        messageText = messageText.replace(match, '');
+                    });
+                    messageText = messageText.trim();
+                }
+
                 if (msg.senderType === 'support') {
                     return `
                         <div class="message-wrapper support-message">
                             ${supportPhoto ? `<img src="${escapeHtml(supportPhoto)}" alt="Suporte" class="message-avatar">` : '<div class="message-avatar placeholder">PP</div>'}
                             <div class="message-bubble ${msg.senderType}">
                                 <div class="message-sender">Suporte</div>
-                                <div class="message-text">${escapeHtml(msg.message)}</div>
+                                ${messageText ? `<div class="message-text">${escapeHtml(messageText)}</div>` : ''}
+                                ${imagesHtml}
                                 <div class="message-time">${formatDate(msg.createdAt)}</div>
                             </div>
                         </div>
@@ -203,7 +219,8 @@
                         <div class="message-wrapper user-message">
                             <div class="message-bubble ${msg.senderType}">
                                 <div class="message-sender">${escapeHtml(msg.userName || 'Usuário')}</div>
-                                <div class="message-text">${escapeHtml(msg.message)}</div>
+                                ${messageText ? `<div class="message-text">${escapeHtml(messageText)}</div>` : ''}
+                                ${imagesHtml}
                                 <div class="message-time">${formatDate(msg.createdAt)}</div>
                             </div>
                         </div>
@@ -220,18 +237,38 @@
 
     async function sendMessage() {
         const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
 
         if (!messageInput || !currentThreadId) return;
 
         const message = messageInput.value.trim();
-        if (!message) return;
+        const hasAttachments = attachedFiles.length > 0;
+
+        if (!message && !hasAttachments) return;
 
         // Desabilitar input enquanto envia
         messageInput.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
         const originalPlaceholder = messageInput.placeholder;
         messageInput.placeholder = 'Enviando...';
+        if (sendBtn) sendBtn.textContent = 'Enviando...';
 
         try {
+            let messageText = message;
+            
+            // Adicionar URLs de anexos à mensagem
+            if (hasAttachments) {
+                const attachmentUrls = attachedFiles.map(file => {
+                    if (file.type === 'gif') {
+                        return `[GIF: ${file.url}]`;
+                    } else if (file.type === 'image') {
+                        return `[Imagem: ${file.url}]`;
+                    }
+                    return `[Anexo: ${file.name}]`;
+                }).join(' ');
+                messageText = messageText ? `${messageText}\n\n${attachmentUrls}` : attachmentUrls;
+            }
+
             const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/${encodeURIComponent(currentThreadId)}/reply`) : `${API_BASE}/api/support/messages/${currentThreadId}/reply`;
             const response = await fetch(safeUrl, {
                 method: 'POST',
@@ -240,8 +277,9 @@
                     'Authorization': `Bearer ${TOKEN}`
                 },
                 body: JSON.stringify({
-                    message: message,
-                    senderType: 'support'
+                    message: messageText,
+                    senderType: 'support',
+                    attachments: attachedFiles
                 })
             });
 
@@ -251,6 +289,8 @@
             }
 
             messageInput.value = '';
+            attachedFiles = [];
+            updateAttachedFilesPreview();
             await loadMessages(currentThreadId);
             await loadThreads();
         } catch (error) {
@@ -258,8 +298,246 @@
             alert(`Erro ao enviar mensagem: ${error.message}`);
         } finally {
             messageInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
             messageInput.placeholder = originalPlaceholder;
+            if (sendBtn) sendBtn.textContent = 'Enviar';
         }
+    }
+
+    /**
+     * Emojis populares
+     */
+    const popularEmojis = [
+        '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+        '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+        '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+        '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+        '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+        '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+        '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
+        '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
+        '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧',
+        '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+        '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+        '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘',
+        '💝', '💟', '☮️', '✝️', '☪️', '🕉', '☸️', '✡️',
+        '👍', '👎', '👊', '✊', '🤛', '🤜', '🤞', '✌️',
+        '🤟', '🤘', '👌', '🤌', '🤏', '👈', '👉', '👆',
+        '👇', '☝️', '👋', '🤚', '🖐', '✋', '🖖', '👏',
+        '🙌', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿'
+    ];
+
+    /**
+     * Inicializa o seletor de emojis
+     */
+    function initEmojiPicker() {
+        const emojiBtn = document.getElementById('emojiBtn');
+        const emojiPicker = document.getElementById('emojiPicker');
+        const messageInput = document.getElementById('messageInput');
+
+        if (!emojiBtn || !emojiPicker || !messageInput) return;
+
+        // Criar grid de emojis
+        const emojiGrid = document.createElement('div');
+        emojiGrid.className = 'emoji-picker-grid';
+        emojiGrid.innerHTML = popularEmojis.map(emoji => 
+            `<div class="emoji-item" data-emoji="${emoji}">${emoji}</div>`
+        ).join('');
+        emojiPicker.appendChild(emojiGrid);
+
+        // Toggle do picker
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = emojiPicker.style.display !== 'none';
+            emojiPicker.style.display = isVisible ? 'none' : 'block';
+            const gifPicker = document.getElementById('gifPicker');
+            if (gifPicker) gifPicker.style.display = 'none';
+        });
+
+        // Selecionar emoji
+        emojiGrid.addEventListener('click', (e) => {
+            const emojiItem = e.target.closest('.emoji-item');
+            if (emojiItem) {
+                const emoji = emojiItem.dataset.emoji;
+                messageInput.value += emoji;
+                messageInput.focus();
+                emojiPicker.style.display = 'none';
+            }
+        });
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+                emojiPicker.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Busca GIFs usando Giphy API (pode ser substituído por outra API)
+     */
+    async function searchGifs(query = '') {
+        const gifResults = document.getElementById('gifResults');
+        if (!gifResults) return;
+
+        gifResults.innerHTML = '<div class="loading-state">Carregando GIFs...</div>';
+
+        try {
+            // Usando Giphy API pública (pode ser substituído por uma chave própria)
+            const apiKey = 'dc6zaTOxFJmzC'; // Chave pública do Giphy (limitada)
+            const url = query 
+                ? `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(query)}&limit=20`
+                : `https://api.giphy.com/v1/gifs/trending?api_key=${apiKey}&limit=20`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.data && data.data.length > 0) {
+                gifResults.innerHTML = data.data.map(gif => `
+                    <div class="gif-item" data-gif-url="${gif.images.fixed_height.url}">
+                        <img src="${gif.images.fixed_height_small.url}" alt="${gif.title || 'GIF'}" loading="lazy">
+                    </div>
+                `).join('');
+
+                // Adicionar event listeners
+                gifResults.querySelectorAll('.gif-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const gifUrl = item.dataset.gifUrl;
+                        attachedFiles.push({
+                            type: 'gif',
+                            url: gifUrl,
+                            name: 'gif.gif'
+                        });
+                        updateAttachedFilesPreview();
+                        document.getElementById('gifPicker').style.display = 'none';
+                    });
+                });
+            } else {
+                gifResults.innerHTML = '<div class="loading-state">Nenhum GIF encontrado</div>';
+            }
+        } catch (error) {
+            console.error('[SUPORTE] Erro ao buscar GIFs:', error);
+            gifResults.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Erro ao carregar GIFs</div>';
+        }
+    }
+
+    /**
+     * Inicializa o seletor de GIFs
+     */
+    function initGifPicker() {
+        const gifBtn = document.getElementById('gifBtn');
+        const gifPicker = document.getElementById('gifPicker');
+        const gifSearch = document.getElementById('gifSearch');
+        const closeGifPicker = document.getElementById('closeGifPicker');
+        const emojiPicker = document.getElementById('emojiPicker');
+
+        if (!gifBtn || !gifPicker) return;
+
+        // Toggle do picker
+        gifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = gifPicker.style.display !== 'none';
+            gifPicker.style.display = isVisible ? 'none' : 'block';
+            if (emojiPicker) emojiPicker.style.display = 'none';
+            if (!isVisible) {
+                searchGifs();
+            }
+        });
+
+        // Fechar picker
+        if (closeGifPicker) {
+            closeGifPicker.addEventListener('click', () => {
+                gifPicker.style.display = 'none';
+            });
+        }
+
+        // Buscar GIFs
+        if (gifSearch) {
+            let searchTimeout;
+            gifSearch.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                searchTimeout = setTimeout(() => {
+                    searchGifs(query);
+                }, 500);
+            });
+        }
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
+                gifPicker.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Inicializa o upload de arquivos
+     */
+    function initFileUpload() {
+        const attachBtn = document.getElementById('attachBtn');
+        const fileInput = document.getElementById('fileInput');
+
+        if (!attachBtn || !fileInput) return;
+
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        attachedFiles.push({
+                            type: file.type.startsWith('image/') ? 'image' : 'video',
+                            url: event.target.result,
+                            name: file.name,
+                            file: file
+                        });
+                        updateAttachedFilesPreview();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Apenas imagens e vídeos são suportados');
+                }
+            });
+            fileInput.value = '';
+        });
+    }
+
+    /**
+     * Atualiza o preview dos arquivos anexados
+     */
+    function updateAttachedFilesPreview() {
+        const preview = document.getElementById('attachedFiles');
+        if (!preview) return;
+
+        if (attachedFiles.length === 0) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        preview.innerHTML = attachedFiles.map((file, index) => `
+            <div class="attached-file-item">
+                ${file.type === 'gif' || file.type === 'image' 
+                    ? `<img src="${escapeHtml(file.url)}" alt="${escapeHtml(file.name)}">`
+                    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#232326;color:#999;font-size:0.75rem;">${escapeHtml(file.name)}</div>`
+                }
+                <button class="remove-file-btn" data-index="${index}">✕</button>
+            </div>
+        `).join('');
+
+        // Adicionar event listeners para remover arquivos
+        preview.querySelectorAll('.remove-file-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                attachedFiles.splice(index, 1);
+                updateAttachedFilesPreview();
+            });
+        });
     }
 
     /**
@@ -314,9 +592,15 @@
         if (!checkAuth()) return;
 
         const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
         const refreshBtn = document.getElementById('refreshBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const deleteThreadBtn = document.getElementById('deleteThreadBtn');
+
+        // Inicializar funcionalidades de mídia
+        initEmojiPicker();
+        initGifPicker();
+        initFileUpload();
 
         if (messageInput) {
             messageInput.addEventListener('keydown', (e) => {
@@ -325,6 +609,10 @@
                     sendMessage();
                 }
             });
+        }
+
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
         }
 
         if (deleteThreadBtn) {
