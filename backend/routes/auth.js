@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import express from "express";
 import passport from "passport";
 import {
@@ -45,6 +45,31 @@ dotenv.config({
 }); // Garante que .env está sendo lido da raiz
 
 const router = express.Router();
+
+// Expiração: access 30 dias, refresh 60 dias (renovação automática)
+const JWT_ACCESS_EXPIRY = "30d";
+const JWT_REFRESH_EXPIRY = "60d";
+
+/**
+ * Gera par access + refresh token para um utilizador.
+ * @param {string} ReferenciaID
+ * @param {string} email
+ * @returns {{ token: string, refreshToken: string }}
+ */
+function gerarParesToken(ReferenciaID, email) {
+    const secret = process.env.JWT_SECRET;
+    const token = jwt.sign(
+        { ReferenciaID, email },
+        secret,
+        { expiresIn: JWT_ACCESS_EXPIRY }
+    );
+    const refreshToken = jwt.sign(
+        { ReferenciaID, email, type: "refresh" },
+        secret,
+        { expiresIn: JWT_REFRESH_EXPIRY }
+    );
+    return { token, refreshToken };
+}
 
 function gerarCodigo() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -528,21 +553,15 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                             console.log(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
 
-                        const token = jwt.sign({
-                                ReferenciaID: discordUser.ReferenciaID,
-                                email: discordUser.email
-                            },
-                            process.env.JWT_SECRET, {
-                                expiresIn: "7d"
-                            }
-                        );
+                        const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
 
                         console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.ReferenciaID);
                         const userObject = {
                             ReferenciaID: discordUser.ReferenciaID,
                             email: discordUser.email,
                             token,
-                            discordId: discordId // Incluir discordId para uso no callback
+                            refreshToken,
+                            discordId: discordId
                         };
                         console.log(" [DISCORD STRATEGY] Chamando done() com user (login direto):", JSON.stringify(userObject, null, 2));
                         return done(null, userObject);
@@ -659,21 +678,15 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         }
                     }
 
-                    const token = jwt.sign({
-                            ReferenciaID: referenciaID,
-                            email
-                        },
-                        process.env.JWT_SECRET, {
-                            expiresIn: "7d"
-                        }
-                    );
+                    const { token, refreshToken } = gerarParesToken(referenciaID, email);
 
                     console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", referenciaID);
                     const userObject = {
                         ReferenciaID: referenciaID,
                         email,
                         token,
-                        discordId: discordId // Incluir discordId para uso no callback
+                        refreshToken,
+                        discordId: discordId
                     };
                     console.log(" [DISCORD STRATEGY] Chamando done() com user:", JSON.stringify(userObject, null, 2));
                     return done(null, userObject);
@@ -736,19 +749,10 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            // Gerar token diretamente
-            const token = jwt.sign({
-                    ReferenciaID: discordUser.ReferenciaID,
-                    email: discordUser.email
-                },
-                process.env.JWT_SECRET, {
-                    expiresIn: "7d"
-                }
-            );
+            const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
 
             console.log(" Login direto via rota alternativa para usuário:", discordUser.ReferenciaID);
 
-            // Criar página HTML que salva no localStorage e redireciona
             const html = `
         <!DOCTYPE html>
         <html>
@@ -757,7 +761,8 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         </head>
         <body>
           <script>
-            // Salvar dados do usuário no localStorage
+            localStorage.setItem('PROMOPING_TOKEN', '${token}');
+            localStorage.setItem('PROMOPING_REFRESH_TOKEN', '${refreshToken}');
             localStorage.setItem('user', JSON.stringify({
               ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
@@ -1287,24 +1292,12 @@ router.post("/login", async (req, res) => {
             }
         }
 
-        // Gera token JWT após login bem-sucedido
-        // ESSA PARTE AQUI É CRÍTICA: gera o token que permite acesso ao sistema
-        // Se tu mudar o payload (ReferenciaID, email) ou o expiresIn, pode quebrar tudo
-        // O token precisa ter ReferenciaID e email, sem isso não funciona
-        // expiresIn de 7 dias tá perfeito, não mexe nisso
-        // NÃO MEXA NESSA MERDA
-        const token = jwt.sign({
-                ReferenciaID: user.ReferenciaID, // ESSE CAMPO É OBRIGATÓRIO, não remove
-                email: user.Email // ESSE TAMBÉM É OBRIGATÓRIO
-            },
-            process.env.JWT_SECRET, {
-                expiresIn: "7d" // 7 dias tá bom, não mexe
-            }
-        );
+        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
 
         res.json({
             status: "ok",
             token,
+            refreshToken,
             user: {
                 ReferenciaID: user.ReferenciaID,
                 email: user.Email,
@@ -1319,6 +1312,31 @@ router.post("/login", async (req, res) => {
             status: "error",
             error: err.message || "Erro interno no servidor",
         });
+    }
+});
+
+// Renovar token (refresh): troca sozinho quando o access token expira
+router.post("/refresh", async (req, res) => {
+    try {
+        const { refreshToken: refToken } = req.body;
+        if (!refToken) {
+            return res.status(401).json({ error: "Refresh token não fornecido" });
+        }
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            return res.status(500).json({ error: "Configuração inválida" });
+        }
+        const decoded = jwt.verify(refToken, secret);
+        if (decoded.type !== "refresh" || !decoded.ReferenciaID || !decoded.email) {
+            return res.status(403).json({ error: "Refresh token inválido" });
+        }
+        const { token, refreshToken: newRefreshToken } = gerarParesToken(decoded.ReferenciaID, decoded.email);
+        return res.json({ status: "ok", token, refreshToken: newRefreshToken });
+    } catch (err) {
+        if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
+            return res.status(401).json({ error: "Refresh token expirado", code: "REFRESH_EXPIRED" });
+        }
+        return res.status(403).json({ error: "Refresh token inválido" });
     }
 });
 
@@ -1797,21 +1815,10 @@ router.get("/google/callback", (req, res) => {
                     }
                 }
 
-                const token = jwt.sign({
-                        ReferenciaID: user.ReferenciaID,
-                        email: user.email,
-                        nome: user.nome || user.name
-                    },
-                    process.env.JWT_SECRET, {
-                        expiresIn: "7d"
-                    }
-                );
+                const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.email);
 
                 console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.ReferenciaID);
 
-                // Criar página HTML que salva o token no localStorage e redireciona para o dashboard
-                // Similar ao que o Discord faz
-                // Escapar caracteres especiais para evitar XSS
                 const escapedEmail = (user.email || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const escapedNome = (user.nome || user.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
                 
@@ -1823,18 +1830,15 @@ router.get("/google/callback", (req, res) => {
         </head>
         <body>
           <script>
-            // Salvar token no localStorage
+            localStorage.setItem('PROMOPING_TOKEN', '${token}');
+            localStorage.setItem('PROMOPING_REFRESH_TOKEN', '${refreshToken}');
             localStorage.setItem('token', '${token}');
-            
-            // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
               ReferenciaID: '${user.ReferenciaID}',
               email: '${escapedEmail}',
               nome: '${escapedNome}',
               loginMethod: 'google'
             }));
-            
-            // Redirecionar para o painel
             window.location.href = '/dashboard';
           </script>
           <p>Redirecionando para o painel...</p>
@@ -1912,24 +1916,14 @@ router.get("/github/callback", (req, res) => {
             }
 
             try {
-                const token = jwt.sign({
-                        ReferenciaID: req.user.ReferenciaID,
-                        email: req.user.email,
-                        nome: req.user.nome || req.user.name
-                    },
-                    process.env.JWT_SECRET, {
-                        expiresIn: "7d"
-                    }
-                );
+                const { token, refreshToken } = gerarParesToken(req.user.ReferenciaID, req.user.email);
 
                 const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
                 const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
-
-                // Verificar se veio do sign-up ou login
                 const fromSignUp = req.query.from === 'signup';
                 const redirectUrl = fromSignUp ? signUpUrl : panelUrl;
 
-                res.redirect(`${redirectUrl}?token=${token}`);
+                res.redirect(`${redirectUrl}?token=${encodeURIComponent(token)}&refreshToken=${encodeURIComponent(refreshToken)}`);
             } catch (tokenError) {
                 console.error("Erro ao gerar token:", tokenError);
                 res.redirect(`${loginUrl}?error=token_error`);
@@ -2588,15 +2582,7 @@ router.post("/verificar-codigo", async (req, res) => {
             [user.ReferenciaID]
         );
 
-        // Gerar token JWT
-        const token = jwt.sign({
-                ReferenciaID: user.ReferenciaID,
-                email: user.Email
-            },
-            process.env.JWT_SECRET, {
-                expiresIn: "7d"
-            }
-        );
+        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
 
         console.log(` Email verificado com sucesso para usuário ${user.ReferenciaID}`);
 
@@ -2604,6 +2590,7 @@ router.post("/verificar-codigo", async (req, res) => {
             status: "ok",
             message: "Email verificado com sucesso!",
             token,
+            refreshToken,
             user: {
                 ReferenciaID: user.ReferenciaID,
                 email: user.Email,

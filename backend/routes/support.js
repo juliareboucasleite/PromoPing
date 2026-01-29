@@ -1,10 +1,9 @@
 /**
  * PromoPing Support API Routes
- * 
- * Sistema de suporte ao cliente com threads e mensagens.
- * Cada utilizador pode ter múltiplas threads (conversas) distintas.
- * 
+ *
  * Endpoints:
+ * - POST /api/support/ticket - Criar ticket (AI-first, fallback legado)
+ * - POST /api/support/chat - Primeiro atendimento automático (motor de intenções, sem IA externa)
  * - GET  /api/support/messages/admin - Listar todas as threads (admin)
  * - GET  /api/support/messages - Listar threads do utilizador autenticado
  * - GET  /api/support/messages/:id - Obter thread específica com respostas
@@ -13,18 +12,119 @@
  */
 
 import express from "express";
-import {
-    pool
-} from "../database/db.js";
-import {
-    verifyToken
-} from "../middleware/auth.js";
+import { body, validationResult } from "express-validator";
+import { pool } from "../database/db.js";
+import { verifyToken, optionalToken } from "../middleware/auth.js";
+import { createTicket as createTicketController, VALID_CONTEXTS } from "../controllers/support.controller.js";
+import { processMessage } from "../services/supportChatEngine.js";
+import { createTicketChannel, sendMessageToChannel } from "../services/supportDiscordNotifier.js";
 
 const router = express.Router();
+
+const ticketValidation = [
+    body("message")
+        .isString()
+        .trim()
+        .isLength({ min: 10 })
+        .withMessage("Mensagem é obrigatória e deve ter pelo menos 10 caracteres"),
+    body("context")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isIn(VALID_CONTEXTS)
+        .withMessage("Contexto é obrigatório e deve ser um de: " + VALID_CONTEXTS.join(", ")),
+    body("channel").optional().isString().trim(),
+];
+
+router.post(
+    "/ticket",
+    verifyToken,
+    ticketValidation,
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: errors.array().map((e) => e.msg).join("; ") });
+        }
+        return createTicketController(req, res);
+    }
+);
+
+// ============================================================================
+// POST /api/support/chat — Primeiro atendimento automático (motor de intenções, sem IA externa)
+// ============================================================================
+
+/**
+ * POST /api/support/chat
+ *
+ * Recebe uma mensagem do utilizador, analisa a intenção (JS puro) e devolve
+ * uma resposta amigável. Para intenção UNKNOWN, devolve escalateToHuman: true.
+ *
+ * Body: { "userId": number, "message": string }
+ * Response: { "reply": string, "intent": string, "escalateToHuman": boolean }
+ */
+router.post("/chat", async (req, res) => {
+    try {
+        const { userId, message } = req.body || {};
+
+        if (message === undefined || message === null) {
+            return res.status(400).json({
+                error: "O campo 'message' é obrigatório",
+            });
+        }
+        if (typeof message !== "string" || !message.trim()) {
+            return res.status(400).json({
+                error: "A mensagem não pode estar vazia",
+            });
+        }
+
+        const id = typeof userId === "number" ? userId : parseInt(userId, 10) || 0;
+        const result = processMessage(message.trim(), id);
+
+        return res.json({
+            reply: result.reply,
+            intent: result.intent,
+            escalateToHuman: result.escalateToHuman,
+        });
+    } catch (err) {
+        console.error(" [SUPPORT] Erro em /chat:", err);
+        return res.status(500).json({
+            error: "Erro ao processar a mensagem",
+        });
+    }
+});
 
 // ============================================================================
 // UTILITÁRIOS DE BASE DE DADOS
 // ============================================================================
+
+/** ReferenciaID usado para utilizadores anónimos (não logados) no suporte */
+const ANON_REFERENCIA_ID = "ANON";
+
+/**
+ * Garante que existe o utilizador "Anónimo" na BD (para mensagens de suporte sem login)
+ */
+async function ensureAnonUser() {
+    try {
+        const [rows] = await pool.query(
+            "SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ?",
+            [ANON_REFERENCIA_ID]
+        );
+        if (rows.length > 0) return;
+        const bcrypt = await import("bcrypt");
+        const senhaHash = await bcrypt.hash("anonymous", 10);
+        await pool.query(
+            `INSERT INTO utilizadores (ReferenciaID, Nome, Email, SenhaHash, Ativo, PerfilId)
+             VALUES (?, 'Anónimo', 'anon@promoping.local', ?, 1, 2)`,
+            [ANON_REFERENCIA_ID, senhaHash]
+        );
+        console.log(" [SUPPORT] Utilizador anónimo (ANON) criado na BD");
+    } catch (e) {
+        // Pode falhar se email já existir noutro user; ignorar
+        if (e.code !== "ER_DUP_ENTRY" && e.code !== "ER_DUP_KEY") {
+            console.warn(" [SUPPORT] Aviso ao criar utilizador anónimo:", e.message);
+        }
+    }
+}
 
 /**
  * Garante que a tabela supportmessages existe e está atualizada
@@ -44,7 +144,7 @@ async function ensureTable() {
     INDEX idx_replyTo (replyTo),
     INDEX idx_threadId (threadId),
     INDEX idx_createdAt (createdAt)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
 
     await pool.query(sql);
 
@@ -64,6 +164,35 @@ async function ensureTable() {
             // Coluna/índice já existe, ignorar
         }
     }
+
+    // Coluna para sessão anónima (quem pede ajuda sem estar logado)
+    try {
+        await pool.query("ALTER TABLE supportmessages ADD COLUMN anonymousSessionId VARCHAR(36) NULL AFTER threadId");
+    } catch (e) {
+        // Coluna já existe
+    }
+    try {
+        await pool.query("ALTER TABLE supportmessages ADD INDEX idx_anonymousSessionId (anonymousSessionId)");
+    } catch (e) {
+        // Índice já existe
+    }
+    try {
+        await pool.query("ALTER TABLE supportmessages ADD COLUMN userName VARCHAR(255) NULL AFTER message");
+    } catch (e) {
+        // Coluna já existe
+    }
+    try {
+        await pool.query("ALTER TABLE supportmessages ADD COLUMN userEmail VARCHAR(255) NULL AFTER userName");
+    } catch (e) {
+        // Coluna já existe
+    }
+    try {
+        await pool.query("ALTER TABLE supportmessages ADD COLUMN discordChannelId VARCHAR(20) NULL AFTER userEmail");
+    } catch (e) {
+        // Coluna já existe
+    }
+
+    await ensureAnonUser();
 
     // Foreign keys (podem falhar se já existirem ou houver dados inconsistentes)
     try {
@@ -244,62 +373,68 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
  * Query params:
  * - limit: Número máximo de threads (padrão: 10, máximo: 50)
  * - threadId: Se fornecido, retorna mensagens dessa thread específica
+ * - anonymousId: Se utilizador não está logado, UUID da sessão anónima (obrigatório sem token)
  */
-router.get("/messages", verifyToken, async (req, res) => {
+router.get("/messages", optionalToken, async (req, res) => {
     try {
         await ensureTable();
-        const referenciaID = req.user.ReferenciaID; // ReferenciaID do token JWT
         const limit = Math.min(parseInt(req.query.limit) || 10, 50);
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const offset = (page - 1) * limit;
         const threadId = req.query.threadId;
+        const anonymousId = req.query.anonymousId;
 
-        console.log(" [SUPPORT] Listando mensagens para ReferenciaID:", referenciaID, "page:", page);
+        const isAnonymous = !req.user && anonymousId;
+        const referenciaID = req.user ? req.user.ReferenciaID : ANON_REFERENCIA_ID;
 
-        if (threadId) {
-            // Buscar mensagens de uma thread específica do utilizador
-            const [messages] = await pool.query(
-                `SELECT id, message, senderType, replyTo, threadId, createdAt 
-         FROM supportmessages 
-         WHERE (id = ? OR threadId = ?) AND ReferenciaID = ?
-         ORDER BY createdAt ASC`,
-                [threadId, threadId, referenciaID]
-            );
-
-            return res.json({
-                items: messages
+        if (!req.user && !anonymousId) {
+            return res.status(401).json({
+                error: "Token ou anonymousId é obrigatório",
+                code: "ANONYMOUS_ID_REQUIRED"
             });
         }
 
-        // Buscar threads do utilizador com paginação (primeiras mensagens de cada conversa)
-        // IMPORTANTE: threadId IS NULL OR m.id = m.threadId garante que pegamos apenas a primeira mensagem de cada thread
+        if (threadId) {
+            const whereClause = isAnonymous
+                ? `(id = ? OR threadId = ?) AND ReferenciaID = ? AND anonymousSessionId = ?`
+                : `(id = ? OR threadId = ?) AND ReferenciaID = ?`;
+            const params = isAnonymous
+                ? [threadId, threadId, ANON_REFERENCIA_ID, anonymousId]
+                : [threadId, threadId, referenciaID];
+            const [messages] = await pool.query(
+                `SELECT id, message, senderType, replyTo, threadId, createdAt 
+         FROM supportmessages 
+         WHERE ${whereClause}
+         ORDER BY createdAt ASC`,
+                params
+            );
+            return res.json({ items: messages });
+        }
 
-        // Query para contar total de threads (para paginação)
+        const whereClause = isAnonymous
+            ? `m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId) AND m.anonymousSessionId = ?`
+            : `m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId)`;
+        const whereParams = isAnonymous ? [ANON_REFERENCIA_ID, anonymousId] : [referenciaID];
+
         const [countResult] = await pool.query(
-            `SELECT COUNT(DISTINCT m.id) as total
-       FROM supportmessages m
-       WHERE m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId)`,
-            [referenciaID]
+            `SELECT COUNT(DISTINCT m.id) as total FROM supportmessages m WHERE ${whereClause}`,
+            whereParams
         );
         const totalThreads = (countResult[0] && countResult[0].total) ? countResult[0].total : 0;
         const totalPages = Math.ceil(totalThreads / limit);
 
-        // Query para buscar threads com paginação
         const [threads] = await pool.query(
             `SELECT 
-        m.id, 
-        m.message, 
-        m.senderType,
-        m.createdAt,
+        m.id, m.message, m.senderType, m.createdAt,
         COUNT(DISTINCT r.id) as replyCount,
         MAX(r.createdAt) as lastReplyAt
        FROM supportmessages m
        LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
-       WHERE m.ReferenciaID = ? AND (m.threadId IS NULL OR m.id = m.threadId)
+       WHERE ${whereClause}
        GROUP BY m.id
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
        LIMIT ? OFFSET ?`,
-            [referenciaID, limit, offset]
+            [...whereParams, limit, offset]
         );
 
         res.json({
@@ -315,42 +450,48 @@ router.get("/messages", verifyToken, async (req, res) => {
         });
     } catch (error) {
         console.error(" [SUPPORT] Erro ao listar mensagens:", error);
-        res.status(500).json({
-            error: "Erro ao listar mensagens"
-        });
+        res.status(500).json({ error: "Erro ao listar mensagens" });
     }
 });
 
 /**
  * GET /api/support/messages/:id
  * 
- * Obtém uma thread específica com todas as suas respostas
- * Valida que a thread pertence ao utilizador autenticado
+ * Obtém uma thread específica com todas as suas respostas.
+ * Aceita utilizador logado (token) ou anónimo (anonymousId em query).
  */
-router.get("/messages/:id", verifyToken, async (req, res) => {
+router.get("/messages/:id", optionalToken, async (req, res) => {
     try {
         await ensureTable();
-        const referenciaID = req.user.ReferenciaID;
         const messageId = parseInt(req.params.id);
+        const anonymousId = req.query.anonymousId;
+        const isAnonymous = !req.user && anonymousId;
 
-        // Buscar mensagem principal
+        if (!req.user && !anonymousId) {
+            return res.status(401).json({
+                error: "Token ou anonymousId é obrigatório",
+                code: "ANONYMOUS_ID_REQUIRED"
+            });
+        }
+
         const [messages] = await pool.query(
-            `SELECT id, message, senderType, replyTo, threadId, createdAt 
-       FROM supportmessages 
-       WHERE id = ? AND ReferenciaID = ?`,
-            [messageId, referenciaID]
+            isAnonymous
+                ? `SELECT id, message, senderType, replyTo, threadId, createdAt 
+                   FROM supportmessages 
+                   WHERE id = ? AND ReferenciaID = ? AND anonymousSessionId = ?`
+                : `SELECT id, message, senderType, replyTo, threadId, createdAt 
+                   FROM supportmessages 
+                   WHERE id = ? AND ReferenciaID = ?`,
+            isAnonymous ? [messageId, ANON_REFERENCIA_ID, anonymousId] : [messageId, req.user.ReferenciaID]
         );
 
         if (messages.length === 0) {
-            return res.status(404).json({
-                error: "Mensagem não encontrada"
-            });
+            return res.status(404).json({ error: "Mensagem não encontrada" });
         }
 
         const mainMessage = messages[0];
         const threadId = mainMessage.threadId || mainMessage.id;
 
-        // Buscar todas as respostas da thread
         const [replies] = await pool.query(
             `SELECT id, message, senderType, replyTo, threadId, createdAt 
        FROM supportmessages 
@@ -359,185 +500,247 @@ router.get("/messages/:id", verifyToken, async (req, res) => {
             [threadId, messageId, messageId]
         );
 
-        res.json({
-            message: mainMessage,
-            replies: replies
-        });
+        res.json({ message: mainMessage, replies: replies });
     } catch (error) {
         console.error(" [SUPPORT] Erro ao obter mensagem:", error);
-        res.status(500).json({
-            error: "Erro ao obter mensagem"
-        });
+        res.status(500).json({ error: "Erro ao obter mensagem" });
     }
 });
 
 /**
  * POST /api/support/messages/:id/reply
  * 
- * Responde a uma mensagem existente (adiciona à thread)
- * 
- * IMPORTANTE: 
- * - Se senderType = 'user', valida que a thread pertence ao utilizador
- * - Se senderType = 'support', permite responder qualquer thread
+ * Responde a uma mensagem existente. Aceita utilizador logado (token) ou anónimo (anonymousId no body).
  */
-router.post("/messages/:id/reply", verifyToken, async (req, res) => {
+router.post("/messages/:id/reply", optionalToken, async (req, res) => {
     try {
         await ensureTable();
-        const referenciaID = req.user.ReferenciaID;
         const messageId = parseInt(req.params.id);
-        const {
-            message,
-            senderType = 'user'
-        } = req.body || {};
+        const { message, senderType = 'user', anonymousId } = req.body || {};
+        const referenciaID = req.user ? req.user.ReferenciaID : null;
+        const isAnonymous = !req.user && anonymousId;
 
-        console.log(" [SUPPORT] Resposta de mensagem:", {
-            messageId,
-            referenciaID,
-            senderType
-        });
+        if (!req.user && !anonymousId) {
+            return res.status(401).json({
+                error: "Token ou anonymousId é obrigatório",
+                code: "ANONYMOUS_ID_REQUIRED"
+            });
+        }
 
-        // Validações
         if (!message || typeof message !== "string" || !message.trim()) {
-            return res.status(400).json({
-                error: "Mensagem é obrigatória"
-            });
+            return res.status(400).json({ error: "Mensagem é obrigatória" });
         }
-
         if (!['user', 'support'].includes(senderType)) {
-            return res.status(400).json({
-                error: "senderType deve ser 'user' ou 'support'"
-            });
+            return res.status(400).json({ error: "senderType deve ser 'user' ou 'support'" });
         }
 
-        // Buscar mensagem original
         const [originalMessage] = await pool.query(
-            "SELECT id, ReferenciaID, threadId FROM supportmessages WHERE id = ?",
+            "SELECT id, ReferenciaID, threadId, anonymousSessionId FROM supportmessages WHERE id = ?",
             [messageId]
         );
-
         if (originalMessage.length === 0) {
-            return res.status(404).json({
-                error: "Mensagem original não encontrada"
-            });
+            return res.status(404).json({ error: "Mensagem original não encontrada" });
         }
 
-        // Determinar threadId (usa o threadId da mensagem original ou o próprio ID)
         const threadId = originalMessage[0].threadId || originalMessage[0].id;
+        const refOriginal = originalMessage[0].ReferenciaID;
+        const anonSessionOriginal = originalMessage[0].anonymousSessionId;
 
-        // Validação de permissão: usuários só podem responder suas próprias threads
-        if (senderType === 'user' && originalMessage[0].ReferenciaID !== referenciaID) {
-            return res.status(403).json({
-                error: "Você não pode responder esta mensagem"
-            });
+        if (senderType === 'user') {
+            if (isAnonymous) {
+                if (refOriginal !== ANON_REFERENCIA_ID || anonSessionOriginal !== anonymousId) {
+                    return res.status(403).json({ error: "Você não pode responder esta mensagem" });
+                }
+            } else if (refOriginal !== referenciaID) {
+                return res.status(403).json({ error: "Você não pode responder esta mensagem" });
+            }
         }
 
-        // Determinar ReferenciaID para a resposta
-        // Se for suporte, mantém o ReferenciaID da mensagem original
-        // Se for usuário, usa o ReferenciaID do token
-        const referenciaIDParaResposta = senderType === 'support' ?
-            originalMessage[0].ReferenciaID :
-            referenciaID;
+        const referenciaIDParaResposta = senderType === 'support'
+            ? refOriginal
+            : (isAnonymous ? ANON_REFERENCIA_ID : referenciaID);
 
-        // Inserir resposta
-        const [result] = await pool.query(
+        const [insertResult] = await pool.query(
             `INSERT INTO supportmessages (ReferenciaID, message, senderType, replyTo, threadId)
              VALUES (?, ?, ?, ?, ?)`,
             [referenciaIDParaResposta, message.trim(), senderType, messageId, threadId]
         );
-
-        console.log(" [SUPPORT] Resposta inserida:", result.insertId);
-
-        // Se for mensagem do usuário, verificar se precisa de resposta automática (assíncrono, não bloqueia a resposta)
-        if (senderType === 'user') {
-            setImmediate(async () => {
-                try {
-                    const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
-                    
-                    // Verificar se deve escalar para suporte humano
-                    const shouldEscalate = await shouldEscalateToHuman(threadId);
-                    
-                    if (shouldEscalate) {
-                        await escalateToHuman(threadId, referenciaIDParaResposta);
-                    } else {
-                        // Enviar resposta automática apenas se não houver resposta recente do suporte
-                        await sendAutoResponse(threadId, message.trim(), referenciaIDParaResposta);
-                    }
-                } catch (autoSupportError) {
-                    console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
-                    // Não falhar a requisição se a resposta automática falhar
-                }
-            });
-        }
+        const newId = insertResult.insertId;
 
         res.status(201).json({
-            id: result.insertId,
+            id: newId,
             message: message.trim(),
-            senderType: senderType,
+            senderType,
             replyTo: messageId,
-            threadId: threadId,
+            threadId,
             ReferenciaID: referenciaIDParaResposta
+        });
+
+        setImmediate(async () => {
+            try {
+                const [rows] = await pool.query(
+                    "SELECT discordChannelId, message AS rootMessage, userName, userEmail FROM supportmessages WHERE id = ? LIMIT 1",
+                    [threadId]
+                );
+                let channelId = rows.length > 0 ? rows[0].discordChannelId : null;
+                const root = rows[0];
+
+                // Se a thread ainda não tem canal no Discord (criada antes da integração ou falha na criação), criar agora
+                if (!channelId && root) {
+                    console.log(" [SUPPORT] Thread", threadId, "sem canal Discord; a criar canal agora (fallback).");
+                    channelId = await createTicketChannel(
+                        threadId,
+                        root.rootMessage || "(sem mensagem)",
+                        root.userName || "",
+                        root.userEmail || ""
+                    );
+                    if (channelId) {
+                        await pool.query("UPDATE supportmessages SET discordChannelId = ? WHERE id = ?", [channelId, threadId]);
+                        console.log(" [SUPPORT] Canal Discord criado para thread", threadId, ", channelId:", channelId);
+                    } else {
+                        console.warn(" [SUPPORT] Não foi possível criar canal Discord para thread", threadId, "(bot a correr na porta 3001?)");
+                    }
+                }
+
+                if (channelId) {
+                    await sendMessageToChannel(channelId, message.trim(), senderType);
+                } else {
+                    console.warn(" [SUPPORT] Resposta não enviada para Discord: thread", threadId, "sem canal (verifique o bot na porta 3001).");
+                }
+            } catch (e) {
+                console.error(" [SUPPORT] Erro ao notificar Discord (resposta):", e.message);
+            }
         });
     } catch (error) {
         console.error(" [SUPPORT] Erro ao criar resposta:", error);
-        res.status(500).json({
-            error: "Erro ao enviar resposta",
-            details: error.message
-        });
+        res.status(500).json({ error: "Erro ao enviar resposta", details: error.message });
+    }
+});
+
+/**
+ * POST /api/support/internal/threads/:threadId/reply
+ * Resposta do suporte enviada pelo Discord (só o bot chama).
+ * Header: X-Internal-Secret = SUPPORT_DISCORD_INTERNAL_SECRET do .env
+ */
+router.post("/internal/threads/:threadId/reply", async (req, res) => {
+    try {
+        const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
+        if (!secret || req.headers["x-internal-secret"] !== secret) {
+            return res.status(403).json({ error: "Não autorizado" });
+        }
+        await ensureTable();
+        const threadId = parseInt(req.params.threadId, 10);
+        const { message } = req.body || {};
+        if (!threadId || Number.isNaN(threadId) || !message || typeof message !== "string" || !message.trim()) {
+            return res.status(400).json({ error: "threadId e message são obrigatórios" });
+        }
+
+        const [root] = await pool.query(
+            "SELECT id, ReferenciaID FROM supportmessages WHERE id = ? LIMIT 1",
+            [threadId]
+        );
+        if (root.length === 0) {
+            return res.status(404).json({ error: "Thread não encontrada" });
+        }
+        const referenciaID = root[0].ReferenciaID;
+        const rootId = root[0].id;
+
+        await pool.query(
+            `INSERT INTO supportmessages (ReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, 'support', ?, ?)`,
+            [referenciaID, message.trim(), rootId, threadId]
+        );
+        console.log(" [SUPPORT] Resposta do Discord guardada para thread", threadId);
+        return res.status(201).json({ status: "ok", threadId });
+    } catch (error) {
+        console.error(" [SUPPORT] Erro ao guardar resposta do Discord:", error);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/support/internal/threads/:threadId/close
+ * Fecha o ticket e apaga da base de dados (chamado pelo bot Discord ao clicar "Fechar ticket").
+ * Header: X-Internal-Secret = SUPPORT_DISCORD_INTERNAL_SECRET do .env
+ */
+router.post("/internal/threads/:threadId/close", async (req, res) => {
+    try {
+        const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
+        if (!secret || req.headers["x-internal-secret"] !== secret) {
+            return res.status(403).json({ error: "Não autorizado" });
+        }
+        await ensureTable();
+        const threadId = parseInt(req.params.threadId, 10);
+        if (!threadId || Number.isNaN(threadId)) {
+            return res.status(400).json({ error: "threadId inválido" });
+        }
+
+        const [exists] = await pool.query(
+            "SELECT id FROM supportmessages WHERE id = ? OR threadId = ? LIMIT 1",
+            [threadId, threadId]
+        );
+        if (exists.length === 0) {
+            return res.status(404).json({ error: "Thread não encontrada" });
+        }
+
+        await pool.query(
+            "DELETE FROM supportmessages WHERE id = ? OR threadId = ?",
+            [threadId, threadId]
+        );
+        console.log(" [SUPPORT] Thread", threadId, "fechada e apagada da base de dados (via Discord).");
+        return res.json({ status: "ok", threadId });
+    } catch (error) {
+        console.error(" [SUPPORT] Erro ao fechar thread:", error);
+        return res.status(500).json({ error: error.message });
     }
 });
 
 /**
  * POST /api/support/messages
- * 
- * Cria uma nova thread (nova conversa)
- * 
- * IMPORTANTE:
- * - Cada chamada cria uma NOVA thread (nova conversa)
- * - O threadId é definido como o próprio ID da mensagem (primeira mensagem = thread)
- * - Isso garante que cada utilizador pode ter múltiplas threads distintas
+ * Cria nova thread. Aceita utilizador logado (token) ou anónimo (anonymousId no body).
  */
-router.post("/messages", verifyToken, async (req, res) => {
+router.post("/messages", optionalToken, async (req, res) => {
     try {
         await ensureTable();
-        const referenciaID = req.user.ReferenciaID;
-        const {
-            message
-        } = req.body || {};
+        const { message, anonymousId, userName, userEmail } = req.body || {};
+        const isAnonymous = !req.user;
+        const referenciaID = req.user ? req.user.ReferenciaID : ANON_REFERENCIA_ID;
 
-        console.log(" [SUPPORT] Nova mensagem de ReferenciaID:", referenciaID);
+        if (!req.user && !anonymousId) {
+            return res.status(401).json({
+                error: "Token ou anonymousId é obrigatório (utilizador anónimo deve enviar anonymousId)",
+                code: "ANONYMOUS_ID_REQUIRED"
+            });
+        }
 
-        // Validações
         if (!message || typeof message !== "string" || !message.trim()) {
-            return res.status(400).json({
-                error: "Mensagem é obrigatória"
-            });
+            return res.status(400).json({ error: "Mensagem é obrigatória" });
         }
 
-        // Buscar informações do utilizador para logs
-        const [userInfo] = await pool.query(
-            "SELECT ReferenciaID, Nome, Email, PerfilId FROM utilizadores WHERE ReferenciaID = ?",
-            [referenciaID]
-        );
+        const nameStr = typeof userName === "string" ? userName.trim() : "";
+        const emailStr = typeof userEmail === "string" ? userEmail.trim() : "";
 
-        if (userInfo.length > 0) {
-            const perfil = userInfo[0].PerfilId === 1 ? 'Admin' : userInfo[0].PerfilId === 2 ? 'User' : 'Desconhecido';
-            console.log(" [SUPPORT] Utilizador:", {
-                ReferenciaID: userInfo[0].ReferenciaID,
-                nome: userInfo[0].Nome,
-                perfil
-            });
+        if (req.user) {
+            const [userInfo] = await pool.query(
+                "SELECT ReferenciaID, Nome, Email, PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+                [referenciaID]
+            );
+            if (userInfo.length > 0) {
+                const perfil = userInfo[0].PerfilId === 1 ? 'Admin' : userInfo[0].PerfilId === 2 ? 'User' : 'Desconhecido';
+                console.log(" [SUPPORT] Utilizador:", { ReferenciaID: userInfo[0].ReferenciaID, nome: userInfo[0].Nome, perfil });
+            }
+        } else {
+            console.log(" [SUPPORT] Nova mensagem anónima (anonymousId:", anonymousId?.substring?.(0, 8) + "...)");
         }
 
-        // Inserir nova mensagem (primeira mensagem da thread)
         const [result] = await pool.query(
-            "INSERT INTO supportmessages (ReferenciaID, message, senderType) VALUES (?, ?, 'user')",
-            [referenciaID, message.trim()]
+            isAnonymous
+                ? "INSERT INTO supportmessages (ReferenciaID, message, userName, userEmail, senderType, anonymousSessionId) VALUES (?, ?, ?, ?, 'user', ?)"
+                : "INSERT INTO supportmessages (ReferenciaID, message, userName, userEmail, senderType) VALUES (?, ?, ?, ?, 'user')",
+            isAnonymous ? [ANON_REFERENCIA_ID, message.trim(), nameStr || null, emailStr || null, anonymousId] : [referenciaID, message.trim(), nameStr || null, emailStr || null]
         );
 
         const newMessageId = result.insertId;
 
-        // CRÍTICO: Definir threadId como o próprio ID da mensagem
-        // Isso cria uma nova thread - cada mensagem inicial = nova conversa
         await pool.query(
             "UPDATE supportmessages SET threadId = ? WHERE id = ?",
             [newMessageId, newMessageId]
@@ -545,35 +748,30 @@ router.post("/messages", verifyToken, async (req, res) => {
 
         console.log(" [SUPPORT] Nova thread criada:", newMessageId);
 
-        // Enviar resposta automática (assíncrono, não bloqueia a resposta)
-        setImmediate(async () => {
-            try {
-                const { sendAutoResponse, shouldEscalateToHuman, escalateToHuman } = await import("../services/autoSupport.js");
-                
-                // Verificar se deve escalar para suporte humano
-                const shouldEscalate = await shouldEscalateToHuman(newMessageId);
-                
-                if (shouldEscalate) {
-                    await escalateToHuman(newMessageId, referenciaID);
-                } else {
-                    // Enviar resposta automática
-                    await sendAutoResponse(newMessageId, message.trim(), referenciaID);
-                }
-            } catch (autoSupportError) {
-                console.error(" [SUPPORT] Erro ao processar resposta automática:", autoSupportError);
-                // Não falhar a requisição se a resposta automática falhar
-            }
-        });
-
         res.status(201).json({
             id: newMessageId,
             message: message.trim(),
             senderType: 'user',
-            threadId: newMessageId, // threadId = id (primeira mensagem = thread)
+            threadId: newMessageId,
             ReferenciaID: referenciaID
         });
+
+        setImmediate(async () => {
+            try {
+                console.log(" [SUPPORT] A criar ticket no Discord para thread", newMessageId);
+                const channelId = await createTicketChannel(newMessageId, message.trim(), nameStr, emailStr);
+                if (channelId) {
+                    await pool.query("UPDATE supportmessages SET discordChannelId = ? WHERE id = ?", [channelId, newMessageId]);
+                    console.log(" [SUPPORT] Ticket Discord guardado, channelId:", channelId);
+                } else {
+                    console.warn(" [SUPPORT] Não foi possível criar ticket no Discord para thread", newMessageId, "(bot na porta 3001? DISCORD_GUILD_ID no .env?)");
+                }
+            } catch (e) {
+                console.error("Erro ao criar ticket Discord:", e.message);
+            }
+        });
     } catch (error) {
-        console.error(" [SUPPORT] Erro ao criar mensagem:", error);
+        console.error("Erro ao criar mensagem:", error);
         res.status(500).json({
             error: "Erro ao enviar mensagem",
             details: error.message

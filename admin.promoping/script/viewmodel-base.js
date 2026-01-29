@@ -130,7 +130,45 @@
                     throw new Error(`Resposta inválida do servidor (${response.status}): ${text.substring(0, 100)}`);
                 }
 
-                // Se não for OK, tentar parsear JSON do erro
+                // 401/403: tentar renovar com refresh token; se falhar, redirecionar para login
+                if (response.status === 401 || response.status === 403) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const refreshToken = localStorage.getItem('PROMOPING_REFRESH_TOKEN');
+                    const baseUrl = window.APIUtils
+                        ? window.APIUtils.buildSafeUrl('/api/auth/refresh').replace(/\/api\/auth\/refresh\/?$/, '')
+                        : this.config.apiBase.replace(/\/$/, '');
+                    const refreshUrl = `${baseUrl}/api/auth/refresh`;
+                    const jáTentouRenovar = options._retriedAfterRefresh === true;
+
+                    if (response.status === 401 && refreshToken && !jáTentouRenovar) {
+                        try {
+                            const refreshRes = await fetch(refreshUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ refreshToken })
+                            });
+                            const refreshData = await refreshRes.json().catch(() => ({}));
+                            if (refreshRes.ok && refreshData.token) {
+                                localStorage.setItem('PROMOPING_TOKEN', refreshData.token);
+                                if (refreshData.refreshToken) {
+                                    localStorage.setItem('PROMOPING_REFRESH_TOKEN', refreshData.refreshToken);
+                                }
+                                this.config.token = refreshData.token;
+                                return this.fetchAuth(url, { ...options, _retriedAfterRefresh: true });
+                            }
+                        } catch (refreshErr) {
+                            console.warn('[ViewModel] Falha ao renovar token:', refreshErr);
+                        }
+                    }
+
+                    localStorage.removeItem('PROMOPING_TOKEN');
+                    localStorage.removeItem('PROMOPING_REFRESH_TOKEN');
+                    const msg = errorData.code === 'TOKEN_EXPIRED' ? 'Sessão expirada.' : 'Sessão inválida.';
+                    sessionStorage.setItem('PROMOPING_LOGIN_MSG', msg);
+                    window.location.href = 'login.html';
+                    return response;
+                }
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);

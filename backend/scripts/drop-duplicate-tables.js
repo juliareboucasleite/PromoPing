@@ -32,7 +32,7 @@ async function dropDuplicateTables() {
             host: process.env.DB_HOST || "localhost",
             user: process.env.DB_USER || "root",
             password: process.env.DB_PASSWORD || "",
-            database: process.env.DB_NAME || "pap",
+            database: process.env.DB_NAME || "papv5",
             port: parseInt(process.env.DB_PORT) || 3306
         });
 
@@ -44,7 +44,7 @@ async function dropDuplicateTables() {
             FROM INFORMATION_SCHEMA.TABLES 
             WHERE TABLE_SCHEMA = ?
             ORDER BY TABLE_NAME
-        `, [process.env.DB_NAME || "pap"]);
+        `, [process.env.DB_NAME || "papv5"]);
 
         const existingTables = tables.map(t => t.TABLE_NAME);
         console.log(`Total de tabelas encontradas: ${existingTables.length}\n`);
@@ -78,7 +78,7 @@ async function dropDuplicateTables() {
                     WHERE TABLE_SCHEMA = ? 
                     AND TABLE_NAME = ?
                     AND REFERENCED_TABLE_NAME IS NOT NULL
-                `, [process.env.DB_NAME || "pap", tableName]);
+                `, [process.env.DB_NAME || "papv5", tableName]);
 
                 // Remover foreign keys
                 for (const fk of fks) {

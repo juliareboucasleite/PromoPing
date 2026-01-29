@@ -487,7 +487,7 @@ async function ensureProcessedReleasesTable() {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'pap',
+            database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 3306
         };
 
@@ -521,7 +521,7 @@ async function loadProcessedReleases() {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'pap',
+            database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 3306
         };
 
@@ -554,7 +554,7 @@ async function isReleaseProcessed(releaseId) {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'pap',
+            database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 3306
         };
 
@@ -586,7 +586,7 @@ async function markReleaseAsProcessed(releaseId, tagName, repository) {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'pap',
+            database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 3306
         };
 
@@ -773,7 +773,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
                     host: process.env.DB_HOST || 'localhost',
                     user: process.env.DB_USER || 'root',
                     password: process.env.DB_PASSWORD || '',
-                    database: process.env.DB_NAME || 'pap',
+                    database: process.env.DB_NAME || 'papv5',
                     port: parseInt(process.env.DB_PORT) || 3306
                 };
                 const connection = await mysql.createConnection(dbConfig);

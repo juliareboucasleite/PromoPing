@@ -158,8 +158,8 @@ const TABLE_DEFINITIONS = {
         definition: `CREATE TABLE IF NOT EXISTS configutilizador (
             Id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
             ReferenciaID VARCHAR(13) NOT NULL UNIQUE,
-            PlanoAtualId INT(11) NOT NULL DEFAULT 1,
-            PlanoAtivoId INT(11) NOT NULL DEFAULT 1,
+            PlanoAtualId INT(10) UNSIGNED NOT NULL DEFAULT 1,
+            PlanoAtivoId INT(10) UNSIGNED NOT NULL DEFAULT 1,
             DataInicio DATETIME DEFAULT CURRENT_TIMESTAMP,
             DataCancelamento DATETIME DEFAULT NULL,
             DataExpiracao DATETIME DEFAULT NULL,
@@ -516,9 +516,26 @@ const TABLE_DEFINITIONS = {
             INDEX idx_ReferenciaID (ReferenciaID),
             INDEX idx_replyTo (replyTo),
             INDEX idx_threadId (threadId)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: true,
-        source: 'sql/pap (1).sql - atualizado para ReferenciaID (FK adicionadas separadamente)'
+        source: 'sql/PAPv5.sql - collation alinhada com utilizadores para FK'
+    },
+
+    'chat_start': {
+        definition: `CREATE TABLE IF NOT EXISTS chat_start (
+            id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            ReferenciaID VARCHAR(13) NOT NULL,
+            message TEXT NOT NULL,
+            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            senderType ENUM('user','system') DEFAULT 'user',
+            replyTo INT(11) DEFAULT NULL,
+            threadId INT(11) DEFAULT NULL,
+            INDEX idx_ReferenciaID (ReferenciaID),
+            INDEX idx_replyTo (replyTo),
+            INDEX idx_threadId (threadId)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: true,
+        source: 'sql/PAPv5.sql - chat da start'
     },
 
     'newsletter_subscribers': {
@@ -796,6 +813,7 @@ export async function initializeAllTables() {
         'recuperar_senha',  // Depende de utilizadores
         'stripe_subscriptions', // Depende de utilizadores
         'supportmessages',   // Depende de utilizadores (auto-referência)
+        'chat_start',        // Depende de utilizadores (chat da start)
         'twitch_channels',   // Sem dependências
         'counting_config',   // Sem dependências
         'processed_releases', // Sem dependências
