@@ -41,7 +41,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASS=
-DB_NAME=pap
+DB_NAME=papv5
 
 # JWT Secret
 JWT_SECRET=dev-secret-key-change-in-production
@@ -97,7 +97,7 @@ async function setupDatabase() {
     
     // Usar spawn ao invés de execSync para maior controle e segurança
     // Criar banco de dados usando array de argumentos (seguro contra injection)
-    execSync('mysql', ['-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS pap;'], {
+    execSync('mysql', ['-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS papv5;'], {
       stdio: 'inherit',
       cwd: projectRoot,
       shell: false // Desabilitar shell previne injection
@@ -105,7 +105,7 @@ async function setupDatabase() {
     
     // Importar SQL usando spawn com stdin (mais seguro que redirecionamento)
     const sqlContent = fs.readFileSync(safeSqlFile, 'utf-8');
-    const importSql = spawn('mysql', ['-u', 'root', '-p', 'pap'], {
+    const importSql = spawn('mysql', ['-u', 'root', '-p', 'papv5'], {
       stdio: ['pipe', 'inherit', 'inherit'],
       cwd: projectRoot,
       shell: false
@@ -131,7 +131,7 @@ async function setupDatabase() {
     log(' Base de dados configurada com sucesso', 'green');
   } catch (error) {
     log(' Erro ao configurar base de dados. Execute manualmente:', 'yellow');
-    log(`   mysql -u root -p pap < sql/PAPv5.sql`, 'cyan');
+    log(`   mysql -u root -p papv5 < sql/PAPv5.sql`, 'cyan');
     if (error.message) {
       log(`   Erro: ${error.message}`, 'red');
     }
