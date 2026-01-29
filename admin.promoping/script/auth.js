@@ -18,8 +18,15 @@
 
     // Se não estiver na página de login, não inicializar
     if (!loginForm) {
-        console.log('[AUTH] Não está na página de login, ignorando inicialização');
         return;
+    }
+
+    // Mensagem de sessão expirada/inválida (redirecionado pelo viewmodel-base)
+    const loginMsg = sessionStorage.getItem('PROMOPING_LOGIN_MSG');
+    if (loginMsg && errorMessage) {
+        errorMessage.textContent = loginMsg;
+        errorMessage.classList.add('show');
+        sessionStorage.removeItem('PROMOPING_LOGIN_MSG');
     }
 
     /**
@@ -147,9 +154,12 @@
             console.log('[AUTH] Token recebido:', data.token ? 'Sim' : 'Não');
             console.log('[AUTH] Dados do usuário:', data.user);
 
-            // Salvar token
+            // Salvar token e refresh token (para renovação automática)
             try {
                 localStorage.setItem('PROMOPING_TOKEN', data.token);
+                if (data.refreshToken) {
+                    localStorage.setItem('PROMOPING_REFRESH_TOKEN', data.refreshToken);
+                }
                 localStorage.setItem('PROMOPING_USER', JSON.stringify(data.user));
                 localStorage.setItem('PROMOPING_API', API_BASE);
                 console.log('[AUTH] Dados salvos no localStorage');
