@@ -1721,7 +1721,7 @@ class PromoPingBot {
 
     /**
      * Botão "Fechar ticket" nos tickets do widget (categoria Tickets, canal ticket-XX).
-     * Apaga a thread na base de dados e marca o ticket como fechado no Discord.
+     * Apaga a thread na base de dados e apaga o canal do Discord (o ticket desaparece).
      */
     async handleSupportTicketFechar(interaction) {
         try {
@@ -1750,6 +1750,7 @@ class PromoPingBot {
                     ephemeral: true
                 });
             }
+            await interaction.deferReply({ ephemeral: true });
             const url = new URL(`${backendUrl}/api/support/internal/threads/${threadId}/close`);
             const lib = url.protocol === 'https:' ? https : http;
             const res = await new Promise((resolve, reject) => {
@@ -1768,29 +1769,20 @@ class PromoPingBot {
                 req.end();
             });
             if (!res.ok) {
-                return await interaction.reply({
-                    content: 'Não foi possível fechar o ticket na base de dados (' + res.statusCode + ').',
-                    ephemeral: true
+                return await interaction.editReply({
+                    content: 'Não foi possível apagar a thread na base de dados (' + res.statusCode + ').'
                 });
             }
-            const embed = interaction.message.embeds[0];
-            if (embed) {
-                const closedEmbed = EmbedBuilder.from(embed)
-                    .setColor(0x95a5a6)
-                    .setFooter({ text: 'PromoPing Suporte • Fechado • Dados apagados na base de dados' })
-                    .addFields({ name: 'Status', value: `Fechado por ${interaction.user.tag}`, inline: false });
-                await interaction.update({ embeds: [closedEmbed], components: [] });
-            } else {
-                await interaction.update({ components: [] });
-            }
-            await interaction.followUp({
-                content: `Ticket #${threadId} fechado. Dados apagados na base de dados.`,
-                ephemeral: true
-            }).catch(() => {});
+            await interaction.editReply({ content: 'Ticket e thread apagados.' });
+            await interaction.channel.delete().catch((err) => {
+                console.warn('[DISCORD] Não foi possível apagar o canal do ticket:', err.message);
+            });
         } catch (error) {
             console.error('[DISCORD] Erro ao fechar ticket (widget):', error);
             if (!interaction.replied && !interaction.deferred) {
                 await interaction.reply({ content: 'Ocorreu um erro ao fechar o ticket.', ephemeral: true }).catch(() => {});
+            } else if (interaction.deferred) {
+                await interaction.editReply({ content: 'Ocorreu um erro ao fechar o ticket.' }).catch(() => {});
             }
         }
     }
