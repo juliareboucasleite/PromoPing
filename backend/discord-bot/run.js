@@ -163,7 +163,7 @@ function runDocker() {
 }
 
 function runLocal() {
-    // Log removido para reduzir verbosidade
+    log('A iniciar PromoPing (servidor Express + bot Discord)...', 'green');
 
     // Verificar se .env existe
     if (!checkFile('.env')) {

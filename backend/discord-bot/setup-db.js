@@ -9,7 +9,7 @@ async function setupDatabase() {
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'pap',
+        database: process.env.DB_NAME || 'papv5',
         port: parseInt(process.env.DB_PORT) || 3306
     };
 

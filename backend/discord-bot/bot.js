@@ -1,5 +1,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const path = require('path');
+const http = require('http');
+const https = require('https');
 const mysql = require('mysql2/promise');
 const comandos = require('./comandos');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
@@ -37,7 +39,7 @@ class PromoPingBot {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'pap',
+            database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 3306
         };
 
@@ -162,6 +164,44 @@ class PromoPingBot {
                     return;
                 }
 
+                // Resposta do suporte no canal do ticket (widget) → enviar para o backend para aparecer no widget
+                if (message.guild && message.channel.parent?.name === 'Tickets' && /^ticket-\d+$/.test(message.channel.name)) {
+                    const threadId = message.channel.name.replace(/^ticket-/, '');
+                    const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
+                    const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
+                    if (!secret) {
+                        console.warn('[DISCORD] SUPPORT_DISCORD_INTERNAL_SECRET não configurado; resposta no canal do ticket não enviada para o widget.');
+                        return;
+                    }
+                    try {
+                        const url = new URL(`${backendUrl}/api/support/internal/threads/${threadId}/reply`);
+                        const body = JSON.stringify({ message: message.content });
+                        const lib = url.protocol === 'https:' ? https : http;
+                        const res = await new Promise((resolve, reject) => {
+                            const req = lib.request({
+                                hostname: url.hostname,
+                                port: url.port || (url.protocol === 'https:' ? 443 : 80),
+                                path: url.pathname,
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': secret, 'Content-Length': Buffer.byteLength(body) }
+                            }, (res) => {
+                                let data = '';
+                                res.on('data', (chunk) => { data += chunk; });
+                                res.on('end', () => resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, statusCode: res.statusCode, data }));
+                            });
+                            req.on('error', reject);
+                            req.write(body);
+                            req.end();
+                        });
+                        if (!res.ok) {
+                            console.warn('[DISCORD] Falha ao enviar resposta do ticket para o backend:', res.statusCode, res.data);
+                        }
+                    } catch (err) {
+                        console.error('[DISCORD] Erro ao enviar resposta do ticket para o backend:', err.message);
+                    }
+                    return;
+                }
+
                 // Verificar counting antes de processar comandos
                 const countingHandled = await this.handleCounting(message);
                 if (countingHandled) return; // Se foi processado como counting, não processar como comando
@@ -270,6 +310,10 @@ class PromoPingBot {
                         await this.handleFecharTicketButton(interaction);
                     } else if (interaction.customId.startsWith('ticket_chamar_mod_')) {
                         await this.handleChamarModerador(interaction);
+                    } else if (interaction.customId.startsWith('support_ticket_fechar_')) {
+                        await this.handleSupportTicketFechar(interaction);
+                    } else if (interaction.customId.startsWith('support_ticket_chamar_')) {
+                        await this.handleSupportTicketChamar(interaction);
                     } else if (interaction.customId === 'aceitar_regras_promoping') {
                         await this.handleAceitarRegras(interaction);
                     } else if (interaction.customId === 'abrir_formulario_bug') {
@@ -1672,6 +1716,108 @@ class PromoPingBot {
                 content: 'Ocorreu um erro ao chamar o moderador.', 
                 ephemeral: true 
             });
+        }
+    }
+
+    /**
+     * Botão "Fechar ticket" nos tickets do widget (categoria Tickets, canal ticket-XX).
+     * Apaga a thread na base de dados e marca o ticket como fechado no Discord.
+     */
+    async handleSupportTicketFechar(interaction) {
+        try {
+            const guild = interaction.guild;
+            if (!guild) {
+                return await interaction.reply({ content: 'Este botão só pode ser usado em um servidor.', ephemeral: true });
+            }
+            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID || '1442655668904398980';
+            const isSupport = interaction.member.roles.cache.has(supportRoleId);
+            const isAdmin = this.isAdmin(interaction.member);
+            if (!isSupport && !isAdmin) {
+                return await interaction.reply({
+                    content: 'Apenas a equipa de suporte ou administradores podem fechar o ticket.',
+                    ephemeral: true
+                });
+            }
+            const threadId = interaction.customId.replace(/^support_ticket_fechar_/, '');
+            if (!threadId) {
+                return await interaction.reply({ content: 'Thread inválida.', ephemeral: true });
+            }
+            const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
+            const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
+            if (!secret) {
+                return await interaction.reply({
+                    content: 'SUPPORT_DISCORD_INTERNAL_SECRET não configurado no servidor.',
+                    ephemeral: true
+                });
+            }
+            const url = new URL(`${backendUrl}/api/support/internal/threads/${threadId}/close`);
+            const lib = url.protocol === 'https:' ? https : http;
+            const res = await new Promise((resolve, reject) => {
+                const req = lib.request({
+                    hostname: url.hostname,
+                    port: url.port || (url.protocol === 'https:' ? 443 : 80),
+                    path: url.pathname,
+                    method: 'POST',
+                    headers: { 'X-Internal-Secret': secret, 'Content-Length': 0 }
+                }, (res) => {
+                    let data = '';
+                    res.on('data', (chunk) => { data += chunk; });
+                    res.on('end', () => resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, statusCode: res.statusCode, data }));
+                });
+                req.on('error', reject);
+                req.end();
+            });
+            if (!res.ok) {
+                return await interaction.reply({
+                    content: 'Não foi possível fechar o ticket na base de dados (' + res.statusCode + ').',
+                    ephemeral: true
+                });
+            }
+            const embed = interaction.message.embeds[0];
+            if (embed) {
+                const closedEmbed = EmbedBuilder.from(embed)
+                    .setColor(0x95a5a6)
+                    .setFooter({ text: 'PromoPing Suporte • Fechado • Dados apagados na base de dados' })
+                    .addFields({ name: 'Status', value: `Fechado por ${interaction.user.tag}`, inline: false });
+                await interaction.update({ embeds: [closedEmbed], components: [] });
+            } else {
+                await interaction.update({ components: [] });
+            }
+            await interaction.followUp({
+                content: `Ticket #${threadId} fechado. Dados apagados na base de dados.`,
+                ephemeral: true
+            }).catch(() => {});
+        } catch (error) {
+            console.error('[DISCORD] Erro ao fechar ticket (widget):', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'Ocorreu um erro ao fechar o ticket.', ephemeral: true }).catch(() => {});
+            }
+        }
+    }
+
+    /**
+     * Botão "Chamar supporter" nos tickets do widget. Menciona o role de suporte no canal.
+     */
+    async handleSupportTicketChamar(interaction) {
+        try {
+            const guild = interaction.guild;
+            if (!guild) {
+                return await interaction.reply({ content: 'Este botão só pode ser usado em um servidor.', ephemeral: true });
+            }
+            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID || '1442655668904398980';
+            const threadId = interaction.customId.replace(/^support_ticket_chamar_/, '') || '?';
+            await interaction.reply({
+                content: 'Supporter chamado.',
+                ephemeral: true
+            });
+            await interaction.channel.send({
+                content: `<@&${supportRoleId}> Pedido de atenção no ticket #${threadId} (widget).`
+            }).catch(() => {});
+        } catch (error) {
+            console.error('[DISCORD] Erro ao chamar supporter (widget):', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'Ocorreu um erro.', ephemeral: true }).catch(() => {});
+            }
         }
     }
 

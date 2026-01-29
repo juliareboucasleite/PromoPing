@@ -19,6 +19,33 @@
     return localStorage.getItem('token') || localStorage.getItem('PROMOPING_TOKEN');
   }
 
+  /** Chave no localStorage para o ID de sessão anónima */
+  const ANON_ID_KEY = 'PROMOPING_ANONYMOUS_ID';
+
+  /**
+   * Obtém ou cria um ID de sessão para utilizador não logado (anónimo).
+   * Quem pede ajuda sem estar logado fica como "unknown" / anónimo.
+   * @returns {string} UUID da sessão anónima
+   */
+  function getOrCreateAnonymousId() {
+    let id = localStorage.getItem(ANON_ID_KEY);
+    if (id) return id;
+    id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+    localStorage.setItem(ANON_ID_KEY, id);
+    return id;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   /**
    * Obtém a URL base da API
    * @returns {string} URL base da API
@@ -41,14 +68,30 @@
    */
   async function fetchJSON(path, opts = {}) {
     const token = getToken();
+    const isAnonymous = !token;
+    // Sempre ter anonymousId disponível: quando o token está expirado o backend não tem req.user
+    // e exige anonymousId; enviando sempre, o suporte funciona logado ou anónimo.
+    const anonymousId = getOrCreateAnonymousId();
     let apiBase = getAPIBase().replace(/\/+$/, '');
     
-    // Construir URL completa
-    const fullPath = path.startsWith('http') 
-      ? path 
-      : apiBase + (path.startsWith('/') ? path : '/' + path);
+    let urlPath = path.startsWith('http') ? path : (apiBase + (path.startsWith('/') ? path : '/' + path));
+    if (anonymousId) {
+      const sep = urlPath.includes('?') ? '&' : '?';
+      urlPath = urlPath + sep + 'anonymousId=' + encodeURIComponent(anonymousId);
+    }
     
-    console.log(' [Support Widget] Requisição:', opts.method || 'GET', fullPath);
+    let body = opts.body;
+    if (anonymousId && (opts.method === 'POST' || opts.method === 'PUT')) {
+      try {
+        const parsed = typeof body === 'string' ? JSON.parse(body) : (body || {});
+        parsed.anonymousId = anonymousId;
+        body = JSON.stringify(parsed);
+      } catch (e) {
+        body = JSON.stringify({ anonymousId: anonymousId });
+      }
+    }
+    
+    console.log(' [Support Widget] Requisição:', opts.method || 'GET', urlPath);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -57,9 +100,9 @@
     };
 
     try {
-      const resp = await fetch(fullPath, { ...opts, headers });
+      const resp = await fetch(urlPath, { ...opts, headers, body: body !== undefined ? body : opts.body });
       const responseText = await resp.text();
-      
+
       if (!resp.ok) {
         let errorData;
         try {
@@ -67,6 +110,37 @@
         } catch (e) {
           errorData = { error: responseText || `HTTP ${resp.status}` };
         }
+
+        // 401: tentar renovar com refresh token e repetir o pedido uma vez
+        const refreshToken = localStorage.getItem('PROMOPING_REFRESH_TOKEN');
+        const jáTentouRenovar = opts._retriedAfterRefresh === true;
+
+        if (resp.status === 401 && !jáTentouRenovar) {
+          if (refreshToken) {
+            try {
+              const refreshUrl = apiBase + (apiBase.endsWith('/') ? '' : '/') + 'api/auth/refresh';
+              const refreshRes = await fetch(refreshUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+              });
+              const refreshData = refreshRes.ok ? await refreshRes.json().catch(() => ({})) : {};
+              if (refreshData.token) {
+                localStorage.setItem('PROMOPING_TOKEN', refreshData.token);
+                if (refreshData.refreshToken) {
+                  localStorage.setItem('PROMOPING_REFRESH_TOKEN', refreshData.refreshToken);
+                }
+                return fetchJSON(path, { ...opts, _retriedAfterRefresh: true });
+              }
+              console.warn(' [Support Widget] Refresh não devolveu token:', refreshRes.status);
+            } catch (refreshErr) {
+              console.warn(' [Support Widget] Falha ao renovar token:', refreshErr);
+            }
+          } else if (!isAnonymous) {
+            console.warn(' [Support Widget] Token expirado e sem refresh token. Faça login no painel admin nesta mesma origem para renovar a sessão.');
+          }
+        }
+
         throw new Error(errorData.error || `HTTP ${resp.status}: ${resp.statusText}`);
       }
 
@@ -222,6 +296,10 @@
 
     // Estado da thread atual (null = nova conversa, number = thread existente)
     let currentThreadId = null;
+    // Wizard automático: recolher nome, email e problema antes de abrir ticket
+    let wizardStep = null; // 0 = nome, 1 = email, 2 = mensagem, null = fora do wizard
+    let wizardUserName = '';
+    let wizardUserEmail = '';
 
     // Criar botão flutuante
     const btn = createFloatingButton();
@@ -266,16 +344,37 @@
     }
 
     /**
-     * Inicia uma nova conversa (nova thread)
-     * Limpa o currentThreadId para que a próxima mensagem crie uma nova thread
+     * Mostra o passo atual do wizard (nome, email, mensagem)
+     */
+    function renderWizardStep() {
+      const prompts = [
+        'Olá! Para te ajudar, diz-me o teu nome (ou um nickname).',
+        'Qual é o teu email?',
+        'Descreve o problema ou a tua mensagem.'
+      ];
+      const placeholders = ['O teu nome', 'O teu email', 'Descreve o problema...'];
+      textEl.placeholder = placeholders[wizardStep];
+      messagesContainer.innerHTML = `
+        <div style="padding:20px;color:#333;">
+          <p style="margin:0 0 12px 0;font-size:15px;line-height:1.4;">${prompts[wizardStep]}</p>
+          ${wizardStep === 0 && wizardUserName ? '<p style="margin:8px 0 0 0;color:#666;font-size:13px;">Nome: ' + escapeHtml(wizardUserName) + '</p>' : ''}
+          ${wizardStep === 1 && wizardUserEmail ? '<p style="margin:8px 0 0 0;color:#666;font-size:13px;">Email: ' + escapeHtml(wizardUserEmail) + '</p>' : ''}
+        </div>`;
+    }
+
+    /**
+     * Inicia uma nova conversa (nova thread) — abre o wizard automático
      */
     function startNewConversation() {
       currentThreadId = null;
-      messagesContainer.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Nova conversa. Envie sua mensagem!</div>';
+      wizardStep = 0;
+      wizardUserName = '';
+      wizardUserEmail = '';
       textEl.value = '';
+      renderWizardStep();
       textEl.focus();
       updateThreadInfo();
-      console.log(' [Support Widget] Nova conversa iniciada');
+      console.log(' [Support Widget] Nova conversa — wizard iniciado');
     }
 
     /**
@@ -358,9 +457,11 @@
      */
     async function selectThread(threadId) {
       currentThreadId = threadId;
+      wizardStep = null;
+      textEl.placeholder = 'Digite sua mensagem...';
       await refreshMessages(threadId, messagesContainer);
       updateThreadInfo();
-      renderThreadsList(); // Atualiza destaque visual
+      renderThreadsList();
     }
 
     /**
@@ -373,15 +474,18 @@
         await loadAllThreads();
         
         if (allThreads.length > 0) {
-          // Carrega a thread mais recente (primeira da lista)
           const latestThread = allThreads[0];
           currentThreadId = latestThread.id;
+          wizardStep = null;
+          textEl.placeholder = 'Digite sua mensagem...';
           await refreshMessages(currentThreadId, messagesContainer);
           updateThreadInfo();
         } else {
-          // Nenhuma thread existente - preparar para nova conversa
           currentThreadId = null;
-          messagesContainer.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Nenhuma conversa ainda. Envie sua primeira mensagem!</div>';
+          wizardStep = 0;
+          wizardUserName = '';
+          wizardUserEmail = '';
+          renderWizardStep();
           updateThreadInfo();
         }
       } catch (error) {
@@ -394,72 +498,88 @@
 
     /**
      * Envia uma mensagem
-     * Cria nova thread se currentThreadId é null, ou responde à thread existente
+     * Se estiver no wizard (nome, email, problema), avança passos ou abre o ticket.
+     * Senão, cria nova thread ou responde à thread existente.
      */
     async function sendMessage() {
-      const token = getToken();
-      if (!token) {
-        window.location.href = '/login';
-        return;
-      }
-
       const message = (textEl.value || '').trim();
       if (!message) {
-        fb.textContent = 'Escreva uma mensagem.';
+        fb.textContent = 'Escreva algo para continuar.';
         fb.style.color = '#a66';
         return;
       }
 
       try {
-        fb.textContent = 'Enviando...';
+        fb.textContent = '...';
         fb.style.color = '#666';
 
-        let result;
-
-        if (currentThreadId) {
-          console.log(' [Support Widget] Respondendo à thread:', currentThreadId);
-          
-          // Carrega a thread completa para obter a última mensagem
-          const threadMessages = await loadConversation(currentThreadId);
-          const lastMsg = threadMessages.length > 0 
-            ? threadMessages[threadMessages.length - 1] 
-            : { id: currentThreadId };
-
-          // Envia resposta à última mensagem da thread
-          result = await fetchJSON(`/api/support/messages/${lastMsg.id}/reply`, {
+        // Wizard automático: recolher nome, email e depois abrir ticket
+        if (wizardStep === 0) {
+          wizardUserName = message;
+          wizardStep = 1;
+          textEl.value = '';
+          renderWizardStep();
+          fb.textContent = '';
+          return;
+        }
+        if (wizardStep === 1) {
+          wizardUserEmail = message;
+          wizardStep = 2;
+          textEl.value = '';
+          renderWizardStep();
+          fb.textContent = '';
+          return;
+        }
+        if (wizardStep === 2) {
+          fb.textContent = 'A abrir ticket...';
+          const result = await fetchJSON('/api/support/messages', {
             method: 'POST',
-            body: JSON.stringify({ 
-              message, 
-              senderType: 'user' 
+            body: JSON.stringify({
+              message,
+              userName: wizardUserName,
+              userEmail: wizardUserEmail
             })
           });
+          currentThreadId = result.threadId || result.id;
+          wizardStep = null;
+          wizardUserName = '';
+          wizardUserEmail = '';
+          textEl.value = '';
+          textEl.placeholder = 'Digite sua mensagem...';
+          fb.textContent = 'Enviado! A equipa pode responder aqui.';
+          fb.style.color = '#2e7d32';
+          setTimeout(() => { fb.textContent = ''; }, 2500);
+          await refreshMessages(currentThreadId, messagesContainer);
+          await loadAllThreads();
+          updateThreadInfo();
+          return;
+        }
 
-          console.log(' [Support Widget] Resposta enviada à thread:', currentThreadId);
+        // Fluxo normal: thread existente ou nova conversa sem wizard
+        let result;
+        if (currentThreadId) {
+          const threadMessages = await loadConversation(currentThreadId);
+          const lastMsg = threadMessages.length > 0
+            ? threadMessages[threadMessages.length - 1]
+            : { id: currentThreadId };
+          result = await fetchJSON(`/api/support/messages/${lastMsg.id}/reply`, {
+            method: 'POST',
+            body: JSON.stringify({ message, senderType: 'user' })
+          });
         } else {
-          console.log(' [Support Widget] Criando nova thread');
-          
           result = await fetchJSON('/api/support/messages', {
             method: 'POST',
             body: JSON.stringify({ message })
           });
-
-          // Atualiza o currentThreadId com a nova thread criada
-          // IMPORTANTE: threadId pode ser o próprio ID da mensagem (primeira mensagem = thread)
           currentThreadId = result.threadId || result.id;
-          console.log(' [Support Widget] Nova thread criada:', currentThreadId);
           updateThreadInfo();
         }
 
-        // Limpar campo e atualizar interface
         textEl.value = '';
         fb.textContent = 'Enviado com sucesso!';
         fb.style.color = '#2e7d32';
         setTimeout(() => { fb.textContent = ''; }, 2000);
-
-        // Atualizar mensagens na interface
         await refreshMessages(currentThreadId, messagesContainer);
-        
-        // Recarregar lista de threads para atualizar contadores
         await loadAllThreads();
       } catch (error) {
         console.error(' [Support Widget] Erro ao enviar mensagem:', error);
@@ -468,14 +588,8 @@
       }
     }
 
-    // Abrir/fechar widget
+    // Abrir/fechar widget (funciona logado ou anónimo)
     btn.addEventListener('click', async () => {
-      const token = getToken();
-      if (!token) {
-        window.location.href = '/login';
-        return;
-      }
-      
       const isOpen = modal.style.display !== 'none';
       modal.style.display = isOpen ? 'none' : 'flex';
       

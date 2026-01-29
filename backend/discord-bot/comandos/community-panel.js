@@ -43,6 +43,7 @@ module.exports = {
             // URLs
             const githubDiscussionsUrl = 'https://github.com/juliareboucasleite/PromoPing/discussions';
             const githubRepoUrl = 'https://github.com/juliareboucasleite/PromoPing';
+            const githubBotSuporterUrl = 'https://github.com/juliareboucasleite/PromoPingBotSuporter';
             const siteUrl = process.env.SITE_URL || 'http://promoping.pt';
 
             // Criar embed do painel de recursos da comunidade
@@ -71,6 +72,11 @@ module.exports = {
                         inline: true
                     },
                     {
+                        name: 'Bot de Suporte',
+                        value: `[GitHub Bot Suporter](${githubBotSuporterUrl})`,
+                        inline: true
+                    },
+                    {
                         name: 'Site',
                         value: `[Acessar Site](${siteUrl})`,
                         inline: true
@@ -85,8 +91,8 @@ module.exports = {
                 .setTimestamp()
                 .setFooter({ text: '©PromoPing • Todos os direitos reservados' });
 
-            // Criar botões
-            const row = new ActionRowBuilder()
+            // Criar botões (máximo 5 por linha no Discord)
+            const row1 = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setLabel('GitHub Discussions')
@@ -97,6 +103,10 @@ module.exports = {
                         .setStyle(ButtonStyle.Link)
                         .setURL(githubRepoUrl),
                     new ButtonBuilder()
+                        .setLabel('Bot Suporter')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(githubBotSuporterUrl),
+                    new ButtonBuilder()
                         .setLabel('Acessar Site')
                         .setStyle(ButtonStyle.Link)
                         .setURL(siteUrl)
@@ -105,7 +115,7 @@ module.exports = {
             // Enviar mensagem no canal escolhido
             await targetChannel.send({
                 embeds: [communityPanelEmbed],
-                components: [row]
+                components: [row1]
             });
 
             // Confirmar configuração
