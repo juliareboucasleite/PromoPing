@@ -7,6 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Perfil PromoPing — altere nome, email, senha e consulte o histórico de notificações e relatórios.">
   <title>Perfil PromoPing | promoping.pt</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/perfil.css">
@@ -91,7 +92,7 @@
 
             <form class="profile-form" id="personalInfoForm">
               <div class="form-group">
-                <label class="form-label">Nome completo</label>
+                <label class="form-label" for="fullName">Nome completo</label>
                 <input type="text" class="form-input" id="fullName" value="" required>
                 <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;">
                   <span class="cooldown-icon" aria-hidden="true">
@@ -105,7 +106,7 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">Email</label>
+                <label class="form-label" for="email">Email</label>
                 <input type="email" class="form-input" id="email" value="" required>
               </div>
 
@@ -130,7 +131,7 @@
               <form class="password-form" id="passwordForm">
                 <fieldset id="passwordFormFieldset">
                 <div class="form-group">
-                  <label class="form-label">Senha atual</label>
+                  <label class="form-label" for="currentPassword">Senha atual</label>
                   <div class="input-wrapper password-wrapper">
                     <input type="password" class="form-input password-input" id="currentPassword" placeholder="Insira a sua senha atual" required>
                     <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleCurrentPassword()" id="toggle-currentPassword">
@@ -142,7 +143,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Nova senha</label>
+                  <label class="form-label" for="newPassword">Nova senha</label>
                   <div class="input-wrapper password-wrapper">
                     <input type="password" class="form-input password-input" id="newPassword" placeholder="Mínimo 6 caracteres" required>
                     <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleNewPassword()" id="toggle-newPassword">
@@ -154,7 +155,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Confirmar nova senha</label>
+                  <label class="form-label" for="confirmPassword">Confirmar nova senha</label>
                   <div class="input-wrapper password-wrapper">
                     <input type="password" class="form-input password-input" id="confirmPassword" placeholder="Repita a nova senha" required>
                     <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleConfirmPassword()" id="toggle-confirmPassword">
@@ -689,8 +690,8 @@
           if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'Informações salvas com sucesso!', 5000);
           else alert("Informações salvas com sucesso!");
         } else {
-          if (window.notificationSystem) window.notificationSystem.error('Erro', data.error || "Erro ao salvar informações.", 6000);
-          else alert(data.error || "Erro ao salvar informações.");
+          if (window.notificationSystem) window.notificationSystem.error('Erro', data.message || data.error || "Erro ao salvar informações.", 6000);
+          else alert(data.message || data.error || "Erro ao salvar informações.");
         }
       } catch (err) {
         console.error("Erro ao salvar:", err);
@@ -784,11 +785,11 @@
           if (typeof window.showError === 'function') {
             window.showError(
               "Erro ao alterar senha",
-              data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
+              data.message || data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
               5000
             );
           } else {
-            alert(data.error || "Erro ao alterar senha.");
+            alert(data.message || data.error || "Erro ao alterar senha.");
           }
         }
       } catch (err) {
@@ -966,7 +967,7 @@
           localStorage.removeItem('token');
           window.location.href = '/';
         } else {
-          alert(data.error || 'Erro ao desativar conta');
+          alert(data.message || data.error || 'Erro ao desativar conta');
           btn.disabled = false;
           btn.textContent = originalText;
         }
@@ -1035,7 +1036,7 @@
           localStorage.removeItem('token');
           window.location.href = '/';
         } else {
-          alert(data.error || 'Erro ao excluir conta');
+          alert(data.message || data.error || 'Erro ao excluir conta');
           btn.disabled = false;
           btn.textContent = originalText;
         }
@@ -1047,24 +1048,26 @@
       }
     }
 
-    // Fechar modais ao clicar no overlay
+    // Fechar modais ao clicar no overlay ou com tecla Escape
     document.addEventListener('DOMContentLoaded', function() {
       const deactivateModal = document.getElementById('deactivateModal');
       const deleteModal = document.getElementById('deleteModal');
 
+      function onEscapePerfilModals(e) {
+        if (e.key !== 'Escape') return;
+        if (deactivateModal && deactivateModal.style.display === 'flex') fecharModalDesativar();
+        else if (deleteModal && deleteModal.style.display === 'flex') fecharModalExcluir();
+      }
+      document.addEventListener('keydown', onEscapePerfilModals);
+
       if (deactivateModal) {
         deactivateModal.addEventListener('click', function(e) {
-          if (e.target === deactivateModal) {
-            fecharModalDesativar();
-          }
+          if (e.target === deactivateModal) fecharModalDesativar();
         });
       }
-
       if (deleteModal) {
         deleteModal.addEventListener('click', function(e) {
-          if (e.target === deleteModal) {
-            fecharModalExcluir();
-          }
+          if (e.target === deleteModal) fecharModalExcluir();
         });
       }
     });
