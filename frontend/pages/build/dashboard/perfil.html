@@ -90,6 +90,7 @@
               <div class="form-group">
                 <label class="form-label">Nome completo</label>
                 <input type="text" class="form-input" id="fullName" value="" required>
+                <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;"></p>
               </div>
 
               <div class="form-group">
@@ -113,8 +114,10 @@
 
             <div class="card-content">
               <p class="section-desc">Altere a sua senha para entrar com email e senha</p>
+              <p class="cooldown-msg cooldown-senha" id="cooldownSenhaMsg" aria-live="polite" style="display:none;"></p>
 
               <form class="password-form" id="passwordForm">
+                <fieldset id="passwordFormFieldset">
                 <div class="form-group">
                   <label class="form-label">Senha atual</label>
                   <div class="input-wrapper password-wrapper">
@@ -152,6 +155,7 @@
                 </div>
 
                 <button type="submit" class="save-btn">Alterar Senha</button>
+                </fieldset>
               </form>
             </div>
           </div>
@@ -294,16 +298,17 @@
           </div>
           <div class="profile-card">
             <div class="card-header">
-              <h2 class="card-title">Histórico de Notificações</h2>
-              <button id="resetHistory" class="reset-icon-btn">
-                <svg class="reset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                  <path d="M21 3v5h-5"></path>
-                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                  <path d="M3 21v-5h5"></path>
-                </svg>
+              <h2 class="card-title">Relatórios e Histórico</h2>
+            </div>
+            <div class="history-actions">
+              <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
+                Relatórios PDF
+              </button>
+              <button type="button" id="btnHistoricoCompleto" class="history-action-btn history-btn-excel">
+                Histórico completo
               </button>
             </div>
+            <p class="history-plan-hint" id="historyPlanHint" aria-live="polite"></p>
             <ul id="notificacoesList" class="notification-list"></ul>
           </div>
 
@@ -549,14 +554,43 @@
             email: profile.email
           });
 
+          // Cooldown 30 dias: nome e senha — desabilitar campos e mostrar próxima data permitida
+          function formatarDataPT(isoString) {
+            if (!isoString) return "";
+            const d = new Date(isoString);
+            return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
+          }
+          const cooldownNomeEl = document.getElementById("cooldownNomeMsg");
+          const cooldownSenhaEl = document.getElementById("cooldownSenhaMsg");
+          const passwordFieldset = document.getElementById("passwordFormFieldset");
+
+          if (profile.pode_alterar_nome === false && profile.proxima_alteracao_nome) {
+            if (fullNameEl) fullNameEl.disabled = true;
+            if (cooldownNomeEl) {
+              cooldownNomeEl.textContent = "Pode alterar o nome novamente a " + formatarDataPT(profile.proxima_alteracao_nome) + ".";
+              cooldownNomeEl.style.display = "block";
+            }
+          } else {
+            if (fullNameEl) fullNameEl.disabled = false;
+            if (cooldownNomeEl) cooldownNomeEl.style.display = "none";
+          }
+
+          if (profile.pode_alterar_senha === false && profile.proxima_alteracao_senha) {
+            if (passwordFieldset) passwordFieldset.disabled = true;
+            if (cooldownSenhaEl) {
+              cooldownSenhaEl.textContent = "Pode alterar a senha novamente a " + formatarDataPT(profile.proxima_alteracao_senha) + ".";
+              cooldownSenhaEl.style.display = "block";
+            }
+          } else {
+            if (passwordFieldset) passwordFieldset.disabled = false;
+            if (cooldownSenhaEl) cooldownSenhaEl.style.display = "none";
+          }
+
           updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
           updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
         } else {
           console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
         }
-
-        // Carregar notificações históricas do usuário
-        await carregarNotificacoes();
 
         // Buscar estatísticas da conta do usuário
         const resStats = await makeRequest("/api/user/stats", {
@@ -873,58 +907,6 @@
       });
     }
 
-    // Buscar notificações recentes do usuário e inserir na lista
-    async function carregarNotificacoes() {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await makeRequest("/api/user/me", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const data = await res.json();
-        if (data.status === "ok") {
-          const list = document.getElementById("notificacoesList");
-          list.innerHTML = "";
-
-          if (data.notificacoes && data.notificacoes.length > 0) {
-            data.notificacoes.forEach(n => {
-              const li = document.createElement("li");
-              li.innerHTML = `[${n.Tipo}] ${n.Mensagem} (${n.DataEnvio || '—'})`; //  Backend já envia formatado
-              list.appendChild(li);
-            });
-          } else {
-            list.innerHTML = "<li>Sem notificações ainda.</li>";
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao carregar notificações:", err);
-      }
-    }
-
-    // Evento para resetar/limpar notificações do histórico
-    document.getElementById("resetHistory").addEventListener("click", async () => {
-      if (!confirm("Tem certeza que deseja limpar todo o histórico?")) return;
-      const token = localStorage.getItem("token");
-
-      try {
-        const res = await makeRequest("/api/user/notificacoes/reset", {
-          method: "DELETE",
-          headers: { Authorization: "Bearer " + token }
-        });
-        const data = await res.json();
-        if (data.status === "ok") {
-          alert("Histórico limpo!");
-          carregarNotificacoes();
-        } else {
-          alert(data.error || "Erro ao limpar histórico");
-        }
-      } catch (err) {
-        alert("Erro de ligação ao servidor");
-      }
-    });
-
-    // Chamar notificações ao carregar (podem duplicar mas backend já protege)
-    carregarNotificacoes();
-
     // ===== GERENCIAMENTO DE CONTA =====
     function desativarConta() {
       document.getElementById('deactivateModal').style.display = 'flex';
@@ -1124,6 +1106,7 @@
 
         if (data.status === "ok" && data.plano) {
           const plano = data.plano;
+          atualizarBotoesHistorico(plano.id);
 
           // Mostrar informações baseadas no ID do plano
           if (plano.id === 1) {
@@ -1160,13 +1143,87 @@
         } else {
           document.getElementById("plano-nome").textContent = "Erro ao carregar";
           document.getElementById("plano-descricao").textContent = "Não foi possível carregar as informações do plano";
+          atualizarBotoesHistorico(1);
         }
       } catch (err) {
         console.error("Erro ao carregar plano:", err);
         document.getElementById("plano-nome").textContent = "Erro de conexão";
         document.getElementById("plano-descricao").textContent = "Verifique sua conexão com a internet";
+        atualizarBotoesHistorico(1);
       }
     }
+
+    // Plano atual (para os botões de relatório/histórico)
+    let planoIdAtual = 1;
+
+    function atualizarBotoesHistorico(planoId) {
+      planoIdAtual = planoId;
+      const btnPdf = document.getElementById("btnRelatoriosPdf");
+      const btnHistorico = document.getElementById("btnHistoricoCompleto");
+      const hint = document.getElementById("historyPlanHint");
+      if (!btnPdf || !btnHistorico || !hint) return;
+
+      const temPdf = planoId === 3 || planoId === 4; // Standard ou Premium
+      const temHistorico = planoId >= 2; // Basic, Standard, Premium (planos pagos)
+
+      btnPdf.disabled = !temPdf;
+      btnPdf.title = temPdf ? "Descarregar relatório em PDF" : "Disponível no plano Standard ou superior";
+      btnHistorico.disabled = !temHistorico;
+      if (planoId === 2) {
+        btnHistorico.title = "Histórico de 30 dias (Excel)";
+        hint.textContent = "O seu plano inclui histórico de 30 dias.";
+      } else if (planoId === 3) {
+        btnHistorico.title = "Histórico completo (Excel)";
+        hint.textContent = "O seu plano inclui relatórios PDF e histórico de 50 dias.";
+      } else if (planoId === 4) {
+        btnHistorico.title = "Relatório completo (Premium)";
+        hint.textContent = "O seu plano inclui relatórios PDF e relatório completo (100 dias).";
+      } else {
+        hint.textContent = "Faça upgrade para aceder a relatórios e histórico.";
+      }
+    }
+
+    async function baixarExportacao(url, nomeFicheiro) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Precisa estar logado.");
+        return;
+      }
+      try {
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          alert(data.message || data.error || "Erro ao obter ficheiro.");
+          return;
+        }
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = nomeFicheiro;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (err) {
+        console.error("Erro ao descarregar:", err);
+        alert("Erro de ligação ao servidor.");
+      }
+    }
+
+    document.getElementById("btnRelatoriosPdf").addEventListener("click", () => {
+      if (document.getElementById("btnRelatoriosPdf").disabled) return;
+      baixarExportacao("/api/exportar/produtos/pdf", "relatorio_produtos_promoping.pdf");
+    });
+
+    document.getElementById("btnHistoricoCompleto").addEventListener("click", () => {
+      if (document.getElementById("btnHistoricoCompleto").disabled) return;
+      if (planoIdAtual === 4) {
+        baixarExportacao("/api/exportar/relatorio/completo", "relatorio_completo_promoping.pdf");
+      } else {
+        baixarExportacao("/api/exportar/produtos/excel", "historico_produtos_promoping.xlsx");
+      }
+    });
 
     // Abre página de planos para troca de plano
     function abrirModalPlanos() {
