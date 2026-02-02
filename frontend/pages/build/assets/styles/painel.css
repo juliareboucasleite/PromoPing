@@ -1,4 +1,5 @@
 /* ===== DASHBOARD STYLES ===== */
+/* Sem animações no Painel e Produtos (conforme preferência do projeto) */
 * {
     transform: none !important;
     transition: none !important;
@@ -84,6 +85,31 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Botões de modal (confirmação remover) */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c82333;
 }
 
 .dashboard-body {
@@ -258,7 +284,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #f4af55, #ed9a6c, #dc7c35);
+    
     border-radius: 20px 20px 0 0;
 }
 
