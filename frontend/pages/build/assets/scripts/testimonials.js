@@ -9,19 +9,19 @@
 
   const CONFIG = {
     speed: 0.4,
-    pauseOnHover: true,
+    pauseOnHover: false,
     cardWidth: 320,
     cardHeight: 200,
-    gap: 24,
-    padding: 24,
+    gap: 56,
+    padding: 28,
     radius: 16,
     fontFamily: 'system-ui, -apple-system, sans-serif',
     starColor: '#fa5c00',
     starEmptyColor: 'rgba(255,255,255,0.2)',
     textColor: 'rgba(255,255,255,0.9)',
     roleColor: 'rgba(255,255,255,0.6)',
-    cardBg: 'rgba(255,255,255,0.05)',
-    cardBorder: 'rgba(255,255,255,0.1)',
+    cardBg: 'rgba(255,255,255,0.12)',
+    cardBorder: 'rgba(255,255,255,0.25)',
     maxTextLines: 4
   };
 
@@ -129,7 +129,8 @@
     dpr = window.devicePixelRatio || 1;
     const rect = wrapper.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect.width));
-    const h = Math.max(CONFIG.cardHeight + 32, Math.floor(rect.height));
+    const maxCanvasHeight = 240;
+    const h = Math.min(maxCanvasHeight, Math.max(CONFIG.cardHeight + 32, Math.floor(rect.height)));
 
     canvas.width = w * dpr;
     canvas.height = h * dpr;
@@ -137,7 +138,8 @@
     canvas.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    loopWidth = reviewsData.length * (CONFIG.cardWidth + CONFIG.gap);
+    var n = reviewsData.length;
+    loopWidth = n * (CONFIG.cardWidth + CONFIG.gap);
     offsetX = 0;
     draw();
   }
@@ -160,7 +162,7 @@
     const r = CONFIG.radius;
     ctx.fillStyle = CONFIG.cardBg;
     ctx.strokeStyle = CONFIG.cardBorder;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.5;
     roundRect(ctx, x, y, w, h, r);
     ctx.fill();
     ctx.stroke();

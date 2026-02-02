@@ -1105,6 +1105,12 @@ body.theme-promoping::before {
   z-index: 2;
 }
 
+/* Menos espaço entre o título e o carrossel de marcas */
+.pp-partners .max-w-6xl h2,
+#parceiros h2 {
+  margin-bottom: 0.75rem !important;
+}
+
 .partners-text {
   font-size: 1.1rem;
   color: #5a5a5a;
@@ -1173,6 +1179,7 @@ body.theme-promoping::before {
   overflow: hidden;
   position: relative;
   min-height: 56px;
+  max-height: 64px;
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -1703,7 +1710,7 @@ body.theme-promoping::before {
 
 /* ===== DEPOIMENTOS ===== */
 .pp-testimonials {
-  padding: 80px 20px;
+  padding: 50px 20px;
   background: linear-gradient(135deg, #0e0f1900 0%, #1a1b2e00 100%);
   position: relative;
   z-index: 1;
@@ -1716,7 +1723,7 @@ body.theme-promoping::before {
 
 .testimonials-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .testimonials-badge {
@@ -1745,14 +1752,17 @@ body.theme-promoping::before {
   margin: 0;
 }
 
-/* Carrossel de depoimentos (canvas) */
+/* Carrossel de depoimentos (canvas) – cards lado a lado com espaçamento */
 .testimonials-columns-wrapper {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 24px;
   overflow: hidden;
   position: relative;
   min-height: 220px;
+  max-height: 240px;
+  box-sizing: border-box;
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -1769,12 +1779,13 @@ body.theme-promoping::before {
   );
 }
 
-/* Carrossel depoimentos em canvas */
+/* Canvas dos depoimentos – desenho controla espaçamento entre cards (CONFIG.gap) */
 .testimonials-canvas {
   display: block;
   width: 100%;
   min-height: 220px;
   vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .testimonials-canvas-message {

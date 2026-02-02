@@ -26,7 +26,7 @@
 
   const CONFIG = {
     speed: 0.4, // pixels por frame (menor = mais lento; loop infinito contínuo)
-    pauseOnHover: true,
+    pauseOnHover: false,
     autoStart: true,
     textColor: '#ececec',
     fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -85,7 +85,8 @@
     dpr = window.devicePixelRatio || 1;
     const rect = wrapper.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect.width));
-    const h = Math.max(48, Math.floor(rect.height));
+    const maxCanvasHeight = 64;
+    const h = Math.min(maxCanvasHeight, Math.max(48, Math.floor(rect.height)));
 
     canvas.width = w * dpr;
     canvas.height = h * dpr;
