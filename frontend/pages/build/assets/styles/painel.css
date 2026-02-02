@@ -2761,6 +2761,31 @@ input:checked + .toggle-slider:before {
     z-index: 2;
 }
 
+/* Header da página Produtos: sem fundo cinza (transparente) */
+.page-header-produtos {
+    background: none;
+    padding: 0 0 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-radius: 0;
+    text-align: left;
+}
+
+.page-header-produtos::before {
+    display: none;
+}
+
+/* Header da página Dashboard: sem fundo cinza (transparente) */
+.page-header-dashboard {
+    background: none;
+    padding: 0 0 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-radius: 0;
+    text-align: left;
+}
+
+.page-header-dashboard::before {
+    display: none;
+}
 
 .current-plan-banner {
     background: linear-gradient(135deg, #f4af55, #ed9a6c);
