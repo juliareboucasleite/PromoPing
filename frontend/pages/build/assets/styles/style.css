@@ -341,14 +341,20 @@ body {
 
 /* ===== Secção Conectar (Discord + email) – estilo texto ===== */
 .pp-section-connect {
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 3rem 1.5rem 4rem;
   position: relative;
+  box-sizing: border-box;
 }
 
 .pp-connect-wrap {
   max-width: 880px;
   margin: 0 auto;
   text-align: center;
+  width: 100%;
 }
 
 .pp-connect-title {
@@ -1187,6 +1193,8 @@ body.theme-promoping::before {
 /* ===== SEÇÃO DE PARCEIROS/LOJAS ===== */
 .pp-partners {
   padding: 80px 20px;
+  padding-top: 5rem;
+  margin-top: 4rem;
   background: transparent;
   position: relative;
   overflow: hidden;
