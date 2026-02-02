@@ -68,16 +68,26 @@ router.get("/profile", verifyToken, async (req, res) => {
     const referenciaID = req.user.ReferenciaID;
     console.log(" [BACKEND] Buscando perfil para ReferenciaID:", referenciaID);
 
-    // Dados pessoais
-    const [userRows] = await pool.query(
-      "SELECT Nome, Email, Telefone, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
-      [referenciaID]
-    );
+    // Dados pessoais (inclui datas de última alteração para cooldown de 30 dias)
+    let userRows;
+    try {
+      [userRows] = await pool.query(
+        "SELECT Nome, Email, Telefone, FotoPerfil, UltimaAlteracaoSenha, UltimaAlteracaoNome FROM utilizadores WHERE ReferenciaID = ?",
+        [referenciaID]
+      );
+    } catch (colErr) {
+      if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+        [userRows] = await pool.query(
+          "SELECT Nome, Email, Telefone, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
+          [referenciaID]
+        );
+      } else throw colErr;
+    }
 
-    console.log(" [BACKEND] Dados do usuário encontrados:", userRows);
+    console.log("Dados do usuário encontrados:", userRows);
 
     if (userRows.length === 0) {
-      console.log(" [BACKEND] Usuário não encontrado para ReferenciaID:", referenciaID);
+      console.log("Usuário não encontrado para ReferenciaID:", referenciaID);
       return res.status(404).json({ error: "Utilizador não encontrado" });
     }
 
@@ -102,7 +112,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         
         if (contasConectadasRows && contasConectadasRows.length > 0) {
           discordConectado = contasConectadasRows[0].Conectado === 1 ? 1 : 0;
-          console.log(" [BACKEND] Discord encontrado em contasconectadas:", discordConectado);
+          console.log("Discord encontrado em contasconectadas:", discordConectado);
         } else {
           // Se não estiver na tabela contasconectadas, verificar se há discord_id na tabela utilizadores
           try {
@@ -112,30 +122,30 @@ router.get("/profile", verifyToken, async (req, res) => {
             );
             if (discordRow && discordRow.length > 0 && discordRow[0].Conectado === 1) {
               discordConectado = 1;
-              console.log(" [BACKEND] Discord verificado via discord_id, mas não está em contasconectadas. Inserindo...");
+              console.log("Discord verificado via discord_id, mas não está em contasconectadas. Inserindo...");
               // Inserir na tabela contasconectadas para sincronizar
               try {
                 await pool.query(
                   "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
                   [referenciaID]
                 );
-                console.log(" [BACKEND] Discord inserido em contasconectadas para sincronização");
+                console.log("Discord inserido em contasconectadas para sincronização");
               } catch (insertError) {
-                console.log(" [BACKEND] Erro ao inserir Discord em contasconectadas:", insertError.message);
+                console.log("Erro ao inserir Discord em contasconectadas:", insertError.message);
               }
             }
           } catch (discordIdError) {
-            console.log(" [BACKEND] Coluna discord_id não encontrada:", discordIdError.message);
+            console.log("Coluna discord_id não encontrada:", discordIdError.message);
           }
         }
       } catch (discordError) {
-        console.log(" [BACKEND] Erro ao verificar Discord:", discordError.message);
+        console.log("Erro ao verificar Discord:", discordError.message);
       }
       
       contas = [...contasRows, { Tipo: 'discord', Conectado: discordConectado }];
-      console.log(" [BACKEND] Contas conectadas:", contas);
+      console.log("Contas conectadas:", contas);
     } catch (err) {
-      console.error(" [BACKEND] Erro ao buscar contas conectadas:", err);
+      console.error("Erro ao buscar contas conectadas:", err);
       // Retornar valores padrão em caso de erro
       contas = [
         { Tipo: 'email', Conectado: 0 },
@@ -150,15 +160,29 @@ router.get("/profile", verifyToken, async (req, res) => {
       [referenciaID]
     );
 
+    const u = userRows[0];
+    const DIAS_COOLDOWN = 30;
+    const lastSenha = u?.UltimaAlteracaoSenha ? new Date(u.UltimaAlteracaoSenha) : null;
+    const lastNome = u?.UltimaAlteracaoNome ? new Date(u.UltimaAlteracaoNome) : null;
+    const nextSenha = lastSenha ? new Date(lastSenha.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000) : null;
+    const nextNome = lastNome ? new Date(lastNome.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000) : null;
+    const now = new Date();
+    const podeSenha = !nextSenha || now >= nextSenha;
+    const podeNome = !nextNome || now >= nextNome;
+
     const response = {
       status: "ok",
       profile: {
-        nome: userRows[0]?.Nome,
-        email: userRows[0]?.Email,
-        telefone: userRows[0]?.Telefone,
-        FotoPerfil: userRows[0]?.FotoPerfil,
+        nome: u?.Nome,
+        email: u?.Email,
+        telefone: u?.Telefone,
+        FotoPerfil: u?.FotoPerfil,
         contas_conectadas: contas,
-        preferencias: prefs
+        preferencias: prefs,
+        proxima_alteracao_senha: nextSenha ? nextSenha.toISOString() : null,
+        proxima_alteracao_nome: nextNome ? nextNome.toISOString() : null,
+        pode_alterar_senha: podeSenha,
+        pode_alterar_nome: podeNome
       }
     };
 
@@ -179,6 +203,30 @@ router.put("/profile", verifyToken, async (req, res) => {
     // Usar photo_url se fornecido, senão usar fotoPerfil
     const foto = photo_url || fotoPerfil;
 
+    // Cooldown 30 dias para alteração de nome
+    if (nome !== undefined) {
+      try {
+        const [rows] = await pool.query(
+          "SELECT UltimaAlteracaoNome FROM utilizadores WHERE ReferenciaID = ?",
+          [referenciaID]
+        );
+        if (rows.length > 0 && rows[0].UltimaAlteracaoNome) {
+          const lastChange = new Date(rows[0].UltimaAlteracaoNome);
+          const DIAS_COOLDOWN = 30;
+          const nextAllowed = new Date(lastChange.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000);
+          if (new Date() < nextAllowed) {
+            return res.status(400).json({
+              status: "error",
+              error: `Só pode alterar o nome novamente após 30 dias. Próxima alteração permitida: ${nextAllowed.toLocaleDateString("pt-PT")}.`,
+              proxima_alteracao: nextAllowed.toISOString()
+            });
+          }
+        }
+      } catch (colErr) {
+        if (colErr.code !== 'ER_BAD_FIELD_ERROR') throw colErr;
+      }
+    }
+
     // Construir query dinamicamente baseado nos campos fornecidos
     const updates = [];
     const values = [];
@@ -186,6 +234,7 @@ router.put("/profile", verifyToken, async (req, res) => {
     if (nome !== undefined) {
       updates.push("Nome = ?");
       values.push(nome);
+      updates.push("UltimaAlteracaoNome = NOW()");
     }
     if (email !== undefined) {
       updates.push("Email = ?");
@@ -497,9 +546,9 @@ router.post("/change-password", verifyToken, async (req, res) => {
       });
     }
 
-    // Buscar senha atual do usuário
+    // Buscar senha atual e última alteração
     const [users] = await pool.query(
-      "SELECT SenhaHash FROM utilizadores WHERE ReferenciaID = ?",
+      "SELECT SenhaHash, UltimaAlteracaoSenha FROM utilizadores WHERE ReferenciaID = ?",
       [referenciaID]
     );
 
@@ -539,13 +588,27 @@ router.post("/change-password", verifyToken, async (req, res) => {
       });
     }
 
+    // Cooldown de 30 dias: verificar última alteração
+    const DIAS_COOLDOWN = 30;
+    const lastChange = user.UltimaAlteracaoSenha ? new Date(user.UltimaAlteracaoSenha) : null;
+    if (lastChange) {
+      const nextAllowed = new Date(lastChange.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000);
+      if (new Date() < nextAllowed) {
+        return res.status(400).json({
+          status: "error",
+          error: `Só pode alterar a senha novamente após 30 dias. Próxima alteração permitida: ${nextAllowed.toLocaleDateString("pt-PT")}.`,
+          proxima_alteracao: nextAllowed.toISOString()
+        });
+      }
+    }
+
     // Hash da nova senha
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    // Atualizar senha na base de dados
+    // Atualizar senha e data da última alteração
     await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ? WHERE ReferenciaID = ?",
+      "UPDATE Utilizadores SET SenhaHash = ?, UltimaAlteracaoSenha = NOW() WHERE ReferenciaID = ?",
       [hashedPassword, referenciaID]
     );
 
@@ -593,9 +656,9 @@ router.post("/set-password", verifyToken, async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Atualizar senha na base de dados
+    // Atualizar senha e data da última alteração (cooldown 30 dias)
     await pool.query(
-      "UPDATE Utilizadores SET SenhaHash = ? WHERE ReferenciaID = ?",
+      "UPDATE Utilizadores SET SenhaHash = ?, UltimaAlteracaoSenha = NOW() WHERE ReferenciaID = ?",
       [hashedPassword, referenciaID]
     );
 
