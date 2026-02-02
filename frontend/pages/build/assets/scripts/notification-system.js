@@ -54,15 +54,14 @@ class NotificationSystem {
     // Ativar container - se for apenas logo, não adicionar fundo escuro
     // Adicionar logo-only-mode ANTES de active para garantir que o CSS funcione
     if (isLogoOnly) {
+      this.container.classList.remove('toast-mode');
       this.container.classList.add('logo-only-mode', 'active');
-      // Forçar remoção do blur via JavaScript também
       this.container.style.background = 'rgba(0, 0, 0, 0)';
       this.container.style.backdropFilter = 'none';
       this.container.style.webkitBackdropFilter = 'none';
     } else {
       this.container.classList.remove('logo-only-mode');
-      this.container.classList.add('active');
-      // Restaurar estilos padrão
+      this.container.classList.add('active', 'toast-mode');
       this.container.style.background = '';
       this.container.style.backdropFilter = '';
       this.container.style.webkitBackdropFilter = '';
@@ -96,7 +95,7 @@ class NotificationSystem {
 
     // Desativar container
     setTimeout(() => {
-      this.container.classList.remove('active', 'logo-only-mode');
+      this.container.classList.remove('active', 'logo-only-mode', 'toast-mode');
     }, 200);
 
     // Remover do DOM após animação
@@ -122,7 +121,7 @@ class NotificationSystem {
         this.notifications.delete(id);
       }, 400);
     });
-    this.container.classList.remove('active', 'logo-only-mode');
+    this.container.classList.remove('active', 'logo-only-mode', 'toast-mode');
   }
 
   /**
