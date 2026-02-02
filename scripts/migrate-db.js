@@ -42,6 +42,11 @@ async function migrate() {
   await addColumnIfNotExists('utilizadores', 'dinheiro_poupado', "DECIMAL(10,2) DEFAULT 0.00");
   console.log(' Colunas de estatísticas verificadas/criadas em utilizadores');
 
+  // Cooldown de 30 dias para alteração de senha e nome
+  await addColumnIfNotExists('utilizadores', 'UltimaAlteracaoSenha', "DATETIME NULL");
+  await addColumnIfNotExists('utilizadores', 'UltimaAlteracaoNome', "DATETIME NULL");
+  console.log(' Colunas UltimaAlteracaoSenha e UltimaAlteracaoNome verificadas/criadas');
+
   // Criar tabela de contas conectadas
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ContasConectadas (
