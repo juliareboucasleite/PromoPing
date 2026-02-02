@@ -272,7 +272,12 @@
         '.pp-cta h2',
         '.pp-cta p',
         '.pp-cta a',
+        '.pp-connect-title',
+        '.pp-connect-desc-1',
+        '.pp-connect-desc-2',
+        '.pp-connect-desc-3',
         '.pp-discord-bot-cta span',
+        '.pp-connect-slogan',
         '.pp-header-cta-button-secondary span',
         '.pp-header-cta-button span',
         '.modal-title',
@@ -348,8 +353,9 @@
       'Sempre ligado': 'Always on',
       'Saber mais': 'Find out more',
       'Conecte-se com o bot no Discord ou receba por email': 'Connect with our Discord bot or receive by email',
-      'Com o PromoPing, nunca mais perde uma promoção. Conecte o nosso bot ao seu servidor Discord ou use o email para receber alertas instantâneos quando os preços baixarem.': 'With PromoPing, you\'ll never miss a promotion again. Add our bot to your Discord server or use email to receive instant alerts when prices drop.',
-      'Adicione o bot ao Discord com um clique e configure o que quer monitorizar. Assim que o valor cair, recebe a notificação no Discord ou por email. Rápido, simples e automático.': 'Add the bot to Discord with one click and set up what you want to monitor. As soon as the price drops, you get notified on Discord or by email. Quick, simple and automatic.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático — sem complicações.': 'Add our bot to your Discord server or use your email to receive instant alerts when prices drop. Setup is simple and the process is fully automatic — no hassle.',
+      'Cole o link dos produtos que quer acompanhar na sua área de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. Nós monitorizamos os preços por si e avisamos assim que houver uma descida.': 'Paste the links of the products you want to track in your user area and choose how you prefer to be notified: on Discord in real time, or by email. We monitor prices for you and alert you as soon as there is a drop.',
+      'Milhares de utilizadores já poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoção nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Thousands of users already save on their purchases with PromoPing. Join them and never miss a promotion at your favourite stores again. Discover the best shopping opportunities.',
       'Adicionar bot ao Discord': 'Add bot to Discord',
       'Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Thousands of people already save every month with PromoPing. And it goes beyond notifications—it\'s about being part of an intelligent community that shares the best shopping opportunities. Discover, save and enjoy.',
       'PromoPing. O preço certo, na hora certa.': 'PromoPing. The right price, at the right time.',
@@ -726,31 +732,19 @@
         </div>
       </div>
     </section>
-    <section id="sobre" class="pp-section pp-section-connect py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
-      <div class="pp-container max-w-5xl mx-auto">
-        <div class="centered-content pp-connect-content">
-          <h2 class="pp-connect-title">
-            <span class="highlight">Conecte-se com o bot no Discord ou receba por email</span>
-          </h2>
-          <div class="pp-connect-text text-content justified max-w-4xl mx-auto">
-            <p class="pp-connect-lead">
-              Com o PromoPing, nunca mais perde uma promoção. Conecte o nosso bot ao seu servidor Discord ou use o email para receber alertas instantâneos quando os preços baixarem.
-            </p>
-            <p>
-              Adicione o bot ao Discord com um clique e configure o que quer monitorizar. Assim que o valor cair, recebe a notificação no Discord ou por email. Rápido, simples e automático.
-            </p>
-            <div class="pp-connect-cta">
-              <a href="https://discord.com/oauth2/authorize?client_id=1454552237689933945&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="pp-discord-bot-cta">
-                <svg class="pp-discord-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.037c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C2.3655 6.3628 1.3942 8.3694 1.1938 10.3467a.0664.0664 0 00.0317.0561c1.6483 1.1942 3.2772 2.055 4.8752 2.6172a.0776.0776 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1055c-1.2448-.4855-2.4594-1.0953-3.6196-1.8432a.077.077 0 01-.0076-.1277c.1258-.0962.2516-.1924.3788-.2914a.0743.0743 0 01.0776-.0105c3.9279 1.7933 8.18 1.7933 12.0614 0a.0749.0749 0 01.0785.0095c.126.097.252.193.3778.2892a.077.077 0 01-.0066.1276c-1.1611.748-2.3758 1.358-3.6213 1.8432a.0766.0766 0 00-.0407.1065c.3604.698.7719 1.362 1.225 1.9932a.076.076 0 00.0842.0286c1.596-.5604 3.223-.9642 4.878-2.6198a.066.066 0 00.0317-.0552c-.1983-1.9767-1.1704-3.983-2.9738-5.9402a.069.069 0 00-.0312-.0286zM8.02 15.3312c-1.1823 0-2.1569-1.085-2.1569-2.419 0-1.333.9746-2.4189 2.1569-2.4189 1.1812 0 2.1568 1.086 2.1568 2.4189 0 1.334-.9756 2.419-2.1568 2.419zm7.9748 0c-1.1823 0-2.1569-1.085-2.1569-2.419 0-1.333.9746-2.4189 2.1569-2.4189 1.1812 0 2.1568 1.086 2.1568 2.4189 0 1.334-.9756 2.419-2.1568 2.419z"/></svg>
-                <span>Adicionar bot ao Discord</span>
-              </a>
-            </div>
-            <div class="pp-connect-divider" aria-hidden="true"></div>
-            <p class="pp-connect-slogan">
-              <strong>PromoPing. O preço certo, na hora certa.</strong>
-            </p>
-          </div>
-        </div>
+    <section id="sobre" class="pp-section pp-section-connect">
+      <div class="pp-connect-wrap">
+        <h2 class="pp-connect-title">Conecte-se com o bot no Discord ou receba por email</h2>
+        <p class="pp-connect-desc pp-connect-desc-1">Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático sem complicações.</p>
+        <p class="pp-connect-desc pp-connect-desc-2">Cole o link dos produtos que quer acompanhar na sua área de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. Nós monitorizamos os preços por si e avisamos assim que houver uma descida.</p>
+        <p class="pp-connect-desc pp-connect-desc-3">Milhares de utilizadores já poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoção nas suas lojas favoritas. Descubra as melhores oportunidades de compra.</p>
+        <p class="pp-connect-cta-wrap">
+          <a href="https://discord.com/oauth2/authorize?client_id=1454552237689933945&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer" class="pp-discord-bot-cta">
+            <img class="pp-discord-icon" src="https://cdn.simpleicons.org/discord/ffffff" width="24" height="24" alt="" aria-hidden="true">
+            <span>Adicionar bot ao Discord</span>
+          </a>
+        </p>
+        <p class="pp-connect-slogan">PromoPing. O preço certo, na hora certa.</p>
       </div>
     </section>
     <section id="parceiros" class="pp-partners relative py-16 md:py-20 px-4 sm:px-5 overflow-hidden"
