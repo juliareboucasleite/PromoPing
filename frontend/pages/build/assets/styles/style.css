@@ -37,6 +37,19 @@ section[id] {
 
 /* ===== Global ===== */
 
+/* Focus visível para navegação por teclado (acessibilidade) */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--promoping-orange-dark, #dc7c35);
+  outline-offset: 2px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--promoping-orange-dark, #dc7c35);
+  outline-offset: 2px;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
