@@ -209,12 +209,15 @@
 }
 
 .plan-button.current {
-    background: #10b981;
-    color: white;
+    background: #9ca3af;
+    color: #fff;
+    cursor: default;
 }
 
-.plan-button.current:hover {
-    background: #059669;
+.plan-button.current:hover,
+.plan-button.current:disabled {
+    background: #9ca3af;
+    cursor: default;
 }
 
 .plan-button.secondary {

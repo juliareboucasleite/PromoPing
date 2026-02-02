@@ -705,11 +705,13 @@
             const allButtons = document.querySelectorAll('.plan-button');
             allButtons.forEach(button => {
                 button.className = 'plan-button primary';
+                button.disabled = false;
+                if (button.hasAttribute('data-onclick-backup')) {
+                    button.setAttribute('onclick', button.getAttribute('data-onclick-backup'));
+                    button.removeAttribute('data-onclick-backup');
+                }
                 const currentText = button.textContent;
                 if (currentText.includes('Plano Atual')) {
-                    // Extrair nome do plano do texto atual
-                    const planName = currentText.replace('Plano Atual', '').trim();
-                    // Restaurar texto original baseado no onclick
                     const onclick = button.getAttribute('onclick');
                     if (onclick && onclick.includes('Free')) {
                         button.textContent = 'Escolher Free';
@@ -747,6 +749,9 @@
             if (currentButton) {
                 currentButton.className = 'plan-button current';
                 currentButton.textContent = 'Plano Atual';
+                currentButton.setAttribute('data-onclick-backup', currentButton.getAttribute('onclick') || '');
+                currentButton.removeAttribute('onclick');
+                currentButton.disabled = true;
                 console.log(`Plano atual destacado: ${planName} (ID: ${userPlanId})`);
             } else {
                 console.log(`Plano atual não encontrado: ID ${userPlanId}`);
