@@ -1,0 +1,7 @@
+# PromoPing - robots.txt
+User-agent: *
+Allow: /
+
+# Áreas privadas (login obrigatório)
+Disallow: /dashboard/
+Disallow: /api/
