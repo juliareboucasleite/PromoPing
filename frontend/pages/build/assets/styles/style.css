@@ -1172,6 +1172,7 @@ body.theme-promoping::before {
   margin: 0 auto;
   overflow: hidden;
   position: relative;
+  min-height: 56px;
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -1191,8 +1192,31 @@ body.theme-promoping::before {
 .partner-carousel {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
+.partner-carousel-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
+  vertical-align: middle;
+}
+
+/* Acessibilidade: conteúdo só para leitores de ecrã */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Legado: mantido para compatibilidade se houver referências */
 .partner-carousel-track {
   display: flex;
   align-items: center;
@@ -1721,13 +1745,14 @@ body.theme-promoping::before {
   margin: 0;
 }
 
-/* Carrossel de depoimentos com animação horizontal */
+/* Carrossel de depoimentos (canvas) */
 .testimonials-columns-wrapper {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   overflow: hidden;
   position: relative;
+  min-height: 220px;
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -1744,26 +1769,29 @@ body.theme-promoping::before {
   );
 }
 
+/* Carrossel depoimentos em canvas */
+.testimonials-canvas {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  vertical-align: middle;
+}
+
+.testimonials-canvas-message {
+  display: none;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 40px 20px;
+  font-size: 1rem;
+}
+
+/* Legado: mantido se houver referências */
 .testimonials-column {
   display: flex !important;
   flex-direction: row !important;
   gap: 24px;
   width: max-content;
-  animation: scrollLeft 40s linear infinite !important;
   will-change: transform;
-}
-
-.testimonials-columns-wrapper:hover .testimonials-column {
-  animation-play-state: paused !important;
-}
-
-@keyframes scrollLeft {
-  from {
-    transform: translateX(0) !important;
-  }
-  to {
-    transform: translateX(-50%) !important;
-  }
 }
 
 .testimonial-card {

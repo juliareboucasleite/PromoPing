@@ -761,31 +761,10 @@
         </h2>
         <div class="partner-carousel-wrapper">
           <div class="partner-carousel">
-            <div class="partner-carousel-track">
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                Pingo Doce
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                Continente
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                Auchan
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                Worten
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                FNAC
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                IKEA
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                Radio Popular
-              </h3>
-              <h3 class="partner-item text-lg sm:text-xl md:text-2xl font-medium text-[#ececec] text-center whitespace-nowrap">
-                PcDiga
-              </h3>
+            <canvas id="partner-carousel-canvas" class="partner-carousel-canvas" aria-hidden="true"></canvas>
+            <!-- Lista oculta para acessibilidade / SEO -->
+            <div class="sr-only" aria-hidden="false">
+              Marcas: Pingo Doce, Continente, Auchan, Worten, FNAC, IKEA, Radio Popular, PcDiga.
             </div>
           </div>
         </div>
@@ -942,9 +921,9 @@
           <p class="testimonials-subtitle">Milhares de portugueses já economizam com o PromoPing</p>
         </div>
         <div class="testimonials-columns-wrapper">
-          <div class="testimonials-column" id="testimonials-track">
-            <!-- Os depoimentos serão carregados dinamicamente via JavaScript -->
-          </div>
+          <div id="testimonials-message" class="testimonials-canvas-message" aria-live="polite"></div>
+          <canvas id="testimonials-canvas" class="testimonials-canvas" aria-hidden="true"></canvas>
+          <div class="sr-only" aria-hidden="false">Depoimentos carregados dinamicamente.</div>
         </div>
       </div>
     </section>

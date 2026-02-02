@@ -1,217 +1,195 @@
 /**
- * Carrossel de Parceiros - Scroll Automático Infinito
- * Controla o movimento horizontal contínuo das marcas parceiras
+ * Carrossel de parceiros em Canvas – animação contínua sem depender do layout do DOM.
  */
-
 (function() {
   'use strict';
 
-  // Configurações do carrossel
-  const CONFIG = {
-    speed: 1, // pixels por frame (ajuste para velocidade)
-    pauseOnHover: true,
-    autoStart: true
+  window.partnerCarousel = window.partnerCarousel || {
+    start: function() {},
+    pause: function() {},
+    resume: function() {},
+    destroy: function() {},
+    updateDimensions: function() {},
+    updateSpeed: function() {}
   };
 
-  let carouselTrack = null;
+  const PARTNERS = [
+    'Pingo Doce',
+    'Continente',
+    'Auchan',
+    'Worten',
+    'FNAC',
+    'IKEA',
+    'Radio Popular',
+    'PcDiga'
+  ];
+
+  const CONFIG = {
+    speed: 0.4, // pixels por frame (menor = mais lento; loop infinito contínuo)
+    pauseOnHover: true,
+    autoStart: true,
+    textColor: '#ececec',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontSize: 22,
+    gap: 80
+  };
+
+  let canvas = null;
+  let ctx = null;
+  let wrapper = null;
   let animationFrameId = null;
   let isPaused = false;
-  let currentPosition = 0;
-  let trackWidth = 0;
-  let halfTrackWidth = 0;
+  let offsetX = 0;
+  let loopWidth = 0;
+  let dpr = 1;
 
-  /**
-   * Inicializa o carrossel
-   */
-  function initCarousel() {
-    carouselTrack = document.querySelector('.partner-carousel-track');
-    if (!carouselTrack) {
+  function init() {
+    canvas = document.getElementById('partner-carousel-canvas');
+    if (!canvas) return;
+
+    wrapper = canvas.closest('.partner-carousel-wrapper');
+    if (!wrapper) return;
+
+    ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setupResize();
+    setupEvents();
+
+    resize();
+    window.addEventListener('load', function onLoad() {
+      window.removeEventListener('load', onLoad);
+      resize();
+      if (CONFIG.autoStart && !animationFrameId) start();
+    });
+    if (CONFIG.autoStart) start();
+  }
+
+  function setupResize() {
+    window.addEventListener('resize', resize);
+  }
+
+  function setupEvents() {
+    if (CONFIG.pauseOnHover && wrapper) {
+      wrapper.addEventListener('mouseenter', function() { isPaused = true; });
+      wrapper.addEventListener('mouseleave', function() { isPaused = false; });
+    }
+    document.addEventListener('visibilitychange', function() {
+      isPaused = document.hidden;
+    });
+  }
+
+  function resize() {
+    if (!canvas || !wrapper) return;
+
+    dpr = window.devicePixelRatio || 1;
+    const rect = wrapper.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(48, Math.floor(rect.height));
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    loopWidth = measureLoopWidth();
+    offsetX = 0;
+    draw();
+  }
+
+  function measureLoopWidth() {
+    ctx.font = CONFIG.fontSize + 'px ' + CONFIG.fontFamily;
+    let total = 0;
+    for (let i = 0; i < PARTNERS.length; i++) {
+      total += ctx.measureText(PARTNERS[i]).width + CONFIG.gap;
+    }
+    return total;
+  }
+
+  function draw() {
+    if (!ctx || !canvas) return;
+
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.font = CONFIG.fontSize + 'px ' + CONFIG.fontFamily;
+    ctx.fillStyle = CONFIG.textColor;
+    ctx.textBaseline = 'middle';
+
+    const y = h / 2;
+
+    // Desenha duas cópias para loop infinito
+    for (let copy = 0; copy < 2; copy++) {
+      let x = copy * loopWidth - offsetX;
+      for (let i = 0; i < PARTNERS.length; i++) {
+        const text = PARTNERS[i];
+        const tw = ctx.measureText(text).width;
+        if (x + tw >= -20 && x <= w + 20) {
+          ctx.fillText(text, x, y);
+        }
+        x += tw + CONFIG.gap;
+      }
+    }
+  }
+
+  function animate() {
+    if (isPaused || !canvas) {
+      animationFrameId = null;
       return;
     }
 
-    // Duplica os itens para criar loop infinito
-    duplicateItems();
-
-    // Calcula dimensões
-    updateDimensions();
-
-    // Adiciona event listeners
-    setupEventListeners();
-
-    // Inicia a animação
-    if (CONFIG.autoStart) {
-      startAnimation();
+    offsetX += CONFIG.speed;
+    // Loop infinito: quando avança uma volta completa, volta ao início sem saltar
+    while (loopWidth > 0 && offsetX >= loopWidth) {
+      offsetX -= loopWidth;
     }
 
-    // Atualiza dimensões quando a janela redimensiona
-    window.addEventListener('resize', handleResize);
+    draw();
+    animationFrameId = requestAnimationFrame(animate);
   }
 
-  /**
-   * Duplica os itens do carrossel para criar loop infinito
-   */
-  function duplicateItems() {
-    const items = carouselTrack.querySelectorAll('.partner-item');
-    if (items.length === 0) return;
-
-    // Clona todos os itens
-    items.forEach(item => {
-      const clone = item.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
-      carouselTrack.appendChild(clone);
-    });
-  }
-
-  /**
-   * Atualiza as dimensões do track
-   */
-  function updateDimensions() {
-    if (!carouselTrack) return;
-
-    // Força reflow para garantir que as dimensões estejam atualizadas
-    void carouselTrack.offsetWidth;
-
-    const items = carouselTrack.querySelectorAll('.partner-item');
-    if (items.length === 0) return;
-
-    const itemCount = items.length;
-    const halfCount = Math.floor(itemCount / 2);
-
-    // Calcula a largura de metade dos itens (primeira metade)
-    let width = 0;
-    const trackStyle = window.getComputedStyle(carouselTrack);
-    const gap = parseFloat(trackStyle.gap) || 0;
-
-    for (let i = 0; i < halfCount; i++) {
-      const item = items[i];
-      const itemRect = item.getBoundingClientRect();
-      width += itemRect.width;
-    }
-
-    // Adiciona o gap entre os itens (gap entre n itens = gap * (n-1))
-    if (halfCount > 1) {
-      width += gap * (halfCount - 1);
-    }
-
-    trackWidth = width;
-    halfTrackWidth = trackWidth;
-  }
-
-  /**
-   * Configura os event listeners
-   */
-  function setupEventListeners() {
-    if (!carouselTrack) return;
-
-    const wrapper = carouselTrack.closest('.partner-carousel-wrapper');
-    if (!wrapper) return;
-
-    if (CONFIG.pauseOnHover) {
-      wrapper.addEventListener('mouseenter', pauseAnimation);
-      wrapper.addEventListener('mouseleave', resumeAnimation);
-    }
-
-    // Pausa quando a página não está visível (performance)
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        pauseAnimation();
-      } else {
-        resumeAnimation();
-      }
-    });
-  }
-
-  /**
-   * Inicia a animação do carrossel
-   */
-  function startAnimation() {
+  function start() {
     if (animationFrameId) return;
     isPaused = false;
     animate();
   }
 
-  /**
-   * Pausa a animação
-   */
-  function pauseAnimation() {
+  function pause() {
     isPaused = true;
   }
 
-  /**
-   * Retoma a animação
-   */
-  function resumeAnimation() {
+  function resume() {
     if (isPaused) {
       isPaused = false;
       animate();
     }
   }
 
-  /**
-   * Loop de animação usando requestAnimationFrame
-   */
-  function animate() {
-    if (isPaused || !carouselTrack) {
-      animationFrameId = null;
-      return;
-    }
-
-    // Move o carrossel
-    currentPosition -= CONFIG.speed;
-
-    // Quando chega na metade (fim da primeira cópia), reseta para o início
-    if (halfTrackWidth > 0 && Math.abs(currentPosition) >= halfTrackWidth) {
-      currentPosition = 0;
-    }
-
-    // Aplica a transformação sem transição para movimento suave
-    carouselTrack.style.transition = 'none';
-    carouselTrack.style.transform = `translateX(${currentPosition}px)`;
-
-    // Continua a animação
-    animationFrameId = requestAnimationFrame(animate);
-  }
-
-  /**
-   * Manipula o redimensionamento da janela
-   */
-  function handleResize() {
-    updateDimensions();
-    // Reseta a posição para evitar problemas visuais
-    currentPosition = 0;
-    if (carouselTrack) {
-      carouselTrack.style.transform = `translateX(0px)`;
-    }
-  }
-
-  /**
-   * Destrói o carrossel (limpeza)
-   */
   function destroy() {
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
     isPaused = true;
-    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('resize', resize);
   }
 
-  // Inicializa quando o DOM estiver pronto
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCarousel);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    initCarousel();
+    init();
   }
 
-  // Expõe funções públicas se necessário
   window.partnerCarousel = {
-    start: startAnimation,
-    pause: pauseAnimation,
-    resume: resumeAnimation,
+    start: start,
+    pause: pause,
+    resume: resume,
     destroy: destroy,
+    updateDimensions: resize,
     updateSpeed: function(speed) {
       CONFIG.speed = speed;
     }
   };
-
 })();
