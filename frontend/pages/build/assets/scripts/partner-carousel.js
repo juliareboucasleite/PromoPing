@@ -65,6 +65,10 @@
     if (CONFIG.autoStart) start();
   }
 
+  function onVisibilityChange() {
+    isPaused = document.hidden;
+  }
+
   function setupResize() {
     window.addEventListener('resize', resize);
   }
@@ -74,9 +78,7 @@
       wrapper.addEventListener('mouseenter', function() { isPaused = true; });
       wrapper.addEventListener('mouseleave', function() { isPaused = false; });
     }
-    document.addEventListener('visibilitychange', function() {
-      isPaused = document.hidden;
-    });
+    document.addEventListener('visibilitychange', onVisibilityChange);
   }
 
   function resize() {
@@ -175,6 +177,7 @@
     }
     isPaused = true;
     window.removeEventListener('resize', resize);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
   }
 
   if (document.readyState === 'loading') {

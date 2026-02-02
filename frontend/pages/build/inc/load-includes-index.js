@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
                 headerPlaceholder.innerHTML = correctedData;
                 
-                // Garantir que os modais estejam ocultos após inserir o header
-                setTimeout(() => {
+                  // Garantir que os modais estejam ocultos após inserir o header
+                  setTimeout(() => {
                   const overlay = document.getElementById('modalOverlay');
                   const loginModal = document.getElementById('loginModal');
                   const registerModal = document.getElementById('registerModal');
@@ -33,26 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     registerModal.style.display = 'none';
                   }
                   
-                  // Verificar se as funções estão disponíveis
-                  if (typeof window.openLoginModal === 'function' && typeof window.openRegisterModal === 'function') {
-                    console.log('✅ Funções de modal disponíveis');
-                  } else {
-                    console.error('❌ Funções de modal não encontradas!');
-                  }
-                  
-                  // Verificar se os elementos dos modais foram encontrados
-                  if (overlay && loginModal && registerModal) {
-                    console.log('✅ Elementos dos modais encontrados');
-                  } else {
-                    console.error('❌ Elementos dos modais não encontrados:', { overlay, loginModal, registerModal });
-                  }
-                  
                   // Inicializar modais se a função estiver disponível
                   if (typeof window.initializeModals === 'function') {
                     window.initializeModals();
                   }
-                  
-                  // Os modais já estão no index.html, não precisam ser carregados do header
                 }, 200);
             }
         })

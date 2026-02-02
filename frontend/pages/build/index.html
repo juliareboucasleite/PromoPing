@@ -456,18 +456,25 @@
       'Utilizador do Bot': 'Bot User'
     };
 
-    // Alterna idioma da página
+    // Alterna idioma da página (atualiza todos os indicadores: desktop, mobile, único)
     function toggleLanguage() {
-      const lang = document.getElementById('lang-text');
+      const langDesktop = document.getElementById('lang-text-desktop');
+      const langMobile = document.getElementById('lang-text-mobile');
+      const langSingle = document.getElementById('lang-text');
+      const lang = langDesktop || langMobile || langSingle;
       if (!lang) return;
-      
+
       const cur = lang.textContent.trim();
-      
+
       if (cur === 'PT') {
-        lang.textContent = 'EN';
+        if (langDesktop) langDesktop.textContent = 'EN';
+        if (langMobile) langMobile.textContent = 'EN';
+        if (langSingle) langSingle.textContent = 'EN';
         translateToEnglish();
       } else {
-        lang.textContent = 'PT';
+        if (langDesktop) langDesktop.textContent = 'PT';
+        if (langMobile) langMobile.textContent = 'PT';
+        if (langSingle) langSingle.textContent = 'PT';
         restoreOriginalTexts();
       }
     }
