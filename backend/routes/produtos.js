@@ -15,6 +15,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const router = express.Router();
 
+/** Aceita apenas URLs com esquema http ou https (bloqueia javascript:, data:, etc.). */
+function isAllowedProductUrl(url) {
+  if (typeof url !== "string") return false;
+  const trimmed = url.trim();
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://");
+}
+
 //! Não há mais atualização automática de preços
 //  Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
@@ -35,6 +42,12 @@ router.post("/", verifyToken, async (req, res) => {
             return res.status(400).json({ 
                 status: "error", 
                 message: "Preencha os campos obrigatórios (nome, link e preço alvo válido)" 
+            });
+        }
+        if (!isAllowedProductUrl(link)) {
+            return res.status(400).json({
+                status: "error",
+                message: "O link do produto deve ser um URL válido (http ou https)."
             });
         }
         
@@ -256,8 +269,15 @@ router.put("/:id", verifyToken, async (req, res) => {
         const { id } = req.params;
         const { nome, link, data } = req.body;
         const nomeVal = nome ?? null;
-        const linkVal = link ?? null;
+        let linkVal = link ?? null;
         const dataVal = data ?? null;
+
+        if (linkVal != null && linkVal !== "" && !isAllowedProductUrl(linkVal)) {
+            return res.status(400).json({
+                status: "error",
+                message: "O link do produto deve ser um URL válido (http ou https)."
+            });
+        }
 
         const [result] = await pool.query(
             "UPDATE Produtos SET Nome=COALESCE(?, Nome), Link=COALESCE(?, Link), DataLimite=COALESCE(?, DataLimite) WHERE Id=? AND ReferenciaID=?",

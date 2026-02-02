@@ -850,11 +850,19 @@
       btnText.style.display = "none";
       btnLoading.style.display = "flex";
 
-      const nome = document.getElementById("nome").value;
-      const link = document.getElementById("url").value;
+      const nome = document.getElementById("nome").value.trim();
+      const link = document.getElementById("url").value.trim();
       const dataLimite = document.getElementById("dataLimite").value;
       const precoAlvo = document.getElementById("precoAlvo").value;
       const token = localStorage.getItem("token");
+
+      if (!link.startsWith("http://") && !link.startsWith("https://")) {
+        submitBtn.disabled = false;
+        btnText.style.display = "block";
+        btnLoading.style.display = "none";
+        showError("Link inválido", "O link do produto deve começar por http:// ou https://.");
+        return;
+      }
 
       try {
         const res = await makeRequest("/api/produtos", {
