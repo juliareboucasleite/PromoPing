@@ -7,6 +7,7 @@
   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Planos PromoPing — escolha o plano que melhor se adapta: Free, Basic, Standard ou Premium.">
     <title>Planos PromoPing | promoping.pt</title>
     <link rel="stylesheet" href="../../assets/styles/painel.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
@@ -464,13 +465,21 @@
             
             modal.style.display = 'flex';
             modal.classList.add('active');
+            document.addEventListener('keydown', onEscapePurchaseModal);
+        }
+
+        function onEscapePurchaseModal(e) {
+            if (e.key === 'Escape') fecharModalCompra();
         }
 
         // Função para fechar modal de compra
         function fecharModalCompra() {
+            document.removeEventListener('keydown', onEscapePurchaseModal);
             const modal = document.getElementById('purchaseModal');
-            modal.style.display = 'none';
-            modal.classList.remove('active');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('active');
+            }
             selectedPlanData = null;
         }
 
@@ -594,16 +603,22 @@
             }
         }
 
+        function onEscapeCancelModal(e) {
+            if (e.key === 'Escape') fecharModalCancelamento();
+        }
+
         // Função para abrir modal para cancelar assinatura
         function cancelarAssinatura() {
             const modal = document.getElementById('cancelModal');
             modal.classList.add('active');
+            document.addEventListener('keydown', onEscapeCancelModal);
         }
 
         // Função para fechar o modal de cancelamento
         function fecharModalCancelamento() {
+            document.removeEventListener('keydown', onEscapeCancelModal);
             const modal = document.getElementById('cancelModal');
-            modal.classList.remove('active');
+            if (modal) modal.classList.remove('active');
         }
 
         // Função para realmente cancelar a assinatura via backend
