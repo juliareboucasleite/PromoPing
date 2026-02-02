@@ -67,9 +67,11 @@ class NotificationSystem {
       this.container.style.webkitBackdropFilter = '';
     }
 
-    // Animar entrada
+    // Animar entrada (dois frames para o estado inicial ser pintado antes da transição)
     requestAnimationFrame(() => {
-      notification.classList.add('show');
+      requestAnimationFrame(() => {
+        notification.classList.add('show');
+      });
     });
 
     // Auto-remover após duração
@@ -93,12 +95,12 @@ class NotificationSystem {
     notification.classList.remove('show');
     notification.classList.add('hide');
 
-    // Desativar container
+    // Desativar container após animação de saída
     setTimeout(() => {
       this.container.classList.remove('active', 'logo-only-mode', 'toast-mode');
-    }, 200);
+    }, 350);
 
-    // Remover do DOM após animação
+    // Remover do DOM após animação de saída
     setTimeout(() => {
       if (notification.parentNode) {
         notification.parentNode.removeChild(notification);

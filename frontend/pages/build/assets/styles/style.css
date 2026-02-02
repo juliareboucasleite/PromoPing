@@ -2325,32 +2325,23 @@ body .notification-container.logo-only-mode.active {
 .notification-card {
   position: relative;
   background: #fff;
-  border-radius: 16px;
-  padding: 28px 32px 24px;
-  max-width: 360px;
-  width: 90vw;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 14px 18px 12px;
+  max-width: 300px;
+  width: calc(100vw - 40px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
 }
 
-.notification.success .notification-card {
-  border-top: 4px solid #22c55e;
-}
-
-.notification.error .notification-card {
-  border-top: 4px solid #ef4444;
-}
-
-.notification.warning .notification-card {
-  border-top: 4px solid #f59e0b;
-}
-
+.notification.success .notification-card,
+.notification.error .notification-card,
+.notification.warning .notification-card,
 .notification.info .notification-card {
-  border-top: 4px solid #3b82f6;
+  border-top: none;
 }
 
 .notification-header {
@@ -2359,6 +2350,10 @@ body .notification-container.logo-only-mode.active {
   justify-content: center;
   width: 100%;
   position: relative;
+}
+
+.notification-card .notification-header {
+  justify-content: flex-start;
 }
 
 .notification-logo {
@@ -2370,7 +2365,7 @@ body .notification-container.logo-only-mode.active {
 }
 
 .notification-logo-sm {
-  max-width: 56px;
+  max-width: 40px;
   height: auto;
   animation: none;
 }
@@ -2397,17 +2392,19 @@ body .notification-container.logo-only-mode.active {
 
 .notification-card .notification-title {
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   color: #111827;
   margin: 0;
   letter-spacing: -0.01em;
+  text-align: left;
 }
 
 .notification-card .notification-message {
-  font-size: 0.9375rem;
-  color: #4b5563;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.4;
   margin: 0;
+  text-align: left;
 }
 
 .notification-title {
@@ -2430,20 +2427,20 @@ body .notification-container.logo-only-mode.active {
 
 .notification-card .notification-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.06);
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.05);
   border: none;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  color: #6b7280;
+  padding: 4px;
+  border-radius: 6px;
+  color: #9ca3af;
   transition: background 0.2s ease, color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 
