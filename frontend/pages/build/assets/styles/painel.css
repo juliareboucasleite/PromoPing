@@ -1003,6 +1003,19 @@
     flex-wrap: wrap;
 }
 
+.empty-state-actions .pp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.empty-state-actions .pp-btn svg {
+    flex-shrink: 0;
+    vertical-align: middle;
+    position: relative;
+    top: 1px;
+}
+
 /* ===== LOADING STATE ===== */
 
 .loading-state {

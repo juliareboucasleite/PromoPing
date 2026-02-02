@@ -302,8 +302,9 @@
     let wizardUserEmail = '';
 
     // Criar botão flutuante
-    const btn = createFloatingButton();
-    document.body.appendChild(btn);
+    const btnWrap = createFloatingButton();
+    document.body.appendChild(btnWrap);
+    const btn = document.getElementById('pp-support-btn');
 
     // Criar modal de conversação
     const modal = createModal();
@@ -644,33 +645,74 @@
 
 
   /**
-   * Cria o botão flutuante do widget
-   * @returns {HTMLButtonElement} Botão criado
+   * Cria o botão flutuante do widget (wrapper com badge "+1" e botão "?")
+   * @returns {HTMLDivElement} Wrapper com badge e botão
    */
   function createFloatingButton() {
+    const wrap = document.createElement('div');
+    wrap.className = 'pp-support-btn-wrap';
+    Object.assign(wrap.style, {
+      position: 'fixed',
+      right: '24px',
+      bottom: '24px',
+      zIndex: '1080',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '2px'
+    });
+
+    const badge = document.createElement('span');
+    badge.className = 'pp-support-badge';
+    badge.textContent = '+1';
+    badge.setAttribute('aria-hidden', 'true');
+    Object.assign(badge.style, {
+      display: 'inline-block',
+      fontSize: '10px',
+      fontWeight: '700',
+      color: '#fff',
+      background: 'linear-gradient(180deg, #e53935 0%, #c62828 100%)',
+      padding: '3px 7px',
+      borderRadius: '10px',
+      lineHeight: 1.2,
+      letterSpacing: '0.02em',
+      boxShadow: '0 2px 6px rgba(198, 40, 40, 0.4)',
+      border: '1px solid rgba(255,255,255,0.25)',
+      marginTop: '4px'
+    });
+
     const btn = document.createElement('button');
     btn.id = 'pp-support-btn';
     btn.className = 'pp-support-btn';
-    btn.textContent = 'Suporte';
-    
+    btn.textContent = '?';
+    btn.setAttribute('aria-label', 'Abrir suporte');
     Object.assign(btn.style, {
-      position: 'fixed',
-      right: '20px',
-      bottom: '20px',
-      zIndex: '1080',
-      padding: '10px 14px',
-      border: 'none',
-      borderRadius: '999px',
-      background: '#f17603',
+      width: '48px',
+      height: '48px',
+      padding: '0',
+      border: '2px solid rgba(255,255,255,0.35)',
+      borderRadius: '50%',
+      background: 'linear-gradient(180deg, #ff8c42 0%, #f17603 50%, #e06b00 100%)',
       color: '#fff',
       cursor: 'pointer',
-      boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+      boxShadow: '0 4px 14px rgba(241, 118, 3, 0.4), 0 2px 6px rgba(0,0,0,0.15)',
       fontFamily: 'inherit',
-      fontSize: '14px',
-      fontWeight: '500'
+      fontSize: '20px',
+      fontWeight: '600',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+    });
+    btn.addEventListener('mouseenter', function () {
+      btn.style.transform = 'scale(1.06)';
+      btn.style.boxShadow = '0 6px 20px rgba(241, 118, 3, 0.5), 0 2px 8px rgba(0,0,0,0.2)';
+    });
+    btn.addEventListener('mouseleave', function () {
+      btn.style.transform = 'scale(1)';
+      btn.style.boxShadow = '0 4px 14px rgba(241, 118, 3, 0.4), 0 2px 6px rgba(0,0,0,0.15)';
     });
 
-    return btn;
+    wrap.appendChild(badge);
+    wrap.appendChild(btn);
+    return wrap;
   }
 
   /**
