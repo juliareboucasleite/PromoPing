@@ -7,6 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Produtos PromoPing — liste e edite os produtos que está a monitorizar e acompanhe a evolução dos preços.">
   <title>Produtos PromoPing | promoping.pt</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
@@ -83,10 +84,10 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input">
+            <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input" aria-label="Pesquisar produtos">
           </div>
           <div class="filter-group">
-            <select id="filtroLoja" class="filter-select">
+            <select id="filtroLoja" class="filter-select" aria-label="Filtrar por loja">
               <option value="">Todas as lojas</option>
               <option>Worten</option>
               <option>FNAC</option>
@@ -100,7 +101,7 @@
               <option>H&M</option>
               <option>Amazon</option>
             </select>
-            <select id="filtroEstado" class="filter-select">
+            <select id="filtroEstado" class="filter-select" aria-label="Filtrar por estado">
               <option value="">Todos os estados</option>
               <option value="meta">Meta atingida</option>
               <option value="subiu">Preço subiu</option>
@@ -127,9 +128,25 @@
         </div>
         <p>A carregar produtos...</p>
       </div>
-
     </div>
   </main>
+
+  <!-- Modal de confirmação para remover produto (fora do main, como no Painel) -->
+  <div id="confirmRemoverModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirmRemoverTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="confirmRemoverTitle">Remover produto?</h3>
+        <button type="button" class="modal-close" onclick="closeConfirmRemoverModal()" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Tem a certeza que deseja remover este produto? Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmRemoverModal()">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmRemoverBtn">Remover</button>
+      </div>
+    </div>
+  </div>
   <script src="../../assets/scripts/support-widget.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -377,7 +394,7 @@
                       <line x1="10" y1="14" x2="21" y2="3"></line>
                     </svg>
                   </button>
-                  <button class="action-btn-dashboard delete-btn-dashboard" title="Remover" onclick="removerProduto(${p.Id || p.id})">
+                  <button class="action-btn-dashboard delete-btn-dashboard" title="Remover" onclick="openConfirmRemoverModal(${p.Id || p.id})">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3,6 5,6 21,6"></polyline>
                       <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
@@ -430,15 +447,15 @@
         document.getElementById("filterProductCount").textContent = itens.length;
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
-        alert("Erro ao carregar produtos.");
+        loadingState.style.display = "none";
+        productsList.style.display = "block";
+        productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
       }
     }
 
     // Função: remove produto do usuário através do id
     async function removerProduto(id) {
       const token = localStorage.getItem("token");
-      if (!confirm("Tem certeza que deseja remover este produto?")) return;
-
       try {
         await makeRequest(`/api/produtos/${id}`, {
           method: "DELETE",
@@ -450,6 +467,38 @@
         alert("Erro ao remover produto.");
       }
     }
+
+    // Modal de confirmação para remover produto
+    let pendingDeleteId = null;
+    function onEscapeConfirmRemover(e) {
+      if (e.key === "Escape") closeConfirmRemoverModal();
+    }
+    function openConfirmRemoverModal(id) {
+      pendingDeleteId = id;
+      const modal = document.getElementById("confirmRemoverModal");
+      if (modal) {
+        modal.style.display = "flex";
+        document.addEventListener("keydown", onEscapeConfirmRemover);
+        document.getElementById("confirmRemoverBtn").onclick = function () {
+          if (pendingDeleteId != null) {
+            removerProduto(pendingDeleteId);
+            closeConfirmRemoverModal();
+          }
+        };
+      }
+    }
+    function closeConfirmRemoverModal() {
+      document.removeEventListener("keydown", onEscapeConfirmRemover);
+      pendingDeleteId = null;
+      const modal = document.getElementById("confirmRemoverModal");
+      if (modal) modal.style.display = "none";
+    }
+    window.openConfirmRemoverModal = openConfirmRemoverModal;
+    window.closeConfirmRemoverModal = closeConfirmRemoverModal;
+    (function () {
+      const modal = document.getElementById("confirmRemoverModal");
+      if (modal) modal.addEventListener("click", function (e) { if (e.target === this) closeConfirmRemoverModal(); });
+    })();
 
     let lastSyncTime = Date.now();
 
