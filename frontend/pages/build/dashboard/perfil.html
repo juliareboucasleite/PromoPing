@@ -68,9 +68,12 @@
   <main class="dashboard-main">
     <div class="dashboard-container">
 
-      <header class="page-header">
-        <h1 class="page-title">Perfil</h1>
-        <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
+      <header class="page-header page-header-perfil">
+        <div class="page-header-left">
+          <h1 class="page-title">Perfil</h1>
+          <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
+        </div>
+        <p class="page-greeting">Olá, <span id="profileGreetingName">Utilizador</span>!</p>
       </header>
 
       <div class="profile-layout">
@@ -556,6 +559,8 @@
 
           if (fullNameEl) fullNameEl.value = profile.nome || "";
           if (emailEl) emailEl.value = profile.email || "";
+          const greetingEl = document.getElementById("profileGreetingName");
+          if (greetingEl) greetingEl.textContent = profile.nome || "Utilizador";
 
           console.log(" [FRONTEND] Campos preenchidos:", {
             nome: profile.nome,
@@ -1267,6 +1272,8 @@
             } else {
               console.error("Elemento userName não encontrado");
             }
+            const greetingEl = document.getElementById("profileGreetingName");
+            if (greetingEl) greetingEl.textContent = data.profile.nome || 'Utilizador';
           } else {
             console.error("Estrutura de dados incorreta:", data);
           }
