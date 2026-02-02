@@ -184,6 +184,18 @@
       window.location.href = "/index.html";
     }
 
+    // Sanitização XSS: escapar HTML e atributos ao renderizar dados do utilizador
+    function escapeHtml(text) {
+      if (text == null || typeof text !== "string") return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    function escapeHtmlAttr(text) {
+      if (text == null || typeof text !== "string") return "";
+      return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     // Função principal: carregar lista de produtos do usuário, aplica filtros e monta cards
     async function carregarProdutos() {
       const token = localStorage.getItem("token");
@@ -341,18 +353,24 @@
             </div>
           ` : "";
 
+          const nomeSafe = escapeHtml(String(p.Nome || p.nome || 'Sem nome'));
+          const lojaSafe = escapeHtml(String(loja || 'Loja'));
+          const rawLink = String(p.Link || p.link || '').trim();
+          const safeLink = rawLink.startsWith('http://') || rawLink.startsWith('https://') ? rawLink : '#';
+          const linkAttr = escapeHtmlAttr(safeLink);
+
           const card = `
             <div class="product-card-dashboard${blurClass}" style="animation-delay: ${index * 0.1}s">
               <div class="product-header-dashboard">
                 <div class="product-info-dashboard">
-                  <h3 class="product-name-dashboard">${p.Nome || p.nome || 'Sem nome'}</h3>
+                  <h3 class="product-name-dashboard">${nomeSafe}</h3>
                   <div class="product-tags-dashboard">
-                    <span class="${storeTagClass}">${loja || 'Loja'}</span>
+                    <span class="${storeTagClass}">${lojaSafe}</span>
                     <span class="status-tag-dashboard ${statusClass}">${statusTag}</span>
                   </div>
                 </div>
                 <div class="product-actions-dashboard">
-                  <button class="action-btn-dashboard" title="Abrir produto" onclick="window.open('${p.Link || p.link}','_blank')">
+                  <button class="action-btn-dashboard" title="Abrir produto" onclick="window.open('${linkAttr}','_blank')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                       <polyline points="15,3 21,3 21,9"></polyline>
