@@ -5,6 +5,7 @@
   <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard PromoPing — veja os seus produtos, estatísticas e adicione novos para monitorizar preços.">
   <title>Dashboard PromoPing | promoping.pt</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
@@ -196,6 +197,15 @@
 
     .btn-secondary:hover {
       background-color: #5a6268;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
     }
 
     /* Notificações */
@@ -507,6 +517,23 @@
     </div>
   </div>
 
+  <!-- Modal de confirmação para remover produto -->
+  <div id="confirmRemoverModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirmRemoverTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="confirmRemoverTitle">Remover produto?</h3>
+        <button type="button" class="modal-close" onclick="closeConfirmRemoverModal()" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Tem a certeza que deseja remover este produto? Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmRemoverModal()">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmRemoverBtn">Remover</button>
+      </div>
+    </div>
+  </div>
+
   <main class="dashboard-main">
     <div class="dashboard-container">
       <header class="page-header page-header-dashboard">
@@ -558,21 +585,21 @@
         <h2 class="card-title">+ Adicionar novo produto</h2>
         <form id="formLink" class="add-product-form">
           <div class="form-group name">
-            <input type="text" id="nome" placeholder="Ex: iPhone 15" required class="form-input">
-            <label class="form-label">Nome do produto*</label>
+            <input type="text" id="nome" placeholder="Ex: iPhone 15" required class="form-input" aria-label="Nome do produto">
+            <label class="form-label" for="nome">Nome do produto*</label>
           </div>
           <div class="form-group link">
-            <input type="url" id="url" placeholder="https://loja.com/produto123" required class="form-input">
-            <label class="form-label">Link do produto*</label>
+            <input type="url" id="url" placeholder="https://loja.com/produto123" required class="form-input" aria-label="Link do produto">
+            <label class="form-label" for="url">Link do produto*</label>
           </div>
           <div class="form-group price">
             <input type="number" id="precoAlvo" placeholder="Ex: 999.99" step="0.01" min="0" required
-              class="form-input">
-            <label class="form-label">Preço alvo*</label>
+              class="form-input" aria-label="Preço alvo">
+            <label class="form-label" for="precoAlvo">Preço alvo*</label>
           </div>
           <div class="form-group date">
-            <input type="date" id="dataLimite" class="form-input">
-            <label class="form-label">Data limite (opcional)</label>
+            <input type="date" id="dataLimite" class="form-input" aria-label="Data limite (opcional)">
+            <label class="form-label" for="dataLimite">Data limite (opcional)</label>
           </div>
           <button type="submit" class="add-product-btn" id="submitBtn">
             <span class="btn-text">+ Adicionar produto</span>
@@ -594,6 +621,12 @@
       <section class="products-section">
         <h2 class="section-title">Produtos monitorizados (<span id="productCount">0</span>)</h2>
         <div id="productsList" class="products-list"></div>
+        <div id="loadingState" class="loading-state" style="display: none;">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+          <p>A carregar produtos...</p>
+        </div>
       </section>
     </div>
   </main>
@@ -755,7 +788,7 @@
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
                 </button>
-                <button class="action-btn-new delete-btn-new" title="Remover" onclick="deleteProduct(${p.Id || p.id})">
+                <button class="action-btn-new delete-btn-new" title="Remover" onclick="openConfirmRemoverModal(${p.Id || p.id})">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3,6 5,6 21,6"></polyline>
                     <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
@@ -785,22 +818,28 @@
 
     // Carrega todos os produtos do usuário por fetch e atualiza o DOM com a lista (refaz cards)
     async function carregarProdutos() {
-      console.log("[PAINEL] Iniciando carregamento de produtos...");
+      console.log("Iniciando carregamento de produtos...");
       const productsList = document.getElementById("productsList");
+      const loadingState = document.getElementById("loadingState");
 
       if (!productsList) {
-        console.error("[PAINEL] Elemento productsList não encontrado!");
+        console.error("Elemento productsList não encontrado!");
         return;
       }
 
       const token = localStorage.getItem("token");
-      console.log("[PAINEL] Token encontrado:", !!token);
+      console.log("Token encontrado:", !!token);
 
       if (!token) {
-        console.error("[PAINEL] Token não encontrado no localStorage!");
+        console.error("Token não encontrado no localStorage!");
+        if (loadingState) loadingState.style.display = "none";
+        productsList.style.display = "block";
         productsList.innerHTML = "<p>Erro: Token não encontrado. Faça login novamente.</p>";
         return;
       }
+
+      productsList.style.display = "none";
+      if (loadingState) loadingState.style.display = "block";
 
       try {
         console.log("[PAINEL] Fazendo requisição para API...");
@@ -812,6 +851,8 @@
         const data = await res.json();
         console.log("[PAINEL] Dados recebidos:", data);
 
+        if (loadingState) loadingState.style.display = "none";
+        productsList.style.display = "block";
         productsList.innerHTML = "";
 
         if (data.status === "ok" && data.produtos && data.produtos.length > 0) {
@@ -824,12 +865,35 @@
           });
         } else {
           console.log("[PAINEL] Nenhum produto encontrado");
-          productsList.innerHTML = "<p>Nenhum produto encontrado.</p>";
+          productsList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <h3>Nenhum produto encontrado</h3>
+              <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
+              <div class="empty-state-actions">
+                <a href="#formLink" class="pp-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Adicionar primeiro produto
+                </a>
+                <a href="/dashboard/produtos" class="btn-ghost">Ver Produtos</a>
+              </div>
+            </div>`;
           document.getElementById("productCount").textContent = 0;
         }
       } catch (err) {
         console.error("[PAINEL] Erro ao carregar produtos:", err);
-        if (err.message.includes('Rate limit')) {
+        if (loadingState) loadingState.style.display = "none";
+        productsList.style.display = "block";
+        if (err.message && err.message.includes("Rate limit")) {
           productsList.innerHTML = "<p>Muitas requisições. Aguarde alguns minutos.</p>";
         } else {
           productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
@@ -889,7 +953,7 @@
           carregarProdutos();
           showSuccess("Sucesso", "Produto adicionado com sucesso!");
         } else {
-          showError("Erro", data.error || "Erro ao adicionar produto");
+          showError("Erro", data.message || data.error || "Erro ao adicionar produto");
         }
       } catch (err) {
         console.error("Erro ao adicionar produto:", err);
@@ -904,7 +968,6 @@
 
     // Remove produto pelo id (chama API de DELETE e recarrega)
     async function deleteProduct(id) {
-      if (!confirm("Tem certeza que deseja remover este produto?")) return;
       const token = localStorage.getItem("token");
       try {
         const res = await makeRequest(`/api/produtos/${id}`, {
@@ -923,7 +986,7 @@
         if (data.status === "ok") {
           carregarProdutos();
         } else {
-          showError("Erro", data.error || "Erro ao remover produto");
+          showError("Erro", data.message || data.error || "Erro ao remover produto");
         }
       } catch (err) {
         console.error("Erro ao remover produto:", err);
@@ -934,6 +997,36 @@
     // Tornar função global para uso em onclick
     window.deleteProduct = deleteProduct;
 
+    // Modal de confirmação para remover produto
+    let pendingDeleteId = null;
+    function onEscapeConfirmRemover(e) {
+      if (e.key === "Escape") closeConfirmRemoverModal();
+    }
+    function openConfirmRemoverModal(id) {
+      pendingDeleteId = id;
+      const modal = document.getElementById("confirmRemoverModal");
+      if (modal) {
+        modal.style.display = "flex";
+        document.addEventListener("keydown", onEscapeConfirmRemover);
+        document.getElementById("confirmRemoverBtn").onclick = function () {
+          if (pendingDeleteId != null) {
+            deleteProduct(pendingDeleteId);
+            closeConfirmRemoverModal();
+          }
+        };
+      }
+    }
+    function closeConfirmRemoverModal() {
+      document.removeEventListener("keydown", onEscapeConfirmRemover);
+      pendingDeleteId = null;
+      const modal = document.getElementById("confirmRemoverModal");
+      if (modal) modal.style.display = "none";
+    }
+    window.openConfirmRemoverModal = openConfirmRemoverModal;
+    window.closeConfirmRemoverModal = closeConfirmRemoverModal;
+    document.getElementById("confirmRemoverModal").addEventListener("click", function (e) {
+      if (e.target === this) closeConfirmRemoverModal();
+    });
 
     // Modal para informar sobre o status do scraping
     function mostrarModalScraping(produtoId) {
@@ -1034,7 +1127,7 @@
 
         const data = await res.json();
         if (data.status === 'ok') carregarProdutos();
-        else showError("Erro", data.error || 'Erro ao atualizar data');
+        else showError("Erro", data.message || data.error || 'Erro ao atualizar data');
       } catch (e) {
         showError("Erro", 'Erro no servidor');
       }
