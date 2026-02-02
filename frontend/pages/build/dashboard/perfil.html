@@ -638,13 +638,16 @@
 
         const data = await res.json();
         if (data.status === "ok") {
-          alert("Informações salvas com sucesso!");
+          if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'Informações salvas com sucesso!', 5000);
+          else alert("Informações salvas com sucesso!");
         } else {
-          alert(data.error || "Erro ao salvar informações.");
+          if (window.notificationSystem) window.notificationSystem.error('Erro', data.error || "Erro ao salvar informações.", 6000);
+          else alert(data.error || "Erro ao salvar informações.");
         }
       } catch (err) {
         console.error("Erro ao salvar:", err);
-        alert("Erro de ligação ao servidor.");
+        if (window.notificationSystem) window.notificationSystem.error('Erro', 'Erro de ligação ao servidor.', 6000);
+        else alert("Erro de ligação ao servidor.");
       }
     });
 

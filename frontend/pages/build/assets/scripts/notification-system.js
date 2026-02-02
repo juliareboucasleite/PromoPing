@@ -144,14 +144,16 @@ class NotificationSystem {
         </div>
       `;
     } else {
-      // Notificação normal com título e mensagem
+      // Notificação normal com título e mensagem (card)
       notification.innerHTML = `
-        <div class="notification-header">
-          <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="notification-logo">
+        <div class="notification-card">
+          ${closeButton}
+          <div class="notification-header">
+            <img src="assets/images/PromoPing.png" alt="PromoPing" class="notification-logo notification-logo-sm">
+          </div>
+          ${title ? `<div class="notification-title">${title}</div>` : ''}
+          ${message ? `<div class="notification-message">${message}</div>` : ''}
         </div>
-        ${title ? `<div class="notification-title">${title}</div>` : ''}
-        ${message ? `<div class="notification-message">${message}</div>` : ''}
-        ${closeButton}
       `;
     }
 

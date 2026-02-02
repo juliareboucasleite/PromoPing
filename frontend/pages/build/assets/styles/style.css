@@ -2288,6 +2288,37 @@ body .notification-container.logo-only-mode.active {
   content: none !important;
 }
 
+.notification-card {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px 24px;
+  max-width: 360px;
+  width: 90vw;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.notification.success .notification-card {
+  border-top: 4px solid #22c55e;
+}
+
+.notification.error .notification-card {
+  border-top: 4px solid #ef4444;
+}
+
+.notification.warning .notification-card {
+  border-top: 4px solid #f59e0b;
+}
+
+.notification.info .notification-card {
+  border-top: 4px solid #3b82f6;
+}
+
 .notification-header {
   display: flex;
   align-items: center;
@@ -2302,6 +2333,12 @@ body .notification-container.logo-only-mode.active {
   height: auto;
   animation: pulse 2s ease-in-out infinite;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.notification-logo-sm {
+  max-width: 56px;
+  height: auto;
+  animation: none;
 }
 
 /* Quando é apenas logo (sem título/mensagem), centralizar melhor */
@@ -2324,6 +2361,21 @@ body .notification-container.logo-only-mode.active {
   }
 }
 
+.notification-card .notification-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.notification-card .notification-message {
+  font-size: 0.9375rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .notification-title {
   font-weight: 600;
   font-size: 16px;
@@ -2339,6 +2391,25 @@ body .notification-container.logo-only-mode.active {
 .notification-icon {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
+}
+
+.notification-card .notification-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: #6b7280;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
 }
 
@@ -2359,6 +2430,11 @@ body .notification-container.logo-only-mode.active {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+}
+
+.notification-card .notification-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #111827;
 }
 
 .notification-close:hover {
