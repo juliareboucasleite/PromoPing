@@ -78,8 +78,14 @@
         <div class="plans-container">
             <!-- Header -->
             <div class="plans-header">
-                <h1>Escolha o Plano Perfeito</h1>
-                <p>Selecione o plano que melhor se adequa às suas necessidades e comece a economizar hoje mesmo</p>
+                <div class="plans-header-text">
+                    <h1>Escolha o Plano Perfeito</h1>
+                    <p>Selecione o plano que melhor se adequa às suas necessidades e comece a economizar hoje mesmo</p>
+                </div>
+                <div class="plan-billing-toggle" role="group" aria-label="Faturação">
+                    <button type="button" class="toggle-option active" id="toggleMensal" aria-pressed="true">Mensal</button>
+                    <button type="button" class="toggle-option" id="toggleAnual" aria-pressed="false">Anual</button>
+                </div>
             </div>
 
             <div class="current-plan-section" id="currentPlanSection" style="display: none;">
@@ -111,7 +117,7 @@
 
             <div class="plans-grid" id="plansGrid">
                 <!-- Free Plan -->
-                <div class="plan-card">
+                <div class="plan-card" data-monthly="0">
                     <div class="plan-header">
                         <div class="plan-name">Free</div>
                         <div class="plan-price">€0<span class="currency">,00</span></div>
@@ -160,7 +166,7 @@
                     </button>
                 </div>
 
-                <div class="plan-card">
+                <div class="plan-card" data-monthly="4.99">
                     <div class="plan-header">
                         <div class="plan-name">Basic</div>
                         <div class="plan-price">€4<span class="currency">,99</span></div>
@@ -207,7 +213,7 @@
                         Escolher Basic
                     </button>
                 </div>
-                <div class="plan-card featured">
+                <div class="plan-card featured" data-monthly="12.99">
                     <div class="plan-header">
                         <div class="plan-name">Standard</div>
                         <div class="plan-price">€12<span class="currency">,99</span></div>
@@ -255,7 +261,7 @@
                     </button>
                 </div>
 
-                <div class="plan-card">
+                <div class="plan-card" data-monthly="15.30">
                     <div class="plan-header">
                         <div class="plan-name">Premium</div>
                         <div class="plan-price">€15<span class="currency">,30</span></div>
@@ -876,10 +882,57 @@
             }
         }
 
-        // Quando o DOM estiver pronto, carrega os dados iniciais do usuário/planos
+        // Toggle Mensal/Anual: atualiza preços exibidos nos cartões
+        let billingYearly = false;
+
+        function formatarPreco(val) {
+            const n = Number(val);
+            const intPart = Math.floor(n);
+            const decPart = Math.round((n - intPart) * 100).toString().padStart(2, '0');
+            return { intPart, decPart };
+        }
+
+        function atualizarPrecosExibicao() {
+            document.querySelectorAll('.plan-card[data-monthly]').forEach(card => {
+                const monthly = parseFloat(card.getAttribute('data-monthly')) || 0;
+                const priceEl = card.querySelector('.plan-price');
+                const periodEl = card.querySelector('.plan-period');
+                if (!priceEl || !periodEl) return;
+                const valor = billingYearly ? monthly * 12 : monthly;
+                const { intPart, decPart } = formatarPreco(valor);
+                priceEl.innerHTML = '€' + intPart + '<span class="currency">,' + decPart + '</span>';
+                periodEl.textContent = billingYearly ? 'por ano' : 'por mês';
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             verificarRetornoStripe();
             carregarDadosUsuario();
+
+            const btnMensal = document.getElementById('toggleMensal');
+            const btnAnual = document.getElementById('toggleAnual');
+            if (btnMensal && btnAnual) {
+                btnMensal.addEventListener('click', function () {
+                    if (billingYearly) {
+                        billingYearly = false;
+                        btnMensal.classList.add('active');
+                        btnMensal.setAttribute('aria-pressed', 'true');
+                        btnAnual.classList.remove('active');
+                        btnAnual.setAttribute('aria-pressed', 'false');
+                        atualizarPrecosExibicao();
+                    }
+                });
+                btnAnual.addEventListener('click', function () {
+                    if (!billingYearly) {
+                        billingYearly = true;
+                        btnAnual.classList.add('active');
+                        btnAnual.setAttribute('aria-pressed', 'true');
+                        btnMensal.classList.remove('active');
+                        btnMensal.setAttribute('aria-pressed', 'false');
+                        atualizarPrecosExibicao();
+                    }
+                });
+            }
         });
     </script>
 </body>
