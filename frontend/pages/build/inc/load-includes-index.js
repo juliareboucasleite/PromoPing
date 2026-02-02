@@ -177,25 +177,27 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// Função para alternar o idioma (PT/EN) - apenas simulação visual
+// Função para alternar o idioma (PT/EN). No index chama tradução/restauro se existir.
 function toggleLanguage() {
   const langTextDesktop = document.getElementById('lang-text-desktop');
   const langTextMobile = document.getElementById('lang-text-mobile');
+  const langTextSingle = document.getElementById('lang-text');
   
-  // Usar desktop como referência, ou mobile se desktop não existir
-  const langText = langTextDesktop || langTextMobile;
+  const langText = langTextDesktop || langTextMobile || langTextSingle;
   if (!langText) return;
   
-  const currentLang = langText.textContent;
+  const currentLang = langText.textContent.trim();
   
   if (currentLang === 'PT') {
     if (langTextDesktop) langTextDesktop.textContent = 'EN';
     if (langTextMobile) langTextMobile.textContent = 'EN';
-    // Aqui poderia chamar uma função para traduzir o site para inglês (não implementada)
+    if (langTextSingle) langTextSingle.textContent = 'EN';
+    if (typeof window.translateToEnglish === 'function') window.translateToEnglish();
   } else {
     if (langTextDesktop) langTextDesktop.textContent = 'PT';
     if (langTextMobile) langTextMobile.textContent = 'PT';
-    // Aqui poderia chamar uma função para traduzir o site para português (não implementada)
+    if (langTextSingle) langTextSingle.textContent = 'PT';
+    if (typeof window.restoreOriginalTexts === 'function') window.restoreOriginalTexts();
   }
 }
 

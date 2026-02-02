@@ -228,13 +228,14 @@
 
     // Salva os textos originais quando a página carrega
     function saveOriginalTexts() {
-      // Não sobrescreve se já salvou e está em português (não traduzido)
+      // Não sobrescreve se já salvou: em PT apenas atualiza header; em EN nunca sobrescrever (preserva PT para restaurar)
       const langText = document.getElementById('lang-text');
       const isEnglish = langText && langText.textContent.trim() === 'EN';
       
-      // Se já salvou e não está em inglês, não precisa salvar novamente
-      if (Object.keys(originalTexts).length > 0 && !isEnglish) {
-        // Apenas atualiza elementos do header que podem ter sido carregados depois
+      if (Object.keys(originalTexts).length > 0) {
+        // Já temos textos guardados: em inglês NUNCA sobrescrever (senão perdemos o PT e o "voltar a PT" deixa de funcionar)
+        if (isEnglish) return;
+        // Em português: apenas atualiza elementos do header que podem ter sido carregados depois
         const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
         const headerEntrar = document.querySelector('.pp-header-cta-button span');
         if (headerInscreve && !originalTexts['header-inscreve']) {
