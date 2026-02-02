@@ -1,5 +1,44 @@
 /* ===== ESTILOS ESPECÍFICOS DO PERFIL ===== */
 
+/* ===== HEADER DO PERFIL (sem fundo cinza, título à esquerda, saudação à direita) ===== */
+.page-header-perfil {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    background: none;
+    padding: 0 0 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-radius: 0;
+}
+
+.page-header-perfil::before {
+    display: none;
+}
+
+.page-header-perfil .page-header-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.page-header-perfil .page-title {
+    margin: 0 0 4px 0;
+}
+
+.page-header-perfil .page-subtitle {
+    margin: 0;
+    color: #6c757d;
+}
+
+.page-header-perfil .page-greeting {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
 /* ===== LAYOUT DO PERFIL ===== */
 * {
     transform: none !important;
