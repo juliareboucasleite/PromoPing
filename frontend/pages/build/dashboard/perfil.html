@@ -90,7 +90,15 @@
               <div class="form-group">
                 <label class="form-label">Nome completo</label>
                 <input type="text" class="form-input" id="fullName" value="" required>
-                <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;"></p>
+                <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;">
+                  <span class="cooldown-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" stroke="none"/>
+                      <path d="M12 6v9M12 17v1" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <span class="cooldown-text"></span>
+                </p>
               </div>
 
               <div class="form-group">
@@ -567,8 +575,9 @@
           if (profile.pode_alterar_nome === false && profile.proxima_alteracao_nome) {
             if (fullNameEl) fullNameEl.disabled = true;
             if (cooldownNomeEl) {
-              cooldownNomeEl.textContent = "Pode alterar o nome novamente a " + formatarDataPT(profile.proxima_alteracao_nome) + ".";
-              cooldownNomeEl.style.display = "block";
+              const textEl = cooldownNomeEl.querySelector(".cooldown-text");
+              if (textEl) textEl.textContent = "Pode alterar o nome novamente a " + formatarDataPT(profile.proxima_alteracao_nome) + ".";
+              cooldownNomeEl.style.display = "flex";
             }
           } else {
             if (fullNameEl) fullNameEl.disabled = false;
