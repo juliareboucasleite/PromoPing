@@ -51,7 +51,7 @@
     color: #6b7280;
     background: transparent;
     cursor: pointer;
-    transition: background 0.28s ease, color 0.28s ease, box-shadow 0.2s ease;
+    transition: background 0.28s ease, color 0.28s ease, box-shadow 0.2s ease !important;
 }
 
 .plan-billing-toggle .toggle-option.active {
