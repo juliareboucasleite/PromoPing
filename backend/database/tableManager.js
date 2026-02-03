@@ -242,7 +242,9 @@ const TABLE_DEFINITIONS = {
             HistoricoDias INT(11) DEFAULT NULL,
             IntervaloVerificacao VARCHAR(50) DEFAULT NULL,
             PermiteSMS TINYINT(1) DEFAULT NULL,
-            Relatorios VARCHAR(50) DEFAULT NULL
+            Relatorios VARCHAR(50) DEFAULT NULL,
+            LinksPlanos VARCHAR(500) DEFAULT NULL COMMENT 'URL checkout mensal (Stripe)',
+            LinksPlanosAnual VARCHAR(500) DEFAULT NULL COMMENT 'URL checkout anual (Stripe)'
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: false,
         source: 'sql/pap (1).sql'

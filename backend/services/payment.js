@@ -9,9 +9,11 @@ import { PLANOS_STRIPE } from '../config/stripe.js';
 /**
  * Criar sessão de checkout do Stripe
  * CARALHO, NÃO MEXA NESSA FUNÇÃO SEM ENTENDER STRIPE PRIMEIRO
+ * @param {Object} opts - { checkoutUrlOverride?: string } link direto (mensal ou anual) da BD
  */
-export async function criarSessaoCheckout(referenciaID, planoId, userEmail) {
+export async function criarSessaoCheckout(referenciaID, planoId, userEmail, opts = {}) {
   try {
+    const { checkoutUrlOverride } = opts || {};
     const plano = PLANOS_STRIPE[planoId];
     
     console.log(` [PAYMENT] Criando checkout para usuário ${referenciaID}, plano ${planoId}`);
@@ -70,15 +72,16 @@ export async function criarSessaoCheckout(referenciaID, planoId, userEmail) {
       };
     }
 
-    // Verificar se há link direto do Stripe (preferencial)
-    if (plano.stripe_checkout_url) {
+    // Link da BD (mensal ou anual) tem prioridade sobre config
+    const linkDireto = checkoutUrlOverride || plano.stripe_checkout_url;
+    if (linkDireto) {
       console.log(` [PAYMENT] Usando link direto do Stripe para plano ${plano.nome}`);
-      console.log(` [PAYMENT] URL: ${plano.stripe_checkout_url}`);
+      console.log(` [PAYMENT] URL: ${linkDireto}`);
       
       return {
         success: true,
         tipo: 'checkout',
-        url: plano.stripe_checkout_url,
+        url: linkDireto,
         plano: plano,
         metodo: 'link_direto'
       };

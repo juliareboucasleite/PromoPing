@@ -124,7 +124,11 @@ def create_driver():
     opts.add_argument("--start-maximized")
     opts.add_argument("--window-size=1920,1080")
     opts.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
-    driver = uc.Chrome(options=opts, use_subprocess=True)
+
+    # Usar ChromeDriver da mesma versão major que o Chrome instalado (evita "only supports Chrome 145, current is 144")
+    # Pode ser sobrescrito por CHROME_VERSION_MAIN no .env (ex.: 145 quando atualizares o Chrome)
+    version_main = int(os.getenv("CHROME_VERSION_MAIN", "144"))
+    driver = uc.Chrome(options=opts, use_subprocess=True, version_main=version_main)
     driver.delete_all_cookies()
     return driver
 

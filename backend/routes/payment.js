@@ -18,7 +18,7 @@ const router = express.Router();
  */
 router.post("/create-checkout-session", verifyToken, async (req, res) => {
   try {
-    const { planoId } = req.body;
+    const { planoId, anual } = req.body;
     const referenciaID = req.user.ReferenciaID;
     const userEmail = req.user.email;
 
@@ -29,7 +29,21 @@ router.post("/create-checkout-session", verifyToken, async (req, res) => {
       });
     }
 
-    const resultado = await criarSessaoCheckout(referenciaID, parseInt(planoId), userEmail);
+    let checkoutUrlOverride = null;
+    if (parseInt(planoId) > 1) {
+      const [rows] = await db.query(
+        "SELECT LinksPlanos, LinksPlanosAnual FROM planos WHERE Id = ?",
+        [parseInt(planoId)]
+      );
+      if (rows.length > 0) {
+        const r = rows[0];
+        const linkMensal = r.LinksPlanos ?? null;
+        const linkAnual = r.LinksPlanosAnual ?? null;
+        checkoutUrlOverride = anual ? (linkAnual || linkMensal) : (linkMensal || linkAnual);
+      }
+    }
+
+    const resultado = await criarSessaoCheckout(referenciaID, parseInt(planoId), userEmail, { checkoutUrlOverride });
 
     console.log(`[PAYMENT ROUTE] Resultado recebido:`, {
       tipo: resultado.tipo,

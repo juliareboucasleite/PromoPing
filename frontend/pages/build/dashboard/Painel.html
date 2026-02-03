@@ -540,47 +540,6 @@
         <h1 class="page-title">Dashboard</h1>
         <p class="page-subtitle">Monitorize e gerencie os seus produtos favoritos</p>
       </header>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16.5 9.4l-9-5.19"></path>
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <path d="M3.27 6.96L12 12.01l8.73-5.05"></path>
-              <path d="M12 22.08V12"></path>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value" id="totalProdutos">0</span>
-            <span class="stat-label">Produtos</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <line x1="13" y1="22" x2="11" y2="22"></line>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value" id="totalNotificacoes">0</span>
-            <span class="stat-label">Notificações</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
-              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
-              <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value" id="dinheiroPoupado">€0.00</span>
-            <span class="stat-label">Poupado</span>
-          </div>
-        </div>
-      </div>
       <div class="add-product-card">
         <h2 class="card-title">+ Adicionar novo produto</h2>
         <form id="formLink" class="add-product-form">
@@ -1157,9 +1116,12 @@
         if (data.status === "ok") {
           const stats = data.stats;
           console.log("Estatísticas:", stats);
-          document.getElementById("totalProdutos").textContent = stats.produtos_total || 0;
-          document.getElementById("totalNotificacoes").textContent = stats.notificacoes_total || 0;
-          document.getElementById("dinheiroPoupado").textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+          const elProdutos = document.getElementById("totalProdutos");
+          const elNotif = document.getElementById("totalNotificacoes");
+          const elPoupado = document.getElementById("dinheiroPoupado");
+          if (elProdutos) elProdutos.textContent = stats.produtos_total || 0;
+          if (elNotif) elNotif.textContent = stats.notificacoes_total || 0;
+          if (elPoupado) elPoupado.textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
           console.log("Estatísticas atualizadas na UI");
         } else {
           console.error("Erro na resposta:", data.error);

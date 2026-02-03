@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
 import { pool } from '../backend/database/db.js';
 
 async function addColumnIfNotExists(table, column, definition) {
@@ -46,6 +53,27 @@ async function migrate() {
   await addColumnIfNotExists('utilizadores', 'UltimaAlteracaoSenha', "DATETIME NULL");
   await addColumnIfNotExists('utilizadores', 'UltimaAlteracaoNome', "DATETIME NULL");
   console.log(' Colunas UltimaAlteracaoSenha e UltimaAlteracaoNome verificadas/criadas');
+
+  // Links de cada plano: mensal e anual (checkout Stripe)
+  await addColumnIfNotExists('planos', 'LinksPlanos', "VARCHAR(500) NULL");
+  await addColumnIfNotExists('planos', 'LinksPlanosAnual', "VARCHAR(500) NULL");
+  console.log(' Colunas LinksPlanos e LinksPlanosAnual verificadas/criadas em planos');
+
+  // Preencher links mensais e anuais (Stripe Checkout)
+  await pool.query(`UPDATE planos SET LinksPlanos = NULL, LinksPlanosAnual = NULL WHERE Nome = 'Free'`);
+  await pool.query(
+    `UPDATE planos SET LinksPlanos = ?, LinksPlanosAnual = ? WHERE Nome = 'Basic'`,
+    ['https://buy.stripe.com/eVqcN587y8IG3IM1dleZ201', 'https://buy.stripe.com/dRmfZh0F60ca3IMg8feZ204']
+  );
+  await pool.query(
+    `UPDATE planos SET LinksPlanos = ?, LinksPlanosAnual = ? WHERE Nome = 'Standard'`,
+    ['https://buy.stripe.com/dRm3cv73u8IG4MQ2hpeZ202', 'https://buy.stripe.com/14AaEXevWcYWdjm5tBeZ205']
+  );
+  await pool.query(
+    `UPDATE planos SET LinksPlanos = ?, LinksPlanosAnual = ? WHERE Nome = 'Premium'`,
+    ['https://buy.stripe.com/aFa14ncnO6Ay0wA7BJeZ203', 'https://buy.stripe.com/dRmbJ1evW3om9362hpeZ206']
+  );
+  console.log(' LinksPlanos (mensal) e LinksPlanosAnual preenchidos');
 
   // Criar tabela de contas conectadas
   await pool.query(`

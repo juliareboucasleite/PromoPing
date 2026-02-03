@@ -423,26 +423,30 @@
         }
 
 
-        // Variável global para armazenar dados do plano selecionado
+        // Variável global para armazenar dados do plano selecionado (anual = conforme toggle Mensal/Anual)
         let selectedPlanData = null;
 
-        // Função para abrir modal de compra
+        // Função para abrir modal de compra (preco = preço mensal do plano)
         function abrirModalCompra(planoId, planoNome, preco) {
-            selectedPlanData = { id: planoId, name: planoNome, price: preco };
+            const anual = !!billingYearly;
+            const precoExibir = anual ? preco * 12 : preco;
+            selectedPlanData = { id: planoId, name: planoNome, price: preco, anual: anual };
             
             const modal = document.getElementById('purchaseModal');
             const planNameEl = document.getElementById('purchasePlanName');
             const planPriceEl = document.getElementById('purchasePlanPrice');
+            const planPeriodEl = document.querySelector('.price-period-compact');
             const currentDateEl = document.getElementById('currentDate');
             const nextPaymentDateEl = document.getElementById('nextPaymentDate');
             
             planNameEl.textContent = planoNome;
-            planPriceEl.textContent = `€${preco.toFixed(2).replace('.', ',')}`;
+            planPriceEl.textContent = `€${precoExibir.toFixed(2).replace('.', ',')}`;
+            if (planPeriodEl) planPeriodEl.textContent = anual ? '/ano' : '/mês';
             
-            // Calcular e exibir datas
             const today = new Date();
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const nextPayment = new Date(today);
+            if (anual) nextPayment.setFullYear(nextPayment.getFullYear() + 1);
+            else nextPayment.setMonth(nextPayment.getMonth() + 1);
             
             const formatDate = (date) => {
                 const day = date.getDate().toString().padStart(2, '0');
@@ -452,15 +456,12 @@
             };
             
             currentDateEl.textContent = formatDate(today);
-            nextPaymentDateEl.textContent = formatDate(nextMonth);
+            nextPaymentDateEl.textContent = formatDate(nextPayment);
             
-            // Resetar checkbox e botão
             const checkbox = document.getElementById('acceptPurchaseTerms');
             checkbox.checked = false;
             updateCheckboxStyle(checkbox);
             document.getElementById('confirmPurchaseBtn').disabled = true;
-            
-            // Resetar método de pagamento para Stripe
             document.querySelector('input[name="paymentMethod"][value="stripe"]').checked = true;
             
             modal.style.display = 'flex';
@@ -556,7 +557,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ planoId: id })
+                    body: JSON.stringify({ planoId: id, anual: !!selectedPlanData.anual })
                 });
 
                 if (!response.ok) {
