@@ -546,6 +546,14 @@ body.login-page {
   margin: 0;
 }
 
+.qr-code-image {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .qr-modal {
