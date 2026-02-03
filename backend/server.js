@@ -113,6 +113,8 @@ const authLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // QR login faz polling a cada 2s; não contar esses pedidos no limite de login
+    skip: (req) => /\/api\/auth\/qr-session/.test(req.originalUrl || req.path || ""),
 })
 
 // Rate limiting mais permissivo para OAuth (Google, Discord, etc.)
@@ -932,6 +934,7 @@ import {
 import {
     initializeAllTables
 } from './database/tableManager.js';
+import { cleanupOldQrTokens } from './services/qrLoginSession.js';
 
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
 
@@ -948,7 +951,12 @@ app.listen(PORT, HOST, async () => {
         console.error('[INIT] Erro ao inicializar tabelas (sistema continuará):', error.message);
         // Não bloquear inicialização do servidor se houver erro nas tabelas
     }
-    
+
+    // Limpeza periódica de qr_tokens (pending/expired e used antigos) a cada 10 min
+    setInterval(() => {
+        cleanupOldQrTokens().catch((err) => console.error('[QR-TOKENS] Erro na limpeza:', err.message));
+    }, 10 * 60 * 1000);
+
     if (process.env.NODE_ENV === 'development') {
         // Mostrar também o IP local da rede para acesso via dispositivos móveis
         const os = await import('os');
@@ -972,7 +980,6 @@ app.listen(PORT, HOST, async () => {
         console.log(`  Acesso via rede local: http://${localIP}:${PORT}/`);
         console.log(`  API via rede local: http://${localIP}:${PORT}/api/`);
     }
-    console.log(`  Painel Administrativo: http://localhost:${PORT}/Painel_Administrativo/pages/sign-in.html`);
     console.log(`  Admin PromoPing: http://localhost:${PORT}/admin.promoping/pages/login.html\n`);
 
     // Iniciar verificação automática de períodos de graça
