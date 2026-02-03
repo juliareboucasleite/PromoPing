@@ -232,11 +232,19 @@ module.exports = {
         };
 
         // Enviar mensagem inicial
-        const mensagemInicial = await message.reply({
+        const payload = {
             embeds: [criarEmbed(paginaAtual)],
             components: [criarBotoes(paginaAtual)],
             files: imageAttachment ? [imageAttachment] : []
-        });
+        };
+
+        // Slash command em DM ou contexto sem canal: enviar só o embed, sem botões/collector
+        if (!message.channel) {
+            await message.reply({ ...payload, components: [] });
+            return;
+        }
+
+        const mensagemInicial = await message.reply(payload);
 
         // Obter ID da mensagem (pode ser do objeto retornado ou do ID se for Message)
         const mensagemId = mensagemInicial.id || (mensagemInicial.message ? mensagemInicial.message.id : null);
@@ -253,7 +261,6 @@ module.exports = {
             return isCorrectUser && isCorrectMessage && isCorrectButton;
         };
 
-        // Criar collector usando o canal (funciona tanto para mensagens normais quanto slash commands)
         const collector = message.channel.createMessageComponentCollector({ 
             filter, 
             time: 300000 // 5 minutos
