@@ -682,6 +682,28 @@
       });
     }
 
+    const poupancaJaPedida = new Set();
+    // Clicou "Ir ao site" = regista preço alvo como poupado (1 vez por produto). Só transferir valores.
+    async function abrirProdutoNoSite(produtoId, link) {
+      const token = localStorage.getItem("token");
+      if (token && !poupancaJaPedida.has(produtoId)) {
+        poupancaJaPedida.add(produtoId);
+        try {
+          const res = await makeRequest(`/api/produtos/${produtoId}/registar-poupanca`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: "{}"
+          });
+          const data = await res.json().catch(() => ({}));
+          if (data.registado === true) sessionStorage.setItem("perfil_stats_atualizar", "1");
+          if (typeof carregarEstatisticas === "function") carregarEstatisticas();
+        } catch (e) {
+          poupancaJaPedida.delete(produtoId);
+        }
+      }
+      if (link && link !== "#") window.open(link, "_blank");
+    }
+
     // Cria card HTML de produto dinamicamente, dado o objeto do produto (dados escapados para XSS)
     function createProductCard(p) {
       const nome = escapeHtml((p.Nome || p.nome || "Sem nome").toString());
@@ -691,8 +713,11 @@
       const safeLink = rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : "#";
       const linkAttr = escapeHtmlAttr(safeLink);
       const dataLimiteAttr = escapeHtmlAttr((p.DataLimite || p.dataLimite || "").toString());
-      const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : "—";
-      const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) != null ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : "—";
+      const precoAtualNum = (p.PrecoAtual ?? p.precoAtual ?? p.preco_atual) != null ? Number(p.PrecoAtual ?? p.precoAtual ?? p.preco_atual) : null;
+      const precoAlvoNum = (p.PrecoAlvo ?? p.precoAlvo ?? p.preco_alvo) != null ? Number(p.PrecoAlvo ?? p.precoAlvo ?? p.preco_alvo) : null;
+      const precoAtual = precoAtualNum != null ? "€" + precoAtualNum.toFixed(2) : "—";
+      const precoAlvo = precoAlvoNum != null ? "€" + precoAlvoNum.toFixed(2) : "—";
+      const metaAtingida = precoAlvoNum != null && precoAtualNum != null && precoAtualNum <= precoAlvoNum;
       const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("pt-PT") : "—";
       let storeTagClass = "store-tag";
       if (loja) {
@@ -732,7 +757,7 @@
                 <span class="${storeTagClass}">${loja}</span>
               </div>
               <div class="product-actions-new">
-                <button class="action-btn-new" title="Abrir produto" onclick="window.open('${linkAttr}', '_blank')">
+                <button class="action-btn-new" title="Ir ao site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                     <polyline points="15,3 21,3 21,9"></polyline>
@@ -982,6 +1007,7 @@
       if (modal) modal.style.display = "none";
     }
     window.openConfirmRemoverModal = openConfirmRemoverModal;
+    window.abrirProdutoNoSite = abrirProdutoNoSite;
     window.closeConfirmRemoverModal = closeConfirmRemoverModal;
     document.getElementById("confirmRemoverModal").addEventListener("click", function (e) {
       if (e.target === this) closeConfirmRemoverModal();

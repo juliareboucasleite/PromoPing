@@ -263,6 +263,72 @@ router.get("/:id/historico", verifyToken, async (req, res) => {
     }
 });
 
+//  Clicou no botão "Ir ao site" = soma o preço alvo do produto ao dinheiro poupado (1 vez por produto).
+router.post("/:id/registar-poupanca", verifyToken, async (req, res) => {
+    const produtoId = parseInt(req.params.id, 10);
+    const referenciaID = req.user.ReferenciaID;
+    let connection;
+    try {
+        if (!produtoId || isNaN(produtoId)) {
+            return res.status(400).json({ status: "error", message: "ID de produto inválido" });
+        }
+
+        const [prodRows] = await pool.query(
+            "SELECT Id, Nome, PrecoAlvo FROM produtos WHERE Id = ? AND ReferenciaID = ? AND DeletedAt IS NULL",
+            [produtoId, referenciaID]
+        );
+        if (prodRows.length === 0) {
+            return res.status(404).json({ status: "error", message: "Produto não encontrado" });
+        }
+
+        const p = prodRows[0];
+        const valorPoupado = p.PrecoAlvo != null ? Math.max(0, Number(p.PrecoAlvo)) : 0;
+        if (valorPoupado <= 0) {
+            return res.json({ status: "ok", registado: false, message: "Produto sem preço alvo" });
+        }
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+        await connection.query("SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ? FOR UPDATE", [referenciaID]);
+
+        let existentes = [];
+        try {
+            [existentes] = await connection.query(
+                "SELECT Id FROM notificacoes WHERE ReferenciaID = ? AND ProdutoId = ? AND COALESCE(ValorPoupado,0) > 0 LIMIT 1",
+                [referenciaID, produtoId]
+            );
+        } catch (_) {}
+        if (existentes.length > 0) {
+            await connection.rollback();
+            connection.release();
+            return res.json({ status: "ok", registado: false, jaRegistado: true });
+        }
+
+        await connection.query(
+            "UPDATE utilizadores SET dinheiro_poupado = COALESCE(dinheiro_poupado, 0) + ? WHERE ReferenciaID = ?",
+            [valorPoupado, referenciaID]
+        );
+        try {
+            await connection.query(
+                `INSERT INTO notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado)
+                 VALUES (?, ?, 'meta_atingida', ?, 1, NOW(), ?)`,
+                [referenciaID, produtoId, `Meta: ${p.Nome || "Produto"}. Preço alvo €${valorPoupado.toFixed(2)}.`, valorPoupado]
+            );
+        } catch (_) {}
+        await connection.commit();
+        connection.release();
+        connection = null;
+        return res.json({ status: "ok", registado: true, valorPoupado });
+    } catch (err) {
+        if (connection) {
+            try { await connection.rollback(); } catch (_) {}
+            try { connection.release(); } catch (_) {}
+        }
+        console.error("[REGISTAR-POUPANCA] Erro:", err.message);
+        res.status(500).json({ status: "error", message: "Erro ao registar poupança" });
+    }
+});
+
 //  Editar produto
 router.put("/:id", verifyToken, async (req, res) => {
     try {

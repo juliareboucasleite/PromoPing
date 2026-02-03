@@ -63,10 +63,14 @@ class PromoPingBot {
         this.lastNewsCheck = new Date();
         this.newsService = null; // Será carregado dinamicamente
 
-        // IDs de administradores com acesso total a todos os comandos
+        // IDs de utilizadores com acesso total (fallback)
         this.adminIds = [
             '1448056767253708821' // ID com acesso total
         ];
+        // IDs de cargos (roles) que podem usar !helpadmin e comandos de admin
+        this.adminRoleIds = process.env.DISCORD_ADMIN_ROLE_ID
+            ? process.env.DISCORD_ADMIN_ROLE_ID.split(',').map(s => s.trim()).filter(Boolean)
+            : ['1442655668904398980']; // cargo de suporte/admin (ajustar conforme o servidor)
 
         this.setupEventHandlers();
     }

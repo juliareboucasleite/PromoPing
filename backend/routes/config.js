@@ -106,12 +106,17 @@ router.get("/stats", verifyToken, async (req, res) => {
       [req.user.ReferenciaID]
     );
 
+    const [[{ dinheiroPoupado }]] = await pool.query(
+      "SELECT COALESCE(dinheiro_poupado, 0) AS dinheiroPoupado FROM utilizadores WHERE ReferenciaID=? LIMIT 1",
+      [req.user.ReferenciaID]
+    ).catch(() => [[{ dinheiroPoupado: 0 }]]);
+
     res.json({
       status: "ok",
       stats: {
         produtos_monitorizados: totalProdutos,
         notificacoes_enviadas: totalNotificacoes,
-        dinheiro_poupado: 0, // implementar depois
+        dinheiro_poupado: Number(dinheiroPoupado) || 0,
         membro_desde: membroDesde
           ? new Date(membroDesde).toLocaleDateString("pt-PT", {
               year: "numeric",

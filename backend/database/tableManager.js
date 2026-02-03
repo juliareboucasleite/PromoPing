@@ -64,7 +64,7 @@ const TABLE_DEFINITIONS = {
             PerfilId INT(10) UNSIGNED NOT NULL DEFAULT 2,
             EmailVerificado TINYINT(1) DEFAULT 0,
             CodigoEmail VARCHAR(6) DEFAULT NULL,
-            DinheiroPoupado DECIMAL(10,2) DEFAULT 0.00,
+            dinheiro_poupado DECIMAL(10,2) DEFAULT 0.00,
             DataNascimento DATE DEFAULT NULL,
             discord_id VARCHAR(50) DEFAULT NULL,
             google_id VARCHAR(50) DEFAULT NULL,

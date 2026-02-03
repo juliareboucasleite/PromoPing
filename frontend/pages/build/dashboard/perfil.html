@@ -508,6 +508,38 @@
 
   <script>
 
+    // Atualiza estatísticas (produtos, notificações, dinheiro poupado, membro desde) na página de perfil
+    // forcarRefresh: true para evitar cache (ex.: ao voltar ao separador ou após registar poupança noutro separador)
+    async function atualizarStatsPerfil(token, forcarRefresh) {
+      if (!token) return;
+      try {
+        const temFlag = sessionStorage.getItem("perfil_stats_atualizar") === "1";
+        const evitarCache = Boolean(forcarRefresh || temFlag);
+        const urlStats = evitarCache ? "/api/user/stats?_t=" + Date.now() : "/api/user/stats";
+        const resStats = await makeRequest(urlStats, {
+          headers: { Authorization: "Bearer " + token },
+          ...(evitarCache ? { cache: "no-store" } : {})
+        });
+        const dataStats = await resStats.json();
+        if (dataStats.status !== "ok" || !dataStats.stats) return;
+        const stats = dataStats.stats;
+        const produtosEl = document.getElementById("produtos-monitorizados");
+        if (produtosEl) produtosEl.textContent = stats.produtos_total ?? stats.produtos_total ?? 0;
+        const notificacoesEl = document.getElementById("notificacoes-enviadas");
+        if (notificacoesEl) notificacoesEl.textContent = stats.notificacoes_total ?? 0;
+        // Aceitar dinheiro_poupado em minúsculas (API) ou DinheiroPoupado; garantir número
+        const rawPoupado = stats.dinheiro_poupado ?? stats.DinheiroPoupado ?? 0;
+        const dinheiroPoupado = typeof rawPoupado === "number" ? rawPoupado : Number(String(rawPoupado).replace(",", ".")) || 0;
+        const dinheiroEl = document.getElementById("dinheiro-poupado");
+        if (dinheiroEl) dinheiroEl.textContent = "€" + dinheiroPoupado.toFixed(2);
+        const membroEl = document.getElementById("membro-desde");
+        if (membroEl) membroEl.textContent = stats.membro_desde || "N/A";
+        sessionStorage.removeItem("perfil_stats_atualizar");
+      } catch (e) {
+        console.warn("[PERFIL] Erro ao atualizar estatísticas:", e);
+      }
+    }
+
     // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
     document.addEventListener('DOMContentLoaded', async () => {
       // Verificar se há token na URL (do Google OAuth)
@@ -607,57 +639,21 @@
           console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
         }
 
-        // Buscar estatísticas da conta do usuário
-        const resStats = await makeRequest("/api/user/stats", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataStats = await resStats.json();
-
-        if (dataStats.status === "ok") {
-          const stats = dataStats.stats;
-          console.log("[FRONTEND] Resposta completa recebida:", JSON.stringify(dataStats, null, 2));
-          console.log("[FRONTEND] Estatísticas recebidas:", stats);
-          console.log("[FRONTEND] Chaves em stats:", Object.keys(stats));
-          console.log("[FRONTEND] stats.membro_desde:", stats.membro_desde);
-          console.log("[FRONTEND] typeof stats.membro_desde:", typeof stats.membro_desde);
-          console.log("[FRONTEND] 'membro_desde' in stats:", 'membro_desde' in stats);
-          
-          // Atualizar produtos monitorizados
-          const produtosEl = document.getElementById("produtos-monitorizados");
-          if (produtosEl) {
-            produtosEl.textContent = stats.produtos_total || 0;
-          }
-          
-          // Atualizar notificações enviadas
-          const notificacoesEl = document.getElementById("notificacoes-enviadas");
-          if (notificacoesEl) {
-            notificacoesEl.textContent = stats.notificacoes_total || 0;
-          }
-          
-          // Atualizar dinheiro poupado
-          const dinheiroEl = document.getElementById("dinheiro-poupado");
-          if (dinheiroEl) {
-            const valor = (stats.dinheiro_poupado || 0).toFixed(2);
-            dinheiroEl.textContent = `€${valor}`;
-          }
-          
-          // Atualizar membro desde
-          const membroEl = document.getElementById("membro-desde");
-          if (membroEl) {
-            const membroDesdeValue = stats.membro_desde || "N/A";
-            console.log("[FRONTEND] Valor a ser exibido:", membroDesdeValue);
-            membroEl.textContent = membroDesdeValue;
-          } else {
-            console.error("[FRONTEND] Elemento membro-desde não encontrado!");
-          }
-        } else {
-          console.error("Erro ao carregar estatísticas:", dataStats.error);
-        }
+        // Buscar e atualizar estatísticas (reutilizado ao voltar à página)
+        await atualizarStatsPerfil(token);
         // Buscar informações do plano atual
         await carregarPlano();
 
       } catch (err) {
         console.error("Erro ao carregar perfil:", err);
+      }
+    });
+
+    // Ao voltar ao separador Perfil (ex.: depois de clicar "ir ao site" no Painel), atualizar dinheiro poupado com dados frescos
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        const token = localStorage.getItem("token");
+        if (token) atualizarStatsPerfil(token, true);
       }
     });
 

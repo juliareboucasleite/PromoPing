@@ -5,6 +5,19 @@ module.exports = {
     aliases: ['admin', 'comandosadmin', 'ha'],
     description: 'Lista comandos de administrador (moderação e configuração). Apenas para staff.',
     execute: async (client, message, args, botInstance) => {
+        if (!message.guild) {
+            return await message.reply('❌ Este comando só pode ser usado num servidor.');
+        }
+        const member = message.member;
+        const userId = message.author?.id || member?.user?.id;
+        const adminIds = Array.isArray(botInstance.adminIds) ? botInstance.adminIds : [];
+        const adminRoleIds = Array.isArray(botInstance.adminRoleIds) ? botInstance.adminRoleIds : [];
+        const hasAdminRole = adminRoleIds.length > 0 && member?.roles?.cache && adminRoleIds.some(roleId => member.roles.cache.has(roleId));
+        const isInAdminList = userId && adminIds.includes(userId);
+        if (!hasAdminRole && !isInAdminList) {
+            return await message.reply('❌ Apenas utilizadores com o cargo de administrador podem ver este comando.');
+        }
+
         const comandos = require('./index');
 
         const comandosUnicos = new Map();

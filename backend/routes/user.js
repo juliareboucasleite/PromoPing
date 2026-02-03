@@ -22,12 +22,12 @@ router.get("/me", verifyToken, async (req, res) => {
     );
     const user = users[0];
 
-    // Estatísticas
+    // Estatísticas (dinheiro_poupado vem da coluna em utilizadores)
     const [statsRows] = await pool.query(
       `SELECT 
           (SELECT COUNT(*) FROM produtos WHERE ReferenciaID = ?) AS produtos_total,
           (SELECT COUNT(*) FROM notificacoes WHERE ReferenciaID = ?) AS notificacoes_total,
-          (SELECT COALESCE(SUM(ValorPoupado),0) FROM notificacoes WHERE ReferenciaID = ?) AS dinheiro_poupado`,
+          (SELECT COALESCE(u.dinheiro_poupado,0) FROM utilizadores u WHERE u.ReferenciaID = ? LIMIT 1) AS dinheiro_poupado`,
       [referenciaID, referenciaID, referenciaID]
     );
 
@@ -408,14 +408,28 @@ router.get("/stats", verifyToken, async (req, res) => {
     const referenciaID = req.user.ReferenciaID;
     console.log("[STATS] ReferenciaID extraído do token:", referenciaID);
 
-    // Buscar estatísticas e data de registro separadamente
+    // Buscar estatísticas: produtos, notificações, dinheiro_poupado (utilizadores + soma notificações para fallback)
     const [statsRows] = await pool.query(
       `SELECT 
           (SELECT COUNT(*) FROM produtos WHERE ReferenciaID = ?) AS produtos_total,
           (SELECT COUNT(*) FROM notificacoes WHERE ReferenciaID = ?) AS notificacoes_total,
-          (SELECT COALESCE(SUM(ValorPoupado),0) FROM notificacoes WHERE ReferenciaID = ?) AS dinheiro_poupado`,
-      [referenciaID, referenciaID, referenciaID]
+          (SELECT COALESCE(u.dinheiro_poupado,0) FROM utilizadores u WHERE u.ReferenciaID = ? LIMIT 1) AS dinheiro_poupado_user,
+          (SELECT COALESCE(SUM(ValorPoupado),0) FROM notificacoes WHERE ReferenciaID = ?) AS dinheiro_poupado_notif`,
+      [referenciaID, referenciaID, referenciaID, referenciaID]
     );
+
+    // Usar o maior valor entre utilizadores e soma de notificações (evita mostrar 0 se dados estiverem só em notificações)
+    const fromUser = Number(statsRows[0]?.dinheiro_poupado_user) || 0;
+    const fromNotif = Number(statsRows[0]?.dinheiro_poupado_notif) || 0;
+    const dinheiroPoupadoRaw = Math.max(fromUser, fromNotif);
+    if (fromNotif > fromUser) {
+      try {
+        await pool.query(
+          "UPDATE utilizadores SET dinheiro_poupado = ? WHERE ReferenciaID = ?",
+          [fromNotif, referenciaID]
+        );
+      } catch (_) {}
+    }
 
     // Buscar data de registro diretamente
     const [userRows] = await pool.query(
@@ -424,7 +438,7 @@ router.get("/stats", verifyToken, async (req, res) => {
     );
 
     console.log("[STATS] ReferenciaID usado:", referenciaID);
-    console.log("[STATS] Dados de estatísticas:", statsRows[0]);
+    console.log("[STATS] Dados de estatísticas:", { ...statsRows[0], dinheiro_poupado: dinheiroPoupadoRaw });
     console.log("[STATS] userRows completo:", userRows);
     console.log("[STATS] userRows[0]:", userRows[0]);
     console.log("[STATS] DataRegisto raw:", userRows[0]?.DataRegisto);
@@ -476,13 +490,13 @@ router.get("/stats", verifyToken, async (req, res) => {
 
     // Garantir que membro_desde sempre tenha um valor
     const membroDesdeFinal = membro_desde && membro_desde !== "N/A" ? membro_desde : "N/A";
-    
+
     const responseData = {
       status: "ok",
       stats: {
         produtos_total: statsRows[0]?.produtos_total || 0,
         notificacoes_total: statsRows[0]?.notificacoes_total || 0,
-        dinheiro_poupado: Number(statsRows[0]?.dinheiro_poupado) || 0,
+        dinheiro_poupado: dinheiroPoupadoRaw,
         membro_desde: membroDesdeFinal
       }
     };

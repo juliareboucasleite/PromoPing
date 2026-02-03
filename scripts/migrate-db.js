@@ -20,6 +20,22 @@ async function addColumnIfNotExists(table, column, definition) {
   }
 }
 
+async function columnExists(table, column) {
+  const [rows] = await pool.query(
+    "SELECT COUNT(*) as count FROM information_schema.columns WHERE table_schema = DATABASE() AND LOWER(table_name)=LOWER(?) AND column_name=?",
+    [table, column]
+  );
+  return Number(rows[0].count) > 0;
+}
+
+async function dropColumnIfExists(table, column) {
+  const exists = await columnExists(table, column);
+  if (exists) {
+    await pool.query(`ALTER TABLE \`${table}\` DROP COLUMN \`${column}\``);
+    console.log(` Coluna ${column} removida da tabela ${table}`);
+  }
+}
+
 async function migrate() {
   console.log(' Iniciando migração...');
 
@@ -48,6 +64,30 @@ async function migrate() {
   await addColumnIfNotExists('utilizadores', 'telefone', "VARCHAR(20) NULL");
   await addColumnIfNotExists('utilizadores', 'dinheiro_poupado', "DECIMAL(10,2) DEFAULT 0.00");
   console.log(' Colunas de estatísticas verificadas/criadas em utilizadores');
+
+  // Unificar dinheiro poupado: ficar só com dinheiro_poupado, remover DinheiroPoupado se existir
+  if (await columnExists('utilizadores', 'DinheiroPoupado')) {
+    await pool.query(
+      "UPDATE utilizadores SET dinheiro_poupado = COALESCE(DinheiroPoupado, dinheiro_poupado, 0)"
+    );
+    console.log(' Valores de DinheiroPoupado copiados para dinheiro_poupado');
+    await dropColumnIfExists('utilizadores', 'DinheiroPoupado');
+  }
+
+  // Sincronizar dinheiro_poupado a partir das notificações já existentes (fonte de verdade histórica)
+  try {
+    const [updated] = await pool.query(`
+      UPDATE utilizadores u
+      SET u.dinheiro_poupado = (
+        SELECT COALESCE(SUM(n.ValorPoupado), 0) FROM notificacoes n WHERE n.ReferenciaID = u.ReferenciaID
+      )
+    `);
+    if (updated && updated.affectedRows > 0) {
+      console.log(' dinheiro_poupado sincronizado a partir de notificacoes (', updated.affectedRows, 'linhas)');
+    }
+  } catch (e) {
+    console.warn(' Aviso ao sincronizar dinheiro_poupado (tabela notificacoes pode não existir):', e.message);
+  }
 
   // Cooldown de 30 dias para alteração de senha e nome
   await addColumnIfNotExists('utilizadores', 'UltimaAlteracaoSenha', "DATETIME NULL");

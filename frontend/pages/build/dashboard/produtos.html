@@ -375,6 +375,7 @@
           const rawLink = String(p.Link || p.link || '').trim();
           const safeLink = rawLink.startsWith('http://') || rawLink.startsWith('https://') ? rawLink : '#';
           const linkAttr = escapeHtmlAttr(safeLink);
+          const metaAtingidaProd = statusClass === 'status-target-reached';
 
           const card = `
             <div class="product-card-dashboard${blurClass}" style="animation-delay: ${index * 0.1}s">
@@ -387,7 +388,7 @@
                   </div>
                 </div>
                 <div class="product-actions-dashboard">
-                  <button class="action-btn-dashboard" title="Abrir produto" onclick="window.open('${linkAttr}','_blank')">
+                  <button class="action-btn-dashboard" title="Ir ao site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                       <polyline points="15,3 21,3 21,9"></polyline>
@@ -468,6 +469,27 @@
       }
     }
 
+    const poupancaJaPedida = new Set();
+    // Clicou "Ir ao site" = regista preço alvo como poupado (1 vez por produto).
+    async function abrirProdutoNoSite(produtoId, link) {
+      const token = localStorage.getItem("token");
+      if (token && !poupancaJaPedida.has(produtoId)) {
+        poupancaJaPedida.add(produtoId);
+        try {
+          const res = await makeRequest(`/api/produtos/${produtoId}/registar-poupanca`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: "{}"
+          });
+          const data = await res.json().catch(() => ({}));
+          if (data.registado === true) sessionStorage.setItem("perfil_stats_atualizar", "1");
+        } catch (e) {
+          poupancaJaPedida.delete(produtoId);
+        }
+      }
+      if (link && link !== "#") window.open(link, "_blank");
+    }
+
     // Modal de confirmação para remover produto
     let pendingDeleteId = null;
     function onEscapeConfirmRemover(e) {
@@ -495,6 +517,7 @@
     }
     window.openConfirmRemoverModal = openConfirmRemoverModal;
     window.closeConfirmRemoverModal = closeConfirmRemoverModal;
+    window.abrirProdutoNoSite = abrirProdutoNoSite;
     (function () {
       const modal = document.getElementById("confirmRemoverModal");
       if (modal) modal.addEventListener("click", function (e) { if (e.target === this) closeConfirmRemoverModal(); });
