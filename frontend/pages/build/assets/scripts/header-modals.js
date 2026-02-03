@@ -90,24 +90,145 @@ window.closeModals = function() {
 };
 
 // ===== QR CODE MODAL =====
-// Modal do QR code pra login (tipo autenticação por QR)
+// Modal do QR code pra login: código muda a cada 30s; telemóvel escaneia e confirma.
+var qrSessionId = null;
+var qrRefreshInterval = null;
+var qrPollInterval = null;
+var qrImgElement = null;
+
+function stopQRLoginIntervals() {
+  if (qrRefreshInterval) {
+    clearInterval(qrRefreshInterval);
+    qrRefreshInterval = null;
+  }
+  if (qrPollInterval) {
+    clearInterval(qrPollInterval);
+    qrPollInterval = null;
+  }
+  qrSessionId = null;
+}
+
+function updateQRCodeImage(dataUrl) {
+  var container = document.getElementById('qrCodePlaceholder');
+  if (!container) return;
+  // Esconde o conteúdo placeholder (svg + texto)
+  var placeholderContent = container.querySelector('svg');
+  var placeholderText = container.querySelector('.qr-placeholder-text');
+  if (placeholderContent) placeholderContent.style.display = 'none';
+  if (placeholderText) placeholderText.style.display = 'none';
+  // Mostra a imagem do QR
+  if (!qrImgElement) {
+    qrImgElement = document.createElement('img');
+    qrImgElement.alt = 'Código QR para login';
+    qrImgElement.className = 'qr-code-image';
+    qrImgElement.setAttribute('width', '280');
+    qrImgElement.setAttribute('height', '280');
+    container.appendChild(qrImgElement);
+  }
+  qrImgElement.src = dataUrl;
+  qrImgElement.style.display = 'block';
+}
+
+function resetQRPlaceholder() {
+  var container = document.getElementById('qrCodePlaceholder');
+  if (!container) return;
+  var placeholderContent = container.querySelector('svg');
+  var placeholderText = container.querySelector('.qr-placeholder-text');
+  if (placeholderContent) placeholderContent.style.display = '';
+  if (placeholderText) placeholderText.style.display = '';
+  if (qrImgElement) {
+    qrImgElement.style.display = 'none';
+    qrImgElement.removeAttribute('src');
+  }
+}
+
+function fetchQRSession(sessionId) {
+  var url = '/api/auth/qr-session';
+  if (sessionId) url += '?sessionId=' + encodeURIComponent(sessionId);
+  var requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+  return requestFn(url).then(function (res) { return res.json(); });
+}
+
+function pollQRSessionStatus(sessionId) {
+  var requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+  return requestFn('/api/auth/qr-session/poll?sessionId=' + encodeURIComponent(sessionId))
+    .then(function (res) { return res.json(); });
+}
+
 window.openQRModal = function() {
-  const qrModal = document.getElementById('qrModal');
+  var qrModal = document.getElementById('qrModal');
   if (!qrModal) {
     console.error('Modal QR não encontrado');
     return;
   }
-  
-  // Fecha qualquer outro modal que esteja aberto antes
+
   window.closeModals();
-  
-  // Mostrar modal QR
   qrModal.classList.add('show');
   document.body.style.overflow = 'hidden';
+
+  stopQRLoginIntervals();
+  resetQRPlaceholder();
+
+  fetchQRSession(null)
+    .then(function (data) {
+      if (data.status === 'confirmed') return;
+      qrSessionId = data.sessionId;
+      if (data.qrImageDataUrl) {
+        updateQRCodeImage(data.qrImageDataUrl);
+      }
+      // Atualiza o QR a cada 25s (antes de expirar o código de 30s)
+      qrRefreshInterval = setInterval(function () {
+        if (!qrSessionId) return;
+        fetchQRSession(qrSessionId).then(function (next) {
+          if (next.status === 'confirmed') return;
+          if (next.qrImageDataUrl) updateQRCodeImage(next.qrImageDataUrl);
+        }).catch(function () {});
+      }, 25000);
+      // Poll a cada 3s para ver se o telemóvel confirmou (evita rate limit)
+      qrPollInterval = setInterval(function () {
+        if (!qrSessionId) return;
+        pollQRSessionStatus(qrSessionId).then(function (status) {
+          if (status.status !== 'confirmed') return;
+          stopQRLoginIntervals();
+          // Só redireciona se tivermos um token válido (evita "jwt malformed" no dashboard)
+          var token = status.token && String(status.token).trim();
+          if (!token || token.length < 20) {
+            var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
+            if (placeholderText) {
+              placeholderText.textContent = 'Sessão confirmada mas token em falta. Fecha e tenta outra vez.';
+              placeholderText.style.display = 'block';
+            }
+            return;
+          }
+          localStorage.setItem('token', token);
+          if (status.refreshToken) localStorage.setItem('PROMOPING_TOKEN', status.refreshToken);
+          window.closeQRModal();
+          window.location.href = '/dashboard';
+        }).catch(function (err) {
+          if (err && err.message && err.message.indexOf('Rate limit') !== -1) {
+            var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
+            if (placeholderText) {
+              placeholderText.textContent = 'Muitas tentativas. Espera uns minutos e tenta outra vez.';
+              placeholderText.style.display = 'block';
+            }
+          }
+        });
+      }, 3000);
+    })
+    .catch(function (err) {
+      console.error('Erro ao obter sessão QR:', err);
+      var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
+      if (placeholderText) {
+        placeholderText.textContent = 'Erro ao carregar o código. Tenta novamente.';
+        placeholderText.style.display = 'block';
+      }
+    });
 };
 
 window.closeQRModal = function() {
-  const qrModal = document.getElementById('qrModal');
+  stopQRLoginIntervals();
+  resetQRPlaceholder();
+  var qrModal = document.getElementById('qrModal');
   if (qrModal) {
     qrModal.classList.remove('show');
     document.body.style.overflow = '';
