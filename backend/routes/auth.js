@@ -39,6 +39,13 @@ import {
     gerarReferenciaID,
     validarReferenciaID
 } from "../utils/referenciaId.js";
+import {
+    getOrCreateSession,
+    confirmSession,
+    getSessionStatus,
+    cleanupOldQrTokens
+} from "../services/qrLoginSession.js";
+import QRCode from "qrcode";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -1337,6 +1344,91 @@ router.post("/refresh", async (req, res) => {
             return res.status(401).json({ error: "Refresh token expirado", code: "REFRESH_EXPIRED" });
         }
         return res.status(403).json({ error: "Refresh token inválido" });
+    }
+});
+
+// Código no QR muda a cada 30s; o telemóvel escaneia e confirma com o token do utilizador.
+
+// POST /api/auth/qr-init — gera código QR (alternativa ao GET qr-session; devolve code + expiresAt)
+router.post("/qr-init", async (req, res) => {
+    try {
+        const sessionId = req.body?.sessionId || null;
+        const data = await getOrCreateSession(sessionId || undefined);
+        if (data.confirmed) {
+            return res.json({ sessionId: data.sessionId, status: "confirmed" });
+        }
+        const expiresAt = new Date(Date.now() + data.expiresIn * 1000).toISOString();
+        return res.json({
+            sessionId: data.sessionId,
+            code: data.code,
+            expiresAt,
+        });
+    } catch (err) {
+        console.error("[QR-INIT] Erro:", err);
+        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
+    }
+});
+
+// GET /api/auth/qr-session — obtém sessionId + código atual (e imagem QR em data URL)
+router.get("/qr-session", async (req, res) => {
+    try {
+        const sessionId = req.query.sessionId || null;
+        const data = await getOrCreateSession(sessionId || undefined);
+        if (data.confirmed) {
+            return res.json({ sessionId: data.sessionId, status: "confirmed" });
+        }
+        const qrDataUrl = await QRCode.toDataURL(data.code, {
+            width: 280,
+            margin: 2,
+            color: { dark: "#000000", light: "#ffffff" },
+        });
+        return res.json({
+            sessionId: data.sessionId,
+            code: data.code,
+            expiresIn: data.expiresIn,
+            qrImageDataUrl: qrDataUrl,
+        });
+    } catch (err) {
+        console.error("[QR-SESSION] Erro:", err);
+        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
+    }
+});
+
+// GET /api/auth/qr-session/poll — polling para ver se o telemóvel confirmou
+router.get("/qr-session/poll", async (req, res) => {
+    const sessionId = req.query.sessionId;
+    if (!sessionId) {
+        return res.status(400).json({ error: "sessionId obrigatório" });
+    }
+    const status = await getSessionStatus(sessionId);
+    return res.json(status);
+});
+
+// POST /api/auth/qr-confirm — telemóvel envia o código escaneado + Bearer token do utilizador
+router.post("/qr-confirm", verifyToken, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code || typeof code !== "string") {
+            return res.status(400).json({ error: "Código é obrigatório" });
+        }
+        const user = { ReferenciaID: req.user.ReferenciaID, email: req.user.email };
+        const tokens = gerarParesToken(user.ReferenciaID, user.email);
+        const result = await confirmSession(code.trim(), user, tokens);
+        if (!result.ok) {
+            if (result.code === "already_used") {
+                return res.status(409).json({ error: result.error });
+            }
+            return res.status(400).json({ error: result.error });
+        }
+        return res.json({
+            status: "ok",
+            message: "Login no browser será concluído em instantes.",
+            token: tokens.token,
+            refreshToken: tokens.refreshToken,
+        });
+    } catch (err) {
+        console.error("[QR-CONFIRM] Erro:", err);
+        return res.status(500).json({ error: "Erro ao confirmar código" });
     }
 });
 
