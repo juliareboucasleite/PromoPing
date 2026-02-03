@@ -84,6 +84,8 @@ module.exports = {
                     '• Monitoramento automático de preços',
                     '• Notificações privadas sobre mudanças',
                     '• Sistema conectado à base de dados em tempo real',
+                    '',
+                    '**Administradores:** Use `!helpadmin` para ver comandos de moderação e configuração.',
                 ].join('\n')
             },
             {
@@ -125,7 +127,7 @@ module.exports = {
             {
                 titulo: 'Comandos de Suporte',
                 conteudo: comandosArray
-                    .filter(cmd => ['ticket', 'fechar-ticket'].includes(cmd.name))
+                    .filter(cmd => ['suporte', 'ticket', 'fechar-ticket'].includes(cmd.name))
                     .map(cmd => {
                         const aliases = cmd.aliases && cmd.aliases.length
                             ? ` (${cmd.aliases.join(', ')})`
@@ -133,52 +135,6 @@ module.exports = {
                         return `• \`!${cmd.name}\`${aliases} — ${cmd.description}`;
                     })
                     .join('\n') || 'Nenhum comando de suporte disponível'
-            },
-            {
-                titulo: 'Comandos de Moderação',
-                conteudo: comandosArray
-                    .filter(cmd => ['lock', 'unlock', 'clear'].includes(cmd.name))
-                    .map(cmd => {
-                        const aliases = cmd.aliases && cmd.aliases.length
-                            ? ` (${cmd.aliases.join(', ')})`
-                            : '';
-                        let desc = cmd.description;
-                        if (cmd.name === 'clear') {
-                            desc += '\n  `!clear <número>` - Deleta 1-100 mensagens';
-                        }
-                        return `• \`!${cmd.name}\`${aliases} — ${desc}`;
-                    })
-                    .join('\n') || 'Nenhum comando de moderação disponível'
-            },
-            {
-                titulo: 'Comandos de Entretenimento',
-                conteudo: comandosArray
-                    .filter(cmd => ['counting'].includes(cmd.name))
-                    .map(cmd => {
-                        const aliases = cmd.aliases && cmd.aliases.length
-                            ? ` (${cmd.aliases.join(', ')})`
-                            : '';
-                        return `• \`!${cmd.name}\`${aliases} — ${cmd.description}\n  \`!counting configurar #canal\` - Configura canal de contagem\n  \`!counting status\` - Mostra status\n  \`!counting reset\` - Reseta contagem`;
-                    })
-                    .join('\n') || 'Nenhum comando de entretenimento disponível'
-            },
-            {
-                titulo: 'Comandos de Notificações',
-                conteudo: comandosArray
-                    .filter(cmd => ['social-feed', 'announcements'].includes(cmd.name))
-                    .map(cmd => {
-                        const aliases = cmd.aliases && cmd.aliases.length
-                            ? ` (${cmd.aliases.join(', ')})`
-                            : '';
-                        let desc = cmd.description;
-                        if (cmd.name === 'social-feed') {
-                            desc += '\n  `!social-feed adicionar <canal>` - Adiciona canal Twitch\n  `!social-feed listar` - Lista canais\n  `!social-feed verificar` - Força verificação';
-                        } else if (cmd.name === 'announcements') {
-                            desc += '\n  `!announcements status` - Mostra status\n  `!announcements testar` - Testa notificação';
-                        }
-                        return `• \`!${cmd.name}\`${aliases} — ${desc}`;
-                    })
-                    .join('\n') || 'Nenhum comando de notificações disponível'
             },
         ];
 
