@@ -2900,13 +2900,23 @@ class PromoPingBot {
                 }
             }
 
+            // Garantir canal disponível (interaction.channel pode ser null se não estiver em cache)
+            let channel = interaction.channel;
+            if (!channel && interaction.channelId) {
+                try {
+                    channel = await interaction.client.channels.fetch(interaction.channelId);
+                } catch (err) {
+                    console.error('[DISCORD] Erro ao obter canal do slash command:', err);
+                }
+            }
+
             // Criar uma mensagem simulada para compatibilidade com comandos existentes
             let replied = false;
             const fakeMessage = {
                 author: interaction.user,
                 member: interaction.member,
                 guild: interaction.guild,
-                channel: interaction.channel,
+                channel: channel,
                 createdTimestamp: Date.now(),
                 content: interaction.commandName + (args.length > 0 ? ' ' + args.join(' ') : ''),
                 deleted: false,

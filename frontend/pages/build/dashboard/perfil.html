@@ -902,15 +902,19 @@
         const isConnected = contasMap[tipo] === true || contasMap[tipo] === 1 || contasMap[tipo] === '1';
         console.log(` [PERFIL] Verificando ${tipo}: isConnected = ${isConnected}`);
 
-        if (isConnected) {
+        if (isConnected && tipo === 'discord') {
+          button.textContent = "Trocar conta";
+          button.className = "account-status connected clickable";
+          button.title = "Clique para vincular outra conta Discord";
+          button.onclick = () => conectarDiscord();
+        } else if (isConnected) {
           button.textContent = "Conectado";
           button.className = "account-status connected";
-          button.onclick = null; // Remove evento de clique se conectado
+          button.onclick = null;
         } else {
           button.textContent = "Conectar";
           button.className = "account-status disconnected";
 
-          // Adicionar evento de clique baseado no tipo
           if (tipo === 'discord') {
             button.onclick = () => conectarDiscord();
           } else if (tipo === 'email') {

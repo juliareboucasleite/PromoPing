@@ -550,6 +550,11 @@ input:checked + .toggle-slider:before {
     border: 1px solid #c3e6cb;
 }
 
+.account-status.connected.clickable:hover {
+    background: #c3e6cb;
+    border-color: #28a745;
+}
+
 .account-status.disconnected {
     background: #f8d7da;
     color: #721c24;

@@ -2186,8 +2186,12 @@ router.get("/discord/callback", async (req, res) => {
                     // Associar Discord ao usuário logado
                     linkDiscordUser(discordIdToLink, loggedInReferenciaID);
                     
-                    // Atualizar discord_id no banco de dados (se a coluna existir)
+                    // Atualizar discord_id no banco: desvincular de outras contas (trocar conta) e vincular a esta
                     try {
+                        await pool.query(
+                            "UPDATE utilizadores SET discord_id = NULL WHERE discord_id = ? AND ReferenciaID != ?",
+                            [discordIdToLink, loggedInReferenciaID]
+                        );
                         await pool.query(
                             "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
                             [discordIdToLink, loggedInReferenciaID]
