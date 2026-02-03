@@ -402,6 +402,28 @@ const TABLE_DEFINITIONS = {
         source: 'sql/pap (1).sql - atualizado para ReferenciaID'
     },
 
+    'qr_tokens': {
+        definition: `CREATE TABLE IF NOT EXISTS qr_tokens (
+            code VARCHAR(20) NOT NULL PRIMARY KEY,
+            session_id VARCHAR(64) NOT NULL,
+            ReferenciaID VARCHAR(13) DEFAULT NULL,
+            Email VARCHAR(255) DEFAULT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            expires_at DATETIME NOT NULL,
+            used_at DATETIME DEFAULT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            token TEXT DEFAULT NULL,
+            refresh_token TEXT DEFAULT NULL,
+            INDEX idx_session_id (session_id),
+            INDEX idx_status (status),
+            INDEX idx_expires_at (expires_at),
+            INDEX idx_session_status (session_id, status),
+            FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: true,
+        source: 'Login por QR - tokens efémeros para confirmar sessão no browser'
+    },
+
     'twitch_channels': {
         definition: `CREATE TABLE IF NOT EXISTS twitch_channels (
             Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -415,7 +437,7 @@ const TABLE_DEFINITIONS = {
             INDEX idx_is_live (IsLive)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: false,
-        source: 'sql/pap (1).sql - estrutura real da base de dados'
+        source: 'PAPv5 - estrutura real da base de dados'
     },
 
     'counting_config': {
@@ -810,6 +832,7 @@ export async function initializeAllTables() {
         'contasconectadas', // Depende de utilizadores
         'configutilizador', // Depende de utilizadores e planos
         'password_reset_tokens', // Depende de utilizadores
+        'qr_tokens',        // Depende de utilizadores (login por QR)
         'recuperar_senha',  // Depende de utilizadores
         'stripe_subscriptions', // Depende de utilizadores
         'supportmessages',   // Depende de utilizadores (auto-referência)
