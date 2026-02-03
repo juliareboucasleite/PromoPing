@@ -56,13 +56,21 @@ module.exports = {
                 return message.reply(' **Senha incorreta!** Verifique sua senha e tente novamente.');
             }
 
-            // Atualizar Discord ID se necessário
-            if (!user.discord_id) {
-                await connection.execute(
-                    'UPDATE utilizadores SET discord_id = ?, UltimoLogin = ? WHERE ReferenciaID = ?',
-                    [message.author.id, new Date(), user.ReferenciaID]
-                );
+            // Verificar se este Discord já está vinculado a outra conta (evita ER_DUP_ENTRY)
+            const [outro] = await connection.execute(
+                'SELECT ReferenciaID, Email FROM utilizadores WHERE discord_id = ? AND ReferenciaID != ?',
+                [message.author.id, user.ReferenciaID]
+            );
+            if (outro.length > 0) {
+                await connection.end();
+                return message.reply(' **Este Discord já está vinculado a outra conta.** Faça login com o email dessa conta ou desvincule no site e tente outra vez.');
             }
+
+            // Atualizar Discord ID e último login
+            await connection.execute(
+                'UPDATE utilizadores SET discord_id = ?, UltimoLogin = ? WHERE ReferenciaID = ?',
+                [message.author.id, new Date(), user.ReferenciaID]
+            );
 
             // Buscar estatísticas do usuário
             const [produtos] = await connection.execute(
