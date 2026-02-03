@@ -59,6 +59,10 @@ async function migrate() {
   await addColumnIfNotExists('planos', 'LinksPlanosAnual', "VARCHAR(500) NULL");
   console.log(' Colunas LinksPlanos e LinksPlanosAnual verificadas/criadas em planos');
 
+  // Preço anual por plano (exibir na página de planos quando toggle = Anual)
+  await addColumnIfNotExists('planos', 'PrecoAnual', "DECIMAL(6,2) NULL");
+  console.log(' Coluna PrecoAnual verificada/criada em planos');
+
   // Preencher links mensais e anuais (Stripe Checkout)
   await pool.query(`UPDATE planos SET LinksPlanos = NULL, LinksPlanosAnual = NULL WHERE Nome = 'Free'`);
   await pool.query(
@@ -74,6 +78,14 @@ async function migrate() {
     ['https://buy.stripe.com/aFa14ncnO6Ay0wA7BJeZ203', 'https://buy.stripe.com/dRmbJ1evW3om9362hpeZ206']
   );
   console.log(' LinksPlanos (mensal) e LinksPlanosAnual preenchidos');
+
+  // Preencher PrecoAnual (valor total do plano anual no Stripe; NULL para Free)
+  // Ajuste os valores abaixo para coincidir com os preços anuais configurados no Stripe
+  await pool.query(`UPDATE planos SET PrecoAnual = NULL WHERE Nome = 'Free'`);
+  await pool.query(`UPDATE planos SET PrecoAnual = ? WHERE Nome = 'Basic'`, [49.90]);   // ex.: ~10 meses
+  await pool.query(`UPDATE planos SET PrecoAnual = ? WHERE Nome = 'Standard'`, [129.90]);
+  await pool.query(`UPDATE planos SET PrecoAnual = ? WHERE Nome = 'Premium'`, [153.60]);
+  console.log(' PrecoAnual preenchido');
 
   // Criar tabela de contas conectadas
   await pool.query(`

@@ -238,6 +238,7 @@ const TABLE_DEFINITIONS = {
             Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
             Nome VARCHAR(50) NOT NULL,
             Preco DECIMAL(6,2) NOT NULL,
+            PrecoAnual DECIMAL(6,2) DEFAULT NULL COMMENT 'Preço total anual (Stripe); NULL = Free ou usar 12*Preco',
             LimiteProdutos INT(11) DEFAULT NULL,
             HistoricoDias INT(11) DEFAULT NULL,
             IntervaloVerificacao VARCHAR(50) DEFAULT NULL,

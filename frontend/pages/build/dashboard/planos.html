@@ -118,7 +118,7 @@
 
             <div class="plans-grid" id="plansGrid">
                 <!-- Free Plan -->
-                <div class="plan-card" data-monthly="0">
+                <div class="plan-card" data-plan-id="1" data-monthly="0">
                     <div class="plan-header">
                         <div class="plan-name">Free</div>
                         <div class="plan-price">€0<span class="currency">,00</span></div>
@@ -167,7 +167,7 @@
                     </button>
                 </div>
 
-                <div class="plan-card" data-monthly="4.99">
+                <div class="plan-card" data-plan-id="2" data-monthly="4.99">
                     <div class="plan-header">
                         <div class="plan-name">Basic</div>
                         <div class="plan-price">€4<span class="currency">,99</span></div>
@@ -214,7 +214,7 @@
                         Escolher Basic
                     </button>
                 </div>
-                <div class="plan-card featured" data-monthly="12.99">
+                <div class="plan-card featured" data-plan-id="3" data-monthly="12.99">
                     <div class="plan-header">
                         <div class="plan-name">Standard</div>
                         <div class="plan-price">€12<span class="currency">,99</span></div>
@@ -262,7 +262,7 @@
                     </button>
                 </div>
 
-                <div class="plan-card" data-monthly="15.30">
+                <div class="plan-card" data-plan-id="4" data-monthly="15.30">
                     <div class="plan-header">
                         <div class="plan-name">Premium</div>
                         <div class="plan-price">€15<span class="currency">,30</span></div>
@@ -429,8 +429,11 @@
         // Função para abrir modal de compra (preco = preço mensal do plano)
         function abrirModalCompra(planoId, planoNome, preco) {
             const anual = !!billingYearly;
-            const precoExibir = anual ? preco * 12 : preco;
-            selectedPlanData = { id: planoId, name: planoNome, price: preco, anual: anual };
+            const precoAnualDb = getPrecoAnualPorPlanId(planoId);
+            const precoExibir = anual
+                ? (precoAnualDb != null && !isNaN(precoAnualDb) ? precoAnualDb : preco * 12)
+                : preco;
+            selectedPlanData = { id: planoId, name: planoNome, price: preco, priceAnual: precoAnualDb, anual: anual };
             
             const modal = document.getElementById('purchaseModal');
             const planNameEl = document.getElementById('purchasePlanName');
@@ -692,6 +695,9 @@
             }
         }
 
+        // Planos vindos da API (com Preco, PrecoAnual, LinksPlanos, LinksPlanosAnual)
+        let planosFromApi = [];
+
         // Função para buscar do backend o plano atual do usuário e destacar no UI
         async function carregarPlanos() {
             const token = localStorage.getItem("token");
@@ -704,14 +710,24 @@
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 const data = await response.json();
+                if (data.planos && Array.isArray(data.planos)) {
+                    planosFromApi = data.planos;
+                    atualizarPrecosExibicao();
+                }
                 console.log("Plano atual carregado:", data.userPlanId);
-                // Destacar o plano atual (botão) na tela
                 destacarPlanoAtual(data.userPlanId);
-
             } catch (error) {
                 console.error("Erro ao carregar plano atual:", error);
                 // Manter planos estáticos em caso de erro
             }
+        }
+
+        function getPrecoAnualPorPlanId(planId) {
+            const plan = planosFromApi.find(p => (p.Id || p.id) === parseInt(planId, 10));
+            const precoAnual = plan && (plan.PrecoAnual != null || plan.precoAnual != null)
+                ? (Number(plan.PrecoAnual) ?? Number(plan.precoAnual))
+                : null;
+            return precoAnual;
         }
 
         // Função para destacar o botão do plano atual do usuário
@@ -916,10 +932,15 @@
         function atualizarPrecosExibicao() {
             document.querySelectorAll('.plan-card[data-monthly]').forEach(card => {
                 const monthly = parseFloat(card.getAttribute('data-monthly')) || 0;
+                const planId = card.getAttribute('data-plan-id');
                 const priceEl = card.querySelector('.plan-price');
                 const periodEl = card.querySelector('.plan-period');
                 if (!priceEl || !periodEl) return;
-                const valor = billingYearly ? monthly * 12 : monthly;
+                let valor = monthly;
+                if (billingYearly) {
+                    const precoAnual = planId ? getPrecoAnualPorPlanId(planId) : null;
+                    valor = (precoAnual != null && !isNaN(precoAnual)) ? precoAnual : monthly * 12;
+                }
                 const { intPart, decPart } = formatarPreco(valor);
                 priceEl.innerHTML = '€' + intPart + '<span class="currency">,' + decPart + '</span>';
                 periodEl.textContent = billingYearly ? 'por ano' : 'por mês';
