@@ -81,6 +81,23 @@ const TABLE_DEFINITIONS = {
         source: 'estrutura real da base de dados verificada'
     },
 
+    'user_2fa': {
+        definition: `CREATE TABLE IF NOT EXISTS user_2fa (
+            ReferenciaID VARCHAR(13) NOT NULL PRIMARY KEY,
+            enabled TINYINT(1) NOT NULL DEFAULT 0,
+            method ENUM('email','totp') NOT NULL DEFAULT 'totp',
+            totp_secret VARCHAR(255) DEFAULT NULL,
+            backup_codes TEXT DEFAULT NULL COMMENT 'JSON array of hashed backup codes',
+            email_code VARCHAR(6) DEFAULT NULL,
+            email_code_expires DATETIME DEFAULT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: true,
+        source: '2FA - autenticação em dois fatores'
+    },
+
     'produtos': {
         definition: `CREATE TABLE IF NOT EXISTS produtos (
             Id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -122,6 +139,25 @@ const TABLE_DEFINITIONS = {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
         usesReferenciaID: true,
         source: 'sql/pap (1).sql - atualizado para ReferenciaID'
+    },
+
+    'relatorios': {
+        definition: `CREATE TABLE IF NOT EXISTS relatorios (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            ref VARCHAR(20) NOT NULL UNIQUE,
+            user_id VARCHAR(13) NOT NULL,
+            data_inicio DATE NOT NULL,
+            data_fim DATE NOT NULL,
+            total_produtos INT NOT NULL DEFAULT 0,
+            total_alertas INT NOT NULL DEFAULT 0,
+            total_poupado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_user_id (user_id),
+            INDEX idx_ref (ref),
+            FOREIGN KEY (user_id) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+        usesReferenciaID: true,
+        source: 'relatorios - economia gerada no PromoPing'
     },
 
     'preferenciasnotificacao': {
@@ -607,8 +643,7 @@ async function tableExists(tableName) {
         const originalQuery = getOriginalQuery();
         const [rows] = await originalQuery(
             `SELECT COUNT(*) as count FROM information_schema.tables 
-             WHERE table_schema = DATABASE() AND table_name = ?`,
-            [tableName]
+             WHERE table_schema = DATABASE() AND table_name = ?`, [tableName]
         );
         return rows[0].count > 0;
     } catch (error) {
@@ -631,14 +666,14 @@ function getTableDefinition(tableName) {
  */
 async function recreateTable(tableName, forceRecreate = false) {
     const normalizedName = tableName.toLowerCase();
-    
+
     // Verificar se já foi criada neste boot (a menos que seja forçado)
     if (!forceRecreate && tablesCreatedThisBoot.has(normalizedName)) {
         return false; // Indica que não foi recriada (já existe)
     }
-    
+
     const definition = getTableDefinition(normalizedName);
-    
+
     if (!definition) {
         throw new Error(
             `[TABLE MANAGER] Definição não encontrada para a tabela "${normalizedName}". ` +
@@ -646,11 +681,11 @@ async function recreateTable(tableName, forceRecreate = false) {
             `Adicione a definição em backend/database/tableManager.js se necessário.`
         );
     }
-    
+
     try {
         // Remover IF NOT EXISTS para garantir recriação
         const createSql = definition.definition.replace(/CREATE TABLE IF NOT EXISTS/gi, 'CREATE TABLE');
-        
+
         // Tentar dropar a tabela se existir (pode falhar se não existir, mas não é crítico)
         // Usar query original para evitar recursão
         const originalQuery = getOriginalQuery();
@@ -662,10 +697,10 @@ async function recreateTable(tableName, forceRecreate = false) {
 
         // Criar a tabela usando query original para evitar recursão
         await originalQuery(definition.definition);
-        
+
         // Marcar como criada neste boot
         tablesCreatedThisBoot.add(normalizedName);
-        
+
         return true;
     } catch (error) {
         console.error(`[TABLE MANAGER] Erro ao criar tabela ${normalizedName}:`, error.message);
@@ -679,7 +714,7 @@ async function recreateTable(tableName, forceRecreate = false) {
 async function ensureTable(tableName) {
     const normalizedName = tableName.toLowerCase();
     const exists = await tableExists(normalizedName);
-    
+
     if (!exists) {
         await recreateTable(normalizedName);
         return true; // Tabela foi criada
@@ -704,8 +739,8 @@ export async function handleTableError(error, tableName = null) {
 
     // Tentar extrair nome da tabela do erro se não foi fornecido
     if (!tableName) {
-        const match = error.message?.match(/Table ['`](\w+)['`]/i) || 
-                     error.message?.match(/table ['`](\w+)['`]/i);
+        const msg = error.message || "";
+        const match = msg.match(/Table ['`](\w+)['`]/i) || msg.match(/table ['`](\w+)['`]/i);
         if (match) {
             tableName = match[1];
         }
@@ -719,7 +754,7 @@ export async function handleTableError(error, tableName = null) {
     }
 
     const normalizedName = tableName.toLowerCase();
-    
+
     // Verificar se já foi criada neste boot (prevenir loops)
     if (tablesCreatedThisBoot.has(normalizedName)) {
         throw new Error(
@@ -760,7 +795,7 @@ export async function queryWithTableRecovery(sql, params = []) {
     // ESSA CHAVE AQUI É O QUE PREVINE LOOPS INFINITOS
     // Se tu mudar a forma de gerar a chave, pode quebrar a proteção
     const queryKey = `${sql.substring(0, 50)}_${JSON.stringify(params).substring(0, 50)}`;
-    
+
     // Se esta query já está em processo de recuperação, não tentar novamente
     // ESSA VERIFICAÇÃO AQUI É CRÍTICA, sem ela pode ter loop infinito
     if (queriesInRecovery.has(queryKey)) {
@@ -769,7 +804,7 @@ export async function queryWithTableRecovery(sql, params = []) {
             `Evitando loop infinito. Erro original será propagado.`
         );
     }
-    
+
     try {
         // Usar query original para evitar recursão infinita
         // NÃO MUDE ISSO, usa originalQuery pra não criar loop
@@ -782,22 +817,22 @@ export async function queryWithTableRecovery(sql, params = []) {
             // Marcar query como em recuperação
             // ESSA LINHA AQUI PREVINE QUE A MESMA QUERY TENTE RECRIAR A TABELA VÁRIAS VEZES
             queriesInRecovery.add(queryKey);
-            
+
             try {
                 await handleTableError(error);
-                
+
                 // Reexecutar a query APENAS UMA VEZ após recriação (usar original para evitar loop)
                 const originalQuery = getOriginalQuery();
                 const result = await originalQuery(sql, params);
-                
+
                 // Remover da lista de recuperação após sucesso
                 queriesInRecovery.delete(queryKey);
-                
+
                 return result;
             } catch (recoveryError) {
                 // Remover da lista mesmo em caso de erro
                 queriesInRecovery.delete(queryKey);
-                
+
                 // Propagar erro de recuperação
                 throw recoveryError;
             }
@@ -824,36 +859,38 @@ export async function initializeAllTables() {
     // Ordem de criação: tabelas base primeiro, depois dependentes
     // Tabelas sem dependências (ou com dependências já criadas)
     const creationOrder = [
-        'perfis',           // Base - sem dependências
-        'planos',           // Base - sem dependências
-        'lojas',            // Base - sem dependências
-        'utilizadores',     // Base - depende de perfis
-        'produtos',         // Depende de utilizadores e lojas
-        'historicoprecos',  // Depende de produtos
-        'notificacoes',     // Depende de utilizadores e produtos
+        'perfis', // Base - sem dependências
+        'planos', // Base - sem dependências
+        'lojas', // Base - sem dependências
+        'utilizadores', // Base - depende de perfis
+        'user_2fa', // Depende de utilizadores (2FA)
+        'produtos', // Depende de utilizadores e lojas
+        'historicoprecos', // Depende de produtos
+        'notificacoes', // Depende de utilizadores e produtos
+        'relatorios', // Depende de utilizadores (relatórios de economia)
         'preferenciasnotificacao', // Depende de utilizadores
         'contasconectadas', // Depende de utilizadores
         'configutilizador', // Depende de utilizadores e planos
         'password_reset_tokens', // Depende de utilizadores
-        'qr_tokens',        // Depende de utilizadores (login por QR)
-        'recuperar_senha',  // Depende de utilizadores
+        'qr_tokens', // Depende de utilizadores (login por QR)
+        'recuperar_senha', // Depende de utilizadores
         'stripe_subscriptions', // Depende de utilizadores
-        'supportmessages',   // Depende de utilizadores (auto-referência)
-        'chat_start',        // Depende de utilizadores (chat da start)
-        'twitch_channels',   // Sem dependências
-        'counting_config',   // Sem dependências
+        'supportmessages', // Depende de utilizadores (auto-referência)
+        'chat_start', // Depende de utilizadores (chat da start)
+        'twitch_channels', // Sem dependências
+        'counting_config', // Sem dependências
         'processed_releases', // Sem dependências
-        'pages',            // Sem dependências
-        'webhook_configs',  // Sem dependências
+        'pages', // Sem dependências
+        'webhook_configs', // Sem dependências
         'metricas_sistema', // Sem dependências
         'status_componentes', // Sem dependências
-        'incidentes',       // Sem dependências
-        'atualizacoes',    // Sem dependências
+        'incidentes', // Sem dependências
+        'atualizacoes', // Sem dependências
         'atualizacoes_sistema', // Sem dependências
-        'bugsprojetos',    // Sem dependências
-        'reviews',         // Sem dependências (usa discord_id, não ReferenciaID)
+        'bugsprojetos', // Sem dependências
+        'reviews', // Sem dependências (usa discord_id, não ReferenciaID)
         'newsletter_subscribers', // Sem dependências
-        'sugestoes'        // Sem dependências
+        'sugestoes' // Sem dependências
     ];
 
     // Processar tabelas na ordem definida
@@ -867,7 +904,7 @@ export async function initializeAllTables() {
             const exists = await tableExists(tableName);
             if (!exists) {
                 const wasCreated = await recreateTable(tableName);
-                
+
                 if (wasCreated) {
                     results.created.push({
                         table: tableName,
@@ -891,10 +928,10 @@ export async function initializeAllTables() {
             }
         } catch (error) {
             console.error(`[TABLE MANAGER] Erro ao inicializar tabela ${tableName}:`, error.message);
-            results.errors.push({ 
-                table: tableName, 
+            results.errors.push({
+                table: tableName,
                 source: definition.source,
-                error: error.message 
+                error: error.message
             });
         }
     }
@@ -906,7 +943,7 @@ export async function initializeAllTables() {
                 const exists = await tableExists(tableName);
                 if (!exists) {
                     const wasCreated = await recreateTable(tableName);
-                    
+
                     if (wasCreated) {
                         results.created.push({
                             table: tableName,
@@ -923,10 +960,10 @@ export async function initializeAllTables() {
                 }
             } catch (error) {
                 console.error(`[TABLE MANAGER] Erro ao inicializar tabela ${tableName}:`, error.message);
-                results.errors.push({ 
-                    table: tableName, 
+                results.errors.push({
+                    table: tableName,
                     source: definition.source,
-                    error: error.message 
+                    error: error.message
                 });
             }
         }

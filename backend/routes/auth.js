@@ -45,6 +45,11 @@ import {
     getSessionStatus,
     cleanupOldQrTokens
 } from "../services/qrLoginSession.js";
+import {
+    is2FAEnabled,
+    verifyCode,
+    sendEmailCode
+} from "../services/twoFactorService.js";
 import QRCode from "qrcode";
 
 dotenv.config({
@@ -76,6 +81,16 @@ function gerarParesToken(ReferenciaID, email) {
         { expiresIn: JWT_REFRESH_EXPIRY }
     );
     return { token, refreshToken };
+}
+
+/** Token de curta duração (5 min) usado apenas para completar 2FA no login. */
+function gerarToken2FAPending(ReferenciaID, email) {
+    const secret = process.env.JWT_SECRET;
+    return jwt.sign(
+        { ReferenciaID, email, type: "2fa_pending" },
+        secret,
+        { expiresIn: "5m" }
+    );
 }
 
 function gerarCodigo() {
@@ -1268,6 +1283,24 @@ router.post("/login", async (req, res) => {
                 email: user.Email
             });
         }
+
+        // Se 2FA ativo, não devolver token; devolver tempToken para completar verificação
+        const twoFA = await is2FAEnabled(user.ReferenciaID);
+        if (twoFA) {
+            const tempToken = gerarToken2FAPending(user.ReferenciaID, user.Email);
+            return res.json({
+                status: "ok",
+                requires2FA: true,
+                tempToken,
+                user: {
+                    ReferenciaID: user.ReferenciaID,
+                    email: user.Email,
+                    nome: user.Nome,
+                    perfilId: user.PerfilId || user.perfilId
+                }
+            });
+        }
+
         // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
         // Se a requisição vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
         // CARALHO, NÃO MEXA NESSA PARTE
@@ -1319,6 +1352,77 @@ router.post("/login", async (req, res) => {
             status: "error",
             error: err.message || "Erro interno no servidor",
         });
+    }
+});
+
+// Completar login com código 2FA (após resposta requires2FA do login)
+router.post("/2fa/verify", async (req, res) => {
+    try {
+        const { tempToken, code } = req.body;
+        if (!tempToken || !code) {
+            return res.status(400).json({ status: "error", error: "tempToken e code sao obrigatorios" });
+        }
+        const secret = process.env.JWT_SECRET;
+        let decoded;
+        try {
+            decoded = jwt.verify(tempToken, secret);
+        } catch (e) {
+            return res.status(401).json({ status: "error", error: "Sessao expirada. Faca login novamente." });
+        }
+        if (decoded.type !== "2fa_pending") {
+            return res.status(403).json({ status: "error", error: "Token invalido" });
+        }
+        const referenciaID = decoded.ReferenciaID;
+        const email = decoded.email;
+        await verifyCode(referenciaID, code);
+        const [rows] = await pool.query(
+            "SELECT ReferenciaID, Nome, Email, PerfilId FROM Utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ status: "error", error: "Utilizador nao encontrado" });
+        }
+        const user = rows[0];
+        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
+        res.json({
+            status: "ok",
+            token,
+            refreshToken,
+            user: {
+                ReferenciaID: user.ReferenciaID,
+                email: user.Email,
+                nome: user.Nome,
+                perfilId: user.PerfilId || user.perfilId
+            }
+        });
+    } catch (err) {
+        console.error("[AUTH] Erro 2FA verify:", err);
+        res.status(400).json({ status: "error", error: err.message || "Codigo invalido" });
+    }
+});
+
+// Enviar código 2FA por email (durante login, quando utilizador escolhe "enviar por email")
+router.post("/2fa/send-email-code", async (req, res) => {
+    try {
+        const { tempToken } = req.body;
+        if (!tempToken) {
+            return res.status(400).json({ status: "error", error: "tempToken obrigatorio" });
+        }
+        const secret = process.env.JWT_SECRET;
+        let decoded;
+        try {
+            decoded = jwt.verify(tempToken, secret);
+        } catch (e) {
+            return res.status(401).json({ status: "error", error: "Sessao expirada. Faca login novamente." });
+        }
+        if (decoded.type !== "2fa_pending") {
+            return res.status(403).json({ status: "error", error: "Token invalido" });
+        }
+        await sendEmailCode(decoded.ReferenciaID);
+        res.json({ status: "ok", sent: true });
+    } catch (err) {
+        console.error("[AUTH] Erro ao enviar codigo 2FA:", err);
+        res.status(500).json({ status: "error", error: err.message });
     }
 });
 
