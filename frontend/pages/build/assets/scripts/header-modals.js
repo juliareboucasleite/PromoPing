@@ -27,7 +27,18 @@ window.openLoginModal = function() {
     successElement.textContent = '';
     successElement.style.display = 'none';
   }
-  
+  // Reset do passo 2FA: mostrar formulário normal, esconder passo de código
+  const loginFormReset = document.getElementById('loginForm');
+  const step2FA = document.getElementById('login2FAStep');
+  const dividerOU = document.getElementById('loginDividerOU');
+  const socialOptions = document.querySelector('.social-login-options');
+  if (loginFormReset) loginFormReset.style.display = '';
+  if (step2FA) { step2FA.style.display = 'none'; delete step2FA.dataset.tempToken; }
+  if (dividerOU) dividerOU.style.display = '';
+  if (socialOptions) socialOptions.style.display = '';
+  const sendEmailBtn = document.getElementById('login2FASendEmail');
+  if (sendEmailBtn) sendEmailBtn.textContent = 'Enviar código por email';
+
   // Mostra o modal e bloqueia o scroll da página (pra não rolar enquanto o modal tá aberto)
   loginModal.style.display = 'block';
   overlay.style.display = 'flex';
@@ -578,6 +589,27 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error("Resposta inválida do servidor");
           }
 
+          // Se login exige 2FA, mostrar passo de código (esconder só o form, não o wrapper)
+          if (res.ok && data.status === "ok" && data.requires2FA && data.tempToken) {
+            const step2FA = document.getElementById("login2FAStep");
+            const dividerOU = document.getElementById("loginDividerOU");
+            const socialOptions = document.querySelector(".social-login-options");
+            loginForm.style.display = "none";
+            if (dividerOU) dividerOU.style.display = "none";
+            if (socialOptions) socialOptions.style.display = "none";
+            if (step2FA) {
+              step2FA.style.display = "block";
+              step2FA.dataset.tempToken = data.tempToken;
+              const codeInput = document.getElementById("login2FACode");
+              if (codeInput) codeInput.value = "";
+            }
+            if (submitButton) submitButton.disabled = false;
+            if (submitButton && submitButton.querySelector(".button-text") && originalButtonText) {
+              submitButton.querySelector(".button-text").textContent = originalButtonText;
+            }
+            return;
+          }
+
           // Se deu tudo certo e tem token, salva e redireciona
           if (res.ok && data.status === "ok" && data.token) {
             localStorage.setItem("token", data.token); // salva o token pra usar depois
@@ -616,6 +648,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
         }
+      });
+    }
+
+    // 2FA: Verificar código após login
+    const login2FAVerifyBtn = document.getElementById('login2FAVerify');
+    if (login2FAVerifyBtn) {
+      login2FAVerifyBtn.addEventListener('click', async () => {
+        const stepEl = document.getElementById('login2FAStep');
+        const codeInput = document.getElementById('login2FACode');
+        if (!stepEl || !codeInput) return;
+        const tempToken = stepEl.dataset.tempToken;
+        const code = codeInput.value.trim();
+        if (!tempToken || !code) {
+          const errEl = document.getElementById('loginErrorMessage');
+          if (errEl) { errEl.textContent = 'Introduza o código.'; errEl.style.display = 'block'; }
+          return;
+        }
+        login2FAVerifyBtn.disabled = true;
+        try {
+          const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+          const res = await requestFn('/api/auth/2fa/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempToken, code })
+          });
+          const data = await res.json();
+          if (res.ok && data.status === 'ok' && data.token) {
+            localStorage.setItem('token', data.token);
+            window.location.href = '/dashboard';
+          } else {
+            const errEl = document.getElementById('loginErrorMessage');
+            if (errEl) { errEl.textContent = data.error || 'Código inválido.'; errEl.style.display = 'block'; }
+            login2FAVerifyBtn.disabled = false;
+          }
+        } catch (e) {
+          const errEl = document.getElementById('loginErrorMessage');
+          if (errEl) { errEl.textContent = 'Erro de ligação.'; errEl.style.display = 'block'; }
+          login2FAVerifyBtn.disabled = false;
+        }
+      });
+    }
+
+    // 2FA: Enviar código por email
+    const login2FASendEmailBtn = document.getElementById('login2FASendEmail');
+    if (login2FASendEmailBtn) {
+      login2FASendEmailBtn.addEventListener('click', async () => {
+        const stepEl = document.getElementById('login2FAStep');
+        if (!stepEl) return;
+        const tempToken = stepEl.dataset.tempToken;
+        if (!tempToken) return;
+        login2FASendEmailBtn.disabled = true;
+        try {
+          const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
+          const res = await requestFn('/api/auth/2fa/send-email-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempToken })
+          });
+          const data = await res.json();
+          if (res.ok && data.sent) {
+            const errEl = document.getElementById('loginErrorMessage');
+            if (errEl) { errEl.style.display = 'none'; }
+            login2FASendEmailBtn.textContent = 'Código enviado. Verifique o email.';
+          }
+        } catch (e) {}
+        login2FASendEmailBtn.disabled = false;
       });
     }
 
