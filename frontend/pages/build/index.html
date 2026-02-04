@@ -1036,8 +1036,21 @@
             </div>
           </form>
 
+          <!-- Passo 2FA (mostrado quando login requer código) -->
+          <div id="login2FAStep" class="form-wrapper" style="display: none;">
+            <p class="modal-message">Introduza o código de verificação da sua app ou do email.</p>
+            <div class="form-field">
+              <label class="field-label" for="login2FACode">Código</label>
+              <input type="text" id="login2FACode" class="form-input" placeholder="6 dígitos ou código de backup" maxlength="10" autocomplete="one-time-code">
+            </div>
+            <div class="submit-wrapper" style="margin-top: 0.5rem;">
+              <button type="button" id="login2FASendEmail" class="social-button" style="margin-bottom: 8px;">Enviar código por email</button>
+              <button type="button" id="login2FAVerify" class="submit-button">Verificar</button>
+            </div>
+          </div>
+
           <!-- Divisor OU -->
-          <p class="divider-text">OU</p>
+          <p class="divider-text" id="loginDividerOU">OU</p>
 
           <!-- Opções de Login Social -->
           <div class="social-login-options" data-test-id="login-options">
