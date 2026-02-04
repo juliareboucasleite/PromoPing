@@ -57,14 +57,32 @@ src/generated
 **/*.min.js
 
 # ========== Sensíveis – não publicar no GitHub ==========
+# Variáveis de ambiente (em qualquer pasta: backend, python-scraper, etc.)
+.env
+.env.*
+**/.env
+**/.env.*
+
 # Configuração Discord (tokens, client secret)
 config-files/discord-config.js
+
+# Especificação da API (endpoints, URLs de produção, estrutura interna)
+openapi.yaml
+
+# Config de produção (URLs, basePath por ambiente)
+frontend/.production-config.json
+
+# Ficheiros com chaves/segredos de API (ex.: api-keys.json, secrets.json)
+*api*key*
+*secret*.json
+*credentials*
+*-credentials.*
+
 # Chaves e certificados privados
 *.pem
 *.key
 !*.pub
-# Config de produção com URLs/keys por ambiente (opcional)
-# frontend/.production-config.json
+
 # Backups de base de dados (podem conter dados reais)
 *.sql.gz
 *.sql.backup
