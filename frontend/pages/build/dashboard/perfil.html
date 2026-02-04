@@ -2,1350 +2,1710 @@
 <html lang="pt-PT">
 
 <head>
-  <base href="/">
-  
-  
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Perfil PromoPing — altere nome, email, senha e consulte o histórico de notificações e relatórios.">
-  <title>Perfil PromoPing | promoping.pt</title>
-  <link rel="stylesheet" href="../../assets/styles/painel.css">
-  <link rel="stylesheet" href="../../assets/styles/perfil.css">
-  <link rel="stylesheet" href="../../assets/styles/style.css">
-  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
-  <script src="../../assets/scripts/request-manager.js"></script>
-  <script src="../../assets/scripts/notification-system.js"></script>
+    <base href="/">
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perfil PromoPing — altere nome, email, senha e consulte o histórico de notificações e relatórios.">
+    <title>Perfil PromoPing | promoping.pt</title>
+    <link rel="stylesheet" href="../../assets/styles/painel.css">
+    <link rel="stylesheet" href="../../assets/styles/perfil.css">
+    <link rel="stylesheet" href="../../assets/styles/style.css">
+    <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+    <script src="../../assets/scripts/request-manager.js"></script>
+    <script src="../../assets/scripts/notification-system.js"></script>
 </head>
 
 <body class="dashboard-body">
-  <nav class="dashboard-nav">
-    <div class="nav-container">
-      <div class="nav-brand">
-        <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
-        <span class="nav-brand-name">PromoPing</span>
-      </div>
-      <div class="nav-menu">
-        <a href="/dashboard" class="nav-item">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          Dashboard
-        </a>
-        <a href="/dashboard/produtos" class="nav-item">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path
-              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-            </path>
-            <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-          Produtos
-        </a>
-        <a href="/dashboard/perfil" class="nav-item nav-item-active">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          Perfil
-        </a>
-      </div>
-      <div class="nav-actions">
-        <span class="nav-user" id="userName">Utilizador</span>
-        <button class="nav-logout" onclick="logout()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16,17 21,12 16,7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-          Sair
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <main class="dashboard-main">
-    <div class="dashboard-container">
-
-      <header class="page-header page-header-perfil">
-        <div class="page-header-left">
-          <h1 class="page-title">Perfil</h1>
-          <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="nav-logo">
+                <span class="nav-brand-name">PromoPing</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/dashboard/produtos" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                        </path>
+                        <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Produtos
+                </a>
+                <a href="/dashboard/perfil" class="nav-item nav-item-active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Perfil
+                </a>
+            </div>
+            <div class="nav-actions">
+                <span class="nav-user" id="userName">Utilizador</span>
+                <button class="nav-logout" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                </button>
+            </div>
         </div>
-        <p class="page-greeting">Olá, <span id="profileGreetingName">Utilizador</span>!</p>
-      </header>
+    </nav>
 
-      <div class="profile-layout">
+    <main class="dashboard-main">
+        <div class="dashboard-container">
 
-        <div class="profile-left">
+            <header class="page-header page-header-perfil">
+                <div class="page-header-left">
+                    <h1 class="page-title">Perfil</h1>
+                    <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
+                </div>
+                <p class="page-greeting">Olá, <span id="profileGreetingName">Utilizador</span>!</p>
+            </header>
 
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <h2 class="card-title">Informações pessoais</h2>
+            <div class="profile-layout">
+
+                <div class="profile-left">
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <h2 class="card-title">Informações pessoais</h2>
+                        </div>
+
+                        <form class="profile-form" id="personalInfoForm">
+                            <div class="form-group">
+                                <label class="form-label" for="fullName">Nome completo</label>
+                                <input type="text" class="form-input" id="fullName" value="" required>
+                                <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;">
+                                    <span class="cooldown-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" stroke="none" />
+                                            <path d="M12 6v9M12 17v1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <span class="cooldown-text"></span>
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email</label>
+                                <input type="email" class="form-input" id="email" value="" required>
+                            </div>
+
+                            <button type="submit" class="save-btn">Guardar alterações</button>
+                        </form>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <circle cx="12" cy="16" r="1"></circle>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <h2 class="card-title">Configurar Senha</h2>
+                        </div>
+
+                        <div class="card-content">
+                            <p class="section-desc">Altere a sua senha para entrar com email e senha</p>
+                            <p class="cooldown-msg cooldown-senha" id="cooldownSenhaMsg" aria-live="polite" style="display:none;"></p>
+
+                            <form class="password-form" id="passwordForm">
+                                <fieldset id="passwordFormFieldset">
+                                    <div class="form-group">
+                                        <label class="form-label" for="currentPassword">Senha atual</label>
+                                        <div class="input-wrapper password-wrapper">
+                                            <input type="password" class="form-input password-input" id="currentPassword" placeholder="Insira a sua senha atual" required>
+                                            <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleCurrentPassword()" id="toggle-currentPassword">
+                                                <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                                                    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="newPassword">Nova senha</label>
+                                        <div class="input-wrapper password-wrapper">
+                                            <input type="password" class="form-input password-input" id="newPassword" placeholder="Mínimo 6 caracteres" required>
+                                            <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleNewPassword()" id="toggle-newPassword">
+                                                <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                                                    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="confirmPassword">Confirmar nova senha</label>
+                                        <div class="input-wrapper password-wrapper">
+                                            <input type="password" class="form-input password-input" id="confirmPassword" placeholder="Repita a nova senha" required>
+                                            <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleConfirmPassword()" id="toggle-confirmPassword">
+                                                <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+                                                    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="save-btn">Alterar Senha</button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <h2 class="card-title">Preferências de notificação</h2>
+                        </div>
+
+                        <div class="notification-preferences">
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <svg class="preference-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    <div class="preference-details">
+                                        <span class="preference-name">Email</span>
+                                        <span class="preference-desc"></span>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <svg class="preference-icon discord-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                                    </svg>
+                                    <div class="preference-details">
+                                        <span class="preference-name">Discord</span>
+                                        <span class="preference-desc"></span>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card separado para Gerenciamento de Conta -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path d="M9 12l2 2 4-4"></path>
+                            </svg>
+                            <h2 class="card-title">Gerenciamento de Conta</h2>
+                        </div>
+
+                        <div class="account-management-section">
+                            <div class="account-action-item">
+                                <div class="account-action-info">
+                                    <svg class="account-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    <div class="account-action-details">
+                                        <span class="account-action-name">Desativar Conta</span>
+                                        <span class="account-action-desc">Temporariamente desativa sua conta. Você pode reativar depois.</span>
+                                    </div>
+                                </div>
+                                <button class="account-action-btn deactivate-btn" onclick="desativarConta()">
+                                    Desativar
+                                </button>
+                            </div>
+
+                            <div class="account-action-item">
+                                <div class="account-action-info">
+                                    <svg class="account-action-icon delete-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 6h18"></path>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                    <div class="account-action-details">
+                                        <span class="account-action-name">Excluir Conta</span>
+                                        <span class="account-action-desc">Remove permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.</span>
+                                    </div>
+                                </div>
+                                <button class="account-action-btn delete-btn" onclick="excluirConta()">
+                                    Excluir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-right">
+
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <h2 class="card-title">Contas conectadas</h2>
+                        </div>
+
+                        <div class="connected-accounts">
+                            <div class="account-item">
+                                <div class="account-info">
+                                    <svg class="account-icon google-icon" viewBox="0 0 24 24">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                    </svg>
+                                    <span class="account-name">Email</span>
+                                </div>
+                                <button class="account-status connected">Conectado</button>
+                            </div>
+
+                            <div class="account-item">
+                                <div class="account-info">
+                                    <svg class="account-icon discord-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                                    </svg>
+                                    <span class="account-name">Discord</span>
+                                </div>
+                                <button class="account-status connected">Conectado</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Relatórios e Histórico</h2>
+                        </div>
+                        <div class="history-actions">
+                            <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
+                                Relatórios PDF
+                            </button>
+                            <button type="button" id="btnHistoricoCompleto" class="history-action-btn history-btn-completo">
+                                Histórico completo
+                            </button>
+                        </div>
+                        <p class="history-plan-hint" id="historyPlanHint" aria-live="polite"></p>
+                        <ul id="notificacoesList" class="notification-list"></ul>
+                    </div>
+
+                    <!-- Autenticação em dois fatores (2FA) -->
+                    <div class="profile-card" id="twoFA-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <h2 class="card-title">Autenticação em dois fatores (2FA)</h2>
+                        </div>
+                        <div class="twofa-section">
+                            <p class="twofa-desc">Proteja a sua conta com um código por email ou app de autenticação. Códigos de backup são gerados ao ativar.</p>
+                            <div id="twoFAStatus" class="twofa-status"></div>
+                            <div class="twofa-actions">
+                                <button type="button" id="btn2FAEnable" class="history-action-btn history-btn-pdf" style="display: none;">Ativar 2FA</button>
+                                <button type="button" id="btn2FADisable" class="account-action-btn deactivate-btn" style="display: none;">Desativar 2FA</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M6 20v-6"></path>
+                            </svg>
+                            <h2 class="card-title">Estatísticas</h2>
+                        </div>
+
+                        <div class="statistics">
+                            <div class="stat-item">
+                                <span class="stat-label">Produtos monitorizados</span>
+                                <span class="stat-value" id="produtos-monitorizados"></span>
+                            </div>
+
+                            <div class="stat-item">
+                                <span class="stat-label">Notificações enviadas</span>
+                                <span class="stat-value" id="notificacoes-enviadas"></span>
+                            </div>
+
+                            <div class="stat-item">
+                                <span class="stat-label">Dinheiro poupado</span>
+                                <span class="stat-value stat-savings" id="dinheiro-poupado"></span>
+                            </div>
+
+                            <div class="stat-item">
+                                <span class="stat-label">Membro desde</span>
+                                <span class="stat-value" id="membro-desde"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+                                </path>
+                            </svg>
+                            <h2 class="card-title">Plano Atual</h2>
+                        </div>
+
+                        <div class="plan-info">
+                            <div class="plan-details">
+                                <div class="plan-name" id="plano-nome">Carregando...</div>
+                                <div class="plan-description" id="plano-descricao">Carregando detalhes do plano...</div>
+                                <div class="plan-features">
+                                    <div class="feature-item">
+                                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 12l2 2 4-4"></path>
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                        </svg>
+                                        <span>Intervalo de verificação: <strong id="plano-intervalo">-</strong></span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 12l2 2 4-4"></path>
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                        </svg>
+                                        <span>Produtos ilimitados: <strong id="plano-produtos">-</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="plan-actions">
+                                <button class="change-plan-btn" onclick="abrirModalPlanos()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z">
+                                        </path>
+                                    </svg>
+                                    Alterar Plano
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <form class="profile-form" id="personalInfoForm">
-              <div class="form-group">
-                <label class="form-label" for="fullName">Nome completo</label>
-                <input type="text" class="form-input" id="fullName" value="" required>
-                <p class="cooldown-msg cooldown-nome" id="cooldownNomeMsg" aria-live="polite" style="display:none;">
-                  <span class="cooldown-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" stroke="none"/>
-                      <path d="M12 6v9M12 17v1" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+        </div>
+    </main>
+
+    <!-- Modal de Desativar Conta -->
+    <div class="modal-overlay" id="deactivateModal" style="display: none;">
+        <div class="modal-content account-modal-content">
+            <div class="modal-header account-modal-header">
+                <div class="modal-icon-wrapper warning-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
-                  </span>
-                  <span class="cooldown-text"></span>
+                </div>
+                <h3>Desativar Conta</h3>
+                <button class="modal-close" onclick="fecharModalDesativar()" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body account-modal-body">
+                <p class="modal-message">
+                    Tem certeza que deseja desativar sua conta? Você poderá reativá-la depois fazendo login novamente.
                 </p>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" class="form-input" id="email" value="" required>
-              </div>
-
-              <button type="submit" class="save-btn">Guardar alterações</button>
-            </form>
-          </div>
-
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <circle cx="12" cy="16" r="1"></circle>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              <h2 class="card-title">Configurar Senha</h2>
+                <div id="deactivate2FACodeWrap" class="twofa-code-wrap" style="display: none;">
+                    <label for="deactivate2FACode">Código de verificação 2FA</label>
+                    <input type="text" id="deactivate2FACode" class="twofa-code-input" placeholder="Código 6 dígitos ou backup" maxlength="10" autocomplete="one-time-code">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="fecharModalDesativar()">Cancelar</button>
+                    <button class="modal-btn confirm warning" onclick="confirmarDesativar()">Desativar</button>
+                </div>
             </div>
-
-            <div class="card-content">
-              <p class="section-desc">Altere a sua senha para entrar com email e senha</p>
-              <p class="cooldown-msg cooldown-senha" id="cooldownSenhaMsg" aria-live="polite" style="display:none;"></p>
-
-              <form class="password-form" id="passwordForm">
-                <fieldset id="passwordFormFieldset">
-                <div class="form-group">
-                  <label class="form-label" for="currentPassword">Senha atual</label>
-                  <div class="input-wrapper password-wrapper">
-                    <input type="password" class="form-input password-input" id="currentPassword" placeholder="Insira a sua senha atual" required>
-                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleCurrentPassword()" id="toggle-currentPassword">
-                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="newPassword">Nova senha</label>
-                  <div class="input-wrapper password-wrapper">
-                    <input type="password" class="form-input password-input" id="newPassword" placeholder="Mínimo 6 caracteres" required>
-                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleNewPassword()" id="toggle-newPassword">
-                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="confirmPassword">Confirmar nova senha</label>
-                  <div class="input-wrapper password-wrapper">
-                    <input type="password" class="form-input password-input" id="confirmPassword" placeholder="Repita a nova senha" required>
-                    <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleConfirmPassword()" id="toggle-confirmPassword">
-                      <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-                        <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <button type="submit" class="save-btn">Alterar Senha</button>
-                </fieldset>
-              </form>
-            </div>
-          </div>
-
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-              </svg>
-              <h2 class="card-title">Preferências de notificação</h2>
-            </div>
-
-            <div class="notification-preferences">
-              <div class="preference-item">
-                <div class="preference-info">
-                  <svg class="preference-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                  </svg>
-                  <div class="preference-details">
-                    <span class="preference-name">Email</span>
-                    <span class="preference-desc"></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-
-              <div class="preference-item">
-                <div class="preference-info">
-                  <svg class="preference-icon discord-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                      d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                  </svg>
-                  <div class="preference-details">
-                    <span class="preference-name">Discord</span>
-                    <span class="preference-desc"></span>
-                  </div>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card separado para Gerenciamento de Conta -->
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <path d="M9 12l2 2 4-4"></path>
-              </svg>
-              <h2 class="card-title">Gerenciamento de Conta</h2>
-            </div>
-
-            <div class="account-management-section">
-              <div class="account-action-item">
-                <div class="account-action-info">
-                  <svg class="account-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                  </svg>
-                  <div class="account-action-details">
-                    <span class="account-action-name">Desativar Conta</span>
-                    <span class="account-action-desc">Temporariamente desativa sua conta. Você pode reativar depois.</span>
-                  </div>
-                </div>
-                <button class="account-action-btn deactivate-btn" onclick="desativarConta()">
-                  Desativar
-                </button>
-              </div>
-
-              <div class="account-action-item">
-                <div class="account-action-info">
-                  <svg class="account-action-icon delete-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                  <div class="account-action-details">
-                    <span class="account-action-name">Excluir Conta</span>
-                    <span class="account-action-desc">Remove permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.</span>
-                  </div>
-                </div>
-                <button class="account-action-btn delete-btn" onclick="excluirConta()">
-                  Excluir
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
+    </div>
 
-        <div class="profile-right">
-
-
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-              <h2 class="card-title">Contas conectadas</h2>
-            </div>
-
-            <div class="connected-accounts">
-              <div class="account-item">
-                <div class="account-info">
-                  <svg class="account-icon google-icon" viewBox="0 0 24 24">
-                    <path fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  <span class="account-name">Email</span>
-                </div>
-                <button class="account-status connected">Conectado</button>
-              </div>
-
-              <div class="account-item">
-                <div class="account-info">
-                  <svg class="account-icon discord-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                      d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                  </svg>
-                  <span class="account-name">Discord</span>
-                </div>
-                <button class="account-status connected">Conectado</button>
-              </div>
-            </div>
-          </div>
-          <div class="profile-card">
-            <div class="card-header">
-              <h2 class="card-title">Relatórios e Histórico</h2>
-            </div>
-            <div class="history-actions">
-              <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
-                Relatórios PDF
-              </button>
-              <button type="button" id="btnHistoricoCompleto" class="history-action-btn history-btn-excel">
-                Histórico completo
-              </button>
-            </div>
-            <p class="history-plan-hint" id="historyPlanHint" aria-live="polite"></p>
-            <ul id="notificacoesList" class="notification-list"></ul>
-          </div>
-
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 20V10"></path>
-                <path d="M12 20V4"></path>
-                <path d="M6 20v-6"></path>
-              </svg>
-              <h2 class="card-title">Estatísticas</h2>
-            </div>
-
-            <div class="statistics">
-              <div class="stat-item">
-                <span class="stat-label">Produtos monitorizados</span>
-                <span class="stat-value" id="produtos-monitorizados"></span>
-              </div>
-
-              <div class="stat-item">
-                <span class="stat-label">Notificações enviadas</span>
-                <span class="stat-value" id="notificacoes-enviadas"></span>
-              </div>
-
-              <div class="stat-item">
-                <span class="stat-label">Dinheiro poupado</span>
-                <span class="stat-value stat-savings" id="dinheiro-poupado"></span>
-              </div>
-
-              <div class="stat-item">
-                <span class="stat-label">Membro desde</span>
-                <span class="stat-value" id="membro-desde"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="profile-card">
-            <div class="card-header">
-              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
-                </path>
-              </svg>
-              <h2 class="card-title">Plano Atual</h2>
-            </div>
-
-            <div class="plan-info">
-              <div class="plan-details">
-                <div class="plan-name" id="plano-nome">Carregando...</div>
-                <div class="plan-description" id="plano-descricao">Carregando detalhes do plano...</div>
-                <div class="plan-features">
-                  <div class="feature-item">
-                    <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 12l2 2 4-4"></path>
-                      <circle cx="12" cy="12" r="10"></circle>
+    <!-- Modal de Excluir Conta -->
+    <div class="modal-overlay" id="deleteModal" style="display: none;">
+        <div class="modal-content account-modal-content">
+            <div class="modal-header account-modal-header">
+                <div class="modal-icon-wrapper danger-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
                     </svg>
-                    <span>Intervalo de verificação: <strong id="plano-intervalo">-</strong></span>
-                  </div>
-                  <div class="feature-item">
-                    <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 12l2 2 4-4"></path>
-                      <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    <span>Produtos ilimitados: <strong id="plano-produtos">-</strong></span>
-                  </div>
                 </div>
-              </div>
-
-              <div class="plan-actions">
-                <button class="change-plan-btn" onclick="abrirModalPlanos()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path
-                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 0 1 0 2.828l-7 7a2 2 0 0 1-2.828 0l-7-7A1.994 1.994 0 0 1 3 12V7a4 4 0 0 1 4-4z">
-                    </path>
-                  </svg>
-                  Alterar Plano
+                <h3>Excluir Conta</h3>
+                <button class="modal-close" onclick="fecharModalExcluir()" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                 </button>
-              </div>
             </div>
-          </div>
+            <div class="modal-body account-modal-body">
+                <div class="delete-warning">
+                    <p class="modal-message warning-text">
+                        <strong>Esta ação é PERMANENTE e não pode ser desfeita!</strong>
+                    </p>
+                    <p class="modal-message">
+                        Todos os seus dados serão permanentemente removidos, incluindo:
+                    </p>
+                    <ul class="delete-list">
+                        <li>Seus produtos monitorizados</li>
+                        <li>Histórico de notificações</li>
+                        <li>Configurações e preferências</li>
+                        <li>Assinaturas ativas</li>
+                    </ul>
+                </div>
+                  <div id="delete2FACodeWrap" class="twofa-code-wrap" style="display: none;">
+                    <label for="delete2FACode">Código de verificação 2FA <span aria-hidden="true">*</span></label>
+                    <input type="text" id="delete2FACode" class="twofa-code-input" placeholder="Código 6 dígitos ou backup" maxlength="10" autocomplete="one-time-code">
+                </div>
+                <div class="delete-confirmation">
+                    <label for="deleteConfirmInput" class="delete-label">
+                        Digite <strong>"EXCLUIR"</strong> para confirmar:
+                    </label>
+                    <input type="text" id="deleteConfirmInput" class="delete-input" placeholder="Digite EXCLUIR" onkeyup="verificarConfirmacaoExclusao()">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="fecharModalExcluir()">Cancelar</button>
+                    <button class="modal-btn confirm danger" id="confirmDeleteBtn" onclick="confirmarExcluir()" disabled>Excluir Conta</button>
+                </div>
+            </div>
         </div>
-      </div>
-
     </div>
-  </main>
 
-  <!-- Modal de Desativar Conta -->
-  <div class="modal-overlay" id="deactivateModal" style="display: none;">
-    <div class="modal-content account-modal-content">
-      <div class="modal-header account-modal-header">
-        <div class="modal-icon-wrapper warning-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
+    <!-- Modal 2FA: Escolher método e configurar -->
+    <div class="modal-overlay" id="twoFASetupModal" style="display: none;">
+        <div class="modal-content account-modal-content">
+            <div class="modal-header account-modal-header">
+                <h3 id="twoFASetupTitle">Ativar 2FA</h3>
+                <button class="modal-close" onclick="fecharModal2FASetup()" aria-label="Fechar">&times;</button>
+            </div>
+            <div class="modal-body account-modal-body">
+                <div id="twoFASetupStep1">
+                    <p class="modal-message">Escolha o método de verificação:</p>
+                    <div class="twofa-method-buttons">
+                        <button type="button" class="modal-btn" onclick="iniciarSetup2FA('totp')">App autenticador (Google Authenticator, etc.)</button>
+                        <button type="button" class="modal-btn" onclick="iniciarSetup2FA('email')">Código por email</button>
+                    </div>
+                </div>
+                <div id="twoFASetupStep2" style="display: none;">
+                    <div id="twoFASetupTOTP" style="display: none;">
+                        <p>Escaneie o QR code com a sua app de autenticação:</p>
+                        <div id="twoFAQRContainer" class="twofa-qr-container"></div>
+                        <p class="twofa-backup-label">Guarde os códigos de backup num local seguro (cada um só pode ser usado uma vez):</p>
+                        <div class="twofa-backup-codes-wrap">
+                            <pre id="twoFABackupCodes" class="twofa-backup-codes"></pre>
+                            <button type="button" class="twofa-download-codes-btn" id="btnDownloadBackupCodes" title="Descarregar .txt">↓ .txt</button>
+                        </div>
+                    </div>
+                    <div id="twoFASetupEmail" style="display: none;">
+                        <p>Foi enviado um código de 6 dígitos para o seu email. Introduza-o abaixo.</p>
+                    </div>
+                    <label for="twoFAVerifyCode">Código de verificação</label>
+                    <input type="text" id="twoFAVerifyCode" class="twofa-code-input" placeholder="6 dígitos" maxlength="8" autocomplete="one-time-code">
+                    <div class="modal-actions" style="margin-top: 1rem;">
+                        <button class="modal-btn cancel" onclick="fecharModal2FASetup()">Cancelar</button>
+                        <button class="modal-btn confirm" id="btn2FAConfirmSetup" onclick="confirmarSetup2FA()">Ativar</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <h3>Desativar Conta</h3>
-        <button class="modal-close" onclick="fecharModalDesativar()" aria-label="Fechar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body account-modal-body">
-        <p class="modal-message">
-          Tem certeza que deseja desativar sua conta? Você poderá reativá-la depois fazendo login novamente.
-        </p>
-        <div class="modal-actions">
-          <button class="modal-btn cancel" onclick="fecharModalDesativar()">Cancelar</button>
-          <button class="modal-btn confirm warning" onclick="confirmarDesativar()">Desativar</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Modal de Excluir Conta -->
-  <div class="modal-overlay" id="deleteModal" style="display: none;">
-    <div class="modal-content account-modal-content">
-      <div class="modal-header account-modal-header">
-        <div class="modal-icon-wrapper danger-icon-wrapper">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18"></path>
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
+    <!-- Modal 2FA: Desativar -->
+    <div class="modal-overlay" id="twoFADisableModal" style="display: none;">
+        <div class="modal-content account-modal-content">
+            <div class="modal-header account-modal-header">
+                <h3>Desativar 2FA</h3>
+                <button class="modal-close" onclick="fecharModal2FADisable()" aria-label="Fechar">&times;</button>
+            </div>
+            <div class="modal-body account-modal-body">
+                <p class="modal-message">Introduza o seu código de verificação (app, email ou código de backup) para desativar o 2FA.</p>
+                <input type="text" id="twoFADisableCode" class="twofa-code-input" placeholder="Código" maxlength="10" autocomplete="one-time-code">
+                <div id="twoFADisableSendEmailWrap" class="twofa-send-email-wrap" style="display: none;">
+                    <button type="button" class="twofa-send-email-link" id="twoFADisableSendEmailBtn">Enviar código por email</button>
+                </div>
+                <div class="modal-actions" style="margin-top: 1rem;">
+                    <button class="modal-btn cancel" onclick="fecharModal2FADisable()">Cancelar</button>
+                    <button class="modal-btn confirm warning" onclick="confirmarDesativar2FA()">Desativar 2FA</button>
+                </div>
+            </div>
         </div>
-        <h3>Excluir Conta</h3>
-        <button class="modal-close" onclick="fecharModalExcluir()" aria-label="Fechar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body account-modal-body">
-        <div class="delete-warning">
-          <p class="modal-message warning-text">
-            <strong>Esta ação é PERMANENTE e não pode ser desfeita!</strong>
-          </p>
-          <p class="modal-message">
-            Todos os seus dados serão permanentemente removidos, incluindo:
-          </p>
-          <ul class="delete-list">
-            <li>Seus produtos monitorizados</li>
-            <li>Histórico de notificações</li>
-            <li>Configurações e preferências</li>
-            <li>Assinaturas ativas</li>
-          </ul>
-        </div>
-        <div class="delete-confirmation">
-          <label for="deleteConfirmInput" class="delete-label">
-            Digite <strong>"EXCLUIR"</strong> para confirmar:
-          </label>
-          <input 
-            type="text" 
-            id="deleteConfirmInput" 
-            class="delete-input" 
-            placeholder="Digite EXCLUIR"
-            onkeyup="verificarConfirmacaoExclusao()"
-          >
-        </div>
-        <div class="modal-actions">
-          <button class="modal-btn cancel" onclick="fecharModalExcluir()">Cancelar</button>
-          <button class="modal-btn confirm danger" id="confirmDeleteBtn" onclick="confirmarExcluir()" disabled>Excluir Conta</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script src="../../assets/scripts/support-widget.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      if (window.initSupportWidgetFront) window.initSupportWidgetFront();
-    });
-  </script>
+    <script src="../../assets/scripts/support-widget.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.initSupportWidgetFront) window.initSupportWidgetFront();
+        });
+    </script>
 
-  <script type="module">
-    import { formatDateTime } from "../../assets/scripts/utils.js";
+    <script type="module">
+        import { formatDateTime } from "../../assets/scripts/utils.js";
 
     // Tornar formatDateTime disponível globalmente
     window.formatDateTime = formatDateTime;
   </script>
 
-  <script>
-
-    // Atualiza estatísticas (produtos, notificações, dinheiro poupado, membro desde) na página de perfil
-    // forcarRefresh: true para evitar cache (ex.: ao voltar ao separador ou após registar poupança noutro separador)
-    async function atualizarStatsPerfil(token, forcarRefresh) {
-      if (!token) return;
-      try {
-        const temFlag = sessionStorage.getItem("perfil_stats_atualizar") === "1";
-        const evitarCache = Boolean(forcarRefresh || temFlag);
-        const urlStats = evitarCache ? "/api/user/stats?_t=" + Date.now() : "/api/user/stats";
-        const resStats = await makeRequest(urlStats, {
-          headers: { Authorization: "Bearer " + token },
-          ...(evitarCache ? { cache: "no-store" } : {})
-        });
-        const dataStats = await resStats.json();
-        if (dataStats.status !== "ok" || !dataStats.stats) return;
-        const stats = dataStats.stats;
-        const produtosEl = document.getElementById("produtos-monitorizados");
-        if (produtosEl) produtosEl.textContent = stats.produtos_total ?? stats.produtos_total ?? 0;
-        const notificacoesEl = document.getElementById("notificacoes-enviadas");
-        if (notificacoesEl) notificacoesEl.textContent = stats.notificacoes_total ?? 0;
-        // Aceitar dinheiro_poupado em minúsculas (API) ou DinheiroPoupado; garantir número
-        const rawPoupado = stats.dinheiro_poupado ?? stats.DinheiroPoupado ?? 0;
-        const dinheiroPoupado = typeof rawPoupado === "number" ? rawPoupado : Number(String(rawPoupado).replace(",", ".")) || 0;
-        const dinheiroEl = document.getElementById("dinheiro-poupado");
-        if (dinheiroEl) dinheiroEl.textContent = "€" + dinheiroPoupado.toFixed(2);
-        const membroEl = document.getElementById("membro-desde");
-        if (membroEl) membroEl.textContent = stats.membro_desde || "N/A";
-        sessionStorage.removeItem("perfil_stats_atualizar");
-      } catch (e) {
-        console.warn("[PERFIL] Erro ao atualizar estatísticas:", e);
-      }
-    }
-
-    // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Verificar se há token na URL (do Google OAuth)
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlToken = urlParams.get('token');
-
-      if (urlToken) {
-        localStorage.setItem("token", urlToken);
-        // Limpar a URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-
-      let token = localStorage.getItem("token");
-
-      // Se não há token, usar token válido para teste
-      if (!token) {
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJqdWxpYS5hZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NjA5OTgyNzYsImV4cCI6MTc2MTA4NDY3Nn0.Nrqy_vu4iWA-h9szNZw8rz5eYRLaTj17ROMZ7qimxN4";
-        localStorage.setItem("token", token);
-      }
-
-      if (!token) {
-        alert("Precisa estar logado!");
-        window.location.href = "/index.html";
-        return;
-      }
-
-      try {
-        // Primeiro carregar nome do usuário no header
-        await carregarNomeUsuario();
-
-        // Depois buscar perfil do usuário da API
-        const resProfile = await makeRequest("/api/user/profile", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataProfile = await resProfile.json();
-        console.log(" [FRONTEND] Dados do perfil recebidos:", dataProfile);
-
-        if (dataProfile.status === "ok") {
-          const profile = dataProfile.profile;
-          console.log(" [FRONTEND] Perfil do usuário:", profile);
-
-          // Verificar se os elementos existem
-          const fullNameEl = document.getElementById("fullName");
-          const emailEl = document.getElementById("email");
-
-          console.log(" [FRONTEND] Elementos encontrados:", {
-            fullName: !!fullNameEl,
-            email: !!emailEl
-          });
-
-          if (fullNameEl) fullNameEl.value = profile.nome || "";
-          if (emailEl) emailEl.value = profile.email || "";
-          const greetingEl = document.getElementById("profileGreetingName");
-          if (greetingEl) greetingEl.textContent = profile.nome || "Utilizador";
-
-          console.log(" [FRONTEND] Campos preenchidos:", {
-            nome: profile.nome,
-            email: profile.email
-          });
-
-          // Cooldown 30 dias: nome e senha — desabilitar campos e mostrar próxima data permitida
-          function formatarDataPT(isoString) {
-            if (!isoString) return "";
-            const d = new Date(isoString);
-            return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
-          }
-          const cooldownNomeEl = document.getElementById("cooldownNomeMsg");
-          const cooldownSenhaEl = document.getElementById("cooldownSenhaMsg");
-          const passwordFieldset = document.getElementById("passwordFormFieldset");
-
-          if (profile.pode_alterar_nome === false && profile.proxima_alteracao_nome) {
-            if (fullNameEl) fullNameEl.disabled = true;
-            if (cooldownNomeEl) {
-              const textEl = cooldownNomeEl.querySelector(".cooldown-text");
-              if (textEl) textEl.textContent = "Pode alterar o nome novamente a " + formatarDataPT(profile.proxima_alteracao_nome) + ".";
-              cooldownNomeEl.style.display = "flex";
+    <script>
+        // Atualiza estatísticas (produtos, notificações, dinheiro poupado, membro desde) na página de perfil
+        // forcarRefresh: true para evitar cache (ex.: ao voltar ao separador ou após registar poupança noutro separador)
+        async function atualizarStatsPerfil(token, forcarRefresh) {
+            if (!token) return;
+            try {
+                const temFlag = sessionStorage.getItem("perfil_stats_atualizar") === "1";
+                const evitarCache = Boolean(forcarRefresh || temFlag);
+                const urlStats = evitarCache ? "/api/user/stats?_t=" + Date.now() : "/api/user/stats";
+                const resStats = await makeRequest(urlStats, {
+                    headers: {
+                        Authorization: "Bearer " + token
+                    },
+                    ...(evitarCache ? {
+                        cache: "no-store"
+                    } : {})
+                });
+                const dataStats = await resStats.json();
+                if (dataStats.status !== "ok" || !dataStats.stats) return;
+                const stats = dataStats.stats;
+                const produtosEl = document.getElementById("produtos-monitorizados");
+                if (produtosEl) produtosEl.textContent = (stats.produtos_total != null ? stats.produtos_total : 0);
+                const notificacoesEl = document.getElementById("notificacoes-enviadas");
+                if (notificacoesEl) notificacoesEl.textContent = (stats.notificacoes_total != null ? stats.notificacoes_total : 0);
+                // Aceitar dinheiro_poupado em minúsculas (API) ou DinheiroPoupado; garantir número
+                const rawPoupado = stats.dinheiro_poupado != null ? stats.dinheiro_poupado : (stats.DinheiroPoupado != null ? stats.DinheiroPoupado : 0);
+                const dinheiroPoupado = typeof rawPoupado === "number" ? rawPoupado : Number(String(rawPoupado).replace(",", ".")) || 0;
+                const dinheiroEl = document.getElementById("dinheiro-poupado");
+                if (dinheiroEl) dinheiroEl.textContent = "€" + dinheiroPoupado.toFixed(2);
+                const membroEl = document.getElementById("membro-desde");
+                if (membroEl) membroEl.textContent = stats.membro_desde || "N/A";
+                sessionStorage.removeItem("perfil_stats_atualizar");
+            } catch (e) {
+                console.warn("[PERFIL] Erro ao atualizar estatísticas:", e);
             }
-          } else {
-            if (fullNameEl) fullNameEl.disabled = false;
-            if (cooldownNomeEl) cooldownNomeEl.style.display = "none";
-          }
+        }
 
-          if (profile.pode_alterar_senha === false && profile.proxima_alteracao_senha) {
-            if (passwordFieldset) passwordFieldset.disabled = true;
-            if (cooldownSenhaEl) {
-              cooldownSenhaEl.textContent = "Pode alterar a senha novamente a " + formatarDataPT(profile.proxima_alteracao_senha) + ".";
-              cooldownSenhaEl.style.display = "block";
+        // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar se há token na URL (do Google OAuth)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = urlParams.get('token');
+
+            if (urlToken) {
+                localStorage.setItem("token", urlToken);
+                // Limpar a URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
-          } else {
-            if (passwordFieldset) passwordFieldset.disabled = false;
-            if (cooldownSenhaEl) cooldownSenhaEl.style.display = "none";
-          }
 
-          updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
-          updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
-        } else {
-          console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
-        }
+            let token = localStorage.getItem("token");
 
-        // Buscar e atualizar estatísticas (reutilizado ao voltar à página)
-        await atualizarStatsPerfil(token);
-        // Buscar informações do plano atual
-        await carregarPlano();
+            // Se não há token, usar token válido para teste
+            if (!token) {
+                token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJqdWxpYS5hZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NjA5OTgyNzYsImV4cCI6MTc2MTA4NDY3Nn0.Nrqy_vu4iWA-h9szNZw8rz5eYRLaTj17ROMZ7qimxN4";
+                localStorage.setItem("token", token);
+            }
 
-      } catch (err) {
-        console.error("Erro ao carregar perfil:", err);
-      }
-    });
+            if (!token) {
+                alert("Precisa estar logado!");
+                window.location.href = "/index.html";
+                return;
+            }
 
-    // Ao voltar ao separador Perfil (ex.: depois de clicar "ir ao site" no Painel), atualizar dinheiro poupado com dados frescos
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        const token = localStorage.getItem("token");
-        if (token) atualizarStatsPerfil(token, true);
-      }
-    });
+            try {
+                // Primeiro carregar nome do usuário no header
+                await carregarNomeUsuario();
 
-    // Função para remover token da storage e sair
-    function logout() {
-      localStorage.removeItem("token");
-      window.location.href = "/index.html";
-    }
+                // Depois buscar perfil do usuário da API
+                const resProfile = await makeRequest("/api/user/profile", {
+                    headers: {
+                        Authorization: "Bearer " + token
+                    }
+                });
+                const dataProfile = await resProfile.json();
+                console.log(" [FRONTEND] Dados do perfil recebidos:", dataProfile);
 
-    // Evento de submit das informações pessoais
-    document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = {
-        nome: document.getElementById("fullName").value,
-        email: document.getElementById("email").value
-      };
-      try {
-        // Salvar perfil editado na API
-        const res = await makeRequest("/api/user/profile", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("token")
-          },
-          body: JSON.stringify(formData)
+                if (dataProfile.status === "ok") {
+                    const profile = dataProfile.profile;
+                    console.log(" [FRONTEND] Perfil do usuário:", profile);
+
+                    // Verificar se os elementos existem
+                    const fullNameEl = document.getElementById("fullName");
+                    const emailEl = document.getElementById("email");
+
+                    console.log(" [FRONTEND] Elementos encontrados:", {
+                        fullName: !!fullNameEl,
+                        email: !!emailEl
+                    });
+
+                    if (fullNameEl) fullNameEl.value = profile.nome || "";
+                    if (emailEl) emailEl.value = profile.email || "";
+                    const greetingEl = document.getElementById("profileGreetingName");
+                    if (greetingEl) greetingEl.textContent = profile.nome || "Utilizador";
+
+                    console.log(" [FRONTEND] Campos preenchidos:", {
+                        nome: profile.nome,
+                        email: profile.email
+                    });
+
+                    // Cooldown 30 dias: nome e senha — desabilitar campos e mostrar próxima data permitida
+                    function formatarDataPT(isoString) {
+                        if (!isoString) return "";
+                        const d = new Date(isoString);
+                        return d.toLocaleDateString("pt-PT", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        });
+                    }
+                    const cooldownNomeEl = document.getElementById("cooldownNomeMsg");
+                    const cooldownSenhaEl = document.getElementById("cooldownSenhaMsg");
+                    const passwordFieldset = document.getElementById("passwordFormFieldset");
+
+                    if (profile.pode_alterar_nome === false && profile.proxima_alteracao_nome) {
+                        if (fullNameEl) fullNameEl.disabled = true;
+                        if (cooldownNomeEl) {
+                            const textEl = cooldownNomeEl.querySelector(".cooldown-text");
+                            if (textEl) textEl.textContent = "Pode alterar o nome novamente a " + formatarDataPT(profile.proxima_alteracao_nome) + ".";
+                            cooldownNomeEl.style.display = "flex";
+                        }
+                    } else {
+                        if (fullNameEl) fullNameEl.disabled = false;
+                        if (cooldownNomeEl) cooldownNomeEl.style.display = "none";
+                    }
+
+                    if (profile.pode_alterar_senha === false && profile.proxima_alteracao_senha) {
+                        if (passwordFieldset) passwordFieldset.disabled = true;
+                        if (cooldownSenhaEl) {
+                            cooldownSenhaEl.textContent = "Pode alterar a senha novamente a " + formatarDataPT(profile.proxima_alteracao_senha) + ".";
+                            cooldownSenhaEl.style.display = "block";
+                        }
+                    } else {
+                        if (passwordFieldset) passwordFieldset.disabled = false;
+                        if (cooldownSenhaEl) cooldownSenhaEl.style.display = "none";
+                    }
+
+                    updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
+                    updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
+                } else {
+                    console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
+                }
+
+                await carregarStatus2FA();
+
+                // Buscar e atualizar estatísticas (reutilizado ao voltar à página)
+                await atualizarStatsPerfil(token);
+                // Buscar informações do plano atual
+                await carregarPlano();
+
+            } catch (err) {
+                console.error("Erro ao carregar perfil:", err);
+            }
         });
 
-        const data = await res.json();
-        if (data.status === "ok") {
-          if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'Informações salvas com sucesso!', 5000);
-          else alert("Informações salvas com sucesso!");
-        } else {
-          if (window.notificationSystem) window.notificationSystem.error('Erro', data.message || data.error || "Erro ao salvar informações.", 6000);
-          else alert(data.message || data.error || "Erro ao salvar informações.");
-        }
-      } catch (err) {
-        console.error("Erro ao salvar:", err);
-        if (window.notificationSystem) window.notificationSystem.error('Erro', 'Erro de ligação ao servidor.', 6000);
-        else alert("Erro de ligação ao servidor.");
-      }
-    });
-
-    // Evento de submit para alteração da senha do usuário
-    document.getElementById("passwordForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const currentPassword = document.getElementById("currentPassword").value;
-      const newPassword = document.getElementById("newPassword").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-
-      // Validações
-      if (!currentPassword) {
-        if (typeof window.showError === 'function') {
-          window.showError("Campo obrigatório", "Por favor, insira a sua senha atual.", 3000);
-        } else {
-          alert("Por favor, insira a sua senha atual!");
-        }
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        if (typeof window.showError === 'function') {
-          window.showError("Senha inválida", "A nova senha deve ter pelo menos 6 caracteres.", 3000);
-        } else {
-          alert("A nova senha deve ter pelo menos 6 caracteres!");
-        }
-        return;
-      }
-
-      if (newPassword === currentPassword) {
-        if (typeof window.showError === 'function') {
-          window.showError("Senha inválida", "A nova senha deve ser diferente da senha atual.", 3000);
-        } else {
-          alert("A nova senha deve ser diferente da senha atual!");
-        }
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        if (typeof window.showError === 'function') {
-          window.showError("Senhas não coincidem", "As senhas não coincidem. Verifique e tente novamente.", 3000);
-        } else {
-          alert("As senhas não coincidem!");
-        }
-        return;
-      }
-
-      try {
-        // Enviar senhas para API
-        const res = await makeRequest("/api/user/change-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("token")
-          },
-          body: JSON.stringify({ 
-            currentPassword: currentPassword,
-            newPassword: newPassword 
-          })
+        // Ao voltar ao separador Perfil (ex.: depois de clicar "ir ao site" no Painel), atualizar dinheiro poupado com dados frescos
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                const token = localStorage.getItem("token");
+                if (token) atualizarStatsPerfil(token, true);
+            }
         });
 
-        const data = await res.json();
-        if (data.status === "ok") {
-          // Mostrar notificação de sucesso
-          if (typeof window.showSuccess === 'function') {
-            window.showSuccess(
-              "Senha alterada com sucesso!",
-              "Será redirecionado para fazer login novamente.",
-              3000
-            );
-          } else {
-            alert("Senha alterada com sucesso! Será redirecionado para fazer login novamente.");
-          }
-          
-          // Limpar token e fazer logout
-          localStorage.removeItem("token");
-          sessionStorage.removeItem("token");
-          
-          // Redirecionar para o index após 2 segundos (tempo para ver a notificação)
-          setTimeout(() => {
+        // Função para remover token da storage e sair
+        function logout() {
+            localStorage.removeItem("token");
             window.location.href = "/index.html";
-          }, 2000);
-        } else {
-          // Mostrar notificação de erro
-          if (typeof window.showError === 'function') {
-            window.showError(
-              "Erro ao alterar senha",
-              data.message || data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
-              5000
-            );
-          } else {
-            alert(data.message || data.error || "Erro ao alterar senha.");
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao alterar senha:", err);
-        if (typeof window.showError === 'function') {
-          window.showError(
-            "Erro de ligação",
-            "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
-            5000
-          );
-        } else {
-          alert("Erro de ligação ao servidor.");
-        }
-      }
-    });
-
-    // ===== PASSWORD TOGGLE FUNCTIONS =====
-    function toggleCurrentPassword() {
-      const passwordInput = document.getElementById("currentPassword");
-      const toggleBtn = document.getElementById("toggle-currentPassword");
-
-      if (passwordInput && toggleBtn) {
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          `;
-        } else {
-          passwordInput.type = "password";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-            </svg>
-          `;
-        }
-      }
-    }
-
-    function toggleNewPassword() {
-      const passwordInput = document.getElementById("newPassword");
-      const toggleBtn = document.getElementById("toggle-newPassword");
-
-      if (passwordInput && toggleBtn) {
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          `;
-        } else {
-          passwordInput.type = "password";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-            </svg>
-          `;
-        }
-      }
-    }
-
-    function toggleConfirmPassword() {
-      const passwordInput = document.getElementById("confirmPassword");
-      const toggleBtn = document.getElementById("toggle-confirmPassword");
-
-      if (passwordInput && toggleBtn) {
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          `;
-        } else {
-          passwordInput.type = "password";
-          toggleBtn.innerHTML = `
-            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
-              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
-            </svg>
-          `;
-        }
-      }
-    }
-
-    // Atualiza status de contas conectadas na UI
-    function updateConnectedAccounts(contas) {
-      console.log("Contas recebidas:", contas);
-      const contasMap = {};
-      contas.forEach(c => {
-        const tipo = c.Tipo ? c.Tipo.toLowerCase() : '';
-        const conectado = c.Conectado === 1 || c.Conectado === '1' || c.Conectado === true;
-        contasMap[tipo] = conectado;
-        console.log(` [PERFIL] Conta ${tipo}: Conectado = ${c.Conectado} (${typeof c.Conectado}) -> ${conectado}`);
-      });
-
-      document.querySelectorAll('.account-item').forEach(item => {
-        const nome = item.querySelector('.account-name').textContent.toLowerCase();
-        const button = item.querySelector('.account-status');
-
-        let tipo = '';
-        if (nome.includes('email')) tipo = 'email';
-        else if (nome.includes('sms')) tipo = 'sms';
-        else if (nome.includes('discord')) tipo = 'discord';
-
-        const isConnected = contasMap[tipo] === true || contasMap[tipo] === 1 || contasMap[tipo] === '1';
-        console.log(` [PERFIL] Verificando ${tipo}: isConnected = ${isConnected}`);
-
-        if (isConnected && tipo === 'discord') {
-          button.textContent = "Trocar conta";
-          button.className = "account-status connected clickable";
-          button.title = "Clique para vincular outra conta Discord";
-          button.onclick = () => conectarDiscord();
-        } else if (isConnected) {
-          button.textContent = "Conectado";
-          button.className = "account-status connected";
-          button.onclick = null;
-        } else {
-          button.textContent = "Conectar";
-          button.className = "account-status disconnected";
-
-          if (tipo === 'discord') {
-            button.onclick = () => conectarDiscord();
-          } else if (tipo === 'email') {
-            button.onclick = () => conectarEmail();
-          } else if (tipo === 'sms') {
-            button.onclick = () => conectarSMS();
-          }
-        }
-      });
-    }
-
-    // ===== GERENCIAMENTO DE CONTA =====
-    function desativarConta() {
-      document.getElementById('deactivateModal').style.display = 'flex';
-    }
-
-    function fecharModalDesativar() {
-      document.getElementById('deactivateModal').style.display = 'none';
-    }
-
-    async function confirmarDesativar() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Erro: Não autenticado");
-        fecharModalDesativar();
-        return;
-      }
-
-      const btn = document.querySelector('#deactivateModal .modal-btn.confirm');
-      const originalText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Processando...';
-
-      try {
-        const response = await makeRequest('/api/user/deactivate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (data.status === 'ok') {
-          // Guardar data de expiração no localStorage
-          if (data.expirationDate) {
-            localStorage.setItem('accountDeactivated', 'true');
-            localStorage.setItem('accountExpirationDate', data.expirationDate);
-            localStorage.setItem('accountDaysRemaining', data.daysRemaining || 20);
-          }
-          
-          alert(`Conta desativada com sucesso. Você tem ${data.daysRemaining || 20} dias para reativar fazendo login. Após esse período, sua conta será permanentemente excluída.`);
-          localStorage.removeItem('token');
-          window.location.href = '/';
-        } else {
-          alert(data.message || data.error || 'Erro ao desativar conta');
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-      } catch (error) {
-        console.error('[PERFIL] Erro ao desativar conta:', error);
-        alert('Erro ao desativar conta. Tente novamente mais tarde.');
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-    }
-
-    function excluirConta() {
-      document.getElementById('deleteModal').style.display = 'flex';
-      document.getElementById('deleteConfirmInput').value = '';
-      document.getElementById('confirmDeleteBtn').disabled = true;
-    }
-
-    function fecharModalExcluir() {
-      document.getElementById('deleteModal').style.display = 'none';
-      document.getElementById('deleteConfirmInput').value = '';
-      document.getElementById('confirmDeleteBtn').disabled = true;
-    }
-
-    function verificarConfirmacaoExclusao() {
-      const input = document.getElementById('deleteConfirmInput');
-      const btn = document.getElementById('confirmDeleteBtn');
-      
-      if (input.value === 'EXCLUIR') {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-      }
-    }
-
-    async function confirmarExcluir() {
-      const input = document.getElementById('deleteConfirmInput');
-      if (input.value !== 'EXCLUIR') {
-        return;
-      }
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Erro: Não autenticado");
-        fecharModalExcluir();
-        return;
-      }
-
-      const btn = document.getElementById('confirmDeleteBtn');
-      const originalText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Excluindo...';
-
-      try {
-        const response = await makeRequest('/api/user/delete', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (data.status === 'ok') {
-          alert('Conta excluída com sucesso.');
-          localStorage.removeItem('token');
-          window.location.href = '/';
-        } else {
-          alert(data.message || data.error || 'Erro ao excluir conta');
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-      } catch (error) {
-        console.error('Erro ao excluir conta:', error);
-        alert('Erro ao excluir conta. Tente novamente mais tarde.');
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-    }
-
-    // Fechar modais ao clicar no overlay ou com tecla Escape
-    document.addEventListener('DOMContentLoaded', function() {
-      const deactivateModal = document.getElementById('deactivateModal');
-      const deleteModal = document.getElementById('deleteModal');
-
-      function onEscapePerfilModals(e) {
-        if (e.key !== 'Escape') return;
-        if (deactivateModal && deactivateModal.style.display === 'flex') fecharModalDesativar();
-        else if (deleteModal && deleteModal.style.display === 'flex') fecharModalExcluir();
-      }
-      document.addEventListener('keydown', onEscapePerfilModals);
-
-      if (deactivateModal) {
-        deactivateModal.addEventListener('click', function(e) {
-          if (e.target === deactivateModal) fecharModalDesativar();
-        });
-      }
-      if (deleteModal) {
-        deleteModal.addEventListener('click', function(e) {
-          if (e.target === deleteModal) fecharModalExcluir();
-        });
-      }
-    });
-
-    // Atualizar switches de preferências de notificação (carrega estado e guarda ao mudar)
-    function updateNotificationPreferences(preferencias) {
-      const prefMap = {};
-      (preferencias || []).forEach(p => {
-        const t = (p.Tipo || p.tipo || "").toString().toLowerCase();
-        if (t) prefMap[t] = !!(p.Ativo ?? p.ativo);
-      });
-
-      document.querySelectorAll('.preference-item').forEach(item => {
-        const nome = (item.querySelector('.preference-name') || {}).textContent || "";
-        const toggle = item.querySelector('.toggle-switch input');
-        if (!toggle) return;
-        let tipo = "";
-        if (nome.toLowerCase().includes("email")) tipo = "email";
-        else if (nome.toLowerCase().includes("discord")) tipo = "discord";
-        if (!tipo) return;
-
-        toggle.checked = prefMap[tipo] ?? false;
-        toggle.dataset.preferenceTipo = tipo;
-        toggle.onchange = async (e) => {
-          const ativo = e.target.checked;
-          try {
-            const res = await makeRequest("/api/user/preferences", {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("token")
-              },
-              body: JSON.stringify({ preferences: [{ tipo: e.target.dataset.preferenceTipo || tipo, ativo }] })
-            });
-            const data = await res.json();
-            if (data.status !== "ok") e.target.checked = !ativo;
-          } catch (err) {
-            e.target.checked = !ativo;
-          }
-        };
-      });
-    }
-
-    // Buscar info do plano do usuário e preencher UI do plano
-    async function carregarPlano() {
-      const token = localStorage.getItem("token");
-
-      try {
-        const res = await makeRequest("/api/user/plano", {
-          headers: { Authorization: "Bearer " + token }
-        });
-
-        const data = await res.json();
-
-        if (data.status === "ok" && data.plano) {
-          const plano = data.plano;
-          atualizarBotoesHistorico(plano.id);
-
-          // Mostrar informações baseadas no ID do plano
-          if (plano.id === 1) {
-            // FREE
-            document.getElementById("plano-nome").textContent = "Free";
-            document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
-            document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
-            document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
-          } else if (plano.id === 2) {
-            // BASIC
-            document.getElementById("plano-nome").textContent = "Basic";
-            document.getElementById("plano-descricao").textContent = "Plano básico com funcionalidades essenciais";
-            document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
-            document.getElementById("plano-produtos").textContent = "Não (25 produtos)";
-          } else if (plano.id === 3) {
-            // STANDARD
-            document.getElementById("plano-nome").textContent = "Standard";
-            document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avançadas";
-            document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
-            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
-          } else if (plano.id === 4) {
-            // PREMIUM
-            document.getElementById("plano-nome").textContent = "Premium";
-            document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
-            document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
-            document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
-          } else {
-            // FALLBACK se id não reconhecido
-            document.getElementById("plano-nome").textContent = "Free";
-            document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
-            document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
-            document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
-          }
-        } else {
-          document.getElementById("plano-nome").textContent = "Erro ao carregar";
-          document.getElementById("plano-descricao").textContent = "Não foi possível carregar as informações do plano";
-          atualizarBotoesHistorico(1);
-        }
-      } catch (err) {
-        console.error("Erro ao carregar plano:", err);
-        document.getElementById("plano-nome").textContent = "Erro de conexão";
-        document.getElementById("plano-descricao").textContent = "Verifique sua conexão com a internet";
-        atualizarBotoesHistorico(1);
-      }
-    }
-
-    // Plano atual (para os botões de relatório/histórico)
-    let planoIdAtual = 1;
-
-    function atualizarBotoesHistorico(planoId) {
-      planoIdAtual = planoId;
-      const btnPdf = document.getElementById("btnRelatoriosPdf");
-      const btnHistorico = document.getElementById("btnHistoricoCompleto");
-      const hint = document.getElementById("historyPlanHint");
-      if (!btnPdf || !btnHistorico || !hint) return;
-
-      const temPdf = planoId === 3 || planoId === 4; // Standard ou Premium
-      const temHistorico = planoId >= 2; // Basic, Standard, Premium (planos pagos)
-
-      btnPdf.disabled = !temPdf;
-      btnPdf.title = temPdf ? "Descarregar relatório em PDF" : "Disponível no plano Standard ou superior";
-      btnHistorico.disabled = !temHistorico;
-      if (planoId === 2) {
-        btnHistorico.title = "Histórico de 30 dias (Excel)";
-        hint.textContent = "O seu plano inclui histórico de 30 dias.";
-      } else if (planoId === 3) {
-        btnHistorico.title = "Histórico completo (Excel)";
-        hint.textContent = "O seu plano inclui relatórios PDF e histórico de 50 dias.";
-      } else if (planoId === 4) {
-        btnHistorico.title = "Relatório completo (Premium)";
-        hint.textContent = "O seu plano inclui relatórios PDF e relatório completo (100 dias).";
-      } else {
-        hint.textContent = "Faça upgrade para aceder a relatórios e histórico.";
-      }
-    }
-
-    async function baixarExportacao(url, nomeFicheiro) {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Precisa estar logado.");
-        return;
-      }
-      try {
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { Authorization: "Bearer " + token }
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          alert(data.message || data.error || "Erro ao obter ficheiro.");
-          return;
-        }
-        const blob = await res.blob();
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = nomeFicheiro;
-        a.click();
-        URL.revokeObjectURL(a.href);
-      } catch (err) {
-        console.error("Erro ao descarregar:", err);
-        alert("Erro de ligação ao servidor.");
-      }
-    }
-
-    document.getElementById("btnRelatoriosPdf").addEventListener("click", () => {
-      if (document.getElementById("btnRelatoriosPdf").disabled) return;
-      baixarExportacao("/api/exportar/produtos/pdf", "relatorio_produtos_promoping.pdf");
-    });
-
-    document.getElementById("btnHistoricoCompleto").addEventListener("click", () => {
-      if (document.getElementById("btnHistoricoCompleto").disabled) return;
-      if (planoIdAtual === 4) {
-        baixarExportacao("/api/exportar/relatorio/completo", "relatorio_completo_promoping.pdf");
-      } else {
-        baixarExportacao("/api/exportar/produtos/excel", "historico_produtos_promoping.xlsx");
-      }
-    });
-
-    // Abre página de planos para troca de plano
-    function abrirModalPlanos() {
-      window.location.href = "/dashboard/planos";
-    }
-
-    // Busca o nome do usuário e preenche no topo do painel (nav)
-    async function carregarNomeUsuario() {
-      try {
-        console.log("Carregando nome do usuário...");
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("Token não encontrado para carregar nome");
-          return;
         }
 
-        const response = await makeRequest("/api/user/profile", {
-          headers: { Authorization: "Bearer " + token }
-        });
+        // Evento de submit das informações pessoais
+        document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = {
+                nome: document.getElementById("fullName").value,
+                email: document.getElementById("email").value
+            };
+            try {
+                // Salvar perfil editado na API
+                const res = await makeRequest("/api/user/profile", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token")
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-        console.log("Resposta do perfil recebida:", response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Dados do perfil:", data);
-
-          if (data.status === "ok" && data.profile) {
-            const userNameEl = document.getElementById("userName");
-            if (userNameEl) {
-              userNameEl.textContent = data.profile.nome || 'Utilizador';
-              console.log("Nome do usuário atualizado:", data.profile.nome);
-            } else {
-              console.error("Elemento userName não encontrado");
+                const data = await res.json();
+                if (data.status === "ok") {
+                    if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'Informações salvas com sucesso!', 5000);
+                    else alert("Informações salvas com sucesso!");
+                } else {
+                    if (window.notificationSystem) window.notificationSystem.error('Erro', data.message || data.error || "Erro ao salvar informações.", 6000);
+                    else alert(data.message || data.error || "Erro ao salvar informações.");
+                }
+            } catch (err) {
+                console.error("Erro ao salvar:", err);
+                if (window.notificationSystem) window.notificationSystem.error('Erro', 'Erro de ligação ao servidor.', 6000);
+                else alert("Erro de ligação ao servidor.");
             }
-            const greetingEl = document.getElementById("profileGreetingName");
-            if (greetingEl) greetingEl.textContent = data.profile.nome || 'Utilizador';
-          } else {
-            console.error("Estrutura de dados incorreta:", data);
-          }
-        } else {
-          console.error("Erro na resposta:", response.status);
+        });
+
+        // Evento de submit para alteração da senha do usuário
+        document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById("currentPassword").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            // Validações
+            if (!currentPassword) {
+                if (typeof window.showError === 'function') {
+                    window.showError("Campo obrigatório", "Por favor, insira a sua senha atual.", 3000);
+                } else {
+                    alert("Por favor, insira a sua senha atual!");
+                }
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                if (typeof window.showError === 'function') {
+                    window.showError("Senha inválida", "A nova senha deve ter pelo menos 6 caracteres.", 3000);
+                } else {
+                    alert("A nova senha deve ter pelo menos 6 caracteres!");
+                }
+                return;
+            }
+
+            if (newPassword === currentPassword) {
+                if (typeof window.showError === 'function') {
+                    window.showError("Senha inválida", "A nova senha deve ser diferente da senha atual.", 3000);
+                } else {
+                    alert("A nova senha deve ser diferente da senha atual!");
+                }
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                if (typeof window.showError === 'function') {
+                    window.showError("Senhas não coincidem", "As senhas não coincidem. Verifique e tente novamente.", 3000);
+                } else {
+                    alert("As senhas não coincidem!");
+                }
+                return;
+            }
+
+            try {
+                // Enviar senhas para API
+                const res = await makeRequest("/api/user/change-password", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token")
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+
+                const data = await res.json();
+                if (data.status === "ok") {
+                    // Mostrar notificação de sucesso
+                    if (typeof window.showSuccess === 'function') {
+                        window.showSuccess(
+                            "Senha alterada com sucesso!",
+                            "Será redirecionado para fazer login novamente.",
+                            3000
+                        );
+                    } else {
+                        alert("Senha alterada com sucesso! Será redirecionado para fazer login novamente.");
+                    }
+
+                    // Limpar token e fazer logout
+                    localStorage.removeItem("token");
+                    sessionStorage.removeItem("token");
+
+                    // Redirecionar para o index após 2 segundos (tempo para ver a notificação)
+                    setTimeout(() => {
+                        window.location.href = "/index.html";
+                    }, 2000);
+                } else {
+                    // Mostrar notificação de erro
+                    if (typeof window.showError === 'function') {
+                        window.showError(
+                            "Erro ao alterar senha",
+                            data.message || data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
+                            5000
+                        );
+                    } else {
+                        alert(data.message || data.error || "Erro ao alterar senha.");
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao alterar senha:", err);
+                if (typeof window.showError === 'function') {
+                    window.showError(
+                        "Erro de ligação",
+                        "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+                        5000
+                    );
+                } else {
+                    alert("Erro de ligação ao servidor.");
+                }
+            }
+        });
+
+        // ===== PASSWORD TOGGLE FUNCTIONS =====
+        function toggleCurrentPassword() {
+            const passwordInput = document.getElementById("currentPassword");
+            const toggleBtn = document.getElementById("toggle-currentPassword");
+
+            if (passwordInput && toggleBtn) {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+                } else {
+                    passwordInput.type = "password";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+                }
+            }
         }
-      } catch (error) {
-        console.error("Erro ao carregar nome do usuário:", error);
-      }
-    }
 
-    // Funções de conexão para diferentes serviços
-    async function conectarDiscord() {
-      try {
-        console.log(" Iniciando conexão com Discord...");
+        function toggleNewPassword() {
+            const passwordInput = document.getElementById("newPassword");
+            const toggleBtn = document.getElementById("toggle-newPassword");
 
-        // Verificar se usuário está logado
-        const token = localStorage.getItem("token");
-        if (token) {
-          // Se estiver logado, passar parâmetro para associar ao perfil
-          const discordAuthUrl = `http://127.0.0.1:3000/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
-          window.location.href = discordAuthUrl;
-        } else {
-          // Se não estiver logado, fazer login normal
-          const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
-          window.location.href = discordAuthUrl;
+            if (passwordInput && toggleBtn) {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+                } else {
+                    passwordInput.type = "password";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+                }
+            }
         }
 
-      } catch (error) {
-        console.error(" Erro ao conectar Discord:", error);
-        alert("Erro ao conectar com Discord. Tente novamente.");
-      }
-    }
+        function toggleConfirmPassword() {
+            const passwordInput = document.getElementById("confirmPassword");
+            const toggleBtn = document.getElementById("toggle-confirmPassword");
 
-    async function conectarEmail() {
-      try {
-        console.log(" Configurando email...");
-
-        // Mostrar modal ou redirecionar para configuração de email
-        const email = prompt("Digite seu email para configuração:");
-        if (email && email.includes("@")) {
-          // Aqui você pode implementar a lógica de configuração de email
-          alert("Configuração de email em desenvolvimento!");
+            if (passwordInput && toggleBtn) {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+              <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `;
+                } else {
+                    passwordInput.type = "password";
+                    toggleBtn.innerHTML = `
+            <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
+              <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
+            </svg>
+          `;
+                }
+            }
         }
 
-      } catch (error) {
-        console.error(" Erro ao configurar email:", error);
-        alert("Erro ao configurar email. Tente novamente.");
-      }
-    }
+        // Atualiza status de contas conectadas na UI
+        function updateConnectedAccounts(contas) {
+            console.log("Contas recebidas:", contas);
+            const contasMap = {};
+            contas.forEach(c => {
+                const tipo = c.Tipo ? c.Tipo.toLowerCase() : '';
+                const conectado = c.Conectado === 1 || c.Conectado === '1' || c.Conectado === true;
+                contasMap[tipo] = conectado;
+                console.log(` [PERFIL] Conta ${tipo}: Conectado = ${c.Conectado} (${typeof c.Conectado}) -> ${conectado}`);
+            });
 
-    async function conectarSMS() {
-      try {
-        console.log(" Configurando SMS...");
+            document.querySelectorAll('.account-item').forEach(item => {
+                const nome = item.querySelector('.account-name').textContent.toLowerCase();
+                const button = item.querySelector('.account-status');
 
-        // Mostrar modal ou redirecionar para configuração de SMS
-        const telefone = prompt("Digite seu número de telefone (com código do país):");
-        if (telefone && telefone.length >= 10) {
-          // Aqui você pode implementar a lógica de configuração de SMS
-          alert("Configuração de SMS em desenvolvimento!");
+                let tipo = '';
+                if (nome.includes('email')) tipo = 'email';
+                else if (nome.includes('sms')) tipo = 'sms';
+                else if (nome.includes('discord')) tipo = 'discord';
+
+                const isConnected = contasMap[tipo] === true || contasMap[tipo] === 1 || contasMap[tipo] === '1';
+                console.log(` [PERFIL] Verificando ${tipo}: isConnected = ${isConnected}`);
+
+                if (isConnected && tipo === 'discord') {
+                    button.textContent = "Trocar conta";
+                    button.className = "account-status connected clickable";
+                    button.title = "Clique para vincular outra conta Discord";
+                    button.onclick = () => conectarDiscord();
+                } else if (isConnected) {
+                    button.textContent = "Conectado";
+                    button.className = "account-status connected";
+                    button.onclick = null;
+                } else {
+                    button.textContent = "Conectar";
+                    button.className = "account-status disconnected";
+
+                    if (tipo === 'discord') {
+                        button.onclick = () => conectarDiscord();
+                    } else if (tipo === 'email') {
+                        button.onclick = () => conectarEmail();
+                    } else if (tipo === 'sms') {
+                        button.onclick = () => conectarSMS();
+                    }
+                }
+            });
         }
 
-      } catch (error) {
-        console.error(" Erro ao configurar SMS:", error);
-        alert("Erro ao configurar SMS. Tente novamente.");
-      }
-    }
+        // ===== 2FA =====
+        window.twoFAEnabled = false;
+        let twoFASetupBackupCodes = [];
 
-  </script>
+        async function carregarStatus2FA() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await makeRequest("/api/user/2fa/status", { headers: { Authorization: "Bearer " + token } });
+                const data = await res.json();
+                const statusEl = document.getElementById("twoFAStatus");
+                const btnEnable = document.getElementById("btn2FAEnable");
+                const btnDisable = document.getElementById("btn2FADisable");
+                if (!statusEl || !btnEnable || !btnDisable) return;
+                if (data.twoFA && data.twoFA.enabled) {
+                    window.twoFAEnabled = true;
+                    window.twoFAMethod = data.twoFA.method || null;
+                    statusEl.textContent = "2FA ativo (" + (data.twoFA.method === "email" ? "código por email" : "app autenticador") + ").";
+                    statusEl.className = "twofa-status twofa-on";
+                    btnEnable.style.display = "none";
+                    btnDisable.style.display = "inline-block";
+                } else {
+                    window.twoFAEnabled = false;
+                    window.twoFAMethod = null;
+                    statusEl.textContent = "2FA desativado.";
+                    statusEl.className = "twofa-status twofa-off";
+                    btnEnable.style.display = "inline-block";
+                    btnDisable.style.display = "none";
+                }
+            } catch (e) {
+                console.error("[PERFIL] Erro ao carregar status 2FA:", e);
+            }
+        }
+
+        function abrirModal2FASetup() {
+            document.getElementById("twoFASetupModal").style.display = "flex";
+            document.getElementById("twoFASetupStep1").style.display = "block";
+            document.getElementById("twoFASetupStep2").style.display = "none";
+            document.getElementById("twoFAVerifyCode").value = "";
+        }
+        function fecharModal2FASetup() {
+            document.getElementById("twoFASetupModal").style.display = "none";
+        }
+        function fecharModal2FADisable() {
+            document.getElementById("twoFADisableModal").style.display = "none";
+            document.getElementById("twoFADisableCode").value = "";
+        }
+
+        async function iniciarSetup2FA(method) {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await makeRequest("/api/user/2fa/setup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+                    body: JSON.stringify({ method })
+                });
+                const data = await res.json();
+                if (data.status !== "ok") {
+                    alert(data.error || "Erro ao iniciar 2FA");
+                    return;
+                }
+                document.getElementById("twoFASetupStep1").style.display = "none";
+                document.getElementById("twoFASetupStep2").style.display = "block";
+                document.getElementById("twoFASetupTOTP").style.display = method === "totp" ? "block" : "none";
+                document.getElementById("twoFASetupEmail").style.display = method === "email" ? "block" : "none";
+                if (method === "totp" && data.otpauthUrl) {
+                    const qrContainer = document.getElementById("twoFAQRContainer");
+                    qrContainer.innerHTML = "";
+                    const img = document.createElement("img");
+                    img.alt = "QR Code 2FA";
+                    img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(data.otpauthUrl);
+                    qrContainer.appendChild(img);
+                }
+                if (data.backupCodes && data.backupCodes.length) {
+                    twoFASetupBackupCodes = data.backupCodes;
+                    document.getElementById("twoFABackupCodes").textContent = data.backupCodes.join("\n");
+                } else {
+                    document.getElementById("twoFABackupCodes").textContent = "";
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao iniciar 2FA. Tente novamente.");
+            }
+        }
+
+        async function confirmarSetup2FA() {
+            const code = document.getElementById("twoFAVerifyCode").value.trim();
+            if (!code) {
+                alert("Introduza o código de verificação.");
+                return;
+            }
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await makeRequest("/api/user/2fa/verify-setup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+                    body: JSON.stringify({ code })
+                });
+                const data = await res.json();
+                if (data.status === "ok") {
+                    fecharModal2FASetup();
+                    await carregarStatus2FA();
+                    if (twoFASetupBackupCodes.length) {
+                        alert("2FA ativado. Guarde os códigos de backup num local seguro. Cada um só pode ser usado uma vez.");
+                    } else {
+                        alert("2FA ativado com sucesso.");
+                    }
+                } else {
+                    alert(data.error || "Código inválido.");
+                }
+            } catch (e) {
+                alert("Erro ao ativar 2FA. Tente novamente.");
+            }
+        }
+
+        async function confirmarDesativar2FA() {
+            const code = document.getElementById("twoFADisableCode").value.trim();
+            if (!code) {
+                alert("Introduza o código de verificação.");
+                return;
+            }
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const res = await makeRequest("/api/user/2fa/disable", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+                    body: JSON.stringify({ code })
+                });
+                const data = await res.json();
+                if (data.status === "ok") {
+                    fecharModal2FADisable();
+                    await carregarStatus2FA();
+                    alert("2FA desativado.");
+                } else {
+                    alert(data.error || "Código inválido.");
+                }
+            } catch (e) {
+                alert("Erro ao desativar 2FA. Tente novamente.");
+            }
+        }
+
+        document.getElementById("btn2FAEnable").addEventListener("click", abrirModal2FASetup);
+        document.getElementById("btn2FADisable").addEventListener("click", function() {
+            var sendEmailWrap = document.getElementById("twoFADisableSendEmailWrap");
+            if (sendEmailWrap) sendEmailWrap.style.display = (window.twoFAMethod === "email") ? "block" : "none";
+            document.getElementById("twoFADisableCode").value = "";
+            document.getElementById("twoFADisableModal").style.display = "flex";
+        });
+
+        async function enviarCodigo2FADesativar() {
+            var btn = document.getElementById("twoFADisableSendEmailBtn");
+            if (!btn) return;
+            var token = localStorage.getItem("token");
+            if (!token) return;
+            btn.disabled = true;
+            var originalText = btn.textContent;
+            try {
+                var res = await makeRequest("/api/user/2fa/send-email-code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+                    body: JSON.stringify({})
+                });
+                var data = await res.json();
+                if (data.status === "ok" && data.sent) {
+                    btn.textContent = "Código enviado. Verifique o email.";
+                } else {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+        var twoFADisableSendEmailBtn = document.getElementById("twoFADisableSendEmailBtn");
+        if (twoFADisableSendEmailBtn) twoFADisableSendEmailBtn.addEventListener("click", enviarCodigo2FADesativar);
+
+        function descarregarCodigosBackup2FA() {
+            if (!twoFASetupBackupCodes || twoFASetupBackupCodes.length === 0) return;
+            var texto = "PromoPing - Códigos de backup 2FA\n\nGuarde num local seguro. Cada código só pode ser usado uma vez.\n\n" + twoFASetupBackupCodes.join("\n") + "\n";
+            var blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "promoping-2fa-backup-codes.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        var btnDownloadBackupCodes = document.getElementById("btnDownloadBackupCodes");
+        if (btnDownloadBackupCodes) btnDownloadBackupCodes.addEventListener("click", descarregarCodigosBackup2FA);
+
+        // ===== GERENCIAMENTO DE CONTA =====
+        function desativarConta() {
+            document.getElementById("deactivate2FACodeWrap").style.display = window.twoFAEnabled ? "block" : "none";
+            document.getElementById("deactivate2FACode").value = "";
+            document.getElementById("deactivateModal").style.display = "flex";
+        }
+
+        function fecharModalDesativar() {
+            document.getElementById('deactivateModal').style.display = 'none';
+        }
+
+        async function confirmarDesativar() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Erro: Não autenticado");
+                fecharModalDesativar();
+                return;
+            }
+
+            const btn = document.querySelector('#deactivateModal .modal-btn.confirm');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Processando...';
+
+            const code2FA = window.twoFAEnabled ? document.getElementById("deactivate2FACode").value.trim() : "";
+            if (window.twoFAEnabled && !code2FA) {
+                alert("Introduza o código de verificação 2FA para desativar a conta.");
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }
+            const bodyDeactivate = window.twoFAEnabled ? { code: code2FA } : {};
+            try {
+                const response = await makeRequest('/api/user/deactivate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bodyDeactivate)
+                });
+
+                const data = await response.json();
+                if (data.requires2FACode && data.status !== 'ok') {
+                    alert("É necessário o código 2FA para desativar a conta.");
+                    document.getElementById("deactivate2FACodeWrap").style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    return;
+                }
+                if (data.status === 'ok') {
+                    // Guardar data de expiração no localStorage
+                    if (data.expirationDate) {
+                        localStorage.setItem('accountDeactivated', 'true');
+                        localStorage.setItem('accountExpirationDate', data.expirationDate);
+                        localStorage.setItem('accountDaysRemaining', data.daysRemaining || 20);
+                    }
+
+                    alert(`Conta desativada com sucesso. Você tem ${data.daysRemaining || 20} dias para reativar fazendo login. Após esse período, sua conta será permanentemente excluída.`);
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                } else {
+                    alert(data.message || data.error || 'Erro ao desativar conta');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('[PERFIL] Erro ao desativar conta:', error);
+                alert('Erro ao desativar conta. Tente novamente mais tarde.');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function excluirConta() {
+            document.getElementById("delete2FACodeWrap").style.display = window.twoFAEnabled ? "block" : "none";
+            document.getElementById("delete2FACode").value = "";
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('confirmDeleteBtn').disabled = true;
+        }
+
+        function fecharModalExcluir() {
+            document.getElementById('deleteModal').style.display = 'none';
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('confirmDeleteBtn').disabled = true;
+        }
+
+        function verificarConfirmacaoExclusao() {
+            const input = document.getElementById('deleteConfirmInput');
+            const btn = document.getElementById('confirmDeleteBtn');
+            const code2FA = window.twoFAEnabled ? (document.getElementById('delete2FACode') && document.getElementById('delete2FACode').value.trim()) : '';
+            const ok = input.value === 'EXCLUIR' && (!window.twoFAEnabled || (code2FA && code2FA.length > 0));
+            btn.disabled = !ok;
+        }
+        var delete2FACodeEl = document.getElementById('delete2FACode');
+        if (delete2FACodeEl) delete2FACodeEl.addEventListener('input', verificarConfirmacaoExclusao);
+
+        async function confirmarExcluir() {
+            const input = document.getElementById('deleteConfirmInput');
+            if (input.value !== 'EXCLUIR') {
+                return;
+            }
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Erro: Não autenticado");
+                fecharModalExcluir();
+                return;
+            }
+
+            const btn = document.getElementById('confirmDeleteBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Excluindo...';
+
+            const code2FA = window.twoFAEnabled ? document.getElementById("delete2FACode").value.trim() : "";
+            if (window.twoFAEnabled && !code2FA) {
+                alert("Introduza o código de verificação 2FA para excluir a conta.");
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }
+            const bodyDelete = window.twoFAEnabled ? { code: code2FA } : {};
+            try {
+                const response = await makeRequest('/api/user/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bodyDelete)
+                });
+
+                const data = await response.json();
+                if (data.requires2FACode && data.status !== 'ok') {
+                    alert("É necessário o código 2FA para excluir a conta.");
+                    document.getElementById("delete2FACodeWrap").style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    return;
+                }
+                if (data.status === 'ok') {
+                    alert('Conta excluída com sucesso.');
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                } else {
+                    alert(data.message || data.error || 'Erro ao excluir conta');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('Erro ao excluir conta:', error);
+                alert('Erro ao excluir conta. Tente novamente mais tarde.');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Fechar modais ao clicar no overlay ou com tecla Escape
+        document.addEventListener('DOMContentLoaded', function() {
+            const deactivateModal = document.getElementById('deactivateModal');
+            const deleteModal = document.getElementById('deleteModal');
+
+            function onEscapePerfilModals(e) {
+                if (e.key !== 'Escape') return;
+                if (deactivateModal && deactivateModal.style.display === 'flex') fecharModalDesativar();
+                else if (deleteModal && deleteModal.style.display === 'flex') fecharModalExcluir();
+            }
+            document.addEventListener('keydown', onEscapePerfilModals);
+
+            if (deactivateModal) {
+                deactivateModal.addEventListener('click', function(e) {
+                    if (e.target === deactivateModal) fecharModalDesativar();
+                });
+            }
+            if (deleteModal) {
+                deleteModal.addEventListener('click', function(e) {
+                    if (e.target === deleteModal) fecharModalExcluir();
+                });
+            }
+        });
+
+        // Atualizar switches de preferências de notificação (carrega estado e guarda ao mudar)
+        function updateNotificationPreferences(preferencias) {
+            const prefMap = {};
+            (preferencias || []).forEach(p => {
+                const t = (p.Tipo || p.tipo || "").toString().toLowerCase();
+                if (t) prefMap[t] = !!(p.Ativo != null ? p.Ativo : p.ativo);
+            });
+
+            document.querySelectorAll('.preference-item').forEach(item => {
+                const nome = (item.querySelector('.preference-name') || {}).textContent || "";
+                const toggle = item.querySelector('.toggle-switch input');
+                if (!toggle) return;
+                let tipo = "";
+                if (nome.toLowerCase().includes("email")) tipo = "email";
+                else if (nome.toLowerCase().includes("discord")) tipo = "discord";
+                if (!tipo) return;
+
+                toggle.checked = prefMap[tipo] != null ? prefMap[tipo] : false;
+                toggle.dataset.preferenceTipo = tipo;
+                toggle.onchange = async (e) => {
+                    const ativo = e.target.checked;
+                    try {
+                        const res = await makeRequest("/api/user/preferences", {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: "Bearer " + localStorage.getItem("token")
+                            },
+                            body: JSON.stringify({
+                                preferences: [{
+                                    tipo: e.target.dataset.preferenceTipo || tipo,
+                                    ativo
+                                }]
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.status !== "ok") e.target.checked = !ativo;
+                    } catch (err) {
+                        e.target.checked = !ativo;
+                    }
+                };
+            });
+        }
+
+        // Buscar info do plano do usuário e preencher UI do plano
+        async function carregarPlano() {
+            const token = localStorage.getItem("token");
+
+            try {
+                const res = await makeRequest("/api/user/plano", {
+                    headers: {
+                        Authorization: "Bearer " + token
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.status === "ok" && data.plano) {
+                    const plano = data.plano;
+                    atualizarBotoesHistorico(plano.id);
+
+                    // Mostrar informações baseadas no ID do plano
+                    if (plano.id === 1) {
+                        // FREE
+                        document.getElementById("plano-nome").textContent = "Free";
+                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
+                        document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
+                        document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
+                    } else if (plano.id === 2) {
+                        // BASIC
+                        document.getElementById("plano-nome").textContent = "Basic";
+                        document.getElementById("plano-descricao").textContent = "Plano básico com funcionalidades essenciais";
+                        document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
+                        document.getElementById("plano-produtos").textContent = "Não (25 produtos)";
+                    } else if (plano.id === 3) {
+                        // STANDARD
+                        document.getElementById("plano-nome").textContent = "Standard";
+                        document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avançadas";
+                        document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
+                        document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+                    } else if (plano.id === 4) {
+                        // PREMIUM
+                        document.getElementById("plano-nome").textContent = "Premium";
+                        document.getElementById("plano-descricao").textContent = "Plano premium com todas as funcionalidades";
+                        document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
+                        document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+                    } else {
+                        // FALLBACK se id não reconhecido
+                        document.getElementById("plano-nome").textContent = "Free";
+                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
+                        document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
+                        document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
+                    }
+                } else {
+                    document.getElementById("plano-nome").textContent = "Erro ao carregar";
+                    document.getElementById("plano-descricao").textContent = "Não foi possível carregar as informações do plano";
+                    atualizarBotoesHistorico(1);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar plano:", err);
+                document.getElementById("plano-nome").textContent = "Erro de conexão";
+                document.getElementById("plano-descricao").textContent = "Verifique sua conexão com a internet";
+                atualizarBotoesHistorico(1);
+            }
+        }
+
+        // Plano atual (para os botões de relatório vs histórico)
+        let planoIdAtual = 1;
+        // Dias para "Histórico completo" conforme plano: Basic 30, Standard 50, Premium 100
+        function diasParaHistorico(planoId) {
+            if (planoId === 4) return 100;
+            if (planoId === 3) return 50;
+            if (planoId === 2) return 30;
+            return 30;
+        }
+
+        function atualizarBotoesHistorico(planoId) {
+            planoIdAtual = planoId;
+            const btnPdf = document.getElementById("btnRelatoriosPdf");
+            const btnHistorico = document.getElementById("btnHistoricoCompleto");
+            const hint = document.getElementById("historyPlanHint");
+            if (!btnPdf || !btnHistorico || !hint) return;
+
+            const temRelatorio = planoId === 3 || planoId === 4; // Relatório PDF: Standard ou Premium
+            const temHistorico = planoId >= 2; // Histórico: Basic, Standard, Premium
+
+            btnPdf.disabled = !temRelatorio;
+            btnPdf.title = temRelatorio ? "Descarregar relatório em PDF (últimos 30 dias)" : "Disponível no plano Standard ou superior";
+            btnHistorico.disabled = !temHistorico;
+            if (planoId === 2) {
+                btnHistorico.title = "Descarregar histórico em PDF (30 dias)";
+                hint.textContent = "Relatório: plano Standard+. Histórico: 30 dias no plano Basic.";
+            } else if (planoId === 3) {
+                btnHistorico.title = "Descarregar histórico em PDF (50 dias)";
+                hint.textContent = "Relatório PDF (30 dias) e histórico completo (50 dias).";
+            } else if (planoId === 4) {
+                btnHistorico.title = "Descarregar histórico em PDF (100 dias)";
+                hint.textContent = "Relatório PDF (30 dias) e histórico completo (100 dias).";
+            } else {
+                hint.textContent = "Faça upgrade para aceder a relatórios e histórico.";
+            }
+        }
+
+        // Mesmo padrão do admin (utilizadores): fetch PDF, blob, link download
+        function formatarData(d) {
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, "0");
+            var day = String(d.getDate()).padStart(2, "0");
+            return y + "-" + m + "-" + day;
+        }
+
+        // tipo: "relatorio" (30 dias, ficheiro relatorio-...) ou "historico" (dias conforme plano, ficheiro historico-...)
+        async function exportarPDF(tipo, dias, botaoClicado) {
+            var token = localStorage.getItem("token");
+            if (!token) {
+                alert("Precisa estar logado.");
+                return;
+            }
+            var labelBtn = tipo === "historico" ? "Histórico completo" : "Relatórios PDF";
+            var nomeFicheiro = tipo === "historico" ? "historico-promoping-" : "relatorio-promoping-";
+            if (botaoClicado) {
+                botaoClicado.disabled = true;
+                botaoClicado.textContent = "A gerar PDF...";
+            }
+            try {
+                var hoje = new Date();
+                var dataFim = formatarData(hoje);
+                var dataInicio = new Date(hoje);
+                dataInicio.setDate(dataInicio.getDate() - (dias || 30));
+                var dataInicioStr = formatarData(dataInicio);
+                var basePath = tipo === "historico" ? "/api/historico/pdf" : "/api/relatorios/pdf";
+                var url = window.location.origin + basePath + "?data_inicio=" + encodeURIComponent(dataInicioStr) + "&data_fim=" + encodeURIComponent(dataFim);
+
+                var response = await fetch(url, {
+                    method: "GET",
+                    headers: { Authorization: "Bearer " + token }
+                });
+
+                if (!response.ok) {
+                    var errData = await response.json().catch(function() { return {}; });
+                    throw new Error(errData.error || errData.message || "Erro " + response.status);
+                }
+
+                var blob = await response.blob();
+                var urlBlob = window.URL.createObjectURL(blob);
+                var a = document.createElement("a");
+                a.href = urlBlob;
+                a.download = nomeFicheiro + dataInicioStr + "-" + dataFim + ".pdf";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(urlBlob);
+            } catch (err) {
+                console.error("Erro ao exportar PDF:", err);
+                alert("Erro ao exportar PDF: " + err.message);
+            } finally {
+                if (botaoClicado) {
+                    botaoClicado.disabled = false;
+                    botaoClicado.textContent = labelBtn;
+                }
+            }
+        }
+
+        document.getElementById("btnRelatoriosPdf").addEventListener("click", function() {
+            var btn = this;
+            if (btn.disabled) return;
+            exportarPDF("relatorio", 30, btn);
+        });
+
+        document.getElementById("btnHistoricoCompleto").addEventListener("click", function() {
+            var btn = this;
+            if (btn.disabled) return;
+            var dias = diasParaHistorico(planoIdAtual);
+            exportarPDF("historico", dias, btn);
+        });
+
+        // Abre página de planos para troca de plano
+        function abrirModalPlanos() {
+            window.location.href = "/dashboard/planos";
+        }
+
+        // Busca o nome do usuário e preenche no topo do painel (nav)
+        async function carregarNomeUsuario() {
+            try {
+                console.log("Carregando nome do usuário...");
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error("Token não encontrado para carregar nome");
+                    return;
+                }
+
+                const response = await makeRequest("/api/user/profile", {
+                    headers: {
+                        Authorization: "Bearer " + token
+                    }
+                });
+
+                console.log("Resposta do perfil recebida:", response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Dados do perfil:", data);
+
+                    if (data.status === "ok" && data.profile) {
+                        const userNameEl = document.getElementById("userName");
+                        if (userNameEl) {
+                            userNameEl.textContent = data.profile.nome || 'Utilizador';
+                            console.log("Nome do usuário atualizado:", data.profile.nome);
+                        } else {
+                            console.error("Elemento userName não encontrado");
+                        }
+                        const greetingEl = document.getElementById("profileGreetingName");
+                        if (greetingEl) greetingEl.textContent = data.profile.nome || 'Utilizador';
+                    } else {
+                        console.error("Estrutura de dados incorreta:", data);
+                    }
+                } else {
+                    console.error("Erro na resposta:", response.status);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar nome do usuário:", error);
+            }
+        }
+
+        // Funções de conexão para diferentes serviços
+        async function conectarDiscord() {
+            try {
+                console.log(" Iniciando conexão com Discord...");
+
+                // Verificar se usuário está logado
+                const token = localStorage.getItem("token");
+                if (token) {
+                    // Se estiver logado, passar parâmetro para associar ao perfil
+                    const discordAuthUrl = `http://127.0.0.1:3000/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
+                    window.location.href = discordAuthUrl;
+                } else {
+                    // Se não estiver logado, fazer login normal
+                    const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
+                    window.location.href = discordAuthUrl;
+                }
+
+            } catch (error) {
+                console.error(" Erro ao conectar Discord:", error);
+                alert("Erro ao conectar com Discord. Tente novamente.");
+            }
+        }
+
+        async function conectarEmail() {
+            try {
+                console.log(" Configurando email...");
+
+                // Mostrar modal ou redirecionar para configuração de email
+                const email = prompt("Digite seu email para configuração:");
+                if (email && email.includes("@")) {
+                    // Aqui você pode implementar a lógica de configuração de email
+                    alert("Configuração de email em desenvolvimento!");
+                }
+
+            } catch (error) {
+                console.error(" Erro ao configurar email:", error);
+                alert("Erro ao configurar email. Tente novamente.");
+            }
+        }
+
+        async function conectarSMS() {
+            try {
+                console.log(" Configurando SMS...");
+
+                // Mostrar modal ou redirecionar para configuração de SMS
+                const telefone = prompt("Digite seu número de telefone (com código do país):");
+                if (telefone && telefone.length >= 10) {
+                    // Aqui você pode implementar a lógica de configuração de SMS
+                    alert("Configuração de SMS em desenvolvimento!");
+                }
+
+            } catch (error) {
+                console.error(" Erro ao configurar SMS:", error);
+                alert("Erro ao configurar SMS. Tente novamente.");
+            }
+        }
+    </script>
 </body>
+
 </html>
