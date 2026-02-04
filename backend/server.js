@@ -70,12 +70,14 @@ import adminRoutes from "./routes/admin.js"; // Admin Panel
 import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
 import blogRoutes from "./routes/blog.js"; // Blog
 import heraldRoutes from "./routes/herald.js"; // Herald API
-import { verifyToken} from "./middleware/auth.js"; // JWT
+import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
+import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
+import { verifyToken } from "./middleware/auth.js"; // JWT
 
 // ================== DATABASE ==================
-import {pool} from "./database/db.js"; // Pool de conexão
+import { pool } from "./database/db.js"; // Pool de conexão
 // ================== SERVIÇOS ==================
-import {sendNotification} from "./services/notify.js"; // Notificações
+import { sendNotification } from "./services/notify.js"; // Notificações
 
 // ================== CONFIGURAÇÃO DO EXPRESS ==================
 const app = express();
@@ -83,7 +85,8 @@ const app = express();
 // Trust proxy para funcionar corretamente com NGINX/proxy reverso
 // Em produção, confiar apenas no primeiro proxy (NGINX)
 // Em desenvolvimento, confiar apenas em localhost (usando IPs válidos)
-if (process.env.NODE_ENV === 'production') { app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
 } else {
     app.set('trust proxy', ['127.0.0.1', '::1']);
 }
@@ -255,15 +258,14 @@ app.use("/api/auth", authRoutes); // Login/Registro + Google OAuth
 app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 
 // ================== ROTAS ==================
-app.get("/api/user/me", verifyToken, async (req, res) => {
+app.get("/api/user/me", verifyToken, async(req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
 
         // Buscar dados completos do usuário incluindo foto de perfil e PerfilId
         try {
             const [rows] = await pool.query(
-                "SELECT ReferenciaID, Nome, Email, Telefone, FotoPerfil, DataRegisto, cidade, location, PerfilId FROM Utilizadores WHERE ReferenciaID = ?",
-                [referenciaID]
+                "SELECT ReferenciaID, Nome, Email, Telefone, FotoPerfil, DataRegisto, cidade, location, PerfilId FROM Utilizadores WHERE ReferenciaID = ?", [referenciaID]
             );
 
             if (rows.length > 0) {
@@ -289,8 +291,7 @@ app.get("/api/user/me", verifyToken, async (req, res) => {
             // Se campo FotoPerfil não existe, buscar sem ele mas com PerfilId
             try {
                 const [rows] = await pool.query(
-                    "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, PerfilId FROM Utilizadores WHERE ReferenciaID = ?",
-                    [referenciaID]
+                    "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, PerfilId FROM Utilizadores WHERE ReferenciaID = ?", [referenciaID]
                 );
 
                 if (rows.length > 0) {
@@ -339,6 +340,8 @@ app.use("/api/notificacoes", notificacoesRoutes); // Notificações
 app.use("/api/grace-period", gracePeriodRoutes); // Períodos de graça
 app.use("/api/payment", paymentRoutes); // Pagamentos
 app.use("/api/exportar", exportRoutes); // Exportação
+app.use("/api/relatorios", relatoriosRoutes); // Relatorios PDF
+app.use("/api/historico", historicoRoutes); // Historico PDF (sem graficos)
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
@@ -378,7 +381,7 @@ app.get("/api/", (req, res) => {
 // ================== PROXY PARA BOT DISCORD (notificações de preço por DM) ==================
 // O bot escuta na porta 3001; o backend reencaminha para usar as mesmas notificações
 // que o bot já envia (embed com Preço alvo atingido / Preço diminuiu, etc.) conforme preferências.
-app.post("/api/internal/send-price-dm", async (req, res) => {
+app.post("/api/internal/send-price-dm", async(req, res) => {
     try {
         const botUrl = process.env.INTERNAL_BOT_URL || "http://127.0.0.1:3001";
         const f = await fetch(`${botUrl}/internal/send-price-dm`, {
@@ -406,7 +409,7 @@ app.post("/api/internal/send-price-dm", async (req, res) => {
 });
 
 // ================== NOTIFICAÇÕES DIRETAS ==================
-app.post("/notify", async (req, res) => {
+app.post("/notify", async(req, res) => {
     try {
         const {
             canal,
@@ -971,9 +974,9 @@ const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0
 // ================== INICIAR SERVIDOR ==================
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, async () => {
+app.listen(PORT, HOST, async() => {
     console.log(`\nPromoPing rodando em http://${HOST}:${PORT}`);
-    
+
     // Inicializar todas as tabelas definidas
     try {
         await initializeAllTables();
@@ -989,10 +992,11 @@ app.listen(PORT, HOST, async () => {
 
     if (process.env.NODE_ENV === 'development') {
         // Mostrar também o IP local da rede para acesso via dispositivos móveis
-        const os = await import('os');
+        const os = await
+        import ('os');
         const networkInterfaces = os.networkInterfaces();
         let localIP = '192.168.1.64'; // IP padrão
-        
+
         // Tentar encontrar o IP da rede local automaticamente
         for (const interfaceName in networkInterfaces) {
             const addresses = networkInterfaces[interfaceName];
@@ -1005,7 +1009,7 @@ app.listen(PORT, HOST, async () => {
                 }
             }
         }
-        
+
         console.log(`  Frontend local: http://localhost:${PORT}/ | API: http://localhost:${PORT}/api/`);
         console.log(`  Acesso via rede local: http://${localIP}:${PORT}/`);
         console.log(`  API via rede local: http://${localIP}:${PORT}/api/`);

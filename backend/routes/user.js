@@ -4,6 +4,15 @@ import { pool } from "../database/db.js";
 // import { formatDate } from "../utils/format.js"; // Removido - função não existe
 import { verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
+import {
+  getStatus,
+  is2FAEnabled,
+  startSetup,
+  verifyAndEnable,
+  verifyCode,
+  disable,
+  sendEmailCode
+} from "../services/twoFactorService.js";
 
 const router = express.Router();
 
@@ -1080,10 +1089,83 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
   }
 });
 
+// ================== 2FA (AUTENTICAÇÃO EM DOIS FATORES) ==================
+router.get("/2fa/status", verifyToken, async (req, res) => {
+  try {
+    const status = await getStatus(req.user.ReferenciaID);
+    return res.json({ status: "ok", twoFA: status });
+  } catch (err) {
+    console.error("[USER] Erro ao obter status 2FA:", err);
+    return res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
+router.post("/2fa/setup", verifyToken, async (req, res) => {
+  try {
+    const { method } = req.body;
+    const m = method === "email" ? "email" : "totp";
+    const result = await startSetup(req.user.ReferenciaID, m);
+    return res.json({ status: "ok", ...result });
+  } catch (err) {
+    console.error("[USER] Erro ao iniciar setup 2FA:", err);
+    return res.status(400).json({ status: "error", error: err.message });
+  }
+});
+
+router.post("/2fa/verify-setup", verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ status: "error", error: "Codigo obrigatorio" });
+    const result = await verifyAndEnable(req.user.ReferenciaID, code);
+    return res.json({ status: "ok", ...result });
+  } catch (err) {
+    console.error("[USER] Erro ao ativar 2FA:", err);
+    return res.status(400).json({ status: "error", error: err.message });
+  }
+});
+
+router.post("/2fa/disable", verifyToken, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ status: "error", error: "Codigo obrigatorio para desativar 2FA" });
+    await disable(req.user.ReferenciaID, code);
+    return res.json({ status: "ok", enabled: false });
+  } catch (err) {
+    console.error("[USER] Erro ao desativar 2FA:", err);
+    return res.status(400).json({ status: "error", error: err.message });
+  }
+});
+
+router.post("/2fa/send-email-code", verifyToken, async (req, res) => {
+  try {
+    await sendEmailCode(req.user.ReferenciaID);
+    return res.json({ status: "ok", sent: true });
+  } catch (err) {
+    console.error("[USER] Erro ao enviar codigo 2FA por email:", err);
+    return res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
 // ================== DESATIVAR CONTA ==================
 router.post("/deactivate", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
+    const twoFA = await is2FAEnabled(referenciaID);
+    if (twoFA) {
+      const { code } = req.body || {};
+      if (!code) {
+        return res.status(403).json({
+          status: "error",
+          error: "Codigo de verificacao 2FA obrigatorio para desativar a conta",
+          requires2FACode: true
+        });
+      }
+      try {
+        await verifyCode(referenciaID, code);
+      } catch (verifyErr) {
+        return res.status(400).json({ status: "error", error: verifyErr.message });
+      }
+    }
 
     // Buscar dados do usuário antes de desativar
     const [userRows] = await pool.query(
@@ -1201,6 +1283,22 @@ router.post("/deactivate", verifyToken, async (req, res) => {
 router.delete("/delete", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
+    const twoFA = await is2FAEnabled(referenciaID);
+    if (twoFA) {
+      const { code } = req.body || {};
+      if (!code) {
+        return res.status(403).json({
+          status: "error",
+          error: "Codigo de verificacao 2FA obrigatorio para excluir a conta",
+          requires2FACode: true
+        });
+      }
+      try {
+        await verifyCode(referenciaID, code);
+      } catch (verifyErr) {
+        return res.status(400).json({ status: "error", error: verifyErr.message });
+      }
+    }
 
     // Buscar dados do usuário ANTES de deletar (precisamos do email para enviar confirmação)
     const [userRows] = await pool.query(
