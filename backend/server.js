@@ -375,6 +375,36 @@ app.get("/api/", (req, res) => {
     });
 });
 
+// ================== PROXY PARA BOT DISCORD (notificações de preço por DM) ==================
+// O bot escuta na porta 3001; o backend reencaminha para usar as mesmas notificações
+// que o bot já envia (embed com Preço alvo atingido / Preço diminuiu, etc.) conforme preferências.
+app.post("/api/internal/send-price-dm", async (req, res) => {
+    try {
+        const botUrl = process.env.INTERNAL_BOT_URL || "http://127.0.0.1:3001";
+        const f = await fetch(`${botUrl}/internal/send-price-dm`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(req.body || {}),
+        });
+        const text = await f.text();
+        if (f.status === 503) {
+            return res.status(503).json({
+                error: "Bot Discord indisponível",
+                message: "O bot ainda não está pronto ou não está a correr. Certifica-te de que usas «npm start» (backend + bot) ou que o bot está ligado na porta 3001.",
+                detail: text || undefined,
+            });
+        }
+        res.status(f.status).set("Content-Type", f.headers.get("content-type") || "application/json").send(text);
+    } catch (err) {
+        console.error("[BACKEND] Proxy send-price-dm:", err.message);
+        res.status(503).json({
+            error: "Bot Discord indisponível",
+            message: "Não foi possível contactar o bot. Certifica-te de que «npm start» está a correr (backend + bot) ou que o bot está ligado na porta 3001.",
+            detail: err.message,
+        });
+    }
+});
+
 // ================== NOTIFICAÇÕES DIRETAS ==================
 app.post("/notify", async (req, res) => {
     try {

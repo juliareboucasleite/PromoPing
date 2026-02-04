@@ -1072,22 +1072,27 @@
       }
     });
 
-    // Atualizar switches de preferências de notificação
+    // Atualizar switches de preferências de notificação (carrega estado e guarda ao mudar)
     function updateNotificationPreferences(preferencias) {
       const prefMap = {};
-      preferencias.forEach(p => prefMap[p.Tipo] = p.Ativo);
+      (preferencias || []).forEach(p => {
+        const t = (p.Tipo || p.tipo || "").toString().toLowerCase();
+        if (t) prefMap[t] = !!(p.Ativo ?? p.ativo);
+      });
 
       document.querySelectorAll('.preference-item').forEach(item => {
-        const nome = item.querySelector('.preference-name').textContent.toLowerCase();
+        const nome = (item.querySelector('.preference-name') || {}).textContent || "";
         const toggle = item.querySelector('.toggle-switch input');
-        let tipo = '';
-        if (nome.includes('email')) tipo = 'email';
-        else if (nome.includes('discord')) tipo = 'discord';
+        if (!toggle) return;
+        let tipo = "";
+        if (nome.toLowerCase().includes("email")) tipo = "email";
+        else if (nome.toLowerCase().includes("discord")) tipo = "discord";
+        if (!tipo) return;
 
-        toggle.checked = prefMap[tipo] || false;
-
-        // Adicionar evento para salvar a alteração no switch
-        toggle.addEventListener("change", async (e) => {
+        toggle.checked = prefMap[tipo] ?? false;
+        toggle.dataset.preferenceTipo = tipo;
+        toggle.onchange = async (e) => {
+          const ativo = e.target.checked;
           try {
             const res = await makeRequest("/api/user/preferences", {
               method: "PUT",
@@ -1095,18 +1100,14 @@
                 "Content-Type": "application/json",
                 Authorization: "Bearer " + localStorage.getItem("token")
               },
-              body: JSON.stringify({ preferences: [{ tipo, ativo: e.target.checked }] })
+              body: JSON.stringify({ preferences: [{ tipo: e.target.dataset.preferenceTipo || tipo, ativo }] })
             });
             const data = await res.json();
-            if (data.status !== "ok") {
-              console.error("Erro ao atualizar preferência:", data.error);
-              e.target.checked = !e.target.checked; // reverte
-            }
+            if (data.status !== "ok") e.target.checked = !ativo;
           } catch (err) {
-            console.error("Erro ao atualizar preferência:", err);
-            e.target.checked = !e.target.checked; // reverte
+            e.target.checked = !ativo;
           }
-        });
+        };
       });
     }
 

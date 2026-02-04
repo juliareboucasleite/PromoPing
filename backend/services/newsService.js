@@ -196,6 +196,16 @@ class NewsService {
             // Salvar todas as notícias filtradas na tabela blog_articles
             await this.saveNewsToBlog(filteredNews, connection);
 
+            // Notificar subscritores da newsletter que ativaram "receber notificações de novos artigos"
+            if (filteredNews.length > 0) {
+                try {
+                    const { notifySubscribersOfNewArticles } = await import("./newsletterNotifier.js");
+                    await notifySubscribersOfNewArticles(filteredNews);
+                } catch (notifyErr) {
+                    console.error("[NEWS] Erro ao notificar subscritores de novos artigos:", notifyErr.message);
+                }
+            }
+
             // Limitar a 5 notícias mais impactantes
             const topNews = filteredNews.slice(0, 5);
 

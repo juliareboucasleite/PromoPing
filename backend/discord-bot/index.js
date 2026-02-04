@@ -166,6 +166,25 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
     }
 });
 
+// Endpoint para enviar notificação de preço por DM (chamado pelo backend conforme preferências do utilizador)
+internalApp.post('/internal/send-price-dm', async (req, res) => {
+    try {
+        const { discordId, product } = req.body;
+        if (!discordId || !product || !product.Nome) {
+            return res.status(400).json({ error: 'discordId e product (com Nome) são obrigatórios' });
+        }
+        if (!bot.client || !bot.client.isReady()) {
+            return res.status(503).json({ error: 'Bot não está pronto' });
+        }
+        const payload = { ...product, DiscordId: discordId };
+        await bot.sendPriceNotification(payload);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[DISCORD INTERNAL] Erro send-price-dm:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Endpoint para verificar status do bot
 internalApp.get('/internal/status', (req, res) => {
     res.json({

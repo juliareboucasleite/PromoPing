@@ -11,7 +11,7 @@ router.get("/", verifyToken, async (req, res) => {
     const referenciaID = req.user.ReferenciaID;
     
     const [prefs] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID = ?",
+      "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE ReferenciaID = ?",
       [referenciaID]
     );
 
@@ -45,12 +45,14 @@ router.put("/", verifyToken, async (req, res) => {
           error: "Cada preferência deve ter 'tipo' e 'ativo' (boolean)" 
         });
       }
+      const tipo = String(pref.tipo).toLowerCase().trim();
+      if (!tipo) continue;
 
       await pool.query(
-        `INSERT INTO PreferenciasNotificacao (ReferenciaID, Tipo, Ativo)
+        `INSERT INTO preferenciasnotificacao (ReferenciaID, Tipo, Ativo)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
-        [referenciaID, pref.tipo, pref.ativo ? 1 : 0]
+        [referenciaID, tipo, pref.ativo ? 1 : 0]
       );
     }
 

@@ -50,7 +50,7 @@ router.put("/profile", verifyToken, async (req, res) => {
 router.get("/preferences", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID=?",
+      "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE ReferenciaID=?",
       [req.user.ReferenciaID]
     );
     res.json({ status: "ok", preferencias: rows });
@@ -69,11 +69,13 @@ router.put("/preferences", verifyToken, async (req, res) => {
     }
 
     for (const p of preferences) {
+      const tipo = String(p.tipo || "").toLowerCase().trim();
+      if (!tipo) continue;
       await pool.query(
-        `INSERT INTO PreferenciasNotificacao (ReferenciaID, Tipo, Ativo) 
+        `INSERT INTO preferenciasnotificacao (ReferenciaID, Tipo, Ativo) 
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
-        [req.user.ReferenciaID, p.tipo, p.ativo]
+        [req.user.ReferenciaID, tipo, p.ativo ? 1 : 0]
       );
     }
 

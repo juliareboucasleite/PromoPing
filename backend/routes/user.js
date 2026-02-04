@@ -156,7 +156,7 @@ router.get("/profile", verifyToken, async (req, res) => {
 
     // Preferências
     const [prefs] = await pool.query(
-      "SELECT Tipo, Ativo FROM PreferenciasNotificacao WHERE ReferenciaID = ?",
+      "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE ReferenciaID = ?",
       [referenciaID]
     );
 

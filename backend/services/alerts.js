@@ -1,14 +1,61 @@
 import { pool } from "../database/db.js";
-import { sendNotification } from "./notify.js";
-import { formatPriceDisplay, formatDate } from "../utils/format.js";
+import { formatPriceDisplay } from "../utils/format.js";
+
+const BACKEND_URL = process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
 
 /**
- *  Sistema de alertas inteligentes
- * Envia notificações quando preços atingem metas ou mudam significativamente
+ * Sistema de alertas inteligentes
+ * Envia notificações quando preços atingem metas ou mudam significativamente.
+ * Respeita as preferências do utilizador (email / Discord DM).
  */
 
 /**
- *  Envia alerta de preço alvo atingido
+ * Obtém preferências de notificação do utilizador (preferenciasnotificacao).
+ * @param {string} referenciaID
+ * @returns {{ email: boolean, discord: boolean }}
+ */
+async function getNotificationPreferences(referenciaID) {
+  const [rows] = await pool.query(
+    "SELECT Tipo, Ativo FROM preferenciasnotificacao WHERE ReferenciaID = ?",
+    [referenciaID]
+  );
+  const prefs = { email: false, discord: false };
+  for (const r of rows || []) {
+    const t = String(r.Tipo || "").toLowerCase().trim();
+    if (t === "email") prefs.email = r.Ativo === 1;
+    if (t === "discord") prefs.discord = r.Ativo === 1;
+  }
+  return prefs;
+}
+
+/**
+ * Envia notificação de preço por DM no Discord via bot interno.
+ * @param {string} discordId
+ * @param {Object} productPayload - { Nome, Link, Id, Loja?, PrecoAnterior, PrecoAtual, PrecoAlvo, UpdatedAt }
+ */
+async function sendDiscordPriceDM(discordId, productPayload) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/internal/send-price-dm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ discordId, product: productPayload }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      if (res.status === 503) {
+        console.warn("[ALERTS] Bot Discord indisponível — notificação por DM não enviada. Certifica-te de que o bot está a correr (npm start).");
+      } else {
+        console.error("[ALERTS] Erro ao enviar DM Discord:", res.status, errText || "");
+      }
+      return;
+    }
+  } catch (err) {
+    console.error("[ALERTS] Erro ao enviar DM Discord:", err.message);
+  }
+}
+
+/**
+ * Envia alerta de preço alvo atingido
  * @param {Object} product - Dados do produto
  * @param {number} novoPreco - Novo preço
  * @param {number} precoAlvo - Preço alvo
@@ -17,16 +64,15 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
   try {
     const savings = precoAlvo - novoPreco;
     const savingsPercent = ((savings / precoAlvo) * 100).toFixed(1);
-    
-    // Buscar dados do usuário
+
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+      "SELECT Email, Telefone, Nome, discord_id FROM utilizadores WHERE ReferenciaID = ?",
       [product.ReferenciaID]
     );
-
     const user = userRows[0] || {};
-    const userName = user.Nome || 'Usuário';
-    
+    const userName = user.Nome || "Usuário";
+    const prefs = await getNotificationPreferences(product.ReferenciaID);
+
     const messageHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; color: #333;">
         <div style="background: linear-gradient(135deg, #ff9800 0%, #ff6b35 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -72,8 +118,7 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
       </div>
     `;
 
-    // Enviar email diretamente
-    if (user.Email) {
+    if (prefs.email && user.Email) {
       const { sendEmail } = await import("./notify.js");
       await sendEmail(
         user.Email,
@@ -81,14 +126,30 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
         messageHtml
       );
       console.log(`[ALERTS] Email de preço alvo enviado para ${user.Email}`);
+      await pool.query(
+        "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+        [product.ReferenciaID, product.Id, "email", messageHtml, true, savings]
+      );
     }
 
-    // Gravar notificação no banco
-    await pool.query(
-      "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [product.ReferenciaID, product.Id, 'email', messageHtml, true, savings]
-    );
-
+    if (prefs.discord && user.discord_id) {
+      const productPayload = {
+        Nome: product.Nome,
+        Link: product.Link || "",
+        Id: product.Id,
+        Loja: product.Loja || null,
+        PrecoAnterior: precoAlvo,
+        PrecoAtual: novoPreco,
+        PrecoAlvo,
+        UpdatedAt: new Date(),
+      };
+      await sendDiscordPriceDM(user.discord_id, productPayload);
+      console.log(`[ALERTS] DM Discord de preço alvo enviada para ${user.discord_id}`);
+      await pool.query(
+        "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+        [product.ReferenciaID, product.Id, "discord", "[DM]", true, savings]
+      );
+    }
   } catch (error) {
     console.error("[ALERTS] Erro ao enviar alerta de preço alvo:", error.message);
   }
@@ -153,51 +214,49 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
       </div>
     `;
 
-    // Buscar configurações de notificação do utilizador
-    const [configRows] = await pool.query(
-      "SELECT CanalPreferido FROM configutilizador WHERE ReferenciaID = ?",
-      [product.ReferenciaID]
-    );
-
-    // Buscar email e telefone da tabela Utilizadores
     const [userRows] = await pool.query(
-      "SELECT Email, Telefone, Nome FROM Utilizadores WHERE ReferenciaID = ?",
+      "SELECT Email, Telefone, Nome, discord_id FROM utilizadores WHERE ReferenciaID = ?",
       [product.ReferenciaID]
     );
-
-    const config = configRows[0] || {};
     const user = userRows[0] || {};
-    const canal = config.CanalPreferido || "email";
-    const userName = user.Nome || 'Usuário';
+    const userName = user.Nome || "Usuário";
+    const prefs = await getNotificationPreferences(product.ReferenciaID);
 
-    // Sempre enviar email quando o preço baixar muito ou mudar significativamente
-    if (user.Email) {
+    if (prefs.email && user.Email) {
       const { sendEmail } = await import("./notify.js");
-      const emailSubject = isIncrease 
+      const emailSubject = isIncrease
         ? `📈 Preço Subiu: ${product.Nome}`
         : `📉 Preço Baixou: ${product.Nome}`;
-      
       await sendEmail(user.Email, emailSubject, messageHtml);
       console.log(`[ALERTS] Email de mudança de preço enviado para ${user.Email}`);
+      await pool.query(
+        "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+        [product.ReferenciaID, product.Id, "email", messageHtml, true, Math.abs(diferenca)]
+      );
     }
 
-    // Também enviar via canal preferido (se não for email)
-    if (canal !== "email") {
-      await sendNotification({
-        canal,
-        email: user.Email || process.env.EMAIL_USER,
-        telefone: user.Telefone || null,
-        mensagem: messageHtml,
-      });
+    if (prefs.discord && user.discord_id) {
+      const productPayload = {
+        Nome: product.Nome,
+        Link: product.Link || "",
+        Id: product.Id,
+        Loja: product.Loja || null,
+        PrecoAnterior: precoAnterior,
+        PrecoAtual: novoPreco,
+        PrecoAlvo: product.PrecoAlvo || 0,
+        UpdatedAt: new Date(),
+      };
+      await sendDiscordPriceDM(user.discord_id, productPayload);
+      console.log(`[ALERTS] DM Discord de mudança de preço enviada para ${user.discord_id}`);
+      await pool.query(
+        "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+        [product.ReferenciaID, product.Id, "discord", "[DM]", true, Math.abs(diferenca)]
+      );
     }
 
-    // Gravar notificação no banco
-    await pool.query(
-      "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-      [product.ReferenciaID, product.Id, canal, messageHtml, true, Math.abs(diferenca)]
-    );
-
-    console.log(` Alerta de mudança de preço enviado para ${product.Nome} (${canal})`);
+    if (prefs.email || prefs.discord) {
+      console.log(`[ALERTS] Alerta de mudança de preço enviado para ${product.Nome}`);
+    }
 
   } catch (error) {
     console.error(" Erro ao enviar alerta de mudança de preço:", error.message);
