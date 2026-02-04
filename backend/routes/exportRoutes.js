@@ -1,19 +1,18 @@
 // ================== ROTAS DE EXPORTAÇÃO COM PROTEÇÃO DE PLANOS ==================
 
 import express from "express";
-import { 
-  exportarExcel, 
-  exportarPDF, 
-  exportarIncidentesExcel, 
+import {
+  exportarPDF,
   exportarRelatorioCompleto,
-  obterPlanoUsuario 
+  obterPlanoUsuario
 } from "../controllers/exportController.js";
-import { 
-  verificarPlanoPermitido, 
-  verificarPlanoPago, 
-  verificarPlanoStandard, 
+import {
+  carregarPlanoNoRequest,
+  verificarPlanoPermitido,
+  verificarPlanoPago,
+  verificarPlanoStandard,
   verificarPlanoPremium,
-  obterInfoPlano 
+  obterInfoPlano
 } from "../middleware/verificarPlano.js";
 import { verifyToken } from "../middleware/auth.js"; // Middleware de autenticação existente
 
@@ -27,41 +26,18 @@ const router = express.Router();
  */
 router.get("/user/plano", verifyToken, obterPlanoUsuario);
 
-// ================== ROTAS DE EXPORTAÇÃO DE PRODUTOS ==================
-
-/**
- * GET /api/exportar/produtos/excel
- * Exportar produtos para Excel (Basic, Standard, Premium)
- */
-router.get("/produtos/excel", 
-  verifyToken, 
-  obterInfoPlano,
-  verificarPlanoPago(), 
-  exportarExcel
-);
+// ================== ROTAS DE EXPORTAÇÃO DE PRODUTOS (PDF) ==================
 
 /**
  * GET /api/exportar/produtos/pdf
- * Exportar produtos para PDF (Standard, Premium)
+ * Exportar produtos para PDF (Basic, Standard, Premium)
  */
-router.get("/produtos/pdf", 
-  verifyToken, 
+router.get("/produtos/pdf",
+  verifyToken,
+  carregarPlanoNoRequest,
   obterInfoPlano,
-  verificarPlanoStandard(), 
+  verificarPlanoPago(),
   exportarPDF
-);
-
-// ================== ROTAS DE EXPORTAÇÃO DE INCIDENTES ==================
-
-/**
- * GET /api/exportar/incidentes/excel
- * Exportar incidentes para Excel (Basic, Standard, Premium)
- */
-router.get("/incidentes/excel", 
-  verifyToken, 
-  obterInfoPlano,
-  verificarPlanoPago(), 
-  exportarIncidentesExcel
 );
 
 // ================== ROTAS DE RELATÓRIOS PREMIUM ==================
@@ -70,34 +46,25 @@ router.get("/incidentes/excel",
  * GET /api/exportar/relatorio/completo
  * Exportar relatório completo (Premium apenas)
  */
-router.get("/relatorio/completo", 
-  verifyToken, 
+router.get("/relatorio/completo",
+  verifyToken,
+  carregarPlanoNoRequest,
   obterInfoPlano,
-  verificarPlanoPremium(), 
+  verificarPlanoPremium(),
   exportarRelatorioCompleto
 );
 
 // ================== ROTAS DE EXPORTAÇÃO LEGACY (COMPATIBILIDADE) ==================
 
 /**
- * GET /api/exportar/excel
- * Exportar Excel (Basic, Standard, Premium) - Rota legacy
- */
-router.get("/excel", 
-  verifyToken, 
-  obterInfoPlano,
-  verificarPlanoPago(), 
-  exportarExcel
-);
-
-/**
  * GET /api/exportar/pdf
  * Exportar PDF (Standard, Premium) - Rota legacy
  */
-router.get("/pdf", 
-  verifyToken, 
+router.get("/pdf",
+  verifyToken,
+  carregarPlanoNoRequest,
   obterInfoPlano,
-  verificarPlanoStandard(), 
+  verificarPlanoPago(),
   exportarPDF
 );
 
@@ -131,8 +98,7 @@ router.get("/status", verifyToken, obterInfoPlano, (req, res) => {
     status: "ok",
     plano: plano.nome,
     funcionalidades: {
-      exportar_excel: ["Basic", "Standard", "Premium"].includes(plano.nome),
-      exportar_pdf: ["Standard", "Premium"].includes(plano.nome),
+      exportar_pdf: ["Basic", "Standard", "Premium"].includes(plano.nome),
       relatorio_completo: plano.nome === "Premium",
       limites: plano.limites,
       recursos: plano.recursos
