@@ -55,3 +55,17 @@ node_modules/.bin/eslint
 docs
 src/generated
 **/*.min.js
+
+# ========== Sensíveis – não publicar no GitHub ==========
+# Configuração Discord (tokens, client secret)
+config-files/discord-config.js
+# Chaves e certificados privados
+*.pem
+*.key
+!*.pub
+# Config de produção com URLs/keys por ambiente (opcional)
+# frontend/.production-config.json
+# Backups de base de dados (podem conter dados reais)
+*.sql.gz
+*.sql.backup
+dump*.sql
