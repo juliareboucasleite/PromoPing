@@ -14,6 +14,8 @@
         "migrate": "node scripts/migrate-db.js",
         "docker:dev": "docker-compose -f docker-files/docker-compose.dev.yml up --build",
         "docker:prod": "docker-compose -f docker-files/docker-compose.yml up --build",
+        "nginx:start": "node scripts/nginx-start.js",
+        "nginx:stop": "docker compose -f docker-files/docker-compose.nginx.yml down",
         "db:init": "mysql -u root -p < sql/PAPv5.sql",
         "db:migrate": "npm run migrate",
         "db:ensure-tables": "node scripts/ensure-qr-tokens-table.js",
