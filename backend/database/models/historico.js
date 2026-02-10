@@ -3,9 +3,8 @@ import { pool } from "../db.js";
 import { processAlerts } from "../../services/alerts.js";
 
 // Essa função aqui salva o preço no histórico E processa alertas
-// Se tu fuder isso, pode perder histórico de preços ou não enviar notificações
+// pode perder histórico de preços ou não enviar notificações
 // A ordem das operações é importante: primeiro busca preço anterior, depois salva novo
-// NÃO MEXA NESSA MERDA SEM ENTENDER O FLUXO COMPLETO
 export async function salvarPreco(produtoId, preco) {
   // Buscar preço anterior antes de inserir o novo
   // ESSA QUERY AQUI É IMPORTANTE: pega o preço anterior pra comparar depois
@@ -22,7 +21,7 @@ export async function salvarPreco(produtoId, preco) {
 
   // Inserir novo preço no histórico
   // ESSA QUERY AQUI SALVA O PREÇO NO HISTÓRICO
-  // Se tu fuder isso, perde o histórico de preços e não consegue ver evolução
+  // perde o histórico de preços e não consegue ver evolução
   await pool.query(
     `INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto) 
      VALUES (?, ?, NOW())`,
