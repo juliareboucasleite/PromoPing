@@ -18,7 +18,6 @@ export const PLANOS_STRIPE = {
     stripe_checkout_url: null, // Plano gratuito não precisa de checkout
     limite_produtos: 5,
     verificacao_intervalo: 24,
-    permite_sms: false,
     relatorios: false
   },
   2: { // BASIC
@@ -28,7 +27,6 @@ export const PLANOS_STRIPE = {
     stripe_checkout_url: process.env.STRIPE_BASIC_CHECKOUT_URL || 'https://buy.stripe.com/eVqcN587y8IG3IM1dleZ201', // Link direto do Stripe
     limite_produtos: 25,
     verificacao_intervalo: 4,
-    permite_sms: true,
     relatorios: true
   },
   3: { // STANDARD
@@ -36,9 +34,8 @@ export const PLANOS_STRIPE = {
     preco: 12.99,
     stripe_price_id: process.env.STRIPE_STANDARD_PRICE_ID, // Price ID específico para Standard
     stripe_checkout_url: process.env.STRIPE_STANDARD_CHECKOUT_URL || 'https://buy.stripe.com/dRm3cv73u8IG4MQ2hpeZ202', // Link direto do Stripe
-    limite_produtos: 9999, // Ilimitado
+    limite_produtos: 50, // Ilimitado
     verificacao_intervalo: 0.5, // 30 minutos
-    permite_sms: true,
     relatorios: true
   },
   4: { // PREMIUM
@@ -46,9 +43,8 @@ export const PLANOS_STRIPE = {
     preco: 15.30,
     stripe_price_id: process.env.STRIPE_PREMIUM_PRICE_ID, // Configurar no .env
     stripe_checkout_url: process.env.STRIPE_PREMIUM_CHECKOUT_URL || 'https://buy.stripe.com/aFa14ncnO6Ay0wA7BJeZ203', // Link direto do Stripe
-    limite_produtos: 9999, // Ilimitado
+    limite_produtos: 100, // Ilimitado
     verificacao_intervalo: 0.083, // 5 minutos
-    permite_sms: true,
     relatorios: true
   }
 };
