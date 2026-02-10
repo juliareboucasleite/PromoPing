@@ -1,0 +1,19 @@
+# Nginx sozinho para desenvolvimento local
+# Backend: corre no host com npm run dev (porta 3000)
+# Acesso: http://localhost (Nginx serve o frontend e faz proxy da API para o backend no host)
+
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: promoping-nginx-dev
+    ports:
+      - "80:80"
+    volumes:
+      - ../config-files/nginx-dev.conf:/etc/nginx/nginx.conf:ro
+      - ../frontend/pages/build:/var/www:ro
+    extra_hosts:
+      # Para host.docker.internal no Linux (Windows/Mac já têm)
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
