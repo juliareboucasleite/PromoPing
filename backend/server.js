@@ -362,6 +362,12 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+// ================== WELL-KNOWN (verificação Discord, etc.) ==================
+// Servido em todos os ambientes; em produção o NGINX deve fazer proxy de /.well-known/ para o backend
+app.get("/.well-known/discord", (req, res) => {
+    res.type("text/plain").send("dh=2ff358f6828299158d812b46a60a3a8c7476cd8b");
+});
+
 // ================== API ROOT ==================
 app.get("/api/", (req, res) => {
     res.json({
