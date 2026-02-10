@@ -1,5 +1,3 @@
-// ================== CONTROLLER DE EXPORTAÇÃO (APENAS PDF) ==================
-
 import {
     gerarPDF
 } from "../utils/gerarPDF.js";
@@ -81,8 +79,6 @@ export async function exportarPDF(req, res) {
         res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Length", buffer.length);
-
-        console.log(` PDF gerado com sucesso: ${produtos.length} produtos, ${historico.reduce((acc, h) => acc + h.totalRegistros, 0)} registros de histórico`);
         res.send(buffer);
 
     } catch (err) {
@@ -103,9 +99,6 @@ export async function exportarRelatorioCompleto(req, res) {
     try {
         const referenciaID = req.user.ReferenciaID;
         const userPlano = (req.user && req.user.plano && req.user.plano.nome) ? req.user.plano.nome : "Premium";
-
-        console.log(` Exportando relatório completo PDF para usuário ${referenciaID} (plano: ${userPlano})`);
-
         const [produtos] = await db.query(`
       SELECT 
         p.Id,
@@ -153,7 +146,6 @@ export async function exportarRelatorioCompleto(req, res) {
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Length", buffer.length);
 
-        console.log(` Relatório completo PDF gerado com sucesso`);
         res.send(buffer);
 
     } catch (err) {
@@ -227,8 +219,6 @@ export async function obterPlanoUsuario(req, res) {
                         isInGracePeriod = true;
                         gracePeriodEnd = data.grace_period_end;
                         originalPlan = data.plan_name; // Nome do plano original
-                        console.log(` [PLANO] Usuário ${referenciaID} em período de graça até ${graceEnd.toISOString()}`);
-                        console.log(` [PLANO] Plano original durante graça: ${originalPlan}`);
                     }
                 }
 
