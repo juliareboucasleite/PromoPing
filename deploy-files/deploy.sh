@@ -54,35 +54,9 @@ fi
 log "Criando diretórios..."
 mkdir -p logs uploads
 
-# Parar processos existentes
-log "Parando processos existentes..."
-pm2 stop promoping-api 2>/dev/null || true
-
-# Iniciar aplicação
-log "Iniciando aplicação..."
-pm2 start ecosystem.config.js --env production
-
-# Verificar status
-log "Verificando status da aplicação..."
-pm2 status
-
-# Testar endpoints
-log "Testando endpoints..."
-sleep 5
-
-if curl -f http://localhost:3000 > /dev/null 2>&1; then
-    log " Frontend funcionando"
-else
-    error " Frontend não está respondendo"
-fi
-
-if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
-    log " API funcionando"
-else
-    warning " API não está respondendo (pode ser normal se não implementado)"
-fi
-
-log " Deploy concluído com sucesso!"
-log " Frontend: http://localhost:3000"
-log " API: http://localhost:3000/api/"
-log " Monitor: pm2 monit"
+# Preparação concluída — a aplicação deve ser iniciada pelo teu método em produção
+# (ex.: systemd, Docker, ou: nohup node backend/server.js &)
+log "Preparação do deploy concluída."
+log "Inicie a aplicação com o método que usa em produção (ex.: systemd, Docker ou 'node backend/server.js')."
+log " Frontend/API: http://localhost:3000 (ou atrás do Nginx)"
+log " Health: http://localhost:3000/api/health"
