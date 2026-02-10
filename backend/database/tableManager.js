@@ -17,7 +17,7 @@ import { pool } from './db.js';
  * Obter query original para uso interno (evitar recursão)
  * Acessa pool._originalQuery de forma lazy para evitar referência circular
  * 
- * ===== ATENÇÃO: NÃO MEXA NESSA FUNÇÃO =====
+ * ATENÇÃO: NÃO MEXA NESSA FUNÇÃO
  * Essa função é importante para evitar loops infinitos ao recriar tabelas
  * Se você modificar, pode criar um loop infinito e derrubar o servidor
  * Deixe esta função como está, ela faz o trabalho corretamente

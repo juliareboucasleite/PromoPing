@@ -1,8 +1,3 @@
-// Essa merda aqui controla quem pode acessar o quê baseado no plano
-// Se tu fuder isso, pode dar acesso premium pra quem não pagou
-// Ou bloquear quem pagou, e aí vai ter cliente puto reclamando
-// NÃO MEXA NESSA PORRA SEM ENTENDER A LÓGICA DE PLANOS
-
 import {
     pool
 } from "../database/db.js";

@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
 
-// ===== ATENÇÃO: NÃO MEXA NESSA PORRA AQUI =====
-// Essa função é o coração da segurança do sistema, se tu fuder isso aqui
-// qualquer zé ruela vai conseguir acessar conta dos outros
-// Se não souber o que tá fazendo, NÃO TOQUE NESSA MERDA
+// Essa função é o coração da segurança do sistema
+// Se você modificar, pode dar acesso a contas de outros usuários
+// NÃO ALTERE ESSA FUNÇÃO SEM ENTENDER O IMPACTO
 export function verifyToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -12,7 +11,9 @@ export function verifyToken(req, res, next) {
     return res.status(401).json({ error: "Token não fornecido" });
   }
 
-  // CARALHO, NÃO REMOVA ESSA VERIFICAÇÃO DO JWT_SECRET
+  // ATENÇÃO: NÃO REMOVA ESSA VERIFICAÇÃO DO JWT_SECRET
+  // Se você remover, pode dar acesso a contas de outros usuários
+  // NÃO ALTERE ESSA PARTE SEM ENTENDER O IMPACTO
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     console.error("JWT_SECRET não encontrado no arquivo .env");
