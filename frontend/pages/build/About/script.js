@@ -195,7 +195,6 @@ function init() {
   // Carregar navegação imediatamente
   loadNavigation();
   
-  // === Smooth scroll for internal anchors ===
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
@@ -208,7 +207,6 @@ function init() {
     });
   });
 
-  // === Copy Button Dropdown Functionality ===
   const copyButtonWrapper = document.querySelector('.copy-button-wrapper');
   const copyButton = document.querySelector('.copy-button');
   
@@ -377,7 +375,6 @@ function init() {
     return div.innerHTML;
   }
 
-  // === Search Functionality ===
   const searchInput = document.querySelector('.search-box input');
   if (searchInput) {
     searchInput.addEventListener('keydown', (e) => {
@@ -394,7 +391,6 @@ function init() {
     });
   }
 
-  // === Keyboard Shortcuts ===
   document.addEventListener('keydown', (e) => {
     // Ctrl + K for search
     if (e.ctrlKey && e.key === 'k') {

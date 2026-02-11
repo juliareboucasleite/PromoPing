@@ -116,7 +116,6 @@
         return stars;
     }
 
-    // ================== OVERVIEW ==================
     async function loadOverview() {
         try {
             // Carregar estatísticas
@@ -235,7 +234,6 @@
         }
     }
 
-    // ================== USERS ==================
     async function loadUsers() {
         const usersList = document.getElementById('usersList');
         if (!usersList) return;
@@ -287,7 +285,6 @@
         }
     }
 
-    // ================== PRODUCTS ==================
     async function loadProducts() {
         const productsList = document.getElementById('productsList');
         if (!productsList) return;
@@ -335,7 +332,6 @@
         }
     }
 
-    // ================== REVIEWS ==================
     async function loadReviews() {
         const reviewsList = document.getElementById('reviewsList');
         if (!reviewsList) return;
@@ -379,7 +375,6 @@
         }
     }
 
-    // ================== BUGS ==================
     async function loadBugs() {
         const bugsList = document.getElementById('bugsList');
         if (!bugsList) return;
@@ -475,7 +470,6 @@
         if (form) form.reset();
     }
 
-    // ================== SUPPORT (mantido do código original) ==================
     async function loadThreads() {
         const threadsList = document.getElementById('threadsList');
         const threadsCount = document.getElementById('threadsCount');
@@ -654,7 +648,6 @@
         }
     }
 
-    // ================== NAVEGAÇÃO ==================
     function switchSection(section) {
         currentSection = section;
 
@@ -699,7 +692,6 @@
         }
     }
 
-    // ================== INICIALIZAÇÃO ==================
     function init() {
         if (!checkAuth()) return;
 

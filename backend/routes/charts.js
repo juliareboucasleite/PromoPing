@@ -37,7 +37,7 @@ function lastNDays(n) {
   return labels;
 }
 
-// ================== Séries mensais (últimos 9 meses) ==================
+
 router.get("/api/charts/overview", async (req, res) => {
   try {
     const months = Number(req.query.months || 9);
@@ -82,7 +82,7 @@ router.get("/api/charts/overview", async (req, res) => {
   }
 });
 
-// ================== Séries diárias (últimos 7 dias) ==================
+
 router.get("/api/charts/daily", async (req, res) => {
   try {
     const days = Number(req.query.days || 7);

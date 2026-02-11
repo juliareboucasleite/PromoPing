@@ -160,7 +160,7 @@ router.post("/verify-session", verifyToken, async (req, res) => {
           planoNome
         ]);
         
-        // ===== ATUALIZANDO PLANO DO USUÁRIO =====
+
         // Atualizar plano do usuário na tabela configutilizador
         // ESSA PARTE AQUI É CRÍTICA: atualiza o plano do usuário DEPOIS do pagamento
         // Se tu fuder essa query, o usuário paga mas continua no plano Free

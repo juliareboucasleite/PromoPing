@@ -49,10 +49,6 @@ router.post(
     }
 );
 
-// ============================================================================
-// POST /api/support/chat — Primeiro atendimento automático (motor de intenções, sem IA externa)
-// ============================================================================
-
 /**
  * POST /api/support/chat
  *
@@ -92,10 +88,6 @@ router.post("/chat", async (req, res) => {
         });
     }
 });
-
-// ============================================================================
-// UTILITÁRIOS DE BASE DE DADOS
-// ============================================================================
 
 /** ReferenciaID usado para utilizadores anónimos (não logados) no suporte */
 const ANON_REFERENCIA_ID = "ANON";
@@ -207,10 +199,6 @@ async function ensureTable() {
         // Foreign key já existe ou não pode ser criada
     }
 }
-
-// ============================================================================
-// ENDPOINTS ADMINISTRATIVOS (Com autenticação JWT - para Painel Admin)
-// ============================================================================
 
 /**
  * Verificar se o usuário é admin
@@ -359,10 +347,6 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
         });
     }
 });
-
-// ============================================================================
-// ENDPOINTS DE UTILIZADOR (Requer autenticação JWT)
-// ============================================================================
 
 /**
  * GET /api/support/messages

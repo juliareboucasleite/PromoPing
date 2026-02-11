@@ -1,4 +1,3 @@
-// ===== MODAL CONTROL =====
 // Garantir que as funções estejam no escopo global - tipo window pra não dar merda depois
 window.openLoginModal = function() {
   const overlay = document.getElementById('modalOverlay');
@@ -100,7 +99,6 @@ window.closeModals = function() {
   }
 };
 
-// ===== QR CODE MODAL =====
 // Modal do QR code pra login: código muda a cada 30s; telemóvel escaneia e confirma.
 var qrSessionId = null;
 var qrRefreshInterval = null;
@@ -509,7 +507,6 @@ window.addEventListener('registerModalOpened', () => {
   }, 100);
 });
 
-// ===== LOGIN FUNCTIONALITY =====
 // Toda a lógica de login, registro e verificação fica aqui
 document.addEventListener('DOMContentLoaded', function() {
   // Espera o makeRequest estar disponível (pode carregar depois, então tem que esperar)

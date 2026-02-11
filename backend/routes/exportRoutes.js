@@ -1,5 +1,3 @@
-// ================== ROTAS DE EXPORTAÇÃO COM PROTEÇÃO DE PLANOS ==================
-
 import express from "express";
 import {
   exportarPDF,
@@ -18,15 +16,11 @@ import { verifyToken } from "../middleware/auth.js"; // Middleware de autentica�
 
 const router = express.Router();
 
-// ================== ROTAS DE INFORMAÇÕES ==================
-
 /**
  * GET /api/user/plano
  * Obter informações do plano do usuário
  */
 router.get("/user/plano", verifyToken, obterPlanoUsuario);
-
-// ================== ROTAS DE EXPORTAÇÃO DE PRODUTOS (PDF) ==================
 
 /**
  * GET /api/exportar/produtos/pdf
@@ -40,8 +34,6 @@ router.get("/produtos/pdf",
   exportarPDF
 );
 
-// ================== ROTAS DE RELATÓRIOS PREMIUM ==================
-
 /**
  * GET /api/exportar/relatorio/completo
  * Exportar relatório completo (Premium apenas)
@@ -54,8 +46,6 @@ router.get("/relatorio/completo",
   exportarRelatorioCompleto
 );
 
-// ================== ROTAS DE EXPORTAÇÃO LEGACY (COMPATIBILIDADE) ==================
-
 /**
  * GET /api/exportar/pdf
  * Exportar PDF (Standard, Premium) - Rota legacy
@@ -67,8 +57,6 @@ router.get("/pdf",
   verificarPlanoPago(),
   exportarPDF
 );
-
-// ================== ROTAS DE TESTE E DEBUG ==================
 
 /**
  * GET /api/exportar/teste/plano
@@ -106,8 +94,6 @@ router.get("/status", verifyToken, obterInfoPlano, (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-// ================== MIDDLEWARE DE TRATAMENTO DE ERROS ==================
 
 /**
  * Middleware para tratar erros de acesso negado

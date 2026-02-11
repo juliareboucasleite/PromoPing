@@ -339,7 +339,6 @@ router.post("/api/webhooks/github/test", express.json(), async (req, res) => {
     }
 });
 
-// ================== ROTA: OBTER RELEASES DO GITHUB ==================
 router.get("/api/github/releases", async (req, res) => {
     try {
         const owner = req.query.owner || "juliareboucasleite";
@@ -420,7 +419,6 @@ router.get("/api/github/releases", async (req, res) => {
     }
 });
 
-// ================== ROTA: VERIFICAR DISPONIBILIDADE DO REPOSITÓRIO ==================
 router.get("/api/github/check", async (req, res) => {
     try {
         const owner = req.query.owner || "juliareboucasleite";
@@ -609,7 +607,6 @@ async function markReleaseAsProcessed(releaseId, tagName, repository) {
 // Inicializar: carregar releases processadas do banco
 loadProcessedReleases();
 
-// ================== WEBHOOK: RECEBER EVENTOS DE RELEASE DO GITHUB ==================
 router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     try {
         const event = req.headers['x-github-event'];
@@ -806,7 +803,6 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
     }
 });
 
-// ================== DISCORD WEBHOOKS ==================
 // Rota para receber webhooks do Discord Developer Portal
 // Eventos: Application Authorized, Application Deauthorized, Entitlement Create/Update/Delete
 router.post("/api/webhooks/discord", express.json(), async (req, res) => {

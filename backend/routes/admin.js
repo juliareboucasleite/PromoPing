@@ -83,7 +83,7 @@ router.use((req, res, next) => {
     verifyAdmin(req, res, next);
 });
 
-// ================== UTILIZADORES ==================
+//  UTILIZADORES 
 router.get("/users", async (req, res) => {
     console.log("[ADMIN] GET /api/admin/users chamado");
     try {
@@ -262,7 +262,7 @@ router.patch("/users/:referenciaID", verifyToken, async (req, res) => {
     }
 });
 
-// ================== PRODUTOS ==================
+//  PRODUTOS 
 router.get("/products", async (req, res) => {
     console.log("[ADMIN] GET /api/admin/products chamado");
     try {
@@ -305,7 +305,7 @@ router.get("/products", async (req, res) => {
     }
 });
 
-// ================== AVALIAÇÕES ==================
+//  AVALIAÇÕES 
 // Função para garantir que a tabela reviews existe
 async function ensureReviewsTable() {
     try {
@@ -426,7 +426,7 @@ router.get("/reviews", verifyToken, async (req, res) => {
     }
 });
 
-// ================== BUGS E PROJETOS ==================
+//  BUGS E PROJETOS 
 router.get("/bugs", async (req, res) => {
     try {
         await ensureBugsTable();
@@ -679,7 +679,7 @@ router.delete("/bugs/:id", async (req, res) => {
     }
 });
 
-// ================== SUGESTÕES ==================
+//  SUGESTÕES 
 router.get("/sugestoes", async (req, res) => {
     try {
         await ensureSugestoesTable();
@@ -836,7 +836,7 @@ router.delete("/sugestoes/:id", async (req, res) => {
     }
 });
 
-// ================== INCIDENTES ==================
+//  INCIDENTES 
 router.get("/incidents", async (req, res) => {
     console.log("GET /api/admin/incidents chamado");
     try {
@@ -901,7 +901,6 @@ router.post("/incidents", async (req, res) => {
     }
 });
 
-// ================== ATUALIZAÇÕES ==================
 router.get("/updates", async (req, res) => {
     try {
         await ensureUpdatesTable();
@@ -957,7 +956,6 @@ router.post("/updates", verifyToken, async (req, res) => {
     }
 });
 
-// ================== UTILITÁRIOS ==================
 async function ensureBugsTable() {
     const sql = `CREATE TABLE IF NOT EXISTS bugsprojetos (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -1045,7 +1043,6 @@ async function ensureUpdatesTable() {
     await pool.query(sql);
 }
 
-// ================== CALENDÁRIO ADMINISTRATIVO ==================
 /**
  * Garante que a tabela admin_events existe
  */

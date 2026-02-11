@@ -1,5 +1,3 @@
-// ================== UTILITÁRIO PARA GERAR EXCEL ==================
-
 import ExcelJS from "exceljs";
 
 /**

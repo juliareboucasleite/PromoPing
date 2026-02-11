@@ -35,7 +35,6 @@ import fs from "fs";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
-// ================== CARREGAR VARIÁVEIS DE AMBIENTE ==================
 const __filename = fileURLToPath(
     import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,7 +49,6 @@ dotenv.config({
 });
 
 
-// ================== IMPORTS DE ROTAS ==================
 import authRoutes from "./routes/auth.js"; // Login/Registro + Google OAuth
 import produtosRoutes from "./routes/produtos.js"; // Produtos
 import configRoutes from "./routes/config.js"; // Configurações
@@ -74,12 +72,9 @@ import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
 import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
 import { verifyToken } from "./middleware/auth.js"; // JWT
 
-// ================== DATABASE ==================
 import { pool } from "./database/db.js"; // Pool de conexão
-// ================== SERVIÇOS ==================
 import { sendNotification } from "./services/notify.js"; // Notificações
 
-// ================== CONFIGURAÇÃO DO EXPRESS ==================
 const app = express();
 
 // Trust proxy para funcionar corretamente com NGINX/proxy reverso
@@ -93,7 +88,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use(cookieParser()); // Cookies
 app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
-// ================== RATE LIMITING, tava tomando rate limiting por recarregar a pagina a cada hora
 // Rate limiting geral para todas as rotas
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
@@ -147,7 +141,6 @@ const productLimiter = rateLimit({
 // Aplicar rate limiting geral
 app.use(generalLimiter);
 
-// ================== CONFIGURAÇÃO CORS ==================
 // CORS baseado no .env - SEGURO
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const allowedOrigins = [
@@ -249,7 +242,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ================== ROTAS DE AUTENTICAÇÃO ==================
 // Aplicar rate limiting específico para cada tipo de autenticação
 app.use("/api/auth/google", oauthLimiter); // Google OAuth - mais permissivo
 app.use("/api/auth/discord", oauthLimiter); // Discord OAuth - mais permissivo
@@ -257,7 +249,6 @@ app.use("/api/auth", authLimiter); // Login/Registro tradicional - mais restriti
 app.use("/api/auth", authRoutes); // Login/Registro + Google OAuth
 app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 
-// ================== ROTAS ==================
 app.get("/api/user/me", verifyToken, async(req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
@@ -351,7 +342,6 @@ app.use("/", githubRoutes); // GitHub API (releases)
 app.use("/", statusRoutes); // Status
 app.use("/", chartsRoutes); // Charts
 
-// ================== HEALTH CHECK ==================
 app.get("/api/health", (req, res) => {
     res.json({
         status: "ok",
@@ -362,13 +352,11 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// ================== WELL-KNOWN (verificação Discord, etc.) ==================
 // Servido em todos os ambientes; em produção o NGINX deve fazer proxy de /.well-known/ para o backend
 app.get("/.well-known/discord", (req, res) => {
     res.type("text/plain").send("dh=2ff358f6828299158d812b46a60a3a8c7476cd8b");
 });
 
-// ================== API ROOT ==================
 app.get("/api/", (req, res) => {
     res.json({
         status: "ok",
@@ -384,7 +372,6 @@ app.get("/api/", (req, res) => {
     });
 });
 
-// ================== PROXY PARA BOT DISCORD (notificações de preço por DM) ==================
 // O bot escuta na porta 3001; o backend reencaminha para usar as mesmas notificações
 // que o bot já envia (embed com Preço alvo atingido / Preço diminuiu, etc.) conforme preferências.
 app.post("/api/internal/send-price-dm", async(req, res) => {
@@ -414,7 +401,6 @@ app.post("/api/internal/send-price-dm", async(req, res) => {
     }
 });
 
-// ================== NOTIFICAÇÕES DIRETAS ==================
 app.post("/notify", async(req, res) => {
     try {
         const {
@@ -449,12 +435,10 @@ app.post("/notify", async(req, res) => {
     }
 });
 
-// ================== VERIFICAR PASTA BUILD ==================
 // Verificar se a pasta build existe (usado em várias partes do código)
 const buildPath = path.join(__dirname, "../frontend/pages/build");
 const buildExists = fs.existsSync(buildPath);
 
-// ================== SERVIÇOS DE INCLUDES ==================
 // Servir includes específicos ANTES dos arquivos estáticos
 app.get("/inc/header.html", (req, res) => {
     const filePath = buildExists ?
@@ -516,13 +500,11 @@ app.get("/inc/load-includes-register.js", (req, res) => {
     res.sendFile(filePath);
 });
 
-// ================== OPENAPI SPEC ==================
 app.get("/openapi.yaml", (req, res) => {
     res.setHeader("Content-Type", "application/yaml");
     res.sendFile(path.join(__dirname, "../openapi.yaml"));
 });
 
-// ================== FRONTEND ESTÁTICO ==================
 // Em produção, o NGINX serve o frontend estático
 // Em desenvolvimento, o Express serve o frontend
 const isProduction = process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND !== 'true';
@@ -556,7 +538,6 @@ if (!isProduction) {
         });
     });
 
-    // ================== ROTAS DISCORD DIRETAS ==================
     // Discord OAuth - redirecionar para API
     app.get("/auth/discord", (req, res) => {
         res.redirect("/api/auth/discord");
@@ -568,7 +549,6 @@ if (!isProduction) {
         res.redirect(`/api/auth/discord/callback?${queryString}`);
     });
 
-    // ================== ROTAS DO FRONTEND ==================
     // Página inicial
     app.get("/", (req, res) => {
         const indexPath = buildExists ?
@@ -893,7 +873,6 @@ if (!isProduction) {
         res.redirect(redirectUrl);
     });
 
-    // ================== MIDDLEWARE DE TRATAMENTO DE ERROS ==================
     // Garantir que CORS seja aplicado mesmo em erros
     app.use((err, req, res, next) => {
         // Aplicar CORS mesmo em caso de erro
@@ -977,7 +956,6 @@ import { cleanupOldQrTokens } from './services/qrLoginSession.js';
 
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? "127.0.0.1" : "0.0.0.0");
 
-// ================== INICIAR SERVIDOR ==================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async() => {

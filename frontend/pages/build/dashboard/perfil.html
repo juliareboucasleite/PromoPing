@@ -886,7 +886,6 @@
             }
         });
 
-        // ===== PASSWORD TOGGLE FUNCTIONS =====
         function toggleCurrentPassword() {
             const passwordInput = document.getElementById("currentPassword");
             const toggleBtn = document.getElementById("toggle-currentPassword");
@@ -1006,7 +1005,6 @@
             });
         }
 
-        // ===== 2FA =====
         window.twoFAEnabled = false;
         let twoFASetupBackupCodes = [];
 
@@ -1202,7 +1200,6 @@
         var btnDownloadBackupCodes = document.getElementById("btnDownloadBackupCodes");
         if (btnDownloadBackupCodes) btnDownloadBackupCodes.addEventListener("click", descarregarCodigosBackup2FA);
 
-        // ===== GERENCIAMENTO DE CONTA =====
         function desativarConta() {
             document.getElementById("deactivate2FACodeWrap").style.display = window.twoFAEnabled ? "block" : "none";
             document.getElementById("deactivate2FACode").value = "";

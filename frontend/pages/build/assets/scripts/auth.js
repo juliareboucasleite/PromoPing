@@ -1,4 +1,3 @@
-// ================== TOKEN ==================
 export function salvarToken(token) {
   localStorage.setItem("token", token);
 }
@@ -11,7 +10,6 @@ export function removerToken() {
   localStorage.removeItem("token");
 }
 
-// ================== VERIFICAR SESSÃO ==================
 export async function verificarSessao() {
   const token = obterToken();
   if (!token) {
@@ -43,7 +41,6 @@ export async function verificarSessao() {
   }
 }
 
-// ================== LOGIN COM EMAIL ==================
 export async function loginEmail(email, password) {
   try {
     const res = await makeRequest("/api/auth/login", {
@@ -70,7 +67,6 @@ export async function loginEmail(email, password) {
   }
 }
 
-// ================== REGISTO COM EMAIL ==================
 export async function register(nome, email, password) {
   try {
     const res = await makeRequest("/api/auth/register", {
@@ -93,7 +89,6 @@ export async function register(nome, email, password) {
   }
 }
 
-// ================== LOGOUT ==================
 export function logout() {
   removerToken();
   window.location.href = "/login";

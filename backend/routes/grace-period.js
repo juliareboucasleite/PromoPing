@@ -4,8 +4,6 @@ import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ================== ROTAS DE PERÍODO DE GRAÇA ==================
-
 /**
  * GET /api/grace-period/check
  * Verifica e atualiza períodos de graça expirados

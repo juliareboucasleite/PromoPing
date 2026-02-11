@@ -9,7 +9,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const router = express.Router();
 
-// ================== REVIEWS PÚBLICAS ==================
 /**
  * GET /api/status/reviews/public
  * Busca reviews públicas para exibir na página inicial
@@ -87,7 +86,6 @@ router.get("/api/status/reviews/public", async (req, res) => {
   }
 });
 
-// ================== FUNÇÃO: ATUALIZAR MÉTRICAS AUTOMATICAMENTE ==================
 async function atualizarMetricasAutomaticamente() {
   try {
     // Contar utilizadores ativos (total de utilizadores com Ativo = 1)
@@ -132,7 +130,6 @@ async function atualizarMetricasAutomaticamente() {
 // Exportar função para uso em outras rotas
 export { atualizarMetricasAutomaticamente };
 
-// ================== ROTA: STATUS GERAL DO SISTEMA ==================
 router.get("/api/status", async (req, res) => {
   try {
     // Buscar métricas do sistema
@@ -263,7 +260,6 @@ router.get("/api/status", async (req, res) => {
   }
 });
 
-// ================== ROTA: ATUALIZAR MÉTRICAS ==================
 router.post("/api/metricas/update", async (req, res) => {
   try {
     const { uptime, resposta, ativos, produtos, notificacoes } = req.body;
@@ -288,7 +284,6 @@ router.post("/api/metricas/update", async (req, res) => {
   }
 });
 
-// ================== ROTA: OBTER INCIDENTES ==================
 router.get("/api/incidentes", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -310,7 +305,6 @@ router.get("/api/incidentes", async (req, res) => {
   }
 });
 
-// ================== ROTA: ESTATÍSTICAS EM TEMPO REAL ==================
 router.get("/api/status/realtime", async (req, res) => {
   try {
     // Contar produtos ativos
@@ -349,7 +343,6 @@ router.get("/api/status/realtime", async (req, res) => {
   }
 });
 
-// ================== ROTA: ATUALIZAR COMPONENTE ==================
 router.put("/api/componentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -447,7 +440,6 @@ router.put("/api/componentes/:id", async (req, res) => {
   }
 });
 
-// ================== ROTA: OBTER COMPONENTE ESPECÍFICO ==================
 router.get("/api/componentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -481,7 +473,6 @@ router.get("/api/componentes/:id", async (req, res) => {
   }
 });
 
-// ================== ROTA: LISTAR TODOS OS COMPONENTES ==================
 router.get("/api/componentes", async (req, res) => {
   try {
     const [componentes] = await db.query(
@@ -505,7 +496,6 @@ router.get("/api/componentes", async (req, res) => {
   }
 });
 
-// ================== ROTA: CRIAR NOVO COMPONENTE ==================
 router.post("/api/componentes", async (req, res) => {
   try {
     const { nome, status = 'operational', uptime = 99.9, latencia = 0, detalhes = {} } = req.body;
@@ -553,7 +543,6 @@ router.post("/api/componentes", async (req, res) => {
   }
 });
 
-// ================== ROTA: CRIAR NOVO INCIDENTE ==================
 router.post("/api/incidentes", async (req, res) => {
   try {
     const { Titulo, titulo, Descricao, descricao, Impacto, impacto, Estado, estado, Status, status, DataInicio, dataInicio, DataFim, dataFFim, ComponenteId, componenteId } = req.body;
@@ -631,7 +620,6 @@ router.post("/api/incidentes", async (req, res) => {
   }
 });
 
-// ================== ROTA: ENCERRAR INCIDENTE ==================
 router.put("/api/incidentes/:id/encerrar", async (req, res) => {
   try {
     const { id } = req.params;
@@ -687,7 +675,6 @@ router.put("/api/incidentes/:id/encerrar", async (req, res) => {
   }
 });
 
-// ================== ROTA: OBTER INCIDENTE ESPECÍFICO ==================
 router.get("/api/incidentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -719,7 +706,6 @@ router.get("/api/incidentes/:id", async (req, res) => {
   }
 });
 
-// ================== ROTA: ATUALIZAR INCIDENTE ==================
 router.put("/api/incidentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -834,7 +820,6 @@ router.put("/api/incidentes/:id", async (req, res) => {
   }
 });
 
-// ================== ROTA: EXPORTAR INCIDENTES PARA EXCEL ==================
 router.get("/api/incidentes/exportar", async (req, res) => {
   try {
     // Buscar incidentes com informações dos componentes
@@ -996,7 +981,6 @@ router.get("/api/incidentes/exportar", async (req, res) => {
   }
 });
 
-// ================== ROTA: HEALTH CHECK AVANÇADO ==================
 router.get("/api/status/health", async (req, res) => {
   try {
     // Testar conexão com banco
@@ -1037,7 +1021,6 @@ router.get("/api/status/health", async (req, res) => {
   }
 });
 
-// ================== ROTA: DADOS COMPLETOS DO SISTEMA ==================
 router.get("/api/status/complete", async (req, res) => {
   try {
     // Buscar métricas de performance
@@ -1169,7 +1152,6 @@ router.get("/api/status/complete", async (req, res) => {
   }
 });
 
-// ================== ROTA: ESTATÍSTICAS DE UTILIZADORES ==================
 router.get("/api/stats/users", async (req, res) => {
   try {
     // Contar utilizadores ativos
@@ -1207,7 +1189,6 @@ router.get("/api/stats/users", async (req, res) => {
   }
 });
 
-// ================== ROTA: ESTATÍSTICAS DE PRODUTOS ==================
 router.get("/api/stats/products", async (req, res) => {
   try {
     // Contar produtos monitorizados
@@ -1243,7 +1224,6 @@ router.get("/api/stats/products", async (req, res) => {
   }
 });
 
-// ================== ROTA: ESTATÍSTICAS DE NOTIFICAÇÕES ==================
 router.get("/api/stats/notifications", async (req, res) => {
   try {
     // Contar notificações enviadas hoje
@@ -1285,7 +1265,6 @@ router.get("/api/stats/notifications", async (req, res) => {
   }
 });
 
-// ================== ROTA: ESTATÍSTICAS DE UPTIME ==================
 router.get("/api/stats/uptime", async (req, res) => {
   try {
     // Buscar métricas de uptime mais recentes
@@ -1324,8 +1303,6 @@ router.get("/api/stats/uptime", async (req, res) => {
   }
 });
 
-// ================== ROTAS: ATUALIZAÇÕES DO SISTEMA ==================
-
 // Criar tabela atualizacoes se não existir
 async function ensureAtualizacoesTable() {
   try {
@@ -1358,7 +1335,6 @@ async function initAtualizacoesTable() {
   }
 }
 
-// ================== ROTA: LISTAR ATUALIZAÇÕES ==================
 router.get("/api/atualizacoes", async (req, res) => {
   try {
     await initAtualizacoesTable();
@@ -1381,7 +1357,6 @@ router.get("/api/atualizacoes", async (req, res) => {
   }
 });
 
-// ================== ROTA: OBTER ATUALIZAÇÃO ESPECÍFICA ==================
 router.get("/api/atualizacoes/:id", async (req, res) => {
   try {
     await initAtualizacoesTable();
@@ -1414,7 +1389,6 @@ router.get("/api/atualizacoes/:id", async (req, res) => {
   }
 });
 
-// ================== ROTA: CRIAR NOVA ATUALIZAÇÃO ==================
 router.post("/api/atualizacoes", async (req, res) => {
   try {
     await initAtualizacoesTable();
@@ -1459,7 +1433,6 @@ router.post("/api/atualizacoes", async (req, res) => {
   }
 });
 
-// ================== ROTA: ATUALIZAR ATUALIZAÇÃO ==================
 router.put("/api/atualizacoes/:id", async (req, res) => {
   try {
     await initAtualizacoesTable();

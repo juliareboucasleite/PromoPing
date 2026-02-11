@@ -1,5 +1,3 @@
-// ================== UTILITÁRIO PARA GERAR PDF ==================
-
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
@@ -243,7 +241,6 @@ export async function gerarPDFUtilizadores(utilizadores) {
     const margin = 50;
     const contentWidth = pageWidth - (margin * 2);
 
-    // ================== CABEÇALHO ==================
     let yPosition = margin;
 
     // Logo e título
@@ -282,7 +279,6 @@ export async function gerarPDFUtilizadores(utilizadores) {
     drawLine(doc, yPosition, contentWidth);
     yPosition += 20;
 
-    // ================== INFORMAÇÕES DO RELATÓRIO ==================
     const infoBoxY = yPosition;
     doc.rect(margin, infoBoxY, contentWidth, 60)
        .fillColor('#f8f9fa')
@@ -315,7 +311,6 @@ export async function gerarPDFUtilizadores(utilizadores) {
 
     yPosition += 90;
 
-    // ================== TABELA DE UTILIZADORES ==================
     const tableStartY = yPosition;
     const rowHeight = 30;
     const headerHeight = 35;
@@ -551,7 +546,6 @@ export async function gerarPDFUtilizadores(utilizadores) {
       currentY += rowHeight;
     });
 
-    // ================== RODAPÉ ==================
     const footerY = pageHeight - 50;
     drawLine(doc, footerY - 20, contentWidth);
     

@@ -16,7 +16,6 @@ import {
 
 const router = express.Router();
 
-// ================== PERFIL DO UTILIZADOR ==================
 // Rota /profile (alias para /me) - REMOVIDA (duplicada)
 // A rota principal está na linha 162
 
@@ -318,7 +317,6 @@ router.put("/me", verifyToken, async (req, res) => {
   }
 });
 
-// ================== ATUALIZAR USUÁRIO POR ID (ADMIN) ==================
 // IMPORTANTE: Esta rota deve vir ANTES de rotas paramétricas genéricas
 // mas DEPOIS de rotas específicas como /admins, /profile, etc.
 router.put("/admin/:id", verifyToken, async (req, res) => {
@@ -523,7 +521,6 @@ router.get("/stats", verifyToken, async (req, res) => {
   }
 });
 
-// ================== LISTAR ADMINISTRADORES ==================
 router.get("/admins", async (_req, res) => {
   try {
     const [rows] = await pool.query(
@@ -698,7 +695,6 @@ router.post("/set-password", verifyToken, async (req, res) => {
   }
 });
 
-// ================== UPLOAD DE FOTO DE PERFIL ==================
 router.post("/upload-photo", verifyToken, async (req, res) => {
   try {
     console.log("[UPLOAD-PHOTO] Rota chamada");
@@ -745,7 +741,6 @@ router.post("/upload-photo", verifyToken, async (req, res) => {
   }
 });
 
-// ================== RESETAR HISTÓRICO ==================
 router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -757,7 +752,6 @@ router.delete("/notificacoes/reset", verifyToken, async (req, res) => {
   }
 });
 
-// ================== INFORMAÇÕES DO PLANO ==================
 router.get("/plano", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID; // vindo do middleware de autenticação
@@ -851,7 +845,6 @@ router.get("/plano", verifyToken, async (req, res) => {
   }
 });
 
-// ================== ALTERAR PLANO ==================
 router.post("/plano/alterar", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -941,7 +934,6 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
   }
 });
 
-// ================== BUSCAR PLANOS ==================
 router.get("/planos", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -976,7 +968,6 @@ router.get("/planos", verifyToken, async (req, res) => {
   }
 });
 
-// ================== ALTERAR PLANO ==================
 router.post("/change-plan", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -1031,7 +1022,6 @@ router.post("/change-plan", verifyToken, async (req, res) => {
   }
 });
 
-// ================== CANCELAR ASSINATURA ==================
 router.post("/cancel-subscription", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -1089,7 +1079,6 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
   }
 });
 
-// ================== 2FA (AUTENTICAÇÃO EM DOIS FATORES) ==================
 router.get("/2fa/status", verifyToken, async (req, res) => {
   try {
     const status = await getStatus(req.user.ReferenciaID);
@@ -1146,7 +1135,6 @@ router.post("/2fa/send-email-code", verifyToken, async (req, res) => {
   }
 });
 
-// ================== DESATIVAR CONTA ==================
 router.post("/deactivate", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
@@ -1279,7 +1267,6 @@ router.post("/deactivate", verifyToken, async (req, res) => {
   }
 });
 
-// ================== EXCLUIR CONTA ==================
 router.delete("/delete", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;

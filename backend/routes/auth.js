@@ -727,8 +727,6 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-// ================== ROTAS DISCORD ==================
-
 // Verificar se usuário Discord já existe
 router.get('/discord/check/:discordId', async (req, res) => {
     try {
@@ -817,12 +815,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
     }
 });
 
-// ================== ROTAS SMS/WHATSAPP REMOVIDAS ==================
 // Serviços SMS e WhatsApp foram removidos - apenas Email e Discord disponíveis
-
-// ================== ROTAS EMAIL/SENHA ==================
-
-// ================== RESET DE SENHA (ESTILO PINTEREST) ==================
 
 // Buscar contas por nome/email/username (estilo Pinterest)
 router.get("/search-accounts", async (req, res) => {
@@ -1166,8 +1159,6 @@ router.post("/reset-password", async (req, res) => {
         });
     }
 });
-
-// ================== FIM RESET DE SENHA (ESTILO PINTEREST) ==================
 
 // LOGIN com email e senha
 router.post("/login", async (req, res) => {
@@ -2384,7 +2375,6 @@ router.get("/discord/callback", async (req, res) => {
 });
 
 
-// ===== ROTA DE VERIFICAÇÃO DE TELEFONE REMOVIDA =====
 // WhatsApp foi removido do sistema - apenas Email e Discord disponíveis
 // Se precisar verificar telefone, use a rota de verificação de email
 
@@ -2516,8 +2506,6 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
     }
 });
 
-// ================== ROTAS DE RECUPERAÇÃO DE SENHA ==================
-
 // Esqueci a senha - enviar código
 router.post("/esqueci-senha", async (req, res) => {
     try {
@@ -2532,7 +2520,6 @@ router.post("/esqueci-senha", async (req, res) => {
             });
         }
 
-        // ===== ATENÇÃO: APENAS EMAIL SUPORTADO =====
         // WhatsApp foi removido - apenas email disponível para recuperação de senha
         // Verificar se é email válido
         if (!emailOuTelefone.includes('@')) {
@@ -2614,7 +2601,6 @@ router.post("/resetar-senha", async (req, res) => {
             });
         }
 
-        // ===== ATENÇÃO: APENAS EMAIL SUPORTADO =====
         // WhatsApp foi removido - apenas email disponível para reset de senha
         // Verificar se é email válido
         if (!emailOuTelefone.includes('@')) {
@@ -2730,7 +2716,6 @@ router.post("/reenviar-codigo", async (req, res) => {
             console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
-        // ===== WHATSAPP REMOVIDO =====
         // WhatsApp foi removido do sistema - apenas email disponível
 
         res.json({
@@ -2886,7 +2871,6 @@ router.get("/profile", verifyToken, async (req, res) => {
     }
 });
 
-// ================== ROTA PARA RECUPERAR DADOS OAuth TEMPORÁRIOS ==================
 // Rota para recuperar dados OAuth salvos temporariamente (via cookie)
 router.get("/oauth-temp-data", (req, res) => {
     try {

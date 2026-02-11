@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config({ silent: true, debug: false, override: false, quiet: true });
 
 
-// ===== EMAIL =====
+
 export async function sendEmail(to, subject, message) {
   try {
     console.log(`Iniciando envio de email para: ${to}`);
@@ -120,7 +120,7 @@ export async function sendEmail(to, subject, message) {
   }
 }
 
-// ===== ESCOLHER CANAL =====
+
 export async function sendNotification({ canal, email, telefone, mensagem }) {
   if (canal === "email" && email) {
     await sendEmail(email, "PromoPing - Alerta de preço", mensagem);
