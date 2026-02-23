@@ -23,9 +23,8 @@
     "bcrypt": "^6.0.0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
-    "mysql2": "^3.6.5",
-    "ytpl": "^2.3.0"
-  },
+        "mysql2": "^3.6.5"
+    },
   "devDependencies": {
     "nodemon": "^3.0.2"
   },
