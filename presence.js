@@ -32,9 +32,9 @@ async function initPresence() {
     }
   }
 
-  const clientId = config?.clientId || "SEU_CLIENT_ID_DISCORD";
+  const clientId = config?.clientId || "1454552237689933945";
   const settings = config?.settings || {};
-  if (clientId === "SEU_CLIENT_ID_DISCORD" || clientId === "SEU_CLIENT_ID_AQUI") {
+  if (clientId === "1454552237689933945") {
     console.log("Configure seu Client ID do Discord:");
     console.log("1. Copie config-files/discord-config.example.js para config-files/discord-config.js");
     console.log("2. Configure seu Client ID em config-files/discord-config.js");
