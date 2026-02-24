@@ -6,7 +6,7 @@
     "main": "backend/server.js",
     "scripts": {
         "start": "node backend/discord-bot/run.js",
-        "dev": "nodemon backend/server.js",
+        "dev": "nodemon backend/server.js/backend/discord-bot/run.js",
         "run": "node backend/discord-bot/run.js",
         "release": "node scripts/release.js",
         "setup": "node scripts/setup.js",
