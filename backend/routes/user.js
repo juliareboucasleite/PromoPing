@@ -171,12 +171,11 @@ router.get("/profile", verifyToken, async (req, res) => {
     const u = userRows[0];
     const DIAS_COOLDOWN = 30;
     const lastSenha = u?.UltimaAlteracaoSenha ? new Date(u.UltimaAlteracaoSenha) : null;
-    const lastNome = u?.UltimaAlteracaoNome ? new Date(u.UltimaAlteracaoNome) : null;
     const nextSenha = lastSenha ? new Date(lastSenha.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000) : null;
-    const nextNome = lastNome ? new Date(lastNome.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000) : null;
     const now = new Date();
     const podeSenha = !nextSenha || now >= nextSenha;
-    const podeNome = !nextNome || now >= nextNome;
+    // Nome: utilizador pode alterar quando quiser (sem cooldown)
+    const podeNome = true;
 
     const response = {
       status: "ok",
@@ -188,7 +187,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         contas_conectadas: contas,
         preferencias: prefs,
         proxima_alteracao_senha: nextSenha ? nextSenha.toISOString() : null,
-        proxima_alteracao_nome: nextNome ? nextNome.toISOString() : null,
+        proxima_alteracao_nome: null,
         pode_alterar_senha: podeSenha,
         pode_alterar_nome: podeNome
       }
@@ -211,38 +210,12 @@ router.put("/profile", verifyToken, async (req, res) => {
     // Usar photo_url se fornecido, senão usar fotoPerfil
     const foto = photo_url || fotoPerfil;
 
-    // Cooldown 30 dias para alteração de nome
-    if (nome !== undefined) {
-      try {
-        const [rows] = await pool.query(
-          "SELECT UltimaAlteracaoNome FROM utilizadores WHERE ReferenciaID = ?",
-          [referenciaID]
-        );
-        if (rows.length > 0 && rows[0].UltimaAlteracaoNome) {
-          const lastChange = new Date(rows[0].UltimaAlteracaoNome);
-          const DIAS_COOLDOWN = 30;
-          const nextAllowed = new Date(lastChange.getTime() + DIAS_COOLDOWN * 24 * 60 * 60 * 1000);
-          if (new Date() < nextAllowed) {
-            return res.status(400).json({
-              status: "error",
-              error: `Só pode alterar o nome novamente após 30 dias. Próxima alteração permitida: ${nextAllowed.toLocaleDateString("pt-PT")}.`,
-              proxima_alteracao: nextAllowed.toISOString()
-            });
-          }
-        }
-      } catch (colErr) {
-        if (colErr.code !== 'ER_BAD_FIELD_ERROR') throw colErr;
-      }
-    }
-
-    // Construir query dinamicamente baseado nos campos fornecidos
     const updates = [];
     const values = [];
 
     if (nome !== undefined) {
       updates.push("Nome = ?");
       values.push(nome);
-      updates.push("UltimaAlteracaoNome = NOW()");
     }
     if (email !== undefined) {
       updates.push("Email = ?");
