@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário - PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <link href="../lib/fullcalendar/main.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="calendar.html" class="nav-item active"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Calendário do Suporte</h1>
+                    <button id="refreshCalendarBtn" class="refresh-button">Atualizar</button>
+                </div>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Eventos agendados pela equipa de suporte. Clique num evento para ver o que o suporte está a fazer.</p>
+                <div class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal só leitura: detalhe do evento (o que o suporte está a fazer) -->
+    <div id="eventDetailModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="eventDetailTitle">Detalhe do evento</h2>
+                <button class="modal-close" id="closeEventDetailModal">&times;</button>
+            </div>
+            <div id="eventDetailBody" style="padding: 1rem;"></div>
+            <div class="modal-actions" style="margin-top: 1rem;">
+                <button type="button" class="modal-cancel-button" id="closeEventDetailBtn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../lib/fullcalendar/main.min.js"></script>
+    <script src="../lib/fullcalendar/locales-pt-br.js"></script>
+    <script src="../script/corporation-calendar.js"></script>
+</body>
+
+</html>
