@@ -1311,13 +1311,12 @@ router.post("/login", async (req, res) => {
 
         if (isAdminPanel) {
             const perfilId = user.PerfilId || user.perfilId;
-            // ESSA VERIFICAÇÃO AQUI É O QUE IMPEDE NÃO-ADMINS DE ACESSAR O PAINEL
-            // Se tu mudar !== 1 pra outra coisa, pode dar acesso ou bloquear admins
-            if (perfilId !== 1) {
-                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} não é admin (PerfilId=${perfilId})`);
+            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation (gestão dos funcionários)
+            if (perfilId !== 1 && perfilId !== 3) {
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} (PerfilId=${perfilId})`);
                 return res.status(403).json({
                     status: "error",
-                    error: "Acesso negado. Apenas administradores podem acessar o painel administrativo.",
+                    error: "Acesso negado. Apenas administradores e utilizadores corporativos podem acessar o painel.",
                     accessDenied: true
                 });
             }
