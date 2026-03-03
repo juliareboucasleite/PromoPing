@@ -185,6 +185,7 @@ async function ensureTable() {
     }
 
     await ensureAnonUser();
+    await ensureSupportTicketClosuresTable();
 
     // Foreign keys (podem falhar se já existirem ou houver dados inconsistentes)
     try {
@@ -197,6 +198,30 @@ async function ensureTable() {
         await pool.query("ALTER TABLE supportmessages ADD CONSTRAINT fk_threadId FOREIGN KEY (threadId) REFERENCES supportmessages(id) ON DELETE SET NULL");
     } catch (e) {
         // Foreign key já existe ou não pode ser criada
+    }
+}
+
+/**
+ * Tabela de encerramentos: guarda quem fechou cada ticket (para associar à review de suporte)
+ */
+async function ensureSupportTicketClosuresTable() {
+    try {
+        const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+        if (tables.length === 0) {
+            await pool.query(`
+                CREATE TABLE support_ticket_closures (
+                    threadId INT PRIMARY KEY,
+                    ClosedByReferenciaID VARCHAR(13) NOT NULL,
+                    ClosedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UserReferenciaID VARCHAR(13) NOT NULL,
+                    INDEX idx_user (UserReferenciaID),
+                    INDEX idx_closed_by (ClosedByReferenciaID)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            `);
+            console.log("[SUPPORT] Tabela support_ticket_closures criada");
+        }
+    } catch (e) {
+        console.error("[SUPPORT] ensureSupportTicketClosuresTable:", e.message);
     }
 }
 
@@ -654,16 +679,37 @@ router.post("/internal/threads/:threadId/close", async (req, res) => {
         }
         await ensureTable();
         const threadId = parseInt(req.params.threadId, 10);
+        const { closedByReferenciaID, closedByDiscordId } = req.body || {};
         if (!threadId || Number.isNaN(threadId)) {
             return res.status(400).json({ error: "threadId inválido" });
         }
 
         const [exists] = await pool.query(
-            "SELECT id FROM supportmessages WHERE id = ? OR threadId = ? LIMIT 1",
+            "SELECT id, ReferenciaID FROM supportmessages WHERE id = ? OR threadId = ? ORDER BY id ASC LIMIT 1",
             [threadId, threadId]
         );
         if (exists.length === 0) {
             return res.status(404).json({ error: "Thread não encontrada" });
+        }
+
+        let closedByRef = closedByReferenciaID || null;
+        if (!closedByRef && closedByDiscordId) {
+            const [u] = await pool.query("SELECT ReferenciaID FROM utilizadores WHERE discord_id = ? LIMIT 1", [String(closedByDiscordId)]);
+            if (u.length > 0) closedByRef = u[0].ReferenciaID;
+        }
+        const userRef = exists[0].ReferenciaID;
+        if (closedByRef) {
+            try {
+                const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+                if (tables.length > 0) {
+                    await pool.query(
+                        "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ClosedByReferenciaID = ?, ClosedAt = CURRENT_TIMESTAMP",
+                        [threadId, closedByRef, userRef, closedByRef]
+                    );
+                }
+            } catch (e) {
+                console.warn("[SUPPORT] Ao guardar closure (Discord):", e.message);
+            }
         }
 
         await pool.query(
@@ -675,6 +721,87 @@ router.post("/internal/threads/:threadId/close", async (req, res) => {
     } catch (error) {
         console.error(" [SUPPORT] Erro ao fechar thread:", error);
         return res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/support/closed-tickets
+ * Lista tickets fechados do utilizador logado (para poder escolher qual avaliar)
+ */
+router.get("/closed-tickets", verifyToken, async (req, res) => {
+    try {
+        await ensureTable();
+        const userRef = req.user.ReferenciaID;
+        const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+        if (tables.length === 0) {
+            return res.json({ status: "ok", items: [] });
+        }
+        const [rows] = await pool.query(
+            `SELECT c.threadId, c.ClosedAt, c.ClosedByReferenciaID, u.Nome AS closedByName, u.Email AS closedByEmail
+             FROM support_ticket_closures c
+             LEFT JOIN utilizadores u ON u.ReferenciaID = c.ClosedByReferenciaID
+             WHERE c.UserReferenciaID = ?
+             ORDER BY c.ClosedAt DESC
+             LIMIT 50`,
+            [userRef]
+        );
+        res.json({ status: "ok", items: rows });
+    } catch (e) {
+        console.error("[SUPPORT] closed-tickets:", e);
+        res.status(500).json({ status: "error", error: e.message });
+    }
+});
+
+/**
+ * POST /api/support/review
+ * Criar avaliação (review). Se tipo=suporte e threadId for enviado, associa ao suporte que fechou esse ticket.
+ */
+router.post("/review", verifyToken, async (req, res) => {
+    try {
+        await ensureTable();
+        const { tipo, texto, rating, is_anonimo, threadId } = req.body || {};
+        const referenciaID = req.user.ReferenciaID;
+
+        if (!tipo || !texto || typeof texto !== "string" || !texto.trim()) {
+            return res.status(400).json({ status: "error", error: "tipo e texto são obrigatórios" });
+        }
+        const tipos = ["site", "bot", "suporte"];
+        if (!tipos.includes(tipo)) {
+            return res.status(400).json({ status: "error", error: "tipo deve ser site, bot ou suporte" });
+        }
+
+        let supportReferenciaID = null;
+        if (tipo === "suporte" && threadId) {
+            const [closures] = await pool.query(
+                "SELECT ClosedByReferenciaID FROM support_ticket_closures WHERE threadId = ? AND UserReferenciaID = ? LIMIT 1",
+                [parseInt(threadId, 10), referenciaID]
+            );
+            if (closures.length > 0) {
+                supportReferenciaID = closures[0].ClosedByReferenciaID;
+            }
+        }
+
+        const [cols] = await pool.query(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reviews' AND COLUMN_NAME = 'SupportReferenciaID'"
+        );
+        const hasSupportRef = cols.length > 0;
+
+        if (hasSupportRef && supportReferenciaID) {
+            await pool.query(
+                `INSERT INTO reviews (ReferenciaID, Tipo, Texto, Rating, IsAnonimo, SupportReferenciaID) VALUES (?, ?, ?, ?, ?, ?)`,
+                [referenciaID, tipo, texto.trim(), rating != null ? parseInt(rating, 10) : null, is_anonimo ? 1 : 0, supportReferenciaID]
+            );
+        } else {
+            await pool.query(
+                `INSERT INTO reviews (ReferenciaID, Tipo, Texto, Rating, IsAnonimo) VALUES (?, ?, ?, ?, ?)`,
+                [referenciaID, tipo, texto.trim(), rating != null ? parseInt(rating, 10) : null, is_anonimo ? 1 : 0]
+            );
+        }
+
+        res.json({ status: "ok", message: "Avaliação guardada com sucesso" });
+    } catch (e) {
+        console.error("[SUPPORT] review:", e);
+        res.status(500).json({ status: "error", error: e.message });
     }
 });
 
@@ -786,9 +913,9 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
             });
         }
 
-        // Verificar se a thread existe
+        // Verificar se a thread existe e obter ReferenciaID do utilizador (cliente) da conversa
         const [threadRows] = await pool.query(
-            "SELECT id FROM supportmessages WHERE id = ? OR threadId = ? LIMIT 1",
+            "SELECT id, ReferenciaID FROM supportmessages WHERE id = ? OR threadId = ? ORDER BY id ASC LIMIT 1",
             [threadId, threadId]
         );
 
@@ -796,6 +923,17 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
             return res.status(404).json({
                 error: "Conversa não encontrada"
             });
+        }
+
+        const userReferenciaID = threadRows[0].ReferenciaID;
+        // Guardar quem fechou (para associar à review de suporte)
+        try {
+            await pool.query(
+                "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ClosedByReferenciaID = ?, ClosedAt = CURRENT_TIMESTAMP",
+                [threadId, referenciaID, userReferenciaID, referenciaID]
+            );
+        } catch (e) {
+            console.warn("[SUPPORT] Ao guardar closure:", e.message);
         }
 
         // Excluir todas as mensagens da thread
