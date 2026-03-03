@@ -1,8 +1,3 @@
-/**
- * Calendário Administrativo - PromoPing Admin
- * Sistema de calendário para operações administrativas
- */
-
 (function() {
     'use strict';
 
@@ -66,11 +61,11 @@
      */
     function getEventColor(type) {
         const colors = {
-            'scraper': '#3b82f6',      // Azul
-            'bug': '#ef4444',          // Vermelho
-            'maintenance': '#f59e0b',  // Laranja
-            'deploy': '#10b981',       // Verde
-            'milestone': '#8b5cf6'      // Roxo
+            'scraper': '#3b82f6',      
+            'bug': '#ef4444',          
+            'maintenance': '#f59e0b', 
+            'deploy': '#10b981',       
+            'milestone': '#8b5cf6'      
         };
         return colors[type] || '#6b7280';
     }
@@ -80,10 +75,10 @@
      */
     function getStatusColor(status) {
         const colors = {
-            'scheduled': '#3b82f6',     // Azul
-            'in-progress': '#f59e0b',  // Laranja
-            'completed': '#10b981',     // Verde
-            'cancelled': '#6b7280'      // Cinza
+            'scheduled': '#3b82f6',     
+            'in-progress': '#f59e0b',  
+            'completed': '#10b981',     
+            'cancelled': '#6b7280'      
         };
         return colors[status] || '#6b7280';
     }
@@ -342,15 +337,16 @@
                 const syncBtn = document.getElementById('syncGoogleBtn');
                 const connectBtnText = document.getElementById('connectGoogleBtnText');
 
+                const disconnectBtn = document.getElementById('disconnectGoogleBtn');
                 if (googleConnected) {
-                    // Mostrar botão de sincronizar e esconder botão de conectar
                     if (connectBtn) connectBtn.style.display = 'none';
                     if (syncBtn) syncBtn.style.display = 'inline-flex';
+                    if (disconnectBtn) disconnectBtn.style.display = 'inline-flex';
                     if (connectBtnText) connectBtnText.textContent = 'Conectado';
                 } else {
-                    // Mostrar botão de conectar e esconder botão de sincronizar
                     if (connectBtn) connectBtn.style.display = 'inline-flex';
                     if (syncBtn) syncBtn.style.display = 'none';
+                    if (disconnectBtn) disconnectBtn.style.display = 'none';
                     if (connectBtnText) connectBtnText.textContent = 'Conectar Google';
                 }
             }
@@ -359,8 +355,10 @@
             // Em caso de erro, mostrar botão de conectar
             const connectBtn = document.getElementById('connectGoogleBtn');
             const syncBtn = document.getElementById('syncGoogleBtn');
+            const disconnectBtn = document.getElementById('disconnectGoogleBtn');
             if (connectBtn) connectBtn.style.display = 'inline-flex';
             if (syncBtn) syncBtn.style.display = 'none';
+            if (disconnectBtn) disconnectBtn.style.display = 'none';
         }
     }
 
@@ -549,6 +547,65 @@
         if (syncGoogleBtn) {
             syncGoogleBtn.addEventListener('click', async () => {
                 await syncGoogleCalendar();
+            });
+        }
+
+        const disconnectGoogleBtn = document.getElementById('disconnectGoogleBtn');
+        if (disconnectGoogleBtn) {
+            disconnectGoogleBtn.addEventListener('click', async () => {
+                if (!confirm('Desligar a conta Google? Terá de usar «Conectar Google» de novo para sincronizar ou trocar de conta.')) return;
+                try {
+                    const response = await fetchAuth('/api/admin/calendar/disconnect-google', { method: 'POST' });
+                    const data = await response.json();
+                    if (data.status === 'ok') {
+                        await checkGoogleConnectionStatus();
+                        if (calendar) calendar.refetchEvents();
+                    } else {
+                        alert(data.error || 'Erro ao desligar');
+                    }
+                } catch (err) {
+                    alert('Erro: ' + (err.message || 'Não foi possível desligar'));
+                }
+            });
+        }
+
+        // Guardar tokens Google manualmente
+        const saveGoogleTokensBtn = document.getElementById('saveGoogleTokensBtn');
+        const pasteAccessToken = document.getElementById('pasteAccessToken');
+        const pasteRefreshToken = document.getElementById('pasteRefreshToken');
+        const saveTokensMessage = document.getElementById('saveTokensMessage');
+        if (saveGoogleTokensBtn && pasteAccessToken) {
+            saveGoogleTokensBtn.addEventListener('click', async () => {
+                const accessToken = pasteAccessToken.value.trim();
+                if (!accessToken) {
+                    if (saveTokensMessage) saveTokensMessage.textContent = 'Indique o access token.';
+                    return;
+                }
+                saveGoogleTokensBtn.disabled = true;
+                if (saveTokensMessage) saveTokensMessage.textContent = '';
+                try {
+                    const response = await fetchAuth('/api/admin/calendar/save-google-tokens', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            access_token: accessToken,
+                            refresh_token: (pasteRefreshToken && pasteRefreshToken.value) ? pasteRefreshToken.value.trim() : null
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.status === 'ok') {
+                        if (saveTokensMessage) saveTokensMessage.textContent = 'Guardado.';
+                        if (pasteAccessToken) pasteAccessToken.value = '';
+                        if (pasteRefreshToken) pasteRefreshToken.value = '';
+                        await checkGoogleConnectionStatus();
+                        if (calendar) calendar.refetchEvents();
+                    } else {
+                        if (saveTokensMessage) saveTokensMessage.textContent = data.error || 'Erro';
+                    }
+                } catch (err) {
+                    if (saveTokensMessage) saveTokensMessage.textContent = err.message || 'Erro ao guardar';
+                } finally {
+                    saveGoogleTokensBtn.disabled = false;
+                }
             });
         }
 

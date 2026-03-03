@@ -90,10 +90,25 @@
                             </svg>
                             Sincronizar Eventos
                         </button>
+                        <button id="disconnectGoogleBtn" class="refresh-button" title="Desligar conta Google ou trocar de conta" style="display: none;">
+                            Trocar conta
+                        </button>
                         <button id="newEventBtn" class="refresh-button">Novo Evento</button>
                         <button id="refreshCalendarBtn" class="refresh-button">Atualizar</button>
                     </div>
                 </div>
+
+                <!-- Opção: guardar tokens Google manualmente (quando o popup falha ou redirect_uri não coincide) -->
+                <details id="pasteTokensDetails" class="tokens-paste-details" style="margin-bottom: 1rem;">
+                    <summary style="cursor: pointer; color: #94a3b8; font-size: 0.9rem;">Já tenho tokens do Google (guardar manualmente)</summary>
+                    <div class="tokens-paste-form" style="margin-top: 0.75rem; padding: 1rem; background: #18181a; border: 1px solid #232326; border-radius: 8px; max-width: 560px;">
+                        <p style="margin: 0 0 0.75rem 0; color: #94a3b8; font-size: 0.85rem;">Use apenas se os tokens foram obtidos com o mesmo Client ID configurado no servidor. Access token e refresh token:</p>
+                        <input type="password" id="pasteAccessToken" class="form-input" placeholder="Access token" style="margin-bottom: 0.5rem; width: 100%; box-sizing: border-box;">
+                        <input type="password" id="pasteRefreshToken" class="form-input" placeholder="Refresh token" style="margin-bottom: 0.75rem; width: 100%; box-sizing: border-box;">
+                        <button type="button" id="saveGoogleTokensBtn" class="refresh-button">Guardar tokens</button>
+                        <span id="saveTokensMessage" style="margin-left: 0.5rem; font-size: 0.85rem;"></span>
+                    </div>
+                </details>
 
                 <!-- Calendar Container -->
                 <div class="calendar-container">
@@ -104,8 +119,8 @@
     </div>
 
     <!-- Modal para criar/editar evento -->
-    <div id="eventModal" class="modal">
-        <div class="modal-content">
+    <div id="eventModal" class="modal-overlay">
+        <div class="modal">
             <div class="modal-header">
                 <h2 id="modalTitle">Novo Evento</h2>
                 <button class="modal-close" id="closeModal">&times;</button>
