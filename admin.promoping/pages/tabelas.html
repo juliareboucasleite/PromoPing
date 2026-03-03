@@ -19,7 +19,7 @@
             <div class="sidebar-header">
                 <div class="header-content">
                     <img src="../assets/images/PromoPing.png" alt="PromoPing Logo" class="logo-placeholder">
-                    <h2>PromoPing Admin</h2>
+                        <h4>PromoPing Suporte</h4>
                 </div>
             </div>
             <nav class="sidebar-nav">
@@ -141,6 +141,40 @@
         </div>
     </div>
 
+    <!-- Modal para Atualizar Incidente -->
+    <div id="incidentUpdateModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Atualizar / Resolver Incidente</h2>
+                <button class="modal-close" id="closeIncidentUpdateModal">&times;</button>
+            </div>
+            <form id="incidentUpdateForm">
+                <input type="hidden" id="incidentUpdateId" value="">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="incidentUpdateStatus" class="form-input" required>
+                        <option value="investigating">Investigando</option>
+                        <option value="identified">Identificado</option>
+                        <option value="monitoring">Monitorando</option>
+                        <option value="resolved">Resolvido</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Título (opcional)</label>
+                    <input type="text" id="incidentUpdateTitle" class="form-input" placeholder="Deixe em branco para não alterar">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição (opcional)</label>
+                    <textarea id="incidentUpdateDescription" class="form-input" rows="3" placeholder="Deixe em branco para não alterar"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Guardar</button>
+                    <button type="button" class="modal-cancel-button" onclick="document.getElementById('incidentUpdateModal').classList.remove('show')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal para Nova Atualização -->
     <div id="updateModal" class="modal-overlay">
         <div class="modal">
@@ -175,6 +209,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/admin-role-guard.js"></script>
     <script src="../script/dashboard.js"></script>
     <script src="../script/tabelas.js"></script>
 </body>
