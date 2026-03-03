@@ -120,6 +120,7 @@
                             <th>Status</th>
                             <th>Data Início</th>
                             <th>Data Fim</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,16 +129,18 @@
                                 <td>${escapeHtml(incident.Titulo || 'N/A')}</td>
                                 <td>${escapeHtml((incident.Descricao || '').substring(0, 100))}${incident.Descricao && incident.Descricao.length > 100 ? '...' : ''}</td>
                                 <td>${escapeHtml(incident.ComponenteAfetado || 'N/A')}</td>
-                                <td>
-                                    <span class="bug-status ${incident.Status}">${incident.Status}</span>
-                                </td>
+                                <td><span class="bug-status ${incident.Status}">${incident.Status}</span></td>
                                 <td>${formatDate(incident.DataInicio)}</td>
                                 <td>${incident.DataFim ? formatDate(incident.DataFim) : 'Em andamento'}</td>
+                                <td><button type="button" class="refresh-button" data-incident-id="${incident.Id}" style="padding: 0.25rem 0.5rem;">Atualizar</button></td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
+            incidentsList.querySelectorAll('[data-incident-id]').forEach(btn => {
+                btn.addEventListener('click', () => openIncidentUpdateModal(btn.getAttribute('data-incident-id')));
+            });
         } catch (error) {
             console.error('[TABELAS] Erro ao carregar incidentes:', error);
             incidentsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
@@ -195,6 +198,47 @@
         } catch (error) {
             console.error('[TABELAS] Erro ao carregar atualizações:', error);
             updatesList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+        }
+    }
+
+    /**
+     * Abrir modal para atualizar incidente (notifica Discord e painel corporativo)
+     */
+    function openIncidentUpdateModal(incidentId) {
+        const modal = document.getElementById('incidentUpdateModal');
+        const form = document.getElementById('incidentUpdateForm');
+        if (!modal || !form) return;
+        document.getElementById('incidentUpdateId').value = incidentId;
+        form.reset();
+        document.getElementById('incidentUpdateId').value = incidentId;
+        modal.classList.add('show');
+    }
+
+    function closeIncidentUpdateModal() {
+        const modal = document.getElementById('incidentUpdateModal');
+        if (modal) modal.classList.remove('show');
+    }
+
+    async function submitIncidentUpdate(e) {
+        e.preventDefault();
+        const id = document.getElementById('incidentUpdateId').value;
+        const status = document.getElementById('incidentUpdateStatus').value;
+        const titulo = document.getElementById('incidentUpdateTitle').value.trim();
+        const descricao = document.getElementById('incidentUpdateDescription').value.trim();
+        if (!id) return;
+        try {
+            const body = { status };
+            if (titulo) body.titulo = titulo;
+            if (descricao) body.descricao = descricao;
+            await fetchAuth(`/api/admin/incidents/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
+            alert('Incidente atualizado. Notificação enviada para Discord e painel corporativo.');
+            closeIncidentUpdateModal();
+            loadIncidents();
+        } catch (err) {
+            alert('Erro: ' + err.message);
         }
     }
 
@@ -332,6 +376,10 @@
 
         if (closeIncidentModalBtn) closeIncidentModalBtn.addEventListener('click', closeIncidentModal);
         if (closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
+        const incidentUpdateForm = document.getElementById('incidentUpdateForm');
+        const closeIncidentUpdateModalBtn = document.getElementById('closeIncidentUpdateModal');
+        if (incidentUpdateForm) incidentUpdateForm.addEventListener('submit', submitIncidentUpdate);
+        if (closeIncidentUpdateModalBtn) closeIncidentUpdateModalBtn.addEventListener('click', closeIncidentUpdateModal);
         if (cancelIncidentBtn) cancelIncidentBtn.addEventListener('click', closeIncidentModal);
         if (cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
