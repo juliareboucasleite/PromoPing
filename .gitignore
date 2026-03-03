@@ -63,6 +63,11 @@ src/generated
 **/.env
 **/.env.*
 
+# Ficheiros de exemplo – não versionar
+*.example.js
+*.example.json
+**/*.example.*
+
 # Configuração Discord (tokens, client secret)
 config-files/discord-config.js
 # Nginx produção (domínio, paths do servidor)
