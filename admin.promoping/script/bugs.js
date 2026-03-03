@@ -176,6 +176,11 @@
             document.getElementById('bugPriority').value = bug.Prioridade || 'medium';
             document.getElementById('bugStatus').value = bug.Status || 'open';
 
+            const anexoAtual = document.getElementById('bugAnexoAtual');
+            const anexoInput = document.getElementById('bugAnexo');
+            if (anexoAtual) anexoAtual.textContent = bug.AnexoUrl ? 'Anexo atual: ' + bug.AnexoUrl : '';
+            if (anexoInput) anexoInput.value = '';
+
             // Atualizar título do modal e botões
             document.getElementById('bugModalTitle').textContent = `Editar Bug / Projeto #${bug.Id}`;
             document.getElementById('bugSubmitBtn').textContent = 'Salvar Alterações';
@@ -209,6 +214,27 @@
             prioridade: bugPriority.value,
             status: bugStatus.value
         };
+
+        const anexoInput = document.getElementById('bugAnexo');
+        if (anexoInput && anexoInput.files && anexoInput.files[0]) {
+            const file = anexoInput.files[0];
+            const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|jpg|jpeg|png|gif|webp)$/i)) {
+                alert('Formato não permitido. Use DOC, DOCX, PDF ou imagem.');
+                return;
+            }
+            try {
+                formData.anexo = await new Promise((resolve, reject) => {
+                    const r = new FileReader();
+                    r.onload = () => resolve(r.result);
+                    r.onerror = reject;
+                    r.readAsDataURL(file);
+                });
+                formData.anexoNome = file.name;
+            } catch (e) {
+                console.error('[BUGS] Erro ao ler anexo:', e);
+            }
+        }
 
         if (!formData.titulo || !formData.descricao) {
             alert('Por favor, preencha título e descrição');
@@ -269,6 +295,10 @@
         document.getElementById('bugModalTitle').textContent = 'Novo Bug / Projeto';
         document.getElementById('bugSubmitBtn').textContent = 'Criar Bug/Projeto';
         document.getElementById('deleteBugBtn').style.display = 'none';
+        const a = document.getElementById('bugAnexoAtual');
+        if (a) a.textContent = '';
+        const ai = document.getElementById('bugAnexo');
+        if (ai) ai.value = '';
     }
 
     function init() {
