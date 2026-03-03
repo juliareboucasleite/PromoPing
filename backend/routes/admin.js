@@ -4,6 +4,9 @@
  */
 
 import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import {
     pool
 } from "../database/db.js";
@@ -11,9 +14,44 @@ import {
     verifyToken
 } from "../middleware/auth.js";
 import { google } from "googleapis";
-import { sendResolvedBugToDiscord } from "../utils/discord-notifications.js";
+import { sendResolvedBugToDiscord, sendCorporationAlertToDiscord } from "../utils/discord-notifications.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
+
+const UPLOADS_BUGS = path.join(path.dirname(__dirname), "uploads", "bugs");
+
+async function ensureBugsAnexoColumn() {
+    try {
+        const [cols] = await pool.query(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bugsprojetos' AND COLUMN_NAME = 'AnexoUrl'"
+        );
+        if (cols.length === 0) {
+            await pool.query("ALTER TABLE bugsprojetos ADD COLUMN AnexoUrl VARCHAR(500) NULL DEFAULT NULL AFTER Status");
+            console.log("[ADMIN] Coluna bugsprojetos.AnexoUrl adicionada");
+        }
+    } catch (e) {
+        console.error("[ADMIN] ensureBugsAnexoColumn:", e.message);
+    }
+}
+
+function saveAnexoBase64(bugId, base64Data, fileName) {
+    if (!base64Data || !fileName) return null;
+    const ext = path.extname(fileName).toLowerCase() || ".bin";
+    const allowed = [".doc", ".docx", ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    if (!allowed.some(e => ext === e)) return null;
+    try {
+        if (!fs.existsSync(UPLOADS_BUGS)) fs.mkdirSync(UPLOADS_BUGS, { recursive: true });
+        const safeName = `${bugId}_${Date.now()}${ext}`;
+        const filePath = path.join(UPLOADS_BUGS, safeName);
+        const buf = Buffer.from(base64Data.replace(/^data:[^;]+;base64,/, ""), "base64");
+        fs.writeFileSync(filePath, buf);
+        return "/uploads/bugs/" + safeName;
+    } catch (e) {
+        console.error("[ADMIN] saveAnexoBase64:", e);
+        return null;
+    }
+}
 
 // Helper para tratar erros de conexão com banco de dados
 function handleDatabaseError(err, res, defaultMessage) {
@@ -330,8 +368,24 @@ async function ensureReviewsTable() {
                 INDEX idx_is_anonimo (is_anonimo)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
+        await ensureReviewsSupportReferenciaIDColumn();
     } catch (err) {
         console.error("[ADMIN] Erro ao criar tabela reviews:", err);
+    }
+}
+
+// Coluna SupportReferenciaID: utilizador de suporte que fechou o ticket (quando tipo = suporte)
+async function ensureReviewsSupportReferenciaIDColumn() {
+    try {
+        const [cols] = await pool.query(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reviews' AND COLUMN_NAME = 'SupportReferenciaID'"
+        );
+        if (cols.length === 0) {
+            await pool.query("ALTER TABLE reviews ADD COLUMN SupportReferenciaID VARCHAR(13) NULL DEFAULT NULL, ADD INDEX idx_support_referencia (SupportReferenciaID)");
+            console.log("[ADMIN] Coluna reviews.SupportReferenciaID adicionada");
+        }
+    } catch (err) {
+        console.error("[ADMIN] ensureReviewsSupportReferenciaIDColumn:", err.message);
     }
 }
 
@@ -346,7 +400,7 @@ router.get("/reviews", verifyToken, async (req, res) => {
         const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
 
-        // Construir query com JOIN para pegar dados do usuário
+        // Construir query com JOIN para usuário e suporte que fechou (SupportReferenciaID)
         let query = `SELECT 
             r.Id,
             r.ReferenciaID,
@@ -356,9 +410,13 @@ router.get("/reviews", verifyToken, async (req, res) => {
             CASE WHEN r.IsAnonimo = 1 THEN 1 ELSE 0 END as is_anonimo,
             r.CreatedAt as created_at,
             u.Nome as user_nome,
-            u.Email as user_email
+            u.Email as user_email,
+            r.SupportReferenciaID,
+            s.Nome as support_nome,
+            s.Email as support_email
         FROM reviews r
         LEFT JOIN utilizadores u ON r.ReferenciaID = u.ReferenciaID
+        LEFT JOIN utilizadores s ON r.SupportReferenciaID = s.ReferenciaID
         WHERE 1=1`;
         const params = [];
 
@@ -467,15 +525,17 @@ router.post("/bugs", async (req, res) => {
             });
         }
 
+        const referenciaID = req.user && req.user.ReferenciaID;
         const [result] = await pool.query(
-            `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status) 
-            VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status, CreatedBy)
+            VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 titulo,
                 descricao,
                 tipo || 'bug',
                 prioridade || 'medium',
-                status || 'open'
+                status || 'open',
+                referenciaID || null
             ]
         );
 
@@ -528,7 +588,9 @@ router.put("/bugs/:id", async (req, res) => {
             descricao,
             tipo,
             prioridade,
-            status
+            status,
+            anexo,
+            anexoNome
         } = req.body;
 
         if (!titulo || !descricao) {
@@ -538,7 +600,6 @@ router.put("/bugs/:id", async (req, res) => {
             });
         }
 
-        // Buscar bug atual para verificar se o status mudou para "resolved"
         const [currentBug] = await pool.query(
             `SELECT * FROM bugsprojetos WHERE Id = ?`,
             [id]
@@ -547,14 +608,21 @@ router.put("/bugs/:id", async (req, res) => {
         const oldStatus = currentBug.length > 0 ? currentBug[0].Status : null;
         const newStatus = status || 'open';
 
+        const updates = ["Titulo = ?", "Descricao = ?", "Tipo = ?", "Prioridade = ?", "Status = ?"];
+        const values = [titulo, descricao, tipo || 'bug', prioridade || 'medium', newStatus];
+        if (anexo && anexoNome) {
+            const anexoUrl = saveAnexoBase64(id, anexo, anexoNome);
+            if (anexoUrl) {
+                updates.push("AnexoUrl = ?");
+                values.push(anexoUrl);
+            }
+        }
+        values.push(id);
         await pool.query(
-            `UPDATE bugsprojetos 
-             SET Titulo = ?, Descricao = ?, Tipo = ?, Prioridade = ?, Status = ? 
-             WHERE Id = ?`,
-            [titulo, descricao, tipo || 'bug', prioridade || 'medium', newStatus, id]
+            `UPDATE bugsprojetos SET ${updates.join(", ")} WHERE Id = ?`,
+            values
         );
 
-        // Se o status mudou para "resolved", enviar para o Discord
         if (newStatus === 'resolved' && oldStatus !== 'resolved') {
             const [updatedBug] = await pool.query(
                 `SELECT * FROM bugsprojetos WHERE Id = ?`,
@@ -583,15 +651,9 @@ router.patch("/bugs/:id", async (req, res) => {
     try {
         await ensureBugsTable();
 
-        const {
-            id
-        } = req.params;
-        const {
-            status,
-            prioridade
-        } = req.body;
+        const { id } = req.params;
+        const { status, prioridade, anexo, anexoNome } = req.body;
 
-        // Buscar bug atual para verificar se o status mudou para "resolved"
         const [currentBug] = await pool.query(
             `SELECT * FROM bugsprojetos WHERE Id = ?`,
             [id]
@@ -612,6 +674,14 @@ router.patch("/bugs/:id", async (req, res) => {
             values.push(prioridade);
         }
 
+        if (anexo && anexoNome) {
+            const anexoUrl = saveAnexoBase64(id, anexo, anexoNome);
+            if (anexoUrl) {
+                updates.push("AnexoUrl = ?");
+                values.push(anexoUrl);
+            }
+        }
+
         if (updates.length === 0) {
             return res.status(400).json({
                 status: "error",
@@ -626,15 +696,12 @@ router.patch("/bugs/:id", async (req, res) => {
             values
         );
 
-        // Se o status mudou para "resolved", enviar para o Discord
         if (newStatus === 'resolved' && oldStatus !== 'resolved' && currentBug.length > 0) {
             const [updatedBug] = await pool.query(
                 `SELECT * FROM bugsprojetos WHERE Id = ?`,
                 [id]
             );
-            
             if (updatedBug.length > 0) {
-                // Enviar para Discord de forma assíncrona (não bloquear resposta)
                 sendResolvedBugToDiscord(updatedBug[0]).catch(err => {
                     console.error('[ADMIN] Erro ao enviar bug resolvido para Discord:', err);
                 });
@@ -901,6 +968,66 @@ router.post("/incidents", async (req, res) => {
     }
 });
 
+/** PATCH /api/admin/incidents/:id - Atualizar incidente (ex.: resolver). Notifica Discord e painel corporativo. */
+router.patch("/incidents/:id", async (req, res) => {
+    try {
+        await ensureIncidentsTable();
+        await ensureCorporationNotificationsTable();
+
+        const { id } = req.params;
+        const { titulo, descricao, componenteAfetado, status } = req.body;
+        const referenciaID = req.user && req.user.ReferenciaID;
+
+        const [current] = await pool.query("SELECT * FROM incidentes WHERE Id = ?", [id]);
+        if (current.length === 0) {
+            return res.status(404).json({ status: "error", error: "Incidente não encontrado" });
+        }
+        const oldStatus = current[0].Status;
+        const newStatus = status || current[0].Status;
+        const newTitulo = titulo !== undefined ? titulo : current[0].Titulo;
+        const newDescricao = descricao !== undefined ? descricao : current[0].Descricao;
+        const newComponente = componenteAfetado !== undefined ? componenteAfetado : current[0].ComponenteAfetado;
+
+        const updates = [];
+        const values = [];
+        if (titulo !== undefined) { updates.push("Titulo = ?"); values.push(titulo); }
+        if (descricao !== undefined) { updates.push("Descricao = ?"); values.push(descricao); }
+        if (componenteAfetado !== undefined) { updates.push("ComponenteAfetado = ?"); values.push(componenteAfetado); }
+        if (status !== undefined) {
+            updates.push("Status = ?");
+            values.push(status);
+            if (status === 'resolved') {
+                updates.push("DataFim = NOW()");
+            }
+        }
+        if (updates.length === 0) {
+            return res.status(400).json({ status: "error", error: "Nenhum campo para atualizar" });
+        }
+        values.push(id);
+        await pool.query(`UPDATE incidentes SET ${updates.join(", ")} WHERE Id = ?`, values);
+
+        let authorName = null;
+        if (referenciaID) {
+            const [u] = await pool.query("SELECT Nome FROM utilizadores WHERE ReferenciaID = ?", [referenciaID]);
+            authorName = u[0] && u[0].Nome;
+        }
+        const notifTipo = newStatus === 'resolved' ? 'incident_resolved' : 'incident_update';
+        const notifTitulo = newTitulo || 'Incidente';
+        const notifDesc = newDescricao || (newStatus === 'resolved' ? 'Incidente marcado como resolvido.' : 'Incidente atualizado.');
+
+        await pool.query(
+            `INSERT INTO corporation_notifications (Tipo, Titulo, Descricao, ReferenciaID) VALUES (?, ?, ?, ?)`,
+            [notifTipo, notifTitulo, notifDesc.substring(0, 500), referenciaID || null]
+        );
+        sendCorporationAlertToDiscord(notifTipo, notifTitulo, notifDesc, { incidentId: id, authorName }).catch(() => {});
+
+        res.json({ status: "ok", message: "Incidente atualizado com sucesso" });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar incidente:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar incidente");
+    }
+});
+
 router.get("/updates", async (req, res) => {
     try {
         await ensureUpdatesTable();
@@ -925,6 +1052,7 @@ router.get("/updates", async (req, res) => {
 router.post("/updates", verifyToken, async (req, res) => {
     try {
         await ensureUpdatesTable();
+        await ensureCorporationNotificationsTable();
 
         const {
             titulo,
@@ -944,6 +1072,18 @@ router.post("/updates", verifyToken, async (req, res) => {
             VALUES (?, ?, ?)`,
             [titulo, descricao, tipo || 'feature']
         );
+
+        const referenciaID = req.user && req.user.ReferenciaID;
+        let authorName = null;
+        if (referenciaID) {
+            const [u] = await pool.query("SELECT Nome FROM utilizadores WHERE ReferenciaID = ?", [referenciaID]);
+            authorName = u[0] && u[0].Nome;
+        }
+        await pool.query(
+            `INSERT INTO corporation_notifications (Tipo, Titulo, Descricao, ReferenciaID) VALUES (?, ?, ?, ?)`,
+            ['system_update', titulo, descricao.substring(0, 500), referenciaID || null]
+        );
+        sendCorporationAlertToDiscord('system_update', titulo, descricao, { authorName }).catch(() => {});
 
         res.json({
             status: "ok",
@@ -972,6 +1112,22 @@ async function ensureBugsTable() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
 
     await pool.query(sql);
+    await ensureBugsAnexoColumn();
+    await ensureBugsCreatedByColumn();
+}
+
+async function ensureBugsCreatedByColumn() {
+    try {
+        const [cols] = await pool.query(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bugsprojetos' AND COLUMN_NAME = 'CreatedBy'"
+        );
+        if (cols.length === 0) {
+            await pool.query("ALTER TABLE bugsprojetos ADD COLUMN CreatedBy VARCHAR(13) NULL DEFAULT NULL AFTER Status, ADD INDEX idx_created_by (CreatedBy)");
+            console.log("[ADMIN] Coluna bugsprojetos.CreatedBy adicionada");
+        }
+    } catch (e) {
+        console.error("[ADMIN] ensureBugsCreatedByColumn:", e.message);
+    }
 }
 
 async function ensureSugestoesTable() {
@@ -1041,6 +1197,29 @@ async function ensureUpdatesTable() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
 
     await pool.query(sql);
+}
+
+async function ensureCorporationNotificationsTable() {
+    try {
+        const [tables] = await pool.query("SHOW TABLES LIKE 'corporation_notifications'");
+        if (tables.length === 0) {
+            await pool.query(`
+                CREATE TABLE corporation_notifications (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Tipo VARCHAR(50) NOT NULL,
+                    Titulo VARCHAR(300) NOT NULL,
+                    Descricao TEXT,
+                    ReferenciaID VARCHAR(13) NULL,
+                    DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_tipo (Tipo),
+                    INDEX idx_data (DataCriacao)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            `);
+            console.log("[ADMIN] Tabela corporation_notifications criada");
+        }
+    } catch (err) {
+        console.error("[ADMIN] Erro ao criar corporation_notifications:", err);
+    }
 }
 
 /**
