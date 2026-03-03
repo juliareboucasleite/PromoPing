@@ -65,6 +65,7 @@ import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
+import corporationRoutes from "./routes/corporation.js"; // Painel Corporação (PerfilId 3)
 import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
 import blogRoutes from "./routes/blog.js"; // Blog
 import heraldRoutes from "./routes/herald.js"; // Herald API
@@ -335,6 +336,7 @@ app.use("/api/relatorios", relatoriosRoutes); // Relatorios PDF
 app.use("/api/historico", historicoRoutes); // Historico PDF (sem graficos)
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
+app.use("/api/corporation", corporationRoutes); // Painel Corporação - apenas PerfilId 3
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
 app.use("/api/blog", blogRoutes); // Blog
 app.use("/api/herald", heraldRoutes); // Herald API
@@ -530,6 +532,10 @@ if (!isProduction) {
     // Servir arquivos estáticos do Admin PromoPing
     const adminPath = path.join(__dirname, "../admin.promoping");
     app.use("/admin.promoping", express.static(adminPath));
+
+    // Anexos de bugs (uploads/bugs)
+    const uploadsPath = path.join(__dirname, "uploads");
+    app.use("/uploads", express.static(uploadsPath));
 
     // Rota para ignorar requests do Chrome DevTools
     app.get("/.well-known/appspecific/com.chrome.devtools.json", (req, res) => {
