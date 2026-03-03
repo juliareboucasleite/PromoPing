@@ -56,7 +56,7 @@ docs
 src/generated
 **/*.min.js
 
-# ========== Sensíveis – não publicar no GitHub ==========
+#  Sensíveis – não publicar no GitHub
 # Variáveis de ambiente (em qualquer pasta: backend, python-scraper, etc.)
 .env
 .env.*
