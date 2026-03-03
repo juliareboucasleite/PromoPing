@@ -87,3 +87,4 @@ frontend/.production-config.json
 *.sql.gz
 *.sql.backup
 dump*.sql
+python-scraper/__pycache__/scraper.cpython-313.pyc
