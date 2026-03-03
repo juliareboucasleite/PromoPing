@@ -1757,19 +1757,25 @@ class PromoPingBot {
             await interaction.deferReply({ ephemeral: true });
             const url = new URL(`${backendUrl}/api/support/internal/threads/${threadId}/close`);
             const lib = url.protocol === 'https:' ? https : http;
+            const body = JSON.stringify({ closedByDiscordId: interaction.user.id });
             const res = await new Promise((resolve, reject) => {
                 const req = lib.request({
                     hostname: url.hostname,
                     port: url.port || (url.protocol === 'https:' ? 443 : 80),
                     path: url.pathname,
                     method: 'POST',
-                    headers: { 'X-Internal-Secret': secret, 'Content-Length': 0 }
+                    headers: {
+                        'X-Internal-Secret': secret,
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(body)
+                    }
                 }, (res) => {
                     let data = '';
                     res.on('data', (chunk) => { data += chunk; });
                     res.on('end', () => resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, statusCode: res.statusCode, data }));
                 });
                 req.on('error', reject);
+                req.write(body);
                 req.end();
             });
             if (!res.ok) {
