@@ -80,3 +80,47 @@ export async function sendResolvedBugToDiscord(bug) {
         return false;
     }
 }
+
+/**
+ * Envia alerta corporativo (atualização de incidente ou atualização do sistema) para o Discord
+ * e é usado também para notificar o painel corporativo (a persistência fica em corporation_notifications no backend).
+ * @param {string} type - 'incident_update' | 'incident_resolved' | 'system_update'
+ * @param {string} title - Título
+ * @param {string} description - Descrição
+ * @param {Object} meta - Dados extras (ex: Id do incidente, nome do suporte)
+ * @returns {Promise<boolean>}
+ */
+export async function sendCorporationAlertToDiscord(type, title, description, meta = {}) {
+    try {
+        const channelId = process.env.DISCORD_CORPORATION_CHANNEL_ID || process.env.DISCORD_KNOWN_BUGS_CHANNEL_ID;
+        if (!channelId) {
+            console.log('[DISCORD] Canal de corporação não configurado, pulando notificação');
+            return false;
+        }
+        const typeLabel = type === 'incident_resolved' ? 'Incidente Resolvido' : type === 'incident_update' ? 'Atualização de Incidente' : 'Atualização do Sistema';
+        const color = type === 'incident_resolved' ? 0x10b981 : type === 'incident_update' ? 0xf59e0b : 0x3b82f6;
+        const embed = {
+            title: `${typeLabel}: ${title}`,
+            description: (description || '').substring(0, 2000),
+            color,
+            timestamp: new Date().toISOString(),
+            footer: { text: 'PromoPing • Painel Corporativo' }
+        };
+        if (meta.incidentId) embed.fields = [{ name: 'Incidente', value: `#${meta.incidentId}`, inline: true }];
+        if (meta.authorName) embed.fields = [...(embed.fields || []), { name: 'Por', value: meta.authorName, inline: true }];
+        const response = await fetch('http://127.0.0.1:3001/internal/send-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId, embed })
+        });
+        if (!response.ok) {
+            console.error('[DISCORD] Erro ao enviar alerta corporativo:', await response.text());
+            return false;
+        }
+        console.log('[DISCORD] Alerta corporativo enviado:', typeLabel);
+        return true;
+    } catch (error) {
+        console.error('[DISCORD] Erro ao enviar alerta corporativo:', error);
+        return false;
+    }
+}
