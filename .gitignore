@@ -88,3 +88,12 @@ frontend/.production-config.json
 *.sql.backup
 dump*.sql
 python-scraper/__pycache__/scraper.cpython-313.pyc
+
+# Deploy e Docker – não publicar no GitHub
+deploy-files/
+docker-files/
+*.sh
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+docker-compose*.yaml
