@@ -95,3 +95,6 @@ docker-files/
 
 # Configuração Herald (CI/linting)
 herald.config.json
+
+# Presence (Discord/status)
+presence.js
