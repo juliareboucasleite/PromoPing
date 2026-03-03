@@ -19,7 +19,7 @@
             <div class="sidebar-header">
                 <div class="header-content">
                     <img src="../assets/images/PromoPing.png" alt="PromoPing Logo" class="logo-placeholder">
-                    <h2>PromoPing Admin</h2>
+                        <h4>PromoPing Suporte</h4>
                 </div>
             </div>
             <nav class="sidebar-nav">
@@ -126,6 +126,12 @@
                         <option value="closed">Fechado</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Anexo (opcional)</label>
+                    <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 0.5rem;">Doc, PDF ou imagem para comprovar resolução</p>
+                    <input type="file" id="bugAnexo" class="form-input" accept=".doc,.docx,.pdf,image/*">
+                    <div id="bugAnexoAtual" style="font-size: 0.85rem; margin-top: 0.5rem; color: #9ca3af;"></div>
+                </div>
                 <div class="modal-actions">
                     <button type="submit" class="modal-submit-button" id="bugSubmitBtn">Criar Bug/Projeto</button>
                     <button type="button" class="modal-cancel-button" id="cancelBugBtn">Cancelar</button>
@@ -136,6 +142,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/admin-role-guard.js"></script>
     <script src="../script/bugs.js"></script>
 </body>
 
