@@ -153,6 +153,7 @@
                         <tr>
                             <th>Utilizador</th>
                             <th>Tipo</th>
+                            <th>Fechado por</th>
                             <th>Avaliação</th>
                             <th>Comentário</th>
                             <th>Data</th>
@@ -177,6 +178,7 @@
                                         ${getTipoLabel(review.tipo)}
                                     </span>
                                 </td>
+                                <td>${(review.tipo === 'suporte' && (review.support_nome || review.support_email)) ? escapeHtml(review.support_nome || review.support_email) : '—'}</td>
                                 <td>${generateStarRating(review.rating)}</td>
                                 <td style="max-width: 400px; word-wrap: break-word;">${escapeHtml(review.texto || 'Sem comentário')}</td>
                                 <td>${formatDateTime(review.created_at)}</td>
