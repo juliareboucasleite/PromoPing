@@ -144,15 +144,15 @@
                 throw new Error(errorMsg);
             }
 
-            // Verificar se o usuário retornado é admin (PerfilId = 1)
-            if (data.user && data.user.perfilId !== 1) {
-                throw new Error('Acesso negado. Apenas administradores podem acessar o painel administrativo.');
+            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation
+            const perfilId = data.user && (data.user.perfilId !== undefined ? data.user.perfilId : data.user.PerfilId);
+            if (perfilId !== 1 && perfilId !== 3) {
+                throw new Error('Acesso negado. Apenas administradores ou utilizadores corporativos podem acessar o painel.');
             }
 
             // Login bem-sucedido
-            console.log('[AUTH] Login bem-sucedido! Usuário admin:', data.user);
+            console.log('[AUTH] Login bem-sucedido! Usuário:', data.user, 'PerfilId:', perfilId);
             console.log('[AUTH] Token recebido:', data.token ? 'Sim' : 'Não');
-            console.log('[AUTH] Dados do usuário:', data.user);
 
             // Salvar token e refresh token (para renovação automática)
             try {
@@ -160,7 +160,8 @@
                 if (data.refreshToken) {
                     localStorage.setItem('PROMOPING_REFRESH_TOKEN', data.refreshToken);
                 }
-                localStorage.setItem('PROMOPING_USER', JSON.stringify(data.user));
+                const userToStore = { ...data.user, perfilId: perfilId };
+                localStorage.setItem('PROMOPING_USER', JSON.stringify(userToStore));
                 localStorage.setItem('PROMOPING_API', API_BASE);
                 console.log('[AUTH] Dados salvos no localStorage');
             } catch (storageErr) {
@@ -168,20 +169,21 @@
                 throw new Error('Erro ao salvar dados de autenticação');
             }
 
-            // Redirecionar para dashboard
-            console.log('[AUTH] Redirecionando para dashboard...');
+            // Redirecionar: id 1 -> painel suporte (pages), id 3 -> painel corporação (pages_corporation)
+            const isCorporation = perfilId === 3;
+            const dashboardPath = isCorporation ? '../pages_corporation/dashboard.html' : 'dashboard.html';
+            console.log('[AUTH] Redirecionando para', dashboardPath);
 
             // Limpar loading state
             loginForm.classList.remove('loading');
             loginButton.disabled = false;
             loginButton.textContent = 'Entrando...';
 
-            // Forçar redirecionamento
             try {
-                window.location.replace('dashboard.html');
+                window.location.replace(dashboardPath);
             } catch (redirectErr) {
                 console.error('[AUTH] Erro no redirecionamento, tentando href:', redirectErr);
-                window.location.href = 'dashboard.html';
+                window.location.href = dashboardPath;
             }
 
         } catch (err) {
