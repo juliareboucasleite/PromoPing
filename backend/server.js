@@ -529,9 +529,9 @@ if (!isProduction) {
     const painelPath = path.join(__dirname, "../Painel_Administrativo");
     app.use("/Painel_Administrativo", express.static(painelPath));
 
-    // Servir arquivos estáticos do Admin PromoPing
-    const adminPath = path.join(__dirname, "../admin.promoping");
-    app.use("/admin.promoping", express.static(adminPath));
+    // Servir arquivos estáticos do Painel Suporte e Corporação
+    const adminPath = path.join(__dirname, "../painel-suporte-corporacao");
+    app.use("/painel-suporte-corporacao", express.static(adminPath));
 
     // Anexos de bugs (uploads/bugs)
     const uploadsPath = path.join(__dirname, "uploads");
@@ -1004,7 +1004,7 @@ app.listen(PORT, HOST, async() => {
         console.log(`  Acesso via rede local: http://${localIP}:${PORT}/`);
         console.log(`  API via rede local: http://${localIP}:${PORT}/api/`);
     }
-    console.log(`  Admin PromoPing: http://localhost:${PORT}/admin.promoping/pages/login.html\n`);
+    console.log(`  Painel Suporte/Corporação: http://localhost:${PORT}/painel-suporte-corporacao/pages/login.html\n`);
 
     // Iniciar verificação automática de períodos de graça
     try {

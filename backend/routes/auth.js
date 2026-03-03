@@ -1304,9 +1304,9 @@ router.post("/login", async (req, res) => {
         const adminPanelHeader = req.headers['x-admin-panel'] || req.headers['X-Admin-Panel'] || '';
 
         const isAdminPanel = referer.includes('Painel_Administrativo') ||
-            referer.includes('admin.promoping') ||
+            referer.includes('painel-suporte-corporacao') ||
             origin.includes('Painel_Administrativo') ||
-            origin.includes('admin.promoping') ||
+            origin.includes('painel-suporte-corporacao') ||
             adminPanelHeader === 'true';
 
         if (isAdminPanel) {

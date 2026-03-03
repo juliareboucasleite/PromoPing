@@ -50,7 +50,7 @@ PromoPing/
 │   │   ├── gerarPDF.js        # PDF export
 │   │   └── ...
 │   └── server.js              # Main server
-├── admin.promoping/            # Administrative panel
+├── painel-suporte-corporacao/  # Painéis de suporte e corporação
 │   ├── pages/                  # Admin HTML pages
 │   ├── script/                 # Admin JavaScript scripts
 │   ├── css/                    # CSS styles

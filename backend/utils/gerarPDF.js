@@ -231,7 +231,7 @@ export async function gerarPDFUtilizadores(utilizadores) {
     });
 
     // Tentar carregar a logo
-    let logoPath = path.join(__dirname, '../../admin.promoping/assets/images/PromoPing.png');
+    let logoPath = path.join(__dirname, '../../painel-suporte-corporacao/assets/images/PromoPing.png');
     if (!fs.existsSync(logoPath)) {
       logoPath = path.join(__dirname, '../../frontend/pages/build/assets/images/PromoPing.png');
     }
