@@ -126,7 +126,7 @@
                     <tbody>
                         ${data.incidents.map(incident => `
                             <tr>
-                                <td>${escapeHtml(incident.Titulo || 'N/A')}</td>
+                                <td>${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(incident.Titulo)) || incident.Titulo || 'N/A')}</td>
                                 <td>${escapeHtml((incident.Descricao || '').substring(0, 100))}${incident.Descricao && incident.Descricao.length > 100 ? '...' : ''}</td>
                                 <td>${escapeHtml(incident.ComponenteAfetado || 'N/A')}</td>
                                 <td><span class="bug-status ${incident.Status}">${incident.Status}</span></td>
@@ -182,7 +182,7 @@
                     <tbody>
                         ${data.updates.map(update => `
                             <tr>
-                                <td>${escapeHtml(update.Titulo || 'N/A')}</td>
+                                <td>${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(update.Titulo)) || update.Titulo || 'N/A')}</td>
                                 <td>${escapeHtml((update.Descricao || '').substring(0, 150))}${update.Descricao && update.Descricao.length > 150 ? '...' : ''}</td>
                                 <td>
                                     <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; background: rgba(255, 152, 0, 0.2); color: #fcd34d;">
@@ -234,11 +234,11 @@
                 method: 'PATCH',
                 body: JSON.stringify(body)
             });
-            alert('Incidente atualizado. Notificação enviada para Discord e painel corporativo.');
+            showAlert('Incidente atualizado. Notificação enviada para Discord e painel corporativo.');
             closeIncidentUpdateModal();
             loadIncidents();
         } catch (err) {
-            alert('Erro: ' + err.message);
+            showAlert('Erro: ' + err.message);
         }
     }
 
@@ -254,12 +254,12 @@
 
             const data = await response.json();
 
-            alert('Incidente criado com sucesso!');
+            showAlert('Incidente criado com sucesso!');
             closeIncidentModal();
             loadIncidents();
         } catch (error) {
             console.error('[TABELAS] Erro ao criar incidente:', error);
-            alert(`Erro ao criar incidente: ${error.message}`);
+            showAlert(`Erro ao criar incidente: ${error.message}`);
         }
     }
 
@@ -275,12 +275,12 @@
 
             const data = await response.json();
 
-            alert('Atualização criada com sucesso!');
+            showAlert('Atualização criada com sucesso!');
             closeUpdateModal();
             loadUpdates();
         } catch (error) {
             console.error('[TABELAS] Erro ao criar atualização:', error);
-            alert(`Erro ao criar atualização: ${error.message}`);
+            showAlert(`Erro ao criar atualização: ${error.message}`);
         }
     }
 
@@ -367,11 +367,11 @@
             if (activeTab) switchTab(activeTab.dataset.tab);
         });
         if (logoutBtn) logoutBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja sair?')) {
+            showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                 localStorage.removeItem('PROMOPING_TOKEN');
                 localStorage.removeItem('PROMOPING_USER');
                 window.location.href = 'login.html';
-            }
+            });
         });
 
         if (closeIncidentModalBtn) closeIncidentModalBtn.addEventListener('click', closeIncidentModal);
