@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - PromoPing Admin</title>
+    <title>Perfil - PromoPing Suporte</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,55 +73,191 @@
         <main class="dashboard-main">
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
                 <div class="section-header">
-                    <h1>Perfil do Suporte</h1>
+                    <div>
+                        <h1>Perfil</h1>
+                        <p class="section-description">Dados da sua conta de suporte</p>
+                    </div>
                 </div>
 
                 <div class="profile-container">
-                    <!-- Foto de Perfil -->
-                    <div class="profile-photo-section">
-                        <div class="profile-photo-wrapper">
-                            <div id="profilePhoto" class="profile-photo" style="display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 700; color: #ff9800; background: #232326; border: 3px solid #ff9800;">PP</div>
-                            <div class="photo-buttons">
-                                <button id="changePhotoBtn" class="change-photo-btn">Alterar Foto</button>
-                                <button id="removePhotoBtn" class="remove-photo-btn" style="display: none;">Remover Foto</button>
+                    <div class="profile-card">
+                        <!-- Secção Usuário -->
+                        <h2 class="profile-section-title">Usuário</h2>
+                        <form id="profileForm" class="profile-form">
+                            <div class="profile-row">
+                                <label class="profile-label" for="profileName">Nome</label>
+                                <div class="profile-value">
+                                    <input type="text" id="profileName" class="form-input profile-input" required placeholder="Nome completo">
+                                </div>
                             </div>
-                            <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                            <div class="profile-row">
+                                <span class="profile-label">Senha</span>
+                                <div class="profile-value profile-value-actions">
+                                    <span class="profile-masked">••••••••</span>
+                                    <button type="button" id="changePasswordBtn" class="profile-action-btn">Alterar senha</button>
+                                </div>
+                            </div>
+                            <div class="profile-row">
+                                <label class="profile-label" for="profileEmail">E-mail</label>
+                                <div class="profile-value">
+                                    <input type="email" id="profileEmail" class="form-input profile-input" required placeholder="seu@email.com">
+                                </div>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">E-mail de backup</span>
+                                <div class="profile-value profile-value-actions">
+                                    <button type="button" id="addBackupEmailBtn" class="profile-action-btn">Adicionar e-mail de backup</button>
+                                </div>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Telefone para contato</span>
+                                <div class="profile-value profile-value-actions">
+                                    <span id="profilePhoneDisplay" class="profile-masked">—</span>
+                                    <button type="button" id="addPhoneBtn" class="profile-action-btn">Incluir número</button>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="modal-submit-button">Guardar alterações</button>
+                                <button type="button" class="modal-cancel-button" id="cancelBtn">Cancelar</button>
+                            </div>
+                        </form>
+
+                        <!-- Secção Contas do Google -->
+                        <div class="profile-block">
+                            <h3 class="profile-block-title">Contas do Google</h3>
+                            <p class="profile-block-desc">Aceda ao PromoPing usando a sua conta do Google.</p>
+                            <div class="profile-block-action">
+                                <button type="button" id="connectGoogleBtn" class="profile-secondary-btn">Conectar conta do Google</button>
+                            </div>
+                        </div>
+
+                        <!-- Secção Chaves de acesso -->
+                        <div class="profile-block">
+                            <h3 class="profile-block-title">Chaves de acesso</h3>
+                            <p class="profile-block-desc">Aceda à conta com segurança usando biometria, PIN do dispositivo ou chave de segurança física. Verifique navegadores e dispositivos compatíveis antes de utilizar.</p>
+                            <div class="profile-block-action">
+                                <button type="button" id="addAccessKeyBtn" class="profile-secondary-btn">Adicionar chave de acesso</button>
+                            </div>
+                        </div>
+
+                        <!-- Secção Autenticação de duas etapas -->
+                        <div class="profile-block" id="twoFABlock">
+                            <h3 class="profile-block-title">Autenticação de duas etapas</h3>
+                            <p class="profile-block-desc">Reforce a segurança da conta ativando vários métodos de autenticação para confirmar a sua identidade.</p>
+                            <div class="profile-block-action">
+                                <span id="twoFAStatusText" class="profile-2fa-status"></span>
+                                <button type="button" id="add2FABtn" class="profile-secondary-btn">Adicionar método de autenticação</button>
+                                <button type="button" id="disable2FABtn" class="profile-secondary-btn" style="display: none; border-color: rgba(239,68,68,0.5); color: #f87171;">Desativar 2FA</button>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Formulário de Perfil -->
-                    <form id="profileForm" class="profile-form">
-                        <div class="form-group">
-                            <label class="form-label">Nome</label>
-                            <input type="text" id="profileName" class="form-input" required placeholder="Seu nome completo">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="profileEmail" class="form-input" required placeholder="seu@email.com">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Descrição</label>
-                            <textarea id="profileDescription" class="form-input" rows="5" placeholder="Descreva-se brevemente..."></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Especialidade</label>
-                            <input type="text" id="profileSpecialty" class="form-input" placeholder="Ex: Suporte Técnico, Atendimento ao Cliente">
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" class="modal-submit-button">Salvar Perfil</button>
-                            <button type="button" class="modal-cancel-button" id="cancelBtn">Cancelar</button>
-                        </div>
-                    </form>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- Modal Alterar senha -->
+    <div id="changePasswordModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="changePasswordModalTitle">Alterar senha</h2>
+                <button type="button" class="modal-close" id="closeChangePasswordModal">&times;</button>
+            </div>
+            <form id="changePasswordForm">
+                <div id="changePasswordCurrentWrap" class="form-group">
+                    <label class="form-label" for="currentPassword">Senha atual</label>
+                    <input type="password" id="currentPassword" class="form-input" placeholder="Senha atual" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">Nova senha</label>
+                    <input type="password" id="newPassword" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirmar nova senha</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Repita a nova senha" autocomplete="new-password" minlength="6">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Guardar</button>
+                    <button type="button" class="modal-cancel-button" id="cancelChangePasswordBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Telefone -->
+    <div id="phoneModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Telefone para contato</h2>
+                <button type="button" class="modal-close" id="closePhoneModal">&times;</button>
+            </div>
+            <form id="phoneForm">
+                <div class="form-group">
+                    <label class="form-label" for="phoneInput">Número</label>
+                    <input type="tel" id="phoneInput" class="form-input" placeholder="Ex.: +351 912 345 678" autocomplete="tel">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Guardar</button>
+                    <button type="button" class="modal-cancel-button" id="cancelPhoneBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2FA - Escolher método e verificar -->
+    <div id="twoFAModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="twoFAModalTitle">Autenticação de duas etapas</h2>
+                <button type="button" class="modal-close" id="close2FAModal">&times;</button>
+            </div>
+            <div id="twoFASetupStep1">
+                <p class="profile-block-desc" style="margin-bottom: 1rem;">Escolha o método:</p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button type="button" id="twoFAMethodTotp" class="profile-secondary-btn">App autenticador (TOTP)</button>
+                    <button type="button" id="twoFAMethodEmail" class="profile-secondary-btn">Código por e-mail</button>
+                </div>
+            </div>
+            <div id="twoFASetupStep2" style="display: none;">
+                <div id="twoFAQRWrap" style="margin-bottom: 1rem; text-align: center;"></div>
+                <div id="twoFAEmailSent" style="display: none; margin-bottom: 1rem;">
+                    <p class="profile-block-desc">Foi enviado um código para o seu e-mail. Introduza-o abaixo.</p>
+                </div>
+                <p id="twoFABackupCodes" class="profile-block-desc" style="word-break: break-all; font-size: 0.8rem; margin-bottom: 1rem;"></p>
+                <div class="form-group">
+                    <label class="form-label" for="twoFACodeInput">Código de verificação</label>
+                    <input type="text" id="twoFACodeInput" class="form-input" placeholder="6 dígitos" maxlength="8" pattern="[0-9]*" inputmode="numeric">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="twoFAVerifyBtn" class="modal-submit-button">Ativar 2FA</button>
+                    <button type="button" id="twoFACancelSetupBtn" class="modal-cancel-button">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Desativar 2FA -->
+    <div id="disable2FAModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Desativar autenticação de duas etapas</h2>
+                <button type="button" class="modal-close" id="closeDisable2FAModal">&times;</button>
+            </div>
+            <form id="disable2FAForm">
+                <div class="form-group">
+                    <label class="form-label" for="disable2FACode">Código atual (app ou e-mail)</label>
+                    <input type="text" id="disable2FACode" class="form-input" placeholder="6 dígitos" maxlength="8">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button" style="background: #dc2626;">Desativar</button>
+                    <button type="button" class="modal-cancel-button" id="cancelDisable2FABtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/perfil.js"></script>
 </body>
