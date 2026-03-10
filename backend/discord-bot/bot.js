@@ -2082,10 +2082,11 @@ class PromoPingBot {
 
             // Enviar cada notícia impactante
             for (const article of news) {
+                if (!article || (article.title == null && article.url == null)) continue;
                 // Verificar se já foi enviada
                 const alreadySent = await this.newsService.isNewsAlreadySent(article.url);
                 if (alreadySent) {
-                    console.log(`[DISCORD] Notícia já enviada: ${article.title.substring(0, 50)}...`);
+                    console.log(`[DISCORD] Notícia já enviada: ${(article.title || '').substring(0, 50)}...`);
                     continue;
                 }
 
@@ -2110,27 +2111,36 @@ class PromoPingBot {
 
     async sendNewsNotification(discordChannel, article) {
         try {
+            if (!article) return;
+            const title = article.title != null ? String(article.title) : 'Sem título';
+            const url = article.url || '';
+            const description = article.description != null ? String(article.description) : 'Sem descrição disponível';
+            const category = article.category != null ? String(article.category) : 'Geral';
+            const source = article.source != null ? String(article.source) : 'Fonte';
+            const impactScore = article.impactScore != null ? Number(article.impactScore) : 0;
+            const publishedAt = article.publishedAt ? new Date(article.publishedAt) : new Date();
+
             // Determinar cor baseada no score de impacto
             let color = 0x5865F2; // Azul padrão
-            if (article.impactScore >= 9) {
+            if (impactScore >= 9) {
                 color = 0xff0000; // Vermelho para muito impactante
-            } else if (article.impactScore >= 8) {
+            } else if (impactScore >= 8) {
                 color = 0xff9900; // Laranja para impactante
             } else {
                 color = 0x5865F2; // Azul para moderado
             }
 
             const embed = new EmbedBuilder()
-                .setTitle(`📰 ${article.title}`)
-                .setDescription(article.description || 'Sem descrição disponível')
+                .setTitle(`📰 ${title}`)
+                .setDescription(description)
                 .addFields(
-                    { name: 'Categoria', value: article.category, inline: true },
-                    { name: 'Impacto', value: `${article.impactScore}/10`, inline: true },
-                    { name: 'Fonte', value: article.source, inline: true }
+                    { name: 'Categoria', value: category, inline: true },
+                    { name: 'Impacto', value: `${impactScore}/10`, inline: true },
+                    { name: 'Fonte', value: source, inline: true }
                 )
-                .setURL(article.url)
+                .setURL(url)
                 .setColor(color)
-                .setTimestamp(new Date(article.publishedAt))
+                .setTimestamp(publishedAt)
                 .setFooter({ text: 'PromoPing - Notícias Automáticas' });
 
             if (article.image) {
@@ -2138,7 +2148,7 @@ class PromoPingBot {
             }
 
             await discordChannel.send({ embeds: [embed] });
-            console.log(`[DISCORD] Notícia enviada: ${article.title.substring(0, 50)}...`);
+            console.log(`[DISCORD] Notícia enviada: ${title.substring(0, 50)}...`);
 
         } catch (error) {
             console.error('[DISCORD] Erro ao enviar notificação de notícia:', error);
