@@ -37,15 +37,54 @@
         <main class="dashboard-main">
             <section class="dashboard-section active">
                 <div class="section-header">
-                    <h1>Calendário do Suporte</h1>
-                    <button id="refreshCalendarBtn" class="refresh-button">Atualizar</button>
+                    <h1>Calendário de Atividades</h1>
+                    <div class="header-actions">
+                        <button id="newActivityBtn" class="refresh-button">Nova Atividade</button>
+                        <button id="refreshCalendarBtn" class="refresh-button">Atualizar</button>
+                    </div>
                 </div>
-                <p style="color: #9ca3af; margin-bottom: 1rem;">Eventos agendados pela equipa de suporte. Clique num evento para ver o que o suporte está a fazer.</p>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Crie atividades para o suporte. Elas aparecem no calendário do suporte com data, hora, designado e descrição. Clique num dia para agendar ou num evento para editar.</p>
                 <div class="calendar-container">
                     <div id="calendar"></div>
                 </div>
+
+                <!-- Lista de atividades por estado: pendentes, não concluídas, concluídas -->
+                <div class="activities-section">
+                    <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Atividades</h3>
+                    <div class="activities-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button type="button" class="tab-button active" data-activity-filter="pendentes">Pendentes</button>
+                        <button type="button" class="tab-button" data-activity-filter="nao_concluidas">Não concluídas</button>
+                        <button type="button" class="tab-button" data-activity-filter="concluidas">Concluídas</button>
+                    </div>
+                    <div id="corporationActivitiesListContainer" class="data-table-container" style="min-height: 120px;">
+                        <div class="loading-state">A carregar...</div>
+                    </div>
+                </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal detalhe atividade: estado, comentários (suporte ↔ corporação), botão editar -->
+    <div id="activityDetailModal" class="modal-overlay">
+        <div class="modal" style="max-width: 560px;">
+            <div class="modal-header">
+                <h2 id="activityDetailTitle">Detalhe da atividade</h2>
+                <button type="button" class="modal-close" id="closeActivityDetailModal">&times;</button>
+            </div>
+            <div id="activityDetailBody" style="padding: 1rem;"></div>
+            <div id="activityDetailComments" style="padding: 0 1rem 1rem; border-top: 1px solid var(--border-subtle); margin-top: 0.5rem; padding-top: 1rem;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Comentários</h4>
+                <div id="activityCommentsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;"></div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <textarea id="activityCommentInput" class="form-input" rows="2" placeholder="Escreva um comentário..." style="flex: 1;"></textarea>
+                    <button type="button" id="activityCommentSubmit" class="refresh-button">Enviar</button>
+                </div>
+            </div>
+            <div class="modal-actions" style="margin-top: 0.5rem;">
+                <button type="button" id="activityDetailEditBtn" class="modal-submit-button">Editar atividade</button>
+                <button type="button" class="modal-cancel-button" id="closeActivityDetailBtn">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal só leitura: detalhe do evento (o que o suporte está a fazer) -->
@@ -62,7 +101,58 @@
         </div>
     </div>
 
+    <!-- Modal Nova/Editar Atividade (para o suporte) -->
+    <div id="activityModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="activityModalTitle">Nova Atividade</h2>
+                <button type="button" class="modal-close" id="closeActivityModal">&times;</button>
+            </div>
+            <form id="activityForm">
+                <div class="form-group">
+                    <label class="form-label">Data e hora de início *</label>
+                    <input type="datetime-local" id="activityDataInicio" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duração (minutos)</label>
+                    <input type="number" id="activityDuracao" class="form-input" min="1" value="60">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Designado (membro do suporte)</label>
+                    <select id="activityAssignedTo" class="form-input">
+                        <option value="">— Não designado —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de atividade</label>
+                    <select id="activityTipo" class="form-input">
+                        <option value="">— Selecionar —</option>
+                        <option value="monitorização">Monitorização</option>
+                        <option value="relatório">Relatório</option>
+                        <option value="verificação">Verificação</option>
+                        <option value="manutenção">Manutenção</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ação</label>
+                    <input type="text" id="activityAcao" class="form-input" placeholder="Ex: Verificar preços do dia">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="activityDescricao" class="form-input" rows="3" placeholder="O que o suporte deve fazer"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button" id="activitySubmitBtn">Criar Atividade</button>
+                    <button type="button" class="modal-cancel-button" id="cancelActivityBtn">Cancelar</button>
+                    <button type="button" class="modal-delete-button" id="deleteActivityBtn" style="display: none;">Remover</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/corporation-base.js"></script>
     <script src="../lib/fullcalendar/main.min.js"></script>
     <script src="../lib/fullcalendar/locales-pt-br.js"></script>
