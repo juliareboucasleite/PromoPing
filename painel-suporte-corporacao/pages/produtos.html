@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,6 +75,10 @@
                     <h1>Produtos Monitorados</h1>
                     <button id="refreshProductsBtn" class="refresh-button">Atualizar</button>
                 </div>
+                <div class="tabs-container filter-tabs" id="productFilterTabs" role="tablist">
+                    <button type="button" class="tab-button active" data-filter="todos">Todos</button>
+                    <!-- Abas por empresa (Continente, Fnac, Worten, etc.) são inseridas dinamicamente pelo JS -->
+                </div>
                 <div id="productsList" class="data-table-container">
                     <div class="loading-state">Carregando produtos...</div>
                 </div>
@@ -84,6 +87,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/produtos.js"></script>
 </body>
