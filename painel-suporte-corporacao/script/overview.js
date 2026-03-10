@@ -105,11 +105,11 @@
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
     }
