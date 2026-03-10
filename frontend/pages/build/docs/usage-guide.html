@@ -31,6 +31,47 @@
       overflow-y: auto !important;
       overflow-x: hidden !important;
     }
+
+    /* Guia de Utilização — layout profissional */
+    .usage-guide-intro {
+      color: #a1a1aa;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin: 0 0 2rem 0;
+      max-width: 56ch;
+    }
+    .usage-guide-section {
+      background: #18181a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .usage-guide-section h3 {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.01em;
+    }
+    .usage-guide-section p {
+      color: #a1a1aa;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .usage-guide-section p strong {
+      color: #d4d4d8;
+    }
+    .usage-guide-section:last-of-type {
+      margin-bottom: 0;
+    }
+    .content .usage-guide-wrap {
+      margin-top: 1.5rem;
+    }
+    .content .usage-guide-wrap + .next-card {
+      margin-top: 2rem;
+    }
   </style>
 </head>
 
@@ -115,106 +156,28 @@
       </div>
 
       <h2>Começar com o PromoPing</h2>
-      <h3>Visão Geral</h3>
-      <p>
-        O PromoPing é uma plataforma abrangente de monitorização de preços que o ajuda a rastrear produtos em múltiplas
-        lojas online.
-        Este guia irá conduzi-lo através de todas as funcionalidades essenciais e como utilizá-las eficazmente.
-      </p>
+      <p class="usage-guide-intro">Monitorize preços em várias lojas online. No painel tem a lista de produtos, alertas e acções rápidas.</p>
 
-      <h3>Visão Geral do Painel</h3>
-      <p>Quando iniciar sessão pela primeira vez, verá o painel principal com:</p>
-      <ul class="list-styled">
-        <li><strong>Lista de Produtos:</strong> Todos os seus produtos monitorizados</li>
-        <li><strong>Alertas de Preço:</strong> Alterações de preço recentes e notificações</li>
-        <li><strong>Análises:</strong> Tendências de preços e estatísticas de poupança</li>
-        <li><strong>Acções Rápidas:</strong> Adicionar novos produtos, gerir alertas</li>
-      </ul>
+      <div class="usage-guide-wrap">
+        <section class="usage-guide-section">
+          <h3>Adicionar Produtos</h3>
+          <p>Clique em «Adicionar Produto», cole o URL da loja e defina o limiar de preço e notificações. Também pode introduzir nome, loja e preços manualmente.</p>
+        </section>
+        <section class="usage-guide-section">
+          <h3>Alertas e Notificações</h3>
+          <p>Alertas por <strong>queda de preço</strong> ou <strong>resumo diário</strong>, via <strong>email</strong> ou <strong>Discord</strong>. Configure os canais nas preferências.</p>
+        </section>
+        <section class="usage-guide-section">
+          <h3>Gerir Produtos</h3>
+          <p>Na lista vê preço actual, histórico e estado dos alertas. Use selecção múltipla para actualizar limiares, activar/desactivar alertas, exportar PDF ou eliminar.</p>
+        </section>
+        <section class="usage-guide-section">
+          <h3>Dicas</h3>
+          <p>Limiares realistas (c. 10–20% abaixo do preço actual) e o mesmo produto em várias lojas dão melhores resultados.</p>
+        </section>
+      </div>
 
-      <h3>Adicionar Produtos para Monitorizar</h3>
-
-      <h4>Método 1: URL Directa</h4>
-      <p>A forma mais fácil de adicionar um produto é colando o seu URL:</p>
-      <ol class="list-styled">
-        <li>Clique no botão "Adicionar Produto"</li>
-        <li>Cole o URL do produto da sua loja favorita</li>
-        <li>O PromoPing detectará automaticamente os detalhes do produto</li>
-        <li>Defina o seu limiar de preço desejado</li>
-        <li>Escolha as preferências de notificação</li>
-      </ol>
-
-      <h4>Método 2: Entrada Manual</h4>
-      <p>Para mais controlo, pode introduzir manualmente as informações do produto: nome, loja, preço actual e preço alvo.</p>
-
-      <h3>Configurar Alertas de Preço</h3>
-      <p>Configure alertas para ser notificado quando os preços descem:</p>
-
-      <h4>Tipos de Alerta</h4>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li><strong>Queda de Preço:</strong> Notificar quando o preço desce abaixo do limiar</li>
-        <li><strong>Aumento de Preço:</strong> Alertar quando o preço sobe significativamente</li>
-        <li><strong>Alerta de Stock:</strong> Notificar quando itens esgotados ficam disponíveis</li>
-        <li><strong>Resumo Diário:</strong> Receber actualizações de preços diárias</li>
-      </ul>
-
-      <h4>Canais de Notificação</h4>
-      <p>Escolha como quer receber os alertas:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li><strong>Email:</strong> Receba alertas diretamente na sua caixa de entrada</li>
-        <li><strong>Discord:</strong> Adicione o nosso bot aos seus servidores Discord para receber notificações em tempo real</li>
-      </ul>
-      <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
-        Para configurar notificações via Discord, adicione o bot do PromoPing aos seus servidores Discord através das suas preferências de notificação.
-      </p>
-
-      <h3>Gerir os Seus Produtos</h3>
-
-      <h4>Vista da Lista de Produtos</h4>
-      <p>A sua lista de produtos mostra:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Nome e imagem do produto</li>
-        <li>Preço actual e histórico de preços</li>
-        <li>Informações da loja</li>
-        <li>Estado do alerta</li>
-        <li>Timestamp da última actualização</li>
-      </ul>
-
-      <h4>Acções em Massa</h4>
-      <p>Executar acções em múltiplos produtos:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Seleccionar múltiplos produtos</li>
-        <li>Actualizar limiares de preço</li>
-        <li>Activar/desactivar alertas</li>
-        <li>Exportar para CSV</li>
-        <li>Eliminar itens seleccionados</li>
-      </ul>
-
-      <h3>Histórico de Preços</h3>
-      <p>Visualize o histórico de preços de cada produto monitorizado:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Gráficos de evolução de preços</li>
-        <li>Exportação de dados históricos</li>
-        <li>Estatísticas de poupança</li>
-      </ul>
-
-      <h3>Comparação de Preços</h3>
-      <p>Compare preços do mesmo produto em diferentes lojas:</p>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Adicione o mesmo produto de diferentes lojas</li>
-        <li>Visualize comparação de preços lado a lado</li>
-        <li>Receba alertas quando encontrar a melhor oferta</li>
-      </ul>
-
-      <h3>Dicas para Melhores Resultados</h3>
-      <ul style="color: #ccc; line-height: 1.6; margin: 1rem 0; padding-left: 1.5rem;">
-        <li>Defina limiares de preço realistas (10-20% abaixo do preço actual)</li>
-        <li>Monitore múltiplas lojas para o mesmo produto</li>
-        <li>Ative alertas de stock para itens populares</li>
-        <li>Revise e actualize regularmente a sua lista de produtos</li>
-        <li>Configure notificações via Discord para alertas em tempo real</li>
-      </ul>
-
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='api-reference.html'">
+      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='/docs/api-reference'">
         <div class="next-content">
           <span class="next-label">Seguinte</span>
           <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Referência da API</span>
@@ -226,7 +189,7 @@
       </div>
 
       <footer>
-        <p>Última actualização há 1 ano</p>
+        <p>Documentação PromoPing</p>
       </footer>
     </main>
 
