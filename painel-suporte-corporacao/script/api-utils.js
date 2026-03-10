@@ -127,12 +127,24 @@
         return `${apiBase}${safeEndpoint}`;
     }
 
+    /**
+     * Remove prefixo no formato [Discord], [Console], etc., deixando apenas o título.
+     * @param {string} str - Texto que pode conter prefixo [Algo]
+     * @returns {string} Texto sem o prefixo entre parêntesis retos
+     */
+    function stripBracketPrefix(str) {
+        if (str == null || typeof str !== 'string') return str === null || str === undefined ? '' : String(str);
+        const out = str.replace(/^\s*\[[^\]]*\]\s*/, '').trim();
+        return out || str;
+    }
+
     // Exportar funções para uso global
     window.APIUtils = {
         validateApiBase,
         getSafeApiBase,
         validateEndpoint,
-        buildSafeUrl
+        buildSafeUrl,
+        stripBracketPrefix
     };
 
 })();
