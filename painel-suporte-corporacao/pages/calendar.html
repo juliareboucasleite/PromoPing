@@ -76,7 +76,7 @@
         <main class="dashboard-main">
             <section class="dashboard-section active">
                 <div class="section-header">
-                    <h1>Calendário Administrativo</h1>
+                    <h1>Calendário Suporte</h1>
                     <div class="header-actions">
                         <button id="connectGoogleBtn" class="refresh-button" title="Conectar conta do Google">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
@@ -98,24 +98,41 @@
                     </div>
                 </div>
 
-                <!-- Opção: guardar tokens Google manualmente (quando o popup falha ou redirect_uri não coincide) -->
-                <details id="pasteTokensDetails" class="tokens-paste-details" style="margin-bottom: 1rem;">
-                    <summary style="cursor: pointer; color: #94a3b8; font-size: 0.9rem;">Já tenho tokens do Google (guardar manualmente)</summary>
-                    <div class="tokens-paste-form" style="margin-top: 0.75rem; padding: 1rem; background: #18181a; border: 1px solid #232326; border-radius: 8px; max-width: 560px;">
-                        <p style="margin: 0 0 0.75rem 0; color: #94a3b8; font-size: 0.85rem;">Use apenas se os tokens foram obtidos com o mesmo Client ID configurado no servidor. Access token e refresh token:</p>
-                        <input type="password" id="pasteAccessToken" class="form-input" placeholder="Access token" style="margin-bottom: 0.5rem; width: 100%; box-sizing: border-box;">
-                        <input type="password" id="pasteRefreshToken" class="form-input" placeholder="Refresh token" style="margin-bottom: 0.75rem; width: 100%; box-sizing: border-box;">
-                        <button type="button" id="saveGoogleTokensBtn" class="refresh-button">Guardar tokens</button>
-                        <span id="saveTokensMessage" style="margin-left: 0.5rem; font-size: 0.85rem;"></span>
-                    </div>
-                </details>
+               
 
                 <!-- Calendar Container -->
                 <div class="calendar-container">
                     <div id="calendar"></div>
                 </div>
+
+                <!-- Atividades (corporação -> suporte) -->
+                <div class="activities-section">
+                    <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Atividades para o suporte</h3>
+                    <div class="activities-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button type="button" class="tab-button active" data-activity-filter="hoje">Atividades do dia</button>
+                        <button type="button" class="tab-button" data-activity-filter="pendentes">Pendentes</button>
+                        <button type="button" class="tab-button" data-activity-filter="concluidas">Concluídas</button>
+                    </div>
+                    <div id="activitiesListContainer" class="data-table-container" style="min-height: 120px;">
+                        <div class="loading-state">A carregar...</div>
+                    </div>
+                </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal detalhe atividade (corporação) -->
+    <div id="activityDetailModal" class="modal-overlay">
+        <div class="modal" style="max-width: 560px;">
+            <div class="modal-header">
+                <h2 id="activityDetailTitle">Detalhe da atividade</h2>
+                <button type="button" class="modal-close" id="closeActivityDetailModal">&times;</button>
+            </div>
+            <div id="activityDetailBody" style="padding: 1rem;"></div>
+            <div class="modal-actions">
+                <button type="button" class="modal-cancel-button" id="closeActivityDetailBtn">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal para criar/editar evento -->
@@ -182,6 +199,7 @@
 
     <!-- FullCalendar JS - Versão Local -->
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../lib/fullcalendar/main.min.js"></script>
     <script src="../lib/fullcalendar/locales-pt-br.js"></script>
