@@ -185,6 +185,46 @@ internalApp.post('/internal/send-price-dm', async (req, res) => {
     }
 });
 
+// Enviar DM genérico (ex.: parabéns de aniversário)
+internalApp.post('/internal/send-dm', async (req, res) => {
+    try {
+        const { discordUserId, text, embed } = req.body;
+        if (!discordUserId || (!text && !embed)) {
+            return res.status(400).json({ error: 'discordUserId e (text ou embed) são obrigatórios' });
+        }
+        if (!bot.client || !bot.client.isReady()) {
+            return res.status(503).json({ error: 'Bot não está pronto' });
+        }
+        const user = await bot.client.users.fetch(String(discordUserId)).catch(() => null);
+        if (!user) {
+            return res.status(404).json({ error: 'Utilizador Discord não encontrado' });
+        }
+        const dmChannel = await user.createDM().catch(() => null);
+        if (!dmChannel) {
+            return res.status(500).json({ error: 'Não foi possível abrir DM com o utilizador' });
+        }
+        if (embed) {
+            const { EmbedBuilder } = require('discord.js');
+            const discordEmbed = new EmbedBuilder();
+            if (embed.title) discordEmbed.setTitle(embed.title);
+            if (embed.description) discordEmbed.setDescription(embed.description);
+            if (embed.color) discordEmbed.setColor(embed.color);
+            if (embed.timestamp) discordEmbed.setTimestamp(new Date(embed.timestamp));
+            if (embed.footer) discordEmbed.setFooter(embed.footer);
+            if (embed.fields && Array.isArray(embed.fields) && embed.fields.length > 0) {
+                discordEmbed.addFields(embed.fields);
+            }
+            await dmChannel.send({ embeds: [discordEmbed] });
+        } else {
+            await dmChannel.send({ content: text });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('[DISCORD INTERNAL] Erro send-dm:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Endpoint para verificar status do bot
 internalApp.get('/internal/status', (req, res) => {
     res.json({
