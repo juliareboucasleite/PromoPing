@@ -955,6 +955,7 @@ import {
 import {
     DeactivatedAccountsManager
 } from './services/deactivatedAccountsManager.js';
+import { startBirthdayNotifier } from './services/birthdayNotifier.js';
 import {
     initializeAllTables
 } from './database/tableManager.js';
@@ -1018,5 +1019,12 @@ app.listen(PORT, HOST, async() => {
         await DeactivatedAccountsManager.startAutomaticCheck();
     } catch (error) {
         console.error('Erro ao iniciar verificação automática de contas desativadas:', error);
+    }
+
+    // Notificador de aniversário (parabéns por email e Discord no dia do aniversário)
+    try {
+        startBirthdayNotifier();
+    } catch (error) {
+        console.error('Erro ao iniciar notificador de aniversário:', error);
     }
 });
