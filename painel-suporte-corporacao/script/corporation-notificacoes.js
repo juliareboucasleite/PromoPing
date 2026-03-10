@@ -45,7 +45,7 @@
                         <strong>${escapeHtml(tipoLabel(n.Tipo))}</strong>
                         <span style="color: #9ca3af;">${formatDate(n.DataCriacao)}</span>
                     </div>
-                    <h3 style="margin: 0.5rem 0; font-size: 1rem;">${escapeHtml(n.Titulo)}</h3>
+                    <h3 style="margin: 0.5rem 0; font-size: 1rem;">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(n.Titulo)) || n.Titulo || '')}</h3>
                     <p style="margin: 0; color: #d1d5db; white-space: pre-wrap;">${escapeHtml(n.Descricao || '')}</p>
                     ${n.author_nome ? `<div style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">Por: ${escapeHtml(n.author_nome)}</div>` : ''}
                 </div>
