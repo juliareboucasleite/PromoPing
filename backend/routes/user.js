@@ -80,16 +80,16 @@ router.get("/profile", verifyToken, async (req, res) => {
     let userRows;
     try {
       [userRows] = await pool.query(
-        "SELECT Nome, Email, Telefone, FotoPerfil, UltimaAlteracaoSenha, UltimaAlteracaoNome FROM utilizadores WHERE ReferenciaID = ?",
+        "SELECT Nome, Email, Telefone, FotoPerfil, UltimaAlteracaoSenha, UltimaAlteracaoNome, DataNascimento FROM utilizadores WHERE ReferenciaID = ?",
         [referenciaID]
       );
     } catch (colErr) {
       if (colErr.code === 'ER_BAD_FIELD_ERROR') {
         [userRows] = await pool.query(
-          "SELECT Nome, Email, Telefone, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
-          [referenciaID]
-        );
-      } else throw colErr;
+"SELECT Nome, Email, Telefone, FotoPerfil, DataNascimento FROM utilizadores WHERE ReferenciaID = ?",
+        [referenciaID]
+      );
+    } else throw colErr;
     }
 
     console.log("Dados do usuário encontrados:", userRows);
@@ -205,7 +205,7 @@ router.get("/profile", verifyToken, async (req, res) => {
 router.put("/profile", verifyToken, async (req, res) => {
   try {
     const referenciaID = req.user.ReferenciaID;
-    const { nome, email, telefone, fotoPerfil, photo_url } = req.body;
+    const { nome, email, telefone, fotoPerfil, photo_url, data_nascimento } = req.body;
 
     // Usar photo_url se fornecido, senão usar fotoPerfil
     const foto = photo_url || fotoPerfil;
@@ -229,6 +229,10 @@ router.put("/profile", verifyToken, async (req, res) => {
       updates.push("FotoPerfil = ?");
       values.push(foto);
     }
+    if (data_nascimento !== undefined) {
+      updates.push("DataNascimento = ?");
+      values.push(data_nascimento || null);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ 
@@ -245,26 +249,21 @@ router.put("/profile", verifyToken, async (req, res) => {
       await pool.query(query, values);
       res.json({ status: "ok", message: "Perfil atualizado com sucesso" });
     } catch (updateErr) {
-      // Se a coluna FotoPerfil não existir, tentar sem ela
-      if (updateErr.code === 'ER_BAD_FIELD_ERROR' && updateErr.message.includes('FotoPerfil')) {
-        console.log("Coluna FotoPerfil não existe, tentando sem ela");
-        // Remover FotoPerfil dos updates e tentar novamente
-        const updatesWithoutPhoto = updates.filter(u => !u.includes('FotoPerfil'));
-        if (updatesWithoutPhoto.length > 0) {
-          const valuesWithoutPhoto = values.slice(0, -1).filter((v, i) => !updates[i].includes('FotoPerfil'));
-          valuesWithoutPhoto.push(referenciaID);
-          const queryWithoutPhoto = `UPDATE Utilizadores SET ${updatesWithoutPhoto.join(", ")} WHERE ReferenciaID = ?`;
-          await pool.query(queryWithoutPhoto, valuesWithoutPhoto);
-          res.json({ 
-            status: "ok", 
-            message: "Perfil atualizado (foto não salva - coluna não existe no banco)" 
-          });
-        } else {
-          throw updateErr;
+      // Se alguma coluna opcional não existir, tentar sem ela
+      if (updateErr.code === 'ER_BAD_FIELD_ERROR') {
+        const msg = (updateErr.message || '');
+        const skipField = msg.includes('FotoPerfil') ? 'FotoPerfil' : msg.includes('DataNascimento') ? 'DataNascimento' : null;
+        if (skipField) {
+          const updatesFiltered = updates.filter(u => !u.includes(skipField));
+          if (updatesFiltered.length > 0) {
+            const valuesFiltered = values.slice(0, -1).filter((_, i) => !updates[i].includes(skipField));
+            valuesFiltered.push(referenciaID);
+            await pool.query(`UPDATE Utilizadores SET ${updatesFiltered.join(", ")} WHERE ReferenciaID = ?`, valuesFiltered);
+            return res.json({ status: "ok", message: "Perfil atualizado com sucesso" });
+          }
         }
-      } else {
-        throw updateErr;
       }
+      throw updateErr;
     }
   } catch (err) {
     console.error("Erro ao atualizar perfil:", err);
