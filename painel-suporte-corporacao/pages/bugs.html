@@ -74,13 +74,94 @@
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
                 <div class="section-header">
                     <h1>Bugs & Projetos Secundários</h1>
-                    <button id="newBugBtn" class="refresh-button">+ Novo Bug</button>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button id="newBugBtn" class="refresh-button">+ Novo Bug</button>
+                        <button id="refreshBugsBtn" class="refresh-button">Atualizar</button>
+                    </div>
                 </div>
-                <div id="bugsList" class="data-table-container">
-                    <div class="loading-state">Carregando bugs e projetos...</div>
+
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <button class="tab-button active" data-tab="bugs">Bugs</button>
+                    <button class="tab-button" data-tab="projetos">Projetos Secundários</button>
+                </div>
+
+                <!-- Bugs Tab -->
+                <div id="bugsTab" class="tab-content active">
+                    <div id="bugsList" class="data-table-container">
+                        <div class="loading-state">Carregando bugs...</div>
+                    </div>
+                </div>
+
+                <!-- Projetos Secundários Tab -->
+                <div id="projetosTab" class="tab-content">
+                    <div id="projetosList" class="data-table-container">
+                        <div class="loading-state">Carregando projetos...</div>
+                    </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal para Ver Bug/Projeto (só leitura) -->
+    <div id="bugViewModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="bugViewModalTitle">Bug / Projeto</h2>
+                <button class="modal-close" id="closeBugViewModal">&times;</button>
+            </div>
+            <div id="bugViewContent" class="sugestao-view-content">
+                <div class="form-group">
+                    <span class="form-label">Título</span>
+                    <p id="bugViewTitulo" class="sugestao-view-text"></p>
+                </div>
+                <div class="form-group">
+                    <span class="form-label">Descrição</span>
+                    <p id="bugViewDescricao" class="sugestao-view-text sugestao-view-desc"></p>
+                </div>
+                <div class="form-group sugestao-view-meta">
+                    <span><strong>Tipo:</strong> <span id="bugViewTipo"></span></span>
+                    <span><strong>Prioridade:</strong> <span id="bugViewPrioridade"></span></span>
+                    <span><strong>Status:</strong> <span id="bugViewStatus" class="bug-status"></span></span>
+                    <span><strong>Criado:</strong> <span id="bugViewData"></span></span>
+                </div>
+                <div id="bugViewAnexoWrap" class="form-group" style="display: none;">
+                    <span class="form-label">Anexo</span>
+                    <a id="bugViewAnexo" href="#" target="_blank" rel="noopener"></a>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="refresh-button" id="bugViewAtualizarEstadoBtn">Atualizar estado</button>
+                    <button type="button" class="modal-submit-button" id="bugViewEditarBtn">Editar</button>
+                    <button type="button" class="modal-cancel-button" id="closeBugViewBtn">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Atualizar Estado (como tabelas) -->
+    <div id="bugStatusModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Atualizar estado</h2>
+                <button class="modal-close" id="closeBugStatusModal">&times;</button>
+            </div>
+            <form id="bugStatusForm">
+                <input type="hidden" id="bugStatusId" value="">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="bugStatusSelect" class="form-input" required>
+                        <option value="open">Aberto</option>
+                        <option value="in-progress">Em Progresso</option>
+                        <option value="resolved">Resolvido</option>
+                        <option value="closed">Fechado</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Guardar</button>
+                    <button type="button" class="modal-cancel-button" id="cancelBugStatusBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Modal para Novo/Editar Bug -->
@@ -142,6 +223,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/bugs.js"></script>
 </body>
