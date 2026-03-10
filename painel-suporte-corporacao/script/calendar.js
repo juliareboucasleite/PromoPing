@@ -84,41 +84,60 @@
     }
 
     /**
-     * Carregar eventos do servidor
+     * Carregar eventos do servidor (eventos + atividades corporação)
      */
     async function loadEvents(start, end) {
         try {
             const startStr = start.toISOString().split('T')[0];
             const endStr = end.toISOString().split('T')[0];
-            
-            const response = await fetchAuth(`/api/admin/calendar/events?start=${startStr}&end=${endStr}`);
-            const data = await response.json();
 
-            if (data.status === 'ok' && data.events) {
-                // Formatar eventos para FullCalendar
-                return data.events.map(event => ({
-                    id: event.id.toString(),
-                    title: event.title,
-                    start: event.start,
-                    end: event.end || null,
-                    backgroundColor: getEventColor(event.type),
-                    borderColor: getStatusColor(event.status),
-                    textColor: '#ffffff',
-                    extendedProps: {
-                        description: event.description,
-                        type: event.type,
-                        status: event.status,
-                        createdBy: event.createdBy,
-                        createdByName: event.createdByName,
-                        createdAt: event.createdAt
-                    }
-                }));
-            }
+            const [eventsRes, activitiesRes] = await Promise.all([
+                fetchAuth(`/api/admin/calendar/events?start=${startStr}&end=${endStr}`).then(r => r.json()).catch(() => ({ status: 'ok', events: [] })),
+                fetchAuth(`/api/admin/calendar/activities?start=${startStr}&end=${endStr}`).then(r => r.json()).catch(() => ({ status: 'ok', activities: [] }))
+            ]);
 
-            return [];
+            const events = (eventsRes.status === 'ok' && eventsRes.events) ? eventsRes.events.map(event => ({
+                id: event.id.toString(),
+                title: event.title,
+                start: event.start,
+                end: event.end || null,
+                backgroundColor: getEventColor(event.type),
+                borderColor: getStatusColor(event.status),
+                textColor: '#ffffff',
+                extendedProps: {
+                    description: event.description,
+                    type: event.type,
+                    status: event.status,
+                    createdBy: event.createdBy,
+                    createdByName: event.createdByName,
+                    createdAt: event.createdAt,
+                    isActivity: false
+                }
+            })) : [];
+
+            const activities = (activitiesRes.status === 'ok' && activitiesRes.activities) ? activitiesRes.activities.map(a => ({
+                id: 'act-' + a.id,
+                title: a.acao || a.tipoAtividade || 'Atividade',
+                start: a.dataInicio,
+                end: a.dataFim || null,
+                backgroundColor: '#6366f1',
+                borderColor: '#4f46e5',
+                textColor: '#ffffff',
+                extendedProps: {
+                    isActivity: true,
+                    activityId: a.id,
+                    acao: a.acao,
+                    descricao: a.descricao,
+                    tipoAtividade: a.tipoAtividade,
+                    estado: a.estado,
+                    assignedToNome: a.assignedToNome
+                }
+            })) : [];
+
+            return events.concat(activities);
         } catch (error) {
             console.error('[CALENDAR] Erro ao carregar eventos:', error);
-            alert(`Erro ao carregar eventos: ${error.message}`);
+            showAlert(`Erro ao carregar eventos: ${error.message}`);
             return [];
         }
     }
@@ -162,7 +181,11 @@
                 }
             },
             eventClick: (info) => {
-                openEventModal(info.event);
+                if (info.event.extendedProps && info.event.extendedProps.isActivity) {
+                    openActivityDetailModal(info.event.extendedProps.activityId);
+                } else {
+                    openEventModal(info.event);
+                }
             },
             dateClick: (info) => {
                 openNewEventModal(info.dateStr);
@@ -264,6 +287,228 @@
         currentEventId = null;
     }
 
+    /** Atividades (corporação): lista por filtro */
+    let currentActivityFilter = 'hoje';
+    async function loadActivitiesList(filter) {
+        const container = document.getElementById('activitiesListContainer');
+        if (!container) return;
+        try {
+            container.innerHTML = '<div class="loading-state">A carregar...</div>';
+            const response = await fetchAuth(`/api/admin/calendar/activities?filter=${encodeURIComponent(filter || currentActivityFilter)}`);
+            const data = await response.json();
+            const list = Array.isArray(data.activities) ? data.activities : [];
+            if (list.length === 0) {
+                container.innerHTML = '<div class="loading-state">Nenhuma atividade</div>';
+                return;
+            }
+            function fmtDt(d) {
+                if (!d) return '—';
+                try {
+                    return new Date(d).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                } catch (_) {
+                    return '—';
+                }
+            }
+            function safeStr(val, maxLen) {
+                const s = String(val != null ? val : '—');
+                return maxLen ? s.substring(0, maxLen) : s;
+            }
+            function estadoColor(estado) {
+                if (estado === 'concluida') return '#86efac';
+                if (estado === 'em_curso') return '#fcd34d';
+                return '#94a3b8';
+            }
+            const rows = list.map(function(a) {
+                return '<tr><td>' + fmtDt(a.dataInicio) + '</td><td>' + escapeHtml(safeStr(a.acao || a.tipoAtividade || '—', 40)) + '</td><td>' + escapeHtml(safeStr(a.assignedToNome)) + '</td><td><span style="color:' + estadoColor(a.estado) + '">' + escapeHtml(a.estado || 'pendente') + '</span></td><td><button type="button" class="refresh-button" data-activity-id="' + String(a.id) + '" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Ver</button></td></tr>';
+            }).join('');
+            container.innerHTML = '<table class="data-table"><thead><tr><th>Data</th><th>Ação / Tipo</th><th>Designado</th><th>Estado</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+            container.querySelectorAll('[data-activity-id]').forEach(btn => {
+                btn.addEventListener('click', () => openActivityDetailModal(btn.getAttribute('data-activity-id')));
+            });
+        } catch (err) {
+            console.error('[CALENDAR] loadActivitiesList', err);
+            if (container) container.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Erro ao carregar</div>';
+        }
+    }
+
+    /** Modal detalhe atividade: dados, estado, comentários, relatório */
+    let currentActivityDetailId = null;
+    function escapeHtml(t) {
+        if (t == null) return '';
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+    }
+    async function openActivityDetailModal(activityId) {
+        currentActivityDetailId = activityId;
+        const modal = document.getElementById('activityDetailModal');
+        const titleEl = document.getElementById('activityDetailTitle');
+        const bodyEl = document.getElementById('activityDetailBody');
+        if (!modal || !bodyEl) return;
+        try {
+            const response = await fetchAuth(`/api/admin/calendar/activities/${activityId}`);
+            const data = await response.json();
+            if (data.status !== 'ok' || !data.activity) {
+                showAlert('Atividade não encontrada.');
+                return;
+            }
+            const a = data.activity;
+            const comments = data.comments || [];
+            const reports = data.reports || [];
+            const dataFim = a.dataFim ? new Date(a.dataFim).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+            const dataInicio = a.dataInicio ? new Date(a.dataInicio).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+            titleEl.textContent = a.acao || 'Detalhe da atividade';
+            bodyEl.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Data / Início</label>
+                    <p style="margin: 0; color: var(--text-primary);">${dataInicio}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duração / Fim</label>
+                    <p style="margin: 0; color: var(--text-primary);">${a.duracaoMinutos || 0} min — ${dataFim}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Designado</label>
+                    <p style="margin: 0; color: var(--text-primary);">${escapeHtml(a.assignedToNome || '—')}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <p style="margin: 0; color: var(--text-primary);">${escapeHtml(a.tipoAtividade || '—')}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ação</label>
+                    <p style="margin: 0; color: var(--text-primary);">${escapeHtml(a.acao || '—')}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <p style="margin: 0; color: var(--text-secondary); white-space: pre-wrap;">${escapeHtml(a.descricao || '—')}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select id="activityEstadoSelect" class="form-input" style="max-width: 200px;">
+                        <option value="pendente" ${a.estado === 'pendente' ? 'selected' : ''}>Pendente</option>
+                        <option value="em_curso" ${a.estado === 'em_curso' ? 'selected' : ''}>Em curso</option>
+                        <option value="concluida" ${a.estado === 'concluida' ? 'selected' : ''}>Concluída</option>
+                        <option value="cancelada" ${a.estado === 'cancelada' ? 'selected' : ''}>Cancelada</option>
+                    </select>
+                    <button type="button" id="saveActivityEstadoBtn" class="refresh-button" style="margin-left: 0.5rem; padding: 0.4rem 0.75rem;">Guardar estado</button>
+                </div>
+                <hr style="border-color: var(--border-subtle); margin: 1rem 0;">
+                <div class="form-group">
+                    <label class="form-label">Comentários</label>
+                    <div id="activityCommentsList" style="max-height: 160px; overflow-y: auto; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-elevated); border-radius: 6px;">
+                        ${comments.length === 0 ? '<p style="color: var(--text-muted); margin: 0; font-size: 0.875rem;">Nenhum comentário.</p>' : (function() {
+                            var arr = [];
+                            comments.forEach(function(c) {
+                                var msg = c.Mensagem || c.mensagem || '';
+                                var who = (c.IsCorporation || c.isCorporation) ? 'Corporação' : 'Suporte';
+                                var at = (c.CreatedAt || c.createdAt) ? new Date(c.CreatedAt || c.createdAt).toLocaleString('pt-PT') : '';
+                                arr.push('<p style="margin: 0 0 0.5rem; font-size: 0.875rem;"><strong>' + who + '</strong> ' + escapeHtml(msg) + ' <span style="color: var(--text-muted);">' + at + '</span></p>');
+                            });
+                            return arr.join('');
+                        })()}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="activityCommentInput" class="form-input" placeholder="Comentário..." style="flex: 1;">
+                        <button type="button" id="activityCommentBtn" class="modal-submit-button" style="padding: 0.5rem 1rem;">Enviar</button>
+                    </div>
+                </div>
+                <hr style="border-color: var(--border-subtle); margin: 1rem 0;">
+                <div class="form-group">
+                    <label class="form-label">Submeter relatório</label>
+                    <textarea id="activityReportText" class="form-input" rows="2" placeholder="O que foi feito, como foi feito..."></textarea>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0.25rem 0;">Anexo: PDF, DOC, DOCX ou TXT</p>
+                    <input type="file" id="activityReportFile" accept=".pdf,.doc,.docx,.txt" style="margin: 0.25rem 0;">
+                    <button type="button" id="activityReportBtn" class="modal-submit-button" style="margin-top: 0.5rem;">Submeter relatório</button>
+                </div>
+                ${reports.length > 0 ? (function() {
+                    var parts = [];
+                    reports.forEach(function(r) {
+                        var txt = r.TextoRelatorio || r.textoRelatorio || '';
+                        var url = r.AnexoUrl || r.anexoUrl;
+                        var base = window.APIUtils ? window.APIUtils.getSafeApiBase() : (typeof API_BASE !== 'undefined' ? API_BASE : '');
+                        var href = url ? (base + url) : '';
+                        var linkHtml = href ? ' <a href="' + href + '" target="_blank" rel="noopener">Anexo</a>' : '';
+                        var dateStr = (r.CreatedAt || r.createdAt) ? new Date(r.CreatedAt || r.createdAt).toLocaleString('pt-PT') : '';
+                        parts.push('<p style="margin: 0 0 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">' + escapeHtml(txt.substring(0, 150)) + linkHtml + ' — ' + dateStr + '</p>');
+                    });
+                    return '<div class="form-group"><label class="form-label">Relatórios anteriores</label><div style="max-height: 120px; overflow-y: auto;">' + parts.join('') + '</div></div>';
+                })() : ''}
+            `;
+            document.getElementById('saveActivityEstadoBtn')?.addEventListener('click', async () => {
+                const sel = document.getElementById('activityEstadoSelect');
+                if (!sel) return;
+                try {
+                    await fetchAuth(`/api/admin/calendar/activities/${activityId}`, { method: 'PATCH', body: JSON.stringify({ estado: sel.value }) });
+                    showAlert('Estado atualizado.');
+                    loadActivitiesList(currentActivityFilter);
+                    if (calendar) calendar.refetchEvents();
+                    openActivityDetailModal(activityId);
+                } catch (e) {
+                    showAlert(e.message || 'Erro ao atualizar estado.');
+                }
+            });
+            document.getElementById('activityCommentBtn')?.addEventListener('click', async () => {
+                const input = document.getElementById('activityCommentInput');
+                if (!input || !input.value.trim()) return;
+                try {
+                    await fetchAuth(`/api/admin/calendar/activities/${activityId}/comments`, { method: 'POST', body: JSON.stringify({ mensagem: input.value.trim() }) });
+                    input.value = '';
+                    showAlert('Comentário adicionado.');
+                    openActivityDetailModal(activityId);
+                } catch (e) {
+                    showAlert(e.message || 'Erro ao enviar comentário.');
+                }
+            });
+            document.getElementById('activityReportBtn')?.addEventListener('click', async () => {
+                const textEl = document.getElementById('activityReportText');
+                const fileEl = document.getElementById('activityReportFile');
+                const texto = textEl && textEl.value ? textEl.value.trim() : '';
+                if (!texto && (!fileEl || !fileEl.files.length)) {
+                    showAlert('Indique o texto do relatório e/ou anexe um ficheiro.');
+                    return;
+                }
+                let anexoBase64 = '';
+                let anexoFileName = '';
+                if (fileEl && fileEl.files.length > 0) {
+                    const file = fileEl.files[0];
+                    const ext = (file.name || '').toLowerCase();
+                    if (!['.pdf','.doc','.docx','.txt'].some(e => ext.endsWith(e))) {
+                        showAlert('Anexo: use PDF, DOC, DOCX ou TXT.');
+                        return;
+                    }
+                    anexoFileName = file.name;
+                    anexoBase64 = await new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.onload = () => res(r.result);
+                        r.onerror = rej;
+                        r.readAsDataURL(file);
+                    });
+                }
+                try {
+                    await fetchAuth(`/api/admin/calendar/activities/${activityId}/report`, {
+                        method: 'POST',
+                        body: JSON.stringify({ texto: texto || null, anexoBase64: anexoBase64 || undefined, anexoFileName: anexoFileName || undefined })
+                    });
+                    if (textEl) textEl.value = '';
+                    if (fileEl) fileEl.value = '';
+                    showAlert('Relatório submetido.');
+                    openActivityDetailModal(activityId);
+                } catch (e) {
+                    showAlert(e.message || 'Erro ao submeter relatório.');
+                }
+            });
+            modal.classList.add('show');
+        } catch (err) {
+            console.error('[CALENDAR] openActivityDetailModal', err);
+            showAlert(err.message || 'Erro ao carregar atividade.');
+        }
+    }
+    function closeActivityDetailModal() {
+        currentActivityDetailId = null;
+        document.getElementById('activityDetailModal')?.classList.remove('show');
+    }
+
     /**
      * Salvar evento (criar ou atualizar)
      */
@@ -291,7 +536,7 @@
             }
         } catch (error) {
             console.error('[CALENDAR] Erro ao salvar evento:', error);
-            alert(`Erro ao salvar evento: ${error.message}`);
+            showAlert(`Erro ao salvar evento: ${error.message}`);
             return false;
         }
     }
@@ -317,7 +562,7 @@
             calendar.refetchEvents();
         } catch (error) {
             console.error('[CALENDAR] Erro ao atualizar evento:', error);
-            alert(`Erro ao atualizar evento: ${error.message}`);
+            showAlert(`Erro ao atualizar evento: ${error.message}`);
             calendar.refetchEvents(); // Reverter mudanças
         }
     }
@@ -410,7 +655,7 @@
             }
         } catch (error) {
             console.error('[CALENDAR] Erro ao conectar Google:', error);
-            alert(`Erro ao conectar: ${error.message}`);
+            showAlert(`Erro ao conectar: ${error.message}`);
             connectBtn.disabled = false;
             connectBtn.innerHTML = originalText;
         }
@@ -441,9 +686,9 @@
                 
                 // Mostrar mensagem mais amigável
                 if (data.note) {
-                    alert('ℹ️ ' + data.note);
+                    showAlert('ℹ️ ' + data.note);
                 } else {
-                    alert('✅ ' + message);
+                    showAlert('✅ ' + message);
                 }
                 
                 // Recarregar eventos após sincronização
@@ -469,7 +714,7 @@
                 errorMessage = 'Google OAuth não está configurado no servidor.';
             }
             
-            alert('⚠️ Erro ao sincronizar: ' + errorMessage);
+            showAlert('⚠️ Erro ao sincronizar: ' + errorMessage);
         } finally {
             syncBtn.disabled = false;
             syncBtn.innerHTML = originalText;
@@ -482,10 +727,7 @@
     async function deleteEvent() {
         if (!currentEventId) return;
 
-        if (!confirm('Tem certeza que deseja excluir este evento?')) {
-            return;
-        }
-
+        showConfirm('Tem certeza que deseja excluir este evento?', 'Excluir evento', async () => {
         try {
             const response = await fetchAuth(`/api/admin/calendar/events/${currentEventId}`, {
                 method: 'DELETE'
@@ -501,8 +743,9 @@
             }
         } catch (error) {
             console.error('[CALENDAR] Erro ao excluir evento:', error);
-            alert(`Erro ao excluir evento: ${error.message}`);
+            showAlert(`Erro ao excluir evento: ${error.message}`);
         }
+        });
     }
 
     /**
@@ -530,9 +773,8 @@
 
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
-                if (calendar) {
-                    calendar.refetchEvents();
-                }
+                if (calendar) calendar.refetchEvents();
+                loadActivitiesList(currentActivityFilter);
             });
         }
 
@@ -552,8 +794,8 @@
 
         const disconnectGoogleBtn = document.getElementById('disconnectGoogleBtn');
         if (disconnectGoogleBtn) {
-            disconnectGoogleBtn.addEventListener('click', async () => {
-                if (!confirm('Desligar a conta Google? Terá de usar «Conectar Google» de novo para sincronizar ou trocar de conta.')) return;
+            disconnectGoogleBtn.addEventListener('click', () => {
+                showConfirm('Desligar a conta Google? Terá de usar «Conectar Google» de novo para sincronizar ou trocar de conta.', 'Desligar Google', async () => {
                 try {
                     const response = await fetchAuth('/api/admin/calendar/disconnect-google', { method: 'POST' });
                     const data = await response.json();
@@ -561,11 +803,12 @@
                         await checkGoogleConnectionStatus();
                         if (calendar) calendar.refetchEvents();
                     } else {
-                        alert(data.error || 'Erro ao desligar');
+                        showAlert(data.error || 'Erro ao desligar');
                     }
                 } catch (err) {
-                    alert('Erro: ' + (err.message || 'Não foi possível desligar'));
+                    showAlert('Erro: ' + (err.message || 'Não foi possível desligar'));
                 }
+                });
             });
         }
 
@@ -612,6 +855,22 @@
         // Verificar status da conexão Google
         await checkGoogleConnectionStatus();
 
+        // Atividades (corporação): abas e lista
+        loadActivitiesList('hoje').catch(function() {});
+        document.querySelectorAll('.activities-tabs .tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentActivityFilter = btn.dataset.activityFilter || 'hoje';
+                document.querySelectorAll('.activities-tabs .tab-button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadActivitiesList(currentActivityFilter);
+            });
+        });
+        document.getElementById('closeActivityDetailModal')?.addEventListener('click', closeActivityDetailModal);
+        document.getElementById('closeActivityDetailBtn')?.addEventListener('click', closeActivityDetailModal);
+        document.getElementById('activityDetailModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'activityDetailModal') closeActivityDetailModal();
+        });
+
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', closeModal);
         }
@@ -636,7 +895,7 @@
                 const endDate = document.getElementById('eventEndDate').value;
 
                 if (!title || !startDate) {
-                    alert('Por favor, preencha título e data de início');
+                    showAlert('Por favor, preencha título e data de início');
                     return;
                 }
 
@@ -676,11 +935,11 @@
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
 
