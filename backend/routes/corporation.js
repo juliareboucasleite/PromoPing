@@ -225,6 +225,288 @@ router.get("/calendar/events", async (req, res) => {
     }
 });
 
+/** Garantir tabela de atividades (corporação -> suporte) */
+async function ensureCorporationActivitiesTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS corporation_activities (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                DataInicio DATETIME NOT NULL,
+                DuracaoMinutos INT NOT NULL DEFAULT 60,
+                AssignedTo VARCHAR(13) NULL,
+                TipoAtividade VARCHAR(80) NULL,
+                Acao VARCHAR(255) NULL,
+                Descricao TEXT NULL,
+                Estado ENUM('pendente','em_curso','concluida','cancelada') DEFAULT 'pendente',
+                CreatedBy VARCHAR(13) NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_DataInicio (DataInicio),
+                INDEX idx_AssignedTo (AssignedTo),
+                INDEX idx_Estado (Estado),
+                INDEX idx_CreatedBy (CreatedBy)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+    } catch (e) {
+        console.error("[CORPORATION] ensureCorporationActivitiesTable:", e.message);
+    }
+}
+
+/** GET /calendar/activities - atividades no intervalo (para calendário corporativo) */
+router.get("/calendar/activities", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const { start, end } = req.query;
+        let query = `
+            SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedBy, a.CreatedAt,
+                   u.Nome AS AssignedToNome
+            FROM corporation_activities a
+            LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+            WHERE 1=1
+        `;
+        const params = [];
+        if (start && end) {
+            query += " AND a.DataInicio >= ? AND a.DataInicio <= ?";
+            params.push(start, end);
+        }
+        query += " ORDER BY a.DataInicio ASC";
+        const [rows] = await pool.query(query, params);
+        const activities = rows.map(r => {
+            const dataFim = new Date(r.DataInicio);
+            dataFim.setMinutes(dataFim.getMinutes() + (r.DuracaoMinutos || 0));
+            return {
+                id: r.Id,
+                title: r.Acao || r.TipoAtividade || "Atividade",
+                start: r.DataInicio,
+                end: dataFim.toISOString().slice(0, 19).replace("T", " "),
+                tipoAtividade: r.TipoAtividade,
+                acao: r.Acao,
+                descricao: r.Descricao,
+                estado: r.Estado,
+                assignedTo: r.AssignedTo,
+                assignedToNome: r.AssignedToNome
+            };
+        });
+        res.json({ status: "ok", activities });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao buscar atividades:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar atividades");
+    }
+});
+
+/** GET /calendar/activities/list - lista atividades por filtro: pendentes | nao_concluidas | concluidas */
+router.get("/calendar/activities/list", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const { filter } = req.query;
+        let query = `
+            SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedBy, a.CreatedAt,
+                   u.Nome AS AssignedToNome
+            FROM corporation_activities a
+            LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+            WHERE 1=1
+        `;
+        const params = [];
+        if (filter === "pendentes") {
+            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + INTERVAL a.DuracaoMinutos MINUTE) >= NOW()";
+        } else if (filter === "nao_concluidas") {
+            query += " AND a.Estado IN ('pendente','em_curso')";
+        } else if (filter === "concluidas") {
+            query += " AND a.Estado = 'concluida'";
+        }
+        query += " ORDER BY a.DataInicio ASC";
+        const [rows] = await pool.query(query, params);
+        const activities = rows.map(r => {
+            const dataFim = new Date(r.DataInicio);
+            dataFim.setMinutes(dataFim.getMinutes() + (r.DuracaoMinutos || 0));
+            return {
+                id: r.Id,
+                dataInicio: r.DataInicio,
+                duracaoMinutos: r.DuracaoMinutos,
+                dataFim: dataFim.toISOString(),
+                assignedTo: r.AssignedTo,
+                assignedToNome: r.AssignedToNome,
+                tipoAtividade: r.TipoAtividade,
+                acao: r.Acao,
+                descricao: r.Descricao,
+                estado: r.Estado,
+                createdBy: r.CreatedBy,
+                createdAt: r.CreatedAt
+            };
+        });
+        res.json({ status: "ok", activities });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao listar atividades (filter):", err);
+        return handleDatabaseError(err, res, "Erro ao listar atividades");
+    }
+});
+
+/** GET /calendar/activities/:id - detalhe da atividade + comentários + relatórios (corporação) */
+router.get("/calendar/activities/:id", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const [rows] = await pool.query(
+            `SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedBy, a.CreatedAt, a.UpdatedAt,
+                    u.Nome AS AssignedToNome
+             FROM corporation_activities a
+             LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+             WHERE a.Id = ?`,
+            [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        const act = rows[0];
+        const dataFim = new Date(act.DataInicio);
+        dataFim.setMinutes(dataFim.getMinutes() + (act.DuracaoMinutos || 0));
+        const [comments] = await pool.query(
+            "SELECT Id, ActivityId, ReferenciaID, IsCorporation, Mensagem, CreatedAt FROM activity_comments WHERE ActivityId = ? ORDER BY CreatedAt ASC",
+            [req.params.id]
+        ).catch(() => [[]]);
+        const [reports] = await pool.query(
+            "SELECT Id, ActivityId, ReferenciaID, TextoRelatorio, AnexoUrl, CreatedAt FROM activity_reports WHERE ActivityId = ? ORDER BY CreatedAt DESC",
+            [req.params.id]
+        ).catch(() => [[]]);
+        res.json({
+            status: "ok",
+            activity: {
+                id: act.Id,
+                dataInicio: act.DataInicio,
+                duracaoMinutos: act.DuracaoMinutos,
+                dataFim: dataFim.toISOString(),
+                assignedTo: act.AssignedTo,
+                assignedToNome: act.AssignedToNome,
+                tipoAtividade: act.TipoAtividade,
+                acao: act.Acao,
+                descricao: act.Descricao,
+                estado: act.Estado,
+                createdBy: act.CreatedBy,
+                createdAt: act.CreatedAt,
+                updatedAt: act.UpdatedAt
+            },
+            comments: comments || [],
+            reports: reports || []
+        });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao buscar detalhe atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar atividade");
+    }
+});
+
+/** POST /calendar/activities - criar atividade (corporação) */
+router.post("/calendar/activities", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const referenciaID = req.user && req.user.ReferenciaID;
+        const { dataInicio, duracaoMinutos, assignedTo, tipoAtividade, acao, descricao } = req.body;
+        if (!dataInicio) {
+            return res.status(400).json({ status: "error", error: "Data/hora de início obrigatória" });
+        }
+        const duration = Math.max(1, parseInt(duracaoMinutos) || 60);
+        const [result] = await pool.query(
+            `INSERT INTO corporation_activities (DataInicio, DuracaoMinutos, AssignedTo, TipoAtividade, Acao, Descricao, CreatedBy)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                dataInicio.replace("T", " ").slice(0, 19),
+                duration,
+                assignedTo || null,
+                tipoAtividade || null,
+                acao || null,
+                descricao || null,
+                referenciaID || null
+            ]
+        );
+        const [row] = await pool.query(
+            `SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedAt,
+                    u.Nome AS AssignedToNome
+             FROM corporation_activities a
+             LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+             WHERE a.Id = ?`,
+            [result.insertId]
+        );
+        const r = row[0];
+        const dataFim = new Date(r.DataInicio);
+        dataFim.setMinutes(dataFim.getMinutes() + (r.DuracaoMinutos || 0));
+        res.status(201).json({
+            status: "ok",
+            activity: {
+                id: r.Id,
+                dataInicio: r.DataInicio,
+                duracaoMinutos: r.DuracaoMinutos,
+                dataFim: dataFim.toISOString(),
+                assignedTo: r.AssignedTo,
+                assignedToNome: r.AssignedToNome,
+                tipoAtividade: r.TipoAtividade,
+                acao: r.Acao,
+                descricao: r.Descricao,
+                estado: r.Estado,
+                createdAt: r.CreatedAt
+            }
+        });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao criar atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao criar atividade");
+    }
+});
+
+/** PUT /calendar/activities/:id - atualizar atividade (corporação) */
+router.put("/calendar/activities/:id", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const { dataInicio, duracaoMinutos, assignedTo, tipoAtividade, acao, descricao } = req.body;
+        const id = req.params.id;
+        const [ex] = await pool.query("SELECT Id FROM corporation_activities WHERE Id = ?", [id]);
+        if (ex.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        const updates = [];
+        const values = [];
+        if (dataInicio !== undefined) { updates.push("DataInicio = ?"); values.push(dataInicio.replace("T", " ").slice(0, 19)); }
+        if (duracaoMinutos !== undefined) { updates.push("DuracaoMinutos = ?"); values.push(Math.max(1, parseInt(duracaoMinutos) || 60)); }
+        if (assignedTo !== undefined) { updates.push("AssignedTo = ?"); values.push(assignedTo || null); }
+        if (tipoAtividade !== undefined) { updates.push("TipoAtividade = ?"); values.push(tipoAtividade || null); }
+        if (acao !== undefined) { updates.push("Acao = ?"); values.push(acao || null); }
+        if (descricao !== undefined) { updates.push("Descricao = ?"); values.push(descricao || null); }
+        if (updates.length === 0) return res.json({ status: "ok", message: "Nada a atualizar" });
+        values.push(id);
+        await pool.query(`UPDATE corporation_activities SET ${updates.join(", ")} WHERE Id = ?`, values);
+        res.json({ status: "ok", message: "Atividade atualizada" });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao atualizar atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar atividade");
+    }
+});
+
+/** DELETE /calendar/activities/:id - remover atividade (corporação) */
+router.delete("/calendar/activities/:id", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const [r] = await pool.query("DELETE FROM corporation_activities WHERE Id = ?", [req.params.id]);
+        if (r.affectedRows === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        res.json({ status: "ok", message: "Atividade removida" });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao remover atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao remover atividade");
+    }
+});
+
+/** POST /calendar/activities/:id/comments - comentário da corporação */
+router.post("/calendar/activities/:id/comments", async (req, res) => {
+    try {
+        const [tables] = await pool.query("SHOW TABLES LIKE 'activity_comments'");
+        if (tables.length === 0) return res.status(404).json({ status: "error", error: "Tabela não existe" });
+        const referenciaID = req.user && req.user.ReferenciaID;
+        const { mensagem } = req.body;
+        if (!mensagem || !String(mensagem).trim()) return res.status(400).json({ status: "error", error: "Mensagem obrigatória" });
+        const [check] = await pool.query("SELECT Id FROM corporation_activities WHERE Id = ?", [req.params.id]);
+        if (check.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        await pool.query(
+            "INSERT INTO activity_comments (ActivityId, ReferenciaID, IsCorporation, Mensagem) VALUES (?, ?, 1, ?)",
+            [req.params.id, referenciaID || null, String(mensagem).trim()]
+        );
+        res.json({ status: "ok", message: "Comentário adicionado" });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao adicionar comentário:", err);
+        return handleDatabaseError(err, res, "Erro ao adicionar comentário");
+    }
+});
+
 /** Avaliações (reviews) - com suporte que fechou quando tipo = suporte */
 router.get("/reviews", async (req, res) => {
     try {
@@ -304,7 +586,7 @@ router.get("/dashboard", async (req, res) => {
                 `SELECT n.Id, n.Tipo, n.Titulo, n.Descricao, n.ReferenciaID as author_id, n.DataCriacao,
                         u.Nome as author_nome
                  FROM corporation_notifications n
-                 LEFT JOIN utilizadores u ON n.ReferenciaID = u.ReferenciaID
+                 LEFT JOIN utilizadores u ON n.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID
                  ORDER BY n.DataCriacao DESC LIMIT ?`,
                 [limit]
             );
@@ -352,7 +634,7 @@ router.get("/dashboard", async (req, res) => {
             const [events] = await pool.query(
                 `SELECT e.Id, e.Titulo, e.Tipo, e.Status, e.StartDate, e.CreatedBy as author_id, u.Nome as author_nome
                  FROM admin_events e
-                 LEFT JOIN utilizadores u ON u.ReferenciaID = e.CreatedBy
+                 LEFT JOIN utilizadores u ON u.ReferenciaID = e.CreatedBy COLLATE utf8mb4_unicode_ci
                  ORDER BY e.StartDate DESC LIMIT ?`,
                 [limit]
             );
@@ -378,7 +660,7 @@ router.get("/notifications", async (req, res) => {
             `SELECT n.Id, n.Tipo, n.Titulo, n.Descricao, n.ReferenciaID as author_id, n.DataCriacao,
                     u.Nome as author_nome, u.Email as author_email
              FROM corporation_notifications n
-             LEFT JOIN utilizadores u ON n.ReferenciaID = u.ReferenciaID
+             LEFT JOIN utilizadores u ON n.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID
              ORDER BY n.DataCriacao DESC LIMIT ?`,
             [limit]
         );
