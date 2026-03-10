@@ -3,8 +3,8 @@
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
   <title>Status do Serviço | PromoPing Docs</title>
   <link rel="stylesheet" href="docs/styles.css">
@@ -82,7 +82,8 @@
                 <span class="copy-dropdown-item-title">View as Markdown</span>
                 <span class="copy-dropdown-item-desc">View this page as plain text</span>
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-dropdown-external">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="copy-dropdown-external">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <line x1="10" y1="14" x2="21" y2="3"></line>
@@ -92,15 +93,11 @@
         </div>
       </div>
 
-      <h2>Status Geral do Sistema</h2>
 
-      <div class="status-overview">
-        <div class="status-card operational">
-          <div class="status-indicator"></div>
-          <div class="status-content">
-            <h3>Todos os Sistemas Operacionais</h3>
-            <p>Última atualização: <span id="last-update">15 de Janeiro, 2025 - 14:30 UTC</span></p>
-          </div>
+      <div class="status-overview status-overview-compact">
+        <div class="status-overview-text">
+          <strong>Todos os sistemas operacionais</strong>
+          <span class="status-overview-meta">Atualizado: <span id="last-update">15 de Janeiro, 2025 - 14:30 UTC</span></span>
         </div>
       </div>
 
@@ -167,7 +164,7 @@
             <p><strong>Logins (24h):</strong> 3,421</p>
             <p><strong>Tempo de resposta:</strong> 12ms</p>
             <p><strong>Taxa de sucesso:</strong> 99.8%</p>
-            <p><strong>Utilizadores online:</strong> <span id="users-online">0</span></p>
+            <p><strong>Utilizadores online:</strong> <span id="users-online-card">0</span></p>
           </div>
         </div>
 
@@ -195,6 +192,7 @@
             <p><strong>Impacto:</strong> Interrupção temporária da API</p>
             <p><strong>Status:</strong> Resolvido</p>
           </div>
+          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
         </div>
 
         <div class="incident-item resolved">
@@ -205,6 +203,7 @@
             <p><strong>Impacto:</strong> Atraso nas notificações por email</p>
             <p><strong>Status:</strong> Resolvido</p>
           </div>
+          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
         </div>
 
         <h3>Métricas de Performance</h3>
@@ -326,28 +325,20 @@
 
         if (data.status === "ok") {
           // Atualizar estatísticas em tempo real
-          const requestsElement = document.getElementById('requests-per-minute');
-          const usersElement = document.getElementById('users-online');
-          const notificationsElement = document.getElementById('notifications-today');
-
-          if (requestsElement) {
-            requestsElement.textContent = data.metricas.UtilizadoresAtivos?.toLocaleString() || '0';
-          }
-
-          if (usersElement) {
-            usersElement.textContent = data.metricas.UtilizadoresAtivos?.toLocaleString() || '0';
-          }
-
-          if (notificationsElement) {
-            notificationsElement.textContent = data.metricas.NotificacoesEnviadas?.toLocaleString() || '0';
-          }
+          const valUtilizadores = (data.metricas && data.metricas.UtilizadoresAtivos != null) ? String(data.metricas.UtilizadoresAtivos) : '0';
+          const valNotificacoes = (data.metricas && data.metricas.NotificacoesEnviadas != null) ? String(data.metricas.NotificacoesEnviadas) : '0';
+          atualizarElemento('requests-per-minute', valUtilizadores);
+          atualizarElemento('users-online', valUtilizadores);
+          atualizarElemento('users-online-card', valUtilizadores);
+          atualizarElemento('notifications-today', valNotificacoes);
 
           // Atualizar timestamp
           const footer = document.getElementById('footer-update');
           const lastUpdate = document.getElementById('last-update');
+          const ts = (data.ultimaAtualizacao) ? new Date(data.ultimaAtualizacao) : new Date();
 
           if (footer) {
-            footer.textContent = new Date(data.ultimaAtualizacao).toLocaleString('pt-BR', {
+            footer.textContent = ts.toLocaleString('pt-BR', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -358,7 +349,7 @@
           }
 
           if (lastUpdate) {
-            lastUpdate.textContent = new Date(data.ultimaAtualizacao).toLocaleString('pt-BR', {
+            lastUpdate.textContent = ts.toLocaleString('pt-BR', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -384,9 +375,7 @@
         }
       } catch (error) {
         console.error(" Erro ao carregar status:", error);
-
-        // Fallback para dados simulados em caso de erro
-        console.log(" Usando dados simulados devido a erro na API");
+        // Fallback para dados simulados em caso de erro (API indisponível ou tabelas em falta)
         updateRealtimeStatsFallback();
       }
     }
@@ -398,7 +387,9 @@
 
       // Atualizar estatísticas em tempo real
       atualizarElemento('requests-per-minute', dadosSimulados.requisicoesPorMinuto.toLocaleString());
-      atualizarElemento('users-online', dadosSimulados.utilizadoresOnline.toLocaleString());
+      const u = dadosSimulados.utilizadoresOnline.toLocaleString();
+      atualizarElemento('users-online', u);
+      atualizarElemento('users-online-card', u);
       atualizarElemento('notifications-today', dadosSimulados.notificacoesHoje.toLocaleString());
 
       // Atualizar métricas de performance
@@ -573,8 +564,10 @@
 
         // Atualizar métricas com dados reais
         if (usersData.status === "ok") {
-          atualizarElemento('users-online', usersData.total);
-          atualizarElemento('active-users-value', usersData.total);
+          const uTotal = usersData.total;
+          atualizarElemento('users-online', uTotal);
+          atualizarElemento('users-online-card', uTotal);
+          atualizarElemento('active-users-value', uTotal);
           atualizarElemento('active-users-trend', `+${usersData.growth || 8.2}% vs mês anterior`);
         }
 
@@ -648,12 +641,14 @@
     function atualizarComponentesSistema(componentes) {
       if (componentes && componentes.length > 0) {
         componentes.forEach(componente => {
-          const card = document.querySelector(`[data-component="${componente.nome}"]`);
+          const nome = (componente.Nome || componente.nome || '').toLowerCase().replace(/\s+/g, '-').replace(/ç/g, 'c');
+          const card = document.querySelector(`[data-component="${nome}"]`);
           if (card) {
             const statusBadge = card.querySelector('.status-badge');
             if (statusBadge) {
-              statusBadge.textContent = componente.status;
-              statusBadge.className = `status-badge ${componente.status.toLowerCase()}`;
+              const status = (componente.Status || componente.status || 'operational').toLowerCase();
+              statusBadge.textContent = status === 'operational' ? 'Operacional' : status === 'degraded' ? 'Degradado' : 'Indisponível';
+              statusBadge.className = `status-badge ${status}`;
             }
 
             // Atualizar detalhes específicos do componente
@@ -718,8 +713,10 @@
           // Usuários Ativos (atualizar em tempo real)
           if (metricas.UtilizadoresAtivos !== undefined) {
             const totalUsuarios = metricas.UtilizadoresAtivos;
-            atualizarElemento('active-users-value', totalUsuarios.toLocaleString('pt-BR'));
-            atualizarElemento('users-online', totalUsuarios.toLocaleString('pt-BR'));
+            const uStr = totalUsuarios.toLocaleString('pt-BR');
+            atualizarElemento('active-users-value', uStr);
+            atualizarElemento('users-online', uStr);
+            atualizarElemento('users-online-card', uStr);
 
             // Calcular crescimento (comparar com mês anterior - usar valor fixo por enquanto)
             const crescimentoUsuarios = ((totalUsuarios - 12847) / 12847 * 100).toFixed(2);
@@ -842,19 +839,15 @@
     /* Esconder scrollbar da área de conteúdo principal (main.content) */
     main.content {
       scrollbar-width: none !important;
-      /* Firefox */
       -ms-overflow-style: none !important;
-      /* IE e Edge */
     }
 
     main.content::-webkit-scrollbar {
       display: none !important;
-      /* Chrome, Safari, Opera */
       width: 0 !important;
       background: transparent !important;
     }
 
-    /* Manter funcionalidade de scroll */
     main.content {
       overflow-y: auto !important;
       overflow-x: hidden !important;
