@@ -3,8 +3,8 @@
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
   <title>Histórico de Incidentes | PromoPing Docs</title>
   <link rel="stylesheet" href="docs/styles.css">
@@ -82,7 +82,8 @@
                 <span class="copy-dropdown-item-title">View as Markdown</span>
                 <span class="copy-dropdown-item-desc">View this page as plain text</span>
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-dropdown-external">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="copy-dropdown-external">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <line x1="10" y1="14" x2="21" y2="3"></line>
@@ -100,14 +101,10 @@
 
       <!-- Incident Status Summary -->
       <div class="incident-summary">
-        <h3>Estado Atual do Sistema</h3>
-        <div class="status-overview">
-          <div class="status-item operational">
-            <span class="status-indicator"></span>
-            <span class="status-text">Todos os sistemas operacionais</span>
-          </div>
-          <div class="status-item">
-            <span class="status-text">Última atualização: <span id="last-update">Carregando...</span></span>
+        <div class="status-overview-compact">
+          <div class="status-overview-text">
+            <strong>Todos os sistemas operacionais</strong>
+            <span class="status-overview-meta">Última atualização: <span id="last-update">Carregando...</span></span>
           </div>
         </div>
       </div>
@@ -126,8 +123,8 @@
               <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
             </div>
           </div>
+          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
         </div>
-
         <div class="incident-card">
           <div class="incident-date">8 Jan 2024</div>
           <div class="incident-content">
@@ -138,8 +135,8 @@
               <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
             </div>
           </div>
+          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
         </div>
-
       </div>
 
       <!-- System Updates -->
@@ -171,7 +168,6 @@
   <div id="footer-placeholder"></div>
 
   <script>
-    // ================== CARREGAR INCIDENTES DA API ==================
     async function carregarIncidentes() {
       try {
         // Usar URL completa do servidor Node.js
@@ -200,7 +196,6 @@
       }
     }
 
-    // ================== ATUALIZAR INCIDENTES ==================
     function atualizarIncidentes(incidentes) {
       const container = document.getElementById('incidents-container');
       if (!container) return;
@@ -214,7 +209,6 @@
       });
     }
 
-    // ================== CRIAR CARTÃO DE INCIDENTE ==================
     function criarIncidenteCard(incidente) {
       const card = document.createElement('div');
       card.className = 'incident-card';
@@ -228,8 +222,10 @@
 
       // Mapear Estado do banco para status (Estado pode ser 'Resolvido', 'Em Andamento', etc.)
       const estado = incidente.Estado || incidente.Status || 'Desconhecido';
-      const statusClass = estado.toLowerCase().includes('resolvido') || estado.toLowerCase() === 'resolved' ? 'status-resolved' : 'status-investigating';
-      const statusText = estado.toLowerCase().includes('resolvido') || estado.toLowerCase() === 'resolved' ? 'Resolvido' : 'Em Andamento';
+      const e = estado.toLowerCase();
+      const statusClass = e.includes('resolvido') || e === 'resolved' ? 'status-resolved' : 'status-investigating';
+      const statusText = e.includes('resolvido') || e === 'resolved' ? 'Resolvido' : 'Em Andamento';
+      const dotClass = e.includes('resolvido') || e === 'resolved' ? 'resolved' : (e.includes('indisponível') || e.includes('outage') ? 'outage' : 'investigating');
 
       card.innerHTML = `
         <div class="incident-date">${formatarData(dataInicio)}</div>
@@ -242,12 +238,12 @@
             ${incidente.Descricao ? `<p><strong>Descrição:</strong> ${incidente.Descricao}</p>` : ''}
           </div>
         </div>
+        <span class="card-status-dot ${dotClass}" aria-label="${statusText}"></span>
       `;
 
       return card;
     }
 
-    // ================== FUNÇÕES AUXILIARES ==================
     function formatarData(data) {
       return data.toLocaleDateString('pt-PT', {
         day: '2-digit',
@@ -271,7 +267,6 @@
       }
     }
 
-    // ================== ATUALIZAR TIMESTAMP ==================
     function atualizarTimestamp() {
       const now = new Date();
       const lastUpdate = document.getElementById('last-update');
@@ -295,7 +290,6 @@
       }
     }
 
-    // ================== CARREGAR ATUALIZAÇÕES DA API ==================
     async function carregarAtualizacoes() {
       try {
         const apiUrl = '/api/atualizacoes';
@@ -326,7 +320,6 @@
       }
     }
 
-    // ================== ATUALIZAR ATUALIZAÇÕES ==================
     function atualizarAtualizacoes(atualizacoes) {
       const container = document.getElementById('updates-container');
       if (!container) return;
@@ -339,17 +332,17 @@
       });
     }
 
-    // ================== CRIAR CARTÃO DE ATUALIZAÇÃO ==================
     function criarAtualizacaoCard(atualizacao) {
       const card = document.createElement('div');
       card.className = 'update-card';
 
-      const dataPublicacao = new Date(atualizacao.DataPublicacao);
-      const tipo = atualizacao.Tipo || 'Melhoria';
-      const status = atualizacao.Status || 'Implementado';
-      const statusClass = status === 'Implementado' ? 'status-completed' :
-        status === 'Em Desenvolvimento' ? 'status-investigating' :
-          'status-planned';
+      const dataRef = atualizacao.DataCriacao || atualizacao.DataPublicacao;
+      const dataPublicacao = dataRef ? new Date(dataRef) : new Date();
+      const tipoRaw = atualizacao.Tipo || 'feature';
+      const tipoLabels = { feature: 'Funcionalidade', fix: 'Correção', improvement: 'Melhoria', maintenance: 'Manutenção' };
+      const tipo = tipoLabels[tipoRaw] || tipoRaw;
+      const status = atualizacao.Status;
+      const temStatus = status !== undefined && status !== null && status !== '';
 
       card.innerHTML = `
         <div class="update-date">${formatarData(dataPublicacao)}</div>
@@ -358,15 +351,15 @@
           <div class="update-details">
             <p><strong>Tipo:</strong> ${tipo}</p>
             <p><strong>Descrição:</strong> ${atualizacao.Descricao || 'Sem descrição'}</p>
-            <p><strong>Status:</strong> <span class="${statusClass}">${status}</span></p>
+            ${temStatus ? `<p><strong>Status:</strong> <span class="status-completed">${status}</span></p>` : ''}
           </div>
         </div>
+        <span class="card-status-dot resolved" aria-label="Publicado"></span>
       `;
 
       return card;
     }
 
-    // ================== LISTENERS PARA ATUALIZAÇÃO ==================
     // Escutar evento de storage para atualizar quando houver mudanças
     window.addEventListener('storage', function (e) {
       if (e.key === 'incidentes_updated') {
@@ -394,7 +387,6 @@
       atualizarTimestamp();
     });
 
-    // ================== INICIALIZAÇÃO ==================
     document.addEventListener('DOMContentLoaded', function () {
       // Carregar incidentes da API
       carregarIncidentes();
