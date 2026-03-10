@@ -73,7 +73,7 @@
         <main class="dashboard-main">
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
                 <div class="section-header">
-                    <h1>Utilizadores Ativos</h1>
+                    <h1>Clientes</h1>
                     <div style="display: flex; gap: 0.5rem;">
                         <button id="exportPDFBtn" class="refresh-button" style="background: #dc2626; color: white;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
@@ -85,6 +85,13 @@
                         </button>
                         <button id="refreshUsersBtn" class="refresh-button">Atualizar</button>
                     </div>
+                </div>
+                <div class="tabs-container filter-tabs" role="tablist">
+                    <button type="button" class="tab-button active" data-filter="todos">Todos</button>
+                    <button type="button" class="tab-button" data-filter="principais">Principais clientes</button>
+                    <button type="button" class="tab-button" data-filter="primeira-vez">Clientes pela primeira vez</button>
+                    <button type="button" class="tab-button" data-filter="recorrentes">Clientes recorrentes</button>
+                    <button type="button" class="tab-button" data-filter="recentes">Clientes recentes</button>
                 </div>
                 <div id="usersList" class="data-table-container">
                     <div class="loading-state">Carregando utilizadores...</div>
@@ -137,6 +144,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/utilizadores.js"></script>
 </body>
