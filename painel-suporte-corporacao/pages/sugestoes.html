@@ -83,6 +83,65 @@
         </main>
     </div>
 
+    <!-- Modal para Ver Sugestão (só leitura) -->
+    <div id="sugestaoViewModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="sugestaoViewModalTitle">Sugestão</h2>
+                <button class="modal-close" id="closeSugestaoViewModal">&times;</button>
+            </div>
+            <div id="sugestaoViewContent" class="sugestao-view-content">
+                <div class="form-group">
+                    <span class="form-label">Título</span>
+                    <p id="sugestaoViewTitulo" class="sugestao-view-text"></p>
+                </div>
+                <div class="form-group">
+                    <span class="form-label">Descrição</span>
+                    <p id="sugestaoViewDescricao" class="sugestao-view-text sugestao-view-desc"></p>
+                </div>
+                <div class="form-group sugestao-view-meta">
+                    <span><strong>Plataforma:</strong> <span id="sugestaoViewPlataforma"></span></span>
+                    <span><strong>Prioridade:</strong> <span id="sugestaoViewPrioridade"></span></span>
+                    <span><strong>Status:</strong> <span id="sugestaoViewStatus" class="bug-status"></span></span>
+                    <span><strong>Criado:</strong> <span id="sugestaoViewData"></span></span>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="refresh-button" id="sugestaoViewAtualizarEstadoBtn">Atualizar estado</button>
+                    <button type="button" class="modal-submit-button" id="sugestaoViewEditarBtn">Editar</button>
+                    <button type="button" class="modal-cancel-button" id="closeSugestaoViewBtn">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Atualizar Estado da Sugestão (como tabelas/incidentes) -->
+    <div id="sugestaoStatusModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Atualizar estado da sugestão</h2>
+                <button class="modal-close" id="closeSugestaoStatusModal">&times;</button>
+            </div>
+            <form id="sugestaoStatusForm">
+                <input type="hidden" id="sugestaoStatusId" value="">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="sugestaoStatusSelect" class="form-input" required>
+                        <option value="pendente">Pendente</option>
+                        <option value="em-analise">Em Análise</option>
+                        <option value="aprovada">Aprovada</option>
+                        <option value="em-desenvolvimento">Em Desenvolvimento</option>
+                        <option value="implementada">Implementada</option>
+                        <option value="rejeitada">Rejeitada</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button">Guardar</button>
+                    <button type="button" class="modal-cancel-button" id="cancelSugestaoStatusBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal para Nova/Editar Sugestão -->
     <div id="sugestaoModal" class="modal-overlay">
         <div class="modal">
@@ -137,6 +196,7 @@
     </div>
 
     <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/sugestoes.js"></script>
 </body>
