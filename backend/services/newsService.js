@@ -171,14 +171,15 @@ class NewsService {
             const seenUrls = new Set();
 
             for (const article of articles) {
-                if (!article.url || seenUrls.has(article.url)) continue;
+                const title = article.title != null ? String(article.title).trim() : '';
+                if (!title || !article.url || seenUrls.has(article.url)) continue;
                 seenUrls.add(article.url);
 
                 const impactScore = this.calculateImpactScore(article, article.category || 'Geral');
                 
                 if (impactScore >= minImpactScore) {
                     filteredNews.push({
-                        title: article.title,
+                        title,
                         description: article.description,
                         url: article.url,
                         image: article.urlToImage,
@@ -314,10 +315,15 @@ class NewsService {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             `);
 
-            // Inserir ou atualizar cada notícia
+            // Inserir ou atualizar cada notícia (ignorar entradas sem título ou URL)
             for (const news of newsArray) {
+                const title = news.title != null && String(news.title).trim() !== '' ? String(news.title).trim() : null;
+                const url = news.url != null && String(news.url).trim() !== '' ? news.url : null;
+                if (!title || !url) {
+                    continue;
+                }
                 const publishedDate = news.publishedAt ? new Date(news.publishedAt) : new Date();
-                
+
                 await connection.execute(`
                     INSERT INTO blog_articles 
                         (Title, Description, Url, ImageUrl, Source, Category, ImpactScore, PublishedAt, IsVisible)
@@ -332,13 +338,13 @@ class NewsService {
                         PublishedAt = VALUES(PublishedAt),
                         UpdatedAt = CURRENT_TIMESTAMP
                 `, [
-                    news.title,
+                    title,
                     news.description || null,
-                    news.url,
+                    url,
                     news.image || null,
                     news.source || null,
                     news.category || 'Geral',
-                    news.impactScore || 0,
+                    news.impactScore ?? 0,
                     publishedDate
                 ]);
             }
