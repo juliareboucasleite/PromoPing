@@ -1,6 +1,5 @@
 /**
  * Perfil - PromoPing Admin
- * Gerenciamento de perfil do suporte
  */
 
 (function() {
@@ -18,290 +17,330 @@
     }
 
     async function fetchAuth(url, options = {}) {
-        try {
-            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(url) : `${API_BASE}${url}`;
-            const response = await fetch(safeUrl, {
-                ...options,
-                headers: {
-                    'Authorization': `Bearer ${TOKEN}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                }
-            });
-
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+        const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(url) : `${API_BASE}${url}`;
+        const response = await fetch(safeUrl, {
+            ...options,
+            headers: {
+                'Authorization': `Bearer ${TOKEN}`,
+                'Content-Type': 'application/json',
+                ...options.headers
             }
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);
-            }
-
-            return response;
-        } catch (error) {
-            console.error(`[PERFIL] Erro:`, error);
-            throw error;
+        });
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Resposta inválida do servidor (${response.status})`);
         }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);
+        }
+        return response;
     }
 
-    /**
-     * Carregar perfil do usuário
-     */
+    let userHasPassword = null;
+    let twoFAStatus = { enabled: false };
+
     async function loadProfile() {
         try {
             const response = await fetchAuth('/api/user/me');
             const data = await response.json();
+            const user = data.user || {};
 
             const nameInput = document.getElementById('profileName');
             const emailInput = document.getElementById('profileEmail');
-            const descriptionInput = document.getElementById('profileDescription');
-            const specialtyInput = document.getElementById('profileSpecialty');
-            const photoDiv = document.getElementById('profilePhoto');
-
-            if (data.user) {
-                if (nameInput) nameInput.value = data.user.Nome || data.user.nome || '';
-                if (emailInput) emailInput.value = data.user.Email || data.user.email || '';
+            const phoneDisplay = document.getElementById('profilePhoneDisplay');
+            if (nameInput) nameInput.value = user.Nome || user.nome || '';
+            if (emailInput) emailInput.value = user.Email || user.email || '';
+            if (phoneDisplay) {
+                const phone = user.Telefone || user.telefone || user.phone;
+                phoneDisplay.textContent = phone ? phone : '—';
             }
+            userHasPassword = null;
 
-            // Carregar dados extras do perfil (descrição, foto, especialidade) do localStorage
-            const profileData = localStorage.getItem('PROMOPING_PROFILE');
-            if (profileData) {
-                try {
-                    const profile = JSON.parse(profileData);
-                    if (descriptionInput) descriptionInput.value = profile.descricao || '';
-                    if (specialtyInput) specialtyInput.value = profile.especialidade || '';
-                    if (photoDiv && profile.foto) {
-                        photoDiv.innerHTML = '';
-                        photoDiv.style.display = 'block';
-                        const img = document.createElement('img');
-                        img.src = profile.foto;
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '50%';
-                        photoDiv.appendChild(img);
-                        // Atualizar visibilidade do botão de remover
-                        setTimeout(() => updateRemovePhotoButton(), 100);
-                    }
-                } catch (e) {
-                    console.error('[PERFIL] Erro ao parsear dados do perfil:', e);
-                }
-            }
+            await load2FAStatus();
         } catch (error) {
             console.error('[PERFIL] Erro ao carregar perfil:', error);
         }
     }
 
-    /**
-     * Salvar perfil
-     */
+    async function load2FAStatus() {
+        try {
+            const response = await fetchAuth('/api/user/2fa/status');
+            const data = await response.json();
+            twoFAStatus = data.twoFA || { enabled: false };
+            const statusEl = document.getElementById('twoFAStatusText');
+            const addBtn = document.getElementById('add2FABtn');
+            const disableBtn = document.getElementById('disable2FABtn');
+            if (statusEl) statusEl.textContent = twoFAStatus.enabled ? 'Ativo' : '';
+            if (addBtn) addBtn.style.display = twoFAStatus.enabled ? 'none' : 'inline-block';
+            if (disableBtn) disableBtn.style.display = twoFAStatus.enabled ? 'inline-block' : 'none';
+        } catch (e) {
+            twoFAStatus = { enabled: false };
+            const addBtn = document.getElementById('add2FABtn');
+            const disableBtn = document.getElementById('disable2FABtn');
+            if (addBtn) addBtn.style.display = 'inline-block';
+            if (disableBtn) disableBtn.style.display = 'none';
+        }
+    }
+
     async function saveProfile() {
         const nameInput = document.getElementById('profileName');
-        const descriptionInput = document.getElementById('profileDescription');
-        const specialtyInput = document.getElementById('profileSpecialty');
-        const photoDiv = document.getElementById('profilePhoto');
-
-        if (!nameInput || !descriptionInput) {
-            alert('Erro: Elementos do formulário não encontrados');
+        const emailInput = document.getElementById('profileEmail');
+        if (!nameInput || !emailInput) return;
+        const nome = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        if (!nome) {
+            showAlert('Por favor, preencha o nome');
             return;
         }
-
-        // Obter foto se houver imagem dentro do div
-        let fotoUrl = '';
-        if (photoDiv) {
-            const img = photoDiv.querySelector('img');
-            if (img) {
-                fotoUrl = img.src;
-            }
-        }
-
-        const profileData = {
-            nome: nameInput.value.trim(),
-            descricao: descriptionInput.value.trim(),
-            especialidade: specialtyInput ? specialtyInput.value.trim() : '',
-            foto: fotoUrl
-        };
-
-        if (!profileData.nome) {
-            alert('Por favor, preencha o nome');
-            return;
-        }
-
         try {
-            // Salvar no localStorage por enquanto (pode ser expandido para API depois)
-            localStorage.setItem('PROMOPING_PROFILE', JSON.stringify(profileData));
-
-            // Atualizar nome e email no servidor
-            try {
-                await fetchAuth('/api/user/profile', {
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        nome: profileData.nome,
-                        email: document.getElementById('profileEmail').value.trim()
-                    })
-                });
-            } catch (err) {
-                console.warn('[PERFIL] Erro ao atualizar perfil no servidor:', err);
-                // Continuar mesmo se falhar, pois os dados estão salvos localmente
-            }
-
-            alert('Perfil salvo com sucesso!');
+            await fetchAuth('/api/user/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ nome, email })
+            });
+            showAlert('Perfil guardado com sucesso.');
         } catch (error) {
             console.error('[PERFIL] Erro ao salvar perfil:', error);
-            alert(`Erro ao salvar perfil: ${error.message}`);
+            showAlert('Erro ao guardar perfil: ' + (error.message || 'Tente novamente.'));
         }
     }
 
-    /**
-     * Atualizar visibilidade do botão de remover foto
-     */
-    function updateRemovePhotoButton() {
-        const photoDiv = document.getElementById('profilePhoto');
-        const removePhotoBtn = document.getElementById('removePhotoBtn');
-
-        if (!photoDiv || !removePhotoBtn) return;
-
-        const hasImage = photoDiv.querySelector('img') !== null;
-        removePhotoBtn.style.display = hasImage ? 'inline-block' : 'none';
+    function openChangePasswordModal() {
+        userHasPassword = null;
+        document.getElementById('changePasswordModalTitle').textContent = 'Alterar senha';
+        document.getElementById('changePasswordCurrentWrap').style.display = 'block';
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        document.getElementById('changePasswordModal').classList.add('show');
     }
 
-    /**
-     * Remover foto
-     */
-    function removePhoto() {
-        const photoDiv = document.getElementById('profilePhoto');
-        const photoInput = document.getElementById('photoInput');
-
-        if (!photoDiv) return;
-
-        // Restaurar placeholder
-        photoDiv.innerHTML = 'PP';
-        photoDiv.style.display = 'flex';
-        photoDiv.style.alignItems = 'center';
-        photoDiv.style.justifyContent = 'center';
-        photoDiv.style.fontSize = '3rem';
-        photoDiv.style.fontWeight = '700';
-        photoDiv.style.color = '#ff9800';
-        photoDiv.style.background = '#232326';
-        photoDiv.style.border = '3px solid #ff9800';
-
-        // Limpar input de arquivo
-        if (photoInput) {
-            photoInput.value = '';
-        }
-
-        // Atualizar visibilidade do botão
-        updateRemovePhotoButton();
-
-        // Remover foto do localStorage
-        const profileData = localStorage.getItem('PROMOPING_PROFILE');
-        if (profileData) {
-            try {
-                const profile = JSON.parse(profileData);
-                profile.foto = '';
-                localStorage.setItem('PROMOPING_PROFILE', JSON.stringify(profile));
-            } catch (e) {
-                console.error('[PERFIL] Erro ao remover foto do localStorage:', e);
-            }
-        }
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('show');
     }
 
-    /**
-     * Alterar foto
-     */
-    function setupPhotoUpload() {
-        const photoInput = document.getElementById('photoInput');
-        const changePhotoBtn = document.getElementById('changePhotoBtn');
-        const removePhotoBtn = document.getElementById('removePhotoBtn');
-        const photoDiv = document.getElementById('profilePhoto');
-
-        if (!photoInput || !changePhotoBtn || !photoDiv) return;
-
-        changePhotoBtn.addEventListener('click', () => {
-            photoInput.click();
-        });
-
-        if (removePhotoBtn) {
-            removePhotoBtn.addEventListener('click', removePhoto);
+    async function submitChangePassword(e) {
+        e.preventDefault();
+        const current = document.getElementById('currentPassword').value;
+        const newP = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        if (newP.length < 6) {
+            showAlert('A nova senha deve ter pelo menos 6 caracteres.');
+            return;
         }
-
-        photoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Validar tipo de arquivo
-            if (!file.type.startsWith('image/')) {
-                alert('Por favor, selecione uma imagem válida');
+        if (newP !== confirm) {
+            showAlert('A confirmação da senha não coincide.');
+            return;
+        }
+        try {
+            const body = userHasPassword === false
+                ? { password: newP }
+                : { currentPassword: current, newPassword: newP };
+            const endpoint = userHasPassword === false ? '/api/user/set-password' : '/api/user/change-password';
+            await fetchAuth(endpoint, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            showAlert('Senha guardada com sucesso.');
+            closeChangePasswordModal();
+        } catch (err) {
+            if (err.message && err.message.includes('senha cadastrada')) {
+                userHasPassword = false;
+                document.getElementById('changePasswordModalTitle').textContent = 'Configurar senha';
+                document.getElementById('changePasswordCurrentWrap').style.display = 'none';
+                document.getElementById('currentPassword').value = '';
                 return;
             }
+            showAlert(err.message || 'Erro ao alterar senha.');
+        }
+    }
 
-            // Validar tamanho (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('A imagem deve ter no máximo 5MB');
-                return;
+    function openPhoneModal() {
+        const phoneDisplay = document.getElementById('profilePhoneDisplay');
+        const current = phoneDisplay ? phoneDisplay.textContent : '';
+        document.getElementById('phoneInput').value = current === '—' ? '' : current;
+        document.getElementById('phoneModal').classList.add('show');
+    }
+
+    function closePhoneModal() {
+        document.getElementById('phoneModal').classList.remove('show');
+    }
+
+    async function submitPhone(e) {
+        e.preventDefault();
+        const telefone = document.getElementById('phoneInput').value.trim();
+        try {
+            await fetchAuth('/api/user/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ telefone: telefone || null })
+            });
+            const el = document.getElementById('profilePhoneDisplay');
+            if (el) el.textContent = telefone || '—';
+            showAlert('Telefone guardado.');
+            closePhoneModal();
+        } catch (err) {
+            showAlert(err.message || 'Erro ao guardar telefone.');
+        }
+    }
+
+    
+    function connectGoogle() {
+        const path = window.location.pathname || '/painel-suporte-corporacao/pages/perfil.html';
+        const base = (window.APIUtils ? window.APIUtils.buildSafeUrl('/api/auth/google') : `${API_BASE}/api/auth/google`);
+        const url = base + '?returnTo=' + encodeURIComponent(path);
+        window.location.href = url;
+    }
+
+    let twoFASetupData = null;
+
+    function open2FAModal() {
+        twoFASetupData = null;
+        document.getElementById('twoFAModalTitle').textContent = 'Autenticação de duas etapas';
+        document.getElementById('twoFASetupStep1').style.display = 'block';
+        document.getElementById('twoFASetupStep2').style.display = 'none';
+        document.getElementById('twoFAQRWrap').innerHTML = '';
+        document.getElementById('twoFAQRWrap').style.display = 'none';
+        document.getElementById('twoFAEmailSent').style.display = 'none';
+        document.getElementById('twoFABackupCodes').textContent = '';
+        document.getElementById('twoFACodeInput').value = '';
+        document.getElementById('twoFAModal').classList.add('show');
+    }
+
+    function close2FAModal() {
+        document.getElementById('twoFAModal').classList.remove('show');
+    }
+
+    async function start2FASetup(method) {
+        try {
+            const response = await fetchAuth('/api/user/2fa/setup', {
+                method: 'POST',
+                body: JSON.stringify({ method })
+            });
+            const data = await response.json();
+            twoFASetupData = data;
+            document.getElementById('twoFASetupStep1').style.display = 'none';
+            document.getElementById('twoFASetupStep2').style.display = 'block';
+            const qrWrap = document.getElementById('twoFAQRWrap');
+            const emailSent = document.getElementById('twoFAEmailSent');
+            const backupEl = document.getElementById('twoFABackupCodes');
+            if (method === 'totp' && data.otpauthUrl) {
+                qrWrap.style.display = 'block';
+                qrWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(data.otpauthUrl) + '" alt="QR Code" style="max-width: 200px;">';
+                backupEl.textContent = 'Códigos de backup (guarde em segurança): ' + (data.backupCodes ? data.backupCodes.join(', ') : '');
+            } else {
+                qrWrap.style.display = 'none';
+                emailSent.style.display = 'block';
+                backupEl.textContent = 'Códigos de backup: ' + (data.backupCodes ? data.backupCodes.join(', ') : '');
             }
+        } catch (err) {
+            showAlert(err.message || 'Erro ao iniciar 2FA.');
+        }
+    }
 
-            // Ler arquivo e exibir preview
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                // Criar elemento img dentro do div
-                photoDiv.innerHTML = '';
-                photoDiv.style.display = 'block';
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '50%';
-                photoDiv.appendChild(img);
+    async function verify2FASetup() {
+        const code = document.getElementById('twoFACodeInput').value.trim();
+        if (!code) {
+            showAlert('Introduza o código de verificação.');
+            return;
+        }
+        try {
+            await fetchAuth('/api/user/2fa/verify-setup', {
+                method: 'POST',
+                body: JSON.stringify({ code })
+            });
+            showAlert('2FA ativado com sucesso.');
+            close2FAModal();
+            load2FAStatus();
+        } catch (err) {
+            showAlert(err.message || 'Código inválido.');
+        }
+    }
 
-                // Mostrar botão de remover
-                updateRemovePhotoButton();
-            };
-            reader.readAsDataURL(file);
-        });
+    function openDisable2FAModal() {
+        document.getElementById('disable2FACode').value = '';
+        document.getElementById('disable2FAModal').classList.add('show');
+    }
 
-        // Verificar se já existe foto ao carregar
-        updateRemovePhotoButton();
+    function closeDisable2FAModal() {
+        document.getElementById('disable2FAModal').classList.remove('show');
+    }
+
+    async function submitDisable2FA(e) {
+        e.preventDefault();
+        const code = document.getElementById('disable2FACode').value.trim();
+        if (!code) {
+            showAlert('Introduza o código atual.');
+            return;
+        }
+        try {
+            await fetchAuth('/api/user/2fa/disable', {
+                method: 'POST',
+                body: JSON.stringify({ code })
+            });
+            showAlert('2FA desativado.');
+            closeDisable2FAModal();
+            load2FAStatus();
+        } catch (err) {
+            showAlert(err.message || 'Código inválido.');
+        }
     }
 
     function init() {
         if (!checkAuth()) return;
 
         const profileForm = document.getElementById('profileForm');
-        const logoutBtn = document.getElementById('logoutBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-        setupPhotoUpload();
-
-        if (profileForm) {
-            profileForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveProfile();
+        profileForm && profileForm.addEventListener('submit', (e) => { e.preventDefault(); saveProfile(); });
+        cancelBtn && cancelBtn.addEventListener('click', () => loadProfile());
+        logoutBtn && logoutBtn.addEventListener('click', () => {
+            showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
+                localStorage.removeItem('PROMOPING_TOKEN');
+                localStorage.removeItem('PROMOPING_USER');
+                window.location.href = 'login.html';
             });
-        }
+        });
 
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                loadProfile(); // Recarregar dados originais
-            });
-        }
+        // Alterar senha
+        document.getElementById('changePasswordBtn')?.addEventListener('click', openChangePasswordModal);
+        document.getElementById('closeChangePasswordModal')?.addEventListener('click', closeChangePasswordModal);
+        document.getElementById('cancelChangePasswordBtn')?.addEventListener('click', closeChangePasswordModal);
+        document.getElementById('changePasswordForm')?.addEventListener('submit', submitChangePassword);
 
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
-                    localStorage.removeItem('PROMOPING_TOKEN');
-                    localStorage.removeItem('PROMOPING_USER');
-                    window.location.href = 'login.html';
-                }
-            });
-        }
+        // Telefone
+        document.getElementById('addPhoneBtn')?.addEventListener('click', openPhoneModal);
+        document.getElementById('closePhoneModal')?.addEventListener('click', closePhoneModal);
+        document.getElementById('cancelPhoneBtn')?.addEventListener('click', closePhoneModal);
+        document.getElementById('phoneForm')?.addEventListener('submit', submitPhone);
+
+        // Google
+        document.getElementById('connectGoogleBtn')?.addEventListener('click', connectGoogle);
+
+        // E-mail de backup e Chaves: em breve
+        document.getElementById('addBackupEmailBtn')?.addEventListener('click', () => showAlert('Disponível em breve.', 'Informação'));
+        document.getElementById('addAccessKeyBtn')?.addEventListener('click', () => showAlert('Disponível em breve.', 'Informação'));
+
+        // 2FA
+        document.getElementById('add2FABtn')?.addEventListener('click', open2FAModal);
+        document.getElementById('disable2FABtn')?.addEventListener('click', openDisable2FAModal);
+        document.getElementById('twoFAMethodTotp')?.addEventListener('click', () => start2FASetup('totp'));
+        document.getElementById('twoFAMethodEmail')?.addEventListener('click', () => start2FASetup('email'));
+        document.getElementById('twoFAVerifyBtn')?.addEventListener('click', verify2FASetup);
+        document.getElementById('twoFACancelSetupBtn')?.addEventListener('click', close2FAModal);
+        document.getElementById('close2FAModal')?.addEventListener('click', close2FAModal);
+        document.getElementById('disable2FAForm')?.addEventListener('submit', submitDisable2FA);
+        document.getElementById('closeDisable2FAModal')?.addEventListener('click', closeDisable2FAModal);
+        document.getElementById('cancelDisable2FABtn')?.addEventListener('click', closeDisable2FAModal);
+
+        [ 'changePasswordModal', 'phoneModal', 'twoFAModal', 'disable2FAModal' ].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', function (e) { if (e.target === el) { el.classList.remove('show'); } });
+        });
 
         loadProfile();
-        console.log('[PERFIL] Página de perfil inicializada');
+        console.log('Página de perfil inicializada');
     }
 
     if (document.readyState === 'loading') {
