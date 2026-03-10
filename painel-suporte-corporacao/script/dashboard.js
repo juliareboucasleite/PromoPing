@@ -393,7 +393,7 @@
             bugsList.innerHTML = data.bugs.map(bug => `
                 <div class="bug-item">
                     <div class="bug-header">
-                        <h3 class="bug-title">${escapeHtml(bug.Titulo || 'Sem título')}</h3>
+                        <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(bug.Titulo)) || bug.Titulo || 'Sem título')}</h3>
                         <span class="bug-status ${bug.Status || 'open'}">${bug.Status || 'open'}</span>
                     </div>
                     <p class="bug-description">${escapeHtml(bug.Descricao || 'Sem descrição')}</p>
@@ -421,7 +421,7 @@
         const bugStatus = document.getElementById('bugStatus');
 
         if (!bugTitle || !bugDescription || !bugType || !bugPriority || !bugStatus) {
-            alert('Erro: Elementos do formulário não encontrados');
+            showAlert('Erro: Elementos do formulário não encontrados');
             return;
         }
 
@@ -434,7 +434,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            alert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha título e descrição');
             return;
         }
 
@@ -450,12 +450,12 @@
                 throw new Error(data.error || 'Erro ao criar bug');
             }
 
-            alert('Bug/Projeto criado com sucesso!');
+            showAlert('Bug/Projeto criado com sucesso!');
             closeBugModal();
             await loadBugs(); // Recarregar lista
         } catch (error) {
             console.error('[DASHBOARD] Erro ao criar bug:', error);
-            alert(`Erro ao criar bug: ${error.message}`);
+            showAlert(`Erro ao criar bug: ${error.message}`);
         }
     }
 
@@ -518,10 +518,11 @@
             return;
         }
 
+        const stripTitle = (s) => (window.APIUtils && window.APIUtils.stripBracketPrefix(s)) || (s || '');
         threadsList.innerHTML = threads.map(thread => `
             <div class="thread-item ${currentThreadId === thread.id ? 'active' : ''}" data-thread-id="${thread.id}">
                 <h4>${escapeHtml(thread.userName || 'Usuário Desconhecido')}</h4>
-                <p>${escapeHtml(thread.message)}</p>
+                <p>${escapeHtml(stripTitle(thread.message))}</p>
                 <div class="thread-meta">
                     <span>${formatDate(thread.createdAt)}</span>
                     <span>${thread.replyCount > 0 ? `${thread.replyCount} respostas` : 'Nova'}</span>
@@ -590,10 +591,11 @@
             if (chatHeader) chatHeader.style.display = 'flex';
             if (chatInput) chatInput.style.display = 'flex';
 
+            const stripTitle = (s) => (window.APIUtils && window.APIUtils.stripBracketPrefix(s)) || (s || '');
             chatMessages.innerHTML = messages.map(msg => `
                 <div class="message-bubble ${msg.senderType}">
                     <div class="message-sender">${msg.senderType === 'user' ? escapeHtml(msg.userName || 'Usuário') : 'Suporte'}</div>
-                    <div class="message-text">${escapeHtml(msg.message)}</div>
+                    <div class="message-text">${escapeHtml(stripTitle(msg.message))}</div>
                     <div class="message-time">${formatDate(msg.createdAt)}</div>
                 </div>
             `).join('');
@@ -641,7 +643,7 @@
             await loadThreads();
         } catch (error) {
             console.error('[DASHBOARD] Erro ao enviar mensagem:', error);
-            alert(`Erro ao enviar mensagem: ${error.message}`);
+            showAlert(`Erro ao enviar mensagem: ${error.message}`);
         } finally {
             sendBtn.disabled = false;
             sendBtn.textContent = 'Enviar';
@@ -719,11 +721,11 @@
 
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
 
