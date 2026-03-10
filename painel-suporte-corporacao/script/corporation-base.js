@@ -33,7 +33,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.addEventListener('click', () => {
-            if (confirm('Terminar sessão?')) window.CorporationAuth.logout();
+            showConfirm('Terminar sessão?', 'Sair', () => window.CorporationAuth.logout());
         });
     });
 })();
