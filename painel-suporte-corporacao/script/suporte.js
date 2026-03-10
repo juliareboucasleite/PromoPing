@@ -100,16 +100,25 @@
             return;
         }
 
-        threadsList.innerHTML = threads.map(thread => `
+        const truncate = (str, max) => (str && str.length > max ? str.slice(0, max).trim() + '…' : (str || ''));
+        const stripTitle = (s) => (window.APIUtils && window.APIUtils.stripBracketPrefix(s)) || (s || '');
+        threadsList.innerHTML = threads.map(thread => {
+            const ref = thread.ReferenciaID ? String(thread.ReferenciaID) : '';
+            const preview = truncate(stripTitle(thread.message), 42);
+            return `
             <div class="thread-item ${currentThreadId === thread.id ? 'active' : ''}" data-thread-id="${thread.id}">
-                <h4>${escapeHtml(thread.userName || 'Usuário Desconhecido')}</h4>
-                <p>${escapeHtml(thread.message)}</p>
+                <div class="thread-item-header">
+                    <span class="thread-user-name">${escapeHtml(thread.userName || 'Usuário')}</span>
+                    ${ref ? `<span class="thread-ref">${escapeHtml(ref)}</span>` : ''}
+                </div>
+                ${preview ? `<div class="thread-preview">${escapeHtml(preview)}</div>` : ''}
                 <div class="thread-meta">
                     <span>${formatDate(thread.createdAt)}</span>
-                    <span>${thread.replyCount > 0 ? `${thread.replyCount} respostas` : 'Nova'}</span>
+                    <span class="thread-replies">${thread.replyCount > 0 ? `${thread.replyCount} respostas` : 'Nova'}</span>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         document.querySelectorAll('.thread-item').forEach(item => {
             item.addEventListener('click', () => {
@@ -187,9 +196,10 @@
                 }
             }
 
+            const stripTitle = (s) => (window.APIUtils && window.APIUtils.stripBracketPrefix(s)) || (s || '');
             chatMessages.innerHTML = messages.map(msg => {
-                // Extrair URLs de imagens/GIFs da mensagem
-                let messageText = msg.message || '';
+                // Extrair URLs de imagens/GIFs da mensagem; remover prefixo [Discord]/[Console] e deixar só o título
+                let messageText = stripTitle(msg.message || '');
                 const imageMatches = messageText.match(/\[(?:GIF|Imagem):\s*([^\]]+)\]/g);
                 let imagesHtml = '';
                 
@@ -237,8 +247,6 @@
 
     async function sendMessage() {
         const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
-
         if (!messageInput || !currentThreadId) return;
 
         const message = messageInput.value.trim();
@@ -248,10 +256,8 @@
 
         // Desabilitar input enquanto envia
         messageInput.disabled = true;
-        if (sendBtn) sendBtn.disabled = true;
         const originalPlaceholder = messageInput.placeholder;
-        messageInput.placeholder = 'Enviando...';
-        if (sendBtn) sendBtn.textContent = 'Enviando...';
+        messageInput.placeholder = 'A enviar...';
 
         try {
             let messageText = message;
@@ -295,181 +301,11 @@
             await loadThreads();
         } catch (error) {
             console.error('[SUPORTE] Erro ao enviar mensagem:', error);
-            alert(`Erro ao enviar mensagem: ${error.message}`);
+            showAlert(`Erro ao enviar mensagem: ${error.message}`);
         } finally {
             messageInput.disabled = false;
-            if (sendBtn) sendBtn.disabled = false;
             messageInput.placeholder = originalPlaceholder;
-            if (sendBtn) sendBtn.textContent = 'Enviar';
         }
-    }
-
-    /**
-     * Emojis populares
-     */
-    const popularEmojis = [
-        '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-        '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-        '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-        '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-        '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-        '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-        '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
-        '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-        '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧',
-        '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-        '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
-        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-        '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘',
-        '💝', '💟', '☮️', '✝️', '☪️', '🕉', '☸️', '✡️',
-        '👍', '👎', '👊', '✊', '🤛', '🤜', '🤞', '✌️',
-        '🤟', '🤘', '👌', '🤌', '🤏', '👈', '👉', '👆',
-        '👇', '☝️', '👋', '🤚', '🖐', '✋', '🖖', '👏',
-        '🙌', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿'
-    ];
-
-    /**
-     * Inicializa o seletor de emojis
-     */
-    function initEmojiPicker() {
-        const emojiBtn = document.getElementById('emojiBtn');
-        const emojiPicker = document.getElementById('emojiPicker');
-        const messageInput = document.getElementById('messageInput');
-
-        if (!emojiBtn || !emojiPicker || !messageInput) return;
-
-        // Criar grid de emojis
-        const emojiGrid = document.createElement('div');
-        emojiGrid.className = 'emoji-picker-grid';
-        emojiGrid.innerHTML = popularEmojis.map(emoji => 
-            `<div class="emoji-item" data-emoji="${emoji}">${emoji}</div>`
-        ).join('');
-        emojiPicker.appendChild(emojiGrid);
-
-        // Toggle do picker
-        emojiBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isVisible = emojiPicker.style.display !== 'none';
-            emojiPicker.style.display = isVisible ? 'none' : 'block';
-            const gifPicker = document.getElementById('gifPicker');
-            if (gifPicker) gifPicker.style.display = 'none';
-        });
-
-        // Selecionar emoji
-        emojiGrid.addEventListener('click', (e) => {
-            const emojiItem = e.target.closest('.emoji-item');
-            if (emojiItem) {
-                const emoji = emojiItem.dataset.emoji;
-                messageInput.value += emoji;
-                messageInput.focus();
-                emojiPicker.style.display = 'none';
-            }
-        });
-
-        // Fechar ao clicar fora
-        document.addEventListener('click', (e) => {
-            if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-                emojiPicker.style.display = 'none';
-            }
-        });
-    }
-
-    /**
-     * Busca GIFs usando Giphy API (pode ser substituído por outra API)
-     */
-    async function searchGifs(query = '') {
-        const gifResults = document.getElementById('gifResults');
-        if (!gifResults) return;
-
-        gifResults.innerHTML = '<div class="loading-state">Carregando GIFs...</div>';
-
-        try {
-            // Usando Giphy API pública (pode ser substituído por uma chave própria)
-            const apiKey = 'dc6zaTOxFJmzC'; // Chave pública do Giphy (limitada)
-            const url = query 
-                ? `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(query)}&limit=20`
-                : `https://api.giphy.com/v1/gifs/trending?api_key=${apiKey}&limit=20`;
-
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.data && data.data.length > 0) {
-                gifResults.innerHTML = data.data.map(gif => `
-                    <div class="gif-item" data-gif-url="${gif.images.fixed_height.url}">
-                        <img src="${gif.images.fixed_height_small.url}" alt="${gif.title || 'GIF'}" loading="lazy">
-                    </div>
-                `).join('');
-
-                // Adicionar event listeners
-                gifResults.querySelectorAll('.gif-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const gifUrl = item.dataset.gifUrl;
-                        attachedFiles.push({
-                            type: 'gif',
-                            url: gifUrl,
-                            name: 'gif.gif'
-                        });
-                        updateAttachedFilesPreview();
-                        document.getElementById('gifPicker').style.display = 'none';
-                    });
-                });
-            } else {
-                gifResults.innerHTML = '<div class="loading-state">Nenhum GIF encontrado</div>';
-            }
-        } catch (error) {
-            console.error('[SUPORTE] Erro ao buscar GIFs:', error);
-            gifResults.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Erro ao carregar GIFs</div>';
-        }
-    }
-
-    /**
-     * Inicializa o seletor de GIFs
-     */
-    function initGifPicker() {
-        const gifBtn = document.getElementById('gifBtn');
-        const gifPicker = document.getElementById('gifPicker');
-        const gifSearch = document.getElementById('gifSearch');
-        const closeGifPicker = document.getElementById('closeGifPicker');
-        const emojiPicker = document.getElementById('emojiPicker');
-
-        if (!gifBtn || !gifPicker) return;
-
-        // Toggle do picker
-        gifBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isVisible = gifPicker.style.display !== 'none';
-            gifPicker.style.display = isVisible ? 'none' : 'block';
-            if (emojiPicker) emojiPicker.style.display = 'none';
-            if (!isVisible) {
-                searchGifs();
-            }
-        });
-
-        // Fechar picker
-        if (closeGifPicker) {
-            closeGifPicker.addEventListener('click', () => {
-                gifPicker.style.display = 'none';
-            });
-        }
-
-        // Buscar GIFs
-        if (gifSearch) {
-            let searchTimeout;
-            gifSearch.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const query = e.target.value.trim();
-                searchTimeout = setTimeout(() => {
-                    searchGifs(query);
-                }, 500);
-            });
-        }
-
-        // Fechar ao clicar fora
-        document.addEventListener('click', (e) => {
-            if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
-                gifPicker.style.display = 'none';
-            }
-        });
     }
 
     /**
@@ -501,7 +337,7 @@
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    alert('Apenas imagens e vídeos são suportados');
+                    showAlert('Apenas imagens e vídeos são suportados');
                 }
             });
             fileInput.value = '';
@@ -546,10 +382,7 @@
     async function deleteThread() {
         if (!currentThreadId) return;
 
-        if (!confirm('Tem certeza que deseja excluir esta conversa? Esta ação não pode ser desfeita.')) {
-            return;
-        }
-
+        showConfirm('Tem certeza que deseja excluir esta conversa? Esta ação não pode ser desfeita.', 'Excluir conversa', async () => {
         try {
             const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(`/api/support/messages/${encodeURIComponent(currentThreadId)}`) : `${API_BASE}/api/support/messages/${currentThreadId}`;
             const response = await fetch(safeUrl, {
@@ -584,22 +417,19 @@
             await loadThreads();
         } catch (error) {
             console.error('[SUPORTE] Erro ao excluir conversa:', error);
-            alert(`Erro ao excluir conversa: ${error.message}`);
+            showAlert(`Erro ao excluir conversa: ${error.message}`);
         }
+        });
     }
 
     function init() {
         if (!checkAuth()) return;
 
         const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
         const refreshBtn = document.getElementById('refreshBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const deleteThreadBtn = document.getElementById('deleteThreadBtn');
 
-        // Inicializar funcionalidades de mídia
-        initEmojiPicker();
-        initGifPicker();
         initFileUpload();
 
         if (messageInput) {
@@ -609,10 +439,6 @@
                     sendMessage();
                 }
             });
-        }
-
-        if (sendBtn) {
-            sendBtn.addEventListener('click', sendMessage);
         }
 
         if (deleteThreadBtn) {
@@ -628,11 +454,11 @@
 
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
 
