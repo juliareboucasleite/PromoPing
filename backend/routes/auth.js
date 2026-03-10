@@ -1859,6 +1859,16 @@ router.post("/register", async (req, res) => {
 // rotas do google
 router.get("/google", (req, res) => {
     if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        const returnTo = req.query.returnTo;
+        if (returnTo && typeof returnTo === "string" && returnTo.startsWith("/")) {
+            res.cookie("oauth_return_to", returnTo, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 10 * 60 * 1000,
+                path: "/"
+            });
+        }
         console.log(" Google OAuth configurado:");
         console.log("   Client ID:", process.env.GOOGLE_CLIENT_ID.substring(0, 20) + "...");
         console.log("   Client Secret:", process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + "...");
@@ -2005,8 +2015,12 @@ router.get("/google/callback", (req, res) => {
 
                 console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.ReferenciaID);
 
+                const returnTo = req.cookies?.oauth_return_to;
+                const redirectPath = (returnTo && typeof returnTo === "string" && returnTo.startsWith("/")) ? returnTo : "/dashboard";
+
                 const escapedEmail = (user.email || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const escapedNome = (user.nome || user.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const escapedRedirect = redirectPath.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
                 
                 const html = `
         <!DOCTYPE html>
@@ -2025,14 +2039,15 @@ router.get("/google/callback", (req, res) => {
               nome: '${escapedNome}',
               loginMethod: 'google'
             }));
-            window.location.href = '/dashboard';
+            window.location.href = '${escapedRedirect}';
           </script>
-          <p>Redirecionando para o painel...</p>
+          <p>Redirecionando...</p>
         </body>
         </html>
       `;
                 
-                console.log("Redirecionando para dashboard via HTML");
+                res.clearCookie("oauth_return_to", { path: "/" });
+                console.log("[GOOGLE CALLBACK] Redirecionando para:", redirectPath);
                 res.send(html);
             } catch (tokenError) {
                 console.error("Erro ao gerar token:", tokenError);
