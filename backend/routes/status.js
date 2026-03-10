@@ -132,32 +132,48 @@ export { atualizarMetricasAutomaticamente };
 
 router.get("/api/status", async (req, res) => {
   try {
-    // Buscar métricas do sistema
-    const [metricas] = await db.query(
-      "SELECT * FROM metricas_sistema ORDER BY Id DESC LIMIT 1"
-    );
-    
-    // Buscar componentes do sistema
-    const [componentes] = await db.query(
-      "SELECT * FROM status_componentes ORDER BY Id ASC"
-    );
-    
-    // Buscar incidentes recentes
-    const [incidentes] = await db.query(
-      "SELECT * FROM incidentes ORDER BY DataInicio DESC LIMIT 5"
-    );
+    let metricas = [null];
+    let componentes = [];
+    let incidentes = [];
+    let produtosCount = [{ total: 0 }];
+    let utilizadoresCount = [{ total: 0 }];
+    let notificacoesCount = [{ total: 0 }];
 
-    // Buscar estatísticas em tempo real (usar dados mais recentes ou contar diretamente)
-    const [produtosCount] = await db.query("SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL");
-    const [utilizadoresCount] = await db.query("SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1");
-    const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
-    );
-    
-    // Usar contagem direta se métricas não existirem ou se forem desatualizadas
-    const utilizadoresAtivos = utilizadoresCount[0]?.total || 0;
-    const produtosMonitorizados = produtosCount[0]?.total || 0;
-    const notificacoesEnviadas = notificacoesCount[0]?.total || 0;
+    try {
+      const [m] = await db.query("SELECT * FROM metricas_sistema ORDER BY Id DESC LIMIT 1");
+      if (m && m.length) metricas = m;
+    } catch (_) { /* tabela pode não existir */ }
+
+    try {
+      const [c] = await db.query("SELECT * FROM status_componentes ORDER BY Id ASC");
+      if (c && c.length) componentes = c;
+    } catch (_) { /* tabela pode não existir */ }
+
+    try {
+      const [i] = await db.query("SELECT * FROM incidentes ORDER BY DataInicio DESC LIMIT 5");
+      if (i && i.length) incidentes = i;
+    } catch (_) { /* tabela pode não existir */ }
+
+    try {
+      const [p] = await db.query("SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL");
+      if (p && p.length) produtosCount = p;
+    } catch (_) { }
+
+    try {
+      const [u] = await db.query("SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1");
+      if (u && u.length) utilizadoresCount = u;
+    } catch (_) { }
+
+    try {
+      const [n] = await db.query(
+        "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+      );
+      if (n && n.length) notificacoesCount = n;
+    } catch (_) { }
+
+    const utilizadoresAtivos = utilizadoresCount[0]?.total ?? 0;
+    const produtosMonitorizados = produtosCount[0]?.total ?? 0;
+    const notificacoesEnviadas = notificacoesCount[0]?.total ?? 0;
 
     res.json({
       status: "ok",
@@ -323,11 +339,13 @@ router.get("/api/status/realtime", async (req, res) => {
     // Simular requisições por minuto (baseado em atividade real)
     const requestsPerMinute = Math.floor(Math.random() * 50) + 1200;
 
+    const usersOnline = configutilizadorCount[0]?.total || 0;
     res.json({
       status: "ok",
       dados: {
         requestsPerMinute,
-        configutilizadorOnline: configutilizadorCount[0]?.total || 0,
+        usersOnline,
+        configutilizadorOnline: usersOnline,
         notificationsToday: notificacoesCount[0]?.total || 0,
         produtosMonitored: produtosCount[0]?.total || 0
       },
@@ -1303,43 +1321,19 @@ router.get("/api/stats/uptime", async (req, res) => {
   }
 });
 
-// Criar tabela atualizacoes se não existir
-async function ensureAtualizacoesTable() {
-  try {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS atualizacoes (
-        Id INT AUTO_INCREMENT PRIMARY KEY,
-        Titulo VARCHAR(200) NOT NULL,
-        Descricao TEXT NOT NULL,
-        Tipo ENUM('Melhoria', 'Correção', 'Nova Funcionalidade', 'Manutenção') DEFAULT 'Melhoria',
-        DataPublicacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        Status ENUM('Implementado', 'Em Desenvolvimento', 'Planeado') DEFAULT 'Implementado',
-        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_data_publicacao (DataPublicacao),
-        INDEX idx_tipo (Tipo),
-        INDEX idx_status (Status)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `);
-  } catch (err) {
-    console.error('Erro ao criar tabela atualizacoes:', err);
-  }
-}
-
-// Inicializar tabela na primeira chamada
-let tabelaInicializada = false;
-async function initAtualizacoesTable() {
-  if (!tabelaInicializada) {
-    await ensureAtualizacoesTable();
-    tabelaInicializada = true;
-  }
+// Mapear tipo para o ENUM da tabela atualizacoes_sistema (feature, fix, improvement, maintenance)
+function normalizarTipoAtualizacao(tipo) {
+  if (!tipo) return 'feature';
+  const t = String(tipo).toLowerCase();
+  if (['feature', 'fix', 'improvement', 'maintenance'].includes(t)) return t;
+  const map = { melhoria: 'improvement', correção: 'fix', correcao: 'fix', funcionalidade: 'feature', manutenção: 'maintenance', manutencao: 'maintenance' };
+  return map[t] || 'feature';
 }
 
 router.get("/api/atualizacoes", async (req, res) => {
   try {
-    await initAtualizacoesTable();
     const [rows] = await db.query(
-      "SELECT * FROM atualizacoes ORDER BY DataPublicacao DESC"
+      "SELECT Id, Titulo, Descricao, Tipo, DataCriacao FROM atualizacoes_sistema ORDER BY DataCriacao DESC"
     );
     res.json({
       status: "ok",
@@ -1349,20 +1343,19 @@ router.get("/api/atualizacoes", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro ao buscar atualizações:", err);
-    res.status(500).json({ 
+    res.status(500).json({
       status: "error",
       erro: "Erro ao buscar atualizações",
-      message: err.message 
+      message: err.message
     });
   }
 });
 
 router.get("/api/atualizacoes/:id", async (req, res) => {
   try {
-    await initAtualizacoesTable();
     const { id } = req.params;
     const [rows] = await db.query(
-      "SELECT * FROM atualizacoes WHERE Id = ?",
+      "SELECT Id, Titulo, Descricao, Tipo, DataCriacao FROM atualizacoes_sistema WHERE Id = ?",
       [id]
     );
 
@@ -1391,14 +1384,11 @@ router.get("/api/atualizacoes/:id", async (req, res) => {
 
 router.post("/api/atualizacoes", async (req, res) => {
   try {
-    await initAtualizacoesTable();
-    const { Titulo, titulo, Descricao, descricao, Tipo, tipo, DataPublicacao, dataPublicacao, Status, status } = req.body;
+    const { Titulo, titulo, Descricao, descricao, Tipo, tipo } = req.body;
 
     const tituloFinal = Titulo || titulo;
     const descricaoFinal = Descricao || descricao;
-    const tipoFinal = Tipo || tipo || 'Melhoria';
-    const dataPublicacaoFinal = DataPublicacao || dataPublicacao || new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const statusFinal = Status || status || 'Implementado';
+    const tipoFinal = normalizarTipoAtualizacao(Tipo || tipo);
 
     if (!tituloFinal || !descricaoFinal) {
       return res.status(400).json({
@@ -1408,12 +1398,12 @@ router.post("/api/atualizacoes", async (req, res) => {
     }
 
     const [result] = await db.query(
-      "INSERT INTO atualizacoes (Titulo, Descricao, Tipo, DataPublicacao, Status) VALUES (?, ?, ?, ?, ?)",
-      [tituloFinal, descricaoFinal, tipoFinal, dataPublicacaoFinal, statusFinal]
+      "INSERT INTO atualizacoes_sistema (Titulo, Descricao, Tipo) VALUES (?, ?, ?)",
+      [tituloFinal, descricaoFinal, tipoFinal]
     );
 
     const [novaAtualizacao] = await db.query(
-      "SELECT * FROM atualizacoes WHERE Id = ?",
+      "SELECT Id, Titulo, Descricao, Tipo, DataCriacao FROM atualizacoes_sistema WHERE Id = ?",
       [result.insertId]
     );
 
@@ -1435,13 +1425,11 @@ router.post("/api/atualizacoes", async (req, res) => {
 
 router.put("/api/atualizacoes/:id", async (req, res) => {
   try {
-    await initAtualizacoesTable();
     const { id } = req.params;
-    const { Titulo, titulo, Descricao, descricao, Tipo, tipo, DataPublicacao, dataPublicacao, Status, status } = req.body;
+    const { Titulo, titulo, Descricao, descricao, Tipo, tipo } = req.body;
 
-    // Verificar se a atualização existe
     const [verificar] = await db.query(
-      "SELECT * FROM atualizacoes WHERE Id = ?",
+      "SELECT Id FROM atualizacoes_sistema WHERE Id = ?",
       [id]
     );
 
@@ -1453,7 +1441,6 @@ router.put("/api/atualizacoes/:id", async (req, res) => {
       });
     }
 
-    // Construir query dinamicamente
     const updates = [];
     const values = [];
 
@@ -1472,38 +1459,22 @@ router.put("/api/atualizacoes/:id", async (req, res) => {
     const tipoFinal = Tipo || tipo;
     if (tipoFinal !== undefined) {
       updates.push("Tipo = ?");
-      values.push(tipoFinal);
-    }
-
-    const dataPublicacaoFinal = DataPublicacao || dataPublicacao;
-    if (dataPublicacaoFinal !== undefined) {
-      updates.push("DataPublicacao = ?");
-      values.push(dataPublicacaoFinal);
-    }
-
-    const statusFinal = Status || status;
-    if (statusFinal !== undefined) {
-      updates.push("Status = ?");
-      values.push(statusFinal);
+      values.push(normalizarTipoAtualizacao(tipoFinal));
     }
 
     if (updates.length === 0) {
       return res.status(400).json({
         status: "error",
         erro: "Nenhum campo para atualizar foi fornecido",
-        camposValidos: ["Titulo", "Descricao", "Tipo", "DataPublicacao", "Status"]
+        camposValidos: ["Titulo", "Descricao", "Tipo"]
       });
     }
 
     values.push(id);
+    await db.query(`UPDATE atualizacoes_sistema SET ${updates.join(", ")} WHERE Id = ?`, values);
 
-    // Executar atualização
-    const query = `UPDATE atualizacoes SET ${updates.join(", ")} WHERE Id = ?`;
-    await db.query(query, values);
-
-    // Buscar atualização atualizada
     const [atualizacaoAtualizada] = await db.query(
-      "SELECT * FROM atualizacoes WHERE Id = ?",
+      "SELECT Id, Titulo, Descricao, Tipo, DataCriacao FROM atualizacoes_sistema WHERE Id = ?",
       [id]
     );
 
@@ -1513,7 +1484,6 @@ router.put("/api/atualizacoes/:id", async (req, res) => {
       atualizacao: atualizacaoAtualizada[0],
       timestamp: new Date().toISOString()
     });
-
   } catch (err) {
     console.error("Erro ao atualizar atualização:", err);
     res.status(500).json({
