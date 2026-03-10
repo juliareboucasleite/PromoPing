@@ -73,7 +73,7 @@
                         var data = formatDateTime(n.DataCriacao);
                         var funcionario = escapeHtml(n.author_nome || 'Sistema');
                         return '<div class="activity-item" style="padding: 0.75rem; border-bottom: 1px solid #232326;">' +
-                            '<strong>' + escapeHtml(tipo) + '</strong> – ' + escapeHtml(n.Titulo || '') +
+                            '<strong>' + escapeHtml(tipo) + '</strong> – ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(n.Titulo)) || n.Titulo || '') +
                             '<div style="font-size: 0.85rem; margin-top: 0.25rem;"><span style="color: #60a5fa; font-weight: 500;">Funcionário: ' + funcionario + '</span> · ' + data + '</div></div>';
                     })()
                 }));
@@ -84,7 +84,7 @@
                         var desc = (a.Descricao || '').substring(0, 120);
                         if ((a.Descricao || '').length > 120) desc += '…';
                         return '<div class="activity-item" style="padding: 0.75rem; border-bottom: 1px solid #232326;">' +
-                            '<strong>' + tipoLabel + '</strong> – ' + escapeHtml(a.Titulo || '') +
+                            '<strong>' + tipoLabel + '</strong> – ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(a.Titulo)) || a.Titulo || '') +
                             (desc ? '<div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">' + escapeHtml(desc) + '</div>' : '') +
                             '<div style="font-size: 0.85rem; margin-top: 0.25rem;">' + formatDateTime(a.DataCriacao) + '</div></div>';
                     })()
@@ -105,7 +105,7 @@
                         var prioridade = b.Prioridade ? ', ' + escapeHtml(b.Prioridade) : '';
                         var linhaFunc = b.author_nome ? '<div style="font-size: 0.85rem; margin-top: 0.25rem;"><span style="color: #60a5fa; font-weight: 500;">Funcionário: ' + escapeHtml(b.author_nome) + '</span> · ' + formatDate(b.DataCriacao) + '</div>' : '<div style="font-size: 0.85rem; margin-top: 0.25rem;">' + formatDate(b.DataCriacao) + '</div>';
                         return '<div class="activity-item" style="padding: 0.75rem; border-bottom: 1px solid #232326;">' +
-                            '<strong>#' + b.Id + '</strong> ' + escapeHtml(b.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + escapeHtml(b.Tipo || '-') + ', ' + escapeHtml(b.Status || '-') + prioridade + ')</span>' +
+                            '<strong>#' + b.Id + '</strong> ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(b.Titulo)) || b.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + escapeHtml(b.Tipo || '-') + ', ' + escapeHtml(b.Status || '-') + prioridade + ')</span>' +
                             linhaFunc + '</div>';
                     }).join('');
                 }
@@ -118,7 +118,7 @@
                     elEventos.innerHTML = events.map(e => {
                         const funcionario = escapeHtml(e.author_nome || '-');
                         return `<div class="activity-item" style="padding: 0.75rem; border-bottom: 1px solid #232326;">
-                            <strong>${escapeHtml(e.Titulo || 'Sem título')}</strong> <span style="color: #9ca3af;">(${escapeHtml(e.Tipo || '-')}, ${escapeHtml(e.Status || '-')})</span>
+                            <strong>${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(e.Titulo)) || e.Titulo || 'Sem título')}</strong> <span style="color: #9ca3af;">(${escapeHtml(e.Tipo || '-')}, ${escapeHtml(e.Status || '-')})</span>
                             <div style="font-size: 0.85rem; margin-top: 0.25rem;"><span style="color: #60a5fa; font-weight: 500;">Funcionário: ${funcionario}</span> · ${formatDateTime(e.StartDate)}</div>
                         </div>`;
                     }).join('');
