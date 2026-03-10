@@ -20,6 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
 
 const UPLOADS_BUGS = path.join(path.dirname(__dirname), "uploads", "bugs");
+const UPLOADS_ACTIVITY_REPORTS = path.join(path.dirname(__dirname), "uploads", "activity-reports");
 
 async function ensureBugsAnexoColumn() {
     try {
@@ -1541,6 +1542,79 @@ async function ensureAdminEventsTable() {
     }
 }
 
+/** Atividades para o suporte (criadas pela corporação): tabelas + uploads */
+async function ensureCorporationActivitiesTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS corporation_activities (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                DataInicio DATETIME NOT NULL,
+                DuracaoMinutos INT NOT NULL DEFAULT 60,
+                AssignedTo VARCHAR(13) NULL,
+                TipoAtividade VARCHAR(80) NULL,
+                Acao VARCHAR(255) NULL,
+                Descricao TEXT NULL,
+                Estado ENUM('pendente','em_curso','concluida','cancelada') DEFAULT 'pendente',
+                CreatedBy VARCHAR(13) NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_DataInicio (DataInicio),
+                INDEX idx_AssignedTo (AssignedTo),
+                INDEX idx_Estado (Estado),
+                INDEX idx_CreatedBy (CreatedBy)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS activity_comments (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                ActivityId INT NOT NULL,
+                ReferenciaID VARCHAR(13) NULL,
+                IsCorporation TINYINT(1) NOT NULL DEFAULT 0,
+                Mensagem TEXT NOT NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ActivityId (ActivityId),
+                FOREIGN KEY (ActivityId) REFERENCES corporation_activities(Id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS activity_reports (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                ActivityId INT NOT NULL,
+                ReferenciaID VARCHAR(13) NULL,
+                TextoRelatorio TEXT NULL,
+                AnexoUrl VARCHAR(500) NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ActivityId (ActivityId),
+                FOREIGN KEY (ActivityId) REFERENCES corporation_activities(Id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        if (!fs.existsSync(UPLOADS_ACTIVITY_REPORTS)) {
+            fs.mkdirSync(UPLOADS_ACTIVITY_REPORTS, { recursive: true });
+        }
+    } catch (err) {
+        console.error("[ADMIN] Erro ao criar tabelas corporation_activities:", err);
+        throw err;
+    }
+}
+
+function saveActivityReportAnexo(activityId, base64Data, fileName) {
+    if (!base64Data || !fileName) return null;
+    const ext = (path.extname(fileName) || "").toLowerCase();
+    const allowed = [".pdf", ".doc", ".docx", ".txt"];
+    if (!allowed.includes(ext)) return null;
+    try {
+        if (!fs.existsSync(UPLOADS_ACTIVITY_REPORTS)) fs.mkdirSync(UPLOADS_ACTIVITY_REPORTS, { recursive: true });
+        const safeName = `act_${activityId}_${Date.now()}${ext}`;
+        const filePath = path.join(UPLOADS_ACTIVITY_REPORTS, safeName);
+        const buf = Buffer.from(base64Data.replace(/^data:[^;]+;base64,/, ""), "base64");
+        fs.writeFileSync(filePath, buf);
+        return "/uploads/activity-reports/" + safeName;
+    } catch (e) {
+        console.error("[ADMIN] saveActivityReportAnexo:", e);
+        return null;
+    }
+}
+
 /**
  * GET /api/admin/calendar/events
  * Lista todos os eventos do calendário
@@ -1895,6 +1969,176 @@ router.delete("/calendar/events/:id", async (req, res) => {
     } catch (err) {
         console.error("[ADMIN] Erro ao remover evento:", err);
         return handleDatabaseError(err, res, "Erro ao remover evento");
+    }
+});
+
+/** ========== Atividades (corporação -> suporte) ========== */
+/** GET /api/admin/calendar/activities - lista com filtro: hoje | pendentes | concluidas | todas */
+router.get("/calendar/activities", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const { filter, start, end } = req.query;
+        let query = `
+            SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedBy, a.CreatedAt,
+                   u.Nome AS AssignedToNome
+            FROM corporation_activities a
+            LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+            WHERE 1=1
+        `;
+        const params = [];
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(todayStart);
+        todayEnd.setDate(todayEnd.getDate() + 1);
+        if (filter === "hoje") {
+            query += " AND a.DataInicio >= ? AND a.DataInicio < ?";
+            params.push(todayStart.toISOString().slice(0, 19).replace("T", " "), todayEnd.toISOString().slice(0, 19).replace("T", " "));
+        } else if (filter === "pendentes") {
+            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + INTERVAL a.DuracaoMinutos MINUTE) >= NOW()";
+        } else if (filter === "concluidas") {
+            query += " AND a.Estado = 'concluida'";
+        }
+        if (start && end) {
+            query += " AND a.DataInicio >= ? AND a.DataInicio <= ?";
+            params.push(start, end);
+        }
+        query += " ORDER BY a.DataInicio ASC";
+        const [rows] = await pool.query(query, params);
+        const activities = rows.map(r => {
+            const dataFim = new Date(r.DataInicio);
+            dataFim.setMinutes(dataFim.getMinutes() + (r.DuracaoMinutos || 0));
+            return {
+                id: r.Id,
+                dataInicio: r.DataInicio,
+                duracaoMinutos: r.DuracaoMinutos,
+                dataFim: dataFim.toISOString(),
+                assignedTo: r.AssignedTo,
+                assignedToNome: r.AssignedToNome,
+                tipoAtividade: r.TipoAtividade,
+                acao: r.Acao,
+                descricao: r.Descricao,
+                estado: r.Estado,
+                createdBy: r.CreatedBy,
+                createdAt: r.CreatedAt
+            };
+        });
+        res.json({ status: "ok", activities });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao listar atividades:", err);
+        return handleDatabaseError(err, res, "Erro ao listar atividades");
+    }
+});
+
+/** GET /api/admin/calendar/activities/:id - detalhe + comentários + relatórios */
+router.get("/calendar/activities/:id", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const [rows] = await pool.query(
+            `SELECT a.Id, a.DataInicio, a.DuracaoMinutos, a.AssignedTo, a.TipoAtividade, a.Acao, a.Descricao, a.Estado, a.CreatedBy, a.CreatedAt, a.UpdatedAt,
+                    u.Nome AS AssignedToNome
+             FROM corporation_activities a
+             LEFT JOIN utilizadores u ON u.ReferenciaID COLLATE utf8mb4_unicode_ci = a.AssignedTo
+             WHERE a.Id = ?`,
+            [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        const act = rows[0];
+        const dataFim = new Date(act.DataInicio);
+        dataFim.setMinutes(dataFim.getMinutes() + (act.DuracaoMinutos || 0));
+        const [comments] = await pool.query(
+            "SELECT Id, ActivityId, ReferenciaID, IsCorporation, Mensagem, CreatedAt FROM activity_comments WHERE ActivityId = ? ORDER BY CreatedAt ASC",
+            [req.params.id]
+        );
+        const [reports] = await pool.query(
+            "SELECT Id, ActivityId, ReferenciaID, TextoRelatorio, AnexoUrl, CreatedAt FROM activity_reports WHERE ActivityId = ? ORDER BY CreatedAt DESC",
+            [req.params.id]
+        );
+        res.json({
+            status: "ok",
+            activity: {
+                id: act.Id,
+                dataInicio: act.DataInicio,
+                duracaoMinutos: act.DuracaoMinutos,
+                dataFim: dataFim.toISOString(),
+                assignedTo: act.AssignedTo,
+                assignedToNome: act.AssignedToNome,
+                tipoAtividade: act.TipoAtividade,
+                acao: act.Acao,
+                descricao: act.Descricao,
+                estado: act.Estado,
+                createdBy: act.CreatedBy,
+                createdAt: act.CreatedAt,
+                updatedAt: act.UpdatedAt
+            },
+            comments,
+            reports
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao buscar atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar atividade");
+    }
+});
+
+/** PATCH /api/admin/calendar/activities/:id - atualizar estado */
+router.patch("/calendar/activities/:id", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const { estado } = req.body;
+        const valid = ["pendente", "em_curso", "concluida", "cancelada"];
+        if (!estado || !valid.includes(estado)) {
+            return res.status(400).json({ status: "error", error: "Estado inválido" });
+        }
+        const [r] = await pool.query("UPDATE corporation_activities SET Estado = ? WHERE Id = ?", [estado, req.params.id]);
+        if (r.affectedRows === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        res.json({ status: "ok", message: "Estado atualizado" });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar atividade:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar atividade");
+    }
+});
+
+/** POST /api/admin/calendar/activities/:id/comments - adicionar comentário (suporte) */
+router.post("/calendar/activities/:id/comments", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const referenciaID = req.user && req.user.ReferenciaID;
+        const { mensagem } = req.body;
+        if (!mensagem || !String(mensagem).trim()) {
+            return res.status(400).json({ status: "error", error: "Mensagem obrigatória" });
+        }
+        const [check] = await pool.query("SELECT Id FROM corporation_activities WHERE Id = ?", [req.params.id]);
+        if (check.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        await pool.query(
+            "INSERT INTO activity_comments (ActivityId, ReferenciaID, IsCorporation, Mensagem) VALUES (?, ?, 0, ?)",
+            [req.params.id, referenciaID || null, String(mensagem).trim()]
+        );
+        res.json({ status: "ok", message: "Comentário adicionado" });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao adicionar comentário:", err);
+        return handleDatabaseError(err, res, "Erro ao adicionar comentário");
+    }
+});
+
+/** POST /api/admin/calendar/activities/:id/report - submeter relatório (texto + opcional anexo base64) */
+router.post("/calendar/activities/:id/report", async (req, res) => {
+    try {
+        await ensureCorporationActivitiesTable();
+        const referenciaID = req.user && req.user.ReferenciaID;
+        const { texto, anexoBase64, anexoFileName } = req.body;
+        const [check] = await pool.query("SELECT Id FROM corporation_activities WHERE Id = ?", [req.params.id]);
+        if (check.length === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        let anexoUrl = null;
+        if (anexoBase64 && anexoFileName) {
+            anexoUrl = saveActivityReportAnexo(req.params.id, anexoBase64, anexoFileName);
+        }
+        await pool.query(
+            "INSERT INTO activity_reports (ActivityId, ReferenciaID, TextoRelatorio, AnexoUrl) VALUES (?, ?, ?, ?)",
+            [req.params.id, referenciaID || null, (texto && String(texto).trim()) || null, anexoUrl]
+        );
+        res.json({ status: "ok", message: "Relatório submetido" });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao submeter relatório:", err);
+        return handleDatabaseError(err, res, "Erro ao submeter relatório");
     }
 });
 
