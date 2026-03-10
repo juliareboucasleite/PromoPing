@@ -102,7 +102,7 @@
             sugestoesList.innerHTML = data.sugestoes.map(sugestao => `
                 <div class="bug-item" data-sugestao-id="${sugestao.Id}" style="cursor: pointer;">
                     <div class="bug-header">
-                        <h3 class="bug-title">${escapeHtml(sugestao.Titulo || 'Sem título')}</h3>
+                        <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(sugestao.Titulo)) || sugestao.Titulo || 'Sem título')}</h3>
                         <span class="bug-status ${sugestao.Status || 'pendente'}">${getStatusLabel(sugestao.Status || 'pendente')}</span>
                     </div>
                     <p class="bug-description">${escapeHtml((sugestao.Descricao || 'Sem descrição').substring(0, 200))}${sugestao.Descricao && sugestao.Descricao.length > 200 ? '...' : ''}</p>
@@ -139,7 +139,7 @@
         const sugestaoStatus = document.getElementById('sugestaoStatus');
 
         if (!sugestaoTitle || !sugestaoDescription || !sugestaoPlataforma || !sugestaoPriority || !sugestaoStatus) {
-            alert('Erro: Elementos do formulário não encontrados');
+            showAlert('Erro: Elementos do formulário não encontrados');
             return;
         }
 
@@ -152,7 +152,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            alert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha título e descrição');
             return;
         }
 
@@ -164,49 +164,109 @@
 
             const data = await response.json();
 
-            alert('Sugestão criada com sucesso!');
+            showAlert('Sugestão criada com sucesso!');
             closeSugestaoModal();
             await loadSugestoes();
         } catch (error) {
             console.error('[SUGESTOES] Erro ao criar sugestão:', error);
-            alert(`Erro ao criar sugestão: ${error.message}`);
+            showAlert(`Erro ao criar sugestão: ${error.message}`);
         }
     }
 
     let currentSugestaoId = null;
+    /** Dados da sugestão em visualização (para Editar e Atualizar estado) */
+    let currentSugestaoData = null;
 
+    /** Abre o modal de visualização (só leitura); ao clicar numa sugestão. */
     async function viewSugestaoDetails(sugestaoId) {
         try {
             const response = await fetchAuth(`/api/admin/sugestoes/${sugestaoId}`);
             const data = await response.json();
 
             if (!data.sugestao) {
-                alert('Sugestão não encontrada');
+                showAlert('Sugestão não encontrada');
                 return;
             }
 
             const sugestao = data.sugestao;
             currentSugestaoId = sugestao.Id;
+            currentSugestaoData = sugestao;
 
-            // Preencher formulário
-            document.getElementById('sugestaoId').value = sugestao.Id;
-            document.getElementById('sugestaoTitle').value = sugestao.Titulo || '';
-            document.getElementById('sugestaoDescription').value = sugestao.Descricao || '';
-            document.getElementById('sugestaoPlataforma').value = sugestao.Plataforma || 'ambos';
-            document.getElementById('sugestaoPriority').value = sugestao.Prioridade || 'medium';
-            document.getElementById('sugestaoStatus').value = sugestao.Status || 'pendente';
+            document.getElementById('sugestaoViewModalTitle').textContent = `Sugestão #${sugestao.Id}`;
+            document.getElementById('sugestaoViewTitulo').textContent = sugestao.Titulo || '—';
+            document.getElementById('sugestaoViewDescricao').textContent = sugestao.Descricao || '—';
+            document.getElementById('sugestaoViewPlataforma').textContent = getPlataformaLabel(sugestao.Plataforma || 'ambos');
+            document.getElementById('sugestaoViewPrioridade').textContent = sugestao.Prioridade || 'medium';
+            const statusEl = document.getElementById('sugestaoViewStatus');
+            statusEl.textContent = getStatusLabel(sugestao.Status || 'pendente');
+            statusEl.className = 'bug-status ' + (sugestao.Status || 'pendente');
+            document.getElementById('sugestaoViewData').textContent = formatDate(sugestao.DataCriacao);
 
-            // Atualizar título do modal e botões
-            document.getElementById('sugestaoModalTitle').textContent = `Editar Sugestão #${sugestao.Id}`;
-            document.getElementById('sugestaoSubmitBtn').textContent = 'Salvar Alterações';
-            document.getElementById('deleteSugestaoBtn').style.display = 'inline-block';
-
-            // Mostrar modal
-            document.getElementById('sugestaoModal').classList.add('show');
+            document.getElementById('sugestaoViewModal').classList.add('show');
         } catch (error) {
             console.error('[SUGESTOES] Erro ao carregar detalhes da sugestão:', error);
-            alert(`Erro ao carregar detalhes: ${error.message}`);
+            showAlert(`Erro ao carregar detalhes: ${error.message}`);
         }
+    }
+
+    function closeSugestaoViewModal() {
+        document.getElementById('sugestaoViewModal').classList.remove('show');
+        currentSugestaoData = null;
+    }
+
+    /** Abre o modal de atualizar estado (como tabelas/incidentes). */
+    function openSugestaoStatusModal() {
+        if (!currentSugestaoData) return;
+        document.getElementById('sugestaoStatusId').value = currentSugestaoData.Id;
+        document.getElementById('sugestaoStatusSelect').value = currentSugestaoData.Status || 'pendente';
+        document.getElementById('sugestaoStatusModal').classList.add('show');
+    }
+
+    function closeSugestaoStatusModal() {
+        document.getElementById('sugestaoStatusModal').classList.remove('show');
+    }
+
+    async function submitSugestaoStatus(e) {
+        e.preventDefault();
+        const id = document.getElementById('sugestaoStatusId').value;
+        const newStatus = document.getElementById('sugestaoStatusSelect').value;
+        if (!id || !currentSugestaoData) return;
+        try {
+            await fetchAuth(`/api/admin/sugestoes/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    titulo: (window.APIUtils && window.APIUtils.stripBracketPrefix(currentSugestaoData.Titulo)) || currentSugestaoData.Titulo || '',
+                    descricao: currentSugestaoData.Descricao || '',
+                    plataforma: currentSugestaoData.Plataforma || 'ambos',
+                    prioridade: currentSugestaoData.Prioridade || 'medium',
+                    status: newStatus
+                })
+            });
+            closeSugestaoStatusModal();
+            closeSugestaoViewModal();
+            await loadSugestoes();
+            showAlert('Estado da sugestão atualizado.');
+        } catch (error) {
+            console.error('[SUGESTOES] Erro ao atualizar estado:', error);
+            showAlert(`Erro: ${error.message}`);
+        }
+    }
+
+    /** Abre o modal de edição com os dados da sugestão em visualização. */
+    function openEditSugestaoFromView() {
+        if (!currentSugestaoData) return;
+        const s = currentSugestaoData;
+        closeSugestaoViewModal();
+        document.getElementById('sugestaoId').value = s.Id;
+        document.getElementById('sugestaoTitle').value = (window.APIUtils && window.APIUtils.stripBracketPrefix(s.Titulo)) || s.Titulo || '';
+        document.getElementById('sugestaoDescription').value = s.Descricao || '';
+        document.getElementById('sugestaoPlataforma').value = s.Plataforma || 'ambos';
+        document.getElementById('sugestaoPriority').value = s.Prioridade || 'medium';
+        document.getElementById('sugestaoStatus').value = s.Status || 'pendente';
+        document.getElementById('sugestaoModalTitle').textContent = `Editar Sugestão #${s.Id}`;
+        document.getElementById('sugestaoSubmitBtn').textContent = 'Salvar Alterações';
+        document.getElementById('deleteSugestaoBtn').style.display = 'inline-block';
+        document.getElementById('sugestaoModal').classList.add('show');
     }
 
     async function updateSugestao() {
@@ -231,7 +291,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            alert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha título e descrição');
             return;
         }
 
@@ -243,12 +303,12 @@
 
             const data = await response.json();
 
-            alert('Sugestão atualizada com sucesso!');
+            showAlert('Sugestão atualizada com sucesso!');
             closeSugestaoModal();
             await loadSugestoes();
         } catch (error) {
             console.error('[SUGESTOES] Erro ao atualizar sugestão:', error);
-            alert(`Erro ao atualizar sugestão: ${error.message}`);
+            showAlert(`Erro ao atualizar sugestão: ${error.message}`);
         }
     }
 
@@ -256,10 +316,7 @@
         const sugestaoId = document.getElementById('sugestaoId').value;
         if (!sugestaoId) return;
 
-        if (!confirm('Tem certeza que deseja remover esta sugestão? Esta ação não pode ser desfeita.')) {
-            return;
-        }
-
+        showConfirm('Tem certeza que deseja remover esta sugestão? Esta ação não pode ser desfeita.', { title: 'Remover sugestão', confirmText: 'Remover' }, async () => {
         try {
             const response = await fetchAuth(`/api/admin/sugestoes/${sugestaoId}`, {
                 method: 'DELETE'
@@ -267,13 +324,14 @@
 
             const data = await response.json();
 
-            alert('Sugestão removida com sucesso!');
+            showAlert('Sugestão removida com sucesso!');
             closeSugestaoModal();
             await loadSugestoes();
         } catch (error) {
             console.error('[SUGESTOES] Erro ao remover sugestão:', error);
-            alert(`Erro ao remover sugestão: ${error.message}`);
+            showAlert(`Erro ao remover sugestão: ${error.message}`);
         }
+        });
     }
 
     function closeSugestaoModal() {
@@ -300,11 +358,13 @@
         const sugestaoForm = document.getElementById('sugestaoForm');
         const logoutBtn = document.getElementById('logoutBtn');
         const sugestaoModal = document.getElementById('sugestaoModal');
+        const sugestaoViewModal = document.getElementById('sugestaoViewModal');
+        const sugestaoStatusForm = document.getElementById('sugestaoStatusForm');
 
         if (newSugestaoBtn) {
             newSugestaoBtn.addEventListener('click', () => {
-                // Resetar formulário para criar nova sugestão
                 closeSugestaoModal();
+                closeSugestaoViewModal();
                 if (sugestaoModal) sugestaoModal.classList.add('show');
             });
         }
@@ -314,11 +374,29 @@
 
         if (sugestaoModal) {
             sugestaoModal.addEventListener('click', (e) => {
-                if (e.target === sugestaoModal) {
-                    closeSugestaoModal();
-                }
+                if (e.target === sugestaoModal) closeSugestaoModal();
             });
         }
+
+        const closeSugestaoViewModalBtn = document.getElementById('closeSugestaoViewModal');
+        const closeSugestaoViewBtn = document.getElementById('closeSugestaoViewBtn');
+        const sugestaoViewAtualizarEstadoBtn = document.getElementById('sugestaoViewAtualizarEstadoBtn');
+        const sugestaoViewEditarBtn = document.getElementById('sugestaoViewEditarBtn');
+        if (closeSugestaoViewModalBtn) closeSugestaoViewModalBtn.addEventListener('click', closeSugestaoViewModal);
+        if (closeSugestaoViewBtn) closeSugestaoViewBtn.addEventListener('click', closeSugestaoViewModal);
+        if (sugestaoViewAtualizarEstadoBtn) sugestaoViewAtualizarEstadoBtn.addEventListener('click', openSugestaoStatusModal);
+        if (sugestaoViewEditarBtn) sugestaoViewEditarBtn.addEventListener('click', openEditSugestaoFromView);
+        if (sugestaoViewModal) {
+            sugestaoViewModal.addEventListener('click', (e) => {
+                if (e.target === sugestaoViewModal) closeSugestaoViewModal();
+            });
+        }
+
+        const closeSugestaoStatusModalBtn = document.getElementById('closeSugestaoStatusModal');
+        const cancelSugestaoStatusBtn = document.getElementById('cancelSugestaoStatusBtn');
+        if (closeSugestaoStatusModalBtn) closeSugestaoStatusModalBtn.addEventListener('click', closeSugestaoStatusModal);
+        if (cancelSugestaoStatusBtn) cancelSugestaoStatusBtn.addEventListener('click', closeSugestaoStatusModal);
+        if (sugestaoStatusForm) sugestaoStatusForm.addEventListener('submit', submitSugestaoStatus);
 
         if (sugestaoForm) {
             sugestaoForm.addEventListener('submit', async (e) => {
@@ -337,11 +415,11 @@
 
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
 
