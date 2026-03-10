@@ -10,7 +10,6 @@ const NAVIGATION_HTML = `
         </li>
         <li class="sidebar-nav-section"><span>COMEÇAR</span></li>
         <li><a href="/docs/FirstLaunch" class="sidebar-nav-link">Primeiro Lançamento</a></li>
-        <li><a href="/docs/installation" class="sidebar-nav-link">Guia de Instalação</a></li>
         <li><a href="/docs/usage-guide" class="sidebar-nav-link">Guia de Utilização</a></li>
         <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
         <li><a href="/docs/api-reference" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
