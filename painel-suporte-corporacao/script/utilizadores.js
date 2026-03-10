@@ -63,6 +63,103 @@
         return div.innerHTML;
     }
 
+    let cachedUsers = [];
+
+    function filterUsers(users, filterKey) {
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        switch (filterKey) {
+            case 'principais':
+                return users.filter(u => (u.produtosCount || 0) >= 3);
+            case 'primeira-vez':
+                const regPrimeira = users.filter(u => {
+                    const reg = u.DataRegisto ? new Date(u.DataRegisto) : null;
+                    return reg && reg >= thirtyDaysAgo && (u.produtosCount || 0) <= 1;
+                });
+                return regPrimeira;
+            case 'recorrentes':
+                return users.filter(u => (u.produtosCount || 0) >= 2);
+            case 'recentes':
+                return users.filter(u => {
+                    const reg = u.DataRegisto ? new Date(u.DataRegisto) : null;
+                    return reg && reg >= sevenDaysAgo;
+                });
+            case 'todos':
+            default:
+                return users;
+        }
+    }
+
+    function renderUsersTable(users) {
+        const usersList = document.getElementById('usersList');
+        if (!usersList) return;
+
+        if (!users || users.length === 0) {
+            usersList.innerHTML = '<div class="loading-state">Nenhum utilizador encontrado</div>';
+            return;
+        }
+
+        usersList.innerHTML = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Referência</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Registado</th>
+                        <th>Produtos</th>
+                        <th>Notificações</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(user => `
+                        <tr>
+                            <td><code style="background: #232326; padding: 0.25rem 0.5rem; border-radius: 4px; color: #ff9800;">${escapeHtml(user.ReferenciaID || 'N/A')}</code></td>
+                            <td>${escapeHtml(user.Nome || 'N/A')}</td>
+                            <td>${escapeHtml(user.Email || 'N/A')}</td>
+                            <td>${formatDate(user.DataRegisto)}</td>
+                            <td>${user.produtosCount || 0}</td>
+                            <td>${user.notificacoesCount || 0}</td>
+                            <td>
+                                <span style="color: ${user.Ativo ? '#86efac' : '#fca5a5'}">
+                                    ${user.Ativo ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="edit-user-btn" data-referencia="${escapeHtml(user.ReferenciaID)}" title="Editar utilizador">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const referenciaID = btn.dataset.referencia;
+                openEditModal(referenciaID, cachedUsers);
+            });
+        });
+    }
+
+    function applyFilter(filterKey) {
+        const filtered = filterUsers(cachedUsers, filterKey);
+        renderUsersTable(filtered);
+
+        document.querySelectorAll('.filter-tabs .tab-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === filterKey);
+        });
+    }
+
     async function loadUsers() {
         const usersList = document.getElementById('usersList');
         if (!usersList) return;
@@ -74,59 +171,14 @@
             const data = await response.json();
 
             if (!data.users || data.users.length === 0) {
+                cachedUsers = [];
                 usersList.innerHTML = '<div class="loading-state">Nenhum utilizador encontrado</div>';
                 return;
             }
 
-            usersList.innerHTML = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Referência</th>
-                            <th>Nome</th>
-                            <th>Email</th>
-                            <th>Registado</th>
-                            <th>Produtos</th>
-                            <th>Notificações</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.users.map(user => `
-                            <tr>
-                                <td><code style="background: #232326; padding: 0.25rem 0.5rem; border-radius: 4px; color: #ff9800;">${escapeHtml(user.ReferenciaID || 'N/A')}</code></td>
-                                <td>${escapeHtml(user.Nome || 'N/A')}</td>
-                                <td>${escapeHtml(user.Email || 'N/A')}</td>
-                                <td>${formatDate(user.DataRegisto)}</td>
-                                <td>${user.produtosCount || 0}</td>
-                                <td>${user.notificacoesCount || 0}</td>
-                                <td>
-                                    <span style="color: ${user.Ativo ? '#86efac' : '#fca5a5'}">
-                                        ${user.Ativo ? 'Ativo' : 'Inativo'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="edit-user-btn" data-referencia="${escapeHtml(user.ReferenciaID)}" title="Editar utilizador">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-
-            // Adicionar event listeners aos botões de editar
-            document.querySelectorAll('.edit-user-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const referenciaID = btn.dataset.referencia;
-                    openEditModal(referenciaID, data.users);
-                });
-            });
+            cachedUsers = data.users;
+            const currentFilter = document.querySelector('.filter-tabs .tab-button.active')?.dataset.filter || 'todos';
+            applyFilter(currentFilter);
         } catch (error) {
             console.error('Erro ao carregar utilizadores:', error);
             usersList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
@@ -136,7 +188,7 @@
     function openEditModal(referenciaID, users) {
         const user = users.find(u => u.ReferenciaID === referenciaID);
         if (!user) {
-            alert('Utilizador não encontrado');
+            showAlert('Utilizador não encontrado');
             return;
         }
 
@@ -165,7 +217,7 @@
         const emailVerificado = document.getElementById('editEmailVerificado').value === '1';
 
         if (!nome || !email) {
-            alert('Por favor, preencha nome e email');
+            showAlert('Por favor, preencha nome e email');
             return;
         }
 
@@ -182,12 +234,12 @@
 
             const data = await response.json();
 
-            alert('Utilizador atualizado com sucesso!');
+            showAlert('Utilizador atualizado com sucesso!');
             closeEditModal();
             await loadUsers();
         } catch (error) {
             console.error('[UTILIZADORES] Erro ao atualizar utilizador:', error);
-            alert(`Erro ao atualizar utilizador: ${error.message}`);
+            showAlert(`Erro ao atualizar utilizador: ${error.message}`);
         }
     }
 
@@ -228,7 +280,7 @@
             console.log('[UTILIZADORES] PDF exportado com sucesso');
         } catch (error) {
             console.error('[UTILIZADORES] Erro ao exportar PDF:', error);
-            alert(`Erro ao exportar PDF: ${error.message}`);
+            showAlert(`Erro ao exportar PDF: ${error.message}`);
         } finally {
             const exportBtn = document.getElementById('exportPDFBtn');
             if (exportBtn) {
@@ -258,13 +310,17 @@
 
         if (refreshBtn) refreshBtn.addEventListener('click', loadUsers);
         if (exportPDFBtn) exportPDFBtn.addEventListener('click', exportUsersPDF);
+
+        document.querySelectorAll('.filter-tabs .tab-button').forEach(btn => {
+            btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+        });
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja sair?')) {
+                showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
                     localStorage.removeItem('PROMOPING_TOKEN');
                     localStorage.removeItem('PROMOPING_USER');
                     window.location.href = 'login.html';
-                }
+                });
             });
         }
 
