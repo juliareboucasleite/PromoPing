@@ -110,7 +110,7 @@
             } else {
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 events.forEach(function(ev) {
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml(ev.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (ev.Tipo || '-') + ', ' + (ev.Status || '-') + ')</span> — ' + formatDateTime(ev.StartDate) + '</li>';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(ev.Titulo)) || ev.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (ev.Tipo || '-') + ', ' + (ev.Status || '-') + ')</span> — ' + formatDateTime(ev.StartDate) + '</li>';
                 });
                 html += '</ul>';
             }
@@ -122,7 +122,7 @@
             } else {
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 bugs.forEach(function(b) {
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">#' + b.Id + ' ' + escapeHtml(b.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (b.Tipo || '-') + ', ' + (b.Status || '-') + ')</span> — ' + formatDate(b.DataCriacao) + '</li>';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">#' + b.Id + ' ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(b.Titulo)) || b.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (b.Tipo || '-') + ', ' + (b.Status || '-') + ')</span> — ' + formatDate(b.DataCriacao) + '</li>';
                 });
                 html += '</ul>';
             }
@@ -139,7 +139,7 @@
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 notifs.forEach(function(n) {
                     var tipoLabel = n.Tipo === 'incident_resolved' ? 'Incidente resolvido' : n.Tipo === 'incident_update' ? 'Atualização de incidente' : 'Atualização do sistema';
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml(tipoLabel) + ': ' + escapeHtml(n.Titulo || '') + ' — ' + formatDateTime(n.DataCriacao) + '</li>';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml(tipoLabel) + ': ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(n.Titulo)) || n.Titulo || '') + ' — ' + formatDateTime(n.DataCriacao) + '</li>';
                 });
                 html += '</ul>';
             }
