@@ -21,7 +21,6 @@ if not api_key:
 else:
     client = OpenAI(api_key=api_key)
 
-
 def normalize_product(product_info):
     """
     Normaliza informações do produto usando OpenAI API.

@@ -44,7 +44,7 @@ def main():
     
     # Modo comparação de produtos (novo fluxo isolado)
     if args.compare:
-        print(f"[COMPARE] Comparando produto em múltiplas lojas: {args.compare}")
+        print(f"Comparando produto em múltiplas lojas: {args.compare}")
         try:
             result = compare_product_across_stores(args.compare)
             # Imprimir resultado em JSON para integração
@@ -57,20 +57,20 @@ def main():
     
     # Modo comparação simplificada (retorna apenas JSON de resultados)
     if args.compare_simple:
-        print(f"[COMPARE] Comparação simplificada para: {args.compare_simple}")
+        print(f"Comparação simplificada para: {args.compare_simple}")
         try:
             results = compare_product_simple(args.compare_simple)
             # Imprimir apenas JSON de resultados
             print(json.dumps(results, indent=2, ensure_ascii=False))
         except Exception as e:
-            print(f"[COMPARE] Erro na comparação simplificada: {e}")
+            print(f"Erro na comparação simplificada: {e}")
             import traceback
             traceback.print_exc()
         return
     
     # Modo single product (verificação inicial)
     if args.single:
-        print(f"[SCRAPER] Verificação inicial para: {args.single}")
+        print(f"Verificação inicial para: {args.single}")
         try:
             scrape_single_product(args.single, is_initial=True)
             print("[SCRAPER] Verificação inicial concluída")

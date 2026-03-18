@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import re
 import traceback
@@ -6,6 +5,7 @@ from datetime import datetime
 from time import sleep
 import mysql.connector
 import undetected_chromedriver as uc
+from selenium.common.exceptions import SessionNotCreatedException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -108,27 +108,97 @@ def save_price_history(product_id, price):
 
 # ==================== DRIVER ====================
 
+def get_chrome_major_version():
+    """
+    Resolve a versão major do Chrome.
+    Prioridade:
+    1) CHROME_VERSION_MAIN no ambiente
+    2) Registro do Windows (BLBeacon)
+    """
+    env_version = os.getenv("CHROME_VERSION_MAIN", "").strip()
+    if env_version:
+        try:
+            return int(env_version)
+        except ValueError:
+            logger.warning(f"CHROME_VERSION_MAIN inválido: '{env_version}'. Usando autodetecção.")
+
+    if os.name != "nt":
+        return None
+
+    try:
+        import winreg
+
+        reg_paths = [
+            (winreg.HKEY_CURRENT_USER, r"Software\\Google\\Chrome\\BLBeacon"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\\Google\\Chrome\\BLBeacon"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\\WOW6432Node\\Google\\Chrome\\BLBeacon"),
+        ]
+
+        for hive, subkey in reg_paths:
+            try:
+                with winreg.OpenKey(hive, subkey) as key:
+                    version, _ = winreg.QueryValueEx(key, "version")
+                major = int(str(version).split(".", 1)[0])
+                if major > 0:
+                    return major
+            except OSError:
+                continue
+    except Exception as err:
+        logger.debug(f"Falha ao detectar versão do Chrome no registro: {err}")
+
+    return None
+
+
+def extract_browser_major_from_error(err):
+    """Extrai a versão major do Chrome da mensagem de erro do Selenium."""
+    match = re.search(r"Current browser version is\s+(\d+)\.", str(err))
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def start_chrome_with_version(options, version_main=None):
+    if version_main:
+        logger.info(f"Iniciando ChromeDriver com version_main={version_main}")
+        return uc.Chrome(options=options, use_subprocess=True, version_main=version_main)
+
+    logger.info("Iniciando ChromeDriver com autodetecção de versão")
+    return uc.Chrome(options=options, use_subprocess=True)
+
 def create_driver():
     opts = uc.ChromeOptions()
 
-    # Desativar headless para debug - ver o que está acontecendo
-    # opts.add_argument("--headless=new")  # COMENTADO PARA DEBUG
+    if SCRAPER_CONFIG.get("headless"):
+        opts.add_argument("--headless=new")
+
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
-    # opts.add_argument("--disable-gpu")  # COMENTADO - necessário quando não headless
+    opts.add_argument("--disable-gpu")
     opts.add_argument("--disable-blink-features=AutomationControlled")
     opts.add_argument("--disable-popup-blocking")
     opts.add_argument("--disable-notifications")
+    # Garante navegação em janela anônima (sem sessão/cookies persistidos).
     opts.add_argument("--incognito")
     opts.add_argument("--lang=pt-PT")
     opts.add_argument("--start-maximized")
     opts.add_argument("--window-size=1920,1080")
     opts.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
 
-    # Usar ChromeDriver da mesma versão major que o Chrome instalado (evita "only supports Chrome 145, current is 144")
-    # Pode ser sobrescrito por CHROME_VERSION_MAIN no .env (ex.: 145 quando atualizares o Chrome)
-    version_main = int(os.getenv("CHROME_VERSION_MAIN", "144"))
-    driver = uc.Chrome(options=opts, use_subprocess=True, version_main=version_main)
+    version_main = get_chrome_major_version()
+
+    try:
+        driver = start_chrome_with_version(opts, version_main)
+    except SessionNotCreatedException as err:
+        browser_major = extract_browser_major_from_error(err)
+        if browser_major and browser_major != version_main:
+            logger.warning(
+                f"Incompatibilidade de driver detectada (driver={version_main}, browser={browser_major}). Tentando novamente."
+            )
+            driver = start_chrome_with_version(opts, browser_major)
+        else:
+            logger.warning("Falha com version_main explícita; tentando autodetecção total do undetected_chromedriver.")
+            driver = start_chrome_with_version(opts)
+
     driver.delete_all_cookies()
     return driver
 
@@ -662,26 +732,64 @@ def scrape_single_product(url, is_initial=False):
 # ==================== MAIN ====================
 
 def monitor_loop():
-    driver = create_driver()
-    logger.info("PromoPing scraper iniciado")
+    cycle_interval = max(5, int(SCRAPER_CONFIG.get("cycle_interval", 60)))
+    driver = None
+    logger.info(f"PromoPing scraper iniciado (ciclo a cada {cycle_interval}s)")
 
     try:
-        produtos = fetch_products()
+        while True:
+            started_at = datetime.now()
 
-        for p in produtos:
-            loja, preco = extract_price(driver, p["Link"])
+            if driver is None:
+                try:
+                    driver = create_driver()
+                except Exception as driver_err:
+                    logger.error(f"Falha ao criar driver: {driver_err}")
+                    traceback.print_exc()
+                    sleep(min(30, cycle_interval))
+                    continue
 
-            if preco:
-                logger.info(f"[OK] {p['Nome']} ({loja}) €{preco}")
-                update_price(p["Id"], preco)
-                save_price_history(p["Id"], preco)  # Salvar no histórico da base de dados
-            else:
-                logger.warning(f"[FAIL] {p['Nome']} sem preço ({loja})")
+            try:
+                produtos = fetch_products()
+                logger.info(f"[CICLO] {len(produtos)} produto(s) ativo(s) carregado(s) da base")
 
-            sleep(2)
+                for p in produtos:
+                    try:
+                        loja, preco = extract_price(driver, p["Link"])
+                    except WebDriverException as wd_err:
+                        logger.warning(f"Driver instável ao processar '{p['Nome']}': {wd_err}")
+                        safe_quit(driver)
+                        driver = None
+                        break
+                    except Exception as prod_err:
+                        logger.error(f"Erro ao processar produto '{p['Nome']}': {prod_err}")
+                        traceback.print_exc()
+                        continue
 
-    except Exception as e:
-        logger.error(e)
+                    if preco:
+                        logger.info(f"[OK] {p['Nome']} ({loja}) €{preco}")
+                        update_price(p["Id"], preco)
+                        save_price_history(p["Id"], preco)
+                    else:
+                        logger.warning(f"[FAIL] {p['Nome']} sem preço ({loja})")
+
+                    sleep(2)
+
+            except Exception as cycle_err:
+                logger.error(f"Erro durante ciclo de monitorização: {cycle_err}")
+                traceback.print_exc()
+                safe_quit(driver)
+                driver = None
+
+            elapsed = (datetime.now() - started_at).total_seconds()
+            wait_seconds = max(1, cycle_interval - int(elapsed))
+            logger.info(f"[CICLO] Finalizado em {int(elapsed)}s. Próxima execução em {wait_seconds}s")
+            sleep(wait_seconds)
+
+    except KeyboardInterrupt:
+        logger.info("Interrompido manualmente pelo utilizador")
+    except Exception as err:
+        logger.error(err)
         traceback.print_exc()
 
     finally:

@@ -15,7 +15,8 @@ DB_CONFIG = {
 SCRAPER_CONFIG = {
     'cycle_interval': int(os.getenv('CYCLE_INTERVAL', 60)),
     'max_wait': int(os.getenv('MAX_WAIT', 10)),
-    'headless': os.getenv('HEADLESS', 'False').lower() in ('1', 'true', 'yes'),  # False para debug
+    # True por padrão para rodar em segundo plano sem abrir janela do Chrome.
+    'headless': os.getenv('HEADLESS', 'True').lower() in ('1', 'true', 'yes'),
     'user_agent': os.getenv('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 }
 
