@@ -1,6 +1,3 @@
-# PromoPing Scraper - START
-# Script para iniciar o monitor de precos em segundo plano (headless)
-
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VenvPath = Join-Path (Split-Path -Parent $ScriptPath) ".venv\Scripts\python.exe"
 $ScraperPath = Join-Path $ScriptPath "scraper.py"

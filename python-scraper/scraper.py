@@ -35,12 +35,17 @@ def connect_db():
 def fetch_products():
     conn = connect_db()
     cur = conn.cursor(dictionary=True)
+    # Nota: Idealmente faria JOIN com configutilizador e planos para obter IntervaloVerificacao
+    # baseado no plano do utilizador. Por enquanto, usa default 24h (Free plan).
     cur.execute("""
-        SELECT Id, Nome, Link, PrecoAlvo
+        SELECT Id, Nome, Link, PrecoAlvo, UpdatedAt
         FROM produtos
         WHERE Link IS NOT NULL AND Link <> '' AND DeletedAt IS NULL
     """)
     rows = cur.fetchall()
+    # Adicionar intervalo de verificacao padrao (24h) para cada produto
+    for row in rows:
+        row['VerificacaoIntervalo'] = 24  # Default: Free plan (24 horas)
     cur.close()
     conn.close()
     return rows
@@ -56,6 +61,42 @@ def update_price(product_id, price):
     conn.commit()
     cur.close()
     conn.close()
+
+def should_update_product(product, current_time=None):
+    """
+    Verifica se um produto deve ser atualizado baseado no plano e última verificação.
+    
+    Intervalo de verificação (horas) por tipo de plano:
+    - Premium: 1h
+    - Standard: 4h 
+    - Basic: 8h
+    - Free: 24h
+    
+    Se UpdatedAt é NULL (produto novo), atualiza imediatamente.
+    """
+    if current_time is None:
+        current_time = datetime.now()
+    
+    updated_at = product.get("UpdatedAt")
+    intervalo_horas = product.get("VerificacaoIntervalo", 24)  # Default 24h (Free)
+    
+    # Se nunca foi atualizado (NULL), deve atualizar imediatamente (produto novo)
+    if updated_at is None:
+        return True
+    
+    # Calcular tempo decorrido desde última verificação
+    if isinstance(updated_at, str):
+        try:
+            updated_at = datetime.strptime(updated_at, '%Y-%m-%d %H:%M:%S')
+        except:
+            # Se não conseguir fazer parse, assume que deve atualizar
+            return True
+    
+    tempo_decorrido = (current_time - updated_at).total_seconds() / 3600  # em horas
+    
+    # Se tempo decorrido >= intervalo, deve atualizar
+    return tempo_decorrido >= intervalo_horas
+
 
 def save_price_history(product_id, price):
     """Salva o preço no histórico de preços"""
@@ -753,7 +794,26 @@ def monitor_loop():
                 produtos = fetch_products()
                 logger.info(f"[CICLO] {len(produtos)} produto(s) ativo(s) carregado(s) da base")
 
+                ciclo_agora = datetime.now()
+                atualizados = 0
+                aguardando = 0
+                novos = 0
+
                 for p in produtos:
+                    # Verificar se o produto pode ser atualizado baseado no plano
+                    if not should_update_product(p, ciclo_agora):
+                        intervalo = p.get("VerificacaoIntervalo", 24)
+                        logger.debug(f"[SKIP] {p['Nome']} aguarda proxima atualizacao (intervalo: {intervalo}h)")
+                        aguardando += 1
+                        continue
+                    
+                    # Se UpdatedAt é NULL, é um produto novo
+                    if p.get("UpdatedAt") is None:
+                        novos += 1
+                        logger.info(f"[NOVO] Monitorando novo produto: {p['Nome']}")
+                    
+                    atualizados += 1
+
                     try:
                         loja, preco = extract_price(driver, p["Link"])
                     except WebDriverException as wd_err:
@@ -774,6 +834,8 @@ def monitor_loop():
                         logger.warning(f"[FAIL] {p['Nome']} sem preço ({loja})")
 
                     sleep(2)
+
+                logger.info(f"[CICLO] Resumo: {atualizados} atualizados, {aguardando} aguardando atualizacao, {novos} novos")
 
             except Exception as cycle_err:
                 logger.error(f"Erro durante ciclo de monitorização: {cycle_err}")
