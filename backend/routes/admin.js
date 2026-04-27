@@ -1994,7 +1994,7 @@ router.get("/calendar/activities", async (req, res) => {
             query += " AND a.DataInicio >= ? AND a.DataInicio < ?";
             params.push(todayStart.toISOString().slice(0, 19).replace("T", " "), todayEnd.toISOString().slice(0, 19).replace("T", " "));
         } else if (filter === "pendentes") {
-            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + INTERVAL a.DuracaoMinutos MINUTE) >= NOW()";
+            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + a.DuracaoMinutos * INTERVAL '1 minute') >= NOW()";
         } else if (filter === "concluidas") {
             query += " AND a.Estado = 'concluida'";
         }
@@ -2554,10 +2554,10 @@ router.post("/calendar/save-google-tokens", verifyToken, async (req, res) => {
         await pool.query(
             `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope, token_type)
              VALUES (?, ?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE
-                 access_token = VALUES(access_token),
-                 refresh_token = VALUES(refresh_token),
-                 expires_at = VALUES(expires_at),
+             ON CONFLICT (ReferenciaID) DO UPDATE SET
+                 access_token = EXCLUDED.access_token,
+                 refresh_token = EXCLUDED.refresh_token,
+                 expires_at = EXCLUDED.expires_at,
                  updated_at = NOW()`,
             [
                 referenciaID,

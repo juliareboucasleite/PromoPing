@@ -2023,11 +2023,11 @@ router.get("/google/callback", (req, res) => {
                         await pool.query(
                             `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope)
                              VALUES (?, ?, ?, ?, ?)
-                             ON DUPLICATE KEY UPDATE 
-                                 access_token = VALUES(access_token),
-                                 refresh_token = VALUES(refresh_token),
-                                 expires_at = VALUES(expires_at),
-                                 scope = VALUES(scope),
+                             ON CONFLICT (ReferenciaID) DO UPDATE SET
+                                 access_token = EXCLUDED.access_token,
+                                 refresh_token = EXCLUDED.refresh_token,
+                                 expires_at = EXCLUDED.expires_at,
+                                 scope = EXCLUDED.scope,
                                  updated_at = NOW()`,
                             [user.ReferenciaID, user.accessToken, user.refreshToken || null, expiresAt, 'calendar.readonly']
                         );

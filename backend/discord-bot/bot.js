@@ -799,7 +799,7 @@ class PromoPingBot {
 
                         // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
                         const [existingReviews] = await connection.execute(
-                            'SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
+                            "SELECT Id FROM reviews WHERE ReferenciaID = ? AND Tipo = ? AND CreatedAt > NOW() - INTERVAL '5 minutes'",
                             [referenciaID, tipo]
                         );
 

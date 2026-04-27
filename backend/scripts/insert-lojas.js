@@ -30,7 +30,7 @@ async function insertLojas() {
 
     for (const loja of lojas) {
       try {
-        // Usar INSERT ... ON DUPLICATE KEY UPDATE para inserir ou atualizar
+        // Usar INSERT ... ON CONFLICT DO UPDATE para inserir ou atualizar
         const [result] = await pool.query(
           `INSERT INTO lojas (Id, Nome, Dominio, CssSelectorPreco, CreatedAt)
            VALUES (?, ?, ?, ?, '2025-10-08 19:52:46')

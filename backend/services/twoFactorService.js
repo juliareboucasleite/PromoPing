@@ -104,8 +104,13 @@ export async function startSetup(referenciaID, method = "totp") {
         await pool.query(
             `INSERT INTO user_2fa (ReferenciaID, enabled, method, totp_secret, backup_codes, email_code, email_code_expires)
              VALUES (?, 0, 'totp', ?, ?, NULL, NULL)
-             ON DUPLICATE KEY UPDATE totp_secret = VALUES(totp_secret), backup_codes = VALUES(backup_codes),
-             method = 'totp', email_code = NULL, email_code_expires = NULL, enabled = 0`,
+             ON CONFLICT (ReferenciaID) DO UPDATE SET
+                 totp_secret = EXCLUDED.totp_secret,
+                 backup_codes = EXCLUDED.backup_codes,
+                 method = 'totp',
+                 email_code = NULL,
+                 email_code_expires = NULL,
+                 enabled = 0`,
             [referenciaID, secret.base32, backupCodesJson]
         );
 
@@ -125,8 +130,13 @@ export async function startSetup(referenciaID, method = "totp") {
         await pool.query(
             `INSERT INTO user_2fa (ReferenciaID, enabled, method, totp_secret, backup_codes, email_code, email_code_expires)
              VALUES (?, 0, 'email', NULL, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE totp_secret = NULL, backup_codes = VALUES(backup_codes),
-             method = 'email', email_code = VALUES(email_code), email_code_expires = VALUES(email_code_expires), enabled = 0`,
+             ON CONFLICT (ReferenciaID) DO UPDATE SET
+                 totp_secret = NULL,
+                 backup_codes = EXCLUDED.backup_codes,
+                 method = 'email',
+                 email_code = EXCLUDED.email_code,
+                 email_code_expires = EXCLUDED.email_code_expires,
+                 enabled = 0`,
             [referenciaID, backupCodesJson, emailCode, expires]
         );
 

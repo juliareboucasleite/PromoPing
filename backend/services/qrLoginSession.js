@@ -130,9 +130,9 @@ export async function getSessionStatus(sessionId) {
 export async function cleanupOldQrTokens() {
   const [result] = await pool.query(
     `DELETE FROM qr_tokens WHERE (
-      status IN ('pending', 'expired') AND expires_at < NOW() - INTERVAL 1 HOUR
+      status IN ('pending', 'expired') AND expires_at < NOW() - INTERVAL '1 hour'
     ) OR (
-      status = 'used' AND used_at < NOW() - INTERVAL 1 HOUR
+      status = 'used' AND used_at < NOW() - INTERVAL '1 hour'
     )`
   );
   if (result.affectedRows > 0) {

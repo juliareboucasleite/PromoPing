@@ -101,9 +101,7 @@ class NewsService {
         try {
             // Buscar configuração
             const [configs] = await pool.query(
-                // Some installations use INTEGER(0/1) instead of BOOLEAN for IsActive.
-                // Accept common truthy representations to avoid "operator does not exist" errors on PostgreSQL.
-                "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
+                "SELECT * FROM news_config WHERE IsActive = 1 LIMIT 1"
             );
 
             if (configs.length === 0) {

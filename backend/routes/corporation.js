@@ -308,7 +308,7 @@ router.get("/calendar/activities/list", async (req, res) => {
         `;
         const params = [];
         if (filter === "pendentes") {
-            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + INTERVAL a.DuracaoMinutos MINUTE) >= NOW()";
+            query += " AND a.Estado IN ('pendente','em_curso') AND (a.DataInicio + a.DuracaoMinutos * INTERVAL '1 minute') >= NOW()";
         } else if (filter === "nao_concluidas") {
             query += " AND a.Estado IN ('pendente','em_curso')";
         } else if (filter === "concluidas") {
