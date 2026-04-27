@@ -238,10 +238,10 @@ async function setupDatabase() {
 
     const dbConfig = {
         host: process.env.DB_HOST || "localhost",
-        user: process.env.DB_USER || "root",
+        user: process.env.DB_USER || "postgres",
         password: process.env.DB_PASSWORD || "",
         database: process.env.DB_NAME || "papv5",
-        port: parseInt(process.env.DB_PORT, 10) || 3306,
+        port: parseInt(process.env.DB_PORT, 10) || 5432,
     };
 
     let connection;

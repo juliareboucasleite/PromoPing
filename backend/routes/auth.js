@@ -960,7 +960,7 @@ router.post("/forgot-password", async (req, res) => {
 
         // Invalidar tokens anteriores do usuário
         await pool.query(
-            "UPDATE password_reset_tokens SET Used = TRUE WHERE ReferenciaID = ? AND Used = FALSE",
+            "UPDATE password_reset_tokens SET Used = 1 WHERE ReferenciaID = ? AND Used = 0",
             [user.ReferenciaID]
         );
 
@@ -1081,7 +1081,7 @@ router.get("/reset-password/:token", async (req, res) => {
             `SELECT prt.*, u.Email 
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
-       WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
+       WHERE prt.Token = ? AND prt.Used = 0 AND prt.ExpiresAt > NOW()`,
             [token]
         );
 
@@ -1133,7 +1133,7 @@ router.post("/reset-password", async (req, res) => {
             `SELECT prt.*, u.ReferenciaID
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
-       WHERE prt.Token = ? AND prt.Used = FALSE AND prt.ExpiresAt > NOW()`,
+       WHERE prt.Token = ? AND prt.Used = 0 AND prt.ExpiresAt > NOW()`,
             [token]
         );
 
@@ -1158,7 +1158,7 @@ router.post("/reset-password", async (req, res) => {
 
         // Marcar token como usado
         await pool.query(
-            "UPDATE password_reset_tokens SET Used = TRUE WHERE Token = ?",
+            "UPDATE password_reset_tokens SET Used = 1 WHERE Token = ?",
             [token]
         );
 

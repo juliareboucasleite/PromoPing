@@ -16,10 +16,10 @@ module.exports = {
 
             const dbConfig = {
                 host: process.env.DB_HOST || 'localhost',
-                user: process.env.DB_USER || 'root',
+                user: process.env.DB_USER || 'postgres',
                 password: process.env.DB_PASSWORD || '',
                 database: process.env.DB_NAME || 'papv5',
-                port: parseInt(process.env.DB_PORT) || 3306
+                port: parseInt(process.env.DB_PORT) || 5432
             };
 
             const connection = await mysql.createConnection(dbConfig);
@@ -29,7 +29,7 @@ module.exports = {
             if (!action || action === 'status' || action === 'info') {
                 // Mostrar status da configuração
                 const [configs] = await connection.execute(
-                    "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
+                    "SELECT * FROM news_config WHERE IsActive = 1 LIMIT 1"
                 );
 
                 const embed = new EmbedBuilder()
@@ -93,34 +93,34 @@ module.exports = {
                     return await message.channel.send('❌ O bot não tem permissão para enviar mensagens nesse canal!');
                 }
 
-                // Criar tabela se não existir
+                // Criar tabela se não existir (alinhada com sql/PAPv5.postgres.sql)
                 await connection.execute(`
                     CREATE TABLE IF NOT EXISTS news_config (
-                        Id INT AUTO_INCREMENT PRIMARY KEY,
+                        Id SERIAL PRIMARY KEY,
                         ChannelId VARCHAR(50) NOT NULL,
-                        CheckInterval INT DEFAULT 60 COMMENT 'Intervalo em minutos',
-                        MonitoredCategories TEXT COMMENT 'Categorias separadas por vírgula',
-                        MinImpactScore INT DEFAULT 7 COMMENT 'Score mínimo de impacto (1-10)',
-                        IsActive BOOLEAN DEFAULT TRUE,
+                        CheckInterval INTEGER DEFAULT 60,
+                        MonitoredCategories TEXT,
+                        MinImpactScore INTEGER DEFAULT 7,
+                        IsActive INTEGER DEFAULT 1,
                         LastCheck TIMESTAMP NULL,
                         CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                        UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
                 `);
 
                 // Verificar se já existe configuração
                 const [existing] = await connection.execute(
-                    "SELECT Id FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
+                    "SELECT Id FROM news_config WHERE IsActive = 1 LIMIT 1"
                 );
 
                 if (existing.length > 0) {
                     await connection.execute(
-                        'UPDATE news_config SET ChannelId = ?, IsActive = TRUE, UpdatedAt = NOW() WHERE Id = ?',
+                        'UPDATE news_config SET ChannelId = ?, IsActive = 1, UpdatedAt = NOW() WHERE Id = ?',
                         [channelId, existing[0].Id]
                     );
                 } else {
                     await connection.execute(
-                        'INSERT INTO news_config (ChannelId, IsActive) VALUES (?, TRUE)',
+                        'INSERT INTO news_config (ChannelId, IsActive) VALUES (?, 1)',
                         [channelId]
                     );
                 }
@@ -141,7 +141,7 @@ module.exports = {
             } else if (action === 'testar' || action === 'test') {
                 // Testar envio de notícia
                 const [configs] = await connection.execute(
-                    "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
+                    "SELECT * FROM news_config WHERE IsActive = 1 LIMIT 1"
                 );
 
                 if (configs.length === 0) {
@@ -177,7 +177,7 @@ module.exports = {
             } else if (action === 'desativar' || action === 'disable') {
                 // Desativar sistema
                 await connection.execute(
-                    'UPDATE news_config SET IsActive = FALSE WHERE LOWER(CAST(IsActive AS TEXT)) IN (\'t\',\'true\',\'1\')'
+                    'UPDATE news_config SET IsActive = 0 WHERE IsActive = 1'
                 );
 
                 const embed = new EmbedBuilder()

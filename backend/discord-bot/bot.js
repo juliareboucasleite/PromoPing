@@ -37,10 +37,10 @@ class PromoPingBot {
         // Configurações de banco de dados
         this.dbConfig = {
             host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
+            user: process.env.DB_USER || 'postgres',
             password: process.env.DB_PASSWORD || '',
             database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
+            port: parseInt(process.env.DB_PORT) || 5432
         };
 
         // Configurações do bot
@@ -2147,9 +2147,7 @@ class PromoPingBot {
             // Buscar configuração do canal de notícias
             const connection = await mysql.createConnection(this.dbConfig);
             const [configs] = await connection.execute(
-                // Tolerate DBs where IsActive is INTEGER(0/1) instead of BOOLEAN
-                // Accept common truthy representations to avoid operator type errors on PostgreSQL
-                "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
+                "SELECT * FROM news_config WHERE IsActive = 1 LIMIT 1"
             );
 
             if (configs.length === 0) {

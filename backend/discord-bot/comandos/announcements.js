@@ -28,10 +28,10 @@ module.exports = {
 
             const dbConfig = {
                 host: process.env.DB_HOST || 'localhost',
-                user: process.env.DB_USER || 'root',
+                user: process.env.DB_USER || 'postgres',
                 password: process.env.DB_PASSWORD || '',
                 database: process.env.DB_NAME || 'papv5',
-                port: parseInt(process.env.DB_PORT) || 3306
+                port: parseInt(process.env.DB_PORT) || 5432
             };
 
             const connection = await mysql.createConnection(dbConfig);
@@ -48,7 +48,7 @@ module.exports = {
             if (!action || action === 'status' || action === 'info') {
                 // Mostrar status da configuração
                 const [configs] = await connection.execute(
-                    "SELECT * FROM webhook_configs WHERE Type = ? AND LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1')",
+                    "SELECT * FROM webhook_configs WHERE Type = ? AND IsActive = 1",
                     ['github']
                 );
 
@@ -106,12 +106,12 @@ module.exports = {
 
                 if (existing.length > 0) {
                     await connection.execute(
-                        'UPDATE webhook_configs SET WebhookUrl = ?, IsActive = TRUE WHERE Type = ?',
+                        'UPDATE webhook_configs SET WebhookUrl = ?, IsActive = 1 WHERE Type = ?',
                         [webhookUrl, 'github']
                     );
                 } else {
                     await connection.execute(
-                        'INSERT INTO webhook_configs (Type, WebhookUrl, IsActive) VALUES (?, ?, TRUE)',
+                        'INSERT INTO webhook_configs (Type, WebhookUrl, IsActive) VALUES (?, ?, 1)',
                         ['github', webhookUrl]
                     );
                 }
@@ -218,10 +218,10 @@ module.exports = {
             try {
                 const dbConfig = {
                     host: process.env.DB_HOST || 'localhost',
-                    user: process.env.DB_USER || 'root',
+                    user: process.env.DB_USER || 'postgres',
                     password: process.env.DB_PASSWORD || '',
                     database: process.env.DB_NAME || 'papv5',
-                    port: parseInt(process.env.DB_PORT) || 3306
+                    port: parseInt(process.env.DB_PORT) || 5432
                 };
                 const errorConnection = await mysql.createConnection(dbConfig);
                 
