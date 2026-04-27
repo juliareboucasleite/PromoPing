@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../database/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -14,14 +14,6 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
  */
 class NewsService {
     constructor() {
-        this.dbConfig = {
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
-        };
-
         // Categorias e palavras-chave relacionadas às lojas monitoradas
         this.monitoredCategories = {
             'Tecnologia': ['tecnologia', 'tech', 'smartphone', 'tablet', 'laptop', 'computador', 'iphone', 'samsung', 'xiaomi', 'huawei', 'apple', 'microsoft', 'nvidia', 'amd', 'intel'],
@@ -107,28 +99,27 @@ class NewsService {
      */
     async fetchNews(minScore = 7) {
         try {
-            const connection = await mysql.createConnection(this.dbConfig);
-
             // Buscar configuração
-            const [configs] = await connection.execute(
-                'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
+            const [configs] = await pool.query(
+                // Some installations use INTEGER(0/1) instead of BOOLEAN for IsActive.
+                // Accept common truthy representations to avoid "operator does not exist" errors on PostgreSQL.
+                "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
             );
 
             if (configs.length === 0) {
-                await connection.end();
                 return [];
             }
 
             const config = configs[0];
-            const minImpactScore = config.MinImpactScore || minScore;
+            const minImpactScore = config.minimpactscore || config.MinImpactScore || minScore;
 
             // Verificar última verificação para evitar spam
-            const lastCheck = config.LastCheck ? new Date(config.LastCheck) : null;
+            const lastCheckRaw = config.lastcheck || config.LastCheck;
+            const lastCheck = lastCheckRaw ? new Date(lastCheckRaw) : null;
             const now = new Date();
-            const checkInterval = (config.CheckInterval || 60) * 60 * 1000; // Converter minutos para ms
+            const checkInterval = (config.checkinterval || config.CheckInterval || 60) * 60 * 1000;
 
             if (lastCheck && (now - lastCheck) < checkInterval) {
-                await connection.end();
                 return []; // Ainda não é hora de verificar novamente
             }
 
@@ -195,7 +186,7 @@ class NewsService {
             filteredNews.sort((a, b) => b.impactScore - a.impactScore);
 
             // Salvar todas as notícias filtradas na tabela blog_articles
-            await this.saveNewsToBlog(filteredNews, connection);
+            await this.saveNewsToBlog(filteredNews);
 
             // Notificar subscritores da newsletter que ativaram "receber notificações de novos artigos"
             if (filteredNews.length > 0) {
@@ -211,12 +202,11 @@ class NewsService {
             const topNews = filteredNews.slice(0, 5);
 
             // Atualizar última verificação
-            await connection.execute(
+            await pool.query(
                 'UPDATE news_config SET LastCheck = NOW() WHERE Id = ?',
-                [config.Id]
+                [config.id || config.Id]
             );
 
-            await connection.end();
             return topNews;
 
         } catch (error) {
@@ -230,28 +220,24 @@ class NewsService {
      */
     async isNewsAlreadySent(url) {
         try {
-            const connection = await mysql.createConnection(this.dbConfig);
-
-            // Criar tabela de notícias enviadas se não existir
-            await connection.execute(`
+            await pool.query(`
                 CREATE TABLE IF NOT EXISTS news_sent (
-                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Id SERIAL PRIMARY KEY,
                     Url VARCHAR(500) NOT NULL UNIQUE,
                     Title VARCHAR(500),
                     Category VARCHAR(100),
                     ImpactScore INT,
-                    SentAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX idx_url (Url),
-                    INDEX idx_sent_at (SentAt)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    SentAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
             `);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_news_sent_url ON news_sent (Url)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_news_sent_at ON news_sent (SentAt)`);
 
-            const [existing] = await connection.execute(
+            const [existing] = await pool.query(
                 'SELECT Id FROM news_sent WHERE Url = ?',
                 [url]
             );
 
-            await connection.end();
             return existing.length > 0;
 
         } catch (error) {
@@ -265,15 +251,11 @@ class NewsService {
      */
     async markNewsAsSent(news) {
         try {
-            const connection = await mysql.createConnection(this.dbConfig);
-
-            await connection.execute(`
+            await pool.query(`
                 INSERT INTO news_sent (Url, Title, Category, ImpactScore)
                 VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE Title = VALUES(Title)
+                ON CONFLICT (Url) DO UPDATE SET Title = EXCLUDED.Title
             `, [news.url, news.title, news.category, news.impactScore]);
-
-            await connection.end();
         } catch (error) {
             console.error('[NEWS] Erro ao marcar notícia como enviada:', error);
         }
@@ -282,18 +264,11 @@ class NewsService {
     /**
      * Salva notícias na tabela blog_articles
      */
-    async saveNewsToBlog(newsArray, connection = null) {
-        const shouldCloseConnection = !connection;
-        
+    async saveNewsToBlog(newsArray) {
         try {
-            if (!connection) {
-                connection = await mysql.createConnection(this.dbConfig);
-            }
-
-            // Criar tabela se não existir
-            await connection.execute(`
+            await pool.query(`
                 CREATE TABLE IF NOT EXISTS blog_articles (
-                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Id SERIAL PRIMARY KEY,
                     Title VARCHAR(500) NOT NULL,
                     Description TEXT,
                     Url VARCHAR(500) NOT NULL UNIQUE,
@@ -301,21 +276,19 @@ class NewsService {
                     Source VARCHAR(200) DEFAULT NULL,
                     Category VARCHAR(100) DEFAULT NULL,
                     ImpactScore INT DEFAULT 0,
-                    PublishedAt DATETIME NOT NULL,
+                    PublishedAt TIMESTAMP NOT NULL,
                     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    IsVisible TINYINT(1) DEFAULT 1,
-                    Views INT DEFAULT 0,
-                    INDEX idx_category (Category),
-                    INDEX idx_impact_score (ImpactScore),
-                    INDEX idx_published_at (PublishedAt),
-                    INDEX idx_created_at (CreatedAt),
-                    INDEX idx_is_visible (IsVisible),
-                    INDEX idx_url (Url(255))
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    IsVisible BOOLEAN DEFAULT TRUE,
+                    Views INT DEFAULT 0
+                )
             `);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_articles_category ON blog_articles (Category)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_articles_impact_score ON blog_articles (ImpactScore)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_articles_published_at ON blog_articles (PublishedAt)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_articles_created_at ON blog_articles (CreatedAt)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_articles_is_visible ON blog_articles (IsVisible)`);
 
-            // Inserir ou atualizar cada notícia (ignorar entradas sem título ou URL)
             for (const news of newsArray) {
                 const title = news.title != null && String(news.title).trim() !== '' ? String(news.title).trim() : null;
                 const url = news.url != null && String(news.url).trim() !== '' ? news.url : null;
@@ -324,18 +297,18 @@ class NewsService {
                 }
                 const publishedDate = news.publishedAt ? new Date(news.publishedAt) : new Date();
 
-                await connection.execute(`
+                await pool.query(`
                     INSERT INTO blog_articles 
                         (Title, Description, Url, ImageUrl, Source, Category, ImpactScore, PublishedAt, IsVisible)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-                    ON DUPLICATE KEY UPDATE
-                        Title = VALUES(Title),
-                        Description = VALUES(Description),
-                        ImageUrl = VALUES(ImageUrl),
-                        Source = VALUES(Source),
-                        Category = VALUES(Category),
-                        ImpactScore = VALUES(ImpactScore),
-                        PublishedAt = VALUES(PublishedAt),
+                    ON CONFLICT (Url) DO UPDATE SET
+                        Title = EXCLUDED.Title,
+                        Description = EXCLUDED.Description,
+                        ImageUrl = EXCLUDED.ImageUrl,
+                        Source = EXCLUDED.Source,
+                        Category = EXCLUDED.Category,
+                        ImpactScore = EXCLUDED.ImpactScore,
+                        PublishedAt = EXCLUDED.PublishedAt,
                         UpdatedAt = CURRENT_TIMESTAMP
                 `, [
                     title,
@@ -348,15 +321,8 @@ class NewsService {
                     publishedDate
                 ]);
             }
-
-            if (shouldCloseConnection) {
-                await connection.end();
-            }
         } catch (error) {
             console.error('[NEWS] Erro ao salvar notícias no blog:', error);
-            if (shouldCloseConnection && connection) {
-                await connection.end();
-            }
         }
     }
 }

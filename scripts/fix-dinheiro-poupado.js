@@ -19,7 +19,7 @@ async function main() {
   try {
     // 1) Garantir coluna dinheiro_poupado em utilizadores
     const [colUser] = await pool.query(
-      "SELECT COUNT(*) as c FROM information_schema.columns WHERE table_schema=DATABASE() AND LOWER(table_name)='utilizadores' AND column_name='dinheiro_poupado'"
+      "SELECT COUNT(*)::int as c FROM information_schema.columns WHERE table_schema = current_schema() AND LOWER(table_name)='utilizadores' AND LOWER(column_name)='dinheiro_poupado'"
     );
     if (Number(colUser[0]?.c) === 0) {
       await pool.query("ALTER TABLE utilizadores ADD COLUMN dinheiro_poupado DECIMAL(10,2) DEFAULT 0.00");
@@ -30,16 +30,16 @@ async function main() {
 
     // 2) Garantir coluna ValorPoupado em notificacoes
     const [tables] = await pool.query(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND LOWER(table_name)=LOWER('notificacoes') LIMIT 1"
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND LOWER(table_name)=LOWER('notificacoes') LIMIT 1"
     );
     const notifTable = tables[0]?.table_name;
     if (notifTable) {
       const [colNotif] = await pool.query(
-        "SELECT COUNT(*) as c FROM information_schema.columns WHERE table_schema=DATABASE() AND LOWER(table_name)=LOWER(?) AND column_name='ValorPoupado'",
+        "SELECT COUNT(*)::int as c FROM information_schema.columns WHERE table_schema = current_schema() AND LOWER(table_name)=LOWER(?) AND LOWER(column_name)=LOWER('ValorPoupado')",
         [notifTable]
       );
       if (Number(colNotif[0]?.c) === 0) {
-        await pool.query(`ALTER TABLE \`${notifTable}\` ADD COLUMN ValorPoupado DECIMAL(10,2) DEFAULT 0.00`);
+        await pool.query(`ALTER TABLE "${notifTable}" ADD COLUMN "ValorPoupado" DECIMAL(10,2) DEFAULT 0.00`);
         console.log(' [FIX] Coluna notificacoes.ValorPoupado criada');
       } else {
         console.log(' [FIX] Coluna notificacoes.ValorPoupado já existe');
@@ -52,7 +52,7 @@ async function main() {
     try {
       const [result] = await pool.query(`
         UPDATE utilizadores u
-        SET u.dinheiro_poupado = (
+        SET dinheiro_poupado = (
           SELECT COALESCE(SUM(n.ValorPoupado), 0)
           FROM notificacoes n
           WHERE n.ReferenciaID = u.ReferenciaID

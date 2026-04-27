@@ -31,7 +31,7 @@ export class DeactivatedAccountsManager {
           FROM utilizadores 
           WHERE Ativo = 0 
             AND DataDesativacao IS NOT NULL 
-            AND DataDesativacao <= DATE_SUB(NOW(), INTERVAL 20 DAY)
+            AND DataDesativacao <= NOW() - INTERVAL '20 days'
         `);
                 expiredAccounts = accountsWithDate;
             } catch (error) {

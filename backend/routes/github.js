@@ -3,7 +3,7 @@
 import express from "express";
 import fetch from "node-fetch";
 import crypto from "crypto";
-import mysql from "mysql2/promise";
+import { pool } from "../database/db.js";
 import {
     EmbedBuilder
 } from "discord.js";
@@ -481,30 +481,18 @@ const processedReleases = new Map();
 // Função para garantir que a tabela de releases processadas existe
 async function ensureProcessedReleasesTable() {
     try {
-        const dbConfig = {
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
-        };
-
-        const connection = await mysql.createConnection(dbConfig);
-
-        await connection.execute(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS processed_releases (
-                Id INT AUTO_INCREMENT PRIMARY KEY,
+                Id SERIAL PRIMARY KEY,
                 ReleaseId VARCHAR(255) NOT NULL UNIQUE,
                 TagName VARCHAR(100) NOT NULL,
                 Repository VARCHAR(200) NOT NULL,
-                ProcessedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_release_id (ReleaseId),
-                INDEX idx_repository (Repository),
-                INDEX idx_processed_at (ProcessedAt)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ProcessedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
         `);
-
-        await connection.end();
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_release_id ON processed_releases (ReleaseId)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_repository ON processed_releases (Repository)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_processed_at ON processed_releases (ProcessedAt)`);
     } catch (error) {
         console.error('[GITHUB] Erro ao criar tabela processed_releases:', error);
     }
@@ -514,26 +502,10 @@ async function ensureProcessedReleasesTable() {
 async function loadProcessedReleases() {
     try {
         await ensureProcessedReleasesTable();
-
-        const dbConfig = {
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
-        };
-
-        const connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute(
-            'SELECT ReleaseId FROM processed_releases'
-        );
-
+        const [rows] = await pool.query('SELECT ReleaseId FROM processed_releases');
         for (const row of rows) {
-            processedReleases.set(row.ReleaseId, Date.now());
+            processedReleases.set(row.releaseid || row.ReleaseId, Date.now());
         }
-
-        await connection.end();
-        // Log removido para reduzir verbosidade
     } catch (error) {
         console.error('[GITHUB] Erro ao carregar releases processadas:', error);
     }
@@ -541,35 +513,18 @@ async function loadProcessedReleases() {
 
 // Verificar se uma release já foi processada (banco + cache)
 async function isReleaseProcessed(releaseId) {
-    // Verificar cache primeiro (mais rápido)
     if (processedReleases.has(releaseId)) {
         return true;
     }
-
-    // Verificar banco de dados
     try {
-        const dbConfig = {
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
-        };
-
-        const connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute(
+        const [rows] = await pool.query(
             'SELECT Id FROM processed_releases WHERE ReleaseId = ?',
             [releaseId]
         );
-
-        await connection.end();
-
         if (rows.length > 0) {
-            // Adicionar ao cache
             processedReleases.set(releaseId, Date.now());
             return true;
         }
-
         return false;
     } catch (error) {
         console.error('[GITHUB] Erro ao verificar release processada:', error);
@@ -580,22 +535,10 @@ async function isReleaseProcessed(releaseId) {
 // Marcar release como processada (banco + cache)
 async function markReleaseAsProcessed(releaseId, tagName, repository) {
     try {
-        const dbConfig = {
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'papv5',
-            port: parseInt(process.env.DB_PORT) || 3306
-        };
-
-        const connection = await mysql.createConnection(dbConfig);
-
-        await connection.execute(
-            'INSERT IGNORE INTO processed_releases (ReleaseId, TagName, Repository) VALUES (?, ?, ?)',
+        await pool.query(
+            'INSERT INTO processed_releases (ReleaseId, TagName, Repository) VALUES (?, ?, ?) ON CONFLICT (ReleaseId) DO NOTHING',
             [releaseId, tagName, repository]
         );
-
-        await connection.end();
 
         // Adicionar ao cache
         processedReleases.set(releaseId, Date.now());
@@ -766,16 +709,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
             // Remover do cache e banco se falhar para permitir retry
             processedReleases.delete(releaseId);
             try {
-                const dbConfig = {
-                    host: process.env.DB_HOST || 'localhost',
-                    user: process.env.DB_USER || 'root',
-                    password: process.env.DB_PASSWORD || '',
-                    database: process.env.DB_NAME || 'papv5',
-                    port: parseInt(process.env.DB_PORT) || 3306
-                };
-                const connection = await mysql.createConnection(dbConfig);
-                await connection.execute('DELETE FROM processed_releases WHERE ReleaseId = ?', [releaseId]);
-                await connection.end();
+                await pool.query('DELETE FROM processed_releases WHERE ReleaseId = ?', [releaseId]);
             } catch (error) {
                 console.error('[GITHUB WEBHOOK] Erro ao remover release do banco:', error);
             }

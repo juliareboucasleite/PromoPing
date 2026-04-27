@@ -30,7 +30,7 @@ router.post("/:tipo", async (req, res) => {
     if (!referenciaID) return res.status(401).json({ error: "Não autenticado" });
 
     await pool.query(
-      "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+      "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, ?, 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
       [referenciaID, tipo]
     );
 

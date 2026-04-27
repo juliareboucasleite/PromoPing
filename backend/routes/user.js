@@ -25,7 +25,7 @@ router.get("/me", verifyToken, async (req, res) => {
 
     // Info do utilizador
     const [users] = await pool.query(
-      "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, FotoPerfil FROM utilizadores WHERE ReferenciaID = ?",
+      'SELECT ReferenciaID AS "ReferenciaID", Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", DataRegisto AS "DataRegisto", FotoPerfil AS "FotoPerfil" FROM utilizadores WHERE ReferenciaID = ?',
       [referenciaID]
     );
     const user = users[0];
@@ -80,23 +80,24 @@ router.get("/profile", verifyToken, async (req, res) => {
     let userRows;
     try {
       [userRows] = await pool.query(
-        "SELECT Nome, Email, Telefone, FotoPerfil, UltimaAlteracaoSenha, UltimaAlteracaoNome, DataNascimento FROM utilizadores WHERE ReferenciaID = ?",
+        'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", UltimaAlteracaoSenha AS "UltimaAlteracaoSenha", UltimaAlteracaoNome AS "UltimaAlteracaoNome", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
         [referenciaID]
       );
     } catch (colErr) {
       if (colErr.code === 'ER_BAD_FIELD_ERROR') {
         [userRows] = await pool.query(
-"SELECT Nome, Email, Telefone, FotoPerfil, DataNascimento FROM utilizadores WHERE ReferenciaID = ?",
-        [referenciaID]
-      );
+          'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
+          [referenciaID]
+        );
     } else throw colErr;
     }
 
     console.log("Dados do usuário encontrados:", userRows);
 
     if (userRows.length === 0) {
-      console.log("Usuário não encontrado para ReferenciaID:", referenciaID);
-      return res.status(404).json({ error: "Utilizador não encontrado" });
+      console.warn("Usuário não encontrado para ReferenciaID:", referenciaID, " - token válido mas sem usuário correspondente");
+      // Retornar 401 para forçar re-login se o token não mapear para um utilizador válido
+      return res.status(401).json({ error: "Token inválido ou utilizador não encontrado" });
     }
 
     // Contas conectadas - verificando email, telefone e discord
@@ -412,7 +413,7 @@ router.get("/stats", verifyToken, async (req, res) => {
 
     // Buscar data de registro diretamente
     const [userRows] = await pool.query(
-      "SELECT DataRegisto FROM utilizadores WHERE ReferenciaID = ?",
+      'SELECT DataRegisto AS "DataRegisto" FROM utilizadores WHERE ReferenciaID = ?',
       [referenciaID]
     );
 

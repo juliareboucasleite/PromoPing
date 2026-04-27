@@ -117,25 +117,25 @@ router.post("/subscribe", async (req, res) => {
       // Criar tabela se não existir
       await connection.query(`
         CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-          id INT AUTO_INCREMENT PRIMARY KEY,
+          id SERIAL PRIMARY KEY,
           email VARCHAR(255) NOT NULL UNIQUE,
           newsletter BOOLEAN DEFAULT TRUE,
           promotions BOOLEAN DEFAULT TRUE,
           articles BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          INDEX idx_email (email)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
       `);
+      await connection.query(`CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_email ON newsletter_subscribers (email)`);
 
       // Inserir ou atualizar subscriber
       await connection.query(`
         INSERT INTO newsletter_subscribers (email, newsletter, promotions, articles)
         VALUES (?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          newsletter = VALUES(newsletter),
-          promotions = VALUES(promotions),
-          articles = VALUES(articles),
+        ON CONFLICT (email) DO UPDATE SET
+          newsletter = EXCLUDED.newsletter,
+          promotions = EXCLUDED.promotions,
+          articles = EXCLUDED.articles,
           updated_at = CURRENT_TIMESTAMP
       `, [email, newsletter || false, promotions || false, articles || false]);
 
@@ -251,7 +251,7 @@ router.get("/stats", async (req, res) => {
       // Contar notificações enviadas (últimos 30 dias)
       const [notificationsCount] = await connection.query(`
         SELECT COUNT(*) as total FROM Notificacoes 
-        WHERE DataEnvio >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        WHERE DataEnvio >= NOW() - INTERVAL '30 days'
       `);
 
 
@@ -263,7 +263,7 @@ router.get("/stats", async (req, res) => {
       // Calcular total poupado (últimos 30 dias)
       const [savingsTotal] = await connection.query(`
         SELECT COALESCE(SUM(ValorPoupado), 0) as total FROM Notificacoes 
-        WHERE DataEnvio >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND ValorPoupado IS NOT NULL
+        WHERE DataEnvio >= NOW() - INTERVAL '30 days' AND ValorPoupado IS NOT NULL
       `);
 
       // Calcular total poupado (todos os tempos)

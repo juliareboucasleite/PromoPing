@@ -17,9 +17,9 @@ async function getUsersWithBirthdayToday() {
     `SELECT ReferenciaID, Nome, Email, discord_id, DataNascimento
      FROM utilizadores
      WHERE DataNascimento IS NOT NULL
-       AND MONTH(DataNascimento) = MONTH(CURDATE())
-       AND DAY(DataNascimento) = DAY(CURDATE())
-       AND (Ativo = 1 OR Ativo IS NULL)
+       AND EXTRACT(MONTH FROM DataNascimento) = EXTRACT(MONTH FROM CURRENT_DATE)
+       AND EXTRACT(DAY FROM DataNascimento) = EXTRACT(DAY FROM CURRENT_DATE)
+       AND (LOWER(CAST(Ativo AS TEXT)) IN ('t','true','1') OR Ativo IS NULL)
        AND Email IS NOT NULL AND Email != ''`
   );
   return rows;

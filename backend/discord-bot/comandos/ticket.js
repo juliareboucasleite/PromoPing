@@ -64,14 +64,26 @@ module.exports = {
                 components: [row]
             });
 
-            // Confirmar configuração
+            // Confirmar configuração (reply pode falhar when original message is an interaction or deleted)
             const confirmEmbed = new EmbedBuilder()
                 .setTitle('✅ Sistema de Tickets Configurado!')
                 .setDescription(`O botão de abrir ticket foi enviado para ${targetChannel}`)
                 .setColor(0x00ff00)
                 .setTimestamp();
 
-            await message.reply({ embeds: [confirmEmbed] });
+            try {
+                await message.reply({ embeds: [confirmEmbed] });
+            } catch (err) {
+                // Fallback: se reply falhar (por exemplo, message_reference inválido em slash->fakeMessage flows),
+                // enviar diretamente no canal ou ignorar silenciosamente.
+                try {
+                    if (message.channel && message.channel.send) {
+                        await message.channel.send({ embeds: [confirmEmbed] }).catch(() => {});
+                    }
+                } catch (e) {
+                    console.warn('[DISCORD] Falha ao confirmar setup do ticket (fallback):', e.message || e);
+                }
+            }
 
         } catch (error) {
             console.error('[DISCORD] Erro no comando ticket:', error);

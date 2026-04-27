@@ -195,11 +195,13 @@ router.get("/", verifyToken, async (req, res) => {
         // Buscar histórico de preços separado
         let historicos = [];
         if (produtos.length > 0) {
+            const produtoIds = produtos.map(p => p.Id);
+            const inPlaceholders = produtoIds.map(() => "?").join(",");
             const [historicosResult] = await pool.query(
-                `SELECT ProdutoId, Preco, DataRegisto 
+                `SELECT ProdutoId, Preco, DataRegisto
                  FROM historicoprecos 
-                 WHERE ProdutoId IN (?)`,
-                [produtos.map(p => p.Id)]
+                 WHERE ProdutoId IN (${inPlaceholders})`,
+                produtoIds
             );
             historicos = historicosResult;
         }

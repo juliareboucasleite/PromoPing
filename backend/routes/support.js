@@ -206,7 +206,7 @@ async function ensureTable() {
  */
 async function ensureSupportTicketClosuresTable() {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'support_ticket_closures'");
         if (tables.length === 0) {
             await pool.query(`
                 CREATE TABLE support_ticket_closures (
@@ -700,11 +700,11 @@ router.post("/internal/threads/:threadId/close", async (req, res) => {
         const userRef = exists[0].ReferenciaID;
         if (closedByRef) {
             try {
-                const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+                const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'support_ticket_closures'");
                 if (tables.length > 0) {
                     await pool.query(
-                        "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ClosedByReferenciaID = ?, ClosedAt = CURRENT_TIMESTAMP",
-                        [threadId, closedByRef, userRef, closedByRef]
+                        "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON CONFLICT (threadId) DO UPDATE SET ClosedByReferenciaID = EXCLUDED.ClosedByReferenciaID, ClosedAt = CURRENT_TIMESTAMP",
+                        [threadId, closedByRef, userRef]
                     );
                 }
             } catch (e) {
@@ -732,7 +732,7 @@ router.get("/closed-tickets", verifyToken, async (req, res) => {
     try {
         await ensureTable();
         const userRef = req.user.ReferenciaID;
-        const [tables] = await pool.query("SHOW TABLES LIKE 'support_ticket_closures'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'support_ticket_closures'");
         if (tables.length === 0) {
             return res.json({ status: "ok", items: [] });
         }
@@ -929,8 +929,8 @@ router.delete("/messages/:id", verifyToken, async (req, res) => {
         // Guardar quem fechou (para associar à review de suporte)
         try {
             await pool.query(
-                "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ClosedByReferenciaID = ?, ClosedAt = CURRENT_TIMESTAMP",
-                [threadId, referenciaID, userReferenciaID, referenciaID]
+                "INSERT INTO support_ticket_closures (threadId, ClosedByReferenciaID, UserReferenciaID) VALUES (?, ?, ?) ON CONFLICT (threadId) DO UPDATE SET ClosedByReferenciaID = EXCLUDED.ClosedByReferenciaID, ClosedAt = CURRENT_TIMESTAMP",
+                [threadId, referenciaID, userReferenciaID]
             );
         } catch (e) {
             console.warn("[SUPPORT] Ao guardar closure:", e.message);

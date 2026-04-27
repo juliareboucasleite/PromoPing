@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 
 module.exports = {
     name: 'ajuda',
@@ -39,7 +39,7 @@ module.exports = {
             stats.totalUsuarios = usuarios[0].total;
             
             // Contar usuários com Discord
-            const [usuariosDiscord] = await connection.execute('SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id != ""');
+            const [usuariosDiscord] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id <> ''");
             stats.usuariosDiscord = usuariosDiscord[0].total;
             
             // Contar mudanças de preço hoje

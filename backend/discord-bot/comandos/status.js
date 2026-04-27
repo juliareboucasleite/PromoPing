@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
@@ -21,7 +21,7 @@ module.exports = {
             
             // Estatísticas do banco
             const [productCount] = await connection.execute('SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL');
-            const [userCount] = await connection.execute('SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id != ""');
+            const [userCount] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id <> ''");
             const [changesToday] = await connection.execute('SELECT COUNT(*) as total FROM historicoprecos WHERE DATE(DataRegisto) = CURDATE()');
             
             await connection.end();

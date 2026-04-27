@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const path = require('path');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
 // Configuração do banco de dados

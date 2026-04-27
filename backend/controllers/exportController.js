@@ -57,7 +57,7 @@ export async function exportarPDF(req, res) {
           SELECT ProdutoId, Preco, DataRegisto as Data
           FROM historicoprecos
           WHERE ProdutoId = ?
-          ${dias ? "AND DataRegisto >= DATE_SUB(NOW(), INTERVAL ? DAY)" : ""}
+          ${dias ? "AND DataRegisto >= NOW() - ((? || ' days')::interval)" : ""}
           ORDER BY DataRegisto DESC
         `, dias ? [produto.Id, dias] : [produto.Id]);
 

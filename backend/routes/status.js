@@ -100,12 +100,12 @@ async function atualizarMetricasAutomaticamente() {
     
     // Contar notificações enviadas hoje
     const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE"
     );
     
     // Buscar métricas existentes para calcular média de uptime e tempo de resposta
     const [metricasAnteriores] = await db.query(
-      "SELECT AVG(UptimeGeral) as uptimeMedio, AVG(TempoRespostaMedia) as tempoRespostaMedio FROM metricas_sistema WHERE AtualizadoEm >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+      "SELECT AVG(UptimeGeral) as uptimeMedio, AVG(TempoRespostaMedia) as tempoRespostaMedio FROM metricas_sistema WHERE AtualizadoEm >= NOW() - INTERVAL '30 days'"
     );
     
     const uptimeGeral = metricasAnteriores[0]?.uptimeMedio || 99.90;
@@ -166,7 +166,7 @@ router.get("/api/status", async (req, res) => {
 
     try {
       const [n] = await db.query(
-        "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+        "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE"
       );
       if (n && n.length) notificacoesCount = n;
     } catch (_) { }
@@ -328,12 +328,12 @@ router.get("/api/status/realtime", async (req, res) => {
     
     // Contar usuários ativos (últimos 24h)
     const [configutilizadorCount] = await db.query(
-      "SELECT COUNT(*) as total FROM configutilizador WHERE UltimoLogin >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"
+      "SELECT COUNT(*) as total FROM configutilizador WHERE UltimoLogin >= NOW() - INTERVAL '24 hours'"
     );
     
     // Contar notificações enviadas hoje
     const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE"
     );
 
     // Simular requisições por minuto (baseado em atividade real)
@@ -1005,8 +1005,8 @@ router.get("/api/status/health", async (req, res) => {
     await db.query("SELECT 1");
     
     // Verificar tabelas essenciais
-    const [tables] = await db.query("SHOW TABLES");
-    const tableNames = tables.map(row => Object.values(row)[0]);
+    const [tables] = await db.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()");
+    const tableNames = tables.map(row => row.table_name);
     
     const essentialTables = ['produtos', 'configutilizador', 'notificacoes'];
     const missingTables = essentialTables.filter(table => !tableNames.includes(table));
@@ -1050,7 +1050,7 @@ router.get("/api/status/complete", async (req, res) => {
     const [produtosCount] = await db.query("SELECT COUNT(*) as total FROM produtos");
     const [utilizadoresCount] = await db.query("SELECT COUNT(*) as total FROM utilizadores");
     const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE"
     );
     
     // Buscar componentes do sistema
@@ -1184,7 +1184,7 @@ router.get("/api/stats/users", async (req, res) => {
     
     // Contar novos utilizadores hoje
     const [utilizadoresNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM utilizadores WHERE DATE(DataRegisto) = CURDATE()"
+      "SELECT COUNT(*) as total FROM utilizadores WHERE DataRegisto::date = CURRENT_DATE"
     );
 
     res.json({
@@ -1219,7 +1219,7 @@ router.get("/api/stats/products", async (req, res) => {
     
     // Contar produtos adicionados hoje
     const [produtosNovos] = await db.query(
-      "SELECT COUNT(*) as total FROM produtos WHERE DATE(CreatedAt) = CURDATE()"
+      "SELECT COUNT(*) as total FROM produtos WHERE CreatedAt::date = CURRENT_DATE"
     );
 
     res.json({
@@ -1246,20 +1246,20 @@ router.get("/api/stats/notifications", async (req, res) => {
   try {
     // Contar notificações enviadas hoje
     const [notificacoesCount] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE()"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE"
     );
     
     // Contar notificações por tipo hoje
     const [notificacoesEmail] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE() AND Tipo = 'email'"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE AND Tipo = 'email'"
     );
     
     const [notificacoesSMS] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE() AND Tipo = 'sms'"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE AND Tipo = 'sms'"
     );
     
     const [notificacoesDiscord] = await db.query(
-      "SELECT COUNT(*) as total FROM notificacoes WHERE DATE(DataEnvio) = CURDATE() AND Tipo = 'discord'"
+      "SELECT COUNT(*) as total FROM notificacoes WHERE DataEnvio::date = CURRENT_DATE AND Tipo = 'discord'"
     );
 
     res.json({
@@ -1292,12 +1292,12 @@ router.get("/api/stats/uptime", async (req, res) => {
     
     // Calcular uptime médio dos últimos 30 dias
     const [uptimeMedio] = await db.query(
-      "SELECT AVG(UptimeGeral) as uptime FROM metricas_sistema WHERE DataAtualizacao >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+      "SELECT AVG(UptimeGeral) as uptime FROM metricas_sistema WHERE DataAtualizacao >= NOW() - INTERVAL '30 days'"
     );
     
     // Buscar tempo de resposta médio
     const [tempoResposta] = await db.query(
-      "SELECT AVG(TempoRespostaMedia) as tempo FROM metricas_sistema WHERE DataAtualizacao >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+      "SELECT AVG(TempoRespostaMedia) as tempo FROM metricas_sistema WHERE DataAtualizacao >= NOW() - INTERVAL '7 days'"
     );
 
     res.json({

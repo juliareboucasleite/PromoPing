@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 const bcrypt = require('bcrypt');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });

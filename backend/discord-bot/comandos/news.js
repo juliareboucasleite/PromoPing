@@ -1,5 +1,5 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
@@ -29,7 +29,7 @@ module.exports = {
             if (!action || action === 'status' || action === 'info') {
                 // Mostrar status da configuração
                 const [configs] = await connection.execute(
-                    'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
+                    "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
                 );
 
                 const embed = new EmbedBuilder()
@@ -110,7 +110,7 @@ module.exports = {
 
                 // Verificar se já existe configuração
                 const [existing] = await connection.execute(
-                    'SELECT Id FROM news_config WHERE IsActive = TRUE LIMIT 1'
+                    "SELECT Id FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
                 );
 
                 if (existing.length > 0) {
@@ -141,7 +141,7 @@ module.exports = {
             } else if (action === 'testar' || action === 'test') {
                 // Testar envio de notícia
                 const [configs] = await connection.execute(
-                    'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
+                    "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
                 );
 
                 if (configs.length === 0) {
@@ -177,7 +177,7 @@ module.exports = {
             } else if (action === 'desativar' || action === 'disable') {
                 // Desativar sistema
                 await connection.execute(
-                    'UPDATE news_config SET IsActive = FALSE WHERE IsActive = TRUE'
+                    'UPDATE news_config SET IsActive = FALSE WHERE LOWER(CAST(IsActive AS TEXT)) IN (\'t\',\'true\',\'1\')'
                 );
 
                 const embed = new EmbedBuilder()

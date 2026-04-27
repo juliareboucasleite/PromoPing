@@ -10,22 +10,23 @@ const VALID_CONTEXTS = ["index", "dashboard", "product", "plan", "profile"];
 const FALLBACK_MESSAGE = "Our support team will review your request and reply shortly.";
 
 async function ensureSupportTicketsTable() {
-    const sql = `CREATE TABLE IF NOT EXISTS SupportTickets (
-      id CHAR(36) PRIMARY KEY,
-      user_id INT NULL,
-      referencia_id VARCHAR(13) NULL,
-      context VARCHAR(50) NOT NULL,
-      channel VARCHAR(50) DEFAULT 'web',
-      message TEXT NOT NULL,
-      ai_response TEXT NULL,
-      ai_confidence DECIMAL(3,2) NULL,
-      status ENUM('OPEN','AI_ANSWERED','ESCALATED','CLOSED') DEFAULT 'OPEN',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_referencia_id (referencia_id),
-      INDEX idx_status (status)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
-    await pool.query(sql);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS SupportTickets (
+        id CHAR(36) PRIMARY KEY,
+        user_id INTEGER NULL,
+        referencia_id VARCHAR(13) NULL,
+        context VARCHAR(50) NOT NULL,
+        channel VARCHAR(50) DEFAULT 'web',
+        message TEXT NOT NULL,
+        ai_response TEXT NULL,
+        ai_confidence DECIMAL(3,2) NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_support_tickets_referencia_id ON SupportTickets (referencia_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON SupportTickets (status)`);
 }
 
 /**

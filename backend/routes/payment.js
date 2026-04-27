@@ -142,15 +142,15 @@ router.post("/verify-session", verifyToken, async (req, res) => {
         
         // Salvar na tabela stripe_subscriptions
         await db.query(`
-          INSERT INTO stripe_subscriptions 
+          INSERT INTO stripe_subscriptions
           (ReferenciaID, customer_id, subscription_id, subscription_status, price_id, plan_name, status)
           VALUES (?, ?, ?, ?, ?, ?, 'active')
-          ON DUPLICATE KEY UPDATE
-          subscription_status = VALUES(subscription_status),
-          price_id = VALUES(price_id),
-          plan_name = VALUES(plan_name),
-          status = VALUES(status),
-          updated_at = NOW()
+          ON CONFLICT (ReferenciaID) DO UPDATE SET
+            subscription_status = EXCLUDED.subscription_status,
+            price_id = EXCLUDED.price_id,
+            plan_name = EXCLUDED.plan_name,
+            status = EXCLUDED.status,
+            updated_at = NOW()
         `, [
           referenciaID,
           resultado.session.customer_id,

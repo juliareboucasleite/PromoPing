@@ -5,10 +5,10 @@ load_dotenv()
 
 DB_CONFIG = {
     'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
+    'user': os.getenv('DB_USER', 'postgres'),
     'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'pap'),
-    'port': int(os.getenv('DB_PORT', 3306))
+    'dbname': os.getenv('DB_NAME', 'papv5'),
+    'port': int(os.getenv('DB_PORT', 5432))
 }
 
 # Configurações do scraper

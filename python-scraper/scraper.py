@@ -3,7 +3,16 @@ import re
 import traceback
 from datetime import datetime
 from time import sleep
-import mysql.connector
+import psycopg2
+import psycopg2.errors
+from psycopg2.extras import RealDictCursor
+import requests
+from bs4 import BeautifulSoup
+try:
+    from curl_cffi import requests as curl_requests
+    HAS_CURL_CFFI = True
+except ImportError:
+    HAS_CURL_CFFI = False
 import undetected_chromedriver as uc
 from selenium.common.exceptions import SessionNotCreatedException, WebDriverException
 from selenium.webdriver.common.by import By
@@ -30,15 +39,16 @@ logger = logging.getLogger(__name__)
 # ==================== DB ====================
 
 def connect_db():
-    return mysql.connector.connect(**DB_CONFIG)
+    return psycopg2.connect(**DB_CONFIG)
 
 def fetch_products():
     conn = connect_db()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     # Nota: Idealmente faria JOIN com configutilizador e planos para obter IntervaloVerificacao
     # baseado no plano do utilizador. Por enquanto, usa default 24h (Free plan).
     cur.execute("""
-        SELECT Id, Nome, Link, PrecoAlvo, UpdatedAt
+        SELECT Id AS "Id", Nome AS "Nome", Link AS "Link",
+               PrecoAlvo AS "PrecoAlvo", UpdatedAt AS "UpdatedAt"
         FROM produtos
         WHERE Link IS NOT NULL AND Link <> '' AND DeletedAt IS NULL
     """)
@@ -111,35 +121,33 @@ def save_price_history(product_id, price):
         """, (product_id, price))
         conn.commit()
         logger.info(f"[HISTORICO] Preço €{price} salvo no histórico para produto {product_id}")
-    except mysql.connector.Error as e:
-        # Se a tabela não existir ou houver erro de estrutura, tentar criar
-        if e.errno == 1146:  # Table doesn't exist
-            logger.warning(f"[HISTORICO] Tabela não existe, tentando criar...")
-            try:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS historicoprecos (
-                        Id INT AUTO_INCREMENT PRIMARY KEY,
-                        ProdutoId INT NOT NULL,
-                        Preco DECIMAL(10,2) NOT NULL,
-                        DataRegisto DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        INDEX idx_produto (ProdutoId),
-                        INDEX idx_data (DataRegisto)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                """)
-                conn.commit()
-                # Tentar inserir novamente
-                cur.execute("""
-                    INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto)
-                    VALUES (%s, %s, NOW())
-                """, (product_id, price))
-                conn.commit()
-                logger.info(f"[HISTORICO] Tabela criada e preço €{price} salvo para produto {product_id}")
-            except Exception as e2:
-                logger.error(f"[HISTORICO] Erro ao criar tabela ou inserir: {e2}")
-                conn.rollback()
-        else:
-            logger.error(f"[HISTORICO] Erro ao salvar histórico: {e}")
+    except psycopg2.errors.UndefinedTable as e:
+        logger.warning(f"[HISTORICO] Tabela não existe, tentando criar...")
+        conn.rollback()
+        try:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS historicoprecos (
+                    Id SERIAL PRIMARY KEY,
+                    ProdutoId INTEGER NOT NULL,
+                    Preco NUMERIC(10,2) NOT NULL,
+                    DataRegisto TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_historicoprecos_produto ON historicoprecos (ProdutoId)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_historicoprecos_data ON historicoprecos (DataRegisto)")
+            conn.commit()
+            cur.execute("""
+                INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto)
+                VALUES (%s, %s, NOW())
+            """, (product_id, price))
+            conn.commit()
+            logger.info(f"[HISTORICO] Tabela criada e preço €{price} salvo para produto {product_id}")
+        except Exception as e2:
+            logger.error(f"[HISTORICO] Erro ao criar tabela ou inserir: {e2}")
             conn.rollback()
+    except psycopg2.Error as e:
+        logger.error(f"[HISTORICO] Erro ao salvar histórico: {e}")
+        conn.rollback()
     except Exception as e:
         logger.error(f"[HISTORICO] Erro inesperado ao salvar histórico: {e}")
         conn.rollback()
@@ -198,19 +206,17 @@ def extract_browser_major_from_error(err):
     return None
 
 
-def start_chrome_with_version(options, version_main=None):
+def start_chrome_with_version(options, version_main=None, headless=False):
     if version_main:
-        logger.info(f"Iniciando ChromeDriver com version_main={version_main}")
-        return uc.Chrome(options=options, use_subprocess=True, version_main=version_main)
+        logger.info(f"Iniciando ChromeDriver com version_main={version_main} (headless={headless})")
+        return uc.Chrome(options=options, use_subprocess=True, version_main=version_main, headless=headless)
 
-    logger.info("Iniciando ChromeDriver com autodetecção de versão")
-    return uc.Chrome(options=options, use_subprocess=True)
+    logger.info(f"Iniciando ChromeDriver com autodetecção de versão (headless={headless})")
+    return uc.Chrome(options=options, use_subprocess=True, headless=headless)
 
 def create_driver():
     opts = uc.ChromeOptions()
-
-    if SCRAPER_CONFIG.get("headless"):
-        opts.add_argument("--headless=new")
+    headless = bool(SCRAPER_CONFIG.get("headless"))
 
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
@@ -218,27 +224,25 @@ def create_driver():
     opts.add_argument("--disable-blink-features=AutomationControlled")
     opts.add_argument("--disable-popup-blocking")
     opts.add_argument("--disable-notifications")
-    # Garante navegação em janela anônima (sem sessão/cookies persistidos).
     opts.add_argument("--incognito")
     opts.add_argument("--lang=pt-PT")
-    opts.add_argument("--start-maximized")
     opts.add_argument("--window-size=1920,1080")
     opts.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
 
     version_main = get_chrome_major_version()
 
     try:
-        driver = start_chrome_with_version(opts, version_main)
+        driver = start_chrome_with_version(opts, version_main, headless=headless)
     except SessionNotCreatedException as err:
         browser_major = extract_browser_major_from_error(err)
         if browser_major and browser_major != version_main:
             logger.warning(
                 f"Incompatibilidade de driver detectada (driver={version_main}, browser={browser_major}). Tentando novamente."
             )
-            driver = start_chrome_with_version(opts, browser_major)
+            driver = start_chrome_with_version(opts, browser_major, headless=headless)
         else:
             logger.warning("Falha com version_main explícita; tentando autodetecção total do undetected_chromedriver.")
-            driver = start_chrome_with_version(opts)
+            driver = start_chrome_with_version(opts, headless=headless)
 
     driver.delete_all_cookies()
     return driver
@@ -406,9 +410,142 @@ def extract_continente_price(driver):
 
     return None
 
+# ==================== LIGHTWEIGHT (requests + BS4) ====================
+
+LIGHTWEIGHT_SUPPORTED = ("continente.pt", "worten", "fnac")
+LIGHTWEIGHT_BLOCKED = ("amazon.", "leroymerlin", "leroy-merlin")
+ANTIBOT_SITES = ("worten", "fnac")
+
+def _fetch_plain(url, timeout=10):
+    headers = {
+        "User-Agent": SCRAPER_CONFIG["user_agent"],
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+        if r.status_code == 200 and r.text:
+            return r.text
+        logger.debug(f"[LIGHT] requests HTTP {r.status_code} para {url}")
+    except Exception as e:
+        logger.debug(f"[LIGHT] requests falhou para {url}: {e}")
+    return None
+
+def _fetch_impersonated(url, timeout=20):
+    if not HAS_CURL_CFFI:
+        logger.debug("[LIGHT] curl_cffi indisponível; instale com `pip install curl_cffi`")
+        return None
+    try:
+        r = curl_requests.get(url, impersonate="chrome120", timeout=timeout, allow_redirects=True)
+        if r.status_code == 200 and r.text:
+            return r.text
+        logger.debug(f"[LIGHT] curl_cffi HTTP {r.status_code} para {url}")
+    except Exception as e:
+        logger.debug(f"[LIGHT] curl_cffi falhou para {url}: {e}")
+    return None
+
+def fetch_html(url, timeout=10):
+    u = url.lower()
+    if any(d in u for d in ANTIBOT_SITES):
+        return _fetch_impersonated(url, timeout=max(timeout, 20))
+    return _fetch_plain(url, timeout=timeout)
+
+def extract_price_lightweight(url):
+    """
+    Tenta extrair preço sem abrir Chrome, apenas requests + BS4.
+    Retorna (loja, preco) em sucesso, (loja, None) se site é suportado mas sem preço,
+    ou None se a URL não é suportada em modo leve (cair no Selenium).
+    """
+    u = url.lower()
+
+    if any(d in u for d in LIGHTWEIGHT_BLOCKED):
+        return None
+    if not any(d in u for d in LIGHTWEIGHT_SUPPORTED):
+        return None
+
+    html = fetch_html(url)
+    if not html:
+        return None
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    if "worten" in u:
+        meta = soup.find("meta", {"itemprop": "price"})
+        if meta and meta.get("content"):
+            price = clean_price_text(meta["content"])
+            if price:
+                return ("Worten", price)
+        meta_og = soup.find("meta", {"property": "product:price:amount"})
+        if meta_og and meta_og.get("content"):
+            price = clean_price_text(meta_og["content"])
+            if price:
+                return ("Worten", price)
+        el = soup.select_one("span.value")
+        if el:
+            content = el.get("content")
+            if content:
+                price = clean_price_text(content)
+                if price:
+                    return ("Worten", price)
+        return ("Worten", None)
+
+    if "fnac" in u:
+        meta = soup.find("meta", {"property": "product:price:amount"})
+        if meta and meta.get("content"):
+            price = clean_price_text(meta["content"])
+            if price:
+                return ("FNAC", price)
+        meta_itemprop = soup.find("meta", {"itemprop": "price"})
+        if meta_itemprop and meta_itemprop.get("content"):
+            price = clean_price_text(meta_itemprop["content"])
+            if price:
+                return ("FNAC", price)
+        el = soup.select_one("span.f-faPriceBox__price, span.userPrice")
+        if el:
+            price = clean_price_text(el.get_text(" ", strip=True))
+            if price:
+                return ("FNAC", price)
+        return ("FNAC", None)
+
+    if "continente.pt" in u:
+        el = soup.select_one("span.value")
+        if el:
+            content = el.get("content")
+            if content:
+                price = clean_price_text(content)
+                if price:
+                    return ("Continente", price)
+            price = clean_price_text(el.get_text(" ", strip=True))
+            if price:
+                return ("Continente", price)
+        el = soup.select_one("span.ct-price-formatted")
+        if el:
+            price = clean_price_text(el.get_text(" ", strip=True))
+            if price:
+                return ("Continente", price)
+        return ("Continente", None)
+
+    return None
+
 # ==================== EXTRACT PRICE ====================
 
 def extract_price(driver, url):
+    light = extract_price_lightweight(url)
+    if light is not None:
+        loja, preco = light
+        if preco:
+            logger.info(f"[LIGHT] {loja} €{preco} (sem Chrome)")
+            return loja, preco
+        logger.info(f"[LIGHT] {loja} sem preço — caindo para Selenium")
+
+    if driver is None:
+        logger.error("[GET] Driver indisponível para fallback Selenium")
+        return "Desconhecida", None
+
     logger.info(f"[GET] {url}")
     driver.get(url)
     sleep(3)
@@ -724,19 +861,25 @@ def scrape_single_product(url, is_initial=False):
     driver = None
     try:
         logger.info(f"[SINGLE] Iniciando scraping para: {url}")
-        driver = create_driver()
-        
-        # Extrair preço
-        loja, preco = extract_price(driver, url)
+
+        loja, preco = (None, None)
+        light = extract_price_lightweight(url)
+        if light is not None and light[1]:
+            loja, preco = light
+            logger.info(f"[SINGLE] Preço obtido em modo leve (sem Chrome): €{preco} ({loja})")
+        else:
+            driver = create_driver()
+            loja, preco = extract_price(driver, url)
         
         if preco:
             logger.info(f"[SINGLE] Preço encontrado: €{preco} ({loja})")
             
             # Buscar produto na base de dados pelo link
             conn = connect_db()
-            cur = conn.cursor(dictionary=True)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute("""
-                SELECT Id, ReferenciaID, Nome, PrecoAtual, PrecoAlvo
+                SELECT Id AS "Id", ReferenciaID AS "ReferenciaID", Nome AS "Nome",
+                       PrecoAtual AS "PrecoAtual", PrecoAlvo AS "PrecoAlvo"
                 FROM produtos
                 WHERE Link = %s AND DeletedAt IS NULL
                 LIMIT 1
@@ -781,15 +924,6 @@ def monitor_loop():
         while True:
             started_at = datetime.now()
 
-            if driver is None:
-                try:
-                    driver = create_driver()
-                except Exception as driver_err:
-                    logger.error(f"Falha ao criar driver: {driver_err}")
-                    traceback.print_exc()
-                    sleep(min(30, cycle_interval))
-                    continue
-
             try:
                 produtos = fetch_products()
                 logger.info(f"[CICLO] {len(produtos)} produto(s) ativo(s) carregado(s) da base")
@@ -798,24 +932,44 @@ def monitor_loop():
                 atualizados = 0
                 aguardando = 0
                 novos = 0
+                light_hits = 0
+                heavy_hits = 0
 
                 for p in produtos:
-                    # Verificar se o produto pode ser atualizado baseado no plano
                     if not should_update_product(p, ciclo_agora):
                         intervalo = p.get("VerificacaoIntervalo", 24)
                         logger.debug(f"[SKIP] {p['Nome']} aguarda proxima atualizacao (intervalo: {intervalo}h)")
                         aguardando += 1
                         continue
-                    
-                    # Se UpdatedAt é NULL, é um produto novo
+
                     if p.get("UpdatedAt") is None:
                         novos += 1
                         logger.info(f"[NOVO] Monitorando novo produto: {p['Nome']}")
-                    
+
                     atualizados += 1
+                    url = p["Link"]
+
+                    light = extract_price_lightweight(url)
+                    if light is not None and light[1]:
+                        loja, preco = light
+                        light_hits += 1
+                        logger.info(f"[OK] {p['Nome']} ({loja}) €{preco} [leve]")
+                        update_price(p["Id"], preco)
+                        save_price_history(p["Id"], preco)
+                        sleep(1)
+                        continue
+
+                    if driver is None:
+                        try:
+                            logger.info("[DRIVER] Iniciando Chrome (necessário para este produto)")
+                            driver = create_driver()
+                        except Exception as driver_err:
+                            logger.error(f"Falha ao criar driver: {driver_err}")
+                            traceback.print_exc()
+                            break
 
                     try:
-                        loja, preco = extract_price(driver, p["Link"])
+                        loja, preco = extract_price(driver, url)
                     except WebDriverException as wd_err:
                         logger.warning(f"Driver instável ao processar '{p['Nome']}': {wd_err}")
                         safe_quit(driver)
@@ -826,6 +980,7 @@ def monitor_loop():
                         traceback.print_exc()
                         continue
 
+                    heavy_hits += 1
                     if preco:
                         logger.info(f"[OK] {p['Nome']} ({loja}) €{preco}")
                         update_price(p["Id"], preco)
@@ -835,7 +990,10 @@ def monitor_loop():
 
                     sleep(2)
 
-                logger.info(f"[CICLO] Resumo: {atualizados} atualizados, {aguardando} aguardando atualizacao, {novos} novos")
+                logger.info(
+                    f"[CICLO] Resumo: {atualizados} atualizados ({light_hits} leves, {heavy_hits} via Chrome), "
+                    f"{aguardando} aguardando, {novos} novos"
+                )
 
             except Exception as cycle_err:
                 logger.error(f"Erro durante ciclo de monitorização: {cycle_err}")

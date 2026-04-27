@@ -174,7 +174,7 @@ router.get("/staff/:referenciaID/activity", async (req, res) => {
 /** Eventos do calendário (read-only) - mesma fonte que o admin */
 router.get("/calendar/events", async (req, res) => {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'admin_events'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'admin_events'");
         if (tables.length === 0) {
             return res.json({ status: "ok", events: [] });
         }
@@ -489,7 +489,7 @@ router.delete("/calendar/activities/:id", async (req, res) => {
 /** POST /calendar/activities/:id/comments - comentário da corporação */
 router.post("/calendar/activities/:id/comments", async (req, res) => {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'activity_comments'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'activity_comments'");
         if (tables.length === 0) return res.status(404).json({ status: "error", error: "Tabela não existe" });
         const referenciaID = req.user && req.user.ReferenciaID;
         const { mensagem } = req.body;
@@ -510,7 +510,7 @@ router.post("/calendar/activities/:id/comments", async (req, res) => {
 /** Avaliações (reviews) - com suporte que fechou quando tipo = suporte */
 router.get("/reviews", async (req, res) => {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'reviews'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'reviews'");
         if (tables.length === 0) {
             return res.json({ status: "ok", reviews: [], total: 0, stats: [] });
         }
@@ -519,8 +519,10 @@ router.get("/reviews", async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit) || 50, 100);
         const offset = (page - 1) * limit;
 
-        const columns = await pool.query("SHOW COLUMNS FROM reviews").then(([c]) => c.map(x => x.Field));
-        const hasSupportRef = columns.includes('SupportReferenciaID');
+        const columns = await pool.query(
+            "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'reviews'"
+        ).then(([c]) => c.map(x => x.column_name));
+        const hasSupportRef = columns.some(c => c.toLowerCase() === 'supportreferenciaid');
 
         let query = `
             SELECT 
@@ -580,7 +582,7 @@ router.get("/dashboard", async (req, res) => {
         const limit = 15;
         const out = { notifications: [], atualizacoesSistema: [], recentBugsProjetos: [], recentEvents: [] };
 
-        const [hasNotif] = await pool.query("SHOW TABLES LIKE 'corporation_notifications'");
+        const [hasNotif] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'corporation_notifications'");
         if (hasNotif.length > 0) {
             const [notifications] = await pool.query(
                 `SELECT n.Id, n.Tipo, n.Titulo, n.Descricao, n.ReferenciaID as author_id, n.DataCriacao,
@@ -593,7 +595,7 @@ router.get("/dashboard", async (req, res) => {
             out.notifications = notifications;
         }
 
-        const [hasAtualizacoes] = await pool.query("SHOW TABLES LIKE 'atualizacoes_sistema'");
+        const [hasAtualizacoes] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'atualizacoes_sistema'");
         if (hasAtualizacoes.length > 0) {
             const [rows] = await pool.query(
                 `SELECT Id, Titulo, Descricao, Tipo, DataCriacao
@@ -604,7 +606,7 @@ router.get("/dashboard", async (req, res) => {
             out.atualizacoesSistema = rows;
         }
 
-        const [hasBugsTable] = await pool.query("SHOW TABLES LIKE 'bugsprojetos'");
+        const [hasBugsTable] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'bugsprojetos'");
         if (hasBugsTable.length > 0) {
             const [hasCol] = await pool.query(
                 "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bugsprojetos' AND COLUMN_NAME = 'CreatedBy'"
@@ -629,7 +631,7 @@ router.get("/dashboard", async (req, res) => {
             }
         }
 
-        const [hasEvents] = await pool.query("SHOW TABLES LIKE 'admin_events'");
+        const [hasEvents] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'admin_events'");
         if (hasEvents.length > 0) {
             const [events] = await pool.query(
                 `SELECT e.Id, e.Titulo, e.Tipo, e.Status, e.StartDate, e.CreatedBy as author_id, u.Nome as author_nome
@@ -651,7 +653,7 @@ router.get("/dashboard", async (req, res) => {
 /** Notificações do painel corporativo (atualizações/incidentes) */
 router.get("/notifications", async (req, res) => {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'corporation_notifications'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'corporation_notifications'");
         if (tables.length === 0) {
             return res.json({ status: "ok", notifications: [] });
         }

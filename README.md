@@ -14,7 +14,7 @@ The system includes a responsive web interface with price evolution charts, a se
 ## Architecture
 PromoPing's Architecture was designed using these technologies: 
 HTML5, CSS3, JavaScript ES6+ (responsive SPA)
-Node.js 18+, Express.js 5.x, MySQL 8.0+
+Node.js 18+, Express.js 5.x, PostgreSQL 14+
 Python 3.8+, Selenium WebDriver, BeautifulSoup4
 Docker, PM2, Nginx, GitHub Actions
 

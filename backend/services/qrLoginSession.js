@@ -63,7 +63,7 @@ export async function getOrCreateSession(existingSessionId) {
 
   const code = generateCode();
   await pool.query(
-    "INSERT INTO qr_tokens (code, session_id, status, expires_at, created_at) VALUES (?, ?, 'pending', DATE_ADD(NOW(), INTERVAL ? SECOND), NOW())",
+    "INSERT INTO qr_tokens (code, session_id, status, expires_at, created_at) VALUES (?, ?, 'pending', NOW() + ((? || ' seconds')::interval), NOW())",
     [code, sessionId, CODE_TTL_SEC]
   );
 

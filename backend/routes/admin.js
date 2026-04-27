@@ -1154,7 +1154,7 @@ async function ensureIncidentsTable() {
     // Verificar se a tabela existe
     try {
         const [tables] = await pool.query(
-            "SHOW TABLES LIKE 'incidentes'"
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'incidentes'"
         );
 
         if (tables.length === 0) {
@@ -1202,7 +1202,7 @@ async function ensureUpdatesTable() {
 
 async function ensureCorporationNotificationsTable() {
     try {
-        const [tables] = await pool.query("SHOW TABLES LIKE 'corporation_notifications'");
+        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'corporation_notifications'");
         if (tables.length === 0) {
             await pool.query(`
                 CREATE TABLE corporation_notifications (
@@ -1232,7 +1232,7 @@ async function ensureCorporationNotificationsTable() {
 async function ensureGoogleOAuthTokensTable() {
     try {
         const [tables] = await pool.query(
-            "SHOW TABLES LIKE 'google_oauth_tokens'"
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'google_oauth_tokens'"
         );
 
         if (tables.length === 0) {
@@ -1497,7 +1497,7 @@ async function syncGoogleCalendarEvents(referenciaID, accessToken) {
 async function ensureAdminEventsTable() {
     try {
         const [tables] = await pool.query(
-            "SHOW TABLES LIKE 'admin_events'"
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'admin_events'"
         );
 
         if (tables.length === 0) {
@@ -2435,11 +2435,11 @@ router.get("/calendar/google-callback", async (req, res) => {
         await pool.query(
             `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope, token_type)
              VALUES (?, ?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE 
-                 access_token = VALUES(access_token),
-                 refresh_token = VALUES(refresh_token),
-                 expires_at = VALUES(expires_at),
-                 scope = VALUES(scope),
+             ON CONFLICT (ReferenciaID) DO UPDATE SET
+                 access_token = EXCLUDED.access_token,
+                 refresh_token = EXCLUDED.refresh_token,
+                 expires_at = EXCLUDED.expires_at,
+                 scope = EXCLUDED.scope,
                  updated_at = NOW()`,
             [
                 referenciaID,

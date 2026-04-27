@@ -51,7 +51,7 @@ router.put("/", verifyToken, async (req, res) => {
       await pool.query(
         `INSERT INTO preferenciasnotificacao (ReferenciaID, Tipo, Ativo)
          VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE Ativo=VALUES(Ativo)`,
+         ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Ativo = EXCLUDED.Ativo`,
         [referenciaID, tipo, pref.ativo ? 1 : 0]
       );
     }

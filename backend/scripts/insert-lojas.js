@@ -32,12 +32,12 @@ async function insertLojas() {
       try {
         // Usar INSERT ... ON DUPLICATE KEY UPDATE para inserir ou atualizar
         const [result] = await pool.query(
-          `INSERT INTO lojas (Id, Nome, Dominio, CssSelectorPreco, CreatedAt) 
+          `INSERT INTO lojas (Id, Nome, Dominio, CssSelectorPreco, CreatedAt)
            VALUES (?, ?, ?, ?, '2025-10-08 19:52:46')
-           ON DUPLICATE KEY UPDATE 
-           Nome = VALUES(Nome), 
-           Dominio = VALUES(Dominio), 
-           CssSelectorPreco = VALUES(CssSelectorPreco)`,
+           ON CONFLICT (Id) DO UPDATE SET
+             Nome = EXCLUDED.Nome,
+             Dominio = EXCLUDED.Dominio,
+             CssSelectorPreco = EXCLUDED.CssSelectorPreco`,
           [loja.id, loja.nome, loja.dominio, loja.css_selector_preco]
         );
 

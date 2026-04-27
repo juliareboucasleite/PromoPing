@@ -308,7 +308,7 @@ export async function getAlertStats() {
     const [stats] = await pool.query(`
       SELECT 
         COUNT(*) as total_alertas,
-        COUNT(CASE WHEN DataEnvio >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN 1 END) as alertas_24h,
+        COUNT(CASE WHEN DataEnvio >= NOW() - INTERVAL '24 hours' THEN 1 END) as alertas_24h,
         COUNT(CASE WHEN ValorPoupado > 0 THEN 1 END) as alertas_poupanca,
         SUM(COALESCE(ValorPoupado, 0)) as total_poupado
       FROM Notificacoes

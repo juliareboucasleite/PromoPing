@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder
 const path = require('path');
 const http = require('http');
 const https = require('https');
-const mysql = require('mysql2/promise');
+const mysql = require('./mysql2-compat');
 const comandos = require('./comandos');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
@@ -57,6 +57,8 @@ class PromoPingBot {
         this.twitchCheckInterval = null;
         this.lastTwitchCheck = new Date();
         this.twitchLiveStatus = new Map(); // channelName -> { isLive: boolean, lastNotification: Date }
+        this.twitchAccessToken = null;
+        this.twitchTokenExpiresAt = 0;
 
         // Monitoramento de Notícias
         this.newsCheckInterval = null;
@@ -2020,6 +2022,89 @@ class PromoPingBot {
         await this.checkTwitchLives();
     }
 
+    sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    isRetryableFetchError(error) {
+        const code = error?.cause?.code || error?.code;
+        return code === 'UND_ERR_CONNECT_TIMEOUT' || code === 'ECONNRESET' || code === 'ETIMEDOUT';
+    }
+
+    async fetchWithRetry(url, options = {}, config = {}) {
+        const {
+            timeoutMs = 20000,
+            retries = 2,
+            retryDelayMs = 1500,
+            label = 'requisição externa'
+        } = config;
+
+        let lastError;
+
+        for (let attempt = 1; attempt <= retries + 1; attempt++) {
+            try {
+                return await fetch(url, {
+                    ...options,
+                    signal: AbortSignal.timeout(timeoutMs)
+                });
+            } catch (error) {
+                lastError = error;
+                const shouldRetry = attempt <= retries && this.isRetryableFetchError(error);
+
+                if (!shouldRetry) {
+                    throw error;
+                }
+
+                console.warn(
+                    `[DISCORD] Falha temporária em ${label} (tentativa ${attempt}/${retries + 1}): ${error?.cause?.code || error.message}`
+                );
+                await this.sleep(retryDelayMs * attempt);
+            }
+        }
+
+        throw lastError;
+    }
+
+    async getTwitchAccessToken() {
+        const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
+        const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
+
+        if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET) {
+            return null;
+        }
+
+        const now = Date.now();
+        if (this.twitchAccessToken && this.twitchTokenExpiresAt > now + 60000) {
+            return this.twitchAccessToken;
+        }
+
+        const tokenResponse = await this.fetchWithRetry('https://id.twitch.tv/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: TWITCH_CLIENT_ID,
+                client_secret: TWITCH_CLIENT_SECRET,
+                grant_type: 'client_credentials'
+            })
+        }, {
+            timeoutMs: 20000,
+            retries: 2,
+            retryDelayMs: 2000,
+            label: 'autenticação Twitch'
+        });
+
+        if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text();
+            throw new Error(`Erro ao obter token da Twitch: ${tokenResponse.status} - ${errorText}`);
+        }
+
+        const tokenData = await tokenResponse.json();
+        this.twitchAccessToken = tokenData.access_token;
+        this.twitchTokenExpiresAt = now + ((tokenData.expires_in || 3600) * 1000);
+
+        return this.twitchAccessToken;
+    }
+
     async startNewsMonitoring() {
         try {
             // Carregar newsService dinamicamente (ES module)
@@ -2062,12 +2147,13 @@ class PromoPingBot {
             // Buscar configuração do canal de notícias
             const connection = await mysql.createConnection(this.dbConfig);
             const [configs] = await connection.execute(
-                'SELECT * FROM news_config WHERE IsActive = TRUE LIMIT 1'
+                // Tolerate DBs where IsActive is INTEGER(0/1) instead of BOOLEAN
+                // Accept common truthy representations to avoid operator type errors on PostgreSQL
+                "SELECT * FROM news_config WHERE LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1') LIMIT 1"
             );
 
             if (configs.length === 0) {
                 console.log('[DISCORD] Sistema de notícias não configurado');
-                await connection.end();
                 return;
             }
 
@@ -2156,20 +2242,20 @@ class PromoPingBot {
     }
 
     async checkTwitchLives() {
+        let connection;
         try {
-            const connection = await mysql.createConnection(this.dbConfig);
+            connection = await mysql.createConnection(this.dbConfig);
             // Selecionar apenas colunas que existem (TwitchUserId pode não existir)
             const [channels] = await connection.execute(
                 'SELECT ChannelName, IsLive FROM twitch_channels'
             );
 
             if (channels.length === 0) {
-                await connection.end();
                 return;
             }
 
             const SOCIAL_FEED_CHANNEL_ID = '1442931610927366284';
-            const channel = await this.client.channels.fetch(SOCIAL_FEED_CHANNEL_ID);
+            const channel = await this.client.channels.fetch(SOCIAL_FEED_CHANNEL_ID).catch(() => null);
             if (!channel) {
                 console.error('[DISCORD] Canal social-feed não encontrado!');
                 await connection.end();
@@ -2186,26 +2272,7 @@ class PromoPingBot {
                 return;
             }
 
-            // Obter token de acesso da Twitch
-            const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    client_id: TWITCH_CLIENT_ID,
-                    client_secret: TWITCH_CLIENT_SECRET,
-                    grant_type: 'client_credentials'
-                })
-            });
-
-            if (!tokenResponse.ok) {
-                const errorText = await tokenResponse.text();
-                console.error(`[DISCORD] Erro ao obter token da Twitch: ${tokenResponse.status} - ${errorText}`);
-                await connection.end();
-                return;
-            }
-
-            const tokenData = await tokenResponse.json();
-            const accessToken = tokenData.access_token;
+            const accessToken = await this.getTwitchAccessToken();
 
             // Buscar informações dos canais (máximo 100 por requisição)
             // Extrair apenas o nome do canal (remover URLs se houver)
@@ -2268,22 +2335,30 @@ class PromoPingBot {
                 return;
             }
             
-            const streamsResponse = await fetch(twitchApiUrl, {
+            const streamsResponse = await this.fetchWithRetry(twitchApiUrl, {
                 headers: {
                     'Client-ID': TWITCH_CLIENT_ID,
                     'Authorization': `Bearer ${accessToken}`
                 }
+            }, {
+                timeoutMs: 20000,
+                retries: 2,
+                retryDelayMs: 2000,
+                label: 'consulta de streams da Twitch'
             });
 
             if (!streamsResponse.ok) {
                 const errorText = await streamsResponse.text();
                 console.error(`[DISCORD] Erro ao buscar streams da Twitch: ${streamsResponse.status} - ${errorText}`);
-                await connection.end();
+                if (streamsResponse.status === 401) {
+                    this.twitchAccessToken = null;
+                    this.twitchTokenExpiresAt = 0;
+                }
                 return;
             }
 
             const streamsData = await streamsResponse.json();
-            const liveChannels = new Set(streamsData.data.map(s => s.user_login.toLowerCase()));
+            const liveChannels = new Set((streamsData.data || []).map(s => s.user_login.toLowerCase()));
 
             // Verificar cada canal e enviar notificação se necessário
             for (const channelData of channels) {
@@ -2307,7 +2382,7 @@ class PromoPingBot {
                 if (isLive && !wasLive) {
                     // Sempre notificar quando canal fica ao vivo (se estava offline antes)
                     // O controle de spam é feito verificando wasLive no banco
-                    const streamInfo = streamsData.data.find(s => s.user_login.toLowerCase() === channelName);
+                    const streamInfo = (streamsData.data || []).find(s => s.user_login.toLowerCase() === channelName);
                     await this.sendTwitchLiveNotification(channel, channelName, streamInfo);
                     this.twitchLiveStatus.set(channelName, { isLive: true, lastNotification: new Date() });
                 } else if (!isLive && wasLive) {
@@ -2316,11 +2391,18 @@ class PromoPingBot {
                 }
             }
 
-            await connection.end();
             this.lastTwitchCheck = new Date();
 
         } catch (error) {
-            console.error('[DISCORD] Erro ao verificar lives da Twitch:', error);
+            if (this.isRetryableFetchError(error)) {
+                console.warn(`[DISCORD] Twitch indisponível por timeout/rede. Nova tentativa no próximo ciclo. Detalhe: ${error?.cause?.code || error.message}`);
+            } else {
+                console.error('[DISCORD] Erro ao verificar lives da Twitch:', error);
+            }
+        } finally {
+            if (connection) {
+                await connection.end().catch(() => {});
+            }
         }
     }
 

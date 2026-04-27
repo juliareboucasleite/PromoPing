@@ -6,10 +6,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DATA_FILE = path.join(__dirname, '../data/discord-users.json');
+const DATA_DIR = path.dirname(DATA_FILE);
+
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+}
 
 // Carregar dados do JSON
 function loadDiscordUsers() {
   try {
+    ensureDataDir();
     if (!fs.existsSync(DATA_FILE)) {
       // Criar arquivo se não existir
       const initialData = { users: [] };
@@ -28,6 +36,7 @@ function loadDiscordUsers() {
 // Salvar dados no JSON
 function saveDiscordUsers(data) {
   try {
+    ensureDataDir();
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {

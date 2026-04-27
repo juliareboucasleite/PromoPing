@@ -44,25 +44,25 @@ router.get("/api/charts/overview", async (req, res) => {
     const labels = lastNMonths(months);
 
     const [prodMes] = await db.query(`
-      SELECT DATE_FORMAT(DataCriacao, '%Y-%m') as periodo, COUNT(*) as total
+      SELECT TO_CHAR(DataCriacao, 'YYYY-MM') as periodo, COUNT(*) as total
       FROM Produtos
-      WHERE DataCriacao >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE DataCriacao >= DATE_TRUNC('month', CURRENT_DATE) - ((? || ' months')::interval)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);
 
     const [notifMes] = await db.query(`
-      SELECT DATE_FORMAT(COALESCE(DataEnvio, Data), '%Y-%m') as periodo, COUNT(*) as total
+      SELECT TO_CHAR(COALESCE(DataEnvio, Data), 'YYYY-MM') as periodo, COUNT(*) as total
       FROM Notificacoes
-      WHERE COALESCE(DataEnvio, Data) >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE COALESCE(DataEnvio, Data) >= DATE_TRUNC('month', CURRENT_DATE) - ((? || ' months')::interval)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);
 
     const [usersMes] = await db.query(`
-      SELECT DATE_FORMAT(DataRegisto, '%Y-%m') as periodo, COUNT(*) as total
+      SELECT TO_CHAR(DataRegisto, 'YYYY-MM') as periodo, COUNT(*) as total
       FROM Utilizadores
-      WHERE DataRegisto >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
+      WHERE DataRegisto >= DATE_TRUNC('month', CURRENT_DATE) - ((? || ' months')::interval)
       GROUP BY periodo
       ORDER BY periodo ASC
     `, [months - 1]);
@@ -89,19 +89,19 @@ router.get("/api/charts/daily", async (req, res) => {
     const labels = lastNDays(days);
 
     const [prodDia] = await db.query(`
-      SELECT DATE(DataCriacao) as periodo, COUNT(*) as total
+      SELECT DataCriacao::date as periodo, COUNT(*) as total
       FROM Produtos
-      WHERE DataCriacao >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-      GROUP BY DATE(DataCriacao)
-      ORDER BY DATE(DataCriacao) ASC
+      WHERE DataCriacao >= CURRENT_DATE - ((? || ' days')::interval)
+      GROUP BY DataCriacao::date
+      ORDER BY DataCriacao::date ASC
     `, [days - 1]);
 
     const [notifDia] = await db.query(`
-      SELECT DATE(COALESCE(DataEnvio, Data)) as periodo, COUNT(*) as total
+      SELECT COALESCE(DataEnvio, Data)::date as periodo, COUNT(*) as total
       FROM Notificacoes
-      WHERE COALESCE(DataEnvio, Data) >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-      GROUP BY DATE(COALESCE(DataEnvio, Data))
-      ORDER BY DATE(COALESCE(DataEnvio, Data)) ASC
+      WHERE COALESCE(DataEnvio, Data) >= CURRENT_DATE - ((? || ' days')::interval)
+      GROUP BY COALESCE(DataEnvio, Data)::date
+      ORDER BY COALESCE(DataEnvio, Data)::date ASC
     `, [days - 1]);
 
     res.json({

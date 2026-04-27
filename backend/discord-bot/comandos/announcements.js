@@ -1,5 +1,5 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const mysql = require('mysql2/promise');
+const mysql = require('../mysql2-compat');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
@@ -48,7 +48,7 @@ module.exports = {
             if (!action || action === 'status' || action === 'info') {
                 // Mostrar status da configuração
                 const [configs] = await connection.execute(
-                    'SELECT * FROM webhook_configs WHERE Type = ? AND IsActive = TRUE',
+                    "SELECT * FROM webhook_configs WHERE Type = ? AND LOWER(CAST(IsActive AS TEXT)) IN ('t','true','1')",
                     ['github']
                 );
 

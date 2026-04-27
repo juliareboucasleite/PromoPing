@@ -153,7 +153,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     const email = profile.emails[0].value;
                     const googleId = profile.id;
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-                    const nome = profile.displayName || profile.name ?.givenName || 'Usuário Google';
+                    const nome = profile.displayName || profile.name?.givenName || 'Usuário Google';
 
                     console.log("[GOOGLE STRATEGY] Processando usuário:", { email, nome, googleId });
 
@@ -223,10 +223,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         
                         // Inserir novo usuário com foto de perfil, google_id e campos necessários
                         try {
-                            // Tentar inserir com google_id, FotoPerfil, Ativo e PerfilId
+                            // Tentar inserir com google_id, FotoPerfil, SenhaHash, Ativo e PerfilId
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, google_id, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
-                                [novaReferenciaID, nome, email, null, fotoPerfil, googleId, perfilId]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, google_id, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                [novaReferenciaID, nome, email, null, fotoPerfil, googleId, '', perfilId]
                             );
                             referenciaID = novaReferenciaID;
                             console.log("[GOOGLE STRATEGY] Novo usuário criado com ReferenciaID:", referenciaID);
@@ -239,11 +239,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                             }
                         } catch (insertErr) {
+                            console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (primeira tentativa):', insertErr.stack || insertErr.message || insertErr);
                             // Se campos não existem, tentar inserir sem eles
                             try {
                                 const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
-                                    [novaReferenciaID, nome, email, null, fotoPerfil, perfilId]
+                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [novaReferenciaID, nome, email, null, fotoPerfil, '', perfilId]
                                 );
                                 referenciaID = novaReferenciaID;
                                 
@@ -267,10 +268,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                     console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                                 }
                             } catch (insertErr2) {
+                                console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (segunda tentativa):', insertErr2.stack || insertErr2.message || insertErr2);
                                 // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
                                 const [result] = await pool.query(
-                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, 1, ?, NOW(), 1)",
-                                    [novaReferenciaID, nome, email, null, perfilId]
+                                    "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
+                                    [novaReferenciaID, nome, email, null, '', perfilId]
                                 );
                                 referenciaID = novaReferenciaID;
                                 
@@ -310,9 +312,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     }
 
                     await pool.query(
-                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido) 
-             VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
+                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido)
+             VALUES (?, ?)
+             ON CONFLICT (ReferenciaID) DO UPDATE SET CanalPreferido = EXCLUDED.CanalPreferido`,
                         [referenciaID, "email"]
                     );
 
@@ -338,6 +340,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                             `);
 
+                            // Garantir índice/constraint único em ReferenciaID para ON CONFLICT funcionar no Postgres
+                            try {
+                                await pool.query(
+                                    "CREATE UNIQUE INDEX IF NOT EXISTS idx_google_oauth_tokens_referenciaid ON google_oauth_tokens (ReferenciaID)"
+                                );
+                            } catch (idxErr) {
+                                // Alguns ambientes (compat shim) podem não suportar IF NOT EXISTS na criação de index; ignorar erros
+                                console.log("[GOOGLE STRATEGY] Aviso ao criar índice único google_oauth_tokens.ReferenciaID:", idxErr.message || idxErr);
+                            }
+
                             // Calcular data de expiração (tokens do Google geralmente expiram em 1 hora)
                             const expiresAt = new Date();
                             expiresAt.setHours(expiresAt.getHours() + 1);
@@ -345,11 +357,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                             await pool.query(
                                 `INSERT INTO google_oauth_tokens (ReferenciaID, access_token, refresh_token, expires_at, scope)
                                  VALUES (?, ?, ?, ?, ?)
-                                 ON DUPLICATE KEY UPDATE 
-                                     access_token = VALUES(access_token),
-                                     refresh_token = VALUES(refresh_token),
-                                     expires_at = VALUES(expires_at),
-                                     scope = VALUES(scope),
+                                 ON CONFLICT (ReferenciaID) DO UPDATE SET
+                                     access_token = EXCLUDED.access_token,
+                                     refresh_token = EXCLUDED.refresh_token,
+                                     expires_at = EXCLUDED.expires_at,
+                                     scope = EXCLUDED.scope,
                                      updated_at = NOW()`,
                                 [referenciaID, accessToken, refreshToken || null, expiresAt, 'calendar.readonly']
                             );
@@ -454,8 +466,8 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                         // Inserir novo usuário com foto de perfil se disponível
                         try {
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil) VALUES (?, ?, ?, ?, ?)",
-                                [novaReferenciaID, nome, email, null, fotoPerfil]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash) VALUES (?, ?, ?, ?, ?, ?)",
+                                [novaReferenciaID, nome, email, null, fotoPerfil, '']
                             );
                             referenciaID = novaReferenciaID;
 
@@ -468,10 +480,11 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                                 // Não bloquear resposta em caso de erro nas métricas
                             }
                         } catch (insertErr) {
+                            console.error('[GITHUB STRATEGY] Erro ao inserir utilizador com FotoPerfil:', insertErr.stack || insertErr.message || insertErr);
                             // Se campo FotoPerfil não existe, inserir sem ele
                             const [result] = await pool.query(
-                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone) VALUES (?, ?, ?, ?)",
-                                [novaReferenciaID, nome, email, null]
+                                "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash) VALUES (?, ?, ?, ?, ?)",
+                                [novaReferenciaID, nome, email, null, '']
                             );
                             referenciaID = novaReferenciaID;
 
@@ -487,9 +500,9 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                     }
 
                     await pool.query(
-                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido) 
-             VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE CanalPreferido = VALUES(CanalPreferido)`,
+                        `INSERT INTO configutilizador (ReferenciaID, CanalPreferido)
+             VALUES (?, ?)
+             ON CONFLICT (ReferenciaID) DO UPDATE SET CanalPreferido = EXCLUDED.CanalPreferido`,
                         [referenciaID, "email"]
                     );
 
@@ -568,7 +581,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         // Garantir que está na tabela contasconectadas
                         try {
                             await pool.query(
-                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
                                 [discordUser.ReferenciaID]
                             );
                         } catch (contasError) {
@@ -608,9 +621,12 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                     let referenciaID;
                     if (rows.length > 0) {
+                        const existingUser = rows[0] || {};
+                        const existingNome = existingUser.Nome ?? existingUser.nome;
+                        const existingReferenciaID = existingUser.ReferenciaID ?? existingUser.referenciaid;
                         // Usuário já existe no banco - ASSOCIAR DISCORD
-                        console.log(" Usuário existente encontrado - Associando Discord:", rows[0].Nome);
-                        referenciaID = rows[0].ReferenciaID;
+                        console.log(" Usuário existente encontrado - Associando Discord:", existingNome);
+                        referenciaID = existingReferenciaID;
 
                         // Associar Discord com usuário do banco
                         linkDiscordUser(discordId, referenciaID);
@@ -630,7 +646,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         // Inserir ou atualizar na tabela contasconectadas
                         try {
                             await pool.query(
-                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                                "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
                                 [referenciaID]
                             );
                             console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuário ${referenciaID}`);
@@ -647,16 +663,17 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         try {
                             // Tentar criar com discord_id
                             [result] = await pool.query(
-                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id) VALUES (?, ?, ?, 1, ?)",
-                                [novaReferenciaID, username, email, discordId]
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id, SenhaHash) VALUES (?, ?, ?, 1, ?, ?)",
+                                [novaReferenciaID, username, email, discordId, '']
                             );
                             console.log(` [DISCORD STRATEGY] Novo usuário criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
                         } catch (dbError) {
+                            console.error(' [DISCORD STRATEGY] Erro ao criar usuário com discord_id:', dbError.stack || dbError.message || dbError);
                             // Se falhar (coluna não existe), criar sem discord_id
                             console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
                             [result] = await pool.query(
-                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo) VALUES (?, ?, ?, 1)",
-                                [novaReferenciaID, username, email]
+                                "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, SenhaHash) VALUES (?, ?, ?, 1, ?)",
+                                [novaReferenciaID, username, email, '']
                             );
                         }
                         referenciaID = novaReferenciaID;
@@ -677,7 +694,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                             "SELECT Id FROM planos WHERE Nome = 'Free' LIMIT 1"
                         );
 
-                        const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
+                        const planoFreeId = planoFree.length > 0 ? (planoFree[0].Id ?? planoFree[0].id ?? 1) : 1; // Fallback para ID 1
 
                         // Criar configuração do usuário com plano FREE
                         await pool.query(
@@ -1193,7 +1210,15 @@ router.post("/login", async (req, res) => {
         const user = rows[0];
         console.log(" Usuário retornado:", user);
 
-        if (!user.SenhaHash) {
+        const userEmail = user.Email ?? user.email;
+        const userNome = user.Nome ?? user.nome;
+        const userReferenciaID = user.ReferenciaID ?? user.referenciaid;
+        const userPerfilId = user.PerfilId ?? user.perfilid;
+        const userSenhaHash = user.SenhaHash ?? user.senhahash;
+        const userEmailVerificado = user.EmailVerificado ?? user.emailverificado;
+        const userAtivo = user.Ativo ?? user.ativo;
+
+        if (!userSenhaHash) {
             return res.status(400).json({
                 status: "error",
                 error: "Conta não tem senha configurada. Use Google ou configure uma senha no perfil.",
@@ -1205,7 +1230,7 @@ router.post("/login", async (req, res) => {
         // Se tu mudar a lógica, pode deixar qualquer um fazer login
         // Ou bloquear quem tem a senha certa
         // NÃO MEXA NESSA MERDA
-        const validPassword = await bcrypt.compare(password, user.SenhaHash);
+        const validPassword = await bcrypt.compare(password, userSenhaHash);
         console.log(" Senha válida?:", validPassword);
 
         if (!validPassword) {
@@ -1216,7 +1241,8 @@ router.post("/login", async (req, res) => {
         }
 
         // Verificar se conta está desativada e permitir reativação se ainda não expirou
-        if (user.Ativo === 0) {
+        const isInactive = userAtivo === 0 || userAtivo === false || String(userAtivo).toLowerCase() === "0" || String(userAtivo).toLowerCase() === "false" || String(userAtivo).toLowerCase() === "f";
+        if (isInactive) {
             // Verificar se ainda está dentro do período de 20 dias
             let canReactivate = false;
             let expirationDate = null;
@@ -1225,7 +1251,7 @@ router.post("/login", async (req, res) => {
                 // Verificar se DataDesativacao existe e não expirou
                 const [deactivatedInfo] = await pool.query(
                     "SELECT DataDesativacao FROM Utilizadores WHERE ReferenciaID = ?",
-                    [user.ReferenciaID]
+                    [userReferenciaID]
                 );
 
                 if (deactivatedInfo.length > 0 && deactivatedInfo[0].DataDesativacao) {
@@ -1250,9 +1276,9 @@ router.post("/login", async (req, res) => {
                 // Reativar conta automaticamente ao fazer login
                 await pool.query(
                     "UPDATE Utilizadores SET Ativo = 1, DataDesativacao = NULL WHERE ReferenciaID = ?",
-                    [user.ReferenciaID]
+                    [userReferenciaID]
                 );
-                console.log(`[AUTH] Conta ${user.ReferenciaID} reativada automaticamente via login`);
+                console.log(`[AUTH] Conta ${userReferenciaID} reativada automaticamente via login`);
 
                 // Marcar que a conta foi reativada para mostrar modal no frontend
                 user.accountReactivated = true;
@@ -1266,28 +1292,29 @@ router.post("/login", async (req, res) => {
         }
 
         // Verificar se email está verificado
-        if (!user.EmailVerificado) {
+        const isEmailVerified = userEmailVerificado === 1 || userEmailVerificado === true || String(userEmailVerificado).toLowerCase() === "1" || String(userEmailVerificado).toLowerCase() === "true" || String(userEmailVerificado).toLowerCase() === "t";
+        if (!isEmailVerified) {
             return res.status(403).json({
                 status: "error",
                 error: "Email não verificado. Verifique seu email antes de fazer login.",
                 needsVerification: true,
-                email: user.Email
+                email: userEmail
             });
         }
 
         // Se 2FA ativo, não devolver token; devolver tempToken para completar verificação
-        const twoFA = await is2FAEnabled(user.ReferenciaID);
+        const twoFA = await is2FAEnabled(userReferenciaID);
         if (twoFA) {
-            const tempToken = gerarToken2FAPending(user.ReferenciaID, user.Email);
+            const tempToken = gerarToken2FAPending(userReferenciaID, userEmail);
             return res.json({
                 status: "ok",
                 requires2FA: true,
                 tempToken,
                 user: {
-                    ReferenciaID: user.ReferenciaID,
-                    email: user.Email,
-                    nome: user.Nome,
-                    perfilId: user.PerfilId || user.perfilId
+                    ReferenciaID: userReferenciaID,
+                    email: userEmail,
+                    nome: userNome,
+                    perfilId: userPerfilId
                 }
             });
         }
@@ -1310,10 +1337,10 @@ router.post("/login", async (req, res) => {
             adminPanelHeader === 'true';
 
         if (isAdminPanel) {
-            const perfilId = user.PerfilId || user.perfilId;
+            const perfilId = userPerfilId;
             // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation (gestão dos funcionários)
             if (perfilId !== 1 && perfilId !== 3) {
-                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${user.Email} (PerfilId=${perfilId})`);
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${userEmail} (PerfilId=${perfilId})`);
                 return res.status(403).json({
                     status: "error",
                     error: "Acesso negado. Apenas administradores e utilizadores corporativos podem acessar o painel.",
@@ -1322,17 +1349,17 @@ router.post("/login", async (req, res) => {
             }
         }
 
-        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
+        const { token, refreshToken } = gerarParesToken(userReferenciaID, userEmail);
 
         res.json({
             status: "ok",
             token,
             refreshToken,
             user: {
-                ReferenciaID: user.ReferenciaID,
-                email: user.Email,
-                nome: user.Nome,
-                perfilId: user.PerfilId || user.perfilId
+                ReferenciaID: userReferenciaID,
+                email: userEmail,
+                nome: userNome,
+                perfilId: userPerfilId
             },
             accountReactivated: user.accountReactivated || false
         });
@@ -2313,7 +2340,7 @@ router.get("/discord/callback", async (req, res) => {
                     // Inserir ou atualizar na tabela contasconectadas
                     try {
                         await pool.query(
-                            "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON DUPLICATE KEY UPDATE Conectado = 1, DataConexao = NOW()",
+                            "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
                             [loggedInReferenciaID]
                         );
                         console.log(" [DISCORD CALLBACK] Discord inserido/atualizado em contasconectadas");
