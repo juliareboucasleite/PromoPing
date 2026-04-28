@@ -44,6 +44,8 @@ class PromoPingBot {
             database: process.env.DB_NAME || 'papv5',
             port: parseInt(process.env.DB_PORT) || 5432
         };
+        this.dbPool = mysql.createPool(this.dbConfig);
+        this.prefixCache = new Map();
 
         // Configurações do bot
         this.prefix = process.env.DISCORD_PREFIX || '!';
@@ -98,6 +100,45 @@ class PromoPingBot {
         // Verificar se o ID está na lista de administradores
         const userId = member.user ? member.user.id : member.id;
         return this.adminIds.includes(userId);
+    }
+
+    async getGuildPrefix(guildId) {
+        if (!guildId) {
+            return this.prefix;
+        }
+
+        if (this.prefixCache.has(guildId)) {
+            return this.prefixCache.get(guildId);
+        }
+
+        try {
+            const [rows] = await this.dbPool.execute(
+                "SELECT Prefix FROM discord_guild_settings WHERE GuildId = ? LIMIT 1",
+                [guildId]
+            );
+
+            const prefix = rows[0]?.Prefix || this.prefix;
+            this.prefixCache.set(guildId, prefix);
+            return prefix;
+        } catch (error) {
+            console.error('[DISCORD] Erro ao obter prefixo do servidor:', error.message);
+            return this.prefix;
+        }
+    }
+
+    async setGuildPrefix(guildId, prefix) {
+        const normalizedPrefix = String(prefix || '').trim() || this.prefix;
+
+        await this.dbPool.execute(
+            `INSERT INTO discord_guild_settings (GuildId, Prefix)
+             VALUES (?, ?)
+             ON CONFLICT (GuildId)
+             DO UPDATE SET Prefix = EXCLUDED.Prefix, UpdatedAt = CURRENT_TIMESTAMP`,
+            [guildId, normalizedPrefix]
+        );
+
+        this.prefixCache.set(guildId, normalizedPrefix);
+        return normalizedPrefix;
     }
 
     setupEventHandlers() {
@@ -167,9 +208,10 @@ class PromoPingBot {
 
                 // Verificar se é mensagem privada (DM)
                 if (!message.guild) {
+                    const privatePrefix = this.prefix;
                     // Processar comandos no privado também
-                    if (message.content.startsWith(this.prefix)) {
-                        const args = message.content.slice(this.prefix.length).trim().split(/ +/);
+                    if (message.content.startsWith(privatePrefix)) {
+                        const args = message.content.slice(privatePrefix.length).trim().split(/ +/);
                         const commandName = args.shift().toLowerCase();
                         const comando = comandos.get(commandName);
                         if (comando) {
@@ -223,11 +265,13 @@ class PromoPingBot {
                 const countingHandled = await this.handleCounting(message);
                 if (countingHandled) return; // Se foi processado como counting, não processar como comando
 
+                const guildPrefix = await this.getGuildPrefix(message.guild.id);
+
                 // Ignora mensagens sem prefixo
-                if (!message.content.startsWith(this.prefix)) return;
+                if (!message.content.startsWith(guildPrefix)) return;
 
                 // Extrai comando e argumentos
-                const args = message.content.slice(this.prefix.length).trim().split(/ +/);
+                const args = message.content.slice(guildPrefix.length).trim().split(/ +/);
                 const commandName = args.shift().toLowerCase();
 
                 const comando = comandos.get(commandName);
