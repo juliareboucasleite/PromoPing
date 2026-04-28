@@ -86,6 +86,16 @@
         return div.innerHTML;
     }
 
+    // PG dobra identificadores não-quotados para minúsculas: as APIs devolvem
+    // `titulo`/`datainicio`, mas este código foi escrito para `Titulo`/`DataInicio`.
+    function ci(obj, key) {
+        if (!obj) return undefined;
+        if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+        const low = key.toLowerCase();
+        if (obj[low] !== undefined && obj[low] !== null) return obj[low];
+        return undefined;
+    }
+
     /**
      * Carregar incidentes
      */
@@ -124,17 +134,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.incidents.map(incident => `
+                        ${data.incidents.map(incident => {
+                            const titulo = ci(incident, 'Titulo') || 'N/A';
+                            const tituloLimpo = (window.APIUtils && window.APIUtils.stripBracketPrefix(titulo)) || titulo;
+                            const descricao = ci(incident, 'Descricao') || '';
+                            const componente = ci(incident, 'ComponenteAfetado') || 'N/A';
+                            const status = ci(incident, 'Status') || '';
+                            const dataInicio = ci(incident, 'DataInicio');
+                            const dataFim = ci(incident, 'DataFim');
+                            const id = ci(incident, 'Id');
+                            return `
                             <tr>
-                                <td>${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(incident.Titulo)) || incident.Titulo || 'N/A')}</td>
-                                <td>${escapeHtml((incident.Descricao || '').substring(0, 100))}${incident.Descricao && incident.Descricao.length > 100 ? '...' : ''}</td>
-                                <td>${escapeHtml(incident.ComponenteAfetado || 'N/A')}</td>
-                                <td><span class="bug-status ${incident.Status}">${incident.Status}</span></td>
-                                <td>${formatDate(incident.DataInicio)}</td>
-                                <td>${incident.DataFim ? formatDate(incident.DataFim) : 'Em andamento'}</td>
-                                <td><button type="button" class="refresh-button" data-incident-id="${incident.Id}" style="padding: 0.25rem 0.5rem;">Atualizar</button></td>
+                                <td>${escapeHtml(tituloLimpo)}</td>
+                                <td>${escapeHtml(descricao.substring(0, 100))}${descricao.length > 100 ? '...' : ''}</td>
+                                <td>${escapeHtml(componente)}</td>
+                                <td><span class="bug-status ${status}">${status}</span></td>
+                                <td>${formatDate(dataInicio)}</td>
+                                <td>${dataFim ? formatDate(dataFim) : 'Em andamento'}</td>
+                                <td><button type="button" class="refresh-button" data-incident-id="${id}" style="padding: 0.25rem 0.5rem;">Atualizar</button></td>
                             </tr>
-                        `).join('')}
+                        `;}).join('')}
                     </tbody>
                 </table>
             `;
@@ -180,18 +199,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.updates.map(update => `
+                        ${data.updates.map(update => {
+                            const titulo = ci(update, 'Titulo') || 'N/A';
+                            const tituloLimpo = (window.APIUtils && window.APIUtils.stripBracketPrefix(titulo)) || titulo;
+                            const descricao = ci(update, 'Descricao') || '';
+                            const tipo = ci(update, 'Tipo') || 'feature';
+                            const dataCriacao = ci(update, 'DataCriacao');
+                            return `
                             <tr>
-                                <td>${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(update.Titulo)) || update.Titulo || 'N/A')}</td>
-                                <td>${escapeHtml((update.Descricao || '').substring(0, 150))}${update.Descricao && update.Descricao.length > 150 ? '...' : ''}</td>
+                                <td>${escapeHtml(tituloLimpo)}</td>
+                                <td>${escapeHtml(descricao.substring(0, 150))}${descricao.length > 150 ? '...' : ''}</td>
                                 <td>
                                     <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; background: rgba(255, 152, 0, 0.2); color: #fcd34d;">
-                                        ${update.Tipo || 'feature'}
+                                        ${tipo}
                                     </span>
                                 </td>
-                                <td>${formatDate(update.DataCriacao)}</td>
+                                <td>${formatDate(dataCriacao)}</td>
                             </tr>
-                        `).join('')}
+                        `;}).join('')}
                     </tbody>
                 </table>
             `;
