@@ -587,6 +587,14 @@ if (!isProduction) {
     const adminPath = path.join(__dirname, "../painel-suporte-corporacao");
     app.use("/painel-suporte-corporacao", express.static(adminPath));
 
+    // URLs limpas para o painel (atalhos)
+    app.get("/suporte", (req, res) => {
+        res.redirect("/painel-suporte-corporacao/pages/dashboard.html");
+    });
+    app.get("/corporativo", (req, res) => {
+        res.redirect("/painel-suporte-corporacao/pages_corporation/dashboard.html");
+    });
+
     // Anexos de bugs (uploads/bugs)
     const uploadsPath = path.join(__dirname, "uploads");
     app.use("/uploads", express.static(uploadsPath));
@@ -885,6 +893,20 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
+    app.get("/docs/ral", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "docs/ral.html") :
+            path.join(__dirname, "../frontend/pages/docs/ral.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/docs/livro-reclamacoes", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "docs/livro-reclamacoes.html") :
+            path.join(__dirname, "../frontend/pages/docs/livro-reclamacoes.html");
+        res.sendFile(filePath);
+    });
+
     app.get("/docs/installation", (req, res) => {
         const filePath = buildExists ?
             path.join(buildPath, "docs/installation.html") :
@@ -1103,7 +1125,17 @@ app.listen(PORT, HOST, async() => {
         console.log(`  Acesso via rede local: http://${localIP}:${PORT}/`);
         console.log(`  API via rede local: http://${localIP}:${PORT}/api/`);
     }
-    console.log(`  Painel Suporte/Corporação: http://localhost:${PORT}/painel-suporte-corporacao/pages/login.html\n`);
+
+    const PUBLIC_URL = (process.env.BASE_URL || process.env.FRONTEND_URL || 'https://promoping.pt').replace(/\/$/, '');
+
+    console.log(`  Página normal (local):      http://localhost:${PORT}/`);
+    console.log(`  Página normal (público):    ${PUBLIC_URL}/`);
+    console.log(`  Suporte (local):            http://localhost:${PORT}/suporte`);
+    console.log(`  Suporte (público):          ${PUBLIC_URL}/suporte`);
+    console.log(`  Corporativo (local):        http://localhost:${PORT}/corporativo`);
+    console.log(`  Corporativo (público):      ${PUBLIC_URL}/corporativo`);
+    console.log(`  Login Painel (local):       http://localhost:${PORT}/painel-suporte-corporacao/pages/login.html`);
+    console.log(`  Login Painel (público):     ${PUBLIC_URL}/painel-suporte-corporacao/pages/login.html\n`);
 
     // Iniciar verificação automática de períodos de graça
     try {
