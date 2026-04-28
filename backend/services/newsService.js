@@ -31,6 +31,18 @@ class NewsService {
             'Amazon', 'IKEA', 'Leroy Merlin', 'Continente', 'Pingo Doce', 'Auchan',
             'Zara', 'H&M', 'Decathlon', 'Sport Zone', 'Foot Locker'
         ];
+        this.newsApiUnavailableLoggedAt = 0;
+    }
+
+    async fetchJsonWithTimeout(url, timeoutMs = 30000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            return await fetch(url, { signal: controller.signal });
+        } finally {
+            clearTimeout(timeoutId);
+        }
     }
 
     /**
@@ -133,7 +145,7 @@ class NewsService {
                         const keywords = this.monitoredCategories[category].slice(0, 3).join(' OR ');
                         const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(keywords)}&language=pt&sortBy=publishedAt&pageSize=10&apiKey=${newsApiKey}`;
                         
-                        const response = await fetch(url);
+                        const response = await this.fetchJsonWithTimeout(url);
                         if (response.ok) {
                             const data = await response.json();
                             if (data.articles) {

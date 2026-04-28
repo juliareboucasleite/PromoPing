@@ -6,7 +6,7 @@
 import { pool } from "../database/db.js";
 import { sendEmail } from "./notify.js";
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://promoping.pt";
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.BASE_URL || "https://promoping.pt";
 
 /**
  * Gera HTML do email com a lista de novos artigos
