@@ -44,18 +44,16 @@ def connect_db():
 def fetch_products():
     conn = connect_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # Nota: Idealmente faria JOIN com configutilizador e planos para obter IntervaloVerificacao
-    # baseado no plano do utilizador. Por enquanto, usa default 24h (Free plan).
     cur.execute("""
-        SELECT Id AS "Id", Nome AS "Nome", Link AS "Link",
-               PrecoAlvo AS "PrecoAlvo", UpdatedAt AS "UpdatedAt"
-        FROM produtos
-        WHERE Link IS NOT NULL AND Link <> '' AND DeletedAt IS NULL
+        SELECT p.Id AS "Id", p.Nome AS "Nome", p.Link AS "Link",
+               p.PrecoAlvo AS "PrecoAlvo", p.UpdatedAt AS "UpdatedAt",
+               COALESCE(NULLIF(regexp_replace(pl.intervaloverificacao, '\\D', '', 'g'), '')::int, 24) AS "VerificacaoIntervalo"
+        FROM produtos p
+        LEFT JOIN configutilizador cu ON cu.referenciaid = p.ReferenciaID
+        LEFT JOIN planos pl ON pl.id = cu.planoativoid
+        WHERE p.Link IS NOT NULL AND p.Link <> '' AND p.DeletedAt IS NULL
     """)
     rows = cur.fetchall()
-    # Adicionar intervalo de verificacao padrao (24h) para cada produto
-    for row in rows:
-        row['VerificacaoIntervalo'] = 24  # Default: Free plan (24 horas)
     cur.close()
     conn.close()
     return rows

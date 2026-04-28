@@ -3,7 +3,6 @@ import os
 import argparse
 import json
 from scraper import monitor_loop, fetch_products, connect_db, scrape_single_product
-from product_comparison import compare_product_across_stores, compare_product_simple
 
 def test_system():
     """Testa sistema antes de iniciar"""
@@ -46,6 +45,7 @@ def main():
     if args.compare:
         print(f"Comparando produto em múltiplas lojas: {args.compare}")
         try:
+            from product_comparison import compare_product_across_stores
             result = compare_product_across_stores(args.compare)
             # Imprimir resultado em JSON para integração
             print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -54,11 +54,12 @@ def main():
             import traceback
             traceback.print_exc()
         return
-    
+
     # Modo comparação simplificada (retorna apenas JSON de resultados)
     if args.compare_simple:
         print(f"Comparação simplificada para: {args.compare_simple}")
         try:
+            from product_comparison import compare_product_simple
             results = compare_product_simple(args.compare_simple)
             # Imprimir apenas JSON de resultados
             print(json.dumps(results, indent=2, ensure_ascii=False))
