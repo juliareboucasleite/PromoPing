@@ -101,6 +101,41 @@
     }
   }
 
+  function getResponsiveCardMetrics() {
+    const viewportWidth = window.innerWidth || 1280;
+    const wrapperWidth = wrapper ? Math.floor(wrapper.getBoundingClientRect().width) : viewportWidth;
+    const isSmallMobile = viewportWidth <= 480;
+    const isMobile = viewportWidth <= 768;
+
+    if (isSmallMobile) {
+      return {
+        width: Math.max(220, Math.min(252, wrapperWidth - 20)),
+        height: 190,
+        gap: 18,
+        padding: 18,
+        maxTextLines: 3
+      };
+    }
+
+    if (isMobile) {
+      return {
+        width: Math.max(240, Math.min(280, wrapperWidth - 28)),
+        height: 196,
+        gap: 22,
+        padding: 20,
+        maxTextLines: 3
+      };
+    }
+
+    return {
+      width: 320,
+      height: 200,
+      gap: 56,
+      padding: 28,
+      maxTextLines: 4
+    };
+  }
+
   function initCanvas() {
     canvas = document.getElementById('testimonials-canvas');
     messageEl = document.getElementById('testimonials-message');
@@ -129,8 +164,14 @@
     dpr = window.devicePixelRatio || 1;
     const rect = wrapper.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect.width));
-    const maxCanvasHeight = 240;
-    const h = Math.min(maxCanvasHeight, Math.max(CONFIG.cardHeight + 32, Math.floor(rect.height)));
+    const metrics = getResponsiveCardMetrics();
+    CONFIG.cardWidth = metrics.width;
+    CONFIG.cardHeight = metrics.height;
+    CONFIG.gap = metrics.gap;
+    CONFIG.padding = metrics.padding;
+    CONFIG.maxTextLines = metrics.maxTextLines;
+    const maxCanvasHeight = window.innerWidth <= 768 ? CONFIG.cardHeight + 8 : 240;
+    const h = Math.min(maxCanvasHeight, Math.max(CONFIG.cardHeight + 8, Math.floor(rect.height)));
 
     canvas.width = w * dpr;
     canvas.height = h * dpr;

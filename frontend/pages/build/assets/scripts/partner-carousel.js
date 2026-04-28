@@ -87,8 +87,11 @@
     dpr = window.devicePixelRatio || 1;
     const rect = wrapper.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect.width));
-    const maxCanvasHeight = 64;
-    const h = Math.min(maxCanvasHeight, Math.max(48, Math.floor(rect.height)));
+    const isMobile = window.innerWidth <= 640;
+    CONFIG.fontSize = isMobile ? 18 : 22;
+    CONFIG.gap = isMobile ? 40 : 80;
+    const maxCanvasHeight = isMobile ? 42 : 64;
+    const h = Math.min(maxCanvasHeight, Math.max(isMobile ? 36 : 48, Math.floor(rect.height)));
 
     canvas.width = w * dpr;
     canvas.height = h * dpr;

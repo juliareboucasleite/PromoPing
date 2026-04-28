@@ -2534,3 +2534,326 @@ body .notification-container.logo-only-mode.active {
     font-size: 1rem;
   }
 }
+
+/* ===== MOBILE FOUNDATION ===== */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .pp-container {
+    padding: 0 20px;
+  }
+
+  .pp-hero {
+    min-height: auto;
+    padding: 48px 0 32px;
+  }
+
+  .pp-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+
+  .pp-hero-left,
+  .pp-hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pp-hero-left h1 {
+    font-size: clamp(2.4rem, 8vw, 4rem);
+    margin-bottom: 24px;
+  }
+
+  .pp-hero-logo {
+    max-width: min(100%, 420px);
+  }
+
+  .pp-about {
+    min-height: auto;
+    padding: 56px 0 40px;
+  }
+
+  .pp-about h2 {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+  }
+
+  .pp-about-text {
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+}
+
+@media (max-width: 640px) {
+  .pp-container {
+    padding: 0 16px;
+  }
+
+  .pp-hero {
+    padding: 36px 0 24px;
+  }
+
+  .pp-hero-grid {
+    gap: 24px;
+  }
+
+  .pp-hero-left h1 {
+    font-size: clamp(2rem, 11vw, 2.9rem);
+    line-height: 1.08;
+  }
+
+  .pp-btn-cta,
+  .pp-btn-ghost {
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+  }
+
+  .pp-about {
+    padding: 40px 0 28px;
+  }
+
+  .pp-about h2 {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .pp-about-text {
+    font-size: 0.98rem;
+  }
+
+  .notification-card {
+    width: calc(100vw - 24px);
+    max-width: none;
+  }
+}
+
+/* ===== HOME MOBILE CORRECTIONS ===== */
+@media (max-width: 768px) {
+  .pp-hero {
+    display: block;
+    min-height: auto;
+    padding: 28px 0 12px;
+  }
+
+  .pp-hero-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    gap: 18px;
+  }
+
+  .pp-hero-left,
+  .pp-hero-right {
+    width: 100%;
+  }
+
+  .pp-hero-left {
+    gap: 14px;
+  }
+
+  .pp-hero-left h1 {
+    margin: 0;
+    text-align: center;
+  }
+
+  .pp-hero-right {
+    justify-content: center;
+  }
+
+  .pp-hero-logo {
+    max-width: min(64vw, 260px);
+  }
+
+  .pp-section-connect {
+    min-height: auto;
+    padding: 42px 18px 28px;
+  }
+
+  .pp-connect-wrap {
+    max-width: 40rem;
+  }
+
+  .pp-connect-title {
+    margin: 0 auto 1rem;
+    max-width: 13ch;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .pp-connect-desc {
+    max-width: 34rem;
+    margin: 0 auto 1.1rem;
+    text-align: left;
+    font-size: 0.98rem;
+    line-height: 1.75;
+  }
+
+  .pp-connect-cta-wrap {
+    margin: 0 0 1.25rem;
+  }
+
+  .pp-discord-bot-cta {
+    width: min(100%, 320px);
+  }
+
+  .pp-connect-slogan {
+    text-align: center;
+  }
+
+  .pp-partners {
+    margin-top: 0;
+    padding: 36px 16px;
+  }
+
+  .partner-carousel-wrapper {
+    min-height: 38px;
+    max-height: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .partner-carousel-canvas {
+    min-height: 38px;
+  }
+
+  .how-section {
+    padding: 48px 16px;
+  }
+
+  .how-header {
+    margin-bottom: 34px;
+  }
+
+  .how-header h2 {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
+  .how-header p {
+    font-size: 1rem;
+  }
+
+  .how-steps {
+    gap: 20px;
+  }
+
+  .how-step {
+    padding: 28px 18px;
+    border-radius: 20px;
+  }
+
+  .step-content h3 {
+    font-size: 1.15rem;
+  }
+
+  .step-content p {
+    font-size: 0.92rem;
+  }
+
+  .pp-pricing {
+    padding: 48px 16px;
+  }
+
+  .pricing-header {
+    margin-bottom: 34px;
+  }
+
+  .pricing-header h2 {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
+  .pricing-header p {
+    font-size: 1rem;
+  }
+
+  .pricing-grid {
+    max-width: none;
+    gap: 16px;
+  }
+
+  .pricing-card {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .pp-testimonials {
+    padding: 48px 16px 24px;
+  }
+
+  .testimonials-header {
+    margin-bottom: 20px;
+  }
+
+  .testimonials-title {
+    font-size: clamp(2rem, 9vw, 2.8rem);
+  }
+
+  .testimonials-subtitle {
+    font-size: 1rem;
+  }
+
+  .testimonials-columns-wrapper {
+    min-height: 205px;
+    max-height: 205px;
+    padding: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .testimonials-canvas {
+    min-height: 205px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-hero {
+    padding-top: 20px;
+  }
+
+  .pp-hero-logo {
+    max-width: min(58vw, 220px);
+  }
+
+  .pp-connect-title,
+  .pricing-header h2,
+  .how-header h2,
+  .testimonials-title {
+    line-height: 1.08;
+  }
+
+  .pp-connect-desc {
+    font-size: 0.94rem;
+    line-height: 1.68;
+  }
+
+  .pricing-card {
+    max-width: 100%;
+  }
+
+  .testimonials-columns-wrapper {
+    min-height: 198px;
+    max-height: 198px;
+  }
+
+  .testimonials-canvas {
+    min-height: 198px;
+  }
+}

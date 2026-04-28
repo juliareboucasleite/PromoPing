@@ -468,3 +468,47 @@ body {
     justify-content: center;
   }
 }
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 5rem;
+  }
+
+  .pp-header {
+    height: auto;
+    min-height: 4rem;
+  }
+
+  .pp-header-container {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .pp-header-logo,
+  .pp-header-burger {
+    width: 100%;
+  }
+
+  .pp-header-burger {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 560px) {
+  .pp-header-logo {
+    justify-content: center;
+  }
+
+  .pp-header-burger {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .pp-header-lang-btn,
+  .pp-header-cta-button {
+    width: 100%;
+    text-align: center;
+  }
+}

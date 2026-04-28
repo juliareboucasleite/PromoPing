@@ -475,3 +475,111 @@
 .modal-overlay .pinterest-modal::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* ===== MOBILE REFINEMENTS ===== */
+@media (max-width: 768px) {
+  .pp-header {
+    margin: 14px 12px 0;
+    max-width: none;
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+
+  .pp-header::before,
+  .pp-header::after {
+    border-radius: inherit;
+  }
+
+  .pp-header-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .pp-header-logo {
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .pp-header-burger {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pp-header-burger-btn {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .pp-header-cta-buttons {
+    width: 100%;
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pp-header-cta-button,
+  .pp-header-cta-button-secondary {
+    min-width: 0;
+    text-align: center;
+    padding: 11px 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .pp-header {
+    padding: 14px;
+  }
+
+  .pp-header-logo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pp-header-burger {
+    grid-template-columns: 1fr;
+  }
+
+  .pp-header-burger-lang {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pp-header-lang-btn {
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .pp-header-cta-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .pp-header-cta-button,
+  .pp-header-cta-button-secondary {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-overlay .pinterest-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .modal-overlay .pinterest-modal .modal-content {
+    max-height: calc(100vh - 24px) !important;
+    overflow-y: auto !important;
+  }
+}

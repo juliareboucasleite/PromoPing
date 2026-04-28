@@ -1,2 +1,14 @@
 node_modules
 .env
+cloudflared-config.yml
+cloudflared.log
+cloudflared.pid
+cloudflared.sock
+cloudflared.tls
+cloudflared.crt
+nginx.dev.conf
+nginx.prod.conf
+nginx.conf
+docker-compose.dev.yml
+docker-compose.prod.yml
+docker-compose.yml

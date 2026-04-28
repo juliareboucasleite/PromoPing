@@ -2233,3 +2233,101 @@ html {
 .modal-content::-webkit-scrollbar-thumb:hover {
     background: #333;
 }
+
+/* ==== MOBILE LAYOUT ==== */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .dashboard-sidebar {
+        width: auto;
+        min-width: 0;
+        margin: 0.5rem;
+        border-radius: 16px;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding: 1rem;
+    }
+
+    .nav-item {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+    .sidebar-footer {
+        padding: 0 1rem 1rem;
+    }
+
+    .dashboard-main {
+        min-width: 0;
+        overflow: visible;
+    }
+
+    .dashboard-section {
+        padding: 1.25rem 1rem 2rem;
+        overflow-y: visible;
+    }
+
+    .section-header,
+    .support-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .threads-panel,
+    .stats-grid {
+        width: 100%;
+    }
+
+    .data-table-container {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        min-width: 720px;
+    }
+
+    .fc .fc-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .login-container {
+        padding: 1rem;
+    }
+
+    .login-card,
+    .modal,
+    .modal-content,
+    .aviso-overlay .aviso-modal {
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+        margin: 12px auto !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        min-width: 640px;
+    }
+}

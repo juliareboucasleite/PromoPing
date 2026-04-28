@@ -3959,3 +3959,129 @@ input:checked + .toggle-slider:before {
         transform: translateY(-5px);
     }
 }
+
+/* ===== MOBILE LAYOUT OVERRIDES ===== */
+@media (max-width: 1024px) {
+    .nav-container {
+        height: auto;
+        padding: 16px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .nav-menu {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .nav-item {
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    .nav-actions {
+        margin-left: auto;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .dashboard-main {
+        margin: 0 12px 12px;
+        padding: 24px 0;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .dashboard-container {
+        padding: 0 16px;
+    }
+
+    .page-header-content,
+    .section-header,
+    .product-header,
+    .history-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .search-container {
+        width: 100%;
+        max-width: none;
+    }
+
+    .filter-group {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .filter-select,
+    .filter-count {
+        width: 100%;
+    }
+
+    .product-details,
+    .product-details-new,
+    .plans-comparison,
+    .plans-info {
+        grid-template-columns: 1fr;
+    }
+
+    .product-actions,
+    .empty-state-actions,
+    .upgrade-benefits {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-main {
+        margin: 0;
+        border-radius: 0;
+        padding: 20px 0;
+    }
+
+    .dashboard-container {
+        padding: 0 12px;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .add-product-form,
+    .filter-group,
+    .empty-state-actions,
+    .upgrade-benefits,
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .product-card,
+    .add-product-card,
+    .filters-bar,
+    .plan-card,
+    .info-card {
+        padding: 16px;
+    }
+
+    .add-product-btn,
+    .refresh-btn,
+    .btn,
+    .upgrade-btn {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: calc(100% - 24px);
+        margin: 12px;
+        max-height: calc(100vh - 24px);
+    }
+}
