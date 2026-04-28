@@ -44,7 +44,7 @@ module.exports = {
             const githubDiscussionsUrl = 'https://github.com/juliareboucasleite/PromoPing/discussions';
             const githubRepoUrl = 'https://github.com/juliareboucasleite/PromoPing';
             const githubBotSuporterUrl = 'https://github.com/juliareboucasleite/PromoPingBotSuporter';
-            const siteUrl = process.env.SITE_URL || 'http://promoping.pt';
+            const siteUrl = process.env.SITE_URL || process.env.FRONTEND_URL || process.env.BASE_URL || 'https://promoping.pt';
 
             // Criar embed do painel de recursos da comunidade
             const communityPanelEmbed = new EmbedBuilder()

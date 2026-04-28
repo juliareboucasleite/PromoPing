@@ -1,8 +1,9 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, REST, Routes, SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ApplicationCommandType } = require('discord.js');
 const path = require('path');
 const http = require('http');
 const https = require('https');
 const mysql = require('./mysql2-compat');
+const setupDatabase = require('./setup-db');
 const comandos = require('./comandos');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
@@ -101,6 +102,11 @@ class PromoPingBot {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
             console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
             this.reconnectAttempts = 0; // Reset contador de reconexão
+            try {
+                await setupDatabase();
+            } catch (dbSetupError) {
+                console.error('[DISCORD] Erro ao alinhar schema do bot:', dbSetupError.message);
+            }
             this.startMonitoring();
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
@@ -173,7 +179,7 @@ class PromoPingBot {
                 // Resposta do suporte no canal do ticket (widget) → enviar para o backend para aparecer no widget
                 if (message.guild && message.channel.parent?.name === 'Tickets' && /^ticket-\d+$/.test(message.channel.name)) {
                     const threadId = message.channel.name.replace(/^ticket-/, '');
-                    const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
+                    const backendUrl = process.env.BACKEND_URL || process.env.API_URL || process.env.BASE_URL || 'http://127.0.0.1:3000';
                     const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
                     if (!secret) {
                         console.warn('[DISCORD] SUPPORT_DISCORD_INTERNAL_SECRET não configurado; resposta no canal do ticket não enviada para o widget.');
@@ -784,7 +790,7 @@ class PromoPingBot {
                         
                         // Buscar ReferenciaID do usuário pelo discord_id
                         const [users] = await connection.execute(
-                            'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                            'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
                             [userId]
                         );
 
@@ -795,7 +801,8 @@ class PromoPingBot {
                             return;
                         }
 
-                        const referenciaID = users[0].ReferenciaID;
+                        const userInfo = users[0];
+                        const referenciaID = userInfo.ReferenciaID;
 
                         // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
                         const [existingReviews] = await connection.execute(
@@ -825,18 +832,28 @@ class PromoPingBot {
                         // Salvar no banco de dados usando apenas as colunas existentes
                         const [result] = await connection.execute(`
                             INSERT INTO reviews (
-                                ReferenciaID, 
-                                Tipo, 
-                                Texto, 
-                                Rating, 
-                                IsAnonimo
-                            ) VALUES (?, ?, ?, ?, ?)
+                                ReferenciaID,
+                                discord_user_id,
+                                discord_username,
+                                discord_avatar_url,
+                                Tipo,
+                                Texto,
+                                Rating,
+                                IsAnonimo,
+                                discord_channel_id,
+                                discord_message_id
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         `, [
                             referenciaID,
+                            userId,
+                            userName || interaction.user.username,
+                            userAvatar || interaction.user.displayAvatarURL(),
                             tipo,
                             reviewText || '',
                             rating,
-                            isAnonimo ? 1 : 0
+                            isAnonimo ? 1 : 0,
+                            discordChannelId,
+                            discordMessageId
                         ]);
 
                         savedReviewId = result.insertId;
@@ -1748,7 +1765,7 @@ class PromoPingBot {
             if (!threadId) {
                 return await interaction.reply({ content: 'Thread inválida.', ephemeral: true });
             }
-            const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
+            const backendUrl = process.env.BACKEND_URL || process.env.API_URL || process.env.BASE_URL || 'http://127.0.0.1:3000';
             const secret = process.env.SUPPORT_DISCORD_INTERNAL_SECRET;
             if (!secret) {
                 return await interaction.reply({
@@ -2709,6 +2726,33 @@ class PromoPingBot {
 
     async registerSlashCommands() {
         try {
+            const normalizeEntryPointCommand = (command) => {
+                const preserved = {
+                    id: command.id,
+                    type: command.type,
+                    application_id: command.application_id,
+                    name: command.name,
+                    description: command.description || ''
+                };
+
+                for (const key of [
+                    'contexts',
+                    'integration_types',
+                    'handler',
+                    'nsfw',
+                    'name_localizations',
+                    'description_localizations',
+                    'options',
+                    'default_member_permissions'
+                ]) {
+                    if (command[key] !== undefined && command[key] !== null) {
+                        preserved[key] = command[key];
+                    }
+                }
+
+                return preserved;
+            };
+
             const commands = [
                 new SlashCommandBuilder()
                     .setName('ping')
@@ -2822,11 +2866,20 @@ class PromoPingBot {
             ].map(command => command.toJSON());
 
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+            const existingGlobalCommands = await rest.get(
+                Routes.applicationCommands(this.client.user.id)
+            );
+            const preservedEntryPointCommands = Array.isArray(existingGlobalCommands)
+                ? existingGlobalCommands
+                    .filter(command => command.type === ApplicationCommandType.PrimaryEntryPoint)
+                    .map(normalizeEntryPointCommand)
+                : [];
+            const bulkCommands = [...commands, ...preservedEntryPointCommands];
 
             // Registrar comandos globalmente
             await rest.put(
                 Routes.applicationCommands(this.client.user.id),
-                { body: commands }
+                { body: bulkCommands }
             );
 
             console.log(`[DISCORD] ${commands.length} comandos de barra registrados com sucesso.`);
@@ -3271,14 +3324,15 @@ class PromoPingBot {
 
                 // Inserir bug na base de dados
                 const [result] = await connection.execute(
-                    `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status) 
-                     VALUES (?, ?, ?, ?, ?)`,
+                    `INSERT INTO bugsprojetos (Titulo, Descricao, Tipo, Prioridade, Status, CreatedBy) 
+                     VALUES (?, ?, ?, ?, ?, ?)`,
                     [
                         titulo,
                         descricaoCompleta,
                         'bug', // Sempre bug quando reportado pelo Discord
                         'medium', // Prioridade média por padrão
-                        'open' // Sempre aberto quando criado
+                        'open', // Sempre aberto quando criado
+                        userInfo?.ReferenciaID || null
                     ]
                 );
 

@@ -42,7 +42,7 @@ module.exports = {
 
             // URL do convite do servidor
             const inviteUrl = 'https://discord.gg/VbukwrCqYU';
-            const siteUrl = process.env.SITE_URL || 'http://promoping.pt';
+            const siteUrl = process.env.SITE_URL || process.env.FRONTEND_URL || process.env.BASE_URL || 'https://promoping.pt';
             const botInviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
 
             // Criar embed do painel de convite

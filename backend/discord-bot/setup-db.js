@@ -66,6 +66,10 @@ async function ensureDefault(connection, tableName, columnName, defaultExpressio
 async function ensureBooleanColumn(connection, tableName, columnName, defaultValue = false) {
     await connection.execute(`
         ALTER TABLE ${tableName}
+        ALTER COLUMN ${columnName} DROP DEFAULT
+    `);
+    await connection.execute(`
+        ALTER TABLE ${tableName}
         ALTER COLUMN ${columnName} TYPE BOOLEAN
         USING CASE
             WHEN ${columnName} IS NULL THEN ${defaultValue ? "TRUE" : "FALSE"}
@@ -130,21 +134,21 @@ async function ensureHistoricoprecos(connection) {
     await ensureIndex(connection, "idx_historicoprecos_loja", "historicoprecos", "Loja");
 }
 
-async function ensureDiscordIdColumn(connection, databaseName) {
+async function ensureDiscordIdColumn(connection) {
     const [columns] = await connection.execute(`
         SELECT COLUMN_NAME
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'utilizadores' AND COLUMN_NAME = 'discord_id'
-    `, [databaseName]);
+        FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'utilizadores'
+          AND column_name = 'discord_id'
+    `);
 
     if (columns.length === 0) {
         await connection.execute(`
             ALTER TABLE utilizadores
             ADD COLUMN discord_id VARCHAR(50) UNIQUE NULL
         `);
-        console.log("Coluna discord_id adicionada à tabela utilizadores");
-    } else {
-        console.log("Coluna discord_id já existe na tabela utilizadores");
+        console.log("Coluna discord_id adicionada a utilizadores");
     }
 }
 
@@ -186,7 +190,7 @@ async function ensureWebhookConfigs(connection) {
         )
     `);
 
-    await ensureRenamedColumn(connection, "webhook_configs", "tipo", "type");
+    await ensureRenamedColumn(connection, "webhook_configs", "tipo", "Type");
     await ensureIdentity(connection, "webhook_configs");
     await ensureColumn(connection, "webhook_configs", "Type", "VARCHAR(100) DEFAULT 'other'");
     await ensureColumn(connection, "webhook_configs", "WebhookUrl", "VARCHAR(500)");
@@ -233,6 +237,162 @@ async function ensureCountingConfig(connection) {
     await ensureIndex(connection, "idx_counting_config_channelid", "counting_config", "ChannelId");
 }
 
+async function ensureNewsConfig(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS news_config (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            ChannelId VARCHAR(50) NOT NULL,
+            CheckInterval INT DEFAULT 60,
+            MonitoredCategories TEXT,
+            MinImpactScore INT DEFAULT 7,
+            IsActive INT DEFAULT 1,
+            LastCheck TIMESTAMP NULL,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "news_config");
+    await ensureColumn(connection, "news_config", "CheckInterval", "INTEGER DEFAULT 60");
+    await ensureColumn(connection, "news_config", "MonitoredCategories", "TEXT");
+    await ensureColumn(connection, "news_config", "MinImpactScore", "INTEGER DEFAULT 7");
+    await ensureColumn(connection, "news_config", "IsActive", "INTEGER DEFAULT 1");
+    await ensureColumn(connection, "news_config", "LastCheck", "TIMESTAMP NULL");
+    await ensureColumn(connection, "news_config", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "news_config", "UpdatedAt", "TIMESTAMP");
+    await ensureIntegerDefault(connection, "news_config", "CheckInterval", 60);
+    await ensureIntegerDefault(connection, "news_config", "MinImpactScore", 7);
+    await ensureIntegerDefault(connection, "news_config", "IsActive", 1);
+    await ensureTimestampDefault(connection, "news_config", "CreatedAt");
+    await ensureTimestampDefault(connection, "news_config", "UpdatedAt");
+    await ensureIndex(connection, "idx_news_config_isactive", "news_config", "IsActive");
+}
+
+async function ensureReviews(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS reviews (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            ReferenciaID VARCHAR(13),
+            discord_user_id VARCHAR(20),
+            discord_username VARCHAR(100),
+            discord_avatar_url VARCHAR(500),
+            Tipo ENUM('site', 'bot', 'suporte') NOT NULL DEFAULT 'site',
+            Texto TEXT NOT NULL,
+            Rating INT,
+            IsAnonimo INT DEFAULT 0,
+            discord_channel_id VARCHAR(20),
+            discord_message_id VARCHAR(20),
+            SupportReferenciaID VARCHAR(13),
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "reviews");
+    await ensureColumn(connection, "reviews", "ReferenciaID", "VARCHAR(13)");
+    await ensureColumn(connection, "reviews", "discord_user_id", "VARCHAR(20)");
+    await ensureColumn(connection, "reviews", "discord_username", "VARCHAR(100)");
+    await ensureColumn(connection, "reviews", "discord_avatar_url", "VARCHAR(500)");
+    await ensureColumn(connection, "reviews", "Tipo", "VARCHAR(20) DEFAULT 'site'");
+    await ensureColumn(connection, "reviews", "Texto", "TEXT");
+    await ensureColumn(connection, "reviews", "Rating", "INTEGER");
+    await ensureColumn(connection, "reviews", "IsAnonimo", "INTEGER DEFAULT 0");
+    await ensureColumn(connection, "reviews", "discord_channel_id", "VARCHAR(20)");
+    await ensureColumn(connection, "reviews", "discord_message_id", "VARCHAR(20)");
+    await ensureColumn(connection, "reviews", "SupportReferenciaID", "VARCHAR(13)");
+    await ensureColumn(connection, "reviews", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "reviews", "UpdatedAt", "TIMESTAMP");
+    await connection.execute("UPDATE reviews SET Tipo = 'site' WHERE Tipo IS NULL");
+    await ensureDefault(connection, "reviews", "Tipo", "'site'");
+    await ensureIntegerDefault(connection, "reviews", "IsAnonimo", 0);
+    await ensureTimestampDefault(connection, "reviews", "CreatedAt");
+    await ensureTimestampDefault(connection, "reviews", "UpdatedAt");
+    await ensureIndex(connection, "idx_reviews_referenciaid", "reviews", "ReferenciaID");
+    await ensureIndex(connection, "idx_reviews_discord_user_id", "reviews", "discord_user_id");
+    await ensureIndex(connection, "idx_reviews_tipo", "reviews", "Tipo");
+    await ensureIndex(connection, "idx_reviews_createdat", "reviews", "CreatedAt");
+    await ensureIndex(connection, "idx_reviews_supportref", "reviews", "SupportReferenciaID");
+}
+
+async function ensureBugsProjetos(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS bugsprojetos (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            Titulo VARCHAR(200) NOT NULL,
+            Descricao TEXT,
+            Tipo ENUM('bug', 'projeto', 'melhoria') DEFAULT 'bug',
+            Prioridade ENUM('low', 'medium', 'high', 'critical') DEFAULT 'medium',
+            Status ENUM('open', 'in-progress', 'resolved', 'closed') DEFAULT 'open',
+            CreatedBy VARCHAR(13),
+            AnexoUrl VARCHAR(500),
+            DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "bugsprojetos");
+    await ensureColumn(connection, "bugsprojetos", "CreatedBy", "VARCHAR(13)");
+    await ensureColumn(connection, "bugsprojetos", "AnexoUrl", "VARCHAR(500)");
+    await ensureColumn(connection, "bugsprojetos", "DataCriacao", "TIMESTAMP");
+    await ensureColumn(connection, "bugsprojetos", "DataAtualizacao", "TIMESTAMP");
+    await ensureTimestampDefault(connection, "bugsprojetos", "DataCriacao");
+    await ensureTimestampDefault(connection, "bugsprojetos", "DataAtualizacao");
+    await ensureIndex(connection, "idx_bugs_status", "bugsprojetos", "Status");
+    await ensureIndex(connection, "idx_bugs_tipo", "bugsprojetos", "Tipo");
+    await ensureIndex(connection, "idx_bugs_createdby", "bugsprojetos", "CreatedBy");
+    await ensureIndex(connection, "idx_bugs_datacriacao", "bugsprojetos", "DataCriacao");
+}
+
+async function ensureSugestoes(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS sugestoes (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            Titulo VARCHAR(200) NOT NULL,
+            Descricao TEXT,
+            Plataforma ENUM('site', 'bot', 'ambos') DEFAULT 'ambos',
+            Prioridade ENUM('low', 'medium', 'high') DEFAULT 'medium',
+            Status ENUM('pendente', 'em-analise', 'aprovada', 'em-desenvolvimento', 'implementada', 'rejeitada') DEFAULT 'pendente',
+            Votos INT DEFAULT 0,
+            DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "sugestoes");
+    await ensureColumn(connection, "sugestoes", "Votos", "INTEGER DEFAULT 0");
+    await ensureColumn(connection, "sugestoes", "DataCriacao", "TIMESTAMP");
+    await ensureColumn(connection, "sugestoes", "DataAtualizacao", "TIMESTAMP");
+    await ensureIntegerDefault(connection, "sugestoes", "Votos", 0);
+    await ensureTimestampDefault(connection, "sugestoes", "DataCriacao");
+    await ensureTimestampDefault(connection, "sugestoes", "DataAtualizacao");
+    await ensureIndex(connection, "idx_sugestoes_status", "sugestoes", "Status");
+    await ensureIndex(connection, "idx_sugestoes_plataforma", "sugestoes", "Plataforma");
+    await ensureIndex(connection, "idx_sugestoes_datacriacao", "sugestoes", "DataCriacao");
+}
+
+async function ensureDiscordErrors(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_errors (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            CommandName VARCHAR(100) NOT NULL,
+            ErrorMessage TEXT NOT NULL,
+            StackTrace TEXT,
+            UserId VARCHAR(50),
+            ChannelId VARCHAR(50),
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_errors");
+    await ensureColumn(connection, "discord_errors", "StackTrace", "TEXT");
+    await ensureColumn(connection, "discord_errors", "UserId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_errors", "ChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_errors", "CreatedAt", "TIMESTAMP");
+    await ensureTimestampDefault(connection, "discord_errors", "CreatedAt");
+    await ensureIndex(connection, "idx_discord_errors_command", "discord_errors", "CommandName");
+    await ensureIndex(connection, "idx_discord_errors_createdat", "discord_errors", "CreatedAt");
+}
+
 async function setupDatabase() {
     console.log("Configurando banco de dados para Discord Bot...");
 
@@ -253,50 +413,9 @@ async function setupDatabase() {
         await ensureHistoricoprecos(connection);
         console.log("Tabela historicoprecos criada/ajustada");
 
-        await ensureDiscordIdColumn(connection, dbConfig.database);
-
-        const [existingData] = await connection.execute("SELECT COUNT(*) as count FROM historicoprecos");
-        if (existingData[0].count === 0) {
-            await connection.execute(`
-                INSERT INTO historicoprecos (ProdutoId, Preco, PrecoAnterior, Loja, Status, Observacoes) VALUES
-                (1, 299.99, 319.99, 'Amazon', 'Ativo', 'Preço atualizado via scraper'),
-                (1, 319.99, 299.99, 'Amazon', 'Ativo', 'Preço aumentou'),
-                (2, 199.99, 219.99, 'Fnac', 'Ativo', 'Desconto aplicado')
-            `);
-            console.log("Dados de exemplo inseridos");
-        }
-
-        await connection.execute(`
-            UPDATE utilizadores
-            SET discord_id = '123456789012345678'
-            WHERE ReferenciaID = (
-                SELECT ReferenciaID
-                FROM utilizadores
-                WHERE discord_id IS NULL
-                  AND ReferenciaID <> 'ANON'
-                ORDER BY DataRegisto ASC
-                LIMIT 1
-            )
-        `);
-        console.log("Usuário de teste configurado com discord_id");
-
+        await ensureDiscordIdColumn(connection);
         await ensureTwitchChannels(connection);
         console.log("Tabela twitch_channels criada/ajustada");
-
-        const [existingChannel] = await connection.execute(
-            "SELECT Id FROM twitch_channels WHERE ChannelName = ?",
-            ["leeksxy"]
-        );
-
-        if (existingChannel.length === 0) {
-            await connection.execute(
-                "INSERT INTO twitch_channels (ChannelName) VALUES (?)",
-                ["leeksxy"]
-            );
-            console.log("Canal Twitch leeksxy adicionado ao monitoramento");
-        } else {
-            console.log("Canal Twitch leeksxy já está sendo monitorado");
-        }
 
         await ensureWebhookConfigs(connection);
         console.log("Tabela webhook_configs criada/ajustada");
@@ -304,7 +423,22 @@ async function setupDatabase() {
         await ensureCountingConfig(connection);
         console.log("Tabela counting_config criada/ajustada");
 
-        console.log("Configuração do banco concluída!");
+        await ensureNewsConfig(connection);
+        console.log("Tabela news_config criada/ajustada");
+
+        await ensureReviews(connection);
+        console.log("Tabela reviews criada/ajustada");
+
+        await ensureBugsProjetos(connection);
+        console.log("Tabela bugsprojetos criada/ajustada");
+
+        await ensureSugestoes(connection);
+        console.log("Tabela sugestoes criada/ajustada");
+
+        await ensureDiscordErrors(connection);
+        console.log("Tabela discord_errors criada/ajustada");
+
+        console.log("Configuracao do banco concluida");
         return true;
     } catch (error) {
         console.error("Erro ao configurar banco:", error);

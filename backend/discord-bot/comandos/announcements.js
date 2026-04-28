@@ -9,6 +9,45 @@ module.exports = {
     description: 'Gerencia notificações de releases do GitHub no canal announcements.',
     execute: async (client, message, args, botInstance) => {
         try {
+            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+            const fetchChannelWithRetry = async (channelId, attempts = 3) => {
+                const cachedChannel = client.channels.cache.get(channelId);
+                if (cachedChannel) {
+                    return cachedChannel;
+                }
+
+                let lastError;
+                for (let attempt = 1; attempt <= attempts; attempt++) {
+                    try {
+                        return await client.channels.fetch(channelId);
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < attempts) {
+                            await wait(attempt * 1000);
+                        }
+                    }
+                }
+
+                throw lastError;
+            };
+            const resolveWebhookTypeColumn = async (connection) => {
+                const [columns] = await connection.execute(`
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_schema = current_schema()
+                      AND table_name = 'webhook_configs'
+                      AND column_name IN ('type', 'tipo')
+                `);
+
+                const availableColumns = columns.map(col => String(col.column_name || '').toLowerCase());
+                if (availableColumns.includes('type')) {
+                    return 'type';
+                }
+                if (availableColumns.includes('tipo')) {
+                    return 'tipo';
+                }
+                return 'type';
+            };
             const action = args[0]?.toLowerCase();
             
             // Para ação de sincronizar, verificar cargo específico
@@ -35,10 +74,11 @@ module.exports = {
             };
 
             const connection = await mysql.createConnection(dbConfig);
+            const webhookTypeColumn = await resolveWebhookTypeColumn(connection);
 
             // ID do canal announcements
             const ANNOUNCEMENTS_CHANNEL_ID = '1442931993888428143';
-            const channel = await client.channels.fetch(ANNOUNCEMENTS_CHANNEL_ID);
+            const channel = await fetchChannelWithRetry(ANNOUNCEMENTS_CHANNEL_ID);
 
             if (!channel) {
                 await connection.end();
@@ -48,7 +88,7 @@ module.exports = {
             if (!action || action === 'status' || action === 'info') {
                 // Mostrar status da configuração
                 const [configs] = await connection.execute(
-                    "SELECT * FROM webhook_configs WHERE Type = ? AND IsActive = 1",
+                    `SELECT * FROM webhook_configs WHERE ${webhookTypeColumn} = ? AND IsActive = 1`,
                     ['github']
                 );
 
@@ -100,18 +140,18 @@ module.exports = {
 
                 // Verificar se já existe configuração
                 const [existing] = await connection.execute(
-                    'SELECT Id FROM webhook_configs WHERE Type = ?',
+                    `SELECT Id FROM webhook_configs WHERE ${webhookTypeColumn} = ?`,
                     ['github']
                 );
 
                 if (existing.length > 0) {
                     await connection.execute(
-                        'UPDATE webhook_configs SET WebhookUrl = ?, IsActive = 1 WHERE Type = ?',
+                        `UPDATE webhook_configs SET WebhookUrl = ?, IsActive = 1 WHERE ${webhookTypeColumn} = ?`,
                         [webhookUrl, 'github']
                     );
                 } else {
                     await connection.execute(
-                        'INSERT INTO webhook_configs (Type, WebhookUrl, IsActive) VALUES (?, ?, 1)',
+                        `INSERT INTO webhook_configs (${webhookTypeColumn}, WebhookUrl, IsActive) VALUES (?, ?, 1)`,
                         ['github', webhookUrl]
                     );
                 }
@@ -156,7 +196,7 @@ module.exports = {
                 
                 try {
                     // Chamar API de sincronização
-                    const syncUrl = process.env.API_URL || 'http://localhost:3000';
+                    const syncUrl = process.env.API_URL || process.env.BACKEND_URL || process.env.BASE_URL || 'http://127.0.0.1:3000';
                     const response = await fetch(`${syncUrl}/api/webhooks/github/sync`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
@@ -257,7 +297,11 @@ module.exports = {
                 console.error('[DISCORD] Erro ao registrar erro no banco:', dbError);
             }
             
-            return await message.channel.send('Ocorreu um erro ao processar o comando. Tente novamente.').catch(() => {
+            const isConnectionTimeout = error?.code === 'UND_ERR_CONNECT_TIMEOUT';
+            const userErrorMessage = isConnectionTimeout
+                ? 'O Discord demorou demasiado tempo a responder. Tente novamente dentro de alguns segundos.'
+                : 'Ocorreu um erro ao processar o comando. Tente novamente.';
+            return await message.channel.send(userErrorMessage).catch(() => {
                 // Se não conseguir enviar, apenas logar
                 console.error('[DISCORD] Não foi possível enviar mensagem de erro');
             });

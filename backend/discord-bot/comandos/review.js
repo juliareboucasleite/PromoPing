@@ -353,7 +353,7 @@ module.exports = {
                                                 
                                                 // Buscar ReferenciaID do usuário pelo discord_id
                                                 const [users] = await connection.execute(
-                                                    'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                                                    'SELECT ReferenciaID, Nome, Email FROM utilizadores WHERE discord_id = ?',
                                                     [reviewData.userId]
                                                 );
 
@@ -367,7 +367,8 @@ module.exports = {
                                                     return;
                                                 }
 
-                                                const referenciaID = users[0].ReferenciaID;
+                                                const userInfo = users[0];
+                                                const referenciaID = userInfo.ReferenciaID;
 
                                                 // Verificar se já existe uma review recente (últimos 5 minutos) do mesmo usuário e tipo
                                                 const [existingReviews] = await connection.execute(
@@ -400,18 +401,28 @@ module.exports = {
                                                 // Salvar no banco de dados usando apenas as colunas existentes
                                                 const [result] = await connection.execute(`
                                                     INSERT INTO reviews (
-                                                        ReferenciaID, 
-                                                        Tipo, 
-                                                        Texto, 
-                                                        Rating, 
-                                                        IsAnonimo
-                                                    ) VALUES (?, ?, ?, ?, ?)
+                                                        ReferenciaID,
+                                                        discord_user_id,
+                                                        discord_username,
+                                                        discord_avatar_url,
+                                                        Tipo,
+                                                        Texto,
+                                                        Rating,
+                                                        IsAnonimo,
+                                                        discord_channel_id,
+                                                        discord_message_id
+                                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                                 `, [
                                                     referenciaID,
+                                                    reviewData.userId,
+                                                    reviewData.message.author.username,
+                                                    reviewData.message.author.displayAvatarURL(),
                                                     reviewData.tipo,
                                                     reviewData.text || '',
                                                     rating,
-                                                    reviewData.isAnonimo ? 1 : 0
+                                                    reviewData.isAnonimo ? 1 : 0,
+                                                    discordChannelId,
+                                                    discordMessageId
                                                 ]);
 
                                                 savedReviewId = result.insertId;

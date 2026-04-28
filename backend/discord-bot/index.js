@@ -1,6 +1,20 @@
-const PromoPingBot = require('./bot');
+const { Agent, setGlobalDispatcher } = require('undici');
+const dns = require('dns');
 const express = require('express');
 const http = require('http');
+
+dns.setDefaultResultOrder('ipv4first');
+setGlobalDispatcher(new Agent({
+    connect: {
+        autoSelectFamily: true,
+        timeout: 20000
+    },
+    keepAliveTimeout: 30000
+}));
+
+const PromoPingBot = require('./bot');
+const INTERNAL_BOT_HOST = process.env.INTERNAL_BOT_HOST || '127.0.0.1';
+const INTERNAL_BOT_PORT = parseInt(process.env.INTERNAL_BOT_PORT || '3001', 10);
 
 // Verificar se as variáveis de ambiente estão configuradas
 if (!process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_BOT_TOKEN === 'SEU_TOKEN_AQUI') {
@@ -235,9 +249,44 @@ internalApp.get('/internal/status', (req, res) => {
 
 // Servidor HTTP interno só inicia DEPOIS do bot estar conectado (para tickets funcionarem)
 const internalServer = http.createServer(internalApp);
+
+async function getExistingInternalBotStatus() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+    try {
+        const response = await fetch(`http://${INTERNAL_BOT_HOST}:${INTERNAL_BOT_PORT}/internal/status`, {
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        return null;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 function startInternalServer() {
-    internalServer.listen(3001, '127.0.0.1', () => {
-        console.log('[DISCORD] Servidor interno de comunicação iniciado na porta 3001 (tickets/suporte)');
+    return new Promise((resolve, reject) => {
+        const handleError = (error) => {
+            internalServer.off('listening', handleListening);
+            reject(error);
+        };
+
+        const handleListening = () => {
+            internalServer.off('error', handleError);
+            console.log(`[DISCORD] Servidor interno de comunicação iniciado na porta ${INTERNAL_BOT_PORT} (tickets/suporte)`);
+            resolve();
+        };
+
+        internalServer.once('error', handleError);
+        internalServer.once('listening', handleListening);
+        internalServer.listen(INTERNAL_BOT_PORT, INTERNAL_BOT_HOST);
     });
 }
 
@@ -253,6 +302,15 @@ process.on('uncaughtException', (error) => {
 
 // Iniciar o bot com retry
 async function startBot() {
+    const existingStatus = await getExistingInternalBotStatus();
+    if (existingStatus && existingStatus.available) {
+        console.warn(
+            `[DISCORD] Já existe uma instância do bot ativa em http://${INTERNAL_BOT_HOST}:${INTERNAL_BOT_PORT}. ` +
+            'A nova instância será encerrada para evitar conflito.'
+        );
+        return;
+    }
+
     const maxRetries = 3;
     let retries = 0;
     
@@ -261,9 +319,21 @@ async function startBot() {
             console.log(`[DISCORD] Tentando iniciar bot Discord... (tentativa ${retries + 1}/${maxRetries})`);
             await bot.connect();
             console.log('[DISCORD] Bot Discord conectado com sucesso!');
-            startInternalServer(); // Só agora abrir porta 3001 para tickets/suporte
+            await startInternalServer(); // Só agora abrir porta 3001 para tickets/suporte
             return; // Sucesso, sair do loop
         } catch (error) {
+            if (error && error.code === 'EADDRINUSE') {
+                const status = await getExistingInternalBotStatus();
+                if (status && status.available) {
+                    console.warn(
+                        `[DISCORD] A porta ${INTERNAL_BOT_PORT} já está ocupada por outra instância saudável do bot. ` +
+                        'Esta instância será encerrada sem erro.'
+                    );
+                    await bot.disconnect();
+                    return;
+                }
+            }
+
             retries++;
             console.error(`[DISCORD] Falha ao iniciar bot (tentativa ${retries}/${maxRetries}):`, error.message);
             
