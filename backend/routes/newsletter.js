@@ -60,7 +60,7 @@ function getNewsletterConfirmationEmail(preferences) {
               </ul>
               
               <div style="text-align: center; margin: 40px 0 30px;">
-                <a href="${process.env.FRONTEND_URL || 'http://promoping.pt'}" style="display: inline-block; background-color: #fff; color: #0f0f10; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: transform 0.2s ease;">Visitar PromoPing</a>
+                <a href="${process.env.FRONTEND_URL || process.env.BASE_URL || 'https://promoping.pt'}" style="display: inline-block; background-color: #fff; color: #0f0f10; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: transform 0.2s ease;">Visitar PromoPing</a>
               </div>
               
               <p style="margin: 30px 0 0; font-size: 0.9rem; line-height: 1.6; color: #666; text-align: center; border-top: 1px solid #232326; padding-top: 30px;">
