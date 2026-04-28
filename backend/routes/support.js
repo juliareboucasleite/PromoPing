@@ -405,16 +405,26 @@ router.get("/messages", optionalToken, async (req, res) => {
 
         if (threadId) {
             const whereClause = isAnonymous
-                ? `(id = ? OR threadId = ?) AND ReferenciaID = ? AND anonymousSessionId = ?`
-                : `(id = ? OR threadId = ?) AND ReferenciaID = ?`;
+                ? `(sm.id = ? OR sm.threadid = ?) AND sm.ReferenciaID = ? AND sm.anonymoussessionid = ?`
+                : `(sm.id = ? OR sm.threadid = ?) AND sm.ReferenciaID = ?`;
             const params = isAnonymous
                 ? [threadId, threadId, ANON_REFERENCIA_ID, anonymousId]
                 : [threadId, threadId, referenciaID];
             const [messages] = await pool.query(
-                `SELECT id, message, senderType, replyTo, threadId, createdAt 
-         FROM supportmessages 
+                `SELECT
+           sm.id,
+           sm.message,
+           sm.ReferenciaID AS "referenciaId",
+           sm.sendertype AS "senderType",
+           sm.replyto AS "replyTo",
+           sm.threadid AS "threadId",
+           sm.createdat AS "createdAt",
+           COALESCE(sm.username, u.Nome) AS "userName",
+           COALESCE(sm.useremail, u.Email) AS "userEmail"
+         FROM supportmessages sm
+         LEFT JOIN utilizadores u ON u.ReferenciaID = sm.ReferenciaID
          WHERE ${whereClause}
-         ORDER BY createdAt ASC`,
+         ORDER BY sm.createdat ASC`,
                 params
             );
             return res.json({ items: messages });
@@ -434,14 +444,21 @@ router.get("/messages", optionalToken, async (req, res) => {
 
         const [threads] = await pool.query(
             `SELECT 
-        m.id, m.message, m.senderType, m.createdAt,
-        COUNT(DISTINCT r.id) as replyCount,
-        MAX(r.createdAt) as lastReplyAt
+        m.id,
+        m.message,
+        m.ReferenciaID AS "referenciaId",
+        m.sendertype AS "senderType",
+        m.createdat AS "createdAt",
+        COALESCE(m.username, u.Nome) AS "userName",
+        COALESCE(m.useremail, u.Email) AS "userEmail",
+        COUNT(DISTINCT r.id) as "replyCount",
+        MAX(r.createdat) as "lastReplyAt"
        FROM supportmessages m
-       LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
+       LEFT JOIN supportmessages r ON (r.threadid = m.id OR r.replyto = m.id)
+       LEFT JOIN utilizadores u ON u.ReferenciaID = m.ReferenciaID
        WHERE ${whereClause}
-       GROUP BY m.id
-       ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
+       GROUP BY m.id, m.message, m.sendertype, m.createdat, m.username, m.useremail, u.Nome, u.Email
+       ORDER BY COALESCE(MAX(r.createdat), m.createdat) DESC
        LIMIT ? OFFSET ?`,
             [...whereParams, limit, offset]
         );
