@@ -46,6 +46,96 @@
     return div.innerHTML;
   }
 
+  function getSupportAvatarUrl() {
+    return `${window.location.origin.replace(/\/+$/, '')}/assets/images/fotodefault.png`;
+  }
+
+  function parseValidDate(value) {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  function getMessageSenderType(msg) {
+    return msg.senderType || msg.sendertype || 'user';
+  }
+
+  function getMessageCreatedAt(msg) {
+    return msg.createdAt || msg.createdat || null;
+  }
+
+  function getMessageUserName(msg) {
+    return msg.userName || msg.username || msg.user_name || '';
+  }
+
+  const PROFILE_IMAGE_FILES = [
+    '0.png',
+    'contacts_photoid_animal_list_10.png',
+    'contacts_photoid_animal_list_2.png',
+    'contacts_photoid_animal_list_3.png',
+    'contacts_photoid_animal_list_4.png',
+    'contacts_photoid_animal_list_5.png',
+    'contacts_photoid_animal_list_6.png',
+    'contacts_photoid_animal_list_7.png',
+    'contacts_photoid_animal_list_8.png',
+    'contacts_photoid_animal_list_9.png',
+    'contacts_photoid_lifestyle_list_1.png',
+    'contacts_photoid_lifestyle_list_10.png',
+    'contacts_photoid_lifestyle_list_2.png',
+    'contacts_photoid_lifestyle_list_3.png',
+    'contacts_photoid_lifestyle_list_4.png',
+    'contacts_photoid_lifestyle_list_5.png',
+    'contacts_photoid_lifestyle_list_6.png',
+    'contacts_photoid_lifestyle_list_7.png',
+    'contacts_photoid_lifestyle_list_8.png',
+    'contacts_photoid_lifestyle_list_9.png',
+    'contacts_photoid_nature_list_5.png',
+    'contacts_photoid_nature_list_6.png',
+    'contacts_photoid_nature_list_7.png',
+    'contacts_photoid_nature_list_8.png',
+    'contacts_photoid_nature_list_9.png',
+    'contacts_photoid_object_list_1.png',
+    'contacts_photoid_object_list_10.png',
+    'contacts_photoid_object_list_2.png',
+    'contacts_photoid_object_list_3.png',
+    'contacts_photoid_object_list_4.png',
+    'contacts_photoid_object_list_5.png',
+    'contacts_photoid_object_list_6.png',
+    'contacts_photoid_object_list_7.png',
+    'contacts_photoid_object_list_9.png',
+    'contacts_photoid_person_list_1.png',
+    'contacts_photoid_person_list_10.png',
+    'contacts_photoid_person_list_2.png',
+    'contacts_photoid_person_list_3.png',
+    'contacts_photoid_person_list_4.png',
+    'contacts_photoid_person_list_5.png',
+    'contacts_photoid_person_list_6.png',
+    'contacts_photoid_person_list_7.png',
+    'contacts_photoid_person_list_8.png',
+    'contacts_photoid_person_list_9.png'
+  ];
+
+  function hashString(value) {
+    const input = String(value || '');
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      hash = ((hash << 5) - hash) + input.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function getUserAvatarKey(msg) {
+    return msg.referenciaId || msg.referenciaID || getMessageUserName(msg) || getToken() || getOrCreateAnonymousId();
+  }
+
+  function getCurrentUserAvatarUrl(msg) {
+    const key = getUserAvatarKey(msg);
+    const index = PROFILE_IMAGE_FILES.length > 0 ? hashString(key) % PROFILE_IMAGE_FILES.length : 0;
+    const selectedFile = PROFILE_IMAGE_FILES[index] || '0.png';
+    return `${window.location.origin.replace(/\/+$/, '')}/assets/images/Imagens-profile/${selectedFile}`;
+  }
+
   /**
    * Obtém a URL base da API
    * @returns {string} URL base da API
@@ -175,10 +265,13 @@
    * @returns {string} HTML da thread renderizada
    */
   function renderThread(thread, isActive = false, hasUnread = false) {
-    const date = new Date(thread.createdAt).toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit' 
-    });
+    const createdAt = parseValidDate(getMessageCreatedAt(thread));
+    const date = createdAt
+      ? createdAt.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit'
+        })
+      : 'Sem data';
     const preview = thread.message.length > 50 
       ? thread.message.substring(0, 50) + '...' 
       : thread.message;
@@ -220,20 +313,31 @@
    * @returns {string} HTML da mensagem renderizada
    */
   function renderMessage(msg) {
-    const isUser = msg.senderType === 'user';
-    const time = new Date(msg.createdAt).toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-    const date = new Date(msg.createdAt).toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit' 
-    });
+    const senderType = getMessageSenderType(msg);
+    const isUser = senderType === 'user';
+    const createdAt = parseValidDate(getMessageCreatedAt(msg));
+    const time = createdAt
+      ? createdAt.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : '';
+    const date = createdAt
+      ? createdAt.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit'
+        })
+      : '';
+    const supportAvatarUrl = getSupportAvatarUrl();
+    const userDisplayName = getMessageUserName(msg).trim();
+    const senderLabel = isUser ? (userDisplayName || 'Você') : 'Suporte';
+    const dateLabel = date && time ? `${date} às ${time}` : '';
     
-    return `
+    const html = `
       <div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:20px;align-items:flex-end;gap:12px;">
         ${!isUser ? `
-          <img src="https://github.com/juliareboucasleite.png" alt="suporte" 
+          <img src="${supportAvatarUrl}" alt="suporte"
+               onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
                style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid white;">
         ` : ''}
         <div style="max-width:75%;display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};gap:4px;">
@@ -243,7 +347,7 @@
           </div>
           <div style="display:flex;align-items:flex-end;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
             <div style="padding:12px 16px;border-radius:18px;background:${isUser ? 'linear-gradient(135deg, #f17603 0%, #ff9800 100%)' : '#ffffff'};color:${isUser ? '#fff' : '#344767'};word-wrap:break-word;box-shadow:0 2px 12px rgba(0,0,0,0.1);${isUser ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'};max-width:100%;border:${isUser ? 'none' : '1px solid #e9ecef'};">
-              <div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${msg.message}</div>
+              <div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(msg.message)}</div>
             </div>
             ${isUser ? `
               <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg, #f17603 0%, #ff9800 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(241,118,3,0.3);">
@@ -252,6 +356,61 @@
                   <path d="M6 20C6 16 9 13 12 13C15 13 18 16 18 20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="white"/>
                 </svg>
               </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    return html
+      .replace(`>${isUser ? 'VocÃª' : 'Suporte'}</span>`, `>${escapeHtml(senderLabel)}</span>`)
+      .replace(
+        /<span style="font-size:10px;color:#adb5bd;">.*?<\/span>/,
+        dateLabel ? `<span style="font-size:10px;color:#adb5bd;">${dateLabel}</span>` : ''
+      );
+  }
+
+  function renderSupportMessage(msg) {
+    const senderType = getMessageSenderType(msg);
+    const isUser = senderType === 'user';
+    const createdAt = parseValidDate(getMessageCreatedAt(msg));
+    const time = createdAt
+      ? createdAt.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : '';
+    const date = createdAt
+      ? createdAt.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit'
+        })
+      : '';
+    const supportAvatarUrl = getSupportAvatarUrl();
+    const userAvatarUrl = getCurrentUserAvatarUrl(msg);
+    const userDisplayName = getMessageUserName(msg).trim();
+    const senderLabel = isUser ? (userDisplayName || 'Voce') : 'Suporte';
+    const dateLabel = date && time ? `${date} às ${time}` : '';
+
+    return `
+      <div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:20px;align-items:flex-end;gap:12px;">
+        ${!isUser ? `
+          <img src="${supportAvatarUrl}" alt="suporte"
+               onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
+               style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid white;">
+        ` : ''}
+        <div style="max-width:75%;display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};gap:4px;">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
+            <span style="font-size:11px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(senderLabel)}</span>
+            ${dateLabel ? `<span style="font-size:10px;color:#adb5bd;">${dateLabel}</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
+            <div style="padding:12px 16px;border-radius:18px;background:${isUser ? 'linear-gradient(135deg, #f17603 0%, #ff9800 100%)' : '#ffffff'};color:${isUser ? '#fff' : '#344767'};word-wrap:break-word;box-shadow:0 2px 12px rgba(0,0,0,0.1);${isUser ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'};max-width:100%;border:${isUser ? 'none' : '1px solid #e9ecef'};">
+              <div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(msg.message)}</div>
+            </div>
+            ${isUser ? `
+              <img src="${userAvatarUrl}" alt="utilizador"
+                   onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
+                   style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(241,118,3,0.25);border:2px solid rgba(255,255,255,0.9);">
             ` : ''}
           </div>
         </div>
@@ -273,7 +432,7 @@
     try {
       const messages = await loadConversation(threadId);
       container.innerHTML = messages.length > 0 
-        ? messages.map(renderMessage).join('')
+        ? messages.map(renderSupportMessage).join('')
         : '<div style="text-align:center;color:#999;padding:20px;">Nenhuma mensagem nesta conversa.</div>';
       container.scrollTop = container.scrollHeight;
     } catch (error) {
