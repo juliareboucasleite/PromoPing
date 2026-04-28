@@ -1,4 +1,4 @@
-const mysql = require("../mysql2-compat");
+const mysql = require("../../mysql2-compat");
 
 function decodeXml(value) {
     return String(value || "")

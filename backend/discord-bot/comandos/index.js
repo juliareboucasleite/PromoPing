@@ -2,33 +2,27 @@ const fs = require("fs");
 const path = require("path");
 
 const comandos = new Map();
-const skippedDirs = new Set(["Giveaways", "Music", "profile", "verify"]);
 
 function listCommandFiles(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const files = [];
+    const directories = entries
+        .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    const files = entries
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".js") && entry.name !== "index.js" && !entry.name.startsWith("_"))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-    for (const entry of entries) {
-        if (entry.name === "index.js" || entry.name.startsWith("_")) {
-            continue;
-        }
+    const commandFiles = [];
 
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-            if (skippedDirs.has(entry.name)) {
-                continue;
-            }
-            files.push(...listCommandFiles(fullPath));
-            continue;
-        }
-
-        if (entry.isFile() && entry.name.endsWith(".js")) {
-            files.push(fullPath);
-        }
+    for (const entry of directories) {
+        commandFiles.push(...listCommandFiles(path.join(dir, entry.name)));
     }
 
-    return files;
+    for (const entry of files) {
+        commandFiles.push(path.join(dir, entry.name));
+    }
+
+    return commandFiles;
 }
 
 function looksLikeSimpleCommand(filePath) {
@@ -38,6 +32,20 @@ function looksLikeSimpleCommand(filePath) {
     } catch {
         return false;
     }
+}
+
+function deriveCategory(filePath, commandName, explicitCategory) {
+    const normalizedExplicit = String(explicitCategory || "").trim();
+    if (normalizedExplicit) {
+        return normalizedExplicit;
+    }
+
+    const relativeDir = path.relative(__dirname, path.dirname(filePath));
+    if (relativeDir && relativeDir !== ".") {
+        return relativeDir.split(path.sep)[0];
+    }
+
+    return "Geral";
 }
 
 try {
@@ -55,6 +63,8 @@ try {
                 continue;
             }
 
+            comando.category = deriveCategory(filePath, commandName, comando.category);
+            comando.filePath = path.relative(__dirname, filePath);
             comandos.set(commandName, comando);
 
             if (Array.isArray(comando.aliases)) {

@@ -5,6 +5,7 @@ const https = require('https');
 const mysql = require('./mysql2-compat');
 const setupDatabase = require('./setup-db');
 const comandos = require('./comandos');
+const YoutubeFeed = require('./comandos/Youtube/youtube-feed');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 class PromoPingBot {
@@ -65,6 +66,9 @@ class PromoPingBot {
         this.newsCheckInterval = null;
         this.lastNewsCheck = new Date();
         this.newsService = null; // Será carregado dinamicamente
+        this.youtubeCheckInterval = null;
+        this.lastYoutubeCheck = new Date();
+        this.youtubeFeedService = new YoutubeFeed(this.client, this.dbConfig);
 
         // IDs de utilizadores com acesso total (fallback)
         this.adminIds = [
@@ -110,6 +114,7 @@ class PromoPingBot {
             this.startMonitoring();
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
+            this.startYoutubeFeedMonitoring();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
@@ -2144,6 +2149,36 @@ class PromoPingBot {
         } catch (error) {
             console.error('[DISCORD] Erro ao carregar newsService:', error);
         }
+    }
+
+    async startYoutubeFeedMonitoring() {
+        if (!this.youtubeFeedService) {
+            return;
+        }
+
+        const intervalMinutes = parseInt(process.env.YOUTUBE_FEED_CHECK_INTERVAL || '10', 10);
+
+        if (this.youtubeCheckInterval) {
+            clearInterval(this.youtubeCheckInterval);
+        }
+
+        this.youtubeCheckInterval = setInterval(async () => {
+            try {
+                await this.youtubeFeedService.checkyt();
+                this.lastYoutubeCheck = new Date();
+            } catch (error) {
+                console.error('[DISCORD] Erro ao verificar feeds do YouTube:', error.message);
+            }
+        }, Math.max(intervalMinutes, 1) * 60 * 1000);
+
+        setTimeout(async () => {
+            try {
+                await this.youtubeFeedService.checkyt();
+                this.lastYoutubeCheck = new Date();
+            } catch (error) {
+                console.error('[DISCORD] Erro na primeira verificaÃ§Ã£o do YouTube:', error.message);
+            }
+        }, 15000);
     }
 
     async checkNews() {

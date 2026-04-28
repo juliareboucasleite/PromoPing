@@ -18,7 +18,7 @@ module.exports = {
             return await message.reply('❌ Apenas utilizadores com o cargo de administrador podem ver este comando.');
         }
 
-        const comandos = require('./index');
+        const comandos = require('../index');
 
         const comandosUnicos = new Map();
         comandos.forEach(cmd => {
