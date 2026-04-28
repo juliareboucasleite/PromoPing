@@ -168,6 +168,16 @@
   <div id="footer-placeholder"></div>
 
   <script>
+    // Lookup case-insensitive: o backend devolve as colunas em lowercase
+    // (PG dobra identificadores não-quotados), por isso aceitamos `DataInicio` ou `datainicio`.
+    function ci(obj, key) {
+      if (!obj) return undefined;
+      if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+      const low = key.toLowerCase();
+      if (obj[low] !== undefined && obj[low] !== null) return obj[low];
+      return undefined;
+    }
+
     async function carregarIncidentes() {
       try {
         // Usar URL completa do servidor Node.js
@@ -213,29 +223,38 @@
       const card = document.createElement('div');
       card.className = 'incident-card';
 
-      const dataInicio = new Date(incidente.DataInicio);
-      const dataFim = incidente.DataFim ? new Date(incidente.DataFim) : null;
+      const dataInicioRaw = ci(incidente, 'DataInicio');
+      const dataFimRaw = ci(incidente, 'DataFim');
+      const dataInicio = dataInicioRaw ? new Date(dataInicioRaw) : null;
+      const dataFim = dataFimRaw ? new Date(dataFimRaw) : null;
 
-      const duracao = dataFim
+      const duracao = dataInicio && dataFim
         ? calcularDuracao(dataInicio, dataFim)
-        : 'Em andamento';
+        : (dataInicio ? 'Em andamento' : '—');
 
-      // Mapear Estado do banco para status (Estado pode ser 'Resolvido', 'Em Andamento', etc.)
-      const estado = incidente.Estado || incidente.Status || 'Desconhecido';
+      const estado = ci(incidente, 'Estado') || ci(incidente, 'Status') || 'Desconhecido';
       const e = estado.toLowerCase();
-      const statusClass = e.includes('resolvido') || e === 'resolved' ? 'status-resolved' : 'status-investigating';
-      const statusText = e.includes('resolvido') || e === 'resolved' ? 'Resolvido' : 'Em Andamento';
-      const dotClass = e.includes('resolvido') || e === 'resolved' ? 'resolved' : (e.includes('indisponível') || e.includes('outage') ? 'outage' : 'investigating');
+      const isResolvido = e.includes('resolvido') || e === 'resolved';
+      const isOutage = e.includes('indisponível') || e.includes('outage');
+      const statusClass = isResolvido ? 'status-resolved' : 'status-investigating';
+      const statusText = isResolvido ? 'Resolvido' : 'Em Andamento';
+      const dotClass = isResolvido ? 'resolved' : (isOutage ? 'outage' : 'investigating');
+
+      const titulo = ci(incidente, 'Titulo') || '—';
+      const impacto = ci(incidente, 'Impacto') || 'Não especificado';
+      const descricao = ci(incidente, 'Descricao');
+      const componente = ci(incidente, 'ComponenteAfetado');
 
       card.innerHTML = `
-        <div class="incident-date">${formatarData(dataInicio)}</div>
+        <div class="incident-date">${dataInicio ? formatarData(dataInicio) : '—'}</div>
         <div class="incident-content">
-          <h4>${incidente.Titulo}</h4>
+          <h4>${titulo}</h4>
           <div class="incident-details">
             <p><strong>Duração:</strong> ${duracao}</p>
-            <p><strong>Impacto:</strong> ${incidente.Impacto || 'Não especificado'}</p>
+            <p><strong>Impacto:</strong> ${impacto}</p>
+            ${componente ? `<p><strong>Componente afetado:</strong> ${componente}</p>` : ''}
             <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
-            ${incidente.Descricao ? `<p><strong>Descrição:</strong> ${incidente.Descricao}</p>` : ''}
+            ${descricao ? `<p><strong>Descrição:</strong> ${descricao}</p>` : ''}
           </div>
         </div>
         <span class="card-status-dot ${dotClass}" aria-label="${statusText}"></span>
@@ -336,21 +355,23 @@
       const card = document.createElement('div');
       card.className = 'update-card';
 
-      const dataRef = atualizacao.DataCriacao || atualizacao.DataPublicacao;
+      const dataRef = ci(atualizacao, 'DataCriacao') || ci(atualizacao, 'DataPublicacao');
       const dataPublicacao = dataRef ? new Date(dataRef) : new Date();
-      const tipoRaw = atualizacao.Tipo || 'feature';
+      const tipoRaw = ci(atualizacao, 'Tipo') || 'feature';
       const tipoLabels = { feature: 'Funcionalidade', fix: 'Correção', improvement: 'Melhoria', maintenance: 'Manutenção' };
       const tipo = tipoLabels[tipoRaw] || tipoRaw;
-      const status = atualizacao.Status;
+      const status = ci(atualizacao, 'Status');
       const temStatus = status !== undefined && status !== null && status !== '';
+      const titulo = ci(atualizacao, 'Titulo') || '—';
+      const descricao = ci(atualizacao, 'Descricao') || 'Sem descrição';
 
       card.innerHTML = `
         <div class="update-date">${formatarData(dataPublicacao)}</div>
         <div class="update-content">
-          <h4>${atualizacao.Titulo || '—'}</h4>
+          <h4>${titulo}</h4>
           <div class="update-details">
             <p><strong>Tipo:</strong> ${tipo}</p>
-            <p><strong>Descrição:</strong> ${atualizacao.Descricao || 'Sem descrição'}</p>
+            <p><strong>Descrição:</strong> ${descricao}</p>
             ${temStatus ? `<p><strong>Status:</strong> <span class="status-completed">${status}</span></p>` : ''}
           </div>
         </div>
