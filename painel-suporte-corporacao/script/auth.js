@@ -35,9 +35,13 @@
     function showError(message) {
         errorMessage.textContent = message;
         errorMessage.classList.add('show');
-        loginForm.classList.add('loading');
+        loginForm.classList.remove('loading');
         loginButton.disabled = false;
         loginButton.textContent = 'Entrar';
+        if (passwordInput) {
+            passwordInput.focus();
+            passwordInput.select();
+        }
     }
 
     /**
