@@ -87,9 +87,7 @@ router.put("/preferences", verifyToken, async (req, res) => {
 });
 
 /**
- * ===============================
  * ESTATÍSTICAS DO UTILIZADOR
- * ===============================
  */
 router.get("/stats", verifyToken, async (req, res) => {
   try {

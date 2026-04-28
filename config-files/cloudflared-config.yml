@@ -1,0 +1,25 @@
+# Cloudflare Tunnel - PromoPing
+# Substituir <TUNNEL_ID> e o caminho das credenciais depois de criar o túnel.
+# Localização típica deste ficheiro depois de copiado: C:\Users\<user>\.cloudflared\config.yml
+
+tunnel: <TUNNEL_ID>
+credentials-file: C:\Users\julia\.cloudflared\<TUNNEL_ID>.json
+
+# Express já serve frontend + /api/ na porta 3000, por isso enviamos tudo para lá.
+ingress:
+  - hostname: promoping.pt
+    service: http://localhost:3000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      httpHostHeader: promoping.pt
+
+  - hostname: www.promoping.pt
+    service: http://localhost:3000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      httpHostHeader: promoping.pt
+
+  # Catch-all obrigatório
+  - service: http_status:404

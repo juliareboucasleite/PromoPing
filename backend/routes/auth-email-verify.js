@@ -8,7 +8,6 @@ const router = express.Router();
 //  FUNÇÃO CRÍTICA: GERAÇÃO DE CÓDIGO 
 // Função gerar código de 6 dígitos nunca mexa nisso pelo amor de deus
 // Se tu mudar essa lógica, pode gerar códigos duplicados ou inválidos
-// E aí ninguém mais consegue verificar email, deixa essa merda quieta
 function gerarCodigo() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
