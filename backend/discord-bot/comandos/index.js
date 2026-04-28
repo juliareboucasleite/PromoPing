@@ -1,57 +1,77 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const comandos = new Map();
+const skippedDirs = new Set(["Giveaways", "Music", "profile", "verify"]);
 
-// Carregando comandos silenciosamente
+function listCommandFiles(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const files = [];
 
-try {
-    // Lê todos os arquivos .js na pasta comandos (exceto este index)
-    const comandoFiles = fs.readdirSync(__dirname)
-        .filter(file => file.endsWith('.js') && file !== 'index.js')
-        .filter(file => fs.statSync(path.join(__dirname, file)).isFile());
+    for (const entry of entries) {
+        if (entry.name === "index.js" || entry.name.startsWith("_")) {
+            continue;
+        }
 
-    let count = 0;
+        const fullPath = path.join(dir, entry.name);
 
-    for (const file of comandoFiles) {
-        try {
-            const comando = require(path.join(__dirname, file));
-
-            if (!comando.name || typeof comando.execute !== 'function') {
-                // Comando inválido - log silencioso
+        if (entry.isDirectory()) {
+            if (skippedDirs.has(entry.name)) {
                 continue;
             }
+            files.push(...listCommandFiles(fullPath));
+            continue;
+        }
 
-            if (comandos.has(comando.name)) {
-                // Nome duplicado - log silencioso
-                continue;
-            }
-
-            comandos.set(comando.name, comando);
-            count++;
-
-            // Registra aliases, se houver
-            if (Array.isArray(comando.aliases)) {
-                for (const alias of comando.aliases) {
-                    if (comandos.has(alias)) {
-                        // Alias duplicado - log silencioso
-                        continue;
-                    }
-                    comandos.set(alias, comando);
-                }
-            }
-
-            // Log silencioso - só mostra em modo debug
-
-        } catch (error) {
-            console.error(` Erro ao carregar comando ${file}:`, error.message);
+        if (entry.isFile() && entry.name.endsWith(".js")) {
+            files.push(fullPath);
         }
     }
 
-    // Log silencioso - comandos carregados
+    return files;
+}
 
+function looksLikeSimpleCommand(filePath) {
+    try {
+        const source = fs.readFileSync(filePath, "utf8");
+        return source.includes("module.exports = {");
+    } catch {
+        return false;
+    }
+}
+
+try {
+    const commandFiles = listCommandFiles(__dirname).filter(looksLikeSimpleCommand);
+
+    for (const filePath of commandFiles) {
+        try {
+            const comando = require(filePath);
+            if (!comando?.name || typeof comando.execute !== "function") {
+                continue;
+            }
+
+            const commandName = String(comando.name).trim().toLowerCase();
+            if (!commandName || comandos.has(commandName)) {
+                continue;
+            }
+
+            comandos.set(commandName, comando);
+
+            if (Array.isArray(comando.aliases)) {
+                for (const alias of comando.aliases) {
+                    const aliasName = String(alias || "").trim().toLowerCase();
+                    if (!aliasName || comandos.has(aliasName)) {
+                        continue;
+                    }
+                    comandos.set(aliasName, comando);
+                }
+            }
+        } catch (error) {
+            console.error(`[DISCORD] Erro ao carregar comando ${path.relative(__dirname, filePath)}:`, error.message);
+        }
+    }
 } catch (error) {
-    console.error(' Erro ao carregar comandos:', error);
+    console.error("[DISCORD] Erro ao carregar comandos:", error.message);
 }
 
 module.exports = comandos;

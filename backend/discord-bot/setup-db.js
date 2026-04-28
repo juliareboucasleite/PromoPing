@@ -393,6 +393,91 @@ async function ensureDiscordErrors(connection) {
     await ensureIndex(connection, "idx_discord_errors_createdat", "discord_errors", "CreatedAt");
 }
 
+async function ensureBirthdayTables(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_birthdays (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL,
+            UserId VARCHAR(50) NOT NULL,
+            BirthdayDate DATE NOT NULL,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (GuildId, UserId)
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_birthdays");
+    await ensureColumn(connection, "discord_birthdays", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_birthdays", "UserId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_birthdays", "BirthdayDate", "DATE");
+    await ensureColumn(connection, "discord_birthdays", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_birthdays", "UpdatedAt", "TIMESTAMP");
+    await ensureTimestampDefault(connection, "discord_birthdays", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_birthdays", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_birthdays_guild_user", "discord_birthdays", "GuildId, UserId", true);
+    await ensureIndex(connection, "idx_discord_birthdays_date", "discord_birthdays", "BirthdayDate");
+
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_birthday_settings (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL UNIQUE,
+            Enabled BOOLEAN DEFAULT FALSE,
+            ChannelId VARCHAR(50),
+            RoleId VARCHAR(50),
+            MessageTemplate VARCHAR(220) DEFAULT 'Happy Birthday, {user}!',
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_birthday_settings");
+    await ensureColumn(connection, "discord_birthday_settings", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_birthday_settings", "Enabled", "BOOLEAN");
+    await ensureColumn(connection, "discord_birthday_settings", "ChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_birthday_settings", "RoleId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_birthday_settings", "MessageTemplate", "VARCHAR(220) DEFAULT 'Happy Birthday, {user}!'");
+    await ensureColumn(connection, "discord_birthday_settings", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_birthday_settings", "UpdatedAt", "TIMESTAMP");
+    await ensureBooleanColumn(connection, "discord_birthday_settings", "Enabled", false);
+    await ensureTimestampDefault(connection, "discord_birthday_settings", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_birthday_settings", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_birthday_settings_guild", "discord_birthday_settings", "GuildId", true);
+}
+
+async function ensureYoutubeFeedChannels(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS youtube_feed_channels (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            YoutubeChannelId VARCHAR(100) NOT NULL,
+            DiscordChannelId VARCHAR(50) NOT NULL,
+            PingEveryone BOOLEAN DEFAULT FALSE,
+            LastVideoId VARCHAR(255),
+            IsActive BOOLEAN DEFAULT TRUE,
+            LastCheckedAt TIMESTAMP NULL,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (YoutubeChannelId, DiscordChannelId)
+        )
+    `);
+
+    await ensureIdentity(connection, "youtube_feed_channels");
+    await ensureColumn(connection, "youtube_feed_channels", "YoutubeChannelId", "VARCHAR(100)");
+    await ensureColumn(connection, "youtube_feed_channels", "DiscordChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "youtube_feed_channels", "PingEveryone", "BOOLEAN");
+    await ensureColumn(connection, "youtube_feed_channels", "LastVideoId", "VARCHAR(255)");
+    await ensureColumn(connection, "youtube_feed_channels", "IsActive", "BOOLEAN");
+    await ensureColumn(connection, "youtube_feed_channels", "LastCheckedAt", "TIMESTAMP NULL");
+    await ensureColumn(connection, "youtube_feed_channels", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "youtube_feed_channels", "UpdatedAt", "TIMESTAMP");
+    await ensureBooleanColumn(connection, "youtube_feed_channels", "PingEveryone", false);
+    await ensureBooleanColumn(connection, "youtube_feed_channels", "IsActive", true);
+    await ensureTimestampDefault(connection, "youtube_feed_channels", "CreatedAt");
+    await ensureTimestampDefault(connection, "youtube_feed_channels", "UpdatedAt");
+    await ensureIndex(connection, "idx_youtube_feed_active", "youtube_feed_channels", "IsActive");
+    await ensureIndex(connection, "idx_youtube_feed_discord_channel", "youtube_feed_channels", "DiscordChannelId");
+    await ensureIndex(connection, "idx_youtube_feed_unique", "youtube_feed_channels", "YoutubeChannelId, DiscordChannelId", true);
+}
+
 async function setupDatabase() {
     console.log("Configurando banco de dados para Discord Bot...");
 
@@ -437,6 +522,12 @@ async function setupDatabase() {
 
         await ensureDiscordErrors(connection);
         console.log("Tabela discord_errors criada/ajustada");
+
+        await ensureBirthdayTables(connection);
+        console.log("Tabelas de birthday criadas/ajustadas");
+
+        await ensureYoutubeFeedChannels(connection);
+        console.log("Tabela youtube_feed_channels criada/ajustada");
 
         console.log("Configuracao do banco concluida");
         return true;
