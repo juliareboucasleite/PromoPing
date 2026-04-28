@@ -1,151 +1,60 @@
-const Command = require("../../abstract/command");
-const { PermissionsBitField } = require("discord.js");
-const { buildNoticePanel, reply } = require("../../../toolkit/helpers/cv2");
-const {
-    buildAuditReason,
-    getInvoker,
-    sanitizeText,
-    validateTargetMember,
-} = require("../../../toolkit/helpers/moderation-security");
+const { PermissionFlagsBits } = require('discord.js');
+const { successEmbed, resolveMember, parseDuration, formatDuration } = require('../_helpers');
 
-module.exports = class TimeoutCommand extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "timeout",
-            aliases: ["mute", "tmute", "stfu"],
-            description: "Timeout a member with strict hierarchy and safety validation.",
-            usage: ["timeout <user> <time> [reason]"],
-            category: "Moderation",
-            userPerms: ["ModerateMembers"],
-            botPerms: ["ViewChannel", "SendMessages", "ModerateMembers"],
-            cooldown: 3,
-            image: "https://imgur.com/PYD1RBa",
-            options: [
-                { type: 6, name: "user", description: "User to timeout", required: true },
-                { type: 3, name: "time", description: "Timeout length, for example 10m", required: false },
-                { type: 3, name: "reason", description: "Reason for the timeout", required: false },
-            ],
-        });
-    }
+const MAX_MS = 28 * 24 * 60 * 60 * 1000;
 
-    async respond(target, title, lines, ephemeral = true) {
-        return reply(target, buildNoticePanel({ title, lines }), { ephemeral });
-    }
-
-    parseDuration(input) {
-        if (!input) return 10 * 60 * 1000;
-        const normalized = String(input).trim().toLowerCase();
-        const match = normalized.match(/^(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days)?$/);
-        if (!match) return null;
-
-        const value = Number(match[1]);
-        const unit = match[2] ?? "m";
-        const multipliers = {
-            s: 1000,
-            sec: 1000,
-            secs: 1000,
-            second: 1000,
-            seconds: 1000,
-            m: 60 * 1000,
-            min: 60 * 1000,
-            mins: 60 * 1000,
-            minute: 60 * 1000,
-            minutes: 60 * 1000,
-            h: 60 * 60 * 1000,
-            hr: 60 * 60 * 1000,
-            hrs: 60 * 60 * 1000,
-            hour: 60 * 60 * 1000,
-            hours: 60 * 60 * 1000,
-            d: 24 * 60 * 60 * 1000,
-            day: 24 * 60 * 60 * 1000,
-            days: 24 * 60 * 60 * 1000,
-        };
-
-        const duration = value * multipliers[unit];
-        const maximum = 28 * 24 * 60 * 60 * 1000;
-        if (!Number.isFinite(duration) || duration < 1000) return null;
-        return Math.min(duration, maximum);
-    }
-
-    async perform(target, member, timeInput, reasonInput) {
-        const duration = this.parseDuration(timeInput);
-        if (!duration) {
-            return this.respond(target, "Timeout Blocked", [
-                "Provide a valid timeout length like `10m`, `2h`, or `1d`.",
-            ]);
+module.exports = {
+    name: 'timeout',
+    aliases: ['mute', 'tmute'],
+    description: 'Aplica timeout (mute) a um membro.',
+    usage: '!timeout <@utilizador> <duração> [motivo]',
+    category: 'Moderation',
+    slash: {
+        options: [
+            { type: 6, name: 'utilizador', description: 'Membro', required: true },
+            { type: 3, name: 'duracao', description: 'Duração (ex: 10m, 1h, 1d)', required: true },
+            { type: 3, name: 'motivo', description: 'Motivo', required: false },
+        ],
+    },
+    execute: async (client, message, args, bot) => {
+        if (!message.guild) return message.reply('Este comando só funciona em servidores.');
+        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return message.reply('Não tens permissão para silenciar membros.');
+        }
+        if (!message.guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return message.reply('Não tenho permissão para silenciar membros.');
         }
 
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return this.respond(target, "Timeout Blocked", [
-                "I won't timeout a member who currently has Administrator.",
-            ]);
+        const target = await resolveMember(message, args[0]);
+        const ms = parseDuration(args[1]);
+        if (!target || !ms) {
+            const prefix = await bot.getGuildPrefix(message.guild.id);
+            return message.reply(`Uso: \`${prefix}timeout <@utilizador> <duração> [motivo]\``);
+        }
+        if (ms > MAX_MS) return message.reply('Duração máxima é 28 dias.');
+        if (target.id === message.author.id) return message.reply('Não te podes silenciar a ti próprio.');
+        if (!target.moderatable) return message.reply('Não consigo silenciar este membro.');
+        if (
+            target.roles.highest.position >= message.member.roles.highest.position
+            && message.guild.ownerId !== message.member.id
+        ) {
+            return message.reply('Não podes silenciar alguém com cargo igual ou superior.');
         }
 
-        const gate = validateTargetMember({
-            client: this.client,
-            guild: target.guild,
-            actorMember: target.member,
-            targetMember: member,
-            action: "timeout",
-        });
-        if (!gate.ok) {
-            return this.respond(target, "Timeout Blocked", [gate.error]);
-        }
-
-        if (member.communicationDisabledUntilTimestamp && member.communicationDisabledUntilTimestamp > Date.now()) {
-            return this.respond(target, "Timeout Blocked", [
-                "That member is already timed out.",
-            ]);
-        }
-
-        const reason = buildAuditReason(
-            "Timeout",
-            getInvoker(target)?.username || "Unknown User",
-            reasonInput
-        );
-
+        const motivo = args.slice(2).join(' ').trim() || 'Sem motivo indicado.';
         try {
-            await member.timeout(duration, reason);
-            return this.respond(target, "User Timed Out", [
-                `Timed out **${member.user.tag}**.`,
-                `Duration: **${Math.round(duration / 60000)} minute(s)**`,
-                `Reason: ${sanitizeText(reasonInput, { fallback: "No reason provided.", maxLength: 180 })}`,
-            ]);
+            await target.timeout(ms, `Timeout por ${message.author.tag}: ${motivo}`.slice(0, 512));
         } catch (error) {
-            return this.respond(target, "Timeout Failed", [
-                sanitizeText(error?.message, {
-                    fallback: "Discord rejected that timeout request.",
-                    maxLength: 220,
-                }),
-            ]);
-        }
-    }
-
-    async run({ message, args }) {
-        const userId = await this.client.util.userQuery(args[0]);
-        if (!userId) {
-            return message.reply({ content: "Provide a valid user or member mention." });
+            return message.reply(`Falha: ${error.message}`);
         }
 
-        const member = await message.guild.members.fetch(userId).catch(() => null);
-        if (!member) {
-            return message.reply({ content: "That user is not in this server." });
-        }
-
-        return this.perform(message, member, args[1], args.slice(2).join(" "));
-    }
-
-    async exec({ interaction }) {
-        const member = interaction.options.getMember("user");
-        if (!member) {
-            return interaction.reply({ content: "That user is not in this server.", ephemeral: true });
-        }
-
-        return this.perform(
-            interaction,
-            member,
-            interaction.options.getString("time"),
-            interaction.options.getString("reason")
-        );
-    }
+        await message.reply({
+            embeds: [successEmbed('Membro silenciado', [
+                `**Utilizador:** ${target.user.tag} (\`${target.id}\`)`,
+                `**Duração:** ${formatDuration(ms)}`,
+                `**Motivo:** ${motivo}`,
+                `**Por:** ${message.author.tag}`,
+            ])],
+        });
+    },
 };

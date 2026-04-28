@@ -1,28 +1,24 @@
-const Command = require("../../abstract/command");
-/**Please create the image / update it in here */
-module.exports = class support extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "support",
-            description: "Get support for the bot.",
-            category: "Utilities",
-            aliases: ["support"],
-            usage: "support",
-            cooldown: 5,
-            image: "https://imgur.com/34I3wSk",
-            userPerms: ['SendMessages', 'ViewChannel'],
-            botPerms: ['EmbedLinks', 'ViewChannel', 'SendMessages'],
-            vote: false,
-        });
-    }
+const { EmbedBuilder } = require("discord.js");
 
-    async run({ message, args }) {
-        await message?.channel.send({ content: `Thanks for choosing PogyClient! If you have any questions or need help, we're here for you.\n${this.client.config.Url.SupportURL}`});
-    }
+module.exports = {
+    name: "support",
+    aliases: [],
+    description: "Mostra como pedir suporte no PromoPing.",
+    category: "Suporte",
+    execute: async (client, message) => {
+        const embed = new EmbedBuilder()
+            .setTitle("Suporte PromoPing")
+            .setDescription(
+                [
+                    "Para abrir suporte diretamente pelo bot, usa `!suporte` com a tua mensagem.",
+                    "Exemplo: `!suporte Preciso de ajuda com as notificacoes`.",
+                    "",
+                    "Tambem podes usar o widget de suporte no site do PromoPing.",
+                ].join("\n")
+            )
+            .setColor(0x5865f2)
+            .setTimestamp();
 
-    async exec({ interaction }) {
-        await interaction.reply({ content: `Thanks for choosing PogyClient! If you have any questions or need help, we're here for you.\n${this.client.config.Url.SupportURL}`});
-    }
-}
-
-
+        await message.reply({ embeds: [embed] }).catch(() => {});
+    },
+};

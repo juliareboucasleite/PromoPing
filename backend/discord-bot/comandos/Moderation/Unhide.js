@@ -1,93 +1,36 @@
-const Command = require("../../abstract/command");
-const { Message } = require('discord.js');
-module.exports = class help extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "unhide",
-            aliases: ["unvanish"],
-            description: "Hide A Channel",
-            usage: ["unhide <channel>"],
-            category: "Moderation",
-            userPerms: ["ManageChannels"],
-            botPerms: [
-                "EmbedLinks",
-                "ViewChannel",
-                "SendMessages",
-                "ManageChannels",
-            ],
-            cooldown: 3,
-            image:"https://i.imgur.com/Mv6W5J4.png",
-            options: [
-                {
-                    type: 7,
-                    name: "channel",
-                    description: "Channel To Unhide",
-                    required: true,
-                },
-            ],
-        });
-    }
-    /**
-     * @param {Object} data hehe keeds
-     * @param {Message} data.message
-     */
-    async run({ message, args }) {
-        if (args[0] === "all") {
-            const channels = await message?.guild.channels.cache.map(chuuu => chuuu);
-            for (let channel of channels) {
-                await channel.permissionOverwrites
-                    .edit(message?.guild.id, {
-                        ViewChannel: true,
-                    })
-            }
-            return message?.reply({
-                content: "All Channels Have Been Hidden",
-            });
+const { PermissionFlagsBits } = require('discord.js');
+const { successEmbed } = require('../_helpers');
+
+module.exports = {
+    name: 'unhide',
+    aliases: ['unvanish'],
+    description: 'Volta a mostrar o canal a @everyone.',
+    usage: '!unhide [#canal]',
+    category: 'Moderation',
+    slash: {
+        options: [
+            { type: 7, name: 'canal', description: 'Canal a mostrar', required: false },
+        ],
+    },
+    execute: async (client, message, args, bot) => {
+        if (!message.guild) return message.reply('Este comando só funciona em servidores.');
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tens permissão para gerir canais.');
         }
-        let channel =
-            message?.mentions.channels.first() ||
-            message?.guild.channels.cache.get(args[0]) ||
-            message?.guild.channels.cache.find(
-                (r) =>
-                    r.name.toLowerCase() ==
-                    args.slice(0).join(" ").toLowerCase()
-            ) ||
-            message?.channel;
-        if (!channel)
-            return message?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-            });
-        await channel.permissionOverwrites
-            .edit(message?.guild.id, {
-                ViewChannel: true,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unhidden ${channel.name}.`)
-            ;
-        return message?.reply({ embeds: [embed] });
-    }
+        if (!message.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tenho permissão para gerir canais.');
+        }
 
-    async exec({ interaction }) {
-        let channel = interaction?.options.getChannel("channel");
-        if (!channel)
-            return interaction?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-                ephemeral: true,
-            });
-        await channel.permissionOverwrites
-            .edit(interaction?.guild.id, {
-                ViewChannel: true,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unhidden ${channel}.`)
-            ;
-        return interaction?.reply({ embeds: [embed] });
-    }
+        const channel = message.mentions.channels.first() || message.channel;
+        try {
+            await channel.permissionOverwrites.edit(
+                message.guild.roles.everyone,
+                { ViewChannel: null },
+                { reason: `Unhide por ${message.author.tag}` }
+            );
+        } catch (error) {
+            return message.reply(`Falha ao mostrar: ${error.message}`);
+        }
+        await message.reply({ embeds: [successEmbed('Canal visível', [`<#${channel.id}> voltou a estar visível.`])] });
+    },
 };
-
-
-

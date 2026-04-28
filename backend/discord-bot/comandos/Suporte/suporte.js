@@ -1,10 +1,10 @@
 const { EmbedBuilder } = require('discord.js');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../../../.env') });
 
 module.exports = {
     name: 'suporte',
-    aliases: ['support'],
+    aliases: [],
     description: 'Cria um ticket de suporte. Use no privado do bot ou no servidor.',
     execute: async (client, message, args, botInstance) => {
         try {

@@ -1,60 +1,35 @@
-const Command = require("../../abstract/command");
+module.exports = {
+    name: "prefix",
+    aliases: ["setprefix"],
+    description: "Mostra ou altera o prefixo do bot neste servidor.",
+    category: "Sistema",
+    usage: "!prefix [novo-prefixo]",
+    execute: async (client, message, args, botInstance) => {
+        if (!message.guild) {
+            await message.reply("Este comando so funciona dentro de um servidor.").catch(() => {});
+            return;
+        }
 
-module.exports = class help extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "prefix",
-            aliases: ["prefix", "setprefix"],
-            description: "Set the prefix for the bot",
-            usage: ["prefix <prefix>"],
-            category: "Utilities",
-            examples: ["Prefix"],
-            userPerms: ["SendMessages", "ManageGuild"],
-            botPerms: ["EmbedLinks", "ViewChannel", "SendMessages"],
-            cooldown: 5,
-            image:"https://i.imgur.com/akMyNgP.png",
-            options: [
-                {
-                    type: 3,
-                    name: "prefix",
-                    description: "Prefix to set",
-                    required: true,
-                },
-            ],
-        });
-    }
-    async run({ message, args }) {
-        const data = await this.client.database.guildData.get(message?.guild.id);
-        if (!args[0]) {
-            return message?.reply(`The current prefix is \`${data.prefix}\``);
-        }
-        if (args[0].length > 5) {
-            return message?.reply("Prefix can only be 5 characters long");
-        }
-        let newPrefix = args[0];
-        data.prefix = newPrefix;
-        this.client.database.guildData.putPrefix(message?.guild.id, data);
-        return message?.reply(`Prefix has been set to \`${data.prefix}\``);
-    }
+        const currentPrefix = await botInstance.getGuildPrefix(message.guild.id);
+        const requestedPrefix = String(args[0] || "").trim();
 
-    async exec({ interaction }) {
-        const data = await this.client.database.guildData.get(
-            interaction?.guild.id
-        );
-        if (!interaction?.options.getString("prefix")) {
-            return interaction?.reply(
-                `The current prefix is \`${data.prefix}\``
-            );
+        if (!requestedPrefix) {
+            await message.reply(`O prefixo atual deste servidor e \`${currentPrefix}\`.`).catch(() => {});
+            return;
         }
-        if (interaction?.options.getString("prefix").length > 5) {
-            return interaction?.reply("Prefix can only be 5 characters long");
+
+        const canManagePrefix = botInstance.isAdmin(message.member) || message.member.permissions.has("ManageGuild");
+        if (!canManagePrefix) {
+            await message.reply("Precisas da permissao `Gerir Servidor` para alterar o prefixo.").catch(() => {});
+            return;
         }
-        let newPrefix = interaction?.options.getString("prefix");
-        data.prefix = newPrefix;
-        this.client.database.guildData.putPrefix(interaction?.guild.id, data);
-        return interaction?.reply(`Prefix has been set to \`${data.prefix}\``);
-    }
+
+        if (requestedPrefix.length > 5) {
+            await message.reply("O prefixo pode ter no maximo 5 caracteres.").catch(() => {});
+            return;
+        }
+
+        await botInstance.setGuildPrefix(message.guild.id, requestedPrefix);
+        await message.reply(`O novo prefixo deste servidor e \`${requestedPrefix}\`.`).catch(() => {});
+    },
 };
-
-
-

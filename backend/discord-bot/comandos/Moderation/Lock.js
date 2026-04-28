@@ -1,77 +1,36 @@
-const Command = require("../../abstract/command");
+const { PermissionFlagsBits } = require('discord.js');
+const { successEmbed } = require('../_helpers');
 
-module.exports = class help extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "lock",
-            aliases: ["lock", "lockdown"],
-            description: "Locks a perticular channel",
-            usage: ["lock <channel>"],
-            category: "Moderation",
-            userPerms: ["ManageChannels"],
-            botPerms: [
-                "EmbedLinks",
-                "ViewChannel",
-                "SendMessages",
-                "ManageChannels",
-            ],
-            cooldown: 3,
-            image: "https://imgur.com/o5nk1bS",
-            options: [
-                {
-                    type: 7,
-                    name: "channel",
-                    description: "Channel To Lock",
-                    required: true,
-                },
-            ],
-        });
-    }
-    async run({ message, args }) {
-        let channel =
-            message?.mentions.channels.first() ||
-            message?.guild.channels.cache.get(args[0]) ||
-            message?.guild.channels.cache.find(
-                (r) =>
-                    r.name.toLowerCase() ==
-                    args.slice(0).join(" ").toLowerCase()
-            ) ||
-            message?.channel;
-        if (!channel)
-            return message?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-            });
-        await channel.permissionOverwrites
-            .edit(message?.guild.id, {
-                SendMessages: false,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Locked ${channel.name}.`)
-            ;
-        return message?.reply({ embeds: [embed] });
-    }
+module.exports = {
+    name: 'lock',
+    aliases: ['lockdown'],
+    description: 'Tranca o canal, impedindo membros de enviar mensagens.',
+    usage: '!lock [#canal]',
+    category: 'Moderation',
+    slash: {
+        options: [
+            { type: 7, name: 'canal', description: 'Canal a trancar (default: actual)', required: false },
+        ],
+    },
+    execute: async (client, message, args, bot) => {
+        if (!message.guild) return message.reply('Este comando só funciona em servidores.');
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tens permissão para gerir canais.');
+        }
+        if (!message.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tenho permissão para gerir canais.');
+        }
 
-    async exec({ interaction }) {
-        let channel = interaction?.options.getChannel("channel");
-        if (!channel)
-            return interaction?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-                ephemeral: true,
-            });
-        await channel.permissionOverwrites
-            .edit(interaction?.guild.id, {
-                SendMessages: false,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Locked ${channel}.`)
-            ;
-        return interaction?.reply({ embeds: [embed] });
-    }
+        const channel = message.mentions.channels.first() || message.channel;
+        try {
+            await channel.permissionOverwrites.edit(
+                message.guild.roles.everyone,
+                { SendMessages: false },
+                { reason: `Lock por ${message.author.tag}` }
+            );
+        } catch (error) {
+            return message.reply(`Falha ao trancar: ${error.message}`);
+        }
+        await message.reply({ embeds: [successEmbed('Canal trancado', [`<#${channel.id}> foi trancado por ${message.author.tag}.`])] });
+    },
 };
-
-
-

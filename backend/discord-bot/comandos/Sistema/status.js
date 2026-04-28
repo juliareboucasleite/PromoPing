@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
-const mysql = require('../mysql2-compat');
+const mysql = require('../../mysql2-compat');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../../../.env') });
 
 module.exports = {
     name: 'status',
@@ -9,6 +9,9 @@ module.exports = {
     description: 'Mostra informações sobre o sistema PromoPing e estatísticas do bot.',
     execute: async (client, message, args, botInstance) => {
         try {
+            const currentPrefix = message.guild
+                ? await botInstance.getGuildPrefix(message.guild.id)
+                : botInstance.prefix;
             const dbConfig = {
                 host: process.env.DB_HOST || 'localhost',
                 user: process.env.DB_USER || 'postgres',
@@ -37,7 +40,7 @@ module.exports = {
                     { name: 'Mudanças Hoje', value: changesToday[0].total.toString(), inline: true },
                     { name: 'Intervalo', value: `${botInstance.checkInterval} minutos`, inline: true },
                     { name: 'Servidores', value: client.guilds.cache.size.toString(), inline: true },
-                    { name: 'Prefixo', value: botInstance.prefix, inline: true }
+                    { name: 'Prefixo', value: currentPrefix, inline: true }
                 )
                 .setColor(0xffa500)
                 .setTimestamp()

@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const path = require("path");
 const fs = require("fs");
-const mysql = require("../mysql2-compat");
+const mysql = require("../../mysql2-compat");
 
 function buildCategoryOrder(categories) {
     const preferred = ["Sistema", "Conta", "Produtos", "Ticket", "Youtube", "Moderation", "Social", "Comunidade", "Paineis", "birthday", "Geral"];
@@ -25,7 +25,7 @@ module.exports = {
     description: "Mostra a lista de comandos disponiveis e estatisticas do sistema com paginacao.",
     category: "Sistema",
     execute: async (client, message) => {
-        const comandos = require("./index");
+        const comandos = require("../index");
 
         const dbConfig = {
             host: process.env.DB_HOST || "localhost",

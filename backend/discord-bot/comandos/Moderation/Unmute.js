@@ -1,79 +1,35 @@
-const Command = require("../../abstract/command");
+const { PermissionFlagsBits } = require('discord.js');
+const { successEmbed, resolveMember } = require('../_helpers');
 
-module.exports = class help extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "unmute",
-            aliases: ["removemute", "removetimeout", "untimeout"],
-            description: "Unmutes A User",
-            usage: ["Unmute <user>"],
-            category: "Moderation",
-            userPerms: ["ModerateMembers"],
-            botPerms: [
-                "EmbedLinks",
-                "ViewChannel",
-                "SendMessages",
-                "ModerateMembers",
-            ],
-            cooldown: 3,
-            image:"https://i.imgur.com/bNVC35D.png",
-            options: [
-                {
-                    type: 6,
-                    name: "user",
-                    description: "User To Unmute",
-                    required: true,
-                },
-            ],
-        });
-    }
-    async run({ message, args }) {
-        const user = await this.client.util.userQuery(args[0]);
-        if (!user)
-            return message?.reply({ content: "I would appreciate it if you provided a valid user!" });
-        const member = await message?.guild.members.fetch(user);
-        if (!member)
-            return message?.reply({ content: "I would appreciate it if you provided a valid user!" });
-        if (!member.communicationDisabledUntil)
-            return message?.reply({ content: "This user is not muted." });
-        await member
-            .edit({ communicationDisabledUntil: null })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unmuted ${member.user.username}.`)
-            ;
-        return message?.reply({ embeds: [embed] });
-    }
-
-    async exec({ interaction }) {
-        let user = interaction?.options.getUser("user");
-        if (!user)
-            return interaction?.reply({
-                content: "I would appreciate it if you provided a valid user!",
-                ephemeral: true,
-            });
-        let member = interaction?.guild.members.cache.get(user.id);
-        if (!member)
-            return interaction?.reply({
-                content: "I would appreciate it if you provided a valid user!",
-                ephemeral: true,
-            });
-        if (!member.communicationDisabledUntil)
-            return interaction?.reply({
-                content: "This user is not muted.",
-                ephemeral: true,
-            });
-        await member
-            .edit({ communicationDisabledUntil: null })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unmuted ${member.user.username}.`)
-            ;
-        return interaction?.reply({ embeds: [embed] });
-    }
+module.exports = {
+    name: 'unmute',
+    aliases: ['untimeout', 'removetimeout', 'removemute'],
+    description: 'Remove timeout (mute) de um membro.',
+    usage: '!unmute <@utilizador>',
+    category: 'Moderation',
+    slash: {
+        options: [
+            { type: 6, name: 'utilizador', description: 'Membro', required: true },
+        ],
+    },
+    execute: async (client, message, args, bot) => {
+        if (!message.guild) return message.reply('Este comando só funciona em servidores.');
+        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return message.reply('Não tens permissão.');
+        }
+        const target = await resolveMember(message, args[0]);
+        if (!target) {
+            const prefix = await bot.getGuildPrefix(message.guild.id);
+            return message.reply(`Uso: \`${prefix}unmute <@utilizador>\``);
+        }
+        if (!target.isCommunicationDisabled()) {
+            return message.reply('Esse membro não está silenciado.');
+        }
+        try {
+            await target.timeout(null, `Unmute por ${message.author.tag}`);
+        } catch (error) {
+            return message.reply(`Falha: ${error.message}`);
+        }
+        await message.reply({ embeds: [successEmbed('Mute removido', [`${target.user.tag} já pode falar novamente.`])] });
+    },
 };
-
-
-

@@ -234,7 +234,10 @@ class PromoPingBot {
                     }
                     try {
                         const url = new URL(`${backendUrl}/api/support/internal/threads/${threadId}/reply`);
-                        const body = JSON.stringify({ message: message.content });
+                        const body = JSON.stringify({
+                            message: message.content,
+                            discordUserId: message.author.id
+                        });
                         const lib = url.protocol === 'https:' ? https : http;
                         const res = await new Promise((resolve, reject) => {
                             const req = lib.request({

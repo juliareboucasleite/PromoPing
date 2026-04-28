@@ -1,77 +1,36 @@
-const Command = require("../../abstract/command");
+const { PermissionFlagsBits } = require('discord.js');
+const { successEmbed } = require('../_helpers');
 
-module.exports = class help extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "unlock",
-            aliases: ["unlock"],
-            description: "Unlocks A Channel",
-            usage: ["Unlock <channel>"],
-            category: "Moderation",
-            userPerms: ["ManageChannels"],
-            botPerms: [
-                "EmbedLinks",
-                "ViewChannel",
-                "SendMessages",
-                "ManageChannels",
-            ],
-            cooldown: 3,
-            image:"https://i.imgur.com/Wrgl6ZB.png",
-            options: [
-                {
-                    type: 7,
-                    name: "channel",
-                    description: "Channel To Unlock",
-                    required: true,
-                },
-            ],
-        });
-    }
-    async run({ message, args }) {
-        let channel =
-            message?.mentions.channels.first() ||
-            message?.guild.channels.cache.get(args[0]) ||
-            message?.guild.channels.cache.find(
-                (r) =>
-                    r.name.toLowerCase() ==
-                    args.slice(0).join(" ").toLowerCase()
-            ) ||
-            message?.channel;
-        if (!channel)
-            return message?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-            });
-        await channel.permissionOverwrites
-            .edit(message?.guild.id, {
-                SendMessages: true,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unlocked ${channel.name}.`)
-            ;
-        return message?.reply({ embeds: [embed] });
-    }
+module.exports = {
+    name: 'unlock',
+    aliases: ['destrancar'],
+    description: 'Destranca o canal, permitindo membros enviarem mensagens.',
+    usage: '!unlock [#canal]',
+    category: 'Moderation',
+    slash: {
+        options: [
+            { type: 7, name: 'canal', description: 'Canal a destrancar (default: actual)', required: false },
+        ],
+    },
+    execute: async (client, message, args, bot) => {
+        if (!message.guild) return message.reply('Este comando só funciona em servidores.');
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tens permissão para gerir canais.');
+        }
+        if (!message.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+            return message.reply('Não tenho permissão para gerir canais.');
+        }
 
-    async exec({ interaction }) {
-        let channel = interaction?.options.getChannel("channel");
-        if (!channel)
-            return interaction?.reply({
-                content: "I would appreciate it if you provided a valid channel.",
-                ephemeral: true,
-            });
-        await channel.permissionOverwrites
-            .edit(interaction?.guild.id, {
-                SendMessages: true,
-            })
-            .catch(() => { });
-        const embed = this.client.util
-            .embed()
-            .setDescription(`Successfully Unlocked ${channel}.`)
-            ;
-        return interaction?.reply({ embeds: [embed] });
-    }
+        const channel = message.mentions.channels.first() || message.channel;
+        try {
+            await channel.permissionOverwrites.edit(
+                message.guild.roles.everyone,
+                { SendMessages: null },
+                { reason: `Unlock por ${message.author.tag}` }
+            );
+        } catch (error) {
+            return message.reply(`Falha ao destrancar: ${error.message}`);
+        }
+        await message.reply({ embeds: [successEmbed('Canal destrancado', [`<#${channel.id}> foi destrancado por ${message.author.tag}.`])] });
+    },
 };
-
-
-

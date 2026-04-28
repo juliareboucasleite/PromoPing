@@ -1,82 +1,69 @@
-const Command = require("../../abstract/command");
-const { buildNoticePanel, reply } = require("../../../toolkit/helpers/cv2");
+const { EmbedBuilder } = require("discord.js");
 
-module.exports = class ProfileSummary extends Command {
-    constructor(...args) {
-        super(...args, {
-            name: "profile",
-            aliases: ["pf", "pr"],
-            description: "Show a clean text summary of a user's bot profile and relationship state.",
-            usage: ["profile [user]"],
-            category: "Utilities",
-            userPerms: ["ViewChannel", "SendMessages"],
-            botPerms: ["ViewChannel", "SendMessages"],
-            cooldown: 5,
-            guildOnly: true,
-        });
+async function resolveTarget(message, args, client) {
+    const mentionedUser = message.mentions.users.first();
+    if (mentionedUser) {
+        return mentionedUser;
     }
 
-    async respond(target, title, lines, ephemeral = false) {
-        return reply(target, buildNoticePanel({ title, lines }), { ephemeral });
+    const raw = String(args[0] || "").replace(/[<@!>]/g, "").trim();
+    if (!raw) {
+        return message.author;
     }
 
-    async getBadges(userId) {
-        const badges = [];
-        const fetched = await this.client.util
-            .fetchDetails(`https://badge.pogyclientbot.xyz/getbadges?userid=${userId}`)
-            .catch(() => null);
-        if (!fetched) return badges;
+    return client.users.fetch(raw).catch(() => null);
+}
 
-        const map = [
-            ["isDeveloper", "Developer"],
-            ["isCommunityManager", "Community Manager"],
-            ["isOwner", "Owner"],
-            ["isAdmin", "Admin"],
-            ["isManager", "Manager"],
-            ["isModerator", "Moderator"],
-            ["isStaff", "Staff"],
-            ["isSupporter", "Supporter"],
-            ["isBugHunters", "Bug Hunters"],
-            ["isSpecialOnes", "Special Ones"],
-        ];
+module.exports = {
+    name: "profile",
+    aliases: ["pf", "pr"],
+    description: "Mostra um resumo do perfil Discord do utilizador.",
+    category: "profile",
+    usage: "!profile [@utilizador|id]",
+    execute: async (client, message, args) => {
+        try {
+            const targetUser = await resolveTarget(message, args, client);
+            if (!targetUser) {
+                await message.reply("Utilizador nao encontrado.");
+                return;
+            }
 
-        for (const [key, label] of map) {
-            if (fetched[key]) badges.push(label);
+            const targetMember = message.guild
+                ? await message.guild.members.fetch(targetUser.id).catch(() => null)
+                : null;
+            const fullUser = await client.users.fetch(targetUser.id, { force: true }).catch(() => targetUser);
+            const roleCount = targetMember
+                ? targetMember.roles.cache.filter((role) => role.id !== message.guild.id).size
+                : 0;
+
+            const embed = new EmbedBuilder()
+                .setTitle(`Perfil de ${fullUser.username}`)
+                .setColor(0xf59e0b)
+                .setThumbnail(fullUser.displayAvatarURL({ size: 256 }))
+                .addFields(
+                    { name: "Tag", value: fullUser.tag, inline: true },
+                    { name: "ID", value: fullUser.id, inline: true },
+                    { name: "Conta criada", value: `<t:${Math.floor(fullUser.createdTimestamp / 1000)}:F>`, inline: false }
+                )
+                .setTimestamp();
+
+            if (targetMember) {
+                embed.addFields(
+                    { name: "Entrou no servidor", value: targetMember.joinedTimestamp ? `<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:F>` : "Desconhecido", inline: false },
+                    { name: "Apelido", value: targetMember.nickname || "Nenhum", inline: true },
+                    { name: "Cargos", value: String(roleCount), inline: true }
+                );
+            }
+
+            const bannerUrl = fullUser.bannerURL?.({ size: 512 });
+            if (bannerUrl) {
+                embed.setImage(bannerUrl);
+            }
+
+            await message.reply({ embeds: [embed] });
+        } catch (error) {
+            console.error("[DISCORD] Erro no comando profile:", error.message);
+            await message.reply("Nao consegui mostrar esse perfil.").catch(() => {});
         }
-
-        return badges;
-    }
-
-    async perform(target, userId) {
-        const user = await this.client.users.fetch(userId).catch(() => null);
-        if (!user) return this.respond(target, "Profile", ["User not found."], true);
-
-        const marriage = await this.client.database.marryData.get(user.id);
-        const badges = await this.getBadges(user.id);
-        const lines = [
-            `User: **${user.tag}**`,
-            `Badges: ${badges.length ? badges.join(", ") : "None"}`,
-        ];
-
-        if (marriage?.married && marriage.partner) {
-            const partner = await this.client.users.fetch(marriage.partner).catch(() => null);
-            const days = marriage.marriedAt ? Math.floor((Date.now() - marriage.marriedAt) / 86400000) : 0;
-            lines.push(`Partner: **${partner?.tag || marriage.partner}**`);
-            lines.push(`Married: <t:${Math.floor(marriage.marriedAt / 1000)}:f>`);
-            lines.push(`Days together: **${days}**`);
-        }
-
-        return this.respond(target, "Profile", lines);
-    }
-
-    async run({ message, args }) {
-        const userId = args[0] ? await this.client.util.userQuery(args[0]) : message.author.id;
-        if (!userId) return message.reply({ content: "User not found.", allowedMentions: { parse: [] } });
-        return this.perform(message, userId);
-    }
-
-    async exec({ interaction }) {
-        const user = interaction.options.getUser("user") || interaction.user;
-        return this.perform(interaction, user.id);
-    }
+    },
 };

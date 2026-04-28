@@ -92,6 +92,37 @@ router.post("/chat", async (req, res) => {
 /** ReferenciaID usado para utilizadores anónimos (não logados) no suporte */
 const ANON_REFERENCIA_ID = "ANON";
 
+async function tableExists(tableName) {
+    const [rows] = await pool.query(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = ?",
+        [String(tableName || "").toLowerCase()]
+    );
+    return rows.length > 0;
+}
+
+async function columnExists(tableName, columnName) {
+    const [rows] = await pool.query(
+        `SELECT column_name
+         FROM information_schema.columns
+         WHERE table_schema = current_schema()
+           AND table_name = ?
+           AND column_name = ?
+         LIMIT 1`,
+        [String(tableName || "").toLowerCase(), String(columnName || "").toLowerCase()]
+    );
+    return rows.length > 0;
+}
+
+async function addColumnIfMissing(tableName, columnName, definition) {
+    if (!(await columnExists(tableName, columnName))) {
+        await pool.query(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+    }
+}
+
+async function createIndexIfMissing(indexName, tableName, expression) {
+    await pool.query(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName} (${expression})`);
+}
+
 /**
  * Garante que existe o utilizador "Anónimo" na BD (para mensagens de suporte sem login)
  */
@@ -126,10 +157,15 @@ async function ensureTable() {
     const sql = `CREATE TABLE IF NOT EXISTS supportmessages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ReferenciaID VARCHAR(13) NOT NULL,
+    SenderReferenciaID VARCHAR(13) NULL,
     message TEXT NOT NULL,
     senderType ENUM('user', 'support') DEFAULT 'user',
     replyTo INT NULL,
     threadId INT NULL,
+    anonymousSessionId VARCHAR(36) NULL,
+    userName VARCHAR(255) NULL,
+    userEmail VARCHAR(255) NULL,
+    discordChannelId VARCHAR(20) NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_ReferenciaID (ReferenciaID),
     FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
@@ -140,49 +176,22 @@ async function ensureTable() {
 
     await pool.query(sql);
 
-    // Migrações: adicionar colunas se não existirem
-    const migrations = [
-        "ALTER TABLE supportmessages ADD COLUMN senderType ENUM('user', 'support') DEFAULT 'user'",
-        "ALTER TABLE supportmessages ADD COLUMN replyTo INT NULL",
-        "ALTER TABLE supportmessages ADD COLUMN threadId INT NULL",
-        "ALTER TABLE supportmessages ADD INDEX idx_replyTo (replyTo)",
-        "ALTER TABLE supportmessages ADD INDEX idx_threadId (threadId)"
-    ];
+    await addColumnIfMissing("supportmessages", "SenderReferenciaID", "VARCHAR(13) NULL");
+    await addColumnIfMissing("supportmessages", "senderType", "VARCHAR(100) DEFAULT 'user'");
+    await addColumnIfMissing("supportmessages", "replyTo", "INTEGER NULL");
+    await addColumnIfMissing("supportmessages", "threadId", "INTEGER NULL");
+    await addColumnIfMissing("supportmessages", "anonymousSessionId", "VARCHAR(36) NULL");
+    await addColumnIfMissing("supportmessages", "userName", "VARCHAR(255) NULL");
+    await addColumnIfMissing("supportmessages", "userEmail", "VARCHAR(255) NULL");
+    await addColumnIfMissing("supportmessages", "discordChannelId", "VARCHAR(20) NULL");
 
-    for (const migration of migrations) {
-        try {
-            await pool.query(migration);
-        } catch (e) {
-            // Coluna/índice já existe, ignorar
-        }
-    }
-
-    // Coluna para sessão anónima (quem pede ajuda sem estar logado)
-    try {
-        await pool.query("ALTER TABLE supportmessages ADD COLUMN anonymousSessionId VARCHAR(36) NULL AFTER threadId");
-    } catch (e) {
-        // Coluna já existe
-    }
-    try {
-        await pool.query("ALTER TABLE supportmessages ADD INDEX idx_anonymousSessionId (anonymousSessionId)");
-    } catch (e) {
-        // Índice já existe
-    }
-    try {
-        await pool.query("ALTER TABLE supportmessages ADD COLUMN userName VARCHAR(255) NULL AFTER message");
-    } catch (e) {
-        // Coluna já existe
-    }
-    try {
-        await pool.query("ALTER TABLE supportmessages ADD COLUMN userEmail VARCHAR(255) NULL AFTER userName");
-    } catch (e) {
-        // Coluna já existe
-    }
-    try {
-        await pool.query("ALTER TABLE supportmessages ADD COLUMN discordChannelId VARCHAR(20) NULL AFTER userEmail");
-    } catch (e) {
-        // Coluna já existe
-    }
+    await pool.query("UPDATE supportmessages SET SenderReferenciaID = ReferenciaID WHERE SenderReferenciaID IS NULL");
+    await createIndexIfMissing("idx_supportmessages_referenciaid", "supportmessages", "ReferenciaID");
+    await createIndexIfMissing("idx_supportmessages_senderreferenciaid", "supportmessages", "SenderReferenciaID");
+    await createIndexIfMissing("idx_supportmessages_replyto", "supportmessages", "replyTo");
+    await createIndexIfMissing("idx_supportmessages_threadid", "supportmessages", "threadId");
+    await createIndexIfMissing("idx_supportmessages_createdat", "supportmessages", "createdAt");
+    await createIndexIfMissing("idx_supportmessages_anonymoussessionid", "supportmessages", "anonymousSessionId");
 
     await ensureAnonUser();
     await ensureSupportTicketClosuresTable();
@@ -206,20 +215,19 @@ async function ensureTable() {
  */
 async function ensureSupportTicketClosuresTable() {
     try {
-        const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'support_ticket_closures'");
-        if (tables.length === 0) {
+        if (!(await tableExists("support_ticket_closures"))) {
             await pool.query(`
                 CREATE TABLE support_ticket_closures (
                     threadId INT PRIMARY KEY,
                     ClosedByReferenciaID VARCHAR(13) NOT NULL,
                     ClosedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UserReferenciaID VARCHAR(13) NOT NULL,
-                    INDEX idx_user (UserReferenciaID),
-                    INDEX idx_closed_by (ClosedByReferenciaID)
+                    UserReferenciaID VARCHAR(13) NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             `);
             console.log("[SUPPORT] Tabela support_ticket_closures criada");
         }
+        await createIndexIfMissing("idx_support_ticket_closures_user", "support_ticket_closures", "UserReferenciaID");
+        await createIndexIfMissing("idx_support_ticket_closures_closed_by", "support_ticket_closures", "ClosedByReferenciaID");
     } catch (e) {
         console.error("[SUPPORT] ensureSupportTicketClosuresTable:", e.message);
     }
@@ -582,14 +590,15 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
             }
         }
 
-        const referenciaIDParaResposta = senderType === 'support'
-            ? refOriginal
+        const referenciaIDParaResposta = refOriginal;
+        const senderReferenciaID = senderType === 'support'
+            ? referenciaID
             : (isAnonymous ? ANON_REFERENCIA_ID : referenciaID);
 
         const [insertResult] = await pool.query(
-            `INSERT INTO supportmessages (ReferenciaID, message, senderType, replyTo, threadId)
-             VALUES (?, ?, ?, ?, ?)`,
-            [referenciaIDParaResposta, message.trim(), senderType, messageId, threadId]
+            `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [referenciaIDParaResposta, senderReferenciaID, message.trim(), senderType, messageId, threadId]
         );
         const newId = insertResult.insertId;
 
@@ -599,7 +608,8 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
             senderType,
             replyTo: messageId,
             threadId,
-            ReferenciaID: referenciaIDParaResposta
+            ReferenciaID: referenciaIDParaResposta,
+            SenderReferenciaID: senderReferenciaID
         });
 
         setImmediate(async () => {
@@ -670,10 +680,22 @@ router.post("/internal/threads/:threadId/reply", async (req, res) => {
         }
         const referenciaID = root[0].ReferenciaID;
         const rootId = root[0].id;
+        const discordUserId = req.body?.discordUserId ? String(req.body.discordUserId) : null;
+        let senderReferenciaID = null;
+
+        if (discordUserId) {
+            const [staffRows] = await pool.query(
+                "SELECT ReferenciaID FROM utilizadores WHERE discord_id = ? LIMIT 1",
+                [discordUserId]
+            );
+            if (staffRows.length > 0) {
+                senderReferenciaID = staffRows[0].ReferenciaID;
+            }
+        }
 
         await pool.query(
-            `INSERT INTO supportmessages (ReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, 'support', ?, ?)`,
-            [referenciaID, message.trim(), rootId, threadId]
+            `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, ?, 'support', ?, ?)`,
+            [referenciaID, senderReferenciaID, message.trim(), rootId, threadId]
         );
         console.log(" [SUPPORT] Resposta do Discord guardada para thread", threadId);
         return res.status(201).json({ status: "ok", threadId });
@@ -862,9 +884,11 @@ router.post("/messages", optionalToken, async (req, res) => {
 
         const [result] = await pool.query(
             isAnonymous
-                ? "INSERT INTO supportmessages (ReferenciaID, message, userName, userEmail, senderType, anonymousSessionId) VALUES (?, ?, ?, ?, 'user', ?)"
-                : "INSERT INTO supportmessages (ReferenciaID, message, userName, userEmail, senderType) VALUES (?, ?, ?, ?, 'user')",
-            isAnonymous ? [ANON_REFERENCIA_ID, message.trim(), nameStr || null, emailStr || null, anonymousId] : [referenciaID, message.trim(), nameStr || null, emailStr || null]
+                ? "INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, userName, userEmail, senderType, anonymousSessionId) VALUES (?, ?, ?, ?, ?, 'user', ?)"
+                : "INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, userName, userEmail, senderType) VALUES (?, ?, ?, ?, ?, 'user')",
+            isAnonymous
+                ? [ANON_REFERENCIA_ID, ANON_REFERENCIA_ID, message.trim(), nameStr || null, emailStr || null, anonymousId]
+                : [referenciaID, referenciaID, message.trim(), nameStr || null, emailStr || null]
         );
 
         const newMessageId = result.insertId;

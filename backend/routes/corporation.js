@@ -22,6 +22,27 @@ function handleDatabaseError(err, res, defaultMessage) {
     });
 }
 
+async function tableExists(tableName) {
+    const [rows] = await pool.query(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = ?",
+        [String(tableName || "").toLowerCase()]
+    );
+    return rows.length > 0;
+}
+
+async function columnExists(tableName, columnName) {
+    const [rows] = await pool.query(
+        `SELECT column_name
+         FROM information_schema.columns
+         WHERE table_schema = current_schema()
+           AND table_name = ?
+           AND column_name = ?
+         LIMIT 1`,
+        [String(tableName || "").toLowerCase(), String(columnName || "").toLowerCase()]
+    );
+    return rows.length > 0;
+}
+
 async function verifyCorporation(req, res, next) {
     try {
         const referenciaID = req.user && req.user.ReferenciaID;
@@ -65,7 +86,7 @@ router.get("/staff", async (req, res) => {
             WHERE u.PerfilId = 1 AND u.Ativo = 1
             ORDER BY u.Nome`
         );
-        res.json({ status: "ok", staff });
+        res.json({ status: "ok", staff: staff.map(mapStaffRow) });
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar staff:", err);
         return handleDatabaseError(err, res, "Erro ao buscar funcionários");
@@ -93,7 +114,7 @@ router.get("/staff/:referenciaID", async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({ status: "error", error: "Funcionário não encontrado" });
         }
-        res.json({ status: "ok", staff: rows[0] });
+        res.json({ status: "ok", staff: mapStaffRow(rows[0]) });
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar funcionário:", err);
         return handleDatabaseError(err, res, "Erro ao buscar funcionário");
@@ -124,10 +145,7 @@ router.get("/staff/:referenciaID/activity", async (req, res) => {
 
         let bugsProjetos = [];
         try {
-            const [cols] = await pool.query(
-                "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bugsprojetos' AND COLUMN_NAME = 'CreatedBy'"
-            );
-            if (cols.length > 0) {
+            if (await columnExists("bugsprojetos", "CreatedBy")) {
                 const [rows] = await pool.query(
                     `SELECT Id, Titulo, Tipo, Prioridade, Status, DataCriacao
                      FROM bugsprojetos WHERE CreatedBy = ?
@@ -138,14 +156,16 @@ router.get("/staff/:referenciaID/activity", async (req, res) => {
             }
         } catch (_) {}
 
+        const hasSenderReference = await columnExists("supportmessages", "SenderReferenciaID").catch(() => false);
+        const supportReferenceColumn = hasSenderReference ? "sm.SenderReferenciaID" : "sm.ReferenciaID";
         const [supportThreads] = await pool.query(
             `SELECT DISTINCT COALESCE(sm.threadId, sm.id) AS threadId
              FROM supportmessages sm
-             WHERE sm.ReferenciaID = ? AND sm.senderType = 'support'
+             WHERE ${supportReferenceColumn} = ? AND sm.senderType = 'support'
              ORDER BY threadId DESC
              LIMIT 50`,
             [referenciaID]
-        ).catch(() => []);
+        ).catch(() => [[]]);
 
         const [notifications] = await pool.query(
             `SELECT Id, Tipo, Titulo, Descricao, DataCriacao
@@ -154,15 +174,15 @@ router.get("/staff/:referenciaID/activity", async (req, res) => {
              ORDER BY DataCriacao DESC
              LIMIT 30`,
             [referenciaID]
-        ).catch(() => []);
+        ).catch(() => [[]]);
 
         res.json({
             status: "ok",
             activity: {
-                calendarEvents: calendarEvents,
-                bugsProjetos: bugsProjetos,
-                supportThreadsCount: supportThreads.length,
-                notifications: notifications
+                calendarEvents: (calendarEvents || []).map(mapCalendarEventRow),
+                bugsProjetos: (bugsProjetos || []).map(mapBugProjetoRow),
+                supportThreadsCount: Array.isArray(supportThreads) ? supportThreads.length : 0,
+                notifications: Array.isArray(notifications) ? notifications.map(mapNotificationRow) : []
             }
         });
     } catch (err) {
@@ -247,9 +267,102 @@ async function ensureCorporationActivitiesTable() {
                 INDEX idx_CreatedBy (CreatedBy)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS activity_comments (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                ActivityId INT NOT NULL,
+                ReferenciaID VARCHAR(13) NULL,
+                IsCorporation TINYINT(1) NOT NULL DEFAULT 0,
+                Mensagem TEXT NOT NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ActivityId (ActivityId),
+                FOREIGN KEY (ActivityId) REFERENCES corporation_activities(Id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS activity_reports (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                ActivityId INT NOT NULL,
+                ReferenciaID VARCHAR(13) NULL,
+                TextoRelatorio TEXT NULL,
+                AnexoUrl VARCHAR(500) NULL,
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ActivityId (ActivityId),
+                FOREIGN KEY (ActivityId) REFERENCES corporation_activities(Id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
     } catch (e) {
         console.error("[CORPORATION] ensureCorporationActivitiesTable:", e.message);
     }
+}
+
+function mapStaffRow(row) {
+    if (!row) return null;
+    return {
+        ReferenciaID: row.ReferenciaID || row.referenciaid || "",
+        Nome: row.Nome || row.nome || "",
+        Email: row.Email || row.email || "",
+        Telefone: row.Telefone || row.telefone || "",
+        DataRegisto: row.DataRegisto || row.dataregisto || null,
+        PerfilId: row.PerfilId || row.perfilid || null,
+        PerfilNome: row.PerfilNome || row.perfilnome || "",
+    };
+}
+
+function mapNotificationRow(row) {
+    if (!row) return null;
+    return {
+        Id: row.Id || row.id || null,
+        Tipo: row.Tipo || row.tipo || "",
+        Titulo: row.Titulo || row.titulo || "",
+        Descricao: row.Descricao || row.descricao || "",
+        ReferenciaID: row.ReferenciaID || row.referenciaid || row.author_id || row.authorid || null,
+        DataCriacao: row.DataCriacao || row.datacriacao || null,
+        author_nome: row.author_nome || row.author_nome || row.authornome || null,
+        author_email: row.author_email || row.authoremail || null,
+    };
+}
+
+function mapBugProjetoRow(row) {
+    if (!row) return null;
+    return {
+        Id: row.Id || row.id || null,
+        Titulo: row.Titulo || row.titulo || "",
+        Tipo: row.Tipo || row.tipo || "",
+        Prioridade: row.Prioridade || row.prioridade || "",
+        Status: row.Status || row.status || "",
+        DataCriacao: row.DataCriacao || row.datacriacao || null,
+        author_id: row.author_id || row.authorid || null,
+        author_nome: row.author_nome || row.authornome || null,
+    };
+}
+
+function mapEventRow(row) {
+    if (!row) return null;
+    return {
+        Id: row.Id || row.id || null,
+        Titulo: row.Titulo || row.titulo || "",
+        Tipo: row.Tipo || row.tipo || "",
+        Status: row.Status || row.status || "",
+        StartDate: row.StartDate || row.startdate || null,
+        author_id: row.author_id || row.authorid || null,
+        author_nome: row.author_nome || row.authornome || null,
+    };
+}
+
+function mapCalendarEventRow(row) {
+    if (!row) return null;
+    return {
+        Id: row.Id || row.id || null,
+        Titulo: row.Titulo || row.titulo || "",
+        Descricao: row.Descricao || row.descricao || "",
+        Tipo: row.Tipo || row.tipo || "",
+        Status: row.Status || row.status || "",
+        StartDate: row.StartDate || row.startdate || null,
+        EndDate: row.EndDate || row.enddate || null,
+    };
 }
 
 /** GET /calendar/activities - atividades no intervalo (para calendário corporativo) */
@@ -592,7 +705,7 @@ router.get("/dashboard", async (req, res) => {
                  ORDER BY n.DataCriacao DESC LIMIT ?`,
                 [limit]
             );
-            out.notifications = notifications;
+            out.notifications = (notifications || []).map(mapNotificationRow);
         }
 
         const [hasAtualizacoes] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'atualizacoes_sistema'");
@@ -603,7 +716,13 @@ router.get("/dashboard", async (req, res) => {
                  ORDER BY DataCriacao DESC LIMIT ?`,
                 [limit]
             );
-            out.atualizacoesSistema = rows;
+            out.atualizacoesSistema = (rows || []).map((row) => ({
+                Id: row.Id || row.id || null,
+                Titulo: row.Titulo || row.titulo || "",
+                Descricao: row.Descricao || row.descricao || "",
+                Tipo: row.Tipo || row.tipo || "",
+                DataCriacao: row.DataCriacao || row.datacriacao || null,
+            }));
         }
 
         const [hasBugsTable] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'bugsprojetos'");
@@ -619,7 +738,7 @@ router.get("/dashboard", async (req, res) => {
                      ORDER BY b.DataCriacao DESC LIMIT ?`,
                     [limit]
                 );
-                out.recentBugsProjetos = bugs;
+                out.recentBugsProjetos = (bugs || []).map(mapBugProjetoRow);
             } else {
                 const [bugs] = await pool.query(
                     `SELECT Id, Titulo, Tipo, Prioridade, Status, DataCriacao
@@ -627,7 +746,11 @@ router.get("/dashboard", async (req, res) => {
                      ORDER BY DataCriacao DESC LIMIT ?`,
                     [limit]
                 );
-                out.recentBugsProjetos = bugs.map(b => ({ ...b, author_id: null, author_nome: null }));
+                out.recentBugsProjetos = (bugs || []).map((b) => ({
+                    ...mapBugProjetoRow(b),
+                    author_id: null,
+                    author_nome: null
+                }));
             }
         }
 
@@ -640,7 +763,7 @@ router.get("/dashboard", async (req, res) => {
                  ORDER BY e.StartDate DESC LIMIT ?`,
                 [limit]
             );
-            out.recentEvents = events;
+            out.recentEvents = (events || []).map(mapEventRow);
         }
 
         res.json({ status: "ok", ...out });
@@ -666,7 +789,7 @@ router.get("/notifications", async (req, res) => {
              ORDER BY n.DataCriacao DESC LIMIT ?`,
             [limit]
         );
-        res.json({ status: "ok", notifications });
+        res.json({ status: "ok", notifications: (notifications || []).map(mapNotificationRow) });
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar notificações:", err);
         return handleDatabaseError(err, res, "Erro ao buscar notificações");
