@@ -478,6 +478,29 @@ async function ensureYoutubeFeedChannels(connection) {
     await ensureIndex(connection, "idx_youtube_feed_unique", "youtube_feed_channels", "YoutubeChannelId, DiscordChannelId", true);
 }
 
+async function ensureDiscordGuildSettings(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_guild_settings (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL UNIQUE,
+            Prefix VARCHAR(5) NOT NULL DEFAULT '!',
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_guild_settings");
+    await ensureColumn(connection, "discord_guild_settings", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_guild_settings", "Prefix", "VARCHAR(5) DEFAULT '!'");
+    await ensureColumn(connection, "discord_guild_settings", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_guild_settings", "UpdatedAt", "TIMESTAMP");
+    await connection.execute("UPDATE discord_guild_settings SET Prefix = '!' WHERE Prefix IS NULL OR Prefix = ''");
+    await ensureDefault(connection, "discord_guild_settings", "Prefix", "'!'");
+    await ensureTimestampDefault(connection, "discord_guild_settings", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_guild_settings", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_guild_settings_guild", "discord_guild_settings", "GuildId", true);
+}
+
 async function setupDatabase() {
     console.log("Configurando banco de dados para Discord Bot...");
 
@@ -528,6 +551,9 @@ async function setupDatabase() {
 
         await ensureYoutubeFeedChannels(connection);
         console.log("Tabela youtube_feed_channels criada/ajustada");
+
+        await ensureDiscordGuildSettings(connection);
+        console.log("Tabela discord_guild_settings criada/ajustada");
 
         console.log("Configuracao do banco concluida");
         return true;
