@@ -137,10 +137,43 @@ function extractInsertId(rows) {
     return 0;
 }
 
+// PG dobra identificadores não-quotados para minúsculas. O código mysql2 acede
+// às colunas com a capitalização declarada (ex.: row.ReferenciaID). Wrap em
+// Proxy case-insensitive para manter compatibilidade sem tocar nas queries.
+function caseInsensitiveRow(row) {
+    if (!row || typeof row !== "object") return row;
+    const lowerMap = Object.create(null);
+    for (const key of Object.keys(row)) {
+        lowerMap[key.toLowerCase()] = key;
+    }
+    return new Proxy(row, {
+        get(target, prop, receiver) {
+            if (typeof prop === "string" && !Object.prototype.hasOwnProperty.call(target, prop)) {
+                const real = lowerMap[prop.toLowerCase()];
+                if (real !== undefined) return target[real];
+            }
+            return Reflect.get(target, prop, receiver);
+        },
+        has(target, prop) {
+            if (prop in target) return true;
+            if (typeof prop === "string") {
+                return lowerMap[prop.toLowerCase()] !== undefined;
+            }
+            return false;
+        },
+    });
+}
+
+function wrapRows(rows) {
+    if (!Array.isArray(rows)) return rows;
+    return rows.map(caseInsensitiveRow);
+}
+
 function formatCompatResult(result) {
     const command = String(result?.command || "").toUpperCase();
+    const rows = wrapRows(result?.rows ?? []);
     if (command === "SELECT") {
-        return [result.rows, result.fields];
+        return [rows, result.fields];
     }
 
     return [{
@@ -149,7 +182,7 @@ function formatCompatResult(result) {
         insertId: command === "INSERT" ? extractInsertId(result?.rows) : 0,
         rowCount: result?.rowCount ?? 0,
         command,
-        rows: result?.rows ?? [],
+        rows,
     }, result?.fields];
 }
 

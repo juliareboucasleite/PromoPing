@@ -310,6 +310,56 @@ function runLocal() {
         log('Bot do Discord não encontrado, pulando...', 'yellow');
     }
 
+    // Iniciar Python Scraper (silencioso — logs vão para python-scraper/logs/app.log)
+    if (process.env.DISABLE_PYTHON_SCRAPER !== 'true') {
+        const isWin = process.platform === 'win32';
+        const venvPython = path.join(
+            rootDir,
+            '.venv',
+            isWin ? 'Scripts' : 'bin',
+            isWin ? 'python.exe' : 'python'
+        );
+        const pythonExec = fs.existsSync(venvPython) ? venvPython : (isWin ? 'python' : 'python3');
+        const scraperCwd = path.join(rootDir, 'python-scraper');
+        const scraperEntry = path.join(scraperCwd, 'scraper.py');
+
+        if (fs.existsSync(scraperEntry)) {
+            try {
+                const scraperProcess = spawn(pythonExec, ['scraper.py'], {
+                    cwd: scraperCwd,
+                    stdio: 'pipe',
+                    env: { ...process.env, PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
+                    windowsHide: true
+                });
+                processes.push(scraperProcess);
+
+                // Silencioso: ignora stdout/stderr normais (já são gravados em logs/app.log).
+                // Só borbulha para a consola se for erro crítico.
+                scraperProcess.stdout.on('data', (data) => {
+                    const message = data.toString().trim();
+                    if (message && /CRITICAL|FATAL|Traceback/i.test(message)) {
+                        log(`Python Scraper: ${message}`, 'red');
+                    }
+                });
+
+                scraperProcess.stderr.on('data', (data) => {
+                    const message = data.toString().trim();
+                    if (message && /CRITICAL|FATAL|Traceback/i.test(message)) {
+                        log(`Python Scraper: ${message}`, 'red');
+                    }
+                });
+
+                scraperProcess.on('error', (error) => {
+                    log(`Erro no Python Scraper: ${error.message}`, 'red');
+                });
+            } catch (error) {
+                log(`Não foi possível iniciar Python Scraper: ${error.message}`, 'yellow');
+            }
+        } else {
+            log('Python Scraper não encontrado, pulando...', 'yellow');
+        }
+    }
+
     // Iniciar servidor (log removido - servidor mostra sua própria mensagem)
     try {
         const server = spawn('node', ['backend/server.js'], {
@@ -336,7 +386,7 @@ function runLocal() {
             // Parar todos os processos
             processes.forEach((proc, index) => {
                 if (proc && !proc.killed) {
-                    const names = ['Rich Presence', 'Bot Discord', 'Servidor'];
+                    const names = ['Rich Presence', 'Bot Discord', 'Python Scraper', 'Servidor'];
                     const name = names[index] || `Processo ${index + 1}`;
                     log(`Parando ${name}...`, 'yellow');
                     proc.kill(signal);

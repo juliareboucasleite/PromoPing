@@ -935,10 +935,12 @@
             console.log("Contas recebidas:", contas);
             const contasMap = {};
             contas.forEach(c => {
-                const tipo = c.Tipo ? c.Tipo.toLowerCase() : '';
-                const conectado = c.Conectado === 1 || c.Conectado === '1' || c.Conectado === true;
+                const tipoRaw = c.Tipo != null ? c.Tipo : c.tipo;
+                const tipo = tipoRaw ? String(tipoRaw).toLowerCase() : '';
+                const conectadoRaw = c.Conectado != null ? c.Conectado : c.conectado;
+                const conectado = conectadoRaw === 1 || conectadoRaw === '1' || conectadoRaw === true;
                 contasMap[tipo] = conectado;
-                console.log(` [PERFIL] Conta ${tipo}: Conectado = ${c.Conectado} (${typeof c.Conectado}) -> ${conectado}`);
+                console.log(` [PERFIL] Conta ${tipo}: Conectado = ${conectadoRaw} (${typeof conectadoRaw}) -> ${conectado}`);
             });
 
             document.querySelectorAll('.account-item').forEach(item => {
