@@ -3,6 +3,7 @@ import { pool } from "../database/db.js";
 import { formatDate } from "../utils/format.js";
 import { exec } from "child_process";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
 
@@ -14,6 +15,17 @@ const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const router = express.Router();
+
+const isWindows = process.platform === 'win32';
+const venvPython = path.join(
+    __dirname,
+    '../../.venv',
+    isWindows ? 'Scripts' : 'bin',
+    isWindows ? 'python.exe' : 'python'
+);
+const pythonExec = fs.existsSync(venvPython)
+    ? `"${venvPython}"`
+    : (isWindows ? 'python' : 'python3');
 
 /** Aceita apenas URLs com esquema http ou https (bloqueia javascript:, data:, etc.). */
 function isAllowedProductUrl(url) {
@@ -130,9 +142,7 @@ router.post("/", verifyToken, async (req, res) => {
         
         // Escapar a URL para segurança (Windows e Linux)
         const escapedLink = link.replace(/"/g, '\\"').replace(/\$/g, '\\$');
-        const isWindows = process.platform === 'win32';
-        const pythonCmd = isWindows ? 'python' : 'python3';
-        const command = `${pythonCmd} "${scraperPath}" --single "${escapedLink}"`;
+        const command = `${pythonExec} "${scraperPath}" --single "${escapedLink}"`;
         
         console.log(" [SCRAPER] Iniciando verificação inicial para:", link);
         exec(command, { cwd: path.join(__dirname, '../../') }, (error, stdout, stderr) => {
@@ -426,9 +436,7 @@ router.post("/:id/compare", verifyToken, async (req, res) => {
         // Executar comparação via Python
         const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
         const escapedLink = productLink.replace(/"/g, '\\"').replace(/\$/g, '\\$');
-        const isWindows = process.platform === 'win32';
-        const pythonCmd = isWindows ? 'python' : 'python3';
-        const command = `${pythonCmd} "${scraperPath}" --compare-simple "${escapedLink}"`;
+        const command = `${pythonExec} "${scraperPath}" --compare-simple "${escapedLink}"`;
         
         console.log(`[COMPARE] Comparando produto ${id} em múltiplas lojas...`);
         
