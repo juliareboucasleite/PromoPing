@@ -1629,11 +1629,11 @@
                 const token = localStorage.getItem("token");
                 if (token) {
                     // Se estiver logado, passar parâmetro para associar ao perfil
-                    const discordAuthUrl = `http://127.0.0.1:3000/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
+                    const discordAuthUrl = `/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
                     window.location.href = discordAuthUrl;
                 } else {
                     // Se não estiver logado, fazer login normal
-                    const discordAuthUrl = "http://127.0.0.1:3000/auth/discord";
+                    const discordAuthUrl = "/auth/discord";
                     window.location.href = discordAuthUrl;
                 }
 

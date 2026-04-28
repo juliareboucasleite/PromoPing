@@ -96,6 +96,6 @@ Before submitting a PR, verify: code follows project standards, functionality te
 Maintainers will review your PR by checking if the code follows standards, testing the changes, and suggesting improvements if necessary. Respond to comments, make requested changes, and update the PR as needed. After approval, the PR will be merged and you will be credited as a contributor.
 
 ## Questions?
-If you have questions about how to contribute, open an issue with the `question` tag or contact us at <corporation.promoping@gmail.com>
+If you have questions about how to contribute, open an issue with the `question` tag or contact us at <suporte@promoping.pt>
 Your friendly PromoPing community!
 Thank you for contributing to make PromoPing better!

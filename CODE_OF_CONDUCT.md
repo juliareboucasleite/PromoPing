@@ -13,7 +13,7 @@ Project maintainers are responsible for clarifying and enforcing our standards o
 This Code of Conduct applies both within project spaces and in public spaces when an individual is representing the project or its community. Examples of representation include using an official project email address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
 
 ## Enforcement
-Instances of abusive, harassing, or otherwise unacceptable behaviour may be reported by contacting the project team at [**corporation.promoping@gmail.com**](mailto:corporation.promoping@gmail.com). All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident.
+Instances of abusive, harassing, or otherwise unacceptable behaviour may be reported by contacting the project team at [**suporte@promoping.pt**](mailto:suporte@promoping.pt). All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident.
 
 ## Attribution
 This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1, available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)

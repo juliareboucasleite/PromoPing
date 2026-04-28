@@ -65,13 +65,31 @@
     }
 
     /**
+     * Deduz a base da API a partir da URL atual quando estamos num
+     * domínio reconhecido (ex.: promoping.pt). Em localhost, usa porta 3000.
+     */
+    function detectApiBaseFromLocation() {
+        try {
+            const { protocol, hostname, port } = window.location;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return 'http://localhost:3000';
+            }
+            // Em produção (promoping.pt) a API é servida no mesmo host/porta
+            const portPart = port && port !== '80' && port !== '443' ? `:${port}` : '';
+            return `${protocol}//${hostname}${portPart}`;
+        } catch (e) {
+            return 'http://localhost:3000';
+        }
+    }
+
+    /**
      * Obtém a URL base da API de forma segura
      * @returns {string} URL base validada
      */
     function getSafeApiBase() {
         const stored = localStorage.getItem('PROMOPING_API');
-        const defaultBase = 'http://localhost:3000';
-        
+        const defaultBase = detectApiBaseFromLocation();
+
         if (!stored) {
             return defaultBase;
         }

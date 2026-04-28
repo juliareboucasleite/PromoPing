@@ -93,7 +93,7 @@ function criarPdfHistorico({ user, periodo, produtos, totais }) {
 
     // —— Nota ——
     doc.font("Helvetica").fontSize(9).fillColor(TEXT_MUTED);
-    doc.text("Histórico de monitorização de preços no PromoPing. Para esclarecimentos: corporation.promoping@gmail.com", m, 258, { width: pageWidth });
+    doc.text("Histórico de monitorização de preços no PromoPing. Para esclarecimentos: suporte@promoping.pt", m, 258, { width: pageWidth });
 
     linhaHorizontal(doc, m, 282, pageWidth);
 

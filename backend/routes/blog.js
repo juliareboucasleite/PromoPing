@@ -16,27 +16,28 @@ async function ensureBlogTable() {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS blog_articles (
-                Id INT AUTO_INCREMENT PRIMARY KEY,
+                Id SERIAL PRIMARY KEY,
                 Title VARCHAR(500) NOT NULL,
                 Description TEXT,
                 Url VARCHAR(500) NOT NULL UNIQUE,
                 ImageUrl VARCHAR(500) DEFAULT NULL,
                 Source VARCHAR(200) DEFAULT NULL,
                 Category VARCHAR(100) DEFAULT NULL,
-                ImpactScore INT DEFAULT 0,
-                PublishedAt DATETIME NOT NULL,
+                ImpactScore INTEGER DEFAULT 0,
+                PublishedAt TIMESTAMP NOT NULL,
                 CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                IsVisible TINYINT(1) DEFAULT 1,
-                Views INT DEFAULT 0,
-                INDEX idx_category (Category),
-                INDEX idx_impact_score (ImpactScore),
-                INDEX idx_published_at (PublishedAt),
-                INDEX idx_created_at (CreatedAt),
-                INDEX idx_is_visible (IsVisible),
-                INDEX idx_url (Url(255))
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                IsVisible SMALLINT DEFAULT 1,
+                Views INTEGER DEFAULT 0
+            )
         `);
+
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_category ON blog_articles (Category)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_impact_score ON blog_articles (ImpactScore)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_published_at ON blog_articles (PublishedAt)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_created_at ON blog_articles (CreatedAt)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_is_visible ON blog_articles (IsVisible)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_blog_url ON blog_articles (Url)`);
     } catch (error) {
         console.error('[BLOG] Erro ao criar tabela blog_articles:', error);
     }

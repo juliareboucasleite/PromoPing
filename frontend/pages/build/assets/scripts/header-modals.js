@@ -718,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnGoogleLogin = document.getElementById('btnGoogleLogin');
     if (btnGoogleLogin) {
       btnGoogleLogin.addEventListener('click', () => {
-        window.location.href = "/api/auth/google";
+        window.location.href = "/auth/google";
       });
     }
 
@@ -728,12 +728,12 @@ document.addEventListener('DOMContentLoaded', function() {
       btnDiscordLogin.addEventListener('click', async () => {
         try {
           const requestFn = (typeof makeRequest === 'function') ? makeRequest : fetch;
-          const response = await requestFn(`/api/auth/discord/check/916737425978589235`);
+          const response = await requestFn(`/auth/discord/check/916737425978589235`);
           const data = await response.json();
 
           // Se já existe, faz login direto. Se não, vai pro fluxo de registro
           if (data.exists) {
-            window.location.href = "/api/auth/discord/direct/916737425978589235";
+            window.location.href = "/auth/discord/direct/916737425978589235";
           } else {
             window.location.href = "/auth/discord";
           }
@@ -920,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnGoogleRegister = document.getElementById('btnGoogleRegister');
     if (btnGoogleRegister) {
       btnGoogleRegister.addEventListener('click', () => {
-        window.location.href = "/api/auth/google";
+        window.location.href = "/auth/google";
       });
     }
 
@@ -1058,4 +1058,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-

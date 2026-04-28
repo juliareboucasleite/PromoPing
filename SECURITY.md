@@ -1,7 +1,7 @@
 # PromoPing Security Policy
 ### Reporting a Vulnerability
 Security is a priority for PromoPing. If you discover a security vulnerability, we appreciate you informing us responsibly.
-Send a detailed email to **corporation.promoping@gmail.com** to report vulnerabilities in PromoPing. Even if you're not certain whether a bug is an exploitable vulnerability, we recommend sending the report to **corporation.promoping@gmail.com** and not discussing the issue elsewhere.
+Send a detailed email to **suporte@promoping.pt** to report vulnerabilities in PromoPing. Even if you're not certain whether a bug is an exploitable vulnerability, we recommend sending the report to **suporte@promoping.pt** and not discussing the issue elsewhere.
 Discuss vulnerabilities only via email, and not publicly, until an official announcement on PromoPing's discussion list on the release date.
 
 When reporting a vulnerability, please provide as much relevant information as possible to help us address the issue efficiently. Please describe the vulnerability in detail, including, if possible, a script or steps to reproduce or demonstrate the problem. Specify which platforms, systems, or scenarios are affected—sometimes vulnerabilities are limited to certain environments or configurations.

@@ -142,7 +142,7 @@ function criarPdf({ ref, user, periodo, produtos, totais }) {
     // —— Nota (estilo fatura) ——
     doc.font("Helvetica").fontSize(9).fillColor(TEXT_MUTED);
     doc.text("Este relatório refere-se ao histórico de monitorização de preços no PromoPing.", m, 272, { width: pageWidth });
-    doc.text("Para esclarecimentos: corporation.promoping@gmail.com", m, 284, { width: pageWidth });
+    doc.text("Para esclarecimentos: suporte@promoping.pt", m, 284, { width: pageWidth });
 
     // —— Linha separadora ——
     linhaHorizontal(doc, m, 298, pageWidth);

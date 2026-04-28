@@ -250,6 +250,60 @@ app.use("/api/auth", authLimiter); // Login/Registro tradicional - mais restriti
 app.use("/api/auth", authRoutes); // Login/Registro + Google OAuth
 app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
 
+app.get("/auth/google", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/google?${queryString}` : "/api/auth/google";
+    res.redirect(target);
+});
+
+app.get("/auth/google/callback", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/google/callback?${queryString}` : "/api/auth/google/callback";
+    res.redirect(target);
+});
+
+app.get("/auth/github", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/github?${queryString}` : "/api/auth/github";
+    res.redirect(target);
+});
+
+app.get("/auth/github/callback", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/github/callback?${queryString}` : "/api/auth/github/callback";
+    res.redirect(target);
+});
+
+app.get("/auth/discord", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/discord?${queryString}` : "/api/auth/discord";
+    res.redirect(target);
+});
+
+app.get("/auth/discord/callback", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const target = queryString ? `/api/auth/discord/callback?${queryString}` : "/api/auth/discord/callback";
+    res.redirect(target);
+});
+
+app.get("/auth/discord/check/:discordId", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const encodedDiscordId = encodeURIComponent(req.params.discordId);
+    const target = queryString
+        ? `/api/auth/discord/check/${encodedDiscordId}?${queryString}`
+        : `/api/auth/discord/check/${encodedDiscordId}`;
+    res.redirect(target);
+});
+
+app.get("/auth/discord/direct/:discordId", (req, res) => {
+    const queryString = new URLSearchParams(req.query).toString();
+    const encodedDiscordId = encodeURIComponent(req.params.discordId);
+    const target = queryString
+        ? `/api/auth/discord/direct/${encodedDiscordId}?${queryString}`
+        : `/api/auth/discord/direct/${encodedDiscordId}`;
+    res.redirect(target);
+});
+
 app.get("/api/user/me", verifyToken, async(req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
@@ -545,8 +599,34 @@ if (!isProduction) {
     });
 
     // Discord OAuth - redirecionar para API
+    app.get("/auth/google", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const target = queryString ? `/api/auth/google?${queryString}` : "/api/auth/google";
+        res.redirect(target);
+    });
+
+    app.get("/auth/google/callback", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const target = queryString ? `/api/auth/google/callback?${queryString}` : "/api/auth/google/callback";
+        res.redirect(target);
+    });
+
+    app.get("/auth/github", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const target = queryString ? `/api/auth/github?${queryString}` : "/api/auth/github";
+        res.redirect(target);
+    });
+
+    app.get("/auth/github/callback", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const target = queryString ? `/api/auth/github/callback?${queryString}` : "/api/auth/github/callback";
+        res.redirect(target);
+    });
+
     app.get("/auth/discord", (req, res) => {
-        res.redirect("/api/auth/discord");
+        const queryString = new URLSearchParams(req.query).toString();
+        const target = queryString ? `/api/auth/discord?${queryString}` : "/api/auth/discord";
+        res.redirect(target);
     });
 
     app.get("/auth/discord/callback", (req, res) => {
@@ -556,6 +636,24 @@ if (!isProduction) {
     });
 
     // Página inicial
+    app.get("/auth/discord/check/:discordId", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const encodedDiscordId = encodeURIComponent(req.params.discordId);
+        const target = queryString
+            ? `/api/auth/discord/check/${encodedDiscordId}?${queryString}`
+            : `/api/auth/discord/check/${encodedDiscordId}`;
+        res.redirect(target);
+    });
+
+    app.get("/auth/discord/direct/:discordId", (req, res) => {
+        const queryString = new URLSearchParams(req.query).toString();
+        const encodedDiscordId = encodeURIComponent(req.params.discordId);
+        const target = queryString
+            ? `/api/auth/discord/direct/${encodedDiscordId}?${queryString}`
+            : `/api/auth/discord/direct/${encodedDiscordId}`;
+        res.redirect(target);
+    });
+
     app.get("/", (req, res) => {
         const indexPath = buildExists ?
             path.join(buildPath, "index.html") :

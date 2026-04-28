@@ -112,6 +112,18 @@ function fixPaths(filePath) {
             modified = true;
         }
 
+        const authUrlRegex = /http:\/\/127\.0\.0\.1:3000\/auth\//g;
+        if (authUrlRegex.test(content)) {
+            content = content.replace(authUrlRegex, '/auth/');
+            modified = true;
+        }
+
+        const localhostAuthRegex = /http:\/\/localhost:3000\/auth\//g;
+        if (localhostAuthRegex.test(content)) {
+            content = content.replace(localhostAuthRegex, '/auth/');
+            modified = true;
+        }
+
         // Corrigir caminhos /PromoPing/frontend/pages/dashboard/ → /dashboard
         const dashboardPathRegex = /\/PromoPing\/frontend\/pages\/dashboard\//g;
         if (dashboardPathRegex.test(content)) {
