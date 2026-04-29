@@ -208,6 +208,176 @@
       background-color: #c82333;
     }
 
+    /* Modal bonitinho para data limite */
+    .date-limit-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(9, 13, 24, 0.68);
+      backdrop-filter: blur(10px);
+      z-index: 1200;
+    }
+
+    .date-limit-modal {
+      width: min(100%, 520px);
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, #171717 0%, #111111 100%);
+      color: #f8fafc;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+      transform: translateY(0);
+      animation: dateLimitPop 0.2s ease-out;
+    }
+
+    @keyframes dateLimitPop {
+      from {
+        transform: translateY(12px) scale(0.98);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .date-limit-hero {
+      position: relative;
+      padding: 28px 28px 22px;
+      background:
+        radial-gradient(circle at top right, rgba(255, 179, 71, 0.18), transparent 36%),
+        radial-gradient(circle at left top, rgba(99, 102, 241, 0.14), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+    }
+
+    .date-limit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffd7a0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .date-limit-title {
+      margin: 0;
+      font-size: 1.55rem;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .date-limit-subtitle {
+      margin: 10px 0 0;
+      color: rgba(255, 255, 255, 0.74);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+
+    .date-limit-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .date-limit-close:hover {
+      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .date-limit-body {
+      padding: 0 28px 24px;
+    }
+
+    .date-limit-field-label {
+      display: block;
+      margin: 0 0 10px;
+      color: #e5e7eb;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .date-limit-input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .date-limit-input:focus {
+      border-color: rgba(255, 179, 71, 0.85);
+      box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .date-limit-hint {
+      margin-top: 12px;
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .date-limit-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 0 28px 28px;
+    }
+
+    .date-limit-actions .btn {
+      min-width: 128px;
+      border-radius: 14px;
+    }
+
+    .date-limit-actions .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+    }
+
+    .date-limit-actions .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .date-limit-actions .btn-primary {
+      background: linear-gradient(135deg, #ffb347 0%, #ff7a18 100%);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(255, 122, 24, 0.28);
+    }
+
+    .date-limit-actions .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(255, 122, 24, 0.34);
+    }
+
+    .date-limit-actions .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
     /* Notificações */
     .notification {
       position: fixed;
@@ -542,6 +712,26 @@
     </div>
   </div>
 
+  <div id="dataLimiteModal" class="date-limit-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="dataLimiteModalTitle">
+    <div class="date-limit-modal">
+      <div class="date-limit-hero">
+        <button type="button" class="date-limit-close" aria-label="Fechar" onclick="fecharDataLimiteModal()">&times;</button>
+        <div class="date-limit-badge">Calendário</div>
+        <h3 class="date-limit-title" id="dataLimiteModalTitle">Definir data limite</h3>
+        <p class="date-limit-subtitle" id="dataLimiteModalSubtitle">Escolhe uma nova data limite para este produto.</p>
+      </div>
+      <div class="date-limit-body">
+        <label class="date-limit-field-label" for="dataLimiteModalInput">Nova data limite</label>
+        <input type="date" id="dataLimiteModalInput" class="date-limit-input">
+        <div class="date-limit-hint" id="dataLimiteModalHint">A data atual será substituída pela nova seleção.</div>
+      </div>
+      <div class="date-limit-actions">
+        <button type="button" class="btn btn-secondary" onclick="fecharDataLimiteModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="salvarDataLimiteBtn">Guardar data</button>
+      </div>
+    </div>
+  </div>
+
   <main class="dashboard-main">
     <div class="dashboard-container">
       <header class="page-header page-header-dashboard">
@@ -772,7 +962,7 @@
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                   </svg>
                 </button>
-                <button class="action-btn-new" title="Editar data" onclick="editarData(${Number(p.Id || p.id) || 0}, '${dataLimiteAttr}')">
+                <button class="action-btn-new" title="Editar data" onclick="editarData(${Number(p.Id || p.id) || 0}, '${dataLimiteAttr}', '${escapeHtmlAttr(String(nome || 'produto'))}')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -1100,10 +1290,54 @@
         notification.remove();
       }, 5000);
     }
-    async function editarData(id, atual) {
-      const novaData = prompt('Nova data limite (AAAA-MM-DD):', (atual || '').split('T')[0] || '');
-      if (novaData === null) return;
+    const dataLimiteModalState = {
+      id: null,
+      atual: '',
+      nome: ''
+    };
+
+    function abrirDataLimiteModal(id, atual, nome) {
+      const modal = document.getElementById('dataLimiteModal');
+      const input = document.getElementById('dataLimiteModalInput');
+      const title = document.getElementById('dataLimiteModalTitle');
+      const subtitle = document.getElementById('dataLimiteModalSubtitle');
+      const hint = document.getElementById('dataLimiteModalHint');
+      if (!modal || !input || !title || !subtitle || !hint) return;
+
+      dataLimiteModalState.id = id;
+      dataLimiteModalState.atual = (atual || '').split('T')[0] || '';
+      dataLimiteModalState.nome = nome || 'produto';
+
+      title.textContent = `Definir data limite`;
+      subtitle.textContent = `${dataLimiteModalState.nome} - escolhe uma nova data para manter o produto monitorizado.`;
+      hint.textContent = dataLimiteModalState.atual ? `Data atual: ${dataLimiteModalState.atual}` : 'Este produto ainda não tem data limite definida.';
+      input.value = dataLimiteModalState.atual;
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => input.focus(), 0);
+    }
+
+    function fecharDataLimiteModal() {
+      const modal = document.getElementById('dataLimiteModal');
+      if (modal) modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    async function salvarDataLimite() {
+      const id = dataLimiteModalState.id;
+      if (!id) return;
+
+      const input = document.getElementById('dataLimiteModalInput');
+      const novaData = input ? input.value : '';
+      if (!novaData) {
+        showWarning('Data limite', 'Escolhe uma data antes de guardar.');
+        return;
+      }
+
       const token = localStorage.getItem("token");
+      const btn = document.getElementById('salvarDataLimiteBtn');
+      if (btn) btn.disabled = true;
       try {
         const res = await makeRequest(`/api/produtos/${id}`, {
           method: 'PUT',
@@ -1119,15 +1353,46 @@
         }
 
         const data = await res.json();
-        if (data.status === 'ok') carregarProdutos();
+        if (data.status === 'ok') {
+          fecharDataLimiteModal();
+          carregarProdutos();
+          showSuccess('Data limite atualizada', 'A nova data foi guardada com sucesso.');
+        }
         else showError("Erro", data.message || data.error || 'Erro ao atualizar data');
       } catch (e) {
         showError("Erro", 'Erro no servidor');
+      } finally {
+        if (btn) btn.disabled = false;
       }
+    }
+
+    async function editarData(id, atual, nome = 'produto') {
+      abrirDataLimiteModal(id, atual, nome);
     }
 
     // Tornar função global para uso em onclick
     window.editarData = editarData;
+    window.fecharDataLimiteModal = fecharDataLimiteModal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('dataLimiteModal');
+      const btnSalvar = document.getElementById('salvarDataLimiteBtn');
+      const input = document.getElementById('dataLimiteModalInput');
+
+      btnSalvar?.addEventListener('click', salvarDataLimite);
+      modal?.addEventListener('click', (event) => {
+        if (event.target === modal) fecharDataLimiteModal();
+      });
+      input?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') salvarDataLimite();
+        if (event.key === 'Escape') fecharDataLimiteModal();
+      });
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal?.style.display === 'flex') {
+          fecharDataLimiteModal();
+        }
+      });
+    });
 
     // Busca estatísticas do usuário e atualiza os cards (produtos, notificações, poupado)
     async function carregarEstatisticas() {
