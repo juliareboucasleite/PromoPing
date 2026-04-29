@@ -131,15 +131,15 @@ router.get("/users", async (req, res) => {
 
         const [users] = await pool.query(
             `SELECT 
-                u.ReferenciaID,
-                u.Nome,
-                u.Email,
-                u.DataRegisto,
-                u.Ativo,
-                u.EmailVerificado,
-                u.PerfilId,
-                COUNT(DISTINCT p.Id) as produtosCount,
-                COUNT(DISTINCT n.Id) as notificacoesCount
+                u.ReferenciaID AS "ReferenciaID",
+                u.Nome AS "Nome",
+                u.Email AS "Email",
+                u.DataRegisto AS "DataRegisto",
+                u.Ativo AS "Ativo",
+                u.EmailVerificado AS "EmailVerificado",
+                u.PerfilId AS "PerfilId",
+                COUNT(DISTINCT p.Id) as "produtosCount",
+                COUNT(DISTINCT n.Id) as "notificacoesCount"
             FROM utilizadores u
             LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
             LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
@@ -172,15 +172,15 @@ router.get("/users/export/pdf", async (req, res) => {
         // Buscar todos os utilizadores ativos (sem limite para PDF)
         const [users] = await pool.query(
             `SELECT 
-                u.ReferenciaID,
-                u.Nome,
-                u.Email,
-                u.DataRegisto,
-                u.Ativo,
-                u.EmailVerificado,
-                u.PerfilId,
-                COUNT(DISTINCT p.Id) as produtosCount,
-                COUNT(DISTINCT n.Id) as notificacoesCount
+                u.ReferenciaID AS "ReferenciaID",
+                u.Nome AS "Nome",
+                u.Email AS "Email",
+                u.DataRegisto AS "DataRegisto",
+                u.Ativo AS "Ativo",
+                u.EmailVerificado AS "EmailVerificado",
+                u.PerfilId AS "PerfilId",
+                COUNT(DISTINCT p.Id) as "produtosCount",
+                COUNT(DISTINCT n.Id) as "notificacoesCount"
             FROM utilizadores u
             LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
             LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
@@ -492,16 +492,16 @@ router.get("/bugs", async (req, res) => {
 
         const [bugs] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Tipo,
-                Prioridade,
-                Status,
-                CreatedBy,
-                AnexoUrl,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Tipo AS "Tipo",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                CreatedBy AS "CreatedBy",
+                AnexoUrl AS "AnexoUrl",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM bugsprojetos 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
@@ -570,16 +570,16 @@ router.get("/bugs/:id", async (req, res) => {
 
         const [bugs] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Tipo,
-                Prioridade,
-                Status,
-                CreatedBy,
-                AnexoUrl,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Tipo AS "Tipo",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                CreatedBy AS "CreatedBy",
+                AnexoUrl AS "AnexoUrl",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
@@ -625,16 +625,16 @@ router.put("/bugs/:id", async (req, res) => {
 
         const [currentBug] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Tipo,
-                Prioridade,
-                Status,
-                CreatedBy,
-                AnexoUrl,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Tipo AS "Tipo",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                CreatedBy AS "CreatedBy",
+                AnexoUrl AS "AnexoUrl",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
@@ -660,16 +660,16 @@ router.put("/bugs/:id", async (req, res) => {
         if (newStatus === 'resolved' && oldStatus !== 'resolved') {
             const [updatedBug] = await pool.query(
                 `SELECT 
-                    Id,
-                    Titulo,
-                    Descricao,
-                    Tipo,
-                    Prioridade,
-                    Status,
-                    CreatedBy,
-                    AnexoUrl,
-                    DataCriacao,
-                    DataAtualizacao
+                    Id AS "Id",
+                    Titulo AS "Titulo",
+                    Descricao AS "Descricao",
+                    Tipo AS "Tipo",
+                    Prioridade AS "Prioridade",
+                    Status AS "Status",
+                    CreatedBy AS "CreatedBy",
+                    AnexoUrl AS "AnexoUrl",
+                    DataCriacao AS "DataCriacao",
+                    DataAtualizacao AS "DataAtualizacao"
                  FROM bugsprojetos WHERE Id = ?`,
                 [id]
             );
@@ -701,16 +701,16 @@ router.patch("/bugs/:id", async (req, res) => {
 
         const [currentBug] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Tipo,
-                Prioridade,
-                Status,
-                CreatedBy,
-                AnexoUrl,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Tipo AS "Tipo",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                CreatedBy AS "CreatedBy",
+                AnexoUrl AS "AnexoUrl",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
@@ -755,16 +755,16 @@ router.patch("/bugs/:id", async (req, res) => {
         if (newStatus === 'resolved' && oldStatus !== 'resolved' && currentBug.length > 0) {
             const [updatedBug] = await pool.query(
                 `SELECT 
-                    Id,
-                    Titulo,
-                    Descricao,
-                    Tipo,
-                    Prioridade,
-                    Status,
-                    CreatedBy,
-                    AnexoUrl,
-                    DataCriacao,
-                    DataAtualizacao
+                    Id AS "Id",
+                    Titulo AS "Titulo",
+                    Descricao AS "Descricao",
+                    Tipo AS "Tipo",
+                    Prioridade AS "Prioridade",
+                    Status AS "Status",
+                    CreatedBy AS "CreatedBy",
+                    AnexoUrl AS "AnexoUrl",
+                    DataCriacao AS "DataCriacao",
+                    DataAtualizacao AS "DataAtualizacao"
                  FROM bugsprojetos WHERE Id = ?`,
                 [id]
             );
@@ -820,15 +820,15 @@ router.get("/sugestoes", async (req, res) => {
 
         const [sugestoes] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Plataforma,
-                Prioridade,
-                Status,
-                Votos,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Plataforma AS "Plataforma",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                Votos AS "Votos",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM sugestoes 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
@@ -853,15 +853,15 @@ router.get("/sugestoes/:id", async (req, res) => {
 
         const [sugestoes] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                Plataforma,
-                Prioridade,
-                Status,
-                Votos,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                Plataforma AS "Plataforma",
+                Prioridade AS "Prioridade",
+                Status AS "Status",
+                Votos AS "Votos",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM sugestoes WHERE Id = ?`,
             [id]
         );
