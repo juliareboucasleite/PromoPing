@@ -1,5 +1,5 @@
 /**
- * Sugestões - PromoPing Admin
+ * Sugestoes - PromoPing Admin
  */
 
 (function() {
@@ -30,8 +30,7 @@
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+                throw new Error(`Resposta invalida do servidor (${response.status})`);
             }
 
             if (!response.ok) {
@@ -41,7 +40,7 @@
 
             return response;
         } catch (error) {
-            console.error(`[SUGESTOES] Erro:`, error);
+            console.error('[SUGESTOES] Erro:', error);
             throw error;
         }
     }
@@ -63,70 +62,76 @@
         return div.innerHTML;
     }
 
+    function pick(obj, ...keys) {
+        for (const key of keys) {
+            if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
+        }
+        return null;
+    }
+
     function getStatusLabel(status) {
         const labels = {
-            'pendente': 'Pendente',
-            'em-analise': 'Em Análise',
-            'aprovada': 'Aprovada',
+            pendente: 'Pendente',
+            'em-analise': 'Em Analise',
+            aprovada: 'Aprovada',
             'em-desenvolvimento': 'Em Desenvolvimento',
-            'implementada': 'Implementada',
-            'rejeitada': 'Rejeitada'
+            implementada: 'Implementada',
+            rejeitada: 'Rejeitada'
         };
-        return labels[status] || status;
+        return labels[status] || status || 'N/A';
     }
 
     function getPlataformaLabel(plataforma) {
         const labels = {
-            'site': 'Site',
-            'bot': 'Bot Discord',
-            'ambos': 'Ambos'
+            site: 'Site',
+            bot: 'Bot Discord',
+            ambos: 'Ambos'
         };
-        return labels[plataforma] || plataforma;
+        return labels[plataforma] || plataforma || 'N/A';
     }
+
+    let currentSugestaoId = null;
+    let currentSugestaoData = null;
 
     async function loadSugestoes() {
         const sugestoesList = document.getElementById('sugestoesList');
         if (!sugestoesList) return;
 
         try {
-            sugestoesList.innerHTML = '<div class="loading-state">Carregando sugestões...</div>';
+            sugestoesList.innerHTML = '<div class="loading-state">Carregando sugestoes...</div>';
 
             const response = await fetchAuth('/api/admin/sugestoes');
             const data = await response.json();
 
             if (!data.sugestoes || data.sugestoes.length === 0) {
-                sugestoesList.innerHTML = '<div class="loading-state">Nenhuma sugestão encontrada</div>';
+                sugestoesList.innerHTML = '<div class="loading-state">Nenhuma sugestao encontrada</div>';
                 return;
             }
 
-            sugestoesList.innerHTML = data.sugestoes.map(sugestao => `
-                <div class="bug-item" data-sugestao-id="${sugestao.Id}" style="cursor: pointer;">
+            sugestoesList.innerHTML = data.sugestoes.map((sugestao) => `
+                <div class="bug-item" data-sugestao-id="${pick(sugestao, 'Id', 'id')}" style="cursor: pointer;">
                     <div class="bug-header">
-                        <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(sugestao.Titulo)) || sugestao.Titulo || 'Sem título')}</h3>
-                        <span class="bug-status ${sugestao.Status || 'pendente'}">${getStatusLabel(sugestao.Status || 'pendente')}</span>
+                        <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(pick(sugestao, 'Titulo', 'titulo'))) || pick(sugestao, 'Titulo', 'titulo') || 'Sem titulo')}</h3>
+                        <span class="bug-status ${pick(sugestao, 'Status', 'status') || 'pendente'}">${getStatusLabel(pick(sugestao, 'Status', 'status') || 'pendente')}</span>
                     </div>
-                    <p class="bug-description">${escapeHtml((sugestao.Descricao || 'Sem descrição').substring(0, 200))}${sugestao.Descricao && sugestao.Descricao.length > 200 ? '...' : ''}</p>
+                    <p class="bug-description">${escapeHtml((pick(sugestao, 'Descricao', 'descricao') || 'Sem descricao').substring(0, 200))}${(pick(sugestao, 'Descricao', 'descricao') || '').length > 200 ? '...' : ''}</p>
                     <div class="bug-meta">
-                        <span>Plataforma: ${getPlataformaLabel(sugestao.Plataforma || 'ambos')}</span>
-                        <span>Prioridade: ${sugestao.Prioridade || 'medium'}</span>
-                        <span>Criado: ${formatDate(sugestao.DataCriacao)}</span>
+                        <span>Plataforma: ${getPlataformaLabel(pick(sugestao, 'Plataforma', 'plataforma') || 'ambos')}</span>
+                        <span>Prioridade: ${pick(sugestao, 'Prioridade', 'prioridade') || 'medium'}</span>
+                        <span>Criado: ${formatDate(pick(sugestao, 'DataCriacao', 'datacriacao'))}</span>
                     </div>
                 </div>
             `).join('');
 
-            // Adicionar event listeners para clicar nas sugestões
-            document.querySelectorAll('.bug-item[data-sugestao-id]').forEach(item => {
+            document.querySelectorAll('.bug-item[data-sugestao-id]').forEach((item) => {
                 item.addEventListener('click', async (e) => {
                     if (e.target.tagName === 'BUTTON') return;
-                    
                     const sugestaoId = item.getAttribute('data-sugestao-id');
-                    if (sugestaoId) {
-                        await viewSugestaoDetails(sugestaoId);
-                    }
+                    if (sugestaoId) await viewSugestaoDetails(sugestaoId);
                 });
             });
         } catch (error) {
-            console.error('[SUGESTOES] Erro ao carregar sugestões:', error);
+            console.error('[SUGESTOES] Erro ao carregar sugestoes:', error);
             sugestoesList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
         }
     }
@@ -139,7 +144,7 @@
         const sugestaoStatus = document.getElementById('sugestaoStatus');
 
         if (!sugestaoTitle || !sugestaoDescription || !sugestaoPlataforma || !sugestaoPriority || !sugestaoStatus) {
-            showAlert('Erro: Elementos do formulário não encontrados');
+            showAlert('Erro: Elementos do formulario nao encontrados');
             return;
         }
 
@@ -152,7 +157,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            showAlert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha titulo e descricao');
             return;
         }
 
@@ -162,49 +167,44 @@
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
-
-            showAlert('Sugestão criada com sucesso!');
+            await response.json();
+            showAlert('Sugestao criada com sucesso!');
             closeSugestaoModal();
             await loadSugestoes();
         } catch (error) {
-            console.error('[SUGESTOES] Erro ao criar sugestão:', error);
-            showAlert(`Erro ao criar sugestão: ${error.message}`);
+            console.error('[SUGESTOES] Erro ao criar sugestao:', error);
+            showAlert(`Erro ao criar sugestao: ${error.message}`);
         }
     }
 
-    let currentSugestaoId = null;
-    /** Dados da sugestão em visualização (para Editar e Atualizar estado) */
-    let currentSugestaoData = null;
-
-    /** Abre o modal de visualização (só leitura); ao clicar numa sugestão. */
     async function viewSugestaoDetails(sugestaoId) {
         try {
             const response = await fetchAuth(`/api/admin/sugestoes/${sugestaoId}`);
             const data = await response.json();
 
             if (!data.sugestao) {
-                showAlert('Sugestão não encontrada');
+                showAlert('Sugestao nao encontrada');
                 return;
             }
 
             const sugestao = data.sugestao;
-            currentSugestaoId = sugestao.Id;
+            currentSugestaoId = pick(sugestao, 'Id', 'id');
             currentSugestaoData = sugestao;
 
-            document.getElementById('sugestaoViewModalTitle').textContent = `Sugestão #${sugestao.Id}`;
-            document.getElementById('sugestaoViewTitulo').textContent = sugestao.Titulo || '—';
-            document.getElementById('sugestaoViewDescricao').textContent = sugestao.Descricao || '—';
-            document.getElementById('sugestaoViewPlataforma').textContent = getPlataformaLabel(sugestao.Plataforma || 'ambos');
-            document.getElementById('sugestaoViewPrioridade').textContent = sugestao.Prioridade || 'medium';
-            const statusEl = document.getElementById('sugestaoViewStatus');
-            statusEl.textContent = getStatusLabel(sugestao.Status || 'pendente');
-            statusEl.className = 'bug-status ' + (sugestao.Status || 'pendente');
-            document.getElementById('sugestaoViewData').textContent = formatDate(sugestao.DataCriacao);
+            document.getElementById('sugestaoViewModalTitle').textContent = `Sugestao #${pick(sugestao, 'Id', 'id')}`;
+            document.getElementById('sugestaoViewTitulo').textContent = pick(sugestao, 'Titulo', 'titulo') || '—';
+            document.getElementById('sugestaoViewDescricao').textContent = pick(sugestao, 'Descricao', 'descricao') || '—';
+            document.getElementById('sugestaoViewPlataforma').textContent = getPlataformaLabel(pick(sugestao, 'Plataforma', 'plataforma') || 'ambos');
+            document.getElementById('sugestaoViewPrioridade').textContent = pick(sugestao, 'Prioridade', 'prioridade') || 'medium';
 
+            const statusEl = document.getElementById('sugestaoViewStatus');
+            statusEl.textContent = getStatusLabel(pick(sugestao, 'Status', 'status') || 'pendente');
+            statusEl.className = `bug-status ${pick(sugestao, 'Status', 'status') || 'pendente'}`;
+
+            document.getElementById('sugestaoViewData').textContent = formatDate(pick(sugestao, 'DataCriacao', 'datacriacao'));
             document.getElementById('sugestaoViewModal').classList.add('show');
         } catch (error) {
-            console.error('[SUGESTOES] Erro ao carregar detalhes da sugestão:', error);
+            console.error('[SUGESTOES] Erro ao carregar detalhes da sugestao:', error);
             showAlert(`Erro ao carregar detalhes: ${error.message}`);
         }
     }
@@ -214,11 +214,10 @@
         currentSugestaoData = null;
     }
 
-    /** Abre o modal de atualizar estado (como tabelas/incidentes). */
     function openSugestaoStatusModal() {
         if (!currentSugestaoData) return;
-        document.getElementById('sugestaoStatusId').value = currentSugestaoData.Id;
-        document.getElementById('sugestaoStatusSelect').value = currentSugestaoData.Status || 'pendente';
+        document.getElementById('sugestaoStatusId').value = pick(currentSugestaoData, 'Id', 'id');
+        document.getElementById('sugestaoStatusSelect').value = pick(currentSugestaoData, 'Status', 'status') || 'pendente';
         document.getElementById('sugestaoStatusModal').classList.add('show');
     }
 
@@ -231,40 +230,42 @@
         const id = document.getElementById('sugestaoStatusId').value;
         const newStatus = document.getElementById('sugestaoStatusSelect').value;
         if (!id || !currentSugestaoData) return;
+
         try {
             await fetchAuth(`/api/admin/sugestoes/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({
-                    titulo: (window.APIUtils && window.APIUtils.stripBracketPrefix(currentSugestaoData.Titulo)) || currentSugestaoData.Titulo || '',
-                    descricao: currentSugestaoData.Descricao || '',
-                    plataforma: currentSugestaoData.Plataforma || 'ambos',
-                    prioridade: currentSugestaoData.Prioridade || 'medium',
+                    titulo: (window.APIUtils && window.APIUtils.stripBracketPrefix(pick(currentSugestaoData, 'Titulo', 'titulo'))) || pick(currentSugestaoData, 'Titulo', 'titulo') || '',
+                    descricao: pick(currentSugestaoData, 'Descricao', 'descricao') || '',
+                    plataforma: pick(currentSugestaoData, 'Plataforma', 'plataforma') || 'ambos',
+                    prioridade: pick(currentSugestaoData, 'Prioridade', 'prioridade') || 'medium',
                     status: newStatus
                 })
             });
+
             closeSugestaoStatusModal();
             closeSugestaoViewModal();
             await loadSugestoes();
-            showAlert('Estado da sugestão atualizado.');
+            showAlert('Estado da sugestao atualizado.');
         } catch (error) {
             console.error('[SUGESTOES] Erro ao atualizar estado:', error);
             showAlert(`Erro: ${error.message}`);
         }
     }
 
-    /** Abre o modal de edição com os dados da sugestão em visualização. */
     function openEditSugestaoFromView() {
         if (!currentSugestaoData) return;
-        const s = currentSugestaoData;
+        const sugestao = currentSugestaoData;
         closeSugestaoViewModal();
-        document.getElementById('sugestaoId').value = s.Id;
-        document.getElementById('sugestaoTitle').value = (window.APIUtils && window.APIUtils.stripBracketPrefix(s.Titulo)) || s.Titulo || '';
-        document.getElementById('sugestaoDescription').value = s.Descricao || '';
-        document.getElementById('sugestaoPlataforma').value = s.Plataforma || 'ambos';
-        document.getElementById('sugestaoPriority').value = s.Prioridade || 'medium';
-        document.getElementById('sugestaoStatus').value = s.Status || 'pendente';
-        document.getElementById('sugestaoModalTitle').textContent = `Editar Sugestão #${s.Id}`;
-        document.getElementById('sugestaoSubmitBtn').textContent = 'Salvar Alterações';
+
+        document.getElementById('sugestaoId').value = pick(sugestao, 'Id', 'id');
+        document.getElementById('sugestaoTitle').value = (window.APIUtils && window.APIUtils.stripBracketPrefix(pick(sugestao, 'Titulo', 'titulo'))) || pick(sugestao, 'Titulo', 'titulo') || '';
+        document.getElementById('sugestaoDescription').value = pick(sugestao, 'Descricao', 'descricao') || '';
+        document.getElementById('sugestaoPlataforma').value = pick(sugestao, 'Plataforma', 'plataforma') || 'ambos';
+        document.getElementById('sugestaoPriority').value = pick(sugestao, 'Prioridade', 'prioridade') || 'medium';
+        document.getElementById('sugestaoStatus').value = pick(sugestao, 'Status', 'status') || 'pendente';
+        document.getElementById('sugestaoModalTitle').textContent = `Editar Sugestao #${pick(sugestao, 'Id', 'id')}`;
+        document.getElementById('sugestaoSubmitBtn').textContent = 'Salvar Alteracoes';
         document.getElementById('deleteSugestaoBtn').style.display = 'inline-block';
         document.getElementById('sugestaoModal').classList.add('show');
     }
@@ -291,7 +292,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            showAlert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha titulo e descricao');
             return;
         }
 
@@ -301,14 +302,13 @@
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
-
-            showAlert('Sugestão atualizada com sucesso!');
+            await response.json();
+            showAlert('Sugestao atualizada com sucesso!');
             closeSugestaoModal();
             await loadSugestoes();
         } catch (error) {
-            console.error('[SUGESTOES] Erro ao atualizar sugestão:', error);
-            showAlert(`Erro ao atualizar sugestão: ${error.message}`);
+            console.error('[SUGESTOES] Erro ao atualizar sugestao:', error);
+            showAlert(`Erro ao atualizar sugestao: ${error.message}`);
         }
     }
 
@@ -316,22 +316,25 @@
         const sugestaoId = document.getElementById('sugestaoId').value;
         if (!sugestaoId) return;
 
-        showConfirm('Tem certeza que deseja remover esta sugestão? Esta ação não pode ser desfeita.', { title: 'Remover sugestão', confirmText: 'Remover' }, async () => {
-        try {
-            const response = await fetchAuth(`/api/admin/sugestoes/${sugestaoId}`, {
-                method: 'DELETE'
-            });
+        showConfirm(
+            'Tem certeza que deseja remover esta sugestao? Esta acao nao pode ser desfeita.',
+            { title: 'Remover sugestao', confirmText: 'Remover' },
+            async () => {
+                try {
+                    const response = await fetchAuth(`/api/admin/sugestoes/${sugestaoId}`, {
+                        method: 'DELETE'
+                    });
 
-            const data = await response.json();
-
-            showAlert('Sugestão removida com sucesso!');
-            closeSugestaoModal();
-            await loadSugestoes();
-        } catch (error) {
-            console.error('[SUGESTOES] Erro ao remover sugestão:', error);
-            showAlert(`Erro ao remover sugestão: ${error.message}`);
-        }
-        });
+                    await response.json();
+                    showAlert('Sugestao removida com sucesso!');
+                    closeSugestaoModal();
+                    await loadSugestoes();
+                } catch (error) {
+                    console.error('[SUGESTOES] Erro ao remover sugestao:', error);
+                    showAlert(`Erro ao remover sugestao: ${error.message}`);
+                }
+            }
+        );
     }
 
     function closeSugestaoModal() {
@@ -340,12 +343,11 @@
 
         if (modal) modal.classList.remove('show');
         if (form) form.reset();
-        
-        // Resetar estado
+
         currentSugestaoId = null;
         document.getElementById('sugestaoId').value = '';
-        document.getElementById('sugestaoModalTitle').textContent = 'Nova Sugestão';
-        document.getElementById('sugestaoSubmitBtn').textContent = 'Criar Sugestão';
+        document.getElementById('sugestaoModalTitle').textContent = 'Nova Sugestao';
+        document.getElementById('sugestaoSubmitBtn').textContent = 'Criar Sugestao';
         document.getElementById('deleteSugestaoBtn').style.display = 'none';
     }
 
@@ -386,6 +388,7 @@
         if (closeSugestaoViewBtn) closeSugestaoViewBtn.addEventListener('click', closeSugestaoViewModal);
         if (sugestaoViewAtualizarEstadoBtn) sugestaoViewAtualizarEstadoBtn.addEventListener('click', openSugestaoStatusModal);
         if (sugestaoViewEditarBtn) sugestaoViewEditarBtn.addEventListener('click', openEditSugestaoFromView);
+
         if (sugestaoViewModal) {
             sugestaoViewModal.addEventListener('click', (e) => {
                 if (e.target === sugestaoViewModal) closeSugestaoViewModal();
@@ -424,7 +427,7 @@
         }
 
         loadSugestoes();
-        console.log('[SUGESTOES] Página de sugestões inicializada');
+        console.log('[SUGESTOES] Pagina de sugestoes inicializada');
     }
 
     if (document.readyState === 'loading') {
