@@ -1,5 +1,5 @@
 /**
- * Avaliações - PromoPing Admin
+ * Avaliacoes - PromoPing Admin
  */
 
 (function() {
@@ -30,8 +30,7 @@
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+                throw new Error(`Resposta invalida do servidor (${response.status})`);
             }
 
             if (!response.ok) {
@@ -41,19 +40,9 @@
 
             return response;
         } catch (error) {
-            console.error(`Erro:`, error);
+            console.error('[AVALIACOES] Erro:', error);
             throw error;
         }
-    }
-
-    function formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-PT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
     }
 
     function escapeHtml(text) {
@@ -63,33 +52,13 @@
         return div.innerHTML;
     }
 
-    function generateStarRating(rating) {
-        if (!rating || rating === 0) return '<span style="color: #666;">Sem avaliação</span>';
-        const filledStar = '⭐';
-        const emptyStar = '☆';
-        let stars = '';
-        for (let i = 0; i < 5; i++) {
-            stars += i < rating ? filledStar : emptyStar;
+    function pick(obj, ...keys) {
+        for (const key of keys) {
+            if (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
+                return obj[key];
+            }
         }
-        return `<span style="font-size: 1.2em;">${stars} (${rating}/5)</span>`;
-    }
-
-    function getTipoLabel(tipo) {
-        const tipos = {
-            'site': 'Site',
-            'bot': 'Bot',
-            'suporte': 'Suporte'
-        };
-        return tipos[tipo] || tipo;
-    }
-
-    function getTipoColor(tipo) {
-        const cores = {
-            'site': '#3b82f6',
-            'bot': '#8b5cf6',
-            'suporte': '#10b981'
-        };
-        return cores[tipo] || '#666';
+        return null;
     }
 
     function formatDateTime(dateString) {
@@ -104,42 +73,81 @@
         });
     }
 
+    function generateStarRating(rating) {
+        if (!rating || rating === 0) return '<span style="color: #666;">Sem avaliacao</span>';
+        const filledStar = '⭐';
+        const emptyStar = '☆';
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            stars += i < rating ? filledStar : emptyStar;
+        }
+        return `<span style="font-size: 1.2em;">${stars} (${rating}/5)</span>`;
+    }
+
+    function getTipoLabel(tipo) {
+        const tipos = {
+            site: 'Site',
+            bot: 'Bot',
+            suporte: 'Suporte'
+        };
+        return tipos[tipo] || tipo || 'N/A';
+    }
+
+    function getTipoColor(tipo) {
+        const cores = {
+            site: '#3b82f6',
+            bot: '#8b5cf6',
+            suporte: '#10b981'
+        };
+        return cores[tipo] || '#666';
+    }
+
+    function getReviewDisplayName(review) {
+        if (review.is_anonimo == 1 || review.is_anonimo === true) {
+            return 'Anonimo';
+        }
+        return pick(review, 'user_nome', 'user_email', 'discord_username') || 'Utilizador';
+    }
+
+    function getReviewAvatar(review) {
+        if (review.is_anonimo == 1 || review.is_anonimo === true) {
+            return '../assets/images/fotodefault.png';
+        }
+        return pick(review, 'discord_avatar_url') || '../assets/images/fotodefault.png';
+    }
+
     async function loadReviews() {
         const reviewsList = document.getElementById('reviewsList');
         if (!reviewsList) return;
 
         try {
-            reviewsList.innerHTML = '<div class="loading-state">Carregando avaliações...</div>';
+            reviewsList.innerHTML = '<div class="loading-state">Carregando avaliacoes...</div>';
 
             const response = await fetchAuth('/api/admin/reviews');
             const data = await response.json();
 
-            console.log('[AVALIACOES] Dados recebidos:', data);
-            console.log('[AVALIACOES] Primeira review:', data.reviews?.[0]);
-
             if (!data.reviews || data.reviews.length === 0) {
                 reviewsList.innerHTML = `
                     <div class="loading-state">
-                        <p>Nenhuma avaliação encontrada.</p>
-                        <p style="color: #9ca3af; font-size: 0.9em; margin-top: 0.5em;">
-                            As avaliações feitas no Discord aparecerão aqui.
+                        <p>Nenhuma avaliacao encontrada.</p>
+                        <p style="color: #9ca3af; font-size: 0.9em; margin-top: 0.5rem;">
+                            As avaliacoes feitas no Discord aparecerao aqui.
                         </p>
                     </div>
                 `;
                 return;
             }
 
-            // Estatísticas
             let statsHtml = '';
             if (data.stats && data.stats.length > 0) {
                 statsHtml = `
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                        ${data.stats.map(stat => `
+                        ${data.stats.map((stat) => `
                             <div style="background: #1f2937; padding: 1rem; border-radius: 8px; border-left: 4px solid ${getTipoColor(stat.tipo)};">
                                 <div style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 0.5rem;">${getTipoLabel(stat.tipo)}</div>
                                 <div style="font-size: 1.5rem; font-weight: 600; color: #fff;">${stat.total}</div>
                                 <div style="font-size: 0.875rem; color: #9ca3af; margin-top: 0.25rem;">
-                                    Média: ${stat.media_rating ? parseFloat(stat.media_rating).toFixed(1) : 'N/A'} ⭐
+                                    Media: ${stat.media_rating ? parseFloat(stat.media_rating).toFixed(1) : 'N/A'} ⭐
                                 </div>
                             </div>
                         `).join('')}
@@ -154,22 +162,19 @@
                             <th>Utilizador</th>
                             <th>Tipo</th>
                             <th>Fechado por</th>
-                            <th>Avaliação</th>
-                            <th>Comentário</th>
+                            <th>Avaliacao</th>
+                            <th>Comentario</th>
                             <th>Data</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.reviews.map(review => `
+                        ${data.reviews.map((review) => `
                             <tr>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        ${(review.is_anonimo == 1 || review.is_anonimo === true) ? 
-                                            `<img src="../assets/images/fotodefault.png" alt="Anónimo" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">` : 
-                                            `<img src="../assets/images/fotodefault.png" alt="${escapeHtml(review.user_nome || review.user_email || 'Utilizador')}" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`
-                                        }
+                                        <img src="${escapeHtml(getReviewAvatar(review))}" alt="${escapeHtml(getReviewDisplayName(review))}" onerror="this.src='../assets/images/PromoPing.png'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                                         <span style="color: ${(review.is_anonimo == 1 || review.is_anonimo === true) ? '#9ca3af' : '#fff'};">
-                                            ${(review.is_anonimo == 1 || review.is_anonimo === true) ? 'Anónimo' : (escapeHtml(review.user_nome) || escapeHtml(review.user_email) || 'Utilizador')}
+                                            ${escapeHtml(getReviewDisplayName(review))}
                                         </span>
                                     </div>
                                 </td>
@@ -178,9 +183,9 @@
                                         ${getTipoLabel(review.tipo)}
                                     </span>
                                 </td>
-                                <td>${(review.tipo === 'suporte' && (review.support_nome || review.support_email)) ? escapeHtml(review.support_nome || review.support_email) : '—'}</td>
+                                <td>${escapeHtml((review.tipo === 'suporte' && pick(review, 'support_nome', 'support_email')) || '—')}</td>
                                 <td>${generateStarRating(review.rating)}</td>
-                                <td style="max-width: 400px; word-wrap: break-word;">${escapeHtml(review.texto || 'Sem comentário')}</td>
+                                <td style="max-width: 400px; word-wrap: break-word;">${escapeHtml(review.texto || 'Sem comentario')}</td>
                                 <td>${formatDateTime(review.created_at)}</td>
                             </tr>
                         `).join('')}
@@ -188,12 +193,12 @@
                 </table>
                 ${data.totalPages > 1 ? `
                     <div style="margin-top: 1rem; text-align: center; color: #9ca3af;">
-                        Página ${data.page} de ${data.totalPages} (Total: ${data.total} avaliações)
+                        Pagina ${data.page} de ${data.totalPages} (Total: ${data.total} avaliacoes)
                     </div>
                 ` : ''}
             `;
         } catch (error) {
-            console.error('[AVALIACOES] Erro ao carregar avaliações:', error);
+            console.error('[AVALIACOES] Erro ao carregar avaliacoes:', error);
             reviewsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
         }
     }
@@ -216,7 +221,7 @@
         }
 
         loadReviews();
-        console.log('[AVALIACOES] Página de avaliações inicializada');
+        console.log('[AVALIACOES] Pagina de avaliacoes inicializada');
     }
 
     if (document.readyState === 'loading') {

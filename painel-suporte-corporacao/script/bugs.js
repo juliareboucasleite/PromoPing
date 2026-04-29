@@ -30,8 +30,7 @@
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+                throw new Error(`Resposta invalida do servidor (${response.status})`);
             }
 
             if (!response.ok) {
@@ -41,7 +40,7 @@
 
             return response;
         } catch (error) {
-            console.error(`[BUGS] Erro:`, error);
+            console.error('[BUGS] Erro:', error);
             throw error;
         }
     }
@@ -64,32 +63,45 @@
     }
 
     function getTipoLabel(tipo) {
-        const labels = { 'bug': 'Bug', 'projeto': 'Projeto Secundário', 'melhoria': 'Melhoria' };
-        return labels[tipo] || tipo;
+        const labels = {
+            bug: 'Bug',
+            projeto: 'Projeto Secundario',
+            melhoria: 'Melhoria'
+        };
+        return labels[tipo] || tipo || 'N/A';
     }
 
     function getStatusLabel(status) {
-        const labels = { 'open': 'Aberto', 'in-progress': 'Em Progresso', 'resolved': 'Resolvido', 'closed': 'Fechado' };
-        return labels[status] || status;
+        const labels = {
+            open: 'Aberto',
+            'in-progress': 'Em Progresso',
+            resolved: 'Resolvido',
+            closed: 'Fechado'
+        };
+        return labels[status] || status || 'N/A';
     }
 
     let allBugs = [];
     let currentTab = 'bugs';
+    let currentBugId = null;
+    let currentBugData = null;
 
     function renderBugList(items, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
+
         if (!items || items.length === 0) {
             container.innerHTML = '<div class="loading-state">Nenhum registo encontrado</div>';
             return;
         }
-        container.innerHTML = items.map(bug => `
+
+        container.innerHTML = items.map((bug) => `
             <div class="bug-item" data-bug-id="${bug.Id}" style="cursor: pointer;">
                 <div class="bug-header">
-                    <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(bug.Titulo)) || bug.Titulo || 'Sem título')}</h3>
+                    <h3 class="bug-title">${escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(bug.Titulo)) || bug.Titulo || 'Sem titulo')}</h3>
                     <span class="bug-status ${bug.Status || 'open'}">${getStatusLabel(bug.Status || 'open')}</span>
                 </div>
-                <p class="bug-description">${escapeHtml((bug.Descricao || 'Sem descrição').substring(0, 200))}${bug.Descricao && bug.Descricao.length > 200 ? '...' : ''}</p>
+                <p class="bug-description">${escapeHtml((bug.Descricao || 'Sem descricao').substring(0, 200))}${bug.Descricao && bug.Descricao.length > 200 ? '...' : ''}</p>
                 <div class="bug-meta">
                     <span>Tipo: ${getTipoLabel(bug.Tipo || 'bug')}</span>
                     <span>Prioridade: ${bug.Prioridade || 'medium'}</span>
@@ -98,7 +110,7 @@
             </div>
         `).join('');
 
-        container.querySelectorAll('.bug-item[data-bug-id]').forEach(item => {
+        container.querySelectorAll('.bug-item[data-bug-id]').forEach((item) => {
             item.addEventListener('click', async (e) => {
                 if (e.target.tagName === 'BUTTON') return;
                 const bugId = item.getAttribute('data-bug-id');
@@ -109,17 +121,20 @@
 
     function switchTab(tab) {
         currentTab = tab;
-        document.querySelectorAll('.tab-button').forEach(btn => {
+
+        document.querySelectorAll('.tab-button').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.tab === tab);
         });
-        document.querySelectorAll('.tab-content').forEach(content => {
+
+        document.querySelectorAll('.tab-content').forEach((content) => {
             content.classList.remove('active');
         });
+
         const content = document.getElementById(tab === 'bugs' ? 'bugsTab' : 'projetosTab');
         if (content) content.classList.add('active');
 
-        const bugs = allBugs.filter(b => b.Tipo === 'bug' || b.Tipo === 'melhoria');
-        const projetos = allBugs.filter(b => b.Tipo === 'projeto');
+        const bugs = allBugs.filter((item) => item.Tipo === 'bug' || item.Tipo === 'melhoria');
+        const projetos = allBugs.filter((item) => item.Tipo === 'projeto');
         renderBugList(bugs, 'bugsList');
         renderBugList(projetos, 'projetosList');
     }
@@ -141,7 +156,7 @@
         } catch (error) {
             console.error('[BUGS] Erro ao carregar bugs:', error);
             bugsList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
-            if (projetosList) projetosList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
+            projetosList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
         }
     }
 
@@ -153,7 +168,7 @@
         const bugStatus = document.getElementById('bugStatus');
 
         if (!bugTitle || !bugDescription || !bugType || !bugPriority || !bugStatus) {
-            showAlert('Erro: Elementos do formulário não encontrados');
+            showAlert('Erro: Elementos do formulario nao encontrados');
             return;
         }
 
@@ -166,7 +181,7 @@
         };
 
         if (!formData.titulo || !formData.descricao) {
-            showAlert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha titulo e descricao');
             return;
         }
 
@@ -176,8 +191,7 @@
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
-
+            await response.json();
             showAlert('Bug/Projeto criado com sucesso!');
             closeBugModal();
             await loadBugs();
@@ -187,17 +201,13 @@
         }
     }
 
-    let currentBugId = null;
-    let currentBugData = null;
-
-    /** Abre o modal de visualização (só leitura); clicar num item abre ver primeiro. */
     async function viewBugDetails(bugId) {
         try {
             const response = await fetchAuth(`/api/admin/bugs/${bugId}`);
             const data = await response.json();
 
             if (!data.bug) {
-                showAlert('Registo não encontrado');
+                showAlert('Registo nao encontrado');
                 return;
             }
 
@@ -205,21 +215,25 @@
             currentBugId = bug.Id;
             currentBugData = bug;
 
-            document.getElementById('bugViewModalTitle').textContent = (bug.Tipo === 'projeto' ? 'Projeto' : 'Bug') + ' #' + bug.Id;
+            document.getElementById('bugViewModalTitle').textContent = `${bug.Tipo === 'projeto' ? 'Projeto' : 'Bug'} #${bug.Id}`;
             document.getElementById('bugViewTitulo').textContent = (window.APIUtils && window.APIUtils.stripBracketPrefix(bug.Titulo)) || bug.Titulo || '—';
             document.getElementById('bugViewDescricao').textContent = bug.Descricao || '—';
             document.getElementById('bugViewTipo').textContent = getTipoLabel(bug.Tipo || 'bug');
             document.getElementById('bugViewPrioridade').textContent = bug.Prioridade || 'medium';
+
             const statusEl = document.getElementById('bugViewStatus');
             statusEl.textContent = getStatusLabel(bug.Status || 'open');
-            statusEl.className = 'bug-status ' + (bug.Status || 'open');
+            statusEl.className = `bug-status ${bug.Status || 'open'}`;
+
             document.getElementById('bugViewData').textContent = formatDate(bug.DataCriacao);
 
             const anexoWrap = document.getElementById('bugViewAnexoWrap');
             const anexoLink = document.getElementById('bugViewAnexo');
             if (bug.AnexoUrl) {
                 anexoWrap.style.display = 'block';
-                anexoLink.href = bug.AnexoUrl.startsWith('http') ? bug.AnexoUrl : (window.APIUtils ? window.APIUtils.getSafeApiBase() : '') + bug.AnexoUrl;
+                anexoLink.href = bug.AnexoUrl.startsWith('http')
+                    ? bug.AnexoUrl
+                    : (window.APIUtils ? window.APIUtils.getSafeApiBase() : '') + bug.AnexoUrl;
                 anexoLink.textContent = 'Ver anexo';
             } else {
                 anexoWrap.style.display = 'none';
@@ -253,11 +267,13 @@
         const id = document.getElementById('bugStatusId').value;
         const newStatus = document.getElementById('bugStatusSelect').value;
         if (!id) return;
+
         try {
             await fetchAuth(`/api/admin/bugs/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ status: newStatus })
             });
+
             closeBugStatusModal();
             closeBugViewModal();
             await loadBugs();
@@ -268,23 +284,26 @@
         }
     }
 
-    /** Abre o modal de edição com os dados do bug em visualização. */
     function openEditBugFromView() {
         if (!currentBugData) return;
+
         const bug = currentBugData;
         closeBugViewModal();
+
         document.getElementById('bugId').value = bug.Id;
         document.getElementById('bugTitle').value = (window.APIUtils && window.APIUtils.stripBracketPrefix(bug.Titulo)) || bug.Titulo || '';
         document.getElementById('bugDescription').value = bug.Descricao || '';
         document.getElementById('bugType').value = bug.Tipo || 'bug';
         document.getElementById('bugPriority').value = bug.Prioridade || 'medium';
         document.getElementById('bugStatus').value = bug.Status || 'open';
+
         const anexoAtual = document.getElementById('bugAnexoAtual');
         const anexoInput = document.getElementById('bugAnexo');
-        if (anexoAtual) anexoAtual.textContent = bug.AnexoUrl ? 'Anexo atual: ' + bug.AnexoUrl : '';
+        if (anexoAtual) anexoAtual.textContent = bug.AnexoUrl ? `Anexo atual: ${bug.AnexoUrl}` : '';
         if (anexoInput) anexoInput.value = '';
-        document.getElementById('bugModalTitle').textContent = 'Editar Bug / Projeto #' + bug.Id;
-        document.getElementById('bugSubmitBtn').textContent = 'Salvar Alterações';
+
+        document.getElementById('bugModalTitle').textContent = `Editar Bug / Projeto #${bug.Id}`;
+        document.getElementById('bugSubmitBtn').textContent = 'Salvar Alteracoes';
         document.getElementById('deleteBugBtn').style.display = 'inline-block';
         document.getElementById('bugModal').classList.add('show');
     }
@@ -313,26 +332,36 @@
         const anexoInput = document.getElementById('bugAnexo');
         if (anexoInput && anexoInput.files && anexoInput.files[0]) {
             const file = anexoInput.files[0];
-            const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const allowed = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp'
+            ];
+
             if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|jpg|jpeg|png|gif|webp)$/i)) {
-                showAlert('Formato não permitido. Use DOC, DOCX, PDF ou imagem.');
+                showAlert('Formato nao permitido. Use DOC, DOCX, PDF ou imagem.');
                 return;
             }
+
             try {
                 formData.anexo = await new Promise((resolve, reject) => {
-                    const r = new FileReader();
-                    r.onload = () => resolve(r.result);
-                    r.onerror = reject;
-                    r.readAsDataURL(file);
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
                 });
                 formData.anexoNome = file.name;
-            } catch (e) {
-                console.error('[BUGS] Erro ao ler anexo:', e);
+            } catch (error) {
+                console.error('[BUGS] Erro ao ler anexo:', error);
             }
         }
 
         if (!formData.titulo || !formData.descricao) {
-            showAlert('Por favor, preencha título e descrição');
+            showAlert('Por favor, preencha titulo e descricao');
             return;
         }
 
@@ -342,8 +371,7 @@
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
-
+            await response.json();
             showAlert('Bug/Projeto atualizado com sucesso!');
             closeBugModal();
             await loadBugs();
@@ -357,21 +385,25 @@
         const bugId = document.getElementById('bugId').value;
         if (!bugId) return;
 
-        showConfirm('Tem certeza que deseja remover este bug/projeto? Esta ação não pode ser desfeita.', { title: 'Remover', confirmText: 'Remover' }, async () => {
-        try {
-            const response = await fetchAuth(`/api/admin/bugs/${bugId}`, {
-                method: 'DELETE'
-            });
+        showConfirm(
+            'Tem certeza que deseja remover este bug/projeto? Esta acao nao pode ser desfeita.',
+            { title: 'Remover', confirmText: 'Remover' },
+            async () => {
+                try {
+                    const response = await fetchAuth(`/api/admin/bugs/${bugId}`, {
+                        method: 'DELETE'
+                    });
 
-            const data = await response.json();
-
-            showAlert('Bug/Projeto removido com sucesso!');
-            closeBugModal();
-            await loadBugs();
-        } catch (error) {
-            console.error('[BUGS] Erro ao remover bug:', error);
-            showAlert(`Erro ao remover bug: ${error.message}`);
-        }
+                    await response.json();
+                    showAlert('Bug/Projeto removido com sucesso!');
+                    closeBugModal();
+                    await loadBugs();
+                } catch (error) {
+                    console.error('[BUGS] Erro ao remover bug:', error);
+                    showAlert(`Erro ao remover bug: ${error.message}`);
+                }
+            }
+        );
     }
 
     function closeBugModal() {
@@ -380,17 +412,17 @@
 
         if (modal) modal.classList.remove('show');
         if (form) form.reset();
-        
-        // Resetar estado
+
         currentBugId = null;
         document.getElementById('bugId').value = '';
         document.getElementById('bugModalTitle').textContent = 'Novo Bug / Projeto';
         document.getElementById('bugSubmitBtn').textContent = 'Criar Bug/Projeto';
         document.getElementById('deleteBugBtn').style.display = 'none';
-        const a = document.getElementById('bugAnexoAtual');
-        if (a) a.textContent = '';
-        const ai = document.getElementById('bugAnexo');
-        if (ai) ai.value = '';
+
+        const anexoAtual = document.getElementById('bugAnexoAtual');
+        const anexoInput = document.getElementById('bugAnexo');
+        if (anexoAtual) anexoAtual.textContent = '';
+        if (anexoInput) anexoInput.value = '';
     }
 
     function init() {
@@ -413,9 +445,10 @@
                 if (bugModal) bugModal.classList.add('show');
             });
         }
+
         if (refreshBugsBtn) refreshBugsBtn.addEventListener('click', loadBugs);
 
-        document.querySelectorAll('.tab-button').forEach(btn => {
+        document.querySelectorAll('.tab-button').forEach((btn) => {
             btn.addEventListener('click', () => {
                 if (btn.dataset.tab) switchTab(btn.dataset.tab);
             });
@@ -438,6 +471,7 @@
         if (closeBugViewBtn) closeBugViewBtn.addEventListener('click', closeBugViewModal);
         if (bugViewAtualizarEstadoBtn) bugViewAtualizarEstadoBtn.addEventListener('click', openBugStatusModal);
         if (bugViewEditarBtn) bugViewEditarBtn.addEventListener('click', openEditBugFromView);
+
         if (bugViewModal) {
             bugViewModal.addEventListener('click', (e) => {
                 if (e.target === bugViewModal) closeBugViewModal();
@@ -476,7 +510,7 @@
         }
 
         loadBugs();
-        console.log('[BUGS] Página de bugs inicializada');
+        console.log('[BUGS] Pagina de bugs inicializada');
     }
 
     if (document.readyState === 'loading') {

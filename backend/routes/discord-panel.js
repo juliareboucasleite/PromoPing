@@ -116,12 +116,17 @@ async function getUserPerfilId(referenciaId) {
 }
 
 async function getRequestPerfilId(req) {
+    const dbPerfilId = await getUserPerfilId(req.user?.ReferenciaID);
+    if (dbPerfilId !== undefined && dbPerfilId !== null) {
+        return Number(dbPerfilId);
+    }
+
     const tokenPerfilId = req.user?.perfilId ?? req.user?.PerfilId;
     if (tokenPerfilId !== undefined && tokenPerfilId !== null) {
         return Number(tokenPerfilId);
     }
 
-    return getUserPerfilId(req.user?.ReferenciaID);
+    return null;
 }
 
 async function ensureDiscordCouponTables() {
