@@ -23,7 +23,11 @@ from config import DB_CONFIG, SCRAPER_CONFIG, LOGGING_CONFIG
 
 # ==================== LOGGING ====================
 
-os.makedirs(os.path.dirname(LOGGING_CONFIG["file"]), exist_ok=True)
+if not LOGGING_CONFIG["file"]:
+    LOGGING_CONFIG["file"] = "python-scraper/logs/scraper.log"
+
+log_dir = os.path.dirname(LOGGING_CONFIG["file"]) or "python-scraper/logs"
+os.makedirs(log_dir, exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
