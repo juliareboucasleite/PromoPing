@@ -605,7 +605,6 @@
         // Event listeners
         const newEventBtn = document.getElementById('newEventBtn');
         const refreshBtn = document.getElementById('refreshCalendarBtn');
-        const syncGoogleBtn = document.getElementById('syncGoogleBtn');
         const closeModalBtn = document.getElementById('closeModal');
         const cancelBtn = document.getElementById('cancelBtn');
         const deleteBtn = document.getElementById('deleteBtn');
@@ -622,83 +621,6 @@
                 loadActivitiesList(currentActivityFilter);
             });
         }
-
-        // Botão de conectar Google
-        const connectGoogleBtn = document.getElementById('connectGoogleBtn');
-        if (connectGoogleBtn) {
-            connectGoogleBtn.addEventListener('click', async () => {
-                await connectGoogleAccount();
-            });
-        }
-
-        if (syncGoogleBtn) {
-            syncGoogleBtn.addEventListener('click', async () => {
-                await syncGoogleCalendar();
-            });
-        }
-
-        const disconnectGoogleBtn = document.getElementById('disconnectGoogleBtn');
-        if (disconnectGoogleBtn) {
-            disconnectGoogleBtn.addEventListener('click', () => {
-                showConfirm('Desligar a conta Google? Terá de usar «Conectar Google» de novo para sincronizar ou trocar de conta.', 'Desligar Google', async () => {
-                try {
-                    const response = await fetchAuth('/api/admin/calendar/disconnect-google', { method: 'POST' });
-                    const data = await response.json();
-                    if (data.status === 'ok') {
-                        await checkGoogleConnectionStatus();
-                        if (calendar) calendar.refetchEvents();
-                    } else {
-                        showAlert(data.error || 'Erro ao desligar');
-                    }
-                } catch (err) {
-                    showAlert('Erro: ' + (err.message || 'Não foi possível desligar'));
-                }
-                });
-            });
-        }
-
-        // Guardar tokens Google manualmente
-        const saveGoogleTokensBtn = document.getElementById('saveGoogleTokensBtn');
-        const pasteAccessToken = document.getElementById('pasteAccessToken');
-        const pasteRefreshToken = document.getElementById('pasteRefreshToken');
-        const saveTokensMessage = document.getElementById('saveTokensMessage');
-        if (saveGoogleTokensBtn && pasteAccessToken) {
-            saveGoogleTokensBtn.addEventListener('click', async () => {
-                const accessToken = pasteAccessToken.value.trim();
-                if (!accessToken) {
-                    if (saveTokensMessage) saveTokensMessage.textContent = 'Indique o access token.';
-                    return;
-                }
-                saveGoogleTokensBtn.disabled = true;
-                if (saveTokensMessage) saveTokensMessage.textContent = '';
-                try {
-                    const response = await fetchAuth('/api/admin/calendar/save-google-tokens', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            access_token: accessToken,
-                            refresh_token: (pasteRefreshToken && pasteRefreshToken.value) ? pasteRefreshToken.value.trim() : null
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.status === 'ok') {
-                        if (saveTokensMessage) saveTokensMessage.textContent = 'Guardado.';
-                        if (pasteAccessToken) pasteAccessToken.value = '';
-                        if (pasteRefreshToken) pasteRefreshToken.value = '';
-                        await checkGoogleConnectionStatus();
-                        if (calendar) calendar.refetchEvents();
-                    } else {
-                        if (saveTokensMessage) saveTokensMessage.textContent = data.error || 'Erro';
-                    }
-                } catch (err) {
-                    if (saveTokensMessage) saveTokensMessage.textContent = err.message || 'Erro ao guardar';
-                } finally {
-                    saveGoogleTokensBtn.disabled = false;
-                }
-            });
-        }
-
-        // Verificar status da conexão Google
-        await checkGoogleConnectionStatus();
 
         // Atividades (corporação): abas e lista
         loadActivitiesList('hoje').catch(function() {});
