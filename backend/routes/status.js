@@ -157,12 +157,39 @@ router.get("/api/status", async (req, res) => {
     } catch (_) { /* tabela pode não existir */ }
 
     try {
-      const [c] = await db.query("SELECT * FROM status_componentes ORDER BY Id ASC");
+      const [c] = await db.query(
+        `SELECT
+           id AS Id,
+           nome AS Nome,
+           estado AS Status,
+           uptime AS Uptime,
+           latenciamedia AS Latencia,
+           ultimaverificacao AS UltimaVerificacao,
+           notas AS Notas
+         FROM status_componentes
+         ORDER BY id ASC`
+      );
       if (c && c.length) componentes = c;
     } catch (_) { /* tabela pode não existir */ }
 
     try {
-      const [i] = await db.query("SELECT * FROM incidentes ORDER BY DataInicio DESC LIMIT 5");
+      const [i] = await db.query(
+        `SELECT
+           id AS Id,
+           titulo AS Titulo,
+           descricao AS Descricao,
+           impacto AS Impacto,
+           status AS Status,
+           datainicio AS DataInicio,
+           datafim AS DataFim,
+           duracao AS Duracao,
+           componenteafetado AS ComponenteAfetado,
+           createdat AS CreatedAt,
+           updatedat AS UpdatedAt
+         FROM incidentes
+         ORDER BY datainicio DESC
+         LIMIT 5`
+      );
       if (i && i.length) incidentes = i;
     } catch (_) { /* tabela pode não existir */ }
 
@@ -380,7 +407,16 @@ router.put("/api/componentes/:id", async (req, res) => {
 
     // Verificar se o componente existe
     const [verificar] = await db.query(
-      "SELECT * FROM status_componentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -449,7 +485,16 @@ router.put("/api/componentes/:id", async (req, res) => {
 
     // Buscar componente atualizado
     const [componenteAtualizado] = await db.query(
-      "SELECT * FROM status_componentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -475,7 +520,16 @@ router.get("/api/componentes/:id", async (req, res) => {
     const { id } = req.params;
 
     const [componente] = await db.query(
-      "SELECT * FROM status_componentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -506,7 +560,16 @@ router.get("/api/componentes/:id", async (req, res) => {
 router.get("/api/componentes", async (req, res) => {
   try {
     const [componentes] = await db.query(
-      "SELECT * FROM status_componentes ORDER BY Id ASC"
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       ORDER BY id ASC`
     );
 
     res.json({
@@ -552,7 +615,16 @@ router.post("/api/componentes", async (req, res) => {
     );
 
     const [novoComponente] = await db.query(
-      "SELECT * FROM status_componentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       WHERE id = ?`,
       [resultado.insertId]
     );
 
@@ -629,7 +701,18 @@ router.post("/api/incidentes", async (req, res) => {
     );
 
     const [novoIncidente] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [resultado.insertId]
     );
 
@@ -656,7 +739,18 @@ router.put("/api/incidentes/:id/encerrar", async (req, res) => {
 
     // Verificar se o incidente existe
     const [verificar] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -684,7 +778,18 @@ router.put("/api/incidentes/:id/encerrar", async (req, res) => {
 
     // Buscar incidente atualizado
     const [incidenteAtualizado] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -709,7 +814,18 @@ router.get("/api/incidentes/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const [incidente] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -753,7 +869,18 @@ router.put("/api/incidentes/:id", async (req, res) => {
 
     // Verificar se o incidente existe
     const [verificar] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -829,7 +956,18 @@ router.put("/api/incidentes/:id", async (req, res) => {
 
     // Buscar incidente atualizado
     const [incidenteAtualizado] = await db.query(
-      "SELECT * FROM incidentes WHERE Id = ?",
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       WHERE id = ?`,
       [id]
     );
 
@@ -1054,8 +1192,18 @@ router.get("/api/status/health", async (req, res) => {
 router.get("/api/status/complete", async (req, res) => {
   try {
     // Buscar métricas de performance
-    const [metricas] = await db.query(
-      "SELECT * FROM metricas_sistema ORDER BY Id DESC LIMIT 1"
+      const [metricas] = await db.query(
+      `SELECT
+         id AS Id,
+         uptimegeral AS UptimeGeral,
+         temporespostamedia AS TempoRespostaMedia,
+         utilizadoresativos AS UtilizadoresAtivos,
+         produtosmonitorizados AS ProdutosMonitorizados,
+         notificacoesenviadas AS NotificacoesEnviadas,
+         atualizadoem AS AtualizadoEm
+       FROM metricas_sistema
+       ORDER BY id DESC
+       LIMIT 1`
     );
     
     // Buscar estatísticas em tempo real
@@ -1067,12 +1215,35 @@ router.get("/api/status/complete", async (req, res) => {
     
     // Buscar componentes do sistema
     const [componentes] = await db.query(
-      "SELECT * FROM status_componentes ORDER BY Id ASC"
+      `SELECT
+         id AS Id,
+         nome AS Nome,
+         estado AS Status,
+         uptime AS Uptime,
+         latenciamedia AS Latencia,
+         ultimaverificacao AS UltimaVerificacao,
+         notas AS Notas
+       FROM status_componentes
+       ORDER BY id ASC`
     );
     
     // Buscar incidentes recentes
     const [incidentes] = await db.query(
-      "SELECT * FROM incidentes ORDER BY DataInicio DESC LIMIT 5"
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         duracao AS Duracao,
+         componenteafetado AS ComponenteAfetado,
+         createdat AS CreatedAt,
+         updatedat AS UpdatedAt
+       FROM incidentes
+       ORDER BY datainicio DESC
+       LIMIT 5`
     );
 
     res.json({
@@ -1299,7 +1470,17 @@ router.get("/api/stats/uptime", async (req, res) => {
   try {
     // Buscar métricas de uptime mais recentes
     const [metricas] = await db.query(
-      "SELECT * FROM metricas_sistema ORDER BY Id DESC LIMIT 1"
+      `SELECT
+         id AS Id,
+         uptimegeral AS UptimeGeral,
+         temporespostamedia AS TempoRespostaMedia,
+         utilizadoresativos AS UtilizadoresAtivos,
+         produtosmonitorizados AS ProdutosMonitorizados,
+         notificacoesenviadas AS NotificacoesEnviadas,
+         atualizadoem AS AtualizadoEm
+       FROM metricas_sistema
+       ORDER BY id DESC
+       LIMIT 1`
     );
     
     // Calcular uptime médio dos últimos 30 dias
