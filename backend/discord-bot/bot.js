@@ -198,6 +198,37 @@ class PromoPingBot {
             console.warn('[DISCORD] Rate limit atingido:', rateLimitInfo);
         });
 
+        // Bot adicionado a um novo servidor — regista para painel de cupões
+        this.client.on('guildCreate', async (guild) => {
+            try {
+                await this.dbPool.execute(
+                    `INSERT INTO corporation_discord_guilds (guild_id, guild_name, guild_icon, added_at, removed_at)
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, NULL)
+                     ON CONFLICT (guild_id) DO UPDATE SET
+                        guild_name = EXCLUDED.guild_name,
+                        guild_icon = EXCLUDED.guild_icon,
+                        removed_at = NULL`,
+                    [guild.id, guild.name, guild.icon || null]
+                );
+                console.log(`[DISCORD] Bot adicionado a "${guild.name}" (${guild.id}) — registado em corporation_discord_guilds`);
+            } catch (err) {
+                console.error('[DISCORD] Erro ao registar guild em guildCreate:', err.message);
+            }
+        });
+
+        // Bot removido de um servidor — marca como removido
+        this.client.on('guildDelete', async (guild) => {
+            try {
+                await this.dbPool.execute(
+                    `UPDATE corporation_discord_guilds SET removed_at = CURRENT_TIMESTAMP WHERE guild_id = ?`,
+                    [guild.id]
+                );
+                console.log(`[DISCORD] Bot removido de "${guild.name || guild.id}" — marcado como removido`);
+            } catch (err) {
+                console.error('[DISCORD] Erro ao marcar guild removida:', err.message);
+            }
+        });
+
         // Quando alguém envia uma mensagem
         this.client.on('messageCreate', async (message) => {
             try {
