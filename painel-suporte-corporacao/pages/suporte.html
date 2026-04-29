@@ -107,9 +107,12 @@
                     <!-- Chat Panel -->
                     <div class="chat-panel">
                         <div id="chatHeader" class="chat-header" style="display: none;">
-                            <div class="chat-user-info">
-                                <h3 id="chatUserName">Usuário</h3>
-                                <span id="chatUserEmail" class="chat-email"></span>
+                            <div class="chat-user">
+                                <div id="chatUserAvatar" class="chat-user-avatar">U</div>
+                                <div class="chat-user-info">
+                                    <h3 id="chatUserName">Usuário</h3>
+                                    <span id="chatUserEmail" class="chat-email"></span>
+                                </div>
                             </div>
                             <button id="deleteThreadBtn" class="delete-thread-btn" title="Excluir conversa">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -122,8 +125,13 @@
                         </div>
                         <div id="chatMessages" class="chat-messages">
                             <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                </div>
                                 <p class="empty-state-title">Nenhuma conversa selecionada</p>
-                                <p class="empty-state-text">Selecione uma conversa na lista para ver as mensagens e responder.</p>
+                                <p class="empty-state-text">Selecione uma conversa na lista ao lado para ver as mensagens e responder.</p>
                             </div>
                         </div>
                         <div id="chatInput" class="chat-input-container" style="display: none;">
@@ -139,7 +147,7 @@
                             </div>
                             <div class="chat-input-footer">
                                 <div id="attachedFiles" class="attached-files-preview"></div>
-                                <span class="chat-send-hint">Enter para enviar</span>
+                                <span class="chat-send-hint"><kbd>Enter</kbd> para enviar</span>
                             </div>
                             <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" multiple>
                         </div>

@@ -50,6 +50,14 @@
         return div.innerHTML;
     }
 
+    function getInitial(name) {
+        if (!name) return '?';
+        const trimmed = String(name).trim();
+        if (!trimmed) return '?';
+        const ch = trimmed.charAt(0);
+        return ch.toUpperCase();
+    }
+
     async function loadThreads() {
         const threadsList = document.getElementById('threadsList');
         const threadsCount = document.getElementById('threadsCount');
@@ -105,16 +113,21 @@
         threadsList.innerHTML = threads.map(thread => {
             const ref = thread.ReferenciaID ? String(thread.ReferenciaID) : '';
             const preview = truncate(stripTitle(thread.message), 42);
+            const userName = thread.userName || 'Usuário';
+            const isNew = !(thread.replyCount > 0);
             return `
             <div class="thread-item ${currentThreadId === thread.id ? 'active' : ''}" data-thread-id="${thread.id}">
-                <div class="thread-item-header">
-                    <span class="thread-user-name">${escapeHtml(thread.userName || 'Usuário')}</span>
-                    ${ref ? `<span class="thread-ref">${escapeHtml(ref)}</span>` : ''}
-                </div>
-                ${preview ? `<div class="thread-preview">${escapeHtml(preview)}</div>` : ''}
-                <div class="thread-meta">
-                    <span>${formatDate(thread.createdAt)}</span>
-                    <span class="thread-replies">${thread.replyCount > 0 ? `${thread.replyCount} respostas` : 'Nova'}</span>
+                <div class="thread-avatar">${escapeHtml(getInitial(userName))}</div>
+                <div class="thread-content">
+                    <div class="thread-item-header">
+                        <span class="thread-user-name">${escapeHtml(userName)}</span>
+                        ${ref ? `<span class="thread-ref">${escapeHtml(ref)}</span>` : ''}
+                    </div>
+                    ${preview ? `<div class="thread-preview">${escapeHtml(preview)}</div>` : ''}
+                    <div class="thread-meta">
+                        <span>${formatDate(thread.createdAt)}</span>
+                        <span class="thread-replies ${isNew ? 'is-new' : ''}">${isNew ? 'Nova' : `${thread.replyCount} respostas`}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -177,8 +190,11 @@
             }
 
             const firstMessage = messages[0];
-            if (chatUserName) chatUserName.textContent = escapeHtml(firstMessage.userName || 'Usuário');
-            if (chatUserEmail) chatUserEmail.textContent = escapeHtml(firstMessage.userEmail || '');
+            const displayName = firstMessage.userName || 'Usuário';
+            if (chatUserName) chatUserName.textContent = displayName;
+            if (chatUserEmail) chatUserEmail.textContent = firstMessage.userEmail || '';
+            const chatUserAvatar = document.getElementById('chatUserAvatar');
+            if (chatUserAvatar) chatUserAvatar.textContent = getInitial(displayName);
             if (chatHeader) chatHeader.style.display = 'flex';
             if (chatInput) chatInput.style.display = 'flex';
 
@@ -408,7 +424,16 @@
             const chatInput = document.getElementById('chatInput');
 
             if (chatMessages) {
-                chatMessages.innerHTML = '<div class="empty-state"><p>Selecione uma conversa para visualizar as mensagens</p></div>';
+                chatMessages.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="empty-state-title">Nenhuma conversa selecionada</p>
+                        <p class="empty-state-text">Selecione uma conversa na lista ao lado para ver as mensagens e responder.</p>
+                    </div>`;
             }
             if (chatHeader) chatHeader.style.display = 'none';
             if (chatInput) chatInput.style.display = 'none';
