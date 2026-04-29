@@ -40,6 +40,23 @@
         });
     }
 
+    async function apiWithFallback(paths, opts = {}) {
+        let lastError = null;
+
+        for (const path of paths) {
+            try {
+                return await api(path, opts);
+            } catch (err) {
+                lastError = err;
+                if (err.status !== 404) {
+                    throw err;
+                }
+            }
+        }
+
+        throw lastError || new Error('Nenhuma rota disponivel');
+    }
+
     function toast(message, kind = 'success') {
         const el = $('toast');
         if (!el) return;
@@ -284,7 +301,10 @@
 
         list.innerHTML = '<div class="dc-empty">A carregar...</div>';
         try {
-            const data = await api(`/api/corporation/discord/requests?status=${state.requestsTab}`);
+            const data = await apiWithFallback([
+                `/api/discord/panel/requests?status=${state.requestsTab}`,
+                `/api/corporation/discord/requests?status=${state.requestsTab}`
+            ]);
             const items = data.requests || [];
             if (!items.length) {
                 list.innerHTML = '<div class="dc-empty">Sem solicitacoes.</div>';
@@ -323,7 +343,10 @@
             : (prompt('Nota (opcional):') || null);
 
         try {
-            await api(`/api/corporation/discord/requests/${id}/${action}`, {
+            await apiWithFallback([
+                `/api/discord/panel/requests/${id}/${action}`,
+                `/api/corporation/discord/requests/${id}/${action}`
+            ], {
                 method: 'POST',
                 body: JSON.stringify({ note })
             });
