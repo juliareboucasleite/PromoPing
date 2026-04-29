@@ -708,8 +708,10 @@
       if (modal) modal.addEventListener("click", function (e) { if (e.target === this) closeDataLimiteModal(); });
 
       if (saveBtn) saveBtn.onclick = function () {
-        const valor = input ? input.value : "";
-        if (!valor) {
+        const day = parseInt(dayInput?.value || "", 10);
+        const month = parseInt(monthInput?.value || "", 10);
+        const year = parseInt(yearInput?.value || "", 10);
+        if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
           if (errEl) { errEl.textContent = "Escolhe uma data."; errEl.style.display = "block"; }
           return;
         }
