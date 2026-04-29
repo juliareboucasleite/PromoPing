@@ -274,4 +274,81 @@ router.get("/bot-callback", async (req, res) => {
     }
 });
 
+// GET /api/discord/panel/guilds — guilds do user que tem MANAGE_GUILD E onde o bot está
+router.get("/guilds", verifyToken, async (req, res) => {
+    try {
+        const accessToken = await getUserAccessToken(req.user.ReferenciaID);
+        if (!accessToken) return res.status(400).json({ error: "Discord não ligado", code: "NOT_LINKED" });
+
+        let userGuilds;
+        try {
+            userGuilds = await discordFetchUserGuilds(accessToken);
+        } catch (err) {
+            console.error("[DISCORD-PANEL] /guilds Discord API erro:", err.message);
+            return res.status(401).json({ error: "Token Discord expirado, reconecta a conta", code: "DISCORD_TOKEN_EXPIRED" });
+        }
+
+        const [botRows] = await pool.query(
+            `SELECT guild_id, guild_name, guild_icon FROM corporation_discord_guilds WHERE removed_at IS NULL`
+        );
+        const botGuildIds = new Set(botRows.map(r => r.guild_id));
+
+        const manageable = userGuilds
+            .filter(g => hasManageGuild(g.permissions))
+            .map(g => ({
+                id: g.id,
+                name: g.name,
+                icon: g.icon,
+                icon_url: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
+                bot_present: botGuildIds.has(g.id),
+                owner: g.owner,
+            }));
+
+        manageable.sort((a, b) => {
+            if (a.bot_present !== b.bot_present) return a.bot_present ? -1 : 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        res.json({ guilds: manageable });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /guilds erro:", err);
+        res.status(500).json({ error: "Falha ao listar servidores" });
+    }
+});
+
+// GET /api/discord/panel/guilds/:guildId/channels — canais de texto onde o bot pode escrever
+router.get("/guilds/:guildId/channels", verifyToken, async (req, res) => {
+    const { guildId } = req.params;
+    if (!/^\d{15,25}$/.test(guildId)) return res.status(400).json({ error: "guildId inválido" });
+
+    try {
+        const [botRows] = await pool.query(
+            `SELECT 1 FROM corporation_discord_guilds WHERE guild_id = ? AND removed_at IS NULL LIMIT 1`,
+            [guildId]
+        );
+        if (!botRows || botRows.length === 0) {
+            return res.status(404).json({ error: "Bot não está neste servidor", code: "BOT_NOT_IN_GUILD" });
+        }
+
+        const accessToken = await getUserAccessToken(req.user.ReferenciaID);
+        if (!accessToken) return res.status(400).json({ error: "Discord não ligado", code: "NOT_LINKED" });
+        const userGuilds = await discordFetchUserGuilds(accessToken);
+        const userGuild = userGuilds.find(g => g.id === guildId);
+        if (!userGuild || !hasManageGuild(userGuild.permissions)) {
+            return res.status(403).json({ error: "Sem permissão MANAGE_GUILD neste servidor" });
+        }
+
+        const channels = await discordBotFetchChannels(guildId);
+        const textChannels = channels
+            .filter(c => c.type === 0 || c.type === 5) // 0=text, 5=announcement
+            .map(c => ({ id: c.id, name: c.name, type: c.type, position: c.position, parent_id: c.parent_id }))
+            .sort((a, b) => a.position - b.position);
+
+        res.json({ channels: textChannels });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /channels erro:", err);
+        res.status(500).json({ error: "Falha ao listar canais" });
+    }
+});
+
 export default router;
