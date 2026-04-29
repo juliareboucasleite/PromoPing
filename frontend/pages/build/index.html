@@ -1165,7 +1165,29 @@
       </div>
     </section>
   </main>
-  <div id="footer-placeholder"></div>
+  <div id="footer-placeholder">
+    <!-- Footer estático: visível para crawlers sem JS (verificação OAuth do Google).
+         Será substituído pela versão completa quando inc/footer.html carregar via JS. -->
+    <footer class="modern-footer" role="contentinfo">
+      <div class="footer-container" style="max-width:1200px;margin:0 auto;padding:40px 16px;">
+        <p style="color:#a0a0a0;font-size:0.95rem;line-height:1.6;margin:0 0 20px;max-width:760px;">
+          PromoPing é um serviço de monitorização de preços em lojas online portuguesas.
+          Os utilizadores adicionam links de produtos, definem alertas e recebem notificações
+          por email ou Discord quando os preços baixam.
+        </p>
+        <nav aria-label="Links legais" style="display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;">
+          <a href="/docs/privacy" rel="privacy-policy" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Política de Privacidade</a>
+          <a href="/docs/terms" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Termos de Serviço</a>
+          <a href="/About/privacy-cookies" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Política de Cookies</a>
+          <a href="/About/about" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Sobre o PromoPing</a>
+          <a href="/docs/support" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Contacto / Suporte</a>
+        </nav>
+        <p style="color:#a0a0a0;font-size:0.85rem;margin:20px 0 0;">
+          Copyright &copy; 2024-2026 PromoPing
+        </p>
+      </div>
+    </footer>
+  </div>
 
   <!-- Modal Overlay -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModals()">
