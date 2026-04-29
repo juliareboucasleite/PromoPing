@@ -103,6 +103,82 @@ async function getUserAccessToken(referenciaId) {
     return rows[0].access_token;
 }
 
+async function ensureDiscordCouponTables() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_coupon_requests (
+            id SERIAL PRIMARY KEY,
+            requested_by_referenciaid VARCHAR(13) NOT NULL,
+            target_guild_id VARCHAR(25) NOT NULL,
+            target_channel_id VARCHAR(25) NOT NULL,
+            title VARCHAR(256) NULL,
+            description TEXT NULL,
+            color INTEGER NULL,
+            image_url TEXT NULL,
+            button_label VARCHAR(80) NULL,
+            button_url TEXT NULL,
+            coupon_code VARCHAR(64) NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            review_note TEXT NULL,
+            reviewed_by_referenciaid VARCHAR(13) NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            reviewed_at TIMESTAMP NULL
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_status
+            ON discord_coupon_requests (status)
+    `);
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_created_at
+            ON discord_coupon_requests (created_at)
+    `);
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_requested_by
+            ON discord_coupon_requests (requested_by_referenciaid)
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_coupon_messages (
+            id SERIAL PRIMARY KEY,
+            sent_by_referenciaid VARCHAR(13) NOT NULL,
+            guild_id VARCHAR(25) NOT NULL,
+            channel_id VARCHAR(25) NOT NULL,
+            title VARCHAR(256) NULL,
+            description TEXT NULL,
+            color INTEGER NULL,
+            image_url TEXT NULL,
+            button_label VARCHAR(80) NULL,
+            button_url TEXT NULL,
+            coupon_code VARCHAR(64) NULL,
+            request_id INTEGER NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_messages_request_id
+            ON discord_coupon_messages (request_id)
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_outbound_queue (
+            id SERIAL PRIMARY KEY,
+            guild_id VARCHAR(25) NOT NULL,
+            channel_id VARCHAR(25) NOT NULL,
+            payload JSONB NOT NULL,
+            coupon_message_id INTEGER NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'queued',
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_outbound_queue_status
+            ON discord_outbound_queue (status)
+    `);
+}
+
 // Bit MANAGE_GUILD = 0x20 (32)
 const MANAGE_GUILD_BIT = 0x20n;
 function hasManageGuild(permissionsString) {
@@ -389,6 +465,7 @@ async function userHasManageGuild(referenciaId, guildId) {
 
 // POST /api/discord/panel/send — envio direto (apenas corp, perfilId=3)
 router.post("/send", verifyToken, async (req, res) => {
+    await ensureDiscordCouponTables();
     if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
         return res.status(403).json({ error: "Apenas utilizadores corporativos podem enviar diretamente. Use /request." });
     }
@@ -429,6 +506,7 @@ router.post("/send", verifyToken, async (req, res) => {
 
 // POST /api/discord/panel/request — suporte cria solicitação
 router.post("/request", verifyToken, async (req, res) => {
+    await ensureDiscordCouponTables();
     const { payload, errors } = sanitizeCouponPayload(req.body);
     if (errors.length) return res.status(400).json({ error: errors.join("; ") });
     try {
@@ -448,6 +526,7 @@ router.post("/request", verifyToken, async (req, res) => {
 
 // GET /api/discord/panel/requests — corp vê todas pendentes; suporte vê as suas
 router.get("/requests", verifyToken, async (req, res) => {
+    await ensureDiscordCouponTables();
     const isCorp = (req.user.perfilId === 3 || req.user.PerfilId === 3);
     try {
         let rows;
@@ -483,6 +562,7 @@ router.get("/requests", verifyToken, async (req, res) => {
 
 // POST /api/discord/panel/requests/:id/approve — corp aprova → enfileira envio
 router.post("/requests/:id/approve", verifyToken, async (req, res) => {
+    await ensureDiscordCouponTables();
     if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
         return res.status(403).json({ error: "Apenas corp pode aprovar" });
     }
@@ -536,6 +616,7 @@ router.post("/requests/:id/approve", verifyToken, async (req, res) => {
 
 // POST /api/discord/panel/requests/:id/reject
 router.post("/requests/:id/reject", verifyToken, async (req, res) => {
+    await ensureDiscordCouponTables();
     if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
         return res.status(403).json({ error: "Apenas corp pode rejeitar" });
     }

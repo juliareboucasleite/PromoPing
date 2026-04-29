@@ -209,8 +209,8 @@
         if (!p.title && !p.description) return toast('Mete pelo menos um título ou descrição', 'error');
         $('sendBtn').disabled = true;
         try {
-            await api('/api/discord/panel/send', { method: 'POST', body: JSON.stringify(p) });
-            toast('Cupão na fila — vai chegar ao Discord em segundos');
+            await api('/api/discord/panel/request', { method: 'POST', body: JSON.stringify(p) });
+            toast('Pedido enviado para aprovação da Corporação');
             resetForm();
         } catch (err) {
             toast(err.message, 'error');
