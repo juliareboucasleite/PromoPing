@@ -30,8 +30,7 @@
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+                throw new Error(`Resposta invalida do servidor (${response.status})`);
             }
 
             if (!response.ok) {
@@ -41,7 +40,7 @@
 
             return response;
         } catch (error) {
-            console.error(`[UTILIZADORES] Erro:`, error);
+            console.error('[UTILIZADORES] Erro:', error);
             throw error;
         }
     }
@@ -63,6 +62,13 @@
         return div.innerHTML;
     }
 
+    function pick(obj, ...keys) {
+        for (const key of keys) {
+            if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
+        }
+        return null;
+    }
+
     let cachedUsers = [];
 
     function filterUsers(users, filterKey) {
@@ -72,18 +78,19 @@
 
         switch (filterKey) {
             case 'principais':
-                return users.filter(u => (u.produtosCount || 0) >= 3);
+                return users.filter((user) => (pick(user, 'produtosCount', 'produtoscount') || 0) >= 3);
             case 'primeira-vez':
-                const regPrimeira = users.filter(u => {
-                    const reg = u.DataRegisto ? new Date(u.DataRegisto) : null;
-                    return reg && reg >= thirtyDaysAgo && (u.produtosCount || 0) <= 1;
+                return users.filter((user) => {
+                    const regValue = pick(user, 'DataRegisto', 'dataregisto');
+                    const reg = regValue ? new Date(regValue) : null;
+                    return reg && reg >= thirtyDaysAgo && (pick(user, 'produtosCount', 'produtoscount') || 0) <= 1;
                 });
-                return regPrimeira;
             case 'recorrentes':
-                return users.filter(u => (u.produtosCount || 0) >= 2);
+                return users.filter((user) => (pick(user, 'produtosCount', 'produtoscount') || 0) >= 2);
             case 'recentes':
-                return users.filter(u => {
-                    const reg = u.DataRegisto ? new Date(u.DataRegisto) : null;
+                return users.filter((user) => {
+                    const regValue = pick(user, 'DataRegisto', 'dataregisto');
+                    const reg = regValue ? new Date(regValue) : null;
                     return reg && reg >= sevenDaysAgo;
                 });
             case 'todos':
@@ -105,32 +112,32 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Referência</th>
+                        <th>Referencia</th>
                         <th>Nome</th>
                         <th>Email</th>
                         <th>Registado</th>
                         <th>Produtos</th>
-                        <th>Notificações</th>
+                        <th>Notificacoes</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th>Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${users.map(user => `
+                    ${users.map((user) => `
                         <tr>
-                            <td><code style="background: #232326; padding: 0.25rem 0.5rem; border-radius: 4px; color: #ff9800;">${escapeHtml(user.ReferenciaID || 'N/A')}</code></td>
-                            <td>${escapeHtml(user.Nome || 'N/A')}</td>
-                            <td>${escapeHtml(user.Email || 'N/A')}</td>
-                            <td>${formatDate(user.DataRegisto)}</td>
-                            <td>${user.produtosCount || 0}</td>
-                            <td>${user.notificacoesCount || 0}</td>
+                            <td><code style="background: #232326; padding: 0.25rem 0.5rem; border-radius: 4px; color: #ff9800;">${escapeHtml(pick(user, 'ReferenciaID', 'referenciaid') || 'N/A')}</code></td>
+                            <td>${escapeHtml(pick(user, 'Nome', 'nome') || 'N/A')}</td>
+                            <td>${escapeHtml(pick(user, 'Email', 'email') || 'N/A')}</td>
+                            <td>${formatDate(pick(user, 'DataRegisto', 'dataregisto'))}</td>
+                            <td>${pick(user, 'produtosCount', 'produtoscount') || 0}</td>
+                            <td>${pick(user, 'notificacoesCount', 'notificacoescount') || 0}</td>
                             <td>
-                                <span style="color: ${user.Ativo ? '#86efac' : '#fca5a5'}">
-                                    ${user.Ativo ? 'Ativo' : 'Inativo'}
+                                <span style="color: ${pick(user, 'Ativo', 'ativo') ? '#86efac' : '#fca5a5'}">
+                                    ${pick(user, 'Ativo', 'ativo') ? 'Ativo' : 'Inativo'}
                                 </span>
                             </td>
                             <td>
-                                <button class="edit-user-btn" data-referencia="${escapeHtml(user.ReferenciaID)}" title="Editar utilizador">
+                                <button class="edit-user-btn" data-referencia="${escapeHtml(pick(user, 'ReferenciaID', 'referenciaid') || '')}" title="Editar utilizador">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -143,7 +150,7 @@
             </table>
         `;
 
-        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+        document.querySelectorAll('.edit-user-btn').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const referenciaID = btn.dataset.referencia;
                 openEditModal(referenciaID, cachedUsers);
@@ -155,7 +162,7 @@
         const filtered = filterUsers(cachedUsers, filterKey);
         renderUsersTable(filtered);
 
-        document.querySelectorAll('.filter-tabs .tab-button').forEach(btn => {
+        document.querySelectorAll('.filter-tabs .tab-button').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.filter === filterKey);
         });
     }
@@ -180,23 +187,23 @@
             const currentFilter = document.querySelector('.filter-tabs .tab-button.active')?.dataset.filter || 'todos';
             applyFilter(currentFilter);
         } catch (error) {
-            console.error('Erro ao carregar utilizadores:', error);
+            console.error('[UTILIZADORES] Erro ao carregar utilizadores:', error);
             usersList.innerHTML = `<div class="loading-state" style="color: #fca5a5;">Erro: ${error.message}</div>`;
         }
     }
 
     function openEditModal(referenciaID, users) {
-        const user = users.find(u => u.ReferenciaID === referenciaID);
+        const user = users.find((item) => pick(item, 'ReferenciaID', 'referenciaid') === referenciaID);
         if (!user) {
-            showAlert('Utilizador não encontrado');
+            showAlert('Utilizador nao encontrado');
             return;
         }
 
-        document.getElementById('editReferenciaID').value = user.ReferenciaID || '';
-        document.getElementById('editNome').value = user.Nome || '';
-        document.getElementById('editEmail').value = user.Email || '';
-        document.getElementById('editAtivo').value = user.Ativo ? '1' : '0';
-        document.getElementById('editEmailVerificado').value = user.EmailVerificado ? '1' : '0';
+        document.getElementById('editReferenciaID').value = pick(user, 'ReferenciaID', 'referenciaid') || '';
+        document.getElementById('editNome').value = pick(user, 'Nome', 'nome') || '';
+        document.getElementById('editEmail').value = pick(user, 'Email', 'email') || '';
+        document.getElementById('editAtivo').value = pick(user, 'Ativo', 'ativo') ? '1' : '0';
+        document.getElementById('editEmailVerificado').value = pick(user, 'EmailVerificado', 'emailverificado') ? '1' : '0';
 
         const modal = document.getElementById('editUserModal');
         if (modal) modal.classList.add('show');
@@ -232,8 +239,7 @@
                 })
             });
 
-            const data = await response.json();
-
+            await response.json();
             showAlert('Utilizador atualizado com sucesso!');
             closeEditModal();
             await loadUsers();
@@ -251,7 +257,9 @@
                 exportBtn.textContent = 'Gerando PDF...';
             }
 
-            const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl('/api/admin/users/export/pdf') : `${API_BASE}/api/admin/users/export/pdf`;
+            const safeUrl = window.APIUtils
+                ? window.APIUtils.buildSafeUrl('/api/admin/users/export/pdf')
+                : `${API_BASE}/api/admin/users/export/pdf`;
             const response = await fetch(safeUrl, {
                 method: 'GET',
                 headers: {
@@ -264,10 +272,7 @@
                 throw new Error(errorData.error || errorData.message || `Erro ${response.status}`);
             }
 
-            // Obter o blob do PDF
             const blob = await response.blob();
-            
-            // Criar link de download
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -276,8 +281,6 @@
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-
-            console.log('[UTILIZADORES] PDF exportado com sucesso');
         } catch (error) {
             console.error('[UTILIZADORES] Erro ao exportar PDF:', error);
             showAlert(`Erro ao exportar PDF: ${error.message}`);
@@ -311,9 +314,10 @@
         if (refreshBtn) refreshBtn.addEventListener('click', loadUsers);
         if (exportPDFBtn) exportPDFBtn.addEventListener('click', exportUsersPDF);
 
-        document.querySelectorAll('.filter-tabs .tab-button').forEach(btn => {
+        document.querySelectorAll('.filter-tabs .tab-button').forEach((btn) => {
             btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
         });
+
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 showConfirm('Tem certeza que deseja sair?', 'Sair', () => {
@@ -331,24 +335,17 @@
             });
         }
 
-        if (closeEditUserModal) {
-            closeEditUserModal.addEventListener('click', closeEditModal);
-        }
-
-        if (cancelEditUserBtn) {
-            cancelEditUserBtn.addEventListener('click', closeEditModal);
-        }
+        if (closeEditUserModal) closeEditUserModal.addEventListener('click', closeEditModal);
+        if (cancelEditUserBtn) cancelEditUserBtn.addEventListener('click', closeEditModal);
 
         if (editUserModal) {
             editUserModal.addEventListener('click', (e) => {
-                if (e.target === editUserModal) {
-                    closeEditModal();
-                }
+                if (e.target === editUserModal) closeEditModal();
             });
         }
 
         loadUsers();
-        console.log('[UTILIZADORES] Página de utilizadores inicializada');
+        console.log('[UTILIZADORES] Pagina de utilizadores inicializada');
     }
 
     if (document.readyState === 'loading') {
