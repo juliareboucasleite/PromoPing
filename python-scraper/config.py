@@ -33,7 +33,7 @@ NOTIFICATION_CONFIG = {
 # Configurações de logging
 LOGGING_CONFIG = {
     'level': os.getenv('LOG_LEVEL', 'DEBUG'),
-    'file': os.getenv('LOG_FILE', 'scraper.log'),
+    'file': os.getenv('LOG_FILE', 'python-scraper/logs/scraper.log'),
     'max_size': int(os.getenv('LOG_MAX_SIZE', 10485760)),  # 10MB
     'backup_count': int(os.getenv('LOG_BACKUP_COUNT', 5))
 }
