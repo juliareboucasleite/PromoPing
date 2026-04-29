@@ -21,6 +21,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 from config import DB_CONFIG, SCRAPER_CONFIG, LOGGING_CONFIG
 
+# Force sensible defaults for Chrome when .env is missing or broken
+os.environ.setdefault('CHROME_BIN', '/usr/bin/chromium-browser')
+os.environ.setdefault('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
+
 # ==================== LOGGING ====================
 
 if not LOGGING_CONFIG["file"]:
@@ -219,6 +223,19 @@ def start_chrome_with_version(options, version_main=None, headless=False):
 def create_driver():
     opts = uc.ChromeOptions()
     headless = bool(SCRAPER_CONFIG.get("headless"))
+
+    # Prefer explicit config values, otherwise env defaults (set above) are used.
+    # If a chromedriver path is provided in config, export it to the environment
+    if SCRAPER_CONFIG.get('chromedriver_path'):
+        os.environ['CHROMEDRIVER_PATH'] = SCRAPER_CONFIG['chromedriver_path']
+
+    # Ensure Chrome binary location is set on the options so headless Chromium is used
+    chrome_bin = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN')
+    if chrome_bin:
+        try:
+            opts.binary_location = chrome_bin
+        except Exception:
+            pass
 
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
