@@ -156,6 +156,7 @@ class PromoPingBot {
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
             this.startYoutubeFeedMonitoring();
+            await this.syncCorporationGuilds();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
