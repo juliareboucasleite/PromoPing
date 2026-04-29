@@ -30,8 +30,7 @@
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Resposta inválida do servidor (${response.status})`);
+                throw new Error(`Resposta invalida do servidor (${response.status})`);
             }
 
             if (!response.ok) {
@@ -41,7 +40,7 @@
 
             return response;
         } catch (error) {
-            console.error(`[PRODUTOS] Erro:`, error);
+            console.error('[PRODUTOS] Erro:', error);
             throw error;
         }
     }
@@ -72,17 +71,15 @@
 
     let cachedProducts = [];
 
-    /** Obtém lista de empresas/lojas distintas a partir dos produtos (ordenada). */
     function getDistinctLojas(products) {
         const set = new Set();
-        (products || []).forEach(p => {
-            const nome = (pick(p, 'Loja', 'loja') || '').trim();
-            if (nome) set.add(nome);
+        (products || []).forEach((product) => {
+            const loja = (pick(product, 'Loja', 'loja') || '').trim();
+            if (loja) set.add(loja);
         });
         return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt'));
     }
 
-    /** Atualiza os botões de filtro: Todos + um por cada empresa. */
     function renderFilterTabs(products) {
         const container = document.getElementById('productFilterTabs');
         if (!container) return;
@@ -91,6 +88,7 @@
         const currentFilter = container.querySelector('.tab-button.active')?.dataset.filter || 'todos';
 
         container.innerHTML = '';
+
         const todosBtn = document.createElement('button');
         todosBtn.type = 'button';
         todosBtn.className = 'tab-button' + (currentFilter === 'todos' ? ' active' : '');
@@ -98,7 +96,7 @@
         todosBtn.textContent = 'Todos';
         container.appendChild(todosBtn);
 
-        lojas.forEach(loja => {
+        lojas.forEach((loja) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'tab-button' + (currentFilter === loja ? ' active' : '');
@@ -107,14 +105,14 @@
             container.appendChild(btn);
         });
 
-        container.querySelectorAll('.tab-button').forEach(btn => {
+        container.querySelectorAll('.tab-button').forEach((btn) => {
             btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
         });
     }
 
     function filterProducts(products, filterKey) {
         if (!filterKey || filterKey === 'todos') return products;
-        return (products || []).filter(p => (pick(p, 'Loja', 'loja') || '').trim() === filterKey);
+        return (products || []).filter((product) => (pick(product, 'Loja', 'loja') || '').trim() === filterKey);
     }
 
     function renderProductsTable(products) {
@@ -132,21 +130,21 @@
                     <tr>
                         <th>Nome</th>
                         <th>Utilizador</th>
-                        <th>Preço Atual</th>
-                        <th>Preço Alvo</th>
+                        <th>Preco Atual</th>
+                        <th>Preco Alvo</th>
                         <th>Loja</th>
                         <th>Criado</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${products.map(product => `
+                    ${products.map((product) => `
                         <tr>
                             <td>${escapeHtml(pick(product, 'Nome', 'nome') || 'N/A')}</td>
                             <td>${escapeHtml(pick(product, 'UserName', 'username') || 'N/A')}</td>
-                            <td>€${parseFloat(product.PrecoAtual || 0).toFixed(2)}</td>
-                            <td>€${parseFloat(product.PrecoAlvo || 0).toFixed(2)}</td>
-                            <td>${escapeHtml(product.Loja || 'N/A')}</td>
-                            <td>${formatDate(product.DataCriacao)}</td>
+                            <td>EUR ${parseFloat(pick(product, 'PrecoAtual', 'precoatual') || 0).toFixed(2)}</td>
+                            <td>EUR ${parseFloat(pick(product, 'PrecoAlvo', 'precoalvo') || 0).toFixed(2)}</td>
+                            <td>${escapeHtml(pick(product, 'Loja', 'loja') || 'N/A')}</td>
+                            <td>${formatDate(pick(product, 'DataCriacao', 'datacriacao'))}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -160,7 +158,7 @@
 
         const container = document.getElementById('productFilterTabs');
         if (container) {
-            container.querySelectorAll('.tab-button').forEach(btn => {
+            container.querySelectorAll('.tab-button').forEach((btn) => {
                 btn.classList.toggle('active', btn.dataset.filter === filterKey);
             });
         }
@@ -211,7 +209,7 @@
         }
 
         loadProducts();
-        console.log('[PRODUTOS] Página de produtos inicializada');
+        console.log('[PRODUTOS] Pagina de produtos inicializada');
     }
 
     if (document.readyState === 'loading') {
