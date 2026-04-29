@@ -237,56 +237,47 @@ def start_chrome_with_version(options, version_main=None, headless=False):
         headless=headless,
     )
 
+
+def build_options():
+    options = uc.ChromeOptions()
+    # Prefer explicit configured chrome binary, fall back to common Linux path
+    options.binary_location = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN') or "/usr/bin/chromium-browser"
+    # Use new headless mode
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    # Keep other sensible defaults
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--incognito")
+    options.add_argument("--lang=pt-PT")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
+    return options
+
 def create_driver():
-    opts = uc.ChromeOptions()
     headless = bool(SCRAPER_CONFIG.get("headless"))
 
-    # Prefer explicit config values, otherwise env defaults (set above) are used.
     # If a chromedriver path is provided in config, export it to the environment
     if SCRAPER_CONFIG.get('chromedriver_path'):
         os.environ['CHROMEDRIVER_PATH'] = SCRAPER_CONFIG['chromedriver_path']
 
-    # Ensure Chrome binary location is set on the options so headless Chromium is used
-    chrome_bin = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN')
-    if chrome_bin:
-        try:
-            opts.binary_location = chrome_bin
-        except Exception:
-            pass
-
-    # Core flags for running Chromium in containerized or headless environments
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--disable-blink-features=AutomationControlled")
-    opts.add_argument("--disable-popup-blocking")
-    opts.add_argument("--disable-notifications")
-    opts.add_argument("--incognito")
-    opts.add_argument("--lang=pt-PT")
-    opts.add_argument("--window-size=1920,1080")
-    opts.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
-
-    # Use new headless mode when requested
-    if headless:
-        try:
-            opts.add_argument("--headless=new")
-        except Exception:
-            pass
-
     version_main = get_chrome_major_version()
 
     try:
-        driver = start_chrome_with_version(opts, version_main, headless=headless)
+        driver = start_chrome_with_version(build_options(), version_main, headless=headless)
     except SessionNotCreatedException as err:
         browser_major = extract_browser_major_from_error(err)
         if browser_major and browser_major != version_main:
             logger.warning(
                 f"Incompatibilidade de driver detectada (driver={version_main}, browser={browser_major}). Tentando novamente."
             )
-            driver = start_chrome_with_version(opts, browser_major, headless=headless)
+            driver = start_chrome_with_version(build_options(), browser_major, headless=headless)
         else:
             logger.warning("Falha com version_main explícita; tentando autodetecção total do undetected_chromedriver.")
-            driver = start_chrome_with_version(opts, headless=headless)
+            driver = start_chrome_with_version(build_options(), headless=headless)
 
     driver.delete_all_cookies()
     return driver
