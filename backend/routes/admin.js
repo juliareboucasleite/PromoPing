@@ -491,7 +491,18 @@ router.get("/bugs", async (req, res) => {
         await ensureBugsTable();
 
         const [bugs] = await pool.query(
-            `SELECT * FROM bugsprojetos 
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Tipo,
+                Prioridade,
+                Status,
+                CreatedBy,
+                AnexoUrl,
+                DataCriacao,
+                DataAtualizacao
+             FROM bugsprojetos 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
         );
@@ -558,7 +569,18 @@ router.get("/bugs/:id", async (req, res) => {
         const { id } = req.params;
 
         const [bugs] = await pool.query(
-            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Tipo,
+                Prioridade,
+                Status,
+                CreatedBy,
+                AnexoUrl,
+                DataCriacao,
+                DataAtualizacao
+             FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
 
@@ -753,7 +775,17 @@ router.get("/sugestoes", async (req, res) => {
         await ensureSugestoesTable();
 
         const [sugestoes] = await pool.query(
-            `SELECT * FROM sugestoes 
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Plataforma,
+                Prioridade,
+                Status,
+                Votos,
+                DataCriacao,
+                DataAtualizacao
+             FROM sugestoes 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
         );
@@ -776,7 +808,17 @@ router.get("/sugestoes/:id", async (req, res) => {
         const { id } = req.params;
 
         const [sugestoes] = await pool.query(
-            `SELECT * FROM sugestoes WHERE Id = ?`,
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Plataforma,
+                Prioridade,
+                Status,
+                Votos,
+                DataCriacao,
+                DataAtualizacao
+             FROM sugestoes WHERE Id = ?`,
             [id]
         );
 
