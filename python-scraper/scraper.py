@@ -44,6 +44,17 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# Avisar se Google OAuth estiver ausente — relevante se algum site usa login Google
+missing_google_id = not os.getenv('GOOGLE_CLIENT_ID')
+missing_google_secret = not os.getenv('GOOGLE_CLIENT_SECRET')
+if missing_google_id or missing_google_secret:
+    parts = []
+    if missing_google_id:
+        parts.append('GOOGLE_CLIENT_ID: Ausente')
+    if missing_google_secret:
+        parts.append('GOOGLE_CLIENT_SECRET: Ausente')
+    logger.warning('Google OAuth ausente — ' + ', '.join(parts) + '. Se um site requerer login via Google, o scraping pode falhar.')
+
 # ==================== DB ====================
 
 def connect_db():
@@ -284,7 +295,8 @@ def create_driver():
 
 def safe_quit(driver):
     try:
-        driver.quit()
+        if driver:
+            driver.quit()
     except:
         pass
 
