@@ -624,7 +624,18 @@ router.put("/bugs/:id", async (req, res) => {
         }
 
         const [currentBug] = await pool.query(
-            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Tipo,
+                Prioridade,
+                Status,
+                CreatedBy,
+                AnexoUrl,
+                DataCriacao,
+                DataAtualizacao
+             FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
 
@@ -648,7 +659,18 @@ router.put("/bugs/:id", async (req, res) => {
 
         if (newStatus === 'resolved' && oldStatus !== 'resolved') {
             const [updatedBug] = await pool.query(
-                `SELECT * FROM bugsprojetos WHERE Id = ?`,
+                `SELECT 
+                    Id,
+                    Titulo,
+                    Descricao,
+                    Tipo,
+                    Prioridade,
+                    Status,
+                    CreatedBy,
+                    AnexoUrl,
+                    DataCriacao,
+                    DataAtualizacao
+                 FROM bugsprojetos WHERE Id = ?`,
                 [id]
             );
             
@@ -678,7 +700,18 @@ router.patch("/bugs/:id", async (req, res) => {
         const { status, prioridade, anexo, anexoNome } = req.body;
 
         const [currentBug] = await pool.query(
-            `SELECT * FROM bugsprojetos WHERE Id = ?`,
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Tipo,
+                Prioridade,
+                Status,
+                CreatedBy,
+                AnexoUrl,
+                DataCriacao,
+                DataAtualizacao
+             FROM bugsprojetos WHERE Id = ?`,
             [id]
         );
 
@@ -721,7 +754,18 @@ router.patch("/bugs/:id", async (req, res) => {
 
         if (newStatus === 'resolved' && oldStatus !== 'resolved' && currentBug.length > 0) {
             const [updatedBug] = await pool.query(
-                `SELECT * FROM bugsprojetos WHERE Id = ?`,
+                `SELECT 
+                    Id,
+                    Titulo,
+                    Descricao,
+                    Tipo,
+                    Prioridade,
+                    Status,
+                    CreatedBy,
+                    AnexoUrl,
+                    DataCriacao,
+                    DataAtualizacao
+                 FROM bugsprojetos WHERE Id = ?`,
                 [id]
             );
             if (updatedBug.length > 0) {
@@ -953,7 +997,19 @@ router.get("/incidents", async (req, res) => {
         await ensureIncidentsTable();
 
         const [incidents] = await pool.query(
-            `SELECT * FROM incidentes 
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                ComponenteAfetado,
+                Status,
+                DataInicio,
+                DataFim,
+                Duracao,
+                Impacto,
+                DataCriacao,
+                DataAtualizacao
+             FROM incidentes 
             ORDER BY DataInicio DESC 
             LIMIT 100`
         );
@@ -1021,7 +1077,22 @@ router.patch("/incidents/:id", async (req, res) => {
         const { titulo, descricao, componenteAfetado, status } = req.body;
         const referenciaID = req.user && req.user.ReferenciaID;
 
-        const [current] = await pool.query("SELECT * FROM incidentes WHERE Id = ?", [id]);
+        const [current] = await pool.query(
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                ComponenteAfetado,
+                Status,
+                DataInicio,
+                DataFim,
+                Duracao,
+                Impacto,
+                DataCriacao,
+                DataAtualizacao
+             FROM incidentes WHERE Id = ?`,
+            [id]
+        );
         if (current.length === 0) {
             return res.status(404).json({ status: "error", error: "Incidente não encontrado" });
         }
@@ -1076,7 +1147,13 @@ router.get("/updates", async (req, res) => {
         await ensureUpdatesTable();
 
         const [updates] = await pool.query(
-            `SELECT * FROM atualizacoes_sistema 
+            `SELECT 
+                Id,
+                Titulo,
+                Descricao,
+                Tipo,
+                DataCriacao
+             FROM atualizacoes_sistema 
             ORDER BY DataCriacao DESC 
             LIMIT 100`
         );
@@ -1848,7 +1925,8 @@ router.put("/calendar/events/:id", async (req, res) => {
 
         // Verificar se o evento existe
         const [existing] = await pool.query(
-            "SELECT * FROM admin_events WHERE Id = ?",
+            `SELECT Id, Titulo, Descricao, Tipo, StartDate, EndDate, Status, CreatedBy, CreatedAt, UpdatedAt, GoogleEventId
+             FROM admin_events WHERE Id = ?`,
             [id]
         );
 
