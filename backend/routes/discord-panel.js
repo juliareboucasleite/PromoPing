@@ -624,10 +624,14 @@ router.post("/requests/:id/approve", verifyToken, async (req, res) => {
              RETURNING id`,
             [req.user.ReferenciaID, r.target_guild_id, r.target_channel_id, r.title, r.description, r.color, r.image_url, r.button_label, r.button_url, r.coupon_code, id]
         );
+        const messageRowId = msgIns?.insertId || msgIns?.rows?.[0]?.id || msgIns?.rows?.[0]?.Id;
+        if (!messageRowId) {
+            throw new Error("Falha ao obter ID da mensagem Discord aprovada");
+        }
 
         await pool.query(
             `INSERT INTO discord_outbound_queue (guild_id, channel_id, payload, coupon_message_id) VALUES (?, ?, ?::jsonb, ?)`,
-            [r.target_guild_id, r.target_channel_id, JSON.stringify(payload), msgIns[0].id]
+            [r.target_guild_id, r.target_channel_id, JSON.stringify(payload), messageRowId]
         );
 
         await pool.query(
@@ -635,7 +639,7 @@ router.post("/requests/:id/approve", verifyToken, async (req, res) => {
             [req.user.ReferenciaID, req.body.note || null, id]
         );
 
-        res.json({ ok: true, message_row_id: msgIns[0].id });
+        res.json({ ok: true, message_row_id: messageRowId });
     } catch (err) {
         console.error("[DISCORD-PANEL] /approve erro:", err);
         res.status(500).json({ error: "Falha ao aprovar" });

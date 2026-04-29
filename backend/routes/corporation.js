@@ -968,11 +968,15 @@ router.post("/discord/requests/:id/approve", async (req, res) => {
                 id
             ]
         );
+        const messageRowId = msgIns?.insertId || msgIns?.rows?.[0]?.id || msgIns?.rows?.[0]?.Id;
+        if (!messageRowId) {
+            throw new Error("Falha ao obter ID da mensagem Discord aprovada");
+        }
 
         await pool.query(
             `INSERT INTO discord_outbound_queue (guild_id, channel_id, payload, coupon_message_id)
              VALUES (?, ?, ?::jsonb, ?)`,
-            [requestRow.target_guild_id, requestRow.target_channel_id, JSON.stringify(payload), msgIns[0].id]
+            [requestRow.target_guild_id, requestRow.target_channel_id, JSON.stringify(payload), messageRowId]
         );
 
         await pool.query(
@@ -985,7 +989,7 @@ router.post("/discord/requests/:id/approve", async (req, res) => {
             [req.user.ReferenciaID, req.body.note || null, id]
         );
 
-        res.json({ status: "ok", ok: true, message_row_id: msgIns[0].id });
+        res.json({ status: "ok", ok: true, message_row_id: messageRowId });
     } catch (err) {
         console.error("[CORPORATION] Erro ao aprovar pedido Discord:", err);
         return handleDatabaseError(err, res, "Erro ao aprovar pedido Discord");
