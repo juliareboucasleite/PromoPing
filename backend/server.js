@@ -71,6 +71,7 @@ import blogRoutes from "./routes/blog.js"; // Blog
 import heraldRoutes from "./routes/herald.js"; // Herald API
 import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
 import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
+import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupões corporativos
 import { verifyToken } from "./middleware/auth.js"; // JWT
 
 import { pool } from "./database/db.js"; // Pool de conexão
@@ -391,6 +392,7 @@ app.use("/api/historico", historicoRoutes); // Historico PDF (sem graficos)
 app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
 app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
 app.use("/api/corporation", corporationRoutes); // Painel Corporação - apenas PerfilId 3
+app.use("/api/discord/panel", discordPanelRoutes); // Discord OAuth painel + cupões corporativos
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
 app.use("/api/blog", blogRoutes); // Blog
 app.use("/api/herald", heraldRoutes); // Herald API
