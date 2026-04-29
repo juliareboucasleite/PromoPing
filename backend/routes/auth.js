@@ -58,6 +58,32 @@ dotenv.config({
 
 const router = express.Router();
 
+const USER_SELECT_FIELDS = `
+    referenciaid,
+    nome,
+    email,
+    senhahash,
+    telefone,
+    codigotelefone,
+    ativo,
+    datadesativacao,
+    dataregisto,
+    ultimologin,
+    perfilid,
+    emailverificado,
+    codigoemail,
+    datanascimento,
+    fotoperfil,
+    createdat,
+    updatedat,
+    discord_id,
+    google_id,
+    ultimo_login,
+    ultimaalteracaosenha,
+    ultimaalteracaonome,
+    dinheiro_poupado
+`;
+
 // Expiração: access 30 dias, refresh 60 dias (renovação automática)
 const JWT_ACCESS_EXPIRY = "30d";
 const JWT_REFRESH_EXPIRY = "60d";
@@ -158,7 +184,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     console.log("[GOOGLE STRATEGY] Processando usuário:", { email, nome, googleId });
 
                     const [rows] = await pool.query(
-                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        `SELECT ${USER_SELECT_FIELDS}
+                         FROM Utilizadores
+                         WHERE Email = ?`,
                         [email]
                     );
 
@@ -440,7 +468,9 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                     const nome = profile.displayName || profile.username || 'Usuário GitHub';
 
                     const [rows] = await pool.query(
-                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        `SELECT ${USER_SELECT_FIELDS}
+                         FROM Utilizadores
+                         WHERE Email = ?`,
                         [email]
                     );
 
@@ -615,7 +645,9 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                     // Verificar se usuário existe no banco de dados
                     const [rows] = await pool.query(
-                        "SELECT * FROM Utilizadores WHERE Email = ?",
+                        `SELECT ${USER_SELECT_FIELDS}
+                         FROM Utilizadores
+                         WHERE Email = ?`,
                         [email]
                     );
 
@@ -1078,7 +1110,7 @@ router.get("/reset-password/:token", async (req, res) => {
 
         // Buscar token válido
         const [tokenRows] = await pool.query(
-            `SELECT prt.*, u.Email 
+            `SELECT u.Email
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
        WHERE prt.Token = ? AND prt.Used = 0 AND prt.ExpiresAt > NOW()`,
@@ -1130,7 +1162,7 @@ router.post("/reset-password", async (req, res) => {
 
         // Buscar token válido
         const [tokenRows] = await pool.query(
-            `SELECT prt.*, u.ReferenciaID
+            `SELECT u.ReferenciaID
        FROM password_reset_tokens prt
        INNER JOIN Utilizadores u ON prt.ReferenciaID = u.ReferenciaID
        WHERE prt.Token = ? AND prt.Used = 0 AND prt.ExpiresAt > NOW()`,
@@ -2507,7 +2539,9 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         // Buscar usuário e verificar código
         const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
         const [userRows] = await pool.query(
-            `SELECT * FROM Utilizadores WHERE ReferenciaID = ? AND ${campoCodigo} = ?`,
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE ReferenciaID = ? AND ${campoCodigo} = ?`,
             [referenciaID, codigo]
         );
 
@@ -2572,7 +2606,9 @@ router.post("/esqueci-senha", async (req, res) => {
 
         // Buscar por email
         const [userRows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE Email = ?`,
             [emailOuTelefone]
         );
 
@@ -2653,7 +2689,9 @@ router.post("/resetar-senha", async (req, res) => {
 
         // Buscar por email e verificar código de email
         const [userRows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE Email = ? AND CodigoEmail = ?`,
             [emailOuTelefone, codigo]
         );
 
@@ -2708,7 +2746,9 @@ router.post("/reenviar-codigo", async (req, res) => {
 
         // Buscar usuário
         const [userRows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE Email = ?`,
             [email]
         );
 

@@ -16,6 +16,37 @@ import {
 
 const router = express.Router();
 
+const PLAN_SELECT_FIELDS = `
+  id,
+  nome,
+  preco,
+  limiteprodutos,
+  historicodias,
+  intervaloverificacao,
+  permitesms,
+  relatorios,
+  linksplanos,
+  linksplanosanual,
+  precoanual
+`;
+
+const CONFIG_SELECT_FIELDS = `
+  id,
+  referenciaid,
+  planoatualid,
+  planoativoid,
+  datainicio,
+  datacancelamento,
+  dataexpiracao,
+  statusassinatura,
+  limiteprodutos,
+  canalpreferido,
+  notificacoesenviadas,
+  historicoativo,
+  ultimologin,
+  historicodias
+`;
+
 // Rota /profile (alias para /me) - REMOVIDA (duplicada)
 // A rota principal está na linha 162
 
@@ -827,7 +858,8 @@ router.post("/plano/alterar", verifyToken, async (req, res) => {
 
     // Validar plano
     const [planoRows] = await pool.query(
-      `SELECT * FROM planos WHERE Id = ?`,
+      `SELECT ${PLAN_SELECT_FIELDS}
+       FROM planos WHERE Id = ?`,
       [planoId]
     );
 
@@ -913,7 +945,8 @@ router.get("/planos", verifyToken, async (req, res) => {
 
     // Buscar todos os planos
     const [planos] = await pool.query(
-      "SELECT * FROM planos ORDER BY Preco ASC"
+      `SELECT ${PLAN_SELECT_FIELDS}
+       FROM planos ORDER BY Preco ASC`
     );
 
     // Buscar plano atual do usuário
@@ -955,7 +988,8 @@ router.post("/change-plan", verifyToken, async (req, res) => {
 
     // Verificar se o plano existe
     const [planoRows] = await pool.query(
-      "SELECT * FROM planos WHERE Id = ?",
+      `SELECT ${PLAN_SELECT_FIELDS}
+       FROM planos WHERE Id = ?`,
       [planId]
     );
 
@@ -1001,7 +1035,8 @@ router.post("/cancel-subscription", verifyToken, async (req, res) => {
 
     // Buscar configuração atual do usuário
     const [userConfig] = await pool.query(
-      "SELECT * FROM configutilizador WHERE ReferenciaID = ?",
+      `SELECT ${CONFIG_SELECT_FIELDS}
+       FROM configutilizador WHERE ReferenciaID = ?`,
       [referenciaID]
     );
 
