@@ -93,7 +93,7 @@
       background: white;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      max-width: 500px;
+      max-width: 380px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
@@ -103,14 +103,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 24px 0;
+      padding: 16px 18px 0;
       border-bottom: 1px solid #e0e0e0;
     }
 
     .modal-header h3 {
       margin: 0;
       color: #333;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
     }
 
     .modal-close {
@@ -132,7 +132,48 @@
     }
 
     .modal-body {
-      padding: 24px;
+      padding: 16px 18px;
+    }
+
+    .modal-body p {
+      margin: 0 0 12px 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .date-fields-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .date-field {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .date-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .date-field input {
+      padding: 8px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .date-field input:focus {
+      border-color: #ff9800;
     }
 
     .scraping-status {
@@ -174,18 +215,18 @@
     }
 
     .modal-footer {
-      padding: 16px 24px 24px;
+      padding: 12px 18px 16px;
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
+      gap: 8px;
     }
 
     .btn {
-      padding: 10px 20px;
+      padding: 8px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 0.9rem;
       font-weight: 500;
       transition: all 0.2s;
     }
@@ -552,10 +593,22 @@
         <button type="button" class="modal-close" onclick="fecharDataLimiteModal()" aria-label="Fechar">&times;</button>
       </div>
       <div class="modal-body">
-        <p id="dataLimiteProductName" style="margin-top:0; font-weight:600;"></p>
-        <p>Define a data até à qual queres monitorizar este produto. Após essa data, o produto deixa de ser verificado automaticamente.</p>
-        <label for="dataLimiteInput" style="display:block; margin-top:12px; margin-bottom:6px; font-weight:500;">Data limite</label>
-        <input type="date" id="dataLimiteInput" class="filter-select" style="width:100%;" />
+        <p id="dataLimiteProductName" style="font-weight:600;"></p>
+        <p>Define até quando monitorizar este produto.</p>
+        <div class="date-fields-group">
+          <div class="date-field">
+            <label for="dataLimiteDay">Dia</label>
+            <input type="number" id="dataLimiteDay" min="1" max="31" placeholder="01">
+          </div>
+          <div class="date-field">
+            <label for="dataLimiteMonth">Mês</label>
+            <input type="number" id="dataLimiteMonth" min="1" max="12" placeholder="01">
+          </div>
+          <div class="date-field">
+            <label for="dataLimiteYear">Ano</label>
+            <input type="number" id="dataLimiteYear" min="2026" max="2099" placeholder="2026">
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="fecharDataLimiteModal()">Cancelar</button>
@@ -1130,20 +1183,33 @@
 
     function abrirDataLimiteModal(id, atual, nome) {
       const modal = document.getElementById('dataLimiteModal');
-      const input = document.getElementById('dataLimiteInput');
+      const dayInput = document.getElementById('dataLimiteDay');
+      const monthInput = document.getElementById('dataLimiteMonth');
+      const yearInput = document.getElementById('dataLimiteYear');
       const productName = document.getElementById('dataLimiteProductName');
-      if (!modal || !input || !productName) return;
+      if (!modal || !dayInput || !monthInput || !yearInput || !productName) return;
 
       dataLimiteModalState.id = id;
       dataLimiteModalState.atual = (atual || '').split('T')[0] || '';
       dataLimiteModalState.nome = nome || 'produto';
 
       productName.textContent = dataLimiteModalState.nome;
-      input.value = dataLimiteModalState.atual;
+
+      // Preencher campos se existe data atual
+      if (dataLimiteModalState.atual) {
+        const [year, month, day] = dataLimiteModalState.atual.split('-');
+        dayInput.value = day || '';
+        monthInput.value = month || '';
+        yearInput.value = year || '';
+      } else {
+        dayInput.value = '';
+        monthInput.value = '';
+        yearInput.value = '';
+      }
 
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
-      setTimeout(() => input.focus(), 0);
+      setTimeout(() => dayInput.focus(), 0);
     }
 
     function fecharDataLimiteModal() {
@@ -1156,13 +1222,34 @@
       const id = dataLimiteModalState.id;
       if (!id) return;
 
-      const input = document.getElementById('dataLimiteInput');
-      const novaData = input ? input.value : '';
-      if (!novaData) {
-        showWarning('Data limite', 'Escolhe uma data antes de guardar.');
+      const dayInput = document.getElementById('dataLimiteDay');
+      const monthInput = document.getElementById('dataLimiteMonth');
+      const yearInput = document.getElementById('dataLimiteYear');
+
+      const day = parseInt(dayInput.value, 10);
+      const month = parseInt(monthInput.value, 10);
+      const year = parseInt(yearInput.value, 10);
+
+      if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
+        showWarning('Data limite', 'Preenche uma data válida (dia, mês e ano).');
         return;
       }
 
+      // Validar se a data é válida e está no futuro
+      const dataObj = new Date(year, month - 1, day);
+      if (dataObj.getDate() !== day || dataObj.getMonth() !== month - 1) {
+        showWarning('Data limite', 'Data inválida (ex: 31 de fevereiro não existe).');
+        return;
+      }
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      if (dataObj < hoje) {
+        showWarning('Data limite', 'A data deve estar no futuro.');
+        return;
+      }
+
+      const novaData = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const token = localStorage.getItem("token");
       const btn = document.getElementById('salvarDataLimiteBtn');
       if (btn) btn.disabled = true;
@@ -1205,16 +1292,39 @@
     document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('dataLimiteModal');
       const btnSalvar = document.getElementById('salvarDataLimiteBtn');
-      const input = document.getElementById('dataLimiteInput');
+      const dayInput = document.getElementById('dataLimiteDay');
+      const monthInput = document.getElementById('dataLimiteMonth');
+      const yearInput = document.getElementById('dataLimiteYear');
 
       btnSalvar?.addEventListener('click', salvarDataLimite);
       modal?.addEventListener('click', (event) => {
         if (event.target === modal) fecharDataLimiteModal();
       });
-      input?.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') salvarDataLimite();
-        if (event.key === 'Escape') fecharDataLimiteModal();
+
+      // Auto-tab entre campos
+      dayInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') salvarDataLimite();
+        if (e.key === 'Escape') fecharDataLimiteModal();
+        if (dayInput.value.length === 2 && e.key !== 'Backspace') {
+          e.preventDefault();
+          monthInput.focus();
+        }
       });
+
+      monthInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') salvarDataLimite();
+        if (e.key === 'Escape') fecharDataLimiteModal();
+        if (monthInput.value.length === 2 && e.key !== 'Backspace') {
+          e.preventDefault();
+          yearInput.focus();
+        }
+      });
+
+      yearInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') salvarDataLimite();
+        if (e.key === 'Escape') fecharDataLimiteModal();
+      });
+
       window.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && modal?.style.display === 'flex') {
           fecharDataLimiteModal();
