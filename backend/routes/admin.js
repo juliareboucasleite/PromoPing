@@ -2262,6 +2262,12 @@ router.get("/calendar/connect-google", verifyToken, async (req, res) => {
             });
         }
 
+        // PerfilId 1 (suporte) e 3 (corp) podem usar calendário; outros não devem chegar aqui
+        const perfilId = req.user.perfilId !== undefined ? req.user.perfilId : req.user.PerfilId;
+        if (perfilId !== 1 && perfilId !== 3) {
+            return res.status(403).json({ status: "error", error: "Sem permissão para calendário" });
+        }
+
         // Verificar se Google OAuth está configurado
         if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
             return res.status(400).json({
@@ -2270,8 +2276,9 @@ router.get("/calendar/connect-google", verifyToken, async (req, res) => {
             });
         }
 
-        // Redirecionar para Google OAuth com state contendo ReferenciaID
-        const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+        // PUBLIC_BASE_URL é a fonte canónica do domínio público (mesmo usado pelo OAuth Discord).
+        // BASE_URL/API_URL ficam como fallback legacy.
+        const baseUrl = process.env.PUBLIC_BASE_URL || process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
         const callbackUrl = `${baseUrl}/api/admin/calendar/google-callback`;
         
         // Criar state com ReferenciaID para segurança
@@ -2376,8 +2383,8 @@ router.get("/calendar/google-callback", async (req, res) => {
             `);
         }
 
-        // Trocar código por tokens
-        const baseUrl = process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
+        // Trocar código por tokens — manter ordem de baseUrl idêntica ao /connect-google
+        const baseUrl = process.env.PUBLIC_BASE_URL || process.env.BASE_URL || process.env.API_URL || `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3000}`;
         const callbackUrl = `${baseUrl}/api/admin/calendar/google-callback`;
 
         const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
