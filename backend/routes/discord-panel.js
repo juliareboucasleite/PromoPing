@@ -76,6 +76,44 @@ async function discordFetchUser(accessToken) {
     return r.json();
 }
 
+async function discordFetchUserGuilds(accessToken) {
+    const r = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!r.ok) throw new Error(`Discord /users/@me/guilds falhou: ${r.status}`);
+    return r.json();
+}
+
+async function discordBotFetchChannels(guildId) {
+    const botToken = process.env.DISCORD_BOT_TOKEN;
+    if (!botToken) throw new Error("DISCORD_BOT_TOKEN ausente");
+    const r = await fetch(`${DISCORD_API}/guilds/${guildId}/channels`, {
+        headers: { Authorization: `Bot ${botToken}` },
+    });
+    if (!r.ok) throw new Error(`Discord /guilds/${guildId}/channels falhou: ${r.status}`);
+    return r.json();
+}
+
+async function getUserAccessToken(referenciaId) {
+    const [rows] = await pool.query(
+        `SELECT access_token, expires_at FROM discord_panel_oauth_tokens WHERE referenciaid = ? LIMIT 1`,
+        [referenciaId]
+    );
+    if (!rows || rows.length === 0) return null;
+    return rows[0].access_token;
+}
+
+// Bit MANAGE_GUILD = 0x20 (32)
+const MANAGE_GUILD_BIT = 0x20n;
+function hasManageGuild(permissionsString) {
+    try {
+        const perms = BigInt(permissionsString || "0");
+        return (perms & MANAGE_GUILD_BIT) === MANAGE_GUILD_BIT;
+    } catch {
+        return false;
+    }
+}
+
 // GET /api/discord/panel/connect — gera URL OAuth para ligar conta Discord
 router.get("/connect", verifyToken, (req, res) => {
     try {
