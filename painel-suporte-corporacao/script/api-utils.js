@@ -93,6 +93,18 @@
         const stored = localStorage.getItem('PROMOPING_API');
         const defaultBase = detectApiBaseFromLocation();
 
+        try {
+            const defaultUrl = new URL(defaultBase);
+            const isProductionHost = defaultUrl.hostname === 'promoping.pt' || defaultUrl.hostname === 'www.promoping.pt';
+
+            // Em produção, a base do próprio site deve prevalecer sempre.
+            if (isProductionHost) {
+                return defaultBase;
+            }
+        } catch (_) {
+            // Se falhar, continua para a lógica normal abaixo.
+        }
+
         if (!stored) {
             return defaultBase;
         }
