@@ -208,175 +208,7 @@
       background-color: #c82333;
     }
 
-    /* Modal bonitinho para data limite */
-    .date-limit-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: rgba(9, 13, 24, 0.68);
-      backdrop-filter: blur(10px);
-      z-index: 1200;
-    }
 
-    .date-limit-modal {
-      width: min(100%, 520px);
-      border-radius: 28px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: linear-gradient(180deg, #171717 0%, #111111 100%);
-      color: #f8fafc;
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
-      transform: translateY(0);
-      animation: dateLimitPop 0.2s ease-out;
-    }
-
-    @keyframes dateLimitPop {
-      from {
-        transform: translateY(12px) scale(0.98);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-    }
-
-    .date-limit-hero {
-      position: relative;
-      padding: 28px 28px 22px;
-      background:
-        radial-gradient(circle at top right, rgba(255, 179, 71, 0.18), transparent 36%),
-        radial-gradient(circle at left top, rgba(99, 102, 241, 0.14), transparent 30%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-    }
-
-    .date-limit-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffd7a0;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .date-limit-title {
-      margin: 0;
-      font-size: 1.55rem;
-      line-height: 1.1;
-      color: #ffffff;
-    }
-
-    .date-limit-subtitle {
-      margin: 10px 0 0;
-      color: rgba(255, 255, 255, 0.74);
-      line-height: 1.55;
-      font-size: 0.98rem;
-    }
-
-    .date-limit-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 38px;
-      height: 38px;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .date-limit-close:hover {
-      transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.14);
-    }
-
-    .date-limit-body {
-      padding: 0 28px 24px;
-    }
-
-    .date-limit-field-label {
-      display: block;
-      margin: 0 0 10px;
-      color: #e5e7eb;
-      font-size: 0.92rem;
-      font-weight: 700;
-    }
-
-    .date-limit-input {
-      width: 100%;
-      padding: 16px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    .date-limit-input:focus {
-      border-color: rgba(255, 179, 71, 0.85);
-      box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.12);
-      transform: translateY(-1px);
-    }
-
-    .date-limit-hint {
-      margin-top: 12px;
-      color: rgba(255, 255, 255, 0.62);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .date-limit-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      padding: 0 28px 28px;
-    }
-
-    .date-limit-actions .btn {
-      min-width: 128px;
-      border-radius: 14px;
-    }
-
-    .date-limit-actions .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #f8fafc;
-    }
-
-    .date-limit-actions .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.14);
-    }
-
-    .date-limit-actions .btn-primary {
-      background: linear-gradient(135deg, #ffb347 0%, #ff7a18 100%);
-      color: #fff;
-      box-shadow: 0 10px 24px rgba(255, 122, 24, 0.28);
-    }
-
-    .date-limit-actions .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 28px rgba(255, 122, 24, 0.34);
-    }
-
-    .date-limit-actions .btn:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none !important;
-    }
 
     /* Notificações */
     .notification {
@@ -712,22 +544,22 @@
     </div>
   </div>
 
-  <div id="dataLimiteModal" class="date-limit-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="dataLimiteModalTitle">
-    <div class="date-limit-modal">
-      <div class="date-limit-hero">
-        <button type="button" class="date-limit-close" aria-label="Fechar" onclick="fecharDataLimiteModal()">&times;</button>
-        <div class="date-limit-badge">Calendário</div>
-        <h3 class="date-limit-title" id="dataLimiteModalTitle">Definir data limite</h3>
-        <p class="date-limit-subtitle" id="dataLimiteModalSubtitle">Escolhe uma nova data limite para este produto.</p>
+  <!-- Modal de data limite (calendário) -->
+  <div id="dataLimiteModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="dataLimiteTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="dataLimiteTitle">Data limite de monitorização</h3>
+        <button type="button" class="modal-close" onclick="fecharDataLimiteModal()" aria-label="Fechar">&times;</button>
       </div>
-      <div class="date-limit-body">
-        <label class="date-limit-field-label" for="dataLimiteModalInput">Nova data limite</label>
-        <input type="date" id="dataLimiteModalInput" class="date-limit-input">
-        <div class="date-limit-hint" id="dataLimiteModalHint">A data atual será substituída pela nova seleção.</div>
+      <div class="modal-body">
+        <p id="dataLimiteProductName" style="margin-top:0; font-weight:600;"></p>
+        <p>Define a data até à qual queres monitorizar este produto. Após essa data, o produto deixa de ser verificado automaticamente.</p>
+        <label for="dataLimiteInput" style="display:block; margin-top:12px; margin-bottom:6px; font-weight:500;">Data limite</label>
+        <input type="date" id="dataLimiteInput" class="filter-select" style="width:100%;" />
       </div>
-      <div class="date-limit-actions">
+      <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="fecharDataLimiteModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="salvarDataLimiteBtn">Guardar data</button>
+        <button type="button" class="btn btn-primary" id="salvarDataLimiteBtn">Guardar</button>
       </div>
     </div>
   </div>
@@ -1298,19 +1130,15 @@
 
     function abrirDataLimiteModal(id, atual, nome) {
       const modal = document.getElementById('dataLimiteModal');
-      const input = document.getElementById('dataLimiteModalInput');
-      const title = document.getElementById('dataLimiteModalTitle');
-      const subtitle = document.getElementById('dataLimiteModalSubtitle');
-      const hint = document.getElementById('dataLimiteModalHint');
-      if (!modal || !input || !title || !subtitle || !hint) return;
+      const input = document.getElementById('dataLimiteInput');
+      const productName = document.getElementById('dataLimiteProductName');
+      if (!modal || !input || !productName) return;
 
       dataLimiteModalState.id = id;
       dataLimiteModalState.atual = (atual || '').split('T')[0] || '';
       dataLimiteModalState.nome = nome || 'produto';
 
-      title.textContent = `Definir data limite`;
-      subtitle.textContent = `${dataLimiteModalState.nome} - escolhe uma nova data para manter o produto monitorizado.`;
-      hint.textContent = dataLimiteModalState.atual ? `Data atual: ${dataLimiteModalState.atual}` : 'Este produto ainda não tem data limite definida.';
+      productName.textContent = dataLimiteModalState.nome;
       input.value = dataLimiteModalState.atual;
 
       modal.style.display = 'flex';
@@ -1328,7 +1156,7 @@
       const id = dataLimiteModalState.id;
       if (!id) return;
 
-      const input = document.getElementById('dataLimiteModalInput');
+      const input = document.getElementById('dataLimiteInput');
       const novaData = input ? input.value : '';
       if (!novaData) {
         showWarning('Data limite', 'Escolhe uma data antes de guardar.');
@@ -1377,7 +1205,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('dataLimiteModal');
       const btnSalvar = document.getElementById('salvarDataLimiteBtn');
-      const input = document.getElementById('dataLimiteModalInput');
+      const input = document.getElementById('dataLimiteInput');
 
       btnSalvar?.addEventListener('click', salvarDataLimite);
       modal?.addEventListener('click', (event) => {
