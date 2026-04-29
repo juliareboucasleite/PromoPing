@@ -302,8 +302,8 @@
         list.innerHTML = '<div class="dc-empty">A carregar...</div>';
         try {
             const data = await apiWithFallback([
-                `/api/discord/panel/requests?status=${state.requestsTab}`,
-                `/api/corporation/discord/requests?status=${state.requestsTab}`
+                `/api/corporation/discord/requests?status=${state.requestsTab}`,
+                `/api/discord/panel/requests?status=${state.requestsTab}`
             ]);
             const items = data.requests || [];
             if (!items.length) {
@@ -344,8 +344,8 @@
 
         try {
             await apiWithFallback([
-                `/api/discord/panel/requests/${id}/${action}`,
-                `/api/corporation/discord/requests/${id}/${action}`
+                `/api/corporation/discord/requests/${id}/${action}`,
+                `/api/discord/panel/requests/${id}/${action}`
             ], {
                 method: 'POST',
                 body: JSON.stringify({ note })
