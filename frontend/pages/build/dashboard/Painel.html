@@ -787,6 +787,14 @@
       if (link && link !== "#") window.open(link, "_blank");
     }
 
+    function focusAddProductForm() {
+      const form = document.getElementById("formLink");
+      const nomeInput = document.getElementById("nome");
+      form?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => nomeInput?.focus(), 250);
+    }
+    window.focusAddProductForm = focusAddProductForm;
+
     // Cria card HTML de produto dinamicamente, dado o objeto do produto (dados escapados para XSS)
     function createProductCard(p) {
       const nome = escapeHtml((p.Nome || p.nome || "Sem nome").toString());
@@ -944,13 +952,13 @@
               <h3>Nenhum produto encontrado</h3>
               <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
               <div class="empty-state-actions">
-                <a href="#formLink" class="pp-btn">
+                <button type="button" class="pp-btn" onclick="focusAddProductForm()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                   Adicionar primeiro produto
-                </a>
+                </button>
                 <a href="/dashboard/produtos" class="btn-ghost">Ver Produtos</a>
               </div>
             </div>`;

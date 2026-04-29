@@ -208,7 +208,7 @@
             <input type="number" id="dataLimiteDay" min="1" max="31" placeholder="01" inputmode="numeric">
           </div>
           <div class="date-field">
-            <label for="dataLimiteMonth">MÃªs</label>
+            <label for="dataLimiteMonth">Mes</label>
             <input type="number" id="dataLimiteMonth" min="1" max="12" placeholder="01" inputmode="numeric">
           </div>
           <div class="date-field">
@@ -639,7 +639,7 @@
 
       if (nameEl) nameEl.textContent = nome || "";
       if (errEl) { errEl.style.display = "none"; errEl.textContent = ""; }
-      if (removeBtn) removeBtn.style.display = "inline-flex";
+      if (removeBtn) removeBtn.style.display = dataLimiteModalState.dataIso ? "inline-flex" : "none";
 
       if (dataLimiteModalState.dataIso) {
         const [year, month, day] = dataLimiteModalState.dataIso.split("-");
@@ -725,6 +725,55 @@
       };
 
       if (removeBtn) removeBtn.onclick = function () { salvarDataLimite(null); };
+    })();
+    (function () {
+      const saveBtn = document.getElementById("dataLimiteSaveBtn");
+      const dayInput = document.getElementById("dataLimiteDay");
+      const monthInput = document.getElementById("dataLimiteMonth");
+      const yearInput = document.getElementById("dataLimiteYear");
+      const errEl = document.getElementById("dataLimiteError");
+
+      if (saveBtn) saveBtn.onclick = function () {
+        const day = parseInt(dayInput?.value || "", 10);
+        const month = parseInt(monthInput?.value || "", 10);
+        const year = parseInt(yearInput?.value || "", 10);
+
+        if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
+          if (errEl) { errEl.textContent = "Escolhe uma data."; errEl.style.display = "block"; }
+          return;
+        }
+
+        const escolhida = new Date(year, month - 1, day);
+        if (escolhida.getDate() !== day || escolhida.getMonth() !== month - 1 || escolhida.getFullYear() !== year) {
+          if (errEl) { errEl.textContent = "Data invalida."; errEl.style.display = "block"; }
+          return;
+        }
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        if (escolhida < hoje) {
+          if (errEl) { errEl.textContent = "A data nao pode ser no passado."; errEl.style.display = "block"; }
+          return;
+        }
+
+        if (errEl) { errEl.textContent = ""; errEl.style.display = "none"; }
+        salvarDataLimite(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+      };
+
+      dayInput?.addEventListener("input", function () {
+        if (this.value.length >= 2) monthInput?.focus();
+      });
+
+      monthInput?.addEventListener("input", function () {
+        if (this.value.length >= 2) yearInput?.focus();
+      });
+
+      [dayInput, monthInput, yearInput].forEach((input) => {
+        input?.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") saveBtn?.click();
+          if (event.key === "Escape") closeDataLimiteModal();
+        });
+      });
     })();
     window.openDataLimiteModal = openDataLimiteModal;
     window.closeDataLimiteModal = closeDataLimiteModal;

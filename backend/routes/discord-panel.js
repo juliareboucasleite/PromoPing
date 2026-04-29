@@ -103,6 +103,27 @@ async function getUserAccessToken(referenciaId) {
     return rows[0].access_token;
 }
 
+async function getUserPerfilId(referenciaId) {
+    if (!referenciaId) return null;
+
+    const [rows] = await pool.query(
+        `SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ? LIMIT 1`,
+        [referenciaId]
+    );
+
+    if (!rows || rows.length === 0) return null;
+    return rows[0].PerfilId ?? rows[0].perfilid ?? null;
+}
+
+async function getRequestPerfilId(req) {
+    const tokenPerfilId = req.user?.perfilId ?? req.user?.PerfilId;
+    if (tokenPerfilId !== undefined && tokenPerfilId !== null) {
+        return Number(tokenPerfilId);
+    }
+
+    return getUserPerfilId(req.user?.ReferenciaID);
+}
+
 async function ensureDiscordCouponTables() {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS discord_coupon_requests (
@@ -466,7 +487,8 @@ async function userHasManageGuild(referenciaId, guildId) {
 // POST /api/discord/panel/send — envio direto (apenas corp, perfilId=3)
 router.post("/send", verifyToken, async (req, res) => {
     await ensureDiscordCouponTables();
-    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+    const perfilId = await getRequestPerfilId(req);
+    if (perfilId !== 3) {
         return res.status(403).json({ error: "Apenas utilizadores corporativos podem enviar diretamente. Use /request." });
     }
     const { payload, errors } = sanitizeCouponPayload(req.body);
@@ -527,7 +549,7 @@ router.post("/request", verifyToken, async (req, res) => {
 // GET /api/discord/panel/requests — corp vê todas pendentes; suporte vê as suas
 router.get("/requests", verifyToken, async (req, res) => {
     await ensureDiscordCouponTables();
-    const isCorp = (req.user.perfilId === 3 || req.user.PerfilId === 3);
+    const isCorp = (await getRequestPerfilId(req)) === 3;
     try {
         let rows;
         if (isCorp) {
@@ -563,7 +585,8 @@ router.get("/requests", verifyToken, async (req, res) => {
 // POST /api/discord/panel/requests/:id/approve — corp aprova → enfileira envio
 router.post("/requests/:id/approve", verifyToken, async (req, res) => {
     await ensureDiscordCouponTables();
-    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+    const perfilId = await getRequestPerfilId(req);
+    if (perfilId !== 3) {
         return res.status(403).json({ error: "Apenas corp pode aprovar" });
     }
     const id = parseInt(req.params.id, 10);
@@ -617,7 +640,8 @@ router.post("/requests/:id/approve", verifyToken, async (req, res) => {
 // POST /api/discord/panel/requests/:id/reject
 router.post("/requests/:id/reject", verifyToken, async (req, res) => {
     await ensureDiscordCouponTables();
-    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+    const perfilId = await getRequestPerfilId(req);
+    if (perfilId !== 3) {
         return res.status(403).json({ error: "Apenas corp pode rejeitar" });
     }
     const id = parseInt(req.params.id, 10);
