@@ -63,13 +63,20 @@
         return div.innerHTML;
     }
 
+    function pick(obj, ...keys) {
+        for (const key of keys) {
+            if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
+        }
+        return null;
+    }
+
     let cachedProducts = [];
 
     /** Obtém lista de empresas/lojas distintas a partir dos produtos (ordenada). */
     function getDistinctLojas(products) {
         const set = new Set();
         (products || []).forEach(p => {
-            const nome = (p.Loja || '').trim();
+            const nome = (pick(p, 'Loja', 'loja') || '').trim();
             if (nome) set.add(nome);
         });
         return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt'));
@@ -107,7 +114,7 @@
 
     function filterProducts(products, filterKey) {
         if (!filterKey || filterKey === 'todos') return products;
-        return (products || []).filter(p => (p.Loja || '').trim() === filterKey);
+        return (products || []).filter(p => (pick(p, 'Loja', 'loja') || '').trim() === filterKey);
     }
 
     function renderProductsTable(products) {
@@ -134,8 +141,8 @@
                 <tbody>
                     ${products.map(product => `
                         <tr>
-                            <td>${escapeHtml(product.Nome || 'N/A')}</td>
-                            <td>${escapeHtml(product.UserName || 'N/A')}</td>
+                            <td>${escapeHtml(pick(product, 'Nome', 'nome') || 'N/A')}</td>
+                            <td>${escapeHtml(pick(product, 'UserName', 'username') || 'N/A')}</td>
                             <td>€${parseFloat(product.PrecoAtual || 0).toFixed(2)}</td>
                             <td>€${parseFloat(product.PrecoAlvo || 0).toFixed(2)}</td>
                             <td>${escapeHtml(product.Loja || 'N/A')}</td>
