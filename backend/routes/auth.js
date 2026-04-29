@@ -1227,7 +1227,9 @@ router.post("/login", async (req, res) => {
 
         // Busca utilizador
         const [rows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ?",
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE Email = ?`,
             [email]
         );
         console.log(" Resultado SELECT:", rows);
@@ -2829,7 +2831,9 @@ router.post("/verificar-codigo", async (req, res) => {
 
         // Buscar usuário e verificar código
         const [userRows] = await pool.query(
-            "SELECT * FROM Utilizadores WHERE Email = ? AND CodigoEmail = ?",
+            `SELECT ${USER_SELECT_FIELDS}
+             FROM Utilizadores
+             WHERE Email = ? AND CodigoEmail = ?`,
             [email, codigo]
         );
 
