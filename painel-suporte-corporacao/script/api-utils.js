@@ -71,6 +71,9 @@
     function detectApiBaseFromLocation() {
         try {
             const { protocol, hostname, port } = window.location;
+            if (protocol === 'file:' || !hostname) {
+                return 'http://localhost:3000';
+            }
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
                 return 'http://localhost:3000';
             }
