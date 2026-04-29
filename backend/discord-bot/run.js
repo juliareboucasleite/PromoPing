@@ -11,13 +11,14 @@ console.log = (...args) => {
         originalConsoleLog(...args);
     }
 };
-
+import './index.js';
 import {
     execSync,
     spawn
 } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+
 import {
     fileURLToPath
 } from 'url';
