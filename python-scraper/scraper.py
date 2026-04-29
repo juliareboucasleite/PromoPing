@@ -213,12 +213,29 @@ def extract_browser_major_from_error(err):
 
 
 def start_chrome_with_version(options, version_main=None, headless=False):
+    # Resolve explicit executable paths from config or environment
+    browser_exec = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN')
+    driver_exec = SCRAPER_CONFIG.get('chromedriver_path') or os.environ.get('CHROMEDRIVER_PATH')
+
     if version_main:
         logger.info(f"Iniciando ChromeDriver com version_main={version_main} (headless={headless})")
-        return uc.Chrome(options=options, use_subprocess=True, version_main=version_main, headless=headless)
+        return uc.Chrome(
+            options=options,
+            browser_executable_path=browser_exec,
+            driver_executable_path=driver_exec,
+            use_subprocess=True,
+            version_main=version_main,
+            headless=headless,
+        )
 
     logger.info(f"Iniciando ChromeDriver com autodetecção de versão (headless={headless})")
-    return uc.Chrome(options=options, use_subprocess=True, headless=headless)
+    return uc.Chrome(
+        options=options,
+        browser_executable_path=browser_exec,
+        driver_executable_path=driver_exec,
+        use_subprocess=True,
+        headless=headless,
+    )
 
 def create_driver():
     opts = uc.ChromeOptions()
@@ -237,6 +254,7 @@ def create_driver():
         except Exception:
             pass
 
+    # Core flags for running Chromium in containerized or headless environments
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
@@ -247,6 +265,13 @@ def create_driver():
     opts.add_argument("--lang=pt-PT")
     opts.add_argument("--window-size=1920,1080")
     opts.add_argument(f"--user-agent={SCRAPER_CONFIG['user_agent']}")
+
+    # Use new headless mode when requested
+    if headless:
+        try:
+            opts.add_argument("--headless=new")
+        except Exception:
+            pass
 
     version_main = get_chrome_major_version()
 
