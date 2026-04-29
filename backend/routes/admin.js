@@ -144,6 +144,8 @@ router.get("/users", async (req, res) => {
             LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
             LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
             WHERE u.Ativo = 1
+              AND COALESCE(u.PerfilId, 2) = 2
+              AND u.ReferenciaID <> 'ANON'
             GROUP BY u.ReferenciaID
             ORDER BY u.DataRegisto DESC
             LIMIT ? OFFSET ?`,
@@ -151,7 +153,11 @@ router.get("/users", async (req, res) => {
         );
 
         const [total] = await pool.query(
-            "SELECT COUNT(*) as total FROM utilizadores WHERE Ativo = 1"
+            `SELECT COUNT(*) as total
+               FROM utilizadores
+              WHERE Ativo = 1
+                AND COALESCE(PerfilId, 2) = 2
+                AND ReferenciaID <> 'ANON'`
         );
 
         res.json({
@@ -185,6 +191,8 @@ router.get("/users/export/pdf", async (req, res) => {
             LEFT JOIN produtos p ON p.ReferenciaID = u.ReferenciaID AND p.DeletedAt IS NULL
             LEFT JOIN notificacoes n ON n.ReferenciaID = u.ReferenciaID
             WHERE u.Ativo = 1
+              AND COALESCE(u.PerfilId, 2) = 2
+              AND u.ReferenciaID <> 'ANON'
             GROUP BY u.ReferenciaID
             ORDER BY u.DataRegisto DESC`
         );
@@ -310,16 +318,16 @@ router.get("/products", async (req, res) => {
 
         const [products] = await pool.query(
             `SELECT 
-                p.Id,
-                p.Nome,
-                p.Link,
-                p.PrecoAtual,
-                p.PrecoAlvo,
-                p.CreatedAt as DataCriacao,
-                l.Nome as Loja,
-                u.Nome as UserName,
-                u.Email as UserEmail,
-                (SELECT COUNT(*) FROM historicoprecos WHERE ProdutoId = p.Id) as historicoCount
+                p.Id AS "Id",
+                p.Nome AS "Nome",
+                p.Link AS "Link",
+                p.PrecoAtual AS "PrecoAtual",
+                p.PrecoAlvo AS "PrecoAlvo",
+                p.CreatedAt as "DataCriacao",
+                l.Nome as "Loja",
+                u.Nome as "UserName",
+                u.Email as "UserEmail",
+                (SELECT COUNT(*) FROM historicoprecos WHERE ProdutoId = p.Id) as "historicoCount"
             FROM produtos p
             LEFT JOIN utilizadores u ON u.ReferenciaID = p.ReferenciaID
             LEFT JOIN lojas l ON l.Id = p.LojaId
@@ -413,6 +421,9 @@ router.get("/reviews", verifyToken, async (req, res) => {
             u.Nome as user_nome,
             u.Email as user_email,
             r.SupportReferenciaID,
+            r.discord_user_id,
+            r.discord_username,
+            r.discord_avatar_url,
             s.Nome as support_nome,
             s.Email as support_email
         FROM reviews r
