@@ -284,7 +284,7 @@
 
         list.innerHTML = '<div class="dc-empty">A carregar...</div>';
         try {
-            const data = await api(`/api/discord/panel/requests?status=${state.requestsTab}`);
+            const data = await api(`/api/corporation/discord/requests?status=${state.requestsTab}`);
             const items = data.requests || [];
             if (!items.length) {
                 list.innerHTML = '<div class="dc-empty">Sem solicitacoes.</div>';
@@ -323,7 +323,7 @@
             : (prompt('Nota (opcional):') || null);
 
         try {
-            await api(`/api/discord/panel/requests/${id}/${action}`, {
+            await api(`/api/corporation/discord/requests/${id}/${action}`, {
                 method: 'POST',
                 body: JSON.stringify({ note })
             });
