@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord — PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        :root {
+            --discord-blurple: #5865f2;
+            --discord-blurple-hover: #4752c4;
+            --discord-green: #23a559;
+            --discord-red: #f23f43;
+            --surface-1: #18191c;
+            --surface-2: #232428;
+            --surface-3: #2b2d31;
+            --border-1: #1f2024;
+            --text-primary: #f2f3f5;
+            --text-muted: #b5bac1;
+            --text-dim: #80848e;
+        }
+
+        .dc-page { padding: 1.5rem 2rem 4rem; max-width: 1280px; }
+        .dc-page h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+        .dc-page .lead { color: var(--text-muted); margin-bottom: 2rem; }
+
+        .dc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+        @media (max-width: 1100px) { .dc-grid { grid-template-columns: 1fr; } }
+
+        .dc-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-1);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .dc-card h2 { margin: 0 0 0.75rem; font-size: 1.1rem; font-weight: 600; }
+        .dc-card .muted { color: var(--text-muted); font-size: 0.9rem; }
+
+        .dc-connect-row { display: flex; align-items: center; gap: 1rem; }
+        .dc-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--surface-3); flex-shrink: 0; }
+        .dc-username { font-weight: 600; }
+        .dc-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
+        .dc-status-dot.on { background: var(--discord-green); }
+        .dc-status-dot.off { background: var(--text-dim); }
+
+        .dc-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.55rem 1rem; border-radius: 8px; border: none;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer;
+            transition: background 120ms, transform 80ms;
+        }
+        .dc-btn:active { transform: scale(0.98); }
+        .dc-btn-primary { background: var(--discord-blurple); color: white; }
+        .dc-btn-primary:hover { background: var(--discord-blurple-hover); }
+        .dc-btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-1); }
+        .dc-btn-ghost:hover { background: var(--surface-3); color: var(--text-primary); }
+        .dc-btn-danger { background: transparent; color: var(--discord-red); border: 1px solid var(--discord-red); }
+        .dc-btn-danger:hover { background: rgba(242, 63, 67, 0.1); }
+        .dc-btn-success { background: var(--discord-green); color: white; }
+        .dc-btn-success:hover { filter: brightness(1.1); }
+        .dc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .dc-guild-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+        .dc-guild-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.6rem 0.75rem; border-radius: 8px;
+            background: var(--surface-3); cursor: pointer;
+            border: 2px solid transparent; transition: border-color 120ms;
+        }
+        .dc-guild-item:hover { border-color: var(--discord-blurple); }
+        .dc-guild-item.selected { border-color: var(--discord-blurple); background: rgba(88, 101, 242, 0.1); }
+        .dc-guild-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-1); flex-shrink: 0; }
+        .dc-guild-name { font-weight: 500; flex: 1; }
+        .dc-guild-flag { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; }
+        .dc-guild-flag.bot-yes { background: rgba(35, 165, 89, 0.15); color: var(--discord-green); }
+        .dc-guild-flag.bot-no { background: rgba(128, 132, 142, 0.15); color: var(--text-dim); }
+
+        .dc-form-grid { display: grid; gap: 0.85rem; }
+        .dc-field { display: flex; flex-direction: column; gap: 0.35rem; }
+        .dc-field label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .dc-field input, .dc-field textarea, .dc-field select {
+            background: var(--surface-1); border: 1px solid var(--border-1);
+            color: var(--text-primary); border-radius: 6px;
+            padding: 0.55rem 0.7rem; font-size: 0.9rem; font-family: inherit;
+            transition: border-color 120ms;
+        }
+        .dc-field input:focus, .dc-field textarea:focus, .dc-field select:focus {
+            outline: none; border-color: var(--discord-blurple);
+        }
+        .dc-field textarea { min-height: 90px; resize: vertical; }
+        .dc-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+
+        .dc-color-row { display: flex; align-items: center; gap: 0.5rem; }
+        .dc-color-row input[type="color"] { width: 40px; height: 36px; padding: 2px; cursor: pointer; }
+
+        /* Embed preview — visual aproximado do Discord */
+        .dc-preview {
+            background: var(--surface-1); border-radius: 8px; padding: 1rem;
+            font-family: 'gg sans', 'Inter', sans-serif;
+        }
+        .dc-preview-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .dc-preview-msg { display: flex; gap: 0.75rem; }
+        .dc-preview-bot-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--discord-blurple), #7289da);
+            flex-shrink: 0;
+        }
+        .dc-preview-body { flex: 1; min-width: 0; }
+        .dc-preview-author { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+        .dc-preview-author-name { font-weight: 600; color: white; }
+        .dc-preview-bot-tag { background: var(--discord-blurple); color: white; font-size: 0.65rem; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+        .dc-preview-time { color: var(--text-dim); font-size: 0.7rem; }
+        .dc-preview-embed {
+            border-left: 4px solid var(--discord-blurple);
+            background: var(--surface-3); border-radius: 4px;
+            padding: 0.75rem 1rem; max-width: 520px;
+        }
+        .dc-preview-embed-title { font-weight: 600; color: white; margin-bottom: 0.4rem; word-wrap: break-word; }
+        .dc-preview-embed-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; }
+        .dc-preview-embed-desc code { background: var(--surface-1); padding: 1px 5px; border-radius: 3px; color: white; font-family: monospace; }
+        .dc-preview-embed-img { margin-top: 0.6rem; max-width: 100%; border-radius: 4px; display: block; max-height: 280px; object-fit: cover; }
+        .dc-preview-embed-button {
+            display: inline-block; margin-top: 0.6rem;
+            background: var(--surface-2); color: white; text-decoration: none;
+            padding: 0.4rem 0.85rem; border-radius: 4px; font-size: 0.85rem;
+            border: 1px solid var(--border-1); font-weight: 500;
+        }
+
+        .dc-empty { text-align: center; padding: 2rem 1rem; color: var(--text-dim); }
+        .dc-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 0.85rem 1.25rem; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 1000; opacity: 0; transition: opacity 200ms; }
+        .dc-toast.show { opacity: 1; }
+        .dc-toast.success { background: var(--discord-green); }
+        .dc-toast.error { background: var(--discord-red); }
+
+        .dc-tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border-1); margin-bottom: 1rem; }
+        .dc-tab { padding: 0.6rem 1rem; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; font-weight: 500; }
+        .dc-tab.active { color: white; border-bottom-color: var(--discord-blurple); }
+
+        .dc-request-item {
+            background: var(--surface-3); border-radius: 8px; padding: 0.85rem 1rem;
+            margin-bottom: 0.6rem; border-left: 3px solid var(--text-dim);
+        }
+        .dc-request-item.pending { border-left-color: #faa61a; }
+        .dc-request-meta { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+        .dc-request-actions { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="discord.html" class="nav-item active"><span class="nav-icon"></span><span>Discord</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active dc-page">
+                <h1>Discord</h1>
+                <p class="lead">Liga a tua conta Discord, escolhe um servidor e envia cupões com embed personalizado.</p>
+
+                <!-- Card de ligação Discord -->
+                <div class="dc-card" id="connectionCard">
+                    <h2>Conta Discord</h2>
+                    <div id="connectionContent" class="muted">A carregar...</div>
+                </div>
+
+                <div class="dc-grid">
+                    <!-- Coluna esquerda -->
+                    <div>
+                        <div class="dc-card">
+                            <h2>Servidores</h2>
+                            <p class="muted">Servidores onde tens permissão de gestão. Selecciona um para enviar cupão.</p>
+                            <div id="guildList" class="dc-guild-list">
+                                <div class="dc-empty">A carregar...</div>
+                            </div>
+                            <div style="margin-top: 0.85rem;">
+                                <button id="addBotBtn" class="dc-btn dc-btn-ghost">+ Adicionar servidor (instalar bot)</button>
+                            </div>
+                        </div>
+
+                        <div class="dc-card" id="builderCard" style="display:none;">
+                            <h2>Construir cupão</h2>
+                            <div class="dc-form-grid">
+                                <div class="dc-field">
+                                    <label for="fChannel">Canal</label>
+                                    <select id="fChannel"><option>Selecciona um servidor primeiro</option></select>
+                                </div>
+                                <div class="dc-field">
+                                    <label for="fTitle">Título do embed</label>
+                                    <input id="fTitle" type="text" maxlength="256" placeholder="Ex: Desconto especial PromoPing!">
+                                </div>
+                                <div class="dc-field">
+                                    <label for="fDesc">Descrição</label>
+                                    <textarea id="fDesc" maxlength="3500" placeholder="Detalhes do cupão, validade, condições..."></textarea>
+                                </div>
+                                <div class="dc-field-row">
+                                    <div class="dc-field">
+                                        <label for="fCoupon">Código promo</label>
+                                        <input id="fCoupon" type="text" maxlength="64" placeholder="PROMO20">
+                                    </div>
+                                    <div class="dc-field">
+                                        <label for="fColor">Cor</label>
+                                        <div class="dc-color-row">
+                                            <input id="fColor" type="color" value="#5865f2">
+                                            <span class="muted" id="fColorHex">#5865F2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dc-field">
+                                    <label for="fImage">URL da imagem (opcional)</label>
+                                    <input id="fImage" type="url" placeholder="https://...">
+                                </div>
+                                <div class="dc-field-row">
+                                    <div class="dc-field">
+                                        <label for="fBtnLabel">Texto do botão (opcional)</label>
+                                        <input id="fBtnLabel" type="text" maxlength="80" placeholder="Ver promoção">
+                                    </div>
+                                    <div class="dc-field">
+                                        <label for="fBtnUrl">URL do botão</label>
+                                        <input id="fBtnUrl" type="url" placeholder="https://promoping.com/...">
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button id="sendBtn" class="dc-btn dc-btn-primary">Enviar agora</button>
+                                    <button id="resetBtn" class="dc-btn dc-btn-ghost" type="button">Limpar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna direita -->
+                    <div>
+                        <div class="dc-card">
+                            <h2>Pré-visualização</h2>
+                            <div class="dc-preview">
+                                <div class="dc-preview-label">Como aparecerá no Discord</div>
+                                <div class="dc-preview-msg">
+                                    <div class="dc-preview-bot-avatar"></div>
+                                    <div class="dc-preview-body">
+                                        <div class="dc-preview-author">
+                                            <span class="dc-preview-author-name">PromoPing</span>
+                                            <span class="dc-preview-bot-tag">BOT</span>
+                                            <span class="dc-preview-time">hoje às agora</span>
+                                        </div>
+                                        <div class="dc-preview-embed" id="previewEmbed">
+                                            <div class="dc-preview-embed-title" id="previewTitle">Título do embed</div>
+                                            <div class="dc-preview-embed-desc" id="previewDesc">A descrição aparece aqui.</div>
+                                            <img id="previewImg" class="dc-preview-embed-img" style="display:none;" alt="">
+                                            <a id="previewBtn" class="dc-preview-embed-button" style="display:none;" target="_blank" rel="noopener">Botão</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dc-card">
+                            <div class="dc-tabs">
+                                <div class="dc-tab active" data-tab="pending">Pendentes</div>
+                                <div class="dc-tab" data-tab="approved">Aprovadas</div>
+                                <div class="dc-tab" data-tab="rejected">Rejeitadas</div>
+                            </div>
+                            <div id="requestsList">
+                                <div class="dc-empty">A carregar...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="toast" class="dc-toast"></div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-discord.js"></script>
+</body>
+
+</html>
