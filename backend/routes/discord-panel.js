@@ -351,4 +351,208 @@ router.get("/guilds/:guildId/channels", verifyToken, async (req, res) => {
     }
 });
 
+function sanitizeCouponPayload(body) {
+    const errors = [];
+    const out = {
+        guild_id: String(body.guild_id || "").trim(),
+        channel_id: String(body.channel_id || "").trim(),
+        title: body.title ? String(body.title).slice(0, 256) : null,
+        description: body.description ? String(body.description).slice(0, 4000) : null,
+        color: typeof body.color === "number" ? body.color : null,
+        image_url: body.image_url ? String(body.image_url).slice(0, 2000) : null,
+        button_label: body.button_label ? String(body.button_label).slice(0, 80) : null,
+        button_url: body.button_url ? String(body.button_url).slice(0, 2000) : null,
+        coupon_code: body.coupon_code ? String(body.coupon_code).slice(0, 64) : null,
+    };
+    if (!/^\d{15,25}$/.test(out.guild_id)) errors.push("guild_id inválido");
+    if (!/^\d{15,25}$/.test(out.channel_id)) errors.push("channel_id inválido");
+    if (!out.title && !out.description) errors.push("É preciso pelo menos title ou description");
+    if (out.image_url && !/^https?:\/\//i.test(out.image_url)) errors.push("image_url deve começar com http(s)://");
+    if (out.button_url && !/^https?:\/\//i.test(out.button_url)) errors.push("button_url deve começar com http(s)://");
+    if ((out.button_label && !out.button_url) || (out.button_url && !out.button_label)) errors.push("Botão precisa de label E url");
+    return { payload: out, errors };
+}
+
+async function userHasManageGuild(referenciaId, guildId) {
+    const accessToken = await getUserAccessToken(referenciaId);
+    if (!accessToken) return { ok: false, code: "NOT_LINKED" };
+    let userGuilds;
+    try {
+        userGuilds = await discordFetchUserGuilds(accessToken);
+    } catch {
+        return { ok: false, code: "DISCORD_TOKEN_EXPIRED" };
+    }
+    const g = userGuilds.find(x => x.id === guildId);
+    if (!g || !hasManageGuild(g.permissions)) return { ok: false, code: "NO_PERMISSION" };
+    return { ok: true };
+}
+
+// POST /api/discord/panel/send — envio direto (apenas corp, perfilId=3)
+router.post("/send", verifyToken, async (req, res) => {
+    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+        return res.status(403).json({ error: "Apenas utilizadores corporativos podem enviar diretamente. Use /request." });
+    }
+    const { payload, errors } = sanitizeCouponPayload(req.body);
+    if (errors.length) return res.status(400).json({ error: errors.join("; ") });
+
+    try {
+        const [botRows] = await pool.query(
+            `SELECT 1 FROM corporation_discord_guilds WHERE guild_id = ? AND removed_at IS NULL LIMIT 1`,
+            [payload.guild_id]
+        );
+        if (!botRows || botRows.length === 0) return res.status(404).json({ error: "Bot não está neste servidor" });
+
+        const perm = await userHasManageGuild(req.user.ReferenciaID, payload.guild_id);
+        if (!perm.ok) return res.status(403).json({ error: "Sem permissão MANAGE_GUILD", code: perm.code });
+
+        const [msgIns] = await pool.query(
+            `INSERT INTO discord_coupon_messages
+                (sent_by_referenciaid, guild_id, channel_id, title, description, color, image_url, button_label, button_url, coupon_code)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id`,
+            [req.user.ReferenciaID, payload.guild_id, payload.channel_id, payload.title, payload.description, payload.color, payload.image_url, payload.button_label, payload.button_url, payload.coupon_code]
+        );
+        const messageRowId = msgIns[0].id;
+
+        await pool.query(
+            `INSERT INTO discord_outbound_queue (guild_id, channel_id, payload, coupon_message_id)
+             VALUES (?, ?, ?::jsonb, ?)`,
+            [payload.guild_id, payload.channel_id, JSON.stringify(payload), messageRowId]
+        );
+
+        res.json({ ok: true, queued: true, message_row_id: messageRowId });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /send erro:", err);
+        res.status(500).json({ error: "Falha ao enfileirar envio" });
+    }
+});
+
+// POST /api/discord/panel/request — suporte cria solicitação
+router.post("/request", verifyToken, async (req, res) => {
+    const { payload, errors } = sanitizeCouponPayload(req.body);
+    if (errors.length) return res.status(400).json({ error: errors.join("; ") });
+    try {
+        const [ins] = await pool.query(
+            `INSERT INTO discord_coupon_requests
+                (requested_by_referenciaid, target_guild_id, target_channel_id, title, description, color, image_url, button_label, button_url, coupon_code)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id`,
+            [req.user.ReferenciaID, payload.guild_id, payload.channel_id, payload.title, payload.description, payload.color, payload.image_url, payload.button_label, payload.button_url, payload.coupon_code]
+        );
+        res.json({ ok: true, request_id: ins[0].id });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /request erro:", err);
+        res.status(500).json({ error: "Falha ao criar solicitação" });
+    }
+});
+
+// GET /api/discord/panel/requests — corp vê todas pendentes; suporte vê as suas
+router.get("/requests", verifyToken, async (req, res) => {
+    const isCorp = (req.user.perfilId === 3 || req.user.PerfilId === 3);
+    try {
+        let rows;
+        if (isCorp) {
+            const status = req.query.status || 'pending';
+            [rows] = await pool.query(
+                `SELECT r.id, r.requested_by_referenciaid, r.target_guild_id, r.target_channel_id,
+                        r.title, r.description, r.color, r.image_url, r.button_label, r.button_url, r.coupon_code,
+                        r.status, r.review_note, r.created_at, r.reviewed_at,
+                        u.nome AS requester_name, u.email AS requester_email
+                   FROM discord_coupon_requests r
+                   LEFT JOIN utilizadores u ON u.referenciaid = r.requested_by_referenciaid
+                  WHERE r.status = ?
+                  ORDER BY r.created_at DESC LIMIT 100`,
+                [status]
+            );
+        } else {
+            [rows] = await pool.query(
+                `SELECT id, target_guild_id, target_channel_id, title, description, color, image_url,
+                        button_label, button_url, coupon_code, status, review_note, created_at, reviewed_at
+                   FROM discord_coupon_requests
+                  WHERE requested_by_referenciaid = ?
+                  ORDER BY created_at DESC LIMIT 100`,
+                [req.user.ReferenciaID]
+            );
+        }
+        res.json({ requests: rows || [] });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /requests erro:", err);
+        res.status(500).json({ error: "Falha ao listar solicitações" });
+    }
+});
+
+// POST /api/discord/panel/requests/:id/approve — corp aprova → enfileira envio
+router.post("/requests/:id/approve", verifyToken, async (req, res) => {
+    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+        return res.status(403).json({ error: "Apenas corp pode aprovar" });
+    }
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: "id inválido" });
+    try {
+        const [reqRows] = await pool.query(
+            `SELECT * FROM discord_coupon_requests WHERE id = ? AND status = 'pending' LIMIT 1`,
+            [id]
+        );
+        if (!reqRows || reqRows.length === 0) return res.status(404).json({ error: "Solicitação não encontrada ou já revista" });
+        const r = reqRows[0];
+
+        const [botRows] = await pool.query(
+            `SELECT 1 FROM corporation_discord_guilds WHERE guild_id = ? AND removed_at IS NULL LIMIT 1`,
+            [r.target_guild_id]
+        );
+        if (!botRows || botRows.length === 0) return res.status(400).json({ error: "Bot não está mais no servidor alvo" });
+
+        const payload = {
+            guild_id: r.target_guild_id, channel_id: r.target_channel_id,
+            title: r.title, description: r.description, color: r.color,
+            image_url: r.image_url, button_label: r.button_label, button_url: r.button_url,
+            coupon_code: r.coupon_code,
+        };
+
+        const [msgIns] = await pool.query(
+            `INSERT INTO discord_coupon_messages
+                (sent_by_referenciaid, guild_id, channel_id, title, description, color, image_url, button_label, button_url, coupon_code, request_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id`,
+            [req.user.ReferenciaID, r.target_guild_id, r.target_channel_id, r.title, r.description, r.color, r.image_url, r.button_label, r.button_url, r.coupon_code, id]
+        );
+
+        await pool.query(
+            `INSERT INTO discord_outbound_queue (guild_id, channel_id, payload, coupon_message_id) VALUES (?, ?, ?::jsonb, ?)`,
+            [r.target_guild_id, r.target_channel_id, JSON.stringify(payload), msgIns[0].id]
+        );
+
+        await pool.query(
+            `UPDATE discord_coupon_requests SET status = 'approved', reviewed_by_referenciaid = ?, reviewed_at = CURRENT_TIMESTAMP, review_note = ? WHERE id = ?`,
+            [req.user.ReferenciaID, req.body.note || null, id]
+        );
+
+        res.json({ ok: true, message_row_id: msgIns[0].id });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /approve erro:", err);
+        res.status(500).json({ error: "Falha ao aprovar" });
+    }
+});
+
+// POST /api/discord/panel/requests/:id/reject
+router.post("/requests/:id/reject", verifyToken, async (req, res) => {
+    if (req.user.perfilId !== 3 && req.user.PerfilId !== 3) {
+        return res.status(403).json({ error: "Apenas corp pode rejeitar" });
+    }
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: "id inválido" });
+    try {
+        const [upd] = await pool.query(
+            `UPDATE discord_coupon_requests SET status = 'rejected', reviewed_by_referenciaid = ?, reviewed_at = CURRENT_TIMESTAMP, review_note = ? WHERE id = ? AND status = 'pending'`,
+            [req.user.ReferenciaID, req.body.note || null, id]
+        );
+        const affected = upd.affectedRows !== undefined ? upd.affectedRows : (upd.rowCount || 0);
+        if (!affected) return res.status(404).json({ error: "Solicitação não encontrada ou já revista" });
+        res.json({ ok: true });
+    } catch (err) {
+        console.error("[DISCORD-PANEL] /reject erro:", err);
+        res.status(500).json({ error: "Falha ao rejeitar" });
+    }
+});
+
 export default router;
