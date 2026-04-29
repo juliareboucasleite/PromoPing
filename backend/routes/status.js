@@ -140,7 +140,19 @@ router.get("/api/status", async (req, res) => {
     let notificacoesCount = [{ total: 0 }];
 
     try {
-      const [m] = await db.query("SELECT * FROM metricas_sistema ORDER BY Id DESC LIMIT 1");
+      const [m] = await db.query(
+        `SELECT
+           id AS Id,
+           uptimegeral AS UptimeGeral,
+           temporespostamedia AS TempoRespostaMedia,
+           utilizadoresativos AS UtilizadoresAtivos,
+           produtosmonitorizados AS ProdutosMonitorizados,
+           notificacoesenviadas AS NotificacoesEnviadas,
+           atualizadoem AS AtualizadoEm
+         FROM metricas_sistema
+         ORDER BY id DESC
+         LIMIT 1`
+      );
       if (m && m.length) metricas = m;
     } catch (_) { /* tabela pode não existir */ }
 
