@@ -202,8 +202,20 @@
       <div class="modal-body">
         <p id="dataLimiteProductName" style="margin-top:0; font-weight:600;"></p>
         <p>Define a data até à qual queres monitorizar este produto. Após essa data, o produto deixa de ser verificado automaticamente.</p>
-        <label for="dataLimiteInput" style="display:block; margin-top:12px; margin-bottom:6px; font-weight:500;">Data limite</label>
-        <input type="date" id="dataLimiteInput" class="filter-select" style="width:100%;" />
+        <div class="date-fields-group">
+          <div class="date-field">
+            <label for="dataLimiteDay">Dia</label>
+            <input type="number" id="dataLimiteDay" min="1" max="31" placeholder="01" inputmode="numeric">
+          </div>
+          <div class="date-field">
+            <label for="dataLimiteMonth">MÃªs</label>
+            <input type="number" id="dataLimiteMonth" min="1" max="12" placeholder="01" inputmode="numeric">
+          </div>
+          <div class="date-field">
+            <label for="dataLimiteYear">Ano</label>
+            <input type="number" id="dataLimiteYear" min="2026" max="2099" placeholder="2026" inputmode="numeric">
+          </div>
+        </div>
         <p id="dataLimiteError" style="color:#c33; margin-top:8px; display:none;"></p>
       </div>
       <div class="modal-footer">
