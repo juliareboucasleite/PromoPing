@@ -342,7 +342,18 @@ router.post("/api/metricas/update", async (req, res) => {
 router.get("/api/incidentes", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM incidentes ORDER BY DataInicio DESC"
+      `SELECT
+         id AS Id,
+         titulo AS Titulo,
+         descricao AS Descricao,
+         impacto AS Impacto,
+         estado AS Estado,
+         status AS Status,
+         datainicio AS DataInicio,
+         datafim AS DataFim,
+         componenteid AS ComponenteId
+       FROM incidentes
+       ORDER BY datainicio DESC`
     );
     res.json({
       status: "ok",
