@@ -141,6 +141,101 @@ class PromoPingBot {
         return normalizedPrefix;
     }
 
+    startCouponQueueWorker() {
+        if (this.couponQueueInterval) return;
+        const intervalMs = parseInt(process.env.COUPON_QUEUE_INTERVAL_MS) || 5000;
+        this.couponQueueInterval = setInterval(() => {
+            this.processCouponQueue().catch(err => {
+                console.error('[COUPON-QUEUE] Erro no ciclo:', err.message);
+            });
+        }, intervalMs);
+        console.log(`[COUPON-QUEUE] Worker iniciado (intervalo ${intervalMs}ms)`);
+    }
+
+    async processCouponQueue() {
+        const [pending] = await this.dbPool.execute(
+            `SELECT id, guild_id, channel_id, payload, attempts, coupon_message_id
+               FROM discord_outbound_queue
+              WHERE status = 'pending' AND attempts < 3
+              ORDER BY created_at ASC
+              LIMIT 5`
+        );
+        if (!pending || pending.length === 0) return;
+
+        for (const job of pending) {
+            const claimed = await this.dbPool.execute(
+                `UPDATE discord_outbound_queue
+                    SET status = 'processing', attempts = attempts + 1
+                  WHERE id = ? AND status = 'pending'`,
+                [job.id]
+            );
+            if (!claimed || (claimed.affectedRows !== undefined && claimed.affectedRows === 0)) continue;
+
+            try {
+                const payload = typeof job.payload === 'string' ? JSON.parse(job.payload) : job.payload;
+                const messageId = await this.sendCouponEmbed(job.guild_id, job.channel_id, payload);
+
+                await this.dbPool.execute(
+                    `UPDATE discord_outbound_queue
+                        SET status = 'sent', processed_at = CURRENT_TIMESTAMP, last_error = NULL
+                      WHERE id = ?`,
+                    [job.id]
+                );
+                if (job.coupon_message_id) {
+                    await this.dbPool.execute(
+                        `UPDATE discord_coupon_messages SET message_id = ? WHERE id = ?`,
+                        [messageId, job.coupon_message_id]
+                    );
+                }
+                console.log(`[COUPON-QUEUE] Job ${job.id} enviado (msg ${messageId})`);
+            } catch (err) {
+                const errMsg = (err && err.message) ? err.message.substring(0, 500) : String(err);
+                const attemptsAfter = (job.attempts || 0) + 1;
+                const finalStatus = attemptsAfter >= 3 ? 'failed' : 'pending';
+                await this.dbPool.execute(
+                    `UPDATE discord_outbound_queue
+                        SET status = ?, last_error = ?, processed_at = CASE WHEN ? = 'failed' THEN CURRENT_TIMESTAMP ELSE processed_at END
+                      WHERE id = ?`,
+                    [finalStatus, errMsg, finalStatus, job.id]
+                );
+                console.error(`[COUPON-QUEUE] Job ${job.id} falhou (tentativa ${attemptsAfter}):`, errMsg);
+            }
+        }
+    }
+
+    async sendCouponEmbed(guildId, channelId, payload) {
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) throw new Error(`Bot não está na guild ${guildId}`);
+        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel || !channel.isTextBased || !channel.isTextBased()) {
+            throw new Error(`Canal ${channelId} não encontrado ou não é de texto`);
+        }
+
+        const embed = new EmbedBuilder();
+        if (payload.title) embed.setTitle(String(payload.title).slice(0, 256));
+        let description = payload.description ? String(payload.description) : '';
+        if (payload.coupon_code) {
+            const code = String(payload.coupon_code).slice(0, 64);
+            description += (description ? '\n\n' : '') + `**Código:** \`${code}\``;
+        }
+        if (description) embed.setDescription(description.slice(0, 4000));
+        if (typeof payload.color === 'number') embed.setColor(payload.color);
+        if (payload.image_url) embed.setImage(payload.image_url);
+        embed.setTimestamp(new Date());
+
+        const components = [];
+        if (payload.button_label && payload.button_url) {
+            const button = new ButtonBuilder()
+                .setLabel(String(payload.button_label).slice(0, 80))
+                .setStyle(ButtonStyle.Link)
+                .setURL(String(payload.button_url));
+            components.push(new ActionRowBuilder().addComponents(button));
+        }
+
+        const sent = await channel.send({ embeds: [embed], components });
+        return sent.id;
+    }
+
     async syncCorporationGuilds() {
         try {
             const guilds = this.client.guilds.cache;
@@ -190,6 +285,7 @@ class PromoPingBot {
             this.startNewsMonitoring();
             this.startYoutubeFeedMonitoring();
             await this.syncCorporationGuilds();
+            this.startCouponQueueWorker();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
