@@ -885,4 +885,141 @@ router.get("/notifications", async (req, res) => {
     }
 });
 
+router.get("/discord/requests", async (req, res) => {
+    try {
+        await ensureCorporationDiscordCouponTables();
+
+        const status = String(req.query.status || "pending").trim();
+        const [rows] = await pool.query(
+            `SELECT r.id, r.requested_by_referenciaid, r.target_guild_id, r.target_channel_id,
+                    r.title, r.description, r.color, r.image_url, r.button_label, r.button_url, r.coupon_code,
+                    r.status, r.review_note, r.created_at, r.reviewed_at,
+                    u.Nome AS requester_name, u.Email AS requester_email
+               FROM discord_coupon_requests r
+               LEFT JOIN utilizadores u ON u.ReferenciaID = r.requested_by_referenciaid
+              WHERE r.status = ?
+              ORDER BY r.created_at DESC
+              LIMIT 100`,
+            [status]
+        );
+
+        res.json({ status: "ok", requests: rows || [] });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao listar pedidos Discord:", err);
+        return handleDatabaseError(err, res, "Erro ao listar pedidos Discord");
+    }
+});
+
+router.post("/discord/requests/:id/approve", async (req, res) => {
+    try {
+        await ensureCorporationDiscordCouponTables();
+        await ensureCorporationDiscordGuildsTable();
+
+        const id = parseInt(req.params.id, 10);
+        if (!id) {
+            return res.status(400).json({ status: "error", error: "ID invalido" });
+        }
+
+        const [reqRows] = await pool.query(
+            `SELECT * FROM discord_coupon_requests WHERE id = ? AND status = 'pending' LIMIT 1`,
+            [id]
+        );
+        if (!reqRows || reqRows.length === 0) {
+            return res.status(404).json({ status: "error", error: "Solicitacao nao encontrada ou ja revista" });
+        }
+
+        const requestRow = reqRows[0];
+        const [botRows] = await pool.query(
+            `SELECT 1 FROM corporation_discord_guilds WHERE guild_id = ? AND removed_at IS NULL LIMIT 1`,
+            [requestRow.target_guild_id]
+        );
+        if (!botRows || botRows.length === 0) {
+            return res.status(400).json({ status: "error", error: "Bot nao esta mais no servidor alvo" });
+        }
+
+        const payload = {
+            guild_id: requestRow.target_guild_id,
+            channel_id: requestRow.target_channel_id,
+            title: requestRow.title,
+            description: requestRow.description,
+            color: requestRow.color,
+            image_url: requestRow.image_url,
+            button_label: requestRow.button_label,
+            button_url: requestRow.button_url,
+            coupon_code: requestRow.coupon_code
+        };
+
+        const [msgIns] = await pool.query(
+            `INSERT INTO discord_coupon_messages
+                (sent_by_referenciaid, guild_id, channel_id, title, description, color, image_url, button_label, button_url, coupon_code, request_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id`,
+            [
+                req.user.ReferenciaID,
+                requestRow.target_guild_id,
+                requestRow.target_channel_id,
+                requestRow.title,
+                requestRow.description,
+                requestRow.color,
+                requestRow.image_url,
+                requestRow.button_label,
+                requestRow.button_url,
+                requestRow.coupon_code,
+                id
+            ]
+        );
+
+        await pool.query(
+            `INSERT INTO discord_outbound_queue (guild_id, channel_id, payload, coupon_message_id)
+             VALUES (?, ?, ?::jsonb, ?)`,
+            [requestRow.target_guild_id, requestRow.target_channel_id, JSON.stringify(payload), msgIns[0].id]
+        );
+
+        await pool.query(
+            `UPDATE discord_coupon_requests
+                SET status = 'approved',
+                    reviewed_by_referenciaid = ?,
+                    reviewed_at = CURRENT_TIMESTAMP,
+                    review_note = ?
+              WHERE id = ?`,
+            [req.user.ReferenciaID, req.body.note || null, id]
+        );
+
+        res.json({ status: "ok", ok: true, message_row_id: msgIns[0].id });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao aprovar pedido Discord:", err);
+        return handleDatabaseError(err, res, "Erro ao aprovar pedido Discord");
+    }
+});
+
+router.post("/discord/requests/:id/reject", async (req, res) => {
+    try {
+        await ensureCorporationDiscordCouponTables();
+
+        const id = parseInt(req.params.id, 10);
+        if (!id) {
+            return res.status(400).json({ status: "error", error: "ID invalido" });
+        }
+
+        const [upd] = await pool.query(
+            `UPDATE discord_coupon_requests
+                SET status = 'rejected',
+                    reviewed_by_referenciaid = ?,
+                    reviewed_at = CURRENT_TIMESTAMP,
+                    review_note = ?
+              WHERE id = ? AND status = 'pending'`,
+            [req.user.ReferenciaID, req.body.note || null, id]
+        );
+        const affected = upd.affectedRows !== undefined ? upd.affectedRows : (upd.rowCount || 0);
+        if (!affected) {
+            return res.status(404).json({ status: "error", error: "Solicitacao nao encontrada ou ja revista" });
+        }
+
+        res.json({ status: "ok", ok: true });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao rejeitar pedido Discord:", err);
+        return handleDatabaseError(err, res, "Erro ao rejeitar pedido Discord");
+    }
+});
+
 export default router;
