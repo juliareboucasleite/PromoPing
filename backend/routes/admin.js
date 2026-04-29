@@ -1281,35 +1281,33 @@ async function ensureSugestoesTable() {
 }
 
 async function ensureIncidentsTable() {
-    // Verificar se a tabela existe
     try {
-        const [tables] = await pool.query(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'incidentes'"
-        );
+        // Cria a tabela com o schema completo se não existir (passa pelo shim MySQL→PG).
+        const createSql = `CREATE TABLE IF NOT EXISTS incidentes (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            Titulo VARCHAR(200) NOT NULL,
+            Descricao TEXT,
+            DataInicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            DataFim TIMESTAMP NULL,
+            Duracao VARCHAR(50),
+            Impacto TEXT,
+            Status ENUM('investigating', 'identified', 'monitoring', 'resolved') DEFAULT 'investigating',
+            ComponenteAfetado VARCHAR(100),
+            DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_data_inicio (DataInicio),
+            INDEX idx_status (Status),
+            INDEX idx_componente (ComponenteAfetado)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
+        await pool.query(createSql);
 
-        if (tables.length === 0) {
-            console.log("[ADMIN] Criando tabela incidentes...");
-            const sql = `CREATE TABLE IF NOT EXISTS incidentes (
-                Id INT AUTO_INCREMENT PRIMARY KEY,
-                Titulo VARCHAR(200) NOT NULL,
-                Descricao TEXT,
-                DataInicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                DataFim TIMESTAMP NULL,
-                Duracao VARCHAR(50),
-                Impacto TEXT,
-                Status ENUM('investigating', 'identified', 'monitoring', 'resolved') DEFAULT 'investigating',
-                ComponenteAfetado VARCHAR(100),
-                DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_data_inicio (DataInicio),
-                INDEX idx_status (Status),
-                INDEX idx_componente (ComponenteAfetado)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
-            await pool.query(sql);
-            console.log("[ADMIN] Tabela incidentes criada com sucesso");
-        } else {
-            console.log("[ADMIN] Tabela incidentes já existe");
-        }
+        // Schemas antigos (dump SQL inicial) criaram a tabela com CreatedAt/UpdatedAt
+        // em vez de DataCriacao/DataAtualizacao. Garantir que as colunas existem.
+        await pool.query(`ALTER TABLE incidentes ADD COLUMN IF NOT EXISTS DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        await pool.query(`ALTER TABLE incidentes ADD COLUMN IF NOT EXISTS DataAtualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+        // Backfill: se as colunas novas vieram a NULL e existiam as antigas, copiar.
+        await pool.query(`UPDATE incidentes SET DataCriacao = CreatedAt WHERE DataCriacao IS NULL AND CreatedAt IS NOT NULL`).catch(() => {});
+        await pool.query(`UPDATE incidentes SET DataAtualizacao = UpdatedAt WHERE DataAtualizacao IS NULL AND UpdatedAt IS NOT NULL`).catch(() => {});
     } catch (err) {
         console.error("[ADMIN] Erro ao verificar/criar tabela incidentes:", err);
         throw err;
