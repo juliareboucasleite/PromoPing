@@ -154,25 +154,23 @@ async function ensureAnonUser() {
  * Cria a tabela se não existir e adiciona colunas/índices necessários
  */
 async function ensureTable() {
-    const sql = `CREATE TABLE IF NOT EXISTS supportmessages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    ReferenciaID VARCHAR(13) NOT NULL,
-    SenderReferenciaID VARCHAR(13) NULL,
-    message TEXT NOT NULL,
-    senderType ENUM('user', 'support') DEFAULT 'user',
-    replyTo INT NULL,
-    threadId INT NULL,
-    anonymousSessionId VARCHAR(36) NULL,
-    userName VARCHAR(255) NULL,
-    userEmail VARCHAR(255) NULL,
-    discordChannelId VARCHAR(20) NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_ReferenciaID (ReferenciaID),
-    FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
-    INDEX idx_replyTo (replyTo),
-    INDEX idx_threadId (threadId),
-    INDEX idx_createdAt (createdAt)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`;
+        const sql = `CREATE TABLE IF NOT EXISTS supportmessages (
+        id SERIAL PRIMARY KEY,
+        ReferenciaID VARCHAR(13) NOT NULL,
+        SenderReferenciaID VARCHAR(13) NULL,
+        message TEXT NOT NULL,
+        senderType VARCHAR(20) DEFAULT 'user',
+        replyTo INTEGER NULL,
+        threadId INTEGER NULL,
+        anonymousSessionId VARCHAR(36) NULL,
+        userName VARCHAR(255) NULL,
+        userEmail VARCHAR(255) NULL,
+        discordChannelId VARCHAR(20) NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ReferenciaID) REFERENCES utilizadores(ReferenciaID) ON DELETE CASCADE,
+        FOREIGN KEY (replyTo) REFERENCES supportmessages(id) ON DELETE CASCADE,
+        FOREIGN KEY (threadId) REFERENCES supportmessages(id) ON DELETE SET NULL
+    );`;
 
     await pool.query(sql);
 
@@ -222,7 +220,7 @@ async function ensureSupportTicketClosuresTable() {
                     ClosedByReferenciaID VARCHAR(13) NOT NULL,
                     ClosedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UserReferenciaID VARCHAR(13) NOT NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                )
             `);
             console.log("[SUPPORT] Tabela support_ticket_closures criada");
         }
@@ -303,7 +301,7 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
           u.Email as userEmail,
           u.PerfilId as userPerfilId
          FROM supportmessages sm
-         LEFT JOIN utilizadores u ON sm.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
+         LEFT JOIN utilizadores u ON sm.ReferenciaID = u.ReferenciaID
          WHERE sm.id = ? OR sm.threadId = ?
          ORDER BY sm.createdAt ASC`,
                 [threadId, threadId]
@@ -342,7 +340,7 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
         MAX(r.createdAt) as lastReplyAt
        FROM supportmessages m
        LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
-       LEFT JOIN utilizadores u ON m.ReferenciaID COLLATE utf8mb4_unicode_ci = u.ReferenciaID COLLATE utf8mb4_unicode_ci
+    LEFT JOIN utilizadores u ON m.ReferenciaID = u.ReferenciaID
        WHERE m.threadId IS NULL OR m.id = m.threadId
        GROUP BY m.id, m.threadId, m.message, m.senderType, m.createdAt, m.ReferenciaID, u.Nome, u.Email, u.PerfilId
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
