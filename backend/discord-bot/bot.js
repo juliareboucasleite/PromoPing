@@ -141,6 +141,39 @@ class PromoPingBot {
         return normalizedPrefix;
     }
 
+    async syncCorporationGuilds() {
+        try {
+            const guilds = this.client.guilds.cache;
+            if (guilds.size === 0) {
+                console.log('[DISCORD] Nenhuma guild para sincronizar com corporation_discord_guilds');
+                return;
+            }
+            for (const [id, guild] of guilds) {
+                await this.dbPool.execute(
+                    `INSERT INTO corporation_discord_guilds (guild_id, guild_name, guild_icon, added_at, removed_at)
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP, NULL)
+                     ON CONFLICT (guild_id) DO UPDATE SET
+                        guild_name = EXCLUDED.guild_name,
+                        guild_icon = EXCLUDED.guild_icon,
+                        removed_at = NULL`,
+                    [id, guild.name, guild.icon || null]
+                );
+            }
+            const activeIds = Array.from(guilds.keys());
+            const placeholders = activeIds.map(() => '?').join(',');
+            await this.dbPool.execute(
+                `UPDATE corporation_discord_guilds
+                    SET removed_at = CURRENT_TIMESTAMP
+                  WHERE removed_at IS NULL
+                    AND guild_id NOT IN (${placeholders})`,
+                activeIds
+            );
+            console.log(`[DISCORD] ${guilds.size} guild(s) sincronizadas com corporation_discord_guilds`);
+        } catch (err) {
+            console.error('[DISCORD] Erro em syncCorporationGuilds:', err.message);
+        }
+    }
+
     setupEventHandlers() {
         // Quando o bot se conecta
         this.client.once('ready', async () => {
