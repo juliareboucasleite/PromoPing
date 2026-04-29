@@ -669,6 +669,14 @@ if (!isProduction) {
         res.sendFile(indexPath);
     });
 
+    // Caminhos de visualização do Google Ads — servem a homepage
+    app.get(/^\/alertas-precos(\/email-discord)?\/?$/i, (req, res) => {
+        const indexPath = buildExists ?
+            path.join(buildPath, "index.html") :
+            path.join(__dirname, "../frontend/pages/index.html");
+        res.sendFile(indexPath);
+    });
+
     // Páginas principais
     app.get("/monitoramento", (req, res) => {
         const filePath = buildExists ?
