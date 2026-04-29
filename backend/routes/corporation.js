@@ -69,6 +69,95 @@ async function verifyCorporation(req, res, next) {
 router.use(verifyToken);
 router.use(verifyCorporation);
 
+async function ensureCorporationDiscordCouponTables() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_coupon_requests (
+            id SERIAL PRIMARY KEY,
+            requested_by_referenciaid VARCHAR(13) NOT NULL,
+            target_guild_id VARCHAR(25) NOT NULL,
+            target_channel_id VARCHAR(25) NOT NULL,
+            title VARCHAR(256) NULL,
+            description TEXT NULL,
+            color INTEGER NULL,
+            image_url TEXT NULL,
+            button_label VARCHAR(80) NULL,
+            button_url TEXT NULL,
+            coupon_code VARCHAR(64) NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            review_note TEXT NULL,
+            reviewed_by_referenciaid VARCHAR(13) NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            reviewed_at TIMESTAMP NULL
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_status
+            ON discord_coupon_requests (status)
+    `);
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_created_at
+            ON discord_coupon_requests (created_at)
+    `);
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_requests_requested_by
+            ON discord_coupon_requests (requested_by_referenciaid)
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_coupon_messages (
+            id SERIAL PRIMARY KEY,
+            sent_by_referenciaid VARCHAR(13) NOT NULL,
+            guild_id VARCHAR(25) NOT NULL,
+            channel_id VARCHAR(25) NOT NULL,
+            title VARCHAR(256) NULL,
+            description TEXT NULL,
+            color INTEGER NULL,
+            image_url TEXT NULL,
+            button_label VARCHAR(80) NULL,
+            button_url TEXT NULL,
+            coupon_code VARCHAR(64) NULL,
+            request_id INTEGER NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_coupon_messages_request_id
+            ON discord_coupon_messages (request_id)
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS discord_outbound_queue (
+            id SERIAL PRIMARY KEY,
+            guild_id VARCHAR(25) NOT NULL,
+            channel_id VARCHAR(25) NOT NULL,
+            payload JSONB NOT NULL,
+            coupon_message_id INTEGER NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'queued',
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_discord_outbound_queue_status
+            ON discord_outbound_queue (status)
+    `);
+}
+
+async function ensureCorporationDiscordGuildsTable() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS corporation_discord_guilds (
+            guild_id VARCHAR(25) PRIMARY KEY,
+            guild_name VARCHAR(255) NULL,
+            guild_icon VARCHAR(255) NULL,
+            added_by_referenciaid VARCHAR(13) NULL,
+            added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            removed_at TIMESTAMP NULL
+        )
+    `);
+}
+
 /** Lista funcionários (suporte - PerfilId = 1) com detalhes */
 router.get("/staff", async (req, res) => {
     try {
