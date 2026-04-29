@@ -169,6 +169,114 @@ async function migrate() {
   await addColumnIfNotExists("notificacoes", "valorpoupado", "DECIMAL(10,2) NULL");
   console.log(" Tabelas auxiliares verificadas/criadas");
 
+  // ===== Discord Panel: cupões corporativos =====
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS discord_panel_oauth_tokens (
+      id SERIAL PRIMARY KEY,
+      referenciaid VARCHAR(50) NOT NULL,
+      discord_user_id VARCHAR(50) NOT NULL,
+      discord_username VARCHAR(100),
+      discord_avatar VARCHAR(100),
+      access_token TEXT NOT NULL,
+      refresh_token TEXT,
+      expires_at TIMESTAMP,
+      scope TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_discord_panel_oauth_user FOREIGN KEY (referenciaid)
+        REFERENCES utilizadores (referenciaid) ON DELETE CASCADE
+    )
+  `);
+  await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_discord_panel_oauth_referenciaid ON discord_panel_oauth_tokens (referenciaid)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_discord_panel_oauth_userid ON discord_panel_oauth_tokens (discord_user_id)`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS corporation_discord_guilds (
+      id SERIAL PRIMARY KEY,
+      guild_id VARCHAR(50) NOT NULL UNIQUE,
+      guild_name VARCHAR(200),
+      guild_icon VARCHAR(100),
+      added_by_referenciaid VARCHAR(50),
+      added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      removed_at TIMESTAMP NULL,
+      CONSTRAINT fk_corp_guild_user FOREIGN KEY (added_by_referenciaid)
+        REFERENCES utilizadores (referenciaid) ON DELETE SET NULL
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_corp_guild_added_by ON corporation_discord_guilds (added_by_referenciaid)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_corp_guild_active ON corporation_discord_guilds (removed_at)`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS discord_coupon_requests (
+      id SERIAL PRIMARY KEY,
+      requested_by_referenciaid VARCHAR(50) NOT NULL,
+      target_guild_id VARCHAR(50) NOT NULL,
+      target_channel_id VARCHAR(50) NOT NULL,
+      title VARCHAR(256),
+      description TEXT,
+      color INTEGER,
+      image_url TEXT,
+      button_label VARCHAR(80),
+      button_url TEXT,
+      coupon_code VARCHAR(64),
+      status VARCHAR(20) DEFAULT 'pending',
+      reviewed_by_referenciaid VARCHAR(50),
+      reviewed_at TIMESTAMP NULL,
+      review_note TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_coupon_req_user FOREIGN KEY (requested_by_referenciaid)
+        REFERENCES utilizadores (referenciaid) ON DELETE CASCADE,
+      CONSTRAINT fk_coupon_req_reviewer FOREIGN KEY (reviewed_by_referenciaid)
+        REFERENCES utilizadores (referenciaid) ON DELETE SET NULL
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_coupon_req_status ON discord_coupon_requests (status)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_coupon_req_requester ON discord_coupon_requests (requested_by_referenciaid)`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS discord_coupon_messages (
+      id SERIAL PRIMARY KEY,
+      sent_by_referenciaid VARCHAR(50),
+      guild_id VARCHAR(50) NOT NULL,
+      channel_id VARCHAR(50) NOT NULL,
+      message_id VARCHAR(50),
+      title VARCHAR(256),
+      description TEXT,
+      color INTEGER,
+      image_url TEXT,
+      button_label VARCHAR(80),
+      button_url TEXT,
+      coupon_code VARCHAR(64),
+      request_id INTEGER NULL,
+      sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_coupon_msg_user FOREIGN KEY (sent_by_referenciaid)
+        REFERENCES utilizadores (referenciaid) ON DELETE SET NULL,
+      CONSTRAINT fk_coupon_msg_request FOREIGN KEY (request_id)
+        REFERENCES discord_coupon_requests (id) ON DELETE SET NULL
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_coupon_msg_guild ON discord_coupon_messages (guild_id)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_coupon_msg_sender ON discord_coupon_messages (sent_by_referenciaid)`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS discord_outbound_queue (
+      id SERIAL PRIMARY KEY,
+      guild_id VARCHAR(50) NOT NULL,
+      channel_id VARCHAR(50) NOT NULL,
+      payload JSONB NOT NULL,
+      status VARCHAR(20) DEFAULT 'pending',
+      attempts INTEGER DEFAULT 0,
+      last_error TEXT,
+      coupon_message_id INTEGER,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      processed_at TIMESTAMP NULL,
+      CONSTRAINT fk_outbound_msg FOREIGN KEY (coupon_message_id)
+        REFERENCES discord_coupon_messages (id) ON DELETE SET NULL
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_outbound_status ON discord_outbound_queue (status, created_at)`);
+  console.log(" Tabelas Discord painel verificadas/criadas");
+
   await pool.end();
   console.log(" Migração concluída!");
 }
