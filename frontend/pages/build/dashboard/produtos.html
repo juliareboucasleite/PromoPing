@@ -617,39 +617,58 @@
     })();
 
     // Modal de data limite (calendário)
-    let pendingDataLimiteId = null;
+    const dataLimiteModalState = {
+      id: null,
+      dataIso: ""
+    };
     function onEscapeDataLimite(e) {
       if (e.key === "Escape") closeDataLimiteModal();
     }
     function openDataLimiteModal(id, nome, dataIso) {
-      pendingDataLimiteId = id;
       const modal = document.getElementById("dataLimiteModal");
-      const input = document.getElementById("dataLimiteInput");
+      const dayInput = document.getElementById("dataLimiteDay");
+      const monthInput = document.getElementById("dataLimiteMonth");
+      const yearInput = document.getElementById("dataLimiteYear");
       const nameEl = document.getElementById("dataLimiteProductName");
       const errEl = document.getElementById("dataLimiteError");
       const removeBtn = document.getElementById("dataLimiteRemoveBtn");
-      if (!modal || !input) return;
+      if (!modal || !dayInput || !monthInput || !yearInput) return;
+
+      dataLimiteModalState.id = id;
+      dataLimiteModalState.dataIso = (dataIso || "").split("T")[0] || "";
 
       if (nameEl) nameEl.textContent = nome || "";
-      input.value = dataIso || "";
-      input.min = new Date().toISOString().slice(0, 10);
       if (errEl) { errEl.style.display = "none"; errEl.textContent = ""; }
-      if (removeBtn) removeBtn.style.display = dataIso ? "inline-block" : "none";
+      if (removeBtn) removeBtn.style.display = "inline-flex";
+
+      if (dataLimiteModalState.dataIso) {
+        const [year, month, day] = dataLimiteModalState.dataIso.split("-");
+        dayInput.value = day || "";
+        monthInput.value = month || "";
+        yearInput.value = year || "";
+      } else {
+        dayInput.value = "";
+        monthInput.value = "";
+        yearInput.value = "";
+      }
 
       modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
       document.addEventListener("keydown", onEscapeDataLimite);
-      setTimeout(() => input.focus(), 50);
+      setTimeout(() => dayInput.focus(), 50);
     }
     function closeDataLimiteModal() {
       document.removeEventListener("keydown", onEscapeDataLimite);
-      pendingDataLimiteId = null;
+      dataLimiteModalState.id = null;
+      dataLimiteModalState.dataIso = "";
       const modal = document.getElementById("dataLimiteModal");
       if (modal) modal.style.display = "none";
+      document.body.style.overflow = "";
     }
     async function salvarDataLimite(novaData) {
-      if (pendingDataLimiteId == null) return;
+      if (dataLimiteModalState.id == null) return;
       const token = localStorage.getItem("token");
-      const id = pendingDataLimiteId;
+      const id = dataLimiteModalState.id;
       const errEl = document.getElementById("dataLimiteError");
       const saveBtn = document.getElementById("dataLimiteSaveBtn");
       const removeBtn = document.getElementById("dataLimiteRemoveBtn");
@@ -681,7 +700,9 @@
       const modal = document.getElementById("dataLimiteModal");
       const saveBtn = document.getElementById("dataLimiteSaveBtn");
       const removeBtn = document.getElementById("dataLimiteRemoveBtn");
-      const input = document.getElementById("dataLimiteInput");
+      const dayInput = document.getElementById("dataLimiteDay");
+      const monthInput = document.getElementById("dataLimiteMonth");
+      const yearInput = document.getElementById("dataLimiteYear");
       const errEl = document.getElementById("dataLimiteError");
 
       if (modal) modal.addEventListener("click", function (e) { if (e.target === this) closeDataLimiteModal(); });
