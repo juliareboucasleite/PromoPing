@@ -174,10 +174,42 @@ class MusicManager {
 
   async search(query, requester) {
     await this.init();
-    return this.player.search(query, {
+    const primary = await this.player.search(query, {
       requestedBy: requester || null,
       searchEngine: QueryType.AUTO,
     });
+    if (primary?.tracks?.length) {
+      return primary;
+    }
+
+    const normalizedSpotifyQuery = this.normalizeSpotifyQuery(query);
+    if (normalizedSpotifyQuery && normalizedSpotifyQuery !== query) {
+      return this.player.search(normalizedSpotifyQuery, {
+        requestedBy: requester || null,
+        searchEngine: QueryType.AUTO,
+      });
+    }
+
+    return primary;
+  }
+
+  normalizeSpotifyQuery(query) {
+    const value = String(query || "").trim();
+    if (!value.includes("open.spotify.com/")) {
+      return null;
+    }
+
+    try {
+      const url = new URL(value);
+      url.search = "";
+      url.hash = "";
+      url.pathname = url.pathname.replace(/^\/intl-[^/]+/i, "");
+      return url.toString();
+    } catch {
+      return value
+        .replace(/\/intl-[^/]+/i, "")
+        .replace(/[?#].*$/, "");
+    }
   }
 
   isSpotifyTrack(track) {
