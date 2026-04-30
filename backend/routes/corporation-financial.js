@@ -7,6 +7,7 @@
  */
 
 import express from "express";
+import PDFDocument from "pdfkit";
 import { pool } from "../database/db.js";
 import stripe from "../config/stripe.js";
 
@@ -314,7 +315,7 @@ router.get("/subscriptions", async (req, res) => {
 
 /**
  * GET /export?from=&to=
- * Exporta transacções como CSV.
+ * Exporta transacções como PDF estilizado.
  */
 router.get("/export", async (req, res) => {
     try {
@@ -344,38 +345,161 @@ router.get("/export", async (req, res) => {
             pages += 1;
         }
 
-        const escapeCsv = (v) => {
-            if (v === null || v === undefined) return '';
-            const s = String(v).replace(/"/g, '""');
-            return /[",\n]/.test(s) ? `"${s}"` : s;
-        };
-
-        const header = ['id','data','status','valor_eur','reembolsado_eur','moeda','email','nome','cartao','last4','descricao'];
-        const lines = [header.join(',')];
+        // Totais
+        let totalRevenue = 0;
+        let totalRefunds = 0;
+        let succeededCount = 0;
         for (const c of all) {
-            lines.push([
-                c.id,
-                new Date(c.created * 1000).toISOString(),
-                c.status,
-                centsToEuros(c.amount).toFixed(2),
-                centsToEuros(c.amount_refunded || 0).toFixed(2),
-                (c.currency || '').toUpperCase(),
-                c.billing_details?.email || c.receipt_email || '',
-                c.billing_details?.name || '',
-                c.payment_method_details?.card?.brand || '',
-                c.payment_method_details?.card?.last4 || '',
-                c.description || ''
-            ].map(escapeCsv).join(','));
+            if (c.status === 'succeeded') {
+                totalRevenue += (c.amount - (c.amount_refunded || 0));
+                succeededCount += 1;
+            }
+            totalRefunds += (c.amount_refunded || 0);
         }
 
-        const csv = '﻿' + lines.join('\n');
-        const filename = `promoping-transacoes-${new Date().toISOString().slice(0,10)}.csv`;
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        const filename = `promoping-transacoes-${new Date().toISOString().slice(0,10)}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.send(csv);
+
+        const doc = new PDFDocument({
+            margin: 40,
+            size: 'A4',
+            info: {
+                Title: 'Relatório financeiro PromoPing',
+                Author: 'PromoPing Corporação',
+                Subject: 'Transacções Stripe',
+                CreationDate: new Date()
+            }
+        });
+        doc.pipe(res);
+
+        const ORANGE = '#ff9800';
+        const DARK = '#0f0f10';
+        const GRAY = '#6b7280';
+        const LIGHT = '#f3f4f6';
+
+        // --- Cabeçalho ---
+        doc.rect(0, 0, doc.page.width, 80).fill(DARK);
+        doc.fillColor(ORANGE).fontSize(22).font('Helvetica-Bold')
+           .text('PromoPing', 40, 28);
+        doc.fillColor(LIGHT).fontSize(11).font('Helvetica')
+           .text('Relatório Financeiro — Transacções', 40, 55);
+        doc.fillColor(LIGHT).fontSize(9)
+           .text(`Gerado em ${new Date().toLocaleString('pt-PT')}`, 40, 55, { align: 'right', width: doc.page.width - 80 });
+
+        doc.moveDown(2);
+        doc.y = 110;
+
+        // --- Período ---
+        const fromLabel = req.query.from ? new Date(req.query.from).toLocaleDateString('pt-PT') : '—';
+        const toLabel = req.query.to ? new Date(req.query.to).toLocaleDateString('pt-PT') : '—';
+        doc.fillColor(GRAY).fontSize(9).font('Helvetica')
+           .text(`Período: ${fromLabel} → ${toLabel}    •    ${all.length} transacções`, 40, doc.y);
+
+        doc.moveDown(1);
+
+        // --- Resumo (3 cards) ---
+        const cardY = doc.y;
+        const cardW = (doc.page.width - 80 - 20) / 3;
+        const cardH = 60;
+
+        const cards = [
+            { label: 'Receita líquida', value: `€ ${centsToEuros(totalRevenue).toFixed(2)}`, color: ORANGE },
+            { label: 'Reembolsos', value: `€ ${centsToEuros(totalRefunds).toFixed(2)}`, color: '#ef4444' },
+            { label: 'Bem-sucedidas', value: String(succeededCount), color: '#10b981' }
+        ];
+
+        cards.forEach((card, i) => {
+            const x = 40 + i * (cardW + 10);
+            doc.rect(x, cardY, cardW, cardH).fill('#1a1a1c').strokeColor('#2a2a2c').stroke();
+            doc.fillColor(GRAY).fontSize(8).font('Helvetica')
+               .text(card.label.toUpperCase(), x + 12, cardY + 12);
+            doc.fillColor(card.color).fontSize(16).font('Helvetica-Bold')
+               .text(card.value, x + 12, cardY + 28);
+        });
+
+        doc.y = cardY + cardH + 20;
+
+        // --- Tabela de transacções ---
+        const tableTop = doc.y;
+        const colX = [40, 130, 290, 360, 430, 500];
+        const headers = ['Data', 'Cliente', 'Cartão', 'Valor', 'Estado', 'ID'];
+
+        function drawHeader(yPos) {
+            doc.rect(40, yPos, doc.page.width - 80, 22).fill(DARK);
+            doc.fillColor(ORANGE).fontSize(9).font('Helvetica-Bold');
+            headers.forEach((h, i) => {
+                doc.text(h, colX[i] + 4, yPos + 7, { width: (colX[i+1] || (doc.page.width - 40)) - colX[i] - 8 });
+            });
+        }
+
+        drawHeader(tableTop);
+        let y = tableTop + 24;
+
+        doc.fillColor('#111').fontSize(8).font('Helvetica');
+
+        all.forEach((c, idx) => {
+            // Quebra de página
+            if (y > doc.page.height - 60) {
+                doc.addPage();
+                y = 40;
+                drawHeader(y);
+                y += 24;
+                doc.fillColor('#111').fontSize(8).font('Helvetica');
+            }
+
+            // Linha alternada
+            if (idx % 2 === 0) {
+                doc.rect(40, y - 2, doc.page.width - 80, 18).fill('#fafafa');
+                doc.fillColor('#111');
+            }
+
+            const dateStr = new Date(c.created * 1000).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
+            const customer = c.billing_details?.email || c.billing_details?.name || c.receipt_email || '—';
+            const card = c.payment_method_details?.card
+                ? `${c.payment_method_details.card.brand} ••${c.payment_method_details.card.last4}`
+                : '—';
+            const valueStr = `€ ${centsToEuros(c.amount).toFixed(2)}`;
+            const status = c.refunded ? 'reembolsado' : c.status;
+            const idShort = c.id.slice(-12);
+
+            const cells = [dateStr, customer, card, valueStr, status, idShort];
+            cells.forEach((v, i) => {
+                doc.fillColor('#111')
+                   .text(String(v).slice(0, 40), colX[i] + 4, y + 3, {
+                       width: (colX[i+1] || (doc.page.width - 40)) - colX[i] - 8,
+                       lineBreak: false,
+                       ellipsis: true
+                   });
+            });
+
+            y += 18;
+        });
+
+        // Mensagem se vazio
+        if (all.length === 0) {
+            doc.fillColor(GRAY).fontSize(11).font('Helvetica-Oblique')
+               .text('Sem transacções no período seleccionado.', 40, y + 20, { align: 'center', width: doc.page.width - 80 });
+        }
+
+        // --- Rodapé ---
+        const range = doc.bufferedPageRange();
+        for (let i = range.start; i < range.start + range.count; i++) {
+            doc.switchToPage(i);
+            doc.fillColor(GRAY).fontSize(8).font('Helvetica')
+               .text(
+                   `PromoPing • Relatório confidencial • Página ${i + 1} de ${range.count}`,
+                   40, doc.page.height - 30,
+                   { align: 'center', width: doc.page.width - 80 }
+               );
+        }
+
+        doc.end();
     } catch (err) {
-        console.error("[CORP-FIN] export:", err);
-        return res.status(500).json({ status: "error", error: err.message });
+        console.error("[CORP-FIN] export PDF:", err);
+        if (!res.headersSent) {
+            return res.status(500).json({ status: "error", error: err.message });
+        }
     }
 });
 

@@ -291,7 +291,7 @@
     }
 
     // --- Export CSV ---
-    async function exportCsv() {
+    async function exportPdf() {
         try {
             const safeUrl = window.APIUtils
                 ? window.APIUtils.buildSafeUrl('/api/corporation/financial/export')
@@ -305,7 +305,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `promoping-transacoes-${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `promoping-transacoes-${new Date().toISOString().slice(0,10)}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -327,7 +327,7 @@
         refreshAll();
 
         document.getElementById('refreshFinBtn')?.addEventListener('click', refreshAll);
-        document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsv);
+        document.getElementById('exportCsvBtn')?.addEventListener('click', exportPdf);
 
         document.querySelectorAll('.fin-tabs .tab-button').forEach(btn => {
             btn.addEventListener('click', () => setActiveTab(btn.dataset.finTab));
