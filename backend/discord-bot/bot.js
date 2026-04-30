@@ -71,6 +71,8 @@ class PromoPingBot {
         this.youtubeCheckInterval = null;
         this.lastYoutubeCheck = new Date();
         this.youtubeFeedService = new YoutubeFeed(this.client, this.dbConfig);
+        this.activityInterval = null;
+        this.lastActivityErrorLog = 0;
 
         // IDs de utilizadores com acesso total (fallback)
         this.adminIds = [
@@ -593,7 +595,7 @@ class PromoPingBot {
 
     setupEventHandlers() {
         // Quando o bot se conecta
-        this.client.once('ready', async () => {
+        this.client.once('clientReady', async () => {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
             console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
             this.reconnectAttempts = 0; // Reset contador de reconexão
@@ -619,12 +621,22 @@ class PromoPingBot {
             ];
             let activityIndex = 0;
             const updateActivity = () => {
+                if (!this.client?.isReady?.() || !this.client.user) return;
                 const activity = activities[activityIndex];
-                this.client.user.setActivity(activity.name, { type: activity.type });
-                activityIndex = (activityIndex + 1) % activities.length;
+                try {
+                    this.client.user.setActivity(activity.name, { type: activity.type });
+                    activityIndex = (activityIndex + 1) % activities.length;
+                } catch (error) {
+                    const now = Date.now();
+                    if (now - this.lastActivityErrorLog > 60000) {
+                        this.lastActivityErrorLog = now;
+                        console.warn('[DISCORD] Falha ao atualizar status do bot:', error.message);
+                    }
+                }
             };
             updateActivity();
-            setInterval(updateActivity, 20000);
+            if (this.activityInterval) clearInterval(this.activityInterval);
+            this.activityInterval = setInterval(updateActivity, 20000);
             
             // Registrar comandos de barra (slash commands)
             await this.registerSlashCommands();
@@ -638,11 +650,22 @@ class PromoPingBot {
         // Handler para desconexão
         this.client.on('disconnect', () => {
             console.warn('[DISCORD] Bot desconectado do Discord');
+            if (this.activityInterval) {
+                clearInterval(this.activityInterval);
+                this.activityInterval = null;
+            }
         });
 
         // Handler para reconexão
         this.client.on('reconnecting', () => {
             console.log('[DISCORD] Tentando reconectar ao Discord...');
+        });
+
+        this.client.on('shardDisconnect', () => {
+            if (this.activityInterval) {
+                clearInterval(this.activityInterval);
+                this.activityInterval = null;
+            }
         });
 
         // Handler para rate limits
@@ -2548,8 +2571,12 @@ class PromoPingBot {
 
     async disconnect() {
         try {
-            if (this.client && this.client.isReady()) {
-                this.client.destroy();
+            if (this.activityInterval) {
+                clearInterval(this.activityInterval);
+                this.activityInterval = null;
+            }
+            if (this.client) {
+                await this.client.destroy();
                 console.log('[DISCORD] Bot desconectado');
             }
         } catch (error) {
@@ -4161,14 +4188,6 @@ class PromoPingBot {
         }
     }
 
-    async disconnect() {
-        try {
-            await this.client.destroy();
-            // Bot desconectado - log silencioso
-        } catch (error) {
-            console.error('[DISCORD] Erro ao desconectar o bot:', error);
-        }
-    }
 }
 
 module.exports = PromoPingBot;
