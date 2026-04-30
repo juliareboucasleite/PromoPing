@@ -6,6 +6,7 @@
 import express from "express";
 import { pool } from "../database/db.js";
 import { verifyToken } from "../middleware/auth.js";
+import financialRouter from "./corporation-financial.js";
 
 const router = express.Router();
 
