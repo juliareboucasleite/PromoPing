@@ -4,21 +4,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliações - PromoPing Admin</title>
+    <title>Avaliações - PromoPing Suporte</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-810832454');
+    </script>
+    <style>
+        .reviews-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .reviews-summary .summary-card {
+            background: linear-gradient(180deg, #1a1a1c 0%, #141416 100%);
+            border: 1px solid #2a2a2c;
+            border-radius: 14px;
+            padding: 1.1rem 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .reviews-summary .summary-card .sc-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.85rem;
+            background: rgba(96, 165, 250, 0.12);
+            color: #60a5fa;
+        }
+        .reviews-summary .summary-card.green .sc-icon { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .reviews-summary .summary-card.purple .sc-icon { background: rgba(167, 139, 250, 0.12); color: #a78bfa; }
+        .reviews-summary .summary-card.orange .sc-icon { background: rgba(255, 152, 0, 0.12); color: #ff9800; }
+        .reviews-summary .summary-card .sc-label {
+            font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; font-weight: 600;
+        }
+        .reviews-summary .summary-card .sc-value {
+            font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: #f3f4f6;
+            font-variant-numeric: tabular-nums;
+        }
+        .reviews-summary .summary-card .sc-trend { font-size: 0.78rem; margin-top: 0.4rem; color: #6b7280; }
 
-    gtag('config', 'AW-810832454');
-  </script>
+        .reviews-toolbar {
+            display: flex; gap: 0.6rem; flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.85rem 1rem;
+            background: #18181b;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+        }
+        .reviews-toolbar label {
+            font-size: 0.78rem; color: #9ca3af;
+            font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .reviews-toolbar select {
+            background: #0f0f10;
+            border: 1px solid #2a2a2c;
+            color: #e5e7eb;
+            padding: 0.45rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            min-width: 140px;
+            cursor: pointer;
+        }
+        .reviews-toolbar select:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+        .reviews-toolbar .toolbar-spacer { flex: 1; }
+
+        /* Override badge colors for better contrast */
+        .review-type-badge.suporte {
+            background: rgba(59, 130, 246, 0.18) !important;
+            color: #93c5fd !important;
+            border-color: rgba(59, 130, 246, 0.35) !important;
+        }
+        .review-type-badge.site {
+            background: rgba(16, 185, 129, 0.18) !important;
+            color: #86efac !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+        }
+        .review-type-badge.bot {
+            background: rgba(139, 92, 246, 0.18) !important;
+            color: #c4b5fd !important;
+            border-color: rgba(139, 92, 246, 0.35) !important;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -31,50 +112,17 @@
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Visão Geral</span>
-                </a>
-                <a href="utilizadores.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Utilizadores</span>
-                </a>
-                <a href="produtos.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Produtos</span>
-                </a>
-                <a href="avaliacoes.html" class="nav-item active">
-                    <span class="nav-icon"></span>
-                    <span>Avaliações</span>
-                </a>
-                <a href="suporte.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Suporte</span>
-                </a>
-                <a href="bugs.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Bugs & Projetos</span>
-                </a>
-                <a href="sugestoes.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Sugestões</span>
-                </a>
-                <a href="tabelas.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Incidentes</span>
-                </a>
-                <a href="calendar.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Calendário</span>
-                </a>
-                <a href="discord.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Discord</span>
-                </a>
-                <a href="perfil.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Perfil</span>
-                </a>
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="utilizadores.html" class="nav-item"><span class="nav-icon"></span><span>Utilizadores</span></a>
+                <a href="produtos.html" class="nav-item"><span class="nav-icon"></span><span>Produtos</span></a>
+                <a href="avaliacoes.html" class="nav-item active"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="suporte.html" class="nav-item"><span class="nav-icon"></span><span>Suporte</span></a>
+                <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
+                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestões</span></a>
+                <a href="tabelas.html" class="nav-item"><span class="nav-icon"></span><span>Incidentes</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+                <a href="perfil.html" class="nav-item"><span class="nav-icon"></span><span>Perfil</span></a>
             </nav>
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="logout-button">Sair</button>
@@ -85,11 +133,80 @@
         <main class="dashboard-main">
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
                 <div class="section-header">
-                    <h1>Avaliações dos Clientes</h1>
+                    <div>
+                        <h1>Avaliações dos Clientes</h1>
+                        <p class="section-description">Feedback dos utilizadores sobre o site, bot e equipa de suporte.</p>
+                    </div>
                     <button id="refreshReviewsBtn" class="refresh-button">Atualizar</button>
                 </div>
+
+                <!-- Resumo -->
+                <div class="reviews-summary" id="reviewsSummary">
+                    <div class="summary-card">
+                        <div class="sc-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <div class="sc-label">Total</div>
+                        <div class="sc-value" id="summaryTotal">—</div>
+                        <div class="sc-trend">Avaliações recebidas</div>
+                    </div>
+                    <div class="summary-card green">
+                        <div class="sc-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 9V5a3 3 0 0 0-6 0v4H2v11h20V9z"/></svg>
+                        </div>
+                        <div class="sc-label">Média geral</div>
+                        <div class="sc-value" id="summaryAvg">—</div>
+                        <div class="sc-trend" id="summaryAvgStars">—</div>
+                    </div>
+                    <div class="summary-card purple">
+                        <div class="sc-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div class="sc-label">Suporte</div>
+                        <div class="sc-value" id="summarySuporte">—</div>
+                        <div class="sc-trend" id="summarySuporteAvg">Média: —</div>
+                    </div>
+                    <div class="summary-card orange">
+                        <div class="sc-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="sc-label">Últimos 7 dias</div>
+                        <div class="sc-value" id="summaryRecent">—</div>
+                        <div class="sc-trend">Novas avaliações</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="reviews-toolbar">
+                    <label for="filterTipo">Tipo</label>
+                    <select id="filterTipo">
+                        <option value="">Todos</option>
+                        <option value="suporte">Suporte</option>
+                        <option value="site">Site</option>
+                        <option value="bot">Bot</option>
+                    </select>
+                    <label for="filterRating">Estrelas</label>
+                    <select id="filterRating">
+                        <option value="">Todas</option>
+                        <option value="5">5 ⭐</option>
+                        <option value="4">4 ⭐</option>
+                        <option value="3">3 ⭐</option>
+                        <option value="2">2 ⭐</option>
+                        <option value="1">1 ⭐</option>
+                    </select>
+                    <label for="filterSort">Ordenar</label>
+                    <select id="filterSort">
+                        <option value="recent">Mais recentes</option>
+                        <option value="oldest">Mais antigas</option>
+                        <option value="rating_high">Maior nota</option>
+                        <option value="rating_low">Menor nota</option>
+                    </select>
+                    <div class="toolbar-spacer"></div>
+                    <span id="filterCount" style="color:#9ca3af;font-size:0.85rem;"></span>
+                </div>
+
                 <div id="reviewsList" class="data-table-container">
-                    <div class="loading-state">Carregando avaliações...</div>
+                    <div class="loading-state">A carregar avaliações...</div>
                 </div>
             </section>
         </main>
@@ -100,5 +217,4 @@
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/avaliacoes.js"></script>
 </body>
-
 </html>
