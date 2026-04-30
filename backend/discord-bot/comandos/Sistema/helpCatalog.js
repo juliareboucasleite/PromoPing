@@ -10,7 +10,7 @@ function buildModules(prefix) {
     return [
         {
             key: "birthday",
-            title: "Aniversários",
+            title: "Aniversarios",
             status: "ativo",
             aliases: ["aniversario", "birthday", "bday"],
             summary: "Membros definem a data; admins escolhem canal, cargo e mensagem.",
@@ -19,13 +19,13 @@ function buildModules(prefix) {
                 `${prefix}birthday check @utilizador`,
                 `${prefix}birthday channel #aniversarios`,
                 `${prefix}birthday role @aniversariante`,
-                `${prefix}birthday message Parabéns {user}!`,
+                `${prefix}birthday message Parabens {user}!`,
                 `${prefix}birthday toggle on`,
             ],
             setup: [
-                "Cada membro guarda a própria data com `birthday set YYYY-MM-DD`.",
+                "Cada membro guarda a propria data com `birthday set YYYY-MM-DD`.",
                 "A staff define o canal e cargo opcional.",
-                "Ativa o módulo com `birthday toggle on`.",
+                "Ativa o modulo com `birthday toggle on`.",
             ],
         },
         {
@@ -33,7 +33,7 @@ function buildModules(prefix) {
             title: "Comunidade",
             status: "ativo",
             aliases: ["community", "comunidade"],
-            summary: "Ferramentas sociais do servidor: contagem, regras, reviews e sugestões.",
+            summary: "Ferramentas sociais do servidor: contagem, regras, reviews e sugestoes.",
             commands: [
                 `${prefix}counting configurar #canal`,
                 `${prefix}regras`,
@@ -42,7 +42,7 @@ function buildModules(prefix) {
             ],
             setup: [
                 "Usa `counting configurar #canal` para ligar a contagem.",
-                "Os comandos `review` e `sugerir` já enviam conteúdo para a base de dados e painéis.",
+                "Os comandos `review` e `sugerir` ja enviam conteudo para a base de dados e paineis.",
             ],
         },
         {
@@ -50,7 +50,7 @@ function buildModules(prefix) {
             title: "Conta",
             status: "ativo",
             aliases: ["account", "conta", "login", "registar"],
-            summary: "Liga o Discord à conta PromoPing para produtos, alertas e suporte.",
+            summary: "Liga o Discord a conta PromoPing para produtos, alertas e suporte.",
             commands: [
                 `${prefix}registar email@dominio.pt senha123`,
                 `${prefix}login email@dominio.pt senha123`,
@@ -58,7 +58,7 @@ function buildModules(prefix) {
                 `${prefix}produtos`,
             ],
             setup: [
-                "Cria conta com `registar` ou faz `login` se já existe.",
+                "Cria conta com `registar` ou faz `login` se ja existe.",
                 "Depois usa `produtos`, `iniciar` e `parar` para o teu acompanhamento.",
             ],
         },
@@ -67,7 +67,7 @@ function buildModules(prefix) {
             title: "Giveaways",
             status: "ativo",
             aliases: ["giveaway", "giveaways", "sorteio", "gstart"],
-            summary: "Sistema simples de giveaways com reação e fecho automático.",
+            summary: "Sistema simples de giveaways com reacao e fecho automatico.",
             commands: [
                 `${prefix}gstart 1h 2 Nitro Classic`,
                 `${prefix}glist`,
@@ -76,17 +76,17 @@ function buildModules(prefix) {
                 `${prefix}gdelete 123456789012345678`,
             ],
             setup: [
-                "Cria no canal atual com `gstart <tempo> <vencedores> <prémio>`.",
+                "Cria no canal atual com `gstart <tempo> <vencedores> <premio>`.",
                 "Os participantes entram reagindo com 🎉.",
                 "O bot fecha automaticamente quando o tempo terminar.",
             ],
         },
         {
             key: "moderation",
-            title: "Moderação",
+            title: "Moderacao",
             status: "ativo",
             aliases: ["moderation", "moderacao", "mod", "staff"],
-            summary: "Ferramentas de staff para limpeza, locks, punições e controlo de canais.",
+            summary: "Ferramentas de staff para limpeza, locks, punicoes e controlo de canais.",
             commands: [
                 `${prefix}helpadmin`,
                 `${prefix}clear 20`,
@@ -96,30 +96,37 @@ function buildModules(prefix) {
                 `${prefix}timeout @utilizador 10m motivo`,
             ],
             setup: [
-                "A maioria dos comandos exige permissões do Discord ou cargo de staff.",
-                "Usa `helpadmin` para ver o bloco de configuração administrativa.",
+                "A maioria dos comandos exige permissoes do Discord ou cargo de staff.",
+                "Usa `helpadmin` para ver o bloco de configuracao administrativa.",
             ],
         },
         {
             key: "music",
-            title: "Música",
-            status: "parcial",
+            title: "Musica",
+            status: "ativo",
             aliases: ["music", "musica", "player"],
-            summary: "O módulo foi exposto no help, mas ainda depende de infra Lavalink no runtime principal.",
+            summary: "Player de musica ligado no runtime atual com fila, volume, loop e controlo de voz.",
             commands: [
-                `${prefix}music`,
+                `${prefix}play link-ou-nome`,
+                `${prefix}pause`,
+                `${prefix}resume`,
+                `${prefix}skip`,
+                `${prefix}queue`,
+                `${prefix}mstop`,
             ],
             setup: [
-                "Hoje o bot mostra o estado real do módulo com `music`.",
-                "Os comandos legados de player ainda precisam de integração do runtime e nó Lavalink online.",
+                "Entra num canal de voz e usa `play` com um nome ou link.",
+                "O `play` publica um painel com botoes para controlar a sessao.",
+                "Usa `queue`, `nowplaying`, `volume` e `loop` para gerir a sessao.",
+                "O comando `music` mostra o estado do runtime e da infra Lavalink.",
             ],
         },
         {
             key: "painel",
-            title: "Painéis",
+            title: "Paineis",
             status: "ativo",
             aliases: ["painel", "panel", "paineis"],
-            summary: "Painéis prontos para comunidade, convites, reviews, tickets e formulários.",
+            summary: "Paineis prontos para comunidade, convites, reviews, tickets e formularios.",
             commands: [
                 `${prefix}painel`,
                 `${prefix}community-panel #canal`,
@@ -137,13 +144,13 @@ function buildModules(prefix) {
             title: "Perfil",
             status: "ativo",
             aliases: ["profile", "perfil", "pf"],
-            summary: "Resumo rápido do perfil Discord do utilizador.",
+            summary: "Resumo rapido do perfil Discord do utilizador.",
             commands: [
                 `${prefix}profile`,
                 `${prefix}profile @utilizador`,
             ],
             setup: [
-                "Não precisa de configuração prévia.",
+                "Nao precisa de configuracao previa.",
             ],
         },
         {
@@ -151,9 +158,9 @@ function buildModules(prefix) {
             title: "Suporte",
             status: "ativo",
             aliases: ["suporte", "support", "ticket"],
-            summary: "Cria tickets por DM, painéis de suporte e encerramento assistido.",
+            summary: "Cria tickets por DM, paineis de suporte e encerramento assistido.",
             commands: [
-                `${prefix}suporte Preciso de ajuda com notificações`,
+                `${prefix}suporte Preciso de ajuda com notificacoes`,
                 `${prefix}ticket`,
                 `${prefix}fechar-ticket`,
                 `${prefix}setup-bug`,
@@ -166,20 +173,20 @@ function buildModules(prefix) {
         },
         {
             key: "verify",
-            title: "Verificação",
+            title: "Verificacao",
             status: "ativo",
             aliases: ["verify", "verification", "verificar", "verifu"],
-            summary: "Painel com botão que entrega um cargo ao membro verificado.",
+            summary: "Painel com botao que entrega um cargo ao membro verificado.",
             commands: [
                 `${prefix}verify setup #canal @cargo`,
-                `${prefix}verify message Clica no botão para entrar`,
+                `${prefix}verify message Clica no botao para entrar`,
                 `${prefix}verify button Verificar-me`,
                 `${prefix}verify resend`,
                 `${prefix}verify disable`,
             ],
             setup: [
                 "Primeiro cria o painel com canal e cargo.",
-                "Depois ajusta texto e botão, e republica com `verify resend` se quiseres.",
+                "Depois ajusta texto e botao, e republica com `verify resend` se quiseres.",
             ],
         },
         {
@@ -187,7 +194,7 @@ function buildModules(prefix) {
             title: "Welcome",
             status: "ativo",
             aliases: ["welcome", "boasvindas", "wel"],
-            summary: "Mensagem de entrada com placeholders e cargo automático opcional.",
+            summary: "Mensagem de entrada com placeholders e cargo automatico opcional.",
             commands: [
                 `${prefix}welcome set #boas-vindas`,
                 `${prefix}welcome message Bem-vindo(a) {user} a {guild}!`,
@@ -205,7 +212,7 @@ function buildModules(prefix) {
             title: "YouTube",
             status: "ativo",
             aliases: ["youtube", "yt", "ytnotifier"],
-            summary: "Monitoriza um canal do YouTube e publica novos vídeos num canal Discord.",
+            summary: "Monitoriza um canal do YouTube e publica novos videos num canal Discord.",
             commands: [
                 `${prefix}youtube status`,
                 `${prefix}youtube enable https://www.youtube.com/channel/UC... #avisos true`,
@@ -213,7 +220,7 @@ function buildModules(prefix) {
             ],
             setup: [
                 "Usa o ID do canal do YouTube ou uma URL `/channel/UC...`.",
-                "O último vídeo atual fica guardado para evitar disparar tudo de uma vez.",
+                "O ultimo video atual fica guardado para evitar disparar tudo de uma vez.",
             ],
         },
     ];

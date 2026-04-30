@@ -6,6 +6,7 @@ const mysql = require('./mysql2-compat');
 const setupDatabase = require('./setup-db');
 const comandos = require('./comandos');
 const YoutubeFeed = require('./comandos/Youtube/youtube-feed');
+const MusicManager = require('./comandos/Music/music-manager');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 class PromoPingBot {
@@ -17,7 +18,8 @@ class PromoPingBot {
                 GatewayIntentBits.MessageContent,
                 GatewayIntentBits.DirectMessages,
                 GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.GuildPresences
+                GatewayIntentBits.GuildPresences,
+                GatewayIntentBits.GuildVoiceStates
             ],
             partials: ['CHANNEL'],
             // Configurações para melhorar a conexão
@@ -46,6 +48,7 @@ class PromoPingBot {
         };
         this.dbPool = mysql.createPool(this.dbConfig);
         this.prefixCache = new Map();
+        this.client.music = new MusicManager(this.client);
 
         // Configurações do bot
         this.prefix = process.env.DISCORD_PREFIX || '!';
@@ -602,6 +605,12 @@ class PromoPingBot {
             } catch (dbSetupError) {
                 console.error('[DISCORD] Erro ao alinhar schema do bot:', dbSetupError.message);
             }
+            try {
+                await this.client.music.init();
+                console.log('[DISCORD] Runtime de música inicializado.');
+            } catch (musicError) {
+                console.error('[DISCORD] Falha ao inicializar música:', musicError.message);
+            }
             this.startMonitoring();
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
@@ -648,6 +657,12 @@ class PromoPingBot {
         // Handler para rate limits
         this.client.on('rateLimit', (rateLimitInfo) => {
             console.warn('[DISCORD] Rate limit atingido:', rateLimitInfo);
+        });
+
+        this.client.on('voiceStateUpdate', async (oldState, newState) => {
+            await this.client.music.handleVoiceStateUpdate(oldState, newState).catch((error) => {
+                console.error('[DISCORD] Erro no ciclo do painel de musica:', error.message);
+            });
         });
 
         // Bot adicionado a um novo servidor — regista para painel de cupões
@@ -824,7 +839,9 @@ class PromoPingBot {
                 }
                 // Lidar com botões
                 else if (interaction.isButton()) {
-                    if (interaction.customId === 'abrir_ticket_promoping') {
+                    if (interaction.customId.startsWith('musicctl_')) {
+                        await this.client.music.handleControlInteraction(interaction);
+                    } else if (interaction.customId === 'abrir_ticket_promoping') {
                         await this.handleTicketButton(interaction);
                     } else if (interaction.customId === 'iniciar_review_promoping') {
                         // Iniciar fluxo de review quando clicar no botão do painel

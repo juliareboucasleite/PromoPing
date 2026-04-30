@@ -1,111 +1,80 @@
-const Command = require("../../abstract/command");
 const {
   ensureJoinable,
   ensureSameVoice,
   ensureVoice,
-  getActor,
-  getGuildMember,
-  queueCount,
+  getMember,
+  queueTracks,
   respond,
 } = require("./_shared");
 
-module.exports = class PlayCommand extends Command {
-  constructor(...args) {
-    super(...args, {
-      name: "play",
-      aliases: ["p"],
-      description: "Play a track or playlist through Lavalink.",
-      usage: ["play <query or url>"],
-      examples: ["play joji slow dancing in the dark", "play https://youtube.com/watch?v=dQw4w9WgXcQ"],
-      category: "Music",
-      userPerms: ["SendMessages"],
-      botPerms: ["ViewChannel", "SendMessages", "Connect", "Speak"],
-      cooldown: 3,
-      options: [
-        { type: 3, name: "query", description: "Song name or url", required: true },
-      ],
-    });
-  }
-
-  async perform(target, query) {
-    if (!query?.trim()) {
-      return respond(target, "Music", ["Give me a song name, search phrase, or direct link."]);
+module.exports = {
+  name: "play",
+  aliases: ["p"],
+  description: "Toca uma musica ou adiciona uma playlist a fila.",
+  category: "Music",
+  usage: "!play <nome ou link>",
+  execute: async (client, message, args) => {
+    if (!message.guild) {
+      return message.reply("Este comando so funciona dentro de um servidor.");
     }
 
-    const member = getGuildMember(target);
-    const actor = getActor(target);
+    const query = args.join(" ").trim();
+    if (!query) {
+      return respond(message, "Musica", ["Usa `!play <nome ou link>` para tocar algo."]);
+    }
+
+    const member = getMember(message);
     const noVoice = ensureVoice(member);
-    if (noVoice) return respond(target, "Music", [noVoice]);
-    const joinableError = ensureJoinable(target, member);
-    if (joinableError) return respond(target, "Music", [joinableError]);
+    if (noVoice) return respond(message, "Musica", [noVoice]);
 
-    const existing = this.client.music.getPlayer(target.guild.id);
-    const sameVoiceError = ensureSameVoice(existing, member);
-    if (sameVoiceError) return respond(target, "Music", [sameVoiceError]);
+    const joinableError = ensureJoinable(message, member);
+    if (joinableError) return respond(message, "Musica", [joinableError]);
 
-    let player;
+    const existing = client.music.getPlayer(message.guild.id);
+    const sameVoiceError = ensureSameVoice(existing, member, client.music);
+    if (sameVoiceError) return respond(message, "Musica", [sameVoiceError]);
+
     try {
-      player = await this.client.music.createPlayer({
-        guild: target.guild,
+      const queue = await client.music.createPlayer({
+        guild: message.guild,
         member,
-        textId: target.channel.id,
+        textId: message.channel.id,
+      });
+
+      const result = await client.music.search(query, message.author);
+      if (!result?.tracks?.length) {
+        return respond(message, "Musica", ["Nao encontrei nenhuma musica para essa pesquisa."]);
+      }
+
+      const wasPlaying = Boolean(queue.currentTrack);
+      await queue.node.play(result);
+
+      if (result.playlist) {
+        return client.music.presentControlPanel(message, queue, message.author.id, {
+          title: "Playlist adicionada",
+          lines: [
+            `**${result.playlist.title || "Playlist"}**`,
+            `Faixas: **${result.tracks.length}**`,
+            `Fila atual: **${queueTracks(queue).length}**`,
+            `Canal de voz: **${member.voice.channel.name}**`,
+          ],
+        });
+      }
+
+      const track = result.tracks[0];
+      return client.music.presentControlPanel(message, queue, message.author.id, {
+        title: wasPlaying ? "Musica adicionada" : "A tocar agora",
+        lines: [
+          `**${track.title}**`,
+          `${track.author || "Artista desconhecido"}`,
+          `Duracao: \`${client.music.formatDuration(track.durationMS || track.duration || 0)}\``,
+          `Fila atual: **${queueTracks(queue).length}**`,
+        ],
       });
     } catch (error) {
-      return respond(target, "Music Offline", [
-        error?.message || "The music node is offline right now.",
-        "Start Lavalink first, then try again.",
+      return respond(message, "Erro de musica", [
+        String(error?.message || error || "Nao consegui tocar essa musica.").slice(0, 300),
       ]);
     }
-
-    const result = await this.client.music.search(query, actor).catch((error) => {
-      return { error: error?.message || "Search failed." };
-    });
-
-    if (result?.error) {
-      return respond(target, "Music Search Failed", [result.error]);
-    }
-
-    if (!result?.tracks?.length) {
-      return respond(target, "Music", ["I couldn't find anything for that search."]);
-    }
-
-    if (result.type === "PLAYLIST") {
-      player.queue.add(result.tracks);
-      if (!player.playing && !player.paused) {
-        await player.play();
-      }
-      return respond(target, "Playlist Added", [
-        `**${result.playlistName || "Playlist"}**`,
-        `Tracks: **${result.tracks.length}**`,
-        `Queue size: **${player.queue.totalSize}**`,
-        `Voice: **${member.voice.channel.name}**`,
-      ], { ephemeral: false });
-    }
-
-    const track = result.tracks[0];
-    player.queue.add(track);
-    if (!player.playing && !player.paused) {
-      await player.play();
-      return respond(target, "Now Playing", [
-        `**${track.title}**`,
-        `${track.author || "Unknown Artist"}`,
-        `Duration: \`${this.client.music.formatDuration(track.length)}\``,
-        `Queue size: **${player.queue.totalSize}**`,
-      ], { ephemeral: false });
-    }
-
-    return respond(target, "Queued", [
-      `**${track.title}**`,
-      `${track.author || "Unknown Artist"}`,
-      `Queue size: **${queueCount(player)}**`,
-    ], { ephemeral: false });
-  }
-
-  async run({ message, args }) {
-    return this.perform(message, args.join(" "));
-  }
-
-  async exec({ interaction }) {
-    return this.perform(interaction, interaction.options.getString("query"));
-  }
+  },
 };

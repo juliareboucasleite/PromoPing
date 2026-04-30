@@ -1,44 +1,22 @@
-const Command = require("../../abstract/command");
-const { ensureSameVoice, getGuildMember, queueCount, respond } = require("./_shared");
+const { ensureSameVoice, getMember, queueTracks, respond } = require("./_shared");
 
-module.exports = class ClearCommand extends Command {
-  constructor(...args) {
-    super(...args, {
-      name: "clear",
-      aliases: ["cq"],
-      description: "Clear the upcoming queue without leaving voice.",
-      usage: ["clear"],
-      examples: ["clear"],
-      category: "Music",
-      userPerms: ["SendMessages"],
-      botPerms: ["ViewChannel", "SendMessages"],
-      cooldown: 2,
-    });
-  }
-
-  async execute(target) {
-    const player = this.client.music.getPlayer(target.guild.id);
-    if (!player) return respond(target, "Queue", ["There is no active player in this server."]);
-    const err = ensureSameVoice(player, getGuildMember(target));
-    if (err) return respond(target, "Queue", [err]);
-
-    const before = queueCount(player);
-    if (!before) {
-      return respond(target, "Queue", ["There are no upcoming tracks to clear."]);
+module.exports = {
+  name: "clearqueue",
+  aliases: ["cq", "clearfila"],
+  description: "Limpa a fila de musica sem desligar o bot.",
+  category: "Music",
+  usage: "!clearqueue",
+  execute: async (client, message) => {
+    const queue = client.music.getPlayer(message.guild?.id);
+    if (!queue) {
+      return respond(message, "Musica", ["Nao ha um player ativo neste servidor."]);
     }
 
-    player.queue.clear();
-    return respond(target, "Queue Cleared", [
-      `Removed **${before}** queued track(s).`,
-      "The current track will keep playing until it ends.",
-    ], { ephemeral: false });
-  }
+    const error = ensureSameVoice(queue, getMember(message), client.music);
+    if (error) return respond(message, "Musica", [error]);
 
-  async run({ message }) {
-    return this.execute(message);
-  }
-
-  async exec({ interaction }) {
-    return this.execute(interaction);
-  }
+    const amount = queueTracks(queue).length;
+    queue.clear();
+    return respond(message, "Musica", [`Fila limpa. Removidas **${amount}** musicas.`]);
+  },
 };

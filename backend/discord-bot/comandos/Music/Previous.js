@@ -1,31 +1,25 @@
-const Command = require("../../abstract/command");
-const { ensureSameVoice, getGuildMember, respond } = require("./_shared");
+const { ensureSameVoice, getMember, respond } = require("./_shared");
 
-module.exports = class PreviousCommand extends Command {
-  constructor(...args) {
-    super(...args, {
-      name: "previous",
-      aliases: ["back"],
-      description: "Play the previously played track again.",
-      usage: ["previous"],
-      category: "Music",
-      userPerms: ["SendMessages"],
-      botPerms: ["ViewChannel", "SendMessages"],
-      cooldown: 2,
-    });
-  }
+module.exports = {
+  name: "previous",
+  aliases: ["back", "anterior"],
+  description: "Volta para a musica anterior do historico.",
+  category: "Music",
+  usage: "!previous",
+  execute: async (client, message) => {
+    const queue = client.music.getPlayer(message.guild?.id);
+    if (!queue) {
+      return respond(message, "Musica", ["Nao ha um player ativo neste servidor."]);
+    }
 
-  async execute(target) {
-    const player = this.client.music.getPlayer(target.guild.id);
-    if (!player) return respond(target, "Music", ["There is no active player in this server."]);
-    const err = ensureSameVoice(player, getGuildMember(target));
-    if (err) return respond(target, "Music", [err]);
-    const track = player.getPrevious(true);
-    if (!track) return respond(target, "Music", ["There is no previous track to replay."]);
-    await player.play(track);
-    return respond(target, "Music", [`Replaying **${track.title}**.`], { ephemeral: false });
-  }
+    const error = ensureSameVoice(queue, getMember(message), client.music);
+    if (error) return respond(message, "Musica", [error]);
 
-  async run({ message }) { return this.execute(message); }
-  async exec({ interaction }) { return this.execute(interaction); }
+    if (!queue.history?.previousTrack) {
+      return respond(message, "Musica", ["Nao ha uma musica anterior no historico."]);
+    }
+
+    await queue.history.previous(true);
+    return respond(message, "Musica", ["Voltei para a musica anterior."]);
+  },
 };

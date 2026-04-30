@@ -1,29 +1,21 @@
-const Command = require("../../abstract/command");
-const { ensureSameVoice, getGuildMember, respond } = require("./_shared");
+const { ensureSameVoice, getMember, respond } = require("./_shared");
 
-module.exports = class PauseCommand extends Command {
-  constructor(...args) {
-    super(...args, {
-      name: "pause",
-      aliases: [],
-      description: "Pause the current track.",
-      usage: ["pause"],
-      category: "Music",
-      userPerms: ["SendMessages"],
-      botPerms: ["ViewChannel", "SendMessages"],
-      cooldown: 2,
-    });
-  }
+module.exports = {
+  name: "pause",
+  aliases: [],
+  description: "Pausa a musica atual.",
+  category: "Music",
+  usage: "!pause",
+  execute: async (client, message) => {
+    const queue = client.music.getPlayer(message.guild?.id);
+    if (!queue?.currentTrack) {
+      return respond(message, "Musica", ["Nao ha nada a tocar agora."]);
+    }
 
-  async execute(target) {
-    const player = this.client.music.getPlayer(target.guild.id);
-    if (!player || !player.queue.current) return respond(target, "Music", ["Nothing is playing right now."]);
-    const err = ensureSameVoice(player, getGuildMember(target));
-    if (err) return respond(target, "Music", [err]);
-    player.pause(true);
-    return respond(target, "Music", ["Playback paused."], { ephemeral: false });
-  }
+    const error = ensureSameVoice(queue, getMember(message), client.music);
+    if (error) return respond(message, "Musica", [error]);
 
-  async run({ message }) { return this.execute(message); }
-  async exec({ interaction }) { return this.execute(interaction); }
+    queue.node.pause();
+    return respond(message, "Musica", ["Reproducao pausada."]);
+  },
 };

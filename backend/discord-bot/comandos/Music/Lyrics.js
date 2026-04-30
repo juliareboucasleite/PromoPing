@@ -1,57 +1,49 @@
-const Command = require("../../abstract/command");
-const { chunkLyrics, ensureSameVoice, getActor, getGuildMember, respond } = require("./_shared");
+const { chunkLyrics, respond } = require("./_shared");
 
-module.exports = class LyricsCommand extends Command {
-  constructor(...args) {
-    super(...args, {
-      name: "lyrics",
-      aliases: ["ly"],
-      description: "Fetch lyrics for the current track or a search query.",
-      usage: ["lyrics [song]"],
-      category: "Music",
-      userPerms: ["SendMessages"],
-      botPerms: ["ViewChannel", "SendMessages"],
-      cooldown: 4,
-      options: [{ type: 3, name: "query", description: "Song name", required: false }],
-    });
-  }
+module.exports = {
+  name: "lyrics",
+  aliases: ["letra"],
+  description: "Mostra a letra da musica atual ou da pesquisa indicada.",
+  category: "Music",
+  usage: "!lyrics [nome da musica]",
+  execute: async (client, message, args) => {
+    let track = client.music.getPlayer(message.guild?.id)?.currentTrack || null;
 
-  async perform(target, query) {
-    let track = null;
-    const player = this.client.music.getPlayer(target.guild.id);
-    if (!query) {
-      if (!player || !player.queue.current) return respond(target, "Lyrics", ["Nothing is playing right now, so provide a song name."]);
-      const err = ensureSameVoice(player, getGuildMember(target));
-      if (err) return respond(target, "Lyrics", [err]);
-      track = player.queue.current;
-    } else {
-      const result = await this.client.music.search(query, getActor(target)).catch((error) => ({
-        error: error?.message || "Lyrics search failed.",
-      }));
-      if (result?.error) {
-        return respond(target, "Music Offline", [
-          result.error,
-          "Start Lavalink first, then try the lyrics lookup again.",
-        ]);
-      }
+    if (!track && args.length) {
+      const result = await client.music.search(args.join(" "), message.author).catch(() => null);
       track = result?.tracks?.[0] || null;
     }
 
-    if (!track) return respond(target, "Lyrics", ["I couldn't resolve a track for that lyrics lookup."]);
-    const lyrics = await this.client.music.fetchLyrics(track);
-    if (!lyrics) return respond(target, "Lyrics", [`I couldn't find lyrics for **${track.title}**.`]);
+    if (!track) {
+      return respond(message, "Letras", [
+        "Nao ha musica ativa. Usa `!lyrics <nome da musica>` para pesquisar diretamente.",
+      ]);
+    }
 
-    const pages = chunkLyrics(lyrics);
-    return respond(target, "Lyrics", [
-      `**${track.title}**`,
-      `${track.author || "Unknown Artist"}`,
-      `Sections: **${pages.length}**`,
-      "",
-      pages[0],
-      ...(pages.length > 1 ? ["", "Use a more specific song search if you want a tighter lyrics match."] : []),
-    ], { ephemeral: false });
-  }
+    const lyrics = await client.music.fetchLyrics(track);
+    if (!lyrics) {
+      return respond(message, "Letras", [`Nao encontrei letra para **${track.title}**.`]);
+    }
 
-  async run({ message, args }) { return this.perform(message, args.join(" ")); }
-  async exec({ interaction }) { return this.perform(interaction, interaction.options.getString("query")); }
+    const chunks = chunkLyrics(lyrics, 3500);
+    await message.reply({
+      embeds: [{
+        title: `Letras • ${track.title}`,
+        color: 0xffa500,
+        description: chunks[0],
+      }],
+      allowedMentions: { parse: [] },
+    });
+
+    for (let index = 1; index < chunks.length; index += 1) {
+      await message.channel.send({
+        embeds: [{
+          title: `Letras • ${track.title} (${index + 1}/${chunks.length})`,
+          color: 0xffa500,
+          description: chunks[index],
+        }],
+        allowedMentions: { parse: [] },
+      }).catch(() => {});
+    }
+  },
 };
