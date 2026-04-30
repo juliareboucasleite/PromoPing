@@ -46,17 +46,33 @@ module.exports = {
         return respond(message, "Musica", ["Nao encontrei nenhuma musica para essa pesquisa."]);
       }
 
+      const playable = await client.music.resolvePlayableResult(result, message.author);
+      if (!playable.tracks.length) {
+        return respond(message, "Erro de musica", [
+          "Reconheci esse link, mas nao encontrei uma fonte de audio para tocar essa faixa.",
+        ]);
+      }
+
       const wasPlaying = Boolean(queue.currentTrack);
-      await queue.node.play(result);
+      const [firstTrack, ...restTracks] = playable.tracks;
+      if (wasPlaying) {
+        queue.addTrack(playable.tracks);
+      } else {
+        await queue.node.play(firstTrack);
+        if (restTracks.length) {
+          queue.addTrack(restTracks);
+        }
+      }
 
       if (result.playlist) {
         return client.music.presentControlPanel(message, queue, message.author.id, {
           title: "Playlist adicionada",
           lines: [
             `**${result.playlist.title || "Playlist"}**`,
-            `Faixas: **${result.tracks.length}**`,
+            `Faixas: **${playable.tracks.length}**`,
             `Fila atual: **${queueTracks(queue).length}**`,
             `Canal de voz: **${member.voice.channel.name}**`,
+            playable.bridged ? "Origem resolvida via YouTube para garantir reproducao." : null,
           ],
         });
       }
@@ -69,6 +85,7 @@ module.exports = {
           `${track.author || "Artista desconhecido"}`,
           `Duracao: \`${client.music.formatDuration(track.durationMS || track.duration || 0)}\``,
           `Fila atual: **${queueTracks(queue).length}**`,
+          playable.bridged ? "Origem resolvida via YouTube para garantir reproducao." : null,
         ],
       });
     } catch (error) {
