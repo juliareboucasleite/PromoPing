@@ -95,13 +95,14 @@ class MusicManager {
     this.player.events.on("playerError", async (queue, error, track) => {
       const channel = await this.getTextChannel(queue);
       if (!channel) return;
+      const targetTrack = track || queue?.currentTrack || null;
 
       await channel.send({
         embeds: [{
           title: "Erro de musica",
           color: 0xffa500,
           description: [
-            track ? `Faixa: **${track.title}**` : null,
+            targetTrack ? `Faixa: **${targetTrack.title}**` : null,
             `Erro: ${String(error?.message || error || "desconhecido").slice(0, 300)}`,
           ].filter(Boolean).join("\n"),
         }],
@@ -177,6 +178,55 @@ class MusicManager {
       requestedBy: requester || null,
       searchEngine: QueryType.AUTO,
     });
+  }
+
+  isSpotifyTrack(track) {
+    return String(track?.source || "").toLowerCase() === "spotify";
+  }
+
+  buildYoutubeBridgeQuery(track) {
+    const title = String(track?.title || "").trim();
+    const author = String(track?.author || "").trim();
+    return `youtube:${author} - ${title} official audio`;
+  }
+
+  async searchYoutubeBridge(track, requester) {
+    const query = this.buildYoutubeBridgeQuery(track);
+    const result = await this.player.search(query, {
+      requestedBy: requester || track?.requestedBy || null,
+      searchEngine: QueryType.AUTO,
+    });
+    return result?.tracks?.[0] || null;
+  }
+
+  async resolvePlayableResult(result, requester) {
+    if (!result?.tracks?.length) {
+      return { playlist: result?.playlist || null, tracks: [], bridged: false };
+    }
+
+    const hasSpotify = result.tracks.some((track) => this.isSpotifyTrack(track));
+    if (!hasSpotify) {
+      return { playlist: result.playlist || null, tracks: result.tracks, bridged: false };
+    }
+
+    const resolvedTracks = [];
+    for (const track of result.tracks) {
+      if (!this.isSpotifyTrack(track)) {
+        resolvedTracks.push(track);
+        continue;
+      }
+
+      const bridgedTrack = await this.searchYoutubeBridge(track, requester);
+      if (bridgedTrack) {
+        resolvedTracks.push(bridgedTrack);
+      }
+    }
+
+    return {
+      playlist: result.playlist || null,
+      tracks: resolvedTracks,
+      bridged: true,
+    };
   }
 
   queueTracks(queue) {
