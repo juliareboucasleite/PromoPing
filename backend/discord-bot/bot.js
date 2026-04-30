@@ -244,6 +244,9 @@ class PromoPingBot {
         if (!targetChannelId) {
             throw new Error('Nenhum canal de verificação foi configurado.');
         }
+        if (!settings.RoleId) {
+            throw new Error('Nenhum cargo de verificação foi configurado.');
+        }
 
         const channel = guild.channels.cache.get(targetChannelId)
             || await guild.channels.fetch(targetChannelId).catch(() => null);
@@ -448,6 +451,14 @@ class PromoPingBot {
                 await this.finalizeGiveaway(row);
             } catch (error) {
                 console.error(`[DISCORD] Falha ao finalizar giveaway ${row.MessageId}:`, error.message);
+                if (/não encontrada|não encontrado/i.test(error.message)) {
+                    await this.dbPool.execute(
+                        `UPDATE discord_giveaways
+                            SET Ended = TRUE, WinnerIds = ?, UpdatedAt = CURRENT_TIMESTAMP
+                          WHERE MessageId = ?`,
+                        ['[]', row.MessageId]
+                    ).catch(() => {});
+                }
             }
         }
     }
