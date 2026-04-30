@@ -8,7 +8,7 @@ lavalink:
   server:
     password: ${LAVALINK_PASSWORD:promoping-lavalink}
     sources:
-      youtube: false
+      youtube: true
       bandcamp: true
       soundcloud: true
       twitch: true

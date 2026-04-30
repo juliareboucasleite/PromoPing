@@ -498,14 +498,21 @@ class MusicManager {
     }
 
     const url = String(track?.url || "").trim();
-    if (url) {
+    const source = String(track?.source || track?.info?.sourceName || "").toLowerCase();
+    const isYoutubeUrl = /(?:youtube\.com|youtu\.be)/i.test(url);
+
+    if (url && !isYoutubeUrl) {
       return url;
     }
 
     const title = String(track?.title || "").trim();
     const author = String(track?.author || "").trim();
     const query = [author, title].filter(Boolean).join(" - ") || title || author;
-    return query ? `ytsearch:${query}` : null;
+    if (!query) {
+      return null;
+    }
+
+    return source === "youtube" || isYoutubeUrl ? `ytmsearch:${query}` : `ytsearch:${query}`;
   }
 
   pickLavalinkTrack(result) {
