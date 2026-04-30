@@ -23,10 +23,20 @@
     }
 
     function stars(r) {
-        if (r == null) return '-';
+        if (r == null) return { stars: '-', score: '' };
         let s = '';
         for (let i = 0; i < 5; i++) s += i < r ? '⭐' : '☆';
-        return s + ` (${r}/5)`;
+        return { stars: s, score: `${r}/5` };
+    }
+
+    function getInitials(name) {
+        if (!name) return '?';
+        return name.split(' ').slice(0, 2).map(n => n[0].toUpperCase()).join('');
+    }
+
+    function getTypeBadgeClass(tipo) {
+        const map = { 'suporte': 'suporte', 'site': 'site', 'bot': 'bot' };
+        return map[tipo] || 'suporte';
     }
 
     async function load() {
@@ -44,16 +54,30 @@
             el.innerHTML = reviews.map(r => {
                 const tipoLabel = r.tipo === 'suporte' ? 'Suporte' : r.tipo === 'site' ? 'Site' : r.tipo === 'bot' ? 'Bot' : r.tipo || '-';
                 const userLabel = r.is_anonimo ? 'Anónimo' : (r.user_nome || r.user_email || 'Utilizador');
-                const supportInfo = r.support_nome ? ` Fechado por: ${escapeHtml(r.support_nome)}` : (r.tipo === 'suporte' ? ' (suporte não associado)' : '');
+                const userInitials = getInitials(userLabel);
+                const ratingData = stars(r.rating);
+                const supportInfo = r.support_nome ? ` • Fechado por ${escapeHtml(r.support_nome)}` : '';
+                const typeBadgeClass = getTypeBadgeClass(r.tipo);
                 return `
-                    <div style="padding: 1rem; border-bottom: 1px solid #232326;">
-                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-                            <strong>${escapeHtml(userLabel)}</strong>
-                            <span style="color: #9ca3af;">${tipoLabel}${supportInfo}</span>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-user">
+                                <div class="review-avatar">${escapeHtml(userInitials)}</div>
+                                <div class="review-user-info">
+                                    <div class="review-user-name">${escapeHtml(userLabel)}</div>
+                                </div>
+                            </div>
+                            <span class="review-type-badge ${typeBadgeClass}">${escapeHtml(tipoLabel)}</span>
                         </div>
-                        <div style="margin: 0.5rem 0;">${stars(r.rating)}</div>
-                        <p style="margin: 0; color: #d1d5db;">${escapeHtml((r.texto || '').substring(0, 300))}${(r.texto && r.texto.length > 300) ? '...' : ''}</p>
-                        <div style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">${formatDate(r.created_at)}</div>
+                        <div class="review-rating">
+                            <span class="review-stars">${ratingData.stars}</span>
+                            <span class="review-score">${ratingData.score}</span>
+                        </div>
+                        <p class="review-text">${escapeHtml((r.texto || '').substring(0, 300))}${(r.texto && r.texto.length > 300) ? '...' : ''}</p>
+                        <div class="review-footer">
+                            <span class="review-date">${formatDate(r.created_at)}</span>
+                        </div>
+                        ${supportInfo ? `<div class="review-support-info">${escapeHtml(supportInfo)}</div>` : ''}
                     </div>`;
             }).join('');
         } catch (e) {
