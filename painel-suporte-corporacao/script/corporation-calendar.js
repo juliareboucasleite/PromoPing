@@ -327,11 +327,21 @@
         else alert('Atividade removida.');
     }
 
-    function initCalendar() {
+    function waitForFullCalendar(maxAttempts = 30, attempt = 0) {
+        return new Promise((resolve, reject) => {
+            if (typeof FullCalendar !== 'undefined') return resolve();
+            if (attempt >= maxAttempts) return reject(new Error('FullCalendar timeout'));
+            setTimeout(() => waitForFullCalendar(maxAttempts, attempt + 1).then(resolve).catch(reject), 200);
+        });
+    }
+
+    async function initCalendar() {
         const calendarEl = document.getElementById('calendar');
         if (!calendarEl) return;
-        if (typeof FullCalendar === 'undefined') {
-            calendarEl.innerHTML = '<div style="padding: 2rem; text-align: center; color: #fca5a5;">FullCalendar não carregado.</div>';
+        try {
+            await waitForFullCalendar(30);
+        } catch (e) {
+            calendarEl.innerHTML = '<div style="padding: 2rem; text-align: center; color: #fca5a5;"><h3>Erro ao carregar FullCalendar</h3><p>Verifique a conexão ou recarregue a página.</p><button onclick="location.reload()" style="margin-top:1rem;padding:0.5rem 1rem;background:#ff9800;color:#0f0f10;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Recarregar</button></div>';
             return;
         }
         calendar = new FullCalendar.Calendar(calendarEl, {
