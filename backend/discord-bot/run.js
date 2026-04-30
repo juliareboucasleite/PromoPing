@@ -200,26 +200,6 @@ function runLocal() {
 
     // Array para armazenar todos os processos
     const processes = [];
-    let lavalinkStartedByRun = false;
-
-    const lavalinkStartScript = path.join(__dirname, 'lavalink', 'start-lavalink.ps1');
-    const lavalinkStopScript = path.join(__dirname, 'lavalink', 'stop-lavalink.ps1');
-
-    if (process.env.DISABLE_LAVALINK !== 'true' && fs.existsSync(lavalinkStartScript)) {
-        if (!checkCommand('java')) {
-            log('Java não encontrado. Lavalink não será iniciado.', 'yellow');
-        } else {
-            try {
-                execSync(`powershell -ExecutionPolicy Bypass -File "${lavalinkStartScript}"`, {
-                    stdio: 'inherit',
-                    cwd: rootDir
-                });
-                lavalinkStartedByRun = true;
-            } catch (error) {
-                log('Falha ao iniciar Lavalink automaticamente.', 'yellow');
-            }
-        }
-    }
 
     // Iniciar Rich Presence (se disponível)
     let presenceProcess = null;
@@ -402,7 +382,7 @@ function runLocal() {
 
         // Graceful shutdown
         const shutdown = (signal) => {
-            log(`\n${signal} recebido. Parando todos os serviços...`, 'yellow');
+            log(`\n${signal} recebido. Parando todos os servi?os...`, 'yellow');
 
             // Parar todos os processos
             processes.forEach((proc, index) => {
@@ -414,18 +394,7 @@ function runLocal() {
                 }
             });
 
-            if (lavalinkStartedByRun && fs.existsSync(lavalinkStopScript)) {
-                try {
-                    execSync(`powershell -ExecutionPolicy Bypass -File "${lavalinkStopScript}"`, {
-                        stdio: 'inherit',
-                        cwd: rootDir
-                    });
-                } catch (error) {
-                    log('Falha ao parar Lavalink automaticamente.', 'yellow');
-                }
-            }
-
-            // Aguardar um pouco e forçar encerramento se necessário
+            // Aguardar um pouco e for?ar encerramento se necess?rio
             setTimeout(() => {
                 processes.forEach(proc => {
                     if (proc && !proc.killed) {
@@ -515,3 +484,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
 }
 
 main();
+
+
+
+

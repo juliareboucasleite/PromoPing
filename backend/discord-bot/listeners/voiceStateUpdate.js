@@ -20,7 +20,6 @@ module.exports = class VoiceStateUpdate extends Event {
         if (oldState.channelId === newState.channelId) return;
         const guildId = newState ? newState.guild.id : oldState.guild.id;
         try {
-            await this.client.music.handleVoiceStateUpdate(oldState, newState).catch(() => null);
             if (!oldState.channelId && newState.channelId) {
                 let data = await this.client.cache.get(guildId + "1")
                 if (!data) {

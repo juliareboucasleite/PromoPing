@@ -158,7 +158,6 @@ module.exports = {
                     `\`${prefix}helpadmin\` mostra moderação e setup de staff.`,
                     `\`${prefix}painel\` resume os painéis prontos.`,
                     `\`${prefix}prefix ?\` altera o prefixo do servidor.`,
-                    `\`${prefix}music\` mostra o estado real do módulo de música.`,
                 ],
             },
         ];

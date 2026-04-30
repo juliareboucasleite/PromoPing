@@ -101,27 +101,6 @@ function buildModules(prefix) {
             ],
         },
         {
-            key: "music",
-            title: "Musica",
-            status: "ativo",
-            aliases: ["music", "musica", "player"],
-            summary: "Player de musica ligado no runtime atual com fila, volume, loop e controlo de voz.",
-            commands: [
-                `${prefix}play link-ou-nome`,
-                `${prefix}pause`,
-                `${prefix}resume`,
-                `${prefix}skip`,
-                `${prefix}queue`,
-                `${prefix}mstop`,
-            ],
-            setup: [
-                "Entra num canal de voz e usa `play` com um nome ou link.",
-                "O `play` publica um painel com botoes para controlar a sessao.",
-                "Usa `queue`, `nowplaying`, `volume` e `loop` para gerir a sessao.",
-                "O comando `music` mostra o estado do runtime e da infra Lavalink.",
-            ],
-        },
-        {
             key: "painel",
             title: "Paineis",
             status: "ativo",

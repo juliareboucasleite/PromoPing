@@ -57,7 +57,7 @@ import notificacoesRoutes from "./routes/notificacoes.js"; // Notificações
 import contasRoutes from "./routes/contas.js"; // Contas
 import preferencesRoutes from "./routes/preferences.js"; // Preferências
 import authEmailVerifyRoutes from "./routes/auth-email-verify.js"; // Verificação email
-import paymentRoutes from "./routes/payment.js"; // Pagamentos
+import paymentRoutes, { stripeWebhookHandler } from "./routes/payment.js"; // Pagamentos
 import statusRoutes from "./routes/status.js"; // Status
 import chartsRoutes from "./routes/charts.js"; // Gráficos/series
 import exportRoutes from "./routes/exportRoutes.js"; // Exportação
@@ -88,6 +88,7 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', ['127.0.0.1', '::1']);
 }
 app.use(cookieParser()); // Cookies
+app.post("/api/payment/webhook", express.raw({ type: "application/json" }), stripeWebhookHandler);
 app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
 // Rate limiting geral para todas as rotas

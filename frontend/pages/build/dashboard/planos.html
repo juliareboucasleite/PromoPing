@@ -636,29 +636,52 @@
         // Função para realmente cancelar a assinatura via backend
         async function confirmarCancelamento() {
             const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Precisa estar logado.");
+                return;
+            }
+
             try {
                 console.log("Cancelando assinatura...");
-                const response = await makeRequest("/api/user/cancel-subscription", {
+                let subscriptionId = null;
+                try {
+                    const planoResp = await makeRequest("/api/user/plano", {
+                        headers: { Authorization: "Bearer " + token }
+                    });
+                    if (planoResp.ok) {
+                        const planoData = await planoResp.json();
+                        subscriptionId = planoData?.subscription_id || null;
+                    }
+                } catch (_) {
+                    // fallback: backend resolve automaticamente por ReferenciaID
+                }
+
+                const response = await makeRequest("/api/payment/cancel-subscription", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: "Bearer " + token
-                    }
+                    },
+                    body: JSON.stringify({
+                        subscription_id: subscriptionId,
+                        reason: "canceled_by_user_dashboard"
+                    })
                 });
                 if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || `Erro HTTP: ${response.status}`);
                 }
                 const data = await response.json();
                 console.log("Assinatura cancelada:", data);
                 // Fechar modal
                 fecharModalCancelamento();
-                alert("Assinatura cancelada com sucesso! Você terá um período de graça de 30 dias antes que os serviços sejam limitados.");
+                alert("Assinatura cancelada com sucesso.");
                 // Recarregar a página para mostrar as mudanças
                 location.reload();
 
             } catch (error) {
                 console.error("Erro ao cancelar assinatura:", error);
-                alert("Erro ao cancelar assinatura. Tente novamente.");
+                alert(`Erro ao cancelar assinatura: ${error.message || 'Tente novamente.'}`);
             }
         }
 
@@ -877,8 +900,43 @@
             }
         });
 
+        async function sincronizarAssinaturaStripe(options = {}) {
+            const { silent = false } = options;
+            const token = localStorage.getItem("token");
+            if (!token) return { status: "no_token" };
+
+            try {
+                const response = await makeRequest('/api/payment/sync-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (!silent) {
+                        console.warn('[PLANOS] Falha ao sincronizar assinatura:', response.status);
+                    }
+                    return { status: "http_error", code: response.status };
+                }
+
+                const data = await response.json();
+                return { status: "ok", data };
+            } catch (error) {
+                if (!silent) {
+                    console.error('[PLANOS] Erro ao sincronizar assinatura:', error);
+                }
+                return { status: "exception", error };
+            }
+        }
+
+        function limparParametrosRetornoStripe() {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         // Verificar se retornou do Stripe após pagamento
-        function verificarRetornoStripe() {
+        async function verificarRetornoStripe() {
             const urlParams = new URLSearchParams(window.location.search);
             const success = urlParams.get('success');
             const canceled = urlParams.get('canceled');
@@ -886,12 +944,18 @@
 
             if (success === 'true' && sessionId) {
                 // Verificar sessão e atualizar plano
-                verificarSessaoPagamento(sessionId);
+                await verificarSessaoPagamento(sessionId);
+            } else if (success === 'true') {
+                // Link direto do Stripe: sincronizar via webhook + fallback de API
+                await sincronizarAssinaturaStripe({ silent: false });
+                alert('Pagamento recebido. Estamos sincronizando o seu plano.');
+                limparParametrosRetornoStripe();
+                location.reload();
             } else if (canceled === 'true') {
                 // Usuário cancelou o pagamento
                 alert('Pagamento cancelado. Você pode tentar novamente quando quiser.');
                 // Limpar parâmetros da URL
-                window.history.replaceState({}, document.title, window.location.pathname);
+                limparParametrosRetornoStripe();
             }
         }
 
@@ -955,8 +1019,9 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            verificarRetornoStripe();
+        document.addEventListener('DOMContentLoaded', async function () {
+            await verificarRetornoStripe();
+            await sincronizarAssinaturaStripe({ silent: true });
             carregarDadosUsuario();
 
             const btnMensal = document.getElementById('toggleMensal');

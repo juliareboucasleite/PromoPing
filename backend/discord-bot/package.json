@@ -6,11 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "node test.js",
-    "lavalink:download": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\download-lavalink.ps1",
-    "lavalink:start": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\start-lavalink.ps1",
-    "lavalink:stop": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\stop-lavalink.ps1",
-    "lavalink:status": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\status-lavalink.ps1"
+    "test": "node test.js"
   },
   "keywords": [
     "discord",
@@ -22,18 +18,10 @@
   "author": "PromoPing Team",
   "license": "MIT",
   "dependencies": {
-    "@discord-player/extractor": "^7.2.0",
-    "@discordjs/voice": "^0.19.2",
-    "@kirdock/discordjs-voice-recorder": "^1.1.1",
     "bcrypt": "^6.0.0",
-    "discord-player": "^7.2.0",
-    "discord-player-googlevideo": "^0.2.5",
-    "discord-player-youtube": "^0.8.4",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
-    "libsodium-wrappers": "^0.8.4",
-    "pg": "^8.20.0",
-    "shoukaku": "^4.3.0"
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -14,22 +14,6 @@ module.exports = class ready extends Event {
     }
     async run() {
         try {
-            await this.client.music.init().catch(() => null);
-            if (this.client.music.ensureReady()) {
-                await this.client.music.waitForNode(8000).catch(() => null);
-                const onlineNodes = this.client.music.getConnectedNodes();
-                if (onlineNodes.length) {
-                    this.client.logger.log(
-                        `Music ready with ${onlineNodes.length} Lavalink node(s) online`,
-                        "ready"
-                    );
-                } else {
-                    const fallbackNode = this.client.config.Lavalink?.Nodes?.[0];
-                    this.client.logger.warn(
-                        `Music node offline. Check Lavalink at ${fallbackNode?.url || "your configured node"}.`
-                    );
-                }
-            }
             await this.client.giveawayManager.init()
             this.client.logger.log(
                 `Logged in as ${this.client.user.username}`,
