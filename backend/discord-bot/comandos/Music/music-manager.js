@@ -6,6 +6,7 @@ const {
 } = require("discord.js");
 const { Player, QueryType, QueueRepeatMode } = require("discord-player");
 const { DefaultExtractors } = require("@discord-player/extractor");
+const { YoutubeSabrExtractor } = require("discord-player-googlevideo");
 
 class MusicManager {
   constructor(client) {
@@ -34,6 +35,7 @@ class MusicManager {
       this.player = new Player(this.client);
       this.bindEvents();
       await this.player.extractors.loadMulti(DefaultExtractors);
+      await this.player.extractors.register(YoutubeSabrExtractor, {});
       this.initialized = true;
       return this.player;
     })().catch((error) => {

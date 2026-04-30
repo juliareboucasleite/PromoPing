@@ -27,6 +27,7 @@
     "@kirdock/discordjs-voice-recorder": "^1.1.1",
     "bcrypt": "^6.0.0",
     "discord-player": "^7.2.0",
+    "discord-player-googlevideo": "^0.2.5",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "libsodium-wrappers": "^0.8.4",
