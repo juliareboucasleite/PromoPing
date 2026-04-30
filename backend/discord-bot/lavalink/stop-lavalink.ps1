@@ -18,6 +18,7 @@ if (-not $lavalinkPid) {
 $process = Get-Process -Id $lavalinkPid -ErrorAction SilentlyContinue
 if ($process) {
     Stop-Process -Id $lavalinkPid -Force
+    Wait-Process -Id $lavalinkPid -ErrorAction SilentlyContinue
     Write-Host "Lavalink parado (PID $lavalinkPid)."
 } else {
     Write-Host "Processo $lavalinkPid já não estava em execução."
