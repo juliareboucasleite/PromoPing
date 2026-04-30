@@ -852,12 +852,11 @@
                 console.log("Dados do usuário não encontrados");
                 return;
             }
-            const user = data.user;
-            const stats = data.stats || {};
             
             // Verificar se o plano é Free (ID 1) - se for, não mostrar a seção
-            const planoId = user.PlanoAtualId || user.plano_id || 1;
-            if (planoId === 1 || user.plano_nome === 'Free' || user.plano_nome === 'FREE') {
+            const planoId = Number(plano.id || 1);
+            const planoNome = String(plano.nome || '').toUpperCase();
+            if (planoId === 1 || planoNome === 'FREE') {
                 currentPlanSection.style.display = "none";
                 return;
             }
@@ -866,13 +865,16 @@
             let status = "Ativo";
             let statusClass = "active";
             // Verificar se está em período de graça
-            if (user.StatusAssinatura === 'PeriodoGraca') {
+            gracePeriodInfo.style.display = "none";
+            const isGracePeriod = Boolean(planoData?.is_in_grace_period) || plano.status === 'PeriodoGraca';
+            if (isGracePeriod) {
                 status = "Período de Graça";
                 statusClass = "grace-period";
                 gracePeriodInfo.style.display = "block";
                 // Calcular tempo restante do período de graça
-                if (user.DataExpiracao) {
-                    const endDate = new Date(user.DataExpiracao);
+                const gracePeriodEnd = planoData?.grace_period_end || plano.expiracao || null;
+                if (gracePeriodEnd) {
+                    const endDate = new Date(gracePeriodEnd);
                     const now = new Date();
                     const timeLeft = endDate - now;
                     if (timeLeft > 0) {
@@ -890,11 +892,11 @@
             currentPlanDetails.innerHTML = `
                 <div class="plan-detail">
                     <h4>Plano Atual</h4>
-                    <p>${user.plano_nome || 'Free'}</p>
+                    <p>${plano.nome || 'Free'}</p>
                 </div>
                 <div class="plan-detail">
                     <h4>Produtos</h4>
-                    <p>${stats.produtos_total || 0} de ${user.LimiteProdutos || '∞'}</p>
+                    <p>${stats.produtos_total || 0} de ${plano.limite_produtos ?? plano.limiteprodutos ?? '∞'}</p>
                 </div>
                 <div class="plan-detail">
                     <h4>Notificações</h4>
@@ -905,6 +907,9 @@
                     <p>€${stats.dinheiro_poupado || '0,00'}</p>
                 </div>
             `;
+            if (cancelButton) {
+                cancelButton.style.display = isGracePeriod ? "none" : "inline-flex";
+            }
             currentPlanSection.style.display = "block";
         }
 
