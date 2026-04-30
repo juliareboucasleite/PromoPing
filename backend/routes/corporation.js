@@ -635,6 +635,11 @@ router.post("/calendar/activities", async (req, res) => {
         const r = row[0];
         const dataFim = new Date(r.DataInicio);
         dataFim.setMinutes(dataFim.getMinutes() + (r.DuracaoMinutos || 0));
+        logAudit(req, 'activity.create', {
+            targetType: 'activity',
+            targetId: r.Id,
+            details: { assignedTo: r.AssignedTo, tipo: r.TipoAtividade, acao: r.Acao }
+        });
         res.status(201).json({
             status: "ok",
             activity: {
@@ -676,6 +681,11 @@ router.put("/calendar/activities/:id", async (req, res) => {
         if (updates.length === 0) return res.json({ status: "ok", message: "Nada a atualizar" });
         values.push(id);
         await pool.query(`UPDATE corporation_activities SET ${updates.join(", ")} WHERE Id = ?`, values);
+        logAudit(req, 'activity.update', {
+            targetType: 'activity',
+            targetId: id,
+            details: { fields: updates.map(u => u.split(' = ')[0]) }
+        });
         res.json({ status: "ok", message: "Atividade atualizada" });
     } catch (err) {
         console.error("[CORPORATION] Erro ao atualizar atividade:", err);
@@ -689,6 +699,7 @@ router.delete("/calendar/activities/:id", async (req, res) => {
         await ensureCorporationActivitiesTable();
         const [r] = await pool.query("DELETE FROM corporation_activities WHERE Id = ?", [req.params.id]);
         if (r.affectedRows === 0) return res.status(404).json({ status: "error", error: "Atividade não encontrada" });
+        logAudit(req, 'activity.delete', { targetType: 'activity', targetId: req.params.id });
         res.json({ status: "ok", message: "Atividade removida" });
     } catch (err) {
         console.error("[CORPORATION] Erro ao remover atividade:", err);
