@@ -844,7 +844,11 @@
             const planStatus = document.getElementById('planStatus');
             const gracePeriodInfo = document.getElementById('gracePeriodInfo');
             const cancelButton = document.querySelector('.cancel-subscription-btn');
-            if (!data.user) {
+            const meData = data?.meData || null;
+            const planoData = data?.planoData || null;
+            const plano = planoData?.plano || null;
+            const stats = meData?.stats || {};
+            if (!plano) {
                 console.log("Dados do usuário não encontrados");
                 return;
             }
