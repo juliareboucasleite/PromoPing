@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria - PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        .audit-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-elevated, #1a1a1c); border: 1px solid var(--border-subtle, #2a2a2c); border-radius: 10px; }
+        .audit-filters label { display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .audit-filters input, .audit-filters select { width: 100%; }
+        .pill { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(255, 152, 0, 0.15); color: #ff9800; font-family: monospace; }
+        .audit-row-detail { font-family: monospace; font-size: 0.78rem; color: #9ca3af; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+        .audit-row-detail:hover { color: #ff9800; }
+        .pagination { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; margin-top: 1rem; font-size: 0.85rem; }
+        .pagination button { padding: 0.35rem 0.75rem; }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="financeiro.html" class="nav-item"><span class="nav-icon"></span><span>Financeiro</span></a>
+                <a href="auditoria.html" class="nav-item active"><span class="nav-icon"></span><span>Auditoria</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Auditoria</h1>
+                    <button id="refreshAuditBtn" class="refresh-button">Atualizar</button>
+                </div>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Registo imutável de quem fez o quê. Útil para responsabilização e investigação de incidentes.</p>
+
+                <div class="audit-filters">
+                    <div>
+                        <label>Acção</label>
+                        <select id="filterAction" class="form-input">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Actor (email/REF-ID)</label>
+                        <input type="text" id="filterActor" class="form-input" placeholder="ex: julia@... ou REF-...">
+                    </div>
+                    <div>
+                        <label>De</label>
+                        <input type="date" id="filterFrom" class="form-input">
+                    </div>
+                    <div>
+                        <label>Até</label>
+                        <input type="date" id="filterTo" class="form-input">
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                        <button type="button" id="applyFiltersBtn" class="modal-submit-button" style="flex: 1;">Filtrar</button>
+                        <button type="button" id="clearFiltersBtn" class="modal-cancel-button" style="flex: 1;">Limpar</button>
+                    </div>
+                </div>
+
+                <div id="auditList" class="data-table-container" style="min-height: 200px;">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+
+                <div class="pagination">
+                    <span id="paginationInfo" style="color: #9ca3af;"></span>
+                    <button type="button" id="prevPageBtn" class="refresh-button">‹ Anterior</button>
+                    <button type="button" id="nextPageBtn" class="refresh-button">Próxima ›</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal detalhe do log -->
+    <div id="auditDetailModal" class="modal-overlay">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Detalhe do registo</h2>
+                <button type="button" class="modal-close" id="closeAuditDetailModal">&times;</button>
+            </div>
+            <div id="auditDetailBody" style="padding: 1rem;"></div>
+            <div class="modal-actions">
+                <button type="button" class="modal-cancel-button" id="closeAuditDetailBtn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-auditoria.js"></script>
+</body>
+
+</html>
