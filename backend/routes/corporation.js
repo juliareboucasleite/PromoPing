@@ -172,19 +172,26 @@ async function ensureCorporationDiscordGuildsTable() {
 /** Lista funcionários (suporte - PerfilId = 1) com detalhes */
 router.get("/staff", async (req, res) => {
     try {
+        const includeInactive = req.query.includeInactive === '1' || req.query.includeInactive === 'true';
+        const profiles = req.query.includeCorp === '1' ? '(1, 3)' : '(1)';
+        const activeFilter = includeInactive ? '' : 'AND u.Ativo = 1';
+
         const [staff] = await pool.query(
-            `SELECT 
+            `SELECT
                 u.ReferenciaID,
                 u.Nome,
                 u.Email,
                 u.Telefone,
                 u.DataRegisto,
                 u.PerfilId,
+                u.Ativo,
+                u.DataDesativacao,
+                u.UltimoLogin,
                 p.Nome AS PerfilNome
             FROM utilizadores u
             LEFT JOIN perfis p ON p.Id = u.PerfilId
-            WHERE u.PerfilId = 1 AND u.Ativo = 1
-            ORDER BY u.Nome`
+            WHERE u.PerfilId IN ${profiles} ${activeFilter}
+            ORDER BY u.Ativo DESC, u.Nome`
         );
         res.json({ status: "ok", staff: staff.map(mapStaffRow) });
     } catch (err) {
@@ -288,6 +295,196 @@ router.get("/staff/:referenciaID/activity", async (req, res) => {
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar atividade:", err);
         return handleDatabaseError(err, res, "Erro ao buscar atividade");
+    }
+});
+
+// ===========================================================================
+// Gestão de funcionários (criar/editar/suspender/reativar/reset-password)
+// ===========================================================================
+
+function generateTempPassword() {
+    // 12 chars: 4 grupos legíveis separados por '-'
+    const groups = [];
+    for (let i = 0; i < 3; i++) {
+        groups.push(crypto.randomBytes(2).toString('hex'));
+    }
+    return groups.join('-');
+}
+
+/** POST /staff — criar nova conta de funcionário (suporte) */
+router.post("/staff", async (req, res) => {
+    try {
+        const { nome, email, telefone, perfilId } = req.body;
+        if (!nome || !email) {
+            return res.status(400).json({ status: "error", error: "Nome e email são obrigatórios." });
+        }
+        const cleanEmail = String(email).trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+            return res.status(400).json({ status: "error", error: "Email inválido." });
+        }
+
+        const [exists] = await pool.query(
+            "SELECT ReferenciaID FROM utilizadores WHERE LOWER(Email) = ? LIMIT 1",
+            [cleanEmail]
+        );
+        if (exists.length > 0) {
+            return res.status(409).json({ status: "error", error: "Já existe uma conta com este email." });
+        }
+
+        const targetPerfil = [1, 3].includes(parseInt(perfilId)) ? parseInt(perfilId) : 1;
+        const referenciaID = gerarReferenciaID();
+        const tempPassword = generateTempPassword();
+        const hash = await bcrypt.hash(tempPassword, 10);
+
+        await pool.query(
+            `INSERT INTO utilizadores
+             (ReferenciaID, Nome, Email, SenhaHash, Telefone, Ativo, PerfilId, EmailVerificado, DataRegisto)
+             VALUES (?, ?, ?, ?, ?, 1, ?, 1, NOW())`,
+            [referenciaID, String(nome).trim().slice(0, 100), cleanEmail, hash, telefone ? String(telefone).slice(0, 20) : null, targetPerfil]
+        );
+
+        logAudit(req, 'staff.create', {
+            targetType: 'user',
+            targetId: referenciaID,
+            details: { nome: String(nome).trim(), email: cleanEmail, perfilId: targetPerfil }
+        });
+
+        res.status(201).json({
+            status: "ok",
+            message: "Funcionário criado.",
+            staff: { ReferenciaID: referenciaID, Nome: nome, Email: cleanEmail, PerfilId: targetPerfil },
+            tempPassword
+        });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao criar funcionário:", err);
+        return handleDatabaseError(err, res, "Erro ao criar funcionário");
+    }
+});
+
+/** PUT /staff/:referenciaID — atualizar dados básicos (nome, telefone, perfil) */
+router.put("/staff/:referenciaID", async (req, res) => {
+    try {
+        const { referenciaID } = req.params;
+        const { nome, telefone, perfilId } = req.body;
+
+        const [exists] = await pool.query(
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        if (exists.length === 0) {
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+        }
+        const currentPerfil = exists[0].PerfilId ?? exists[0].perfilid;
+        if (![1, 3].includes(currentPerfil)) {
+            return res.status(400).json({ status: "error", error: "Só funcionários (suporte/corporação) podem ser editados aqui." });
+        }
+
+        const updates = [];
+        const values = [];
+        if (nome !== undefined) { updates.push("Nome = ?"); values.push(String(nome).trim().slice(0, 100)); }
+        if (telefone !== undefined) { updates.push("Telefone = ?"); values.push(telefone ? String(telefone).slice(0, 20) : null); }
+        if (perfilId !== undefined && [1, 3].includes(parseInt(perfilId))) {
+            updates.push("PerfilId = ?");
+            values.push(parseInt(perfilId));
+        }
+        if (updates.length === 0) {
+            return res.json({ status: "ok", message: "Nada a actualizar." });
+        }
+        values.push(referenciaID);
+        await pool.query(
+            `UPDATE utilizadores SET ${updates.join(", ")}, UpdatedAt = NOW() WHERE ReferenciaID = ?`,
+            values
+        );
+
+        logAudit(req, 'staff.update', {
+            targetType: 'user',
+            targetId: referenciaID,
+            details: { fields: updates.map(u => u.split(' = ')[0]) }
+        });
+
+        res.json({ status: "ok", message: "Funcionário actualizado." });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao actualizar funcionário:", err);
+        return handleDatabaseError(err, res, "Erro ao actualizar funcionário");
+    }
+});
+
+/** POST /staff/:referenciaID/suspend — desactivar conta */
+router.post("/staff/:referenciaID/suspend", async (req, res) => {
+    try {
+        const { referenciaID } = req.params;
+        if (referenciaID === req.user?.ReferenciaID) {
+            return res.status(400).json({ status: "error", error: "Não podes suspender a tua própria conta." });
+        }
+        const [exists] = await pool.query(
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        if (exists.length === 0) {
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+        }
+        await pool.query(
+            "UPDATE utilizadores SET Ativo = 0, DataDesativacao = NOW(), UpdatedAt = NOW() WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        logAudit(req, 'staff.suspend', {
+            targetType: 'user',
+            targetId: referenciaID,
+            details: { reason: req.body?.reason || null }
+        });
+        res.json({ status: "ok", message: "Conta suspensa." });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao suspender:", err);
+        return handleDatabaseError(err, res, "Erro ao suspender funcionário");
+    }
+});
+
+/** POST /staff/:referenciaID/reactivate — reactivar conta */
+router.post("/staff/:referenciaID/reactivate", async (req, res) => {
+    try {
+        const { referenciaID } = req.params;
+        const [r] = await pool.query(
+            "UPDATE utilizadores SET Ativo = 1, DataDesativacao = NULL, UpdatedAt = NOW() WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        const affected = r.affectedRows !== undefined ? r.affectedRows : (r.rowCount || 0);
+        if (!affected) {
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+        }
+        logAudit(req, 'staff.reactivate', { targetType: 'user', targetId: referenciaID });
+        res.json({ status: "ok", message: "Conta reactivada." });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao reactivar:", err);
+        return handleDatabaseError(err, res, "Erro ao reactivar funcionário");
+    }
+});
+
+/** POST /staff/:referenciaID/reset-password — gerar nova password temporária */
+router.post("/staff/:referenciaID/reset-password", async (req, res) => {
+    try {
+        const { referenciaID } = req.params;
+        const [exists] = await pool.query(
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        if (exists.length === 0) {
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+        }
+        const tempPassword = generateTempPassword();
+        const hash = await bcrypt.hash(tempPassword, 10);
+        await pool.query(
+            "UPDATE utilizadores SET SenhaHash = ?, UltimaAlteracaoSenha = NOW(), UpdatedAt = NOW() WHERE ReferenciaID = ?",
+            [hash, referenciaID]
+        );
+        logAudit(req, 'staff.reset_password', { targetType: 'user', targetId: referenciaID });
+        res.json({
+            status: "ok",
+            message: "Password redefinida. Entrega esta password ao funcionário — não voltará a ser mostrada.",
+            tempPassword
+        });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao redefinir password:", err);
+        return handleDatabaseError(err, res, "Erro ao redefinir password");
     }
 });
 
@@ -400,6 +597,7 @@ async function ensureCorporationActivitiesTable() {
 
 function mapStaffRow(row) {
     if (!row) return null;
+    const ativoRaw = row.Ativo !== undefined ? row.Ativo : row.ativo;
     return {
         ReferenciaID: row.ReferenciaID || row.referenciaid || "",
         Nome: row.Nome || row.nome || "",
@@ -408,6 +606,9 @@ function mapStaffRow(row) {
         DataRegisto: row.DataRegisto || row.dataregisto || null,
         PerfilId: row.PerfilId || row.perfilid || null,
         PerfilNome: row.PerfilNome || row.perfilnome || "",
+        Ativo: ativoRaw === undefined ? null : Number(ativoRaw),
+        DataDesativacao: row.DataDesativacao || row.datadesativacao || null,
+        UltimoLogin: row.UltimoLogin || row.ultimologin || null,
     };
 }
 
