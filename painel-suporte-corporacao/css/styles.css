@@ -672,32 +672,11 @@ html {
 }
 
 .chat-header {
-    padding: 1.1rem 1.2rem;
+    padding: 0.6rem 1rem;
     border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(90deg, rgba(245, 158, 11, 0.03) 0%, transparent 100%);
-}
-
-.chat-user {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.chat-user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    background: var(--accent-muted);
-    border: 1px solid rgba(245, 158, 11, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: var(--accent);
-    font-size: 0.9rem;
 }
 
 .chat-user-info {
@@ -706,44 +685,42 @@ html {
 }
 
 .chat-user-info h3 {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.1rem;
 }
 
 .chat-email {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
 }
 
 .delete-thread-btn {
     background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.4);
     color: #f87171;
     border-radius: var(--radius-sm);
-    padding: 0.5rem;
+    padding: 0.35rem;
     cursor: pointer;
-    transition: all 0.18s var(--ease-out);
+    transition: background 0.15s ease, border-color 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     flex-shrink: 0;
 }
 
 .delete-thread-btn:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
     color: #fca5a5;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
-    transform: translateY(-1px);
 }
 
 .delete-thread-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .chat-messages {
