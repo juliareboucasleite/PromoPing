@@ -47,10 +47,23 @@
         <main class="dashboard-main">
             <section class="dashboard-section active">
                 <div class="section-header">
-                    <h1>Funcionários (Suporte)</h1>
-                    <button id="refreshStaffBtn" class="refresh-button">Atualizar</button>
+                    <h1>Funcionários</h1>
+                    <div class="header-actions">
+                        <button id="newStaffBtn" class="refresh-button">+ Novo funcionário</button>
+                        <button id="refreshStaffBtn" class="refresh-button">Atualizar</button>
+                    </div>
                 </div>
-                <p style="color: #9ca3af; margin-bottom: 1rem;">Detalhes da equipa de suporte: nome, contacto, cargo e função.</p>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Gere a equipa: cria contas, edita, suspende ou redefine passwords.</p>
+
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 0.4rem; color: #9ca3af; font-size: 0.85rem;">
+                        <input type="checkbox" id="includeInactiveCheck"> Mostrar suspensos
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.4rem; color: #9ca3af; font-size: 0.85rem;">
+                        <input type="checkbox" id="includeCorpCheck"> Incluir corporação
+                    </label>
+                </div>
+
                 <div id="staffList" class="data-table-container">
                     <div class="loading-state">A carregar...</div>
                 </div>
@@ -66,6 +79,63 @@
                 <button class="modal-close" id="closeStaffModal">&times;</button>
             </div>
             <div id="staffModalBody" style="padding: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Modal Novo/Editar funcionário -->
+    <div id="staffFormModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="staffFormTitle">Novo funcionário</h2>
+                <button type="button" class="modal-close" id="closeStaffFormModal">&times;</button>
+            </div>
+            <form id="staffForm">
+                <input type="hidden" id="staffFormRefId">
+                <div class="form-group">
+                    <label class="form-label">Nome *</label>
+                    <input type="text" id="staffFormNome" class="form-input" required maxlength="100">
+                </div>
+                <div class="form-group" id="staffFormEmailGroup">
+                    <label class="form-label">Email *</label>
+                    <input type="email" id="staffFormEmail" class="form-input" required maxlength="150">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input type="text" id="staffFormTelefone" class="form-input" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Perfil</label>
+                    <select id="staffFormPerfil" class="form-input">
+                        <option value="1">Suporte</option>
+                        <option value="3">Corporação</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-button" id="staffFormSubmit">Criar</button>
+                    <button type="button" class="modal-cancel-button" id="staffFormCancel">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal mostrar password temporária -->
+    <div id="tempPasswordModal" class="modal-overlay">
+        <div class="modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>Password temporária</h2>
+                <button type="button" class="modal-close" id="closeTempPasswordModal">&times;</button>
+            </div>
+            <div style="padding: 1rem;">
+                <p style="color: #fbbf24; margin-bottom: 0.75rem;">⚠ Esta password só será mostrada agora. Copia e entrega-a ao funcionário.</p>
+                <div style="display: flex; gap: 0.5rem; align-items: stretch;">
+                    <input type="text" id="tempPasswordValue" class="form-input" readonly style="font-family: monospace; font-size: 1.1rem; flex: 1;">
+                    <button type="button" id="copyTempPasswordBtn" class="refresh-button">Copiar</button>
+                </div>
+                <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 0.75rem;" id="tempPasswordTarget"></p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-cancel-button" id="closeTempPasswordBtn">Fechar</button>
+            </div>
         </div>
     </div>
 
