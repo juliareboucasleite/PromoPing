@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financeiro - PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .fin-card { background: var(--bg-elevated, #1a1a1c); border: 1px solid var(--border-subtle, #2a2a2c); border-radius: 12px; padding: 1.25rem; }
+        .fin-card-label { font-size: 0.8rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .fin-card-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary, #f3f4f6); }
+        .fin-card-sub { font-size: 0.85rem; color: #9ca3af; margin-top: 0.35rem; }
+        .fin-card-sub.up { color: #4ade80; }
+        .fin-card-sub.down { color: #fca5a5; }
+        .chart-wrap { background: var(--bg-elevated, #1a1a1c); border: 1px solid var(--border-subtle, #2a2a2c); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .chart-wrap h3 { margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-primary, #f3f4f6); }
+        #revenueChart { width: 100%; height: 240px; display: block; }
+        .fin-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .pill { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .pill.ok { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+        .pill.warn { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+        .pill.err { background: rgba(252, 165, 165, 0.15); color: #fca5a5; }
+        .pill.muted { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+        .stripe-error-banner { background: rgba(252, 165, 165, 0.1); border: 1px solid rgba(252, 165, 165, 0.3); color: #fca5a5; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .plan-breakdown { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .plan-chip { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 8px; padding: 0.5rem 0.85rem; font-size: 0.85rem; }
+        .plan-chip strong { color: #ff9800; margin-right: 0.35rem; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="financeiro.html" class="nav-item active"><span class="nav-icon"></span><span>Financeiro</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Financeiro</h1>
+                    <div class="header-actions">
+                        <button id="refreshFinBtn" class="refresh-button">Atualizar</button>
+                        <button id="exportCsvBtn" class="refresh-button">Exportar CSV</button>
+                    </div>
+                </div>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Receita, MRR, payouts da Stripe e transacções.</p>
+
+                <div id="stripeErrorBanner" class="stripe-error-banner" style="display: none;"></div>
+
+                <!-- KPIs -->
+                <div class="fin-grid" id="kpiGrid">
+                    <div class="fin-card">
+                        <div class="fin-card-label">Receita 30d</div>
+                        <div class="fin-card-value" id="kpiRevenue">—</div>
+                        <div class="fin-card-sub" id="kpiRevenueGrowth">vs. 30d anteriores</div>
+                    </div>
+                    <div class="fin-card">
+                        <div class="fin-card-label">MRR</div>
+                        <div class="fin-card-value" id="kpiMrr">—</div>
+                        <div class="fin-card-sub" id="kpiArr">ARR: —</div>
+                    </div>
+                    <div class="fin-card">
+                        <div class="fin-card-label">Assinaturas activas</div>
+                        <div class="fin-card-value" id="kpiActive">—</div>
+                        <div class="fin-card-sub" id="kpiChurn">Churn: —</div>
+                    </div>
+                    <div class="fin-card">
+                        <div class="fin-card-label">Saldo Stripe</div>
+                        <div class="fin-card-value" id="kpiBalance">—</div>
+                        <div class="fin-card-sub" id="kpiPending">Pendente: —</div>
+                    </div>
+                    <div class="fin-card">
+                        <div class="fin-card-label">Reembolsos 30d</div>
+                        <div class="fin-card-value" id="kpiRefunds">—</div>
+                        <div class="fin-card-sub">No último mês</div>
+                    </div>
+                </div>
+
+                <!-- Distribuição por plano -->
+                <div class="chart-wrap">
+                    <h3>Distribuição por plano</h3>
+                    <div id="planBreakdown" class="plan-breakdown">
+                        <span style="color: #9ca3af; font-size: 0.9rem;">A carregar...</span>
+                    </div>
+                </div>
+
+                <!-- Gráfico receita -->
+                <div class="chart-wrap">
+                    <h3>Receita diária (últimos 30 dias)</h3>
+                    <svg id="revenueChart" viewBox="0 0 800 240" preserveAspectRatio="none"></svg>
+                </div>
+
+                <!-- Tabs -->
+                <div class="fin-tabs">
+                    <button type="button" class="tab-button active" data-fin-tab="transactions">Transacções</button>
+                    <button type="button" class="tab-button" data-fin-tab="payouts">Payouts (IBAN)</button>
+                    <button type="button" class="tab-button" data-fin-tab="subscriptions">Assinaturas</button>
+                </div>
+
+                <div id="finPanelTransactions" class="data-table-container" style="min-height: 200px;">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+                <div id="finPanelPayouts" class="data-table-container" style="min-height: 200px; display: none;">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+                <div id="finPanelSubscriptions" class="data-table-container" style="min-height: 200px; display: none;">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-financeiro.js"></script>
+</body>
+
+</html>
