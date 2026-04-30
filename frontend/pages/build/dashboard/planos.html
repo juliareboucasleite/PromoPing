@@ -744,6 +744,7 @@
 
         // Planos vindos da API (com Preco, PrecoAnual, LinksPlanos, LinksPlanosAnual)
         let planosFromApi = [];
+        let currentUserPlanId = 1;
 
         // Função para buscar do backend o plano atual do usuário e destacar no UI
         async function carregarPlanos() {
@@ -762,6 +763,7 @@
                     atualizarPrecosExibicao();
                 }
                 console.log("Plano atual carregado:", data.userPlanId);
+                currentUserPlanId = Number(data.userPlanId || 1);
                 destacarPlanoAtual(data.userPlanId);
             } catch (error) {
                 console.error("Erro ao carregar plano atual:", error);
