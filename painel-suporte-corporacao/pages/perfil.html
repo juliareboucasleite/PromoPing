@@ -8,17 +8,88 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-810832454');
+    </script>
+    <style>
+        .profile-hero {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.18) 0%, rgba(167, 139, 250, 0.08) 50%, rgba(15,15,16,0) 100%);
+            border: 1px solid rgba(96, 165, 250, 0.25);
+            border-radius: 16px;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .profile-hero-avatar {
+            width: 76px; height: 76px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.85rem; font-weight: 800; color: white;
+            flex-shrink: 0;
+            box-shadow: 0 6px 20px rgba(96, 165, 250, 0.3);
+        }
+        .profile-hero-info { flex: 1; min-width: 0; position: relative; }
+        .profile-hero-info h1 { margin: 0 0 0.2rem; font-size: 1.5rem; font-weight: 700; }
+        .profile-hero-info .hero-email { color: #9ca3af; font-size: 0.92rem; margin: 0; }
+        .profile-hero-badges {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            margin-top: 0.65rem;
+        }
+        .profile-hero-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+        .profile-hero-badge.green { background: rgba(74, 222, 128, 0.12); color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+        .profile-hero-badge.purple { background: rgba(167, 139, 250, 0.12); color: #c4b5fd; border-color: rgba(167, 139, 250, 0.3); }
 
-    gtag('config', 'AW-810832454');
-  </script>
+        /* Section cards */
+        .profile-section-card {
+            background: linear-gradient(180deg, #1a1a1c 0%, #141416 100%);
+            border: 1px solid #2a2a2c;
+            border-radius: 14px;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1rem;
+        }
+        .profile-section-card .profile-section-title {
+            margin-top: 0;
+            color: #f3f4f6;
+            font-size: 1rem;
+            border-bottom-color: #2a2a2c;
+        }
+        .profile-section-card .profile-block {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -31,50 +102,17 @@
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Visão Geral</span>
-                </a>
-                <a href="utilizadores.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Utilizadores</span>
-                </a>
-                <a href="produtos.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Produtos</span>
-                </a>
-                <a href="avaliacoes.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Avaliações</span>
-                </a>
-                <a href="suporte.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Suporte</span>
-                </a>
-                <a href="bugs.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Bugs & Projetos</span>
-                </a>
-                <a href="sugestoes.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Sugestões</span>
-                </a>
-                <a href="tabelas.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Incidentes</span>
-                </a>
-                <a href="calendar.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Calendário</span>
-                </a>
-                <a href="discord.html" class="nav-item">
-                    <span class="nav-icon"></span>
-                    <span>Discord</span>
-                </a>
-                <a href="perfil.html" class="nav-item active">
-                    <span class="nav-icon"></span>
-                    <span>Perfil</span>
-                </a>
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="utilizadores.html" class="nav-item"><span class="nav-icon"></span><span>Utilizadores</span></a>
+                <a href="produtos.html" class="nav-item"><span class="nav-icon"></span><span>Produtos</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="suporte.html" class="nav-item"><span class="nav-icon"></span><span>Suporte</span></a>
+                <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
+                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestões</span></a>
+                <a href="tabelas.html" class="nav-item"><span class="nav-icon"></span><span>Incidentes</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+                <a href="perfil.html" class="nav-item active"><span class="nav-icon"></span><span>Perfil</span></a>
             </nav>
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="logout-button">Sair</button>
@@ -84,17 +122,29 @@
         <!-- Main Content -->
         <main class="dashboard-main">
             <section class="dashboard-section active" style="display: flex; flex-direction: column;">
-                <div class="section-header">
-                    <div>
-                        <h1>Perfil</h1>
-                        <p class="section-description">Dados da sua conta de suporte</p>
+                <!-- Hero -->
+                <div class="profile-hero">
+                    <div class="profile-hero-avatar" id="profileHeroAvatar">?</div>
+                    <div class="profile-hero-info">
+                        <h1 id="profileHeroName">A carregar…</h1>
+                        <p class="hero-email" id="profileHeroEmail">—</p>
+                        <div class="profile-hero-badges">
+                            <span class="profile-hero-badge">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                Equipa de suporte
+                            </span>
+                            <span class="profile-hero-badge green" id="profile2FABadge" style="display:none">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                2FA ativo
+                            </span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="profile-container">
-                    <div class="profile-card">
-                        <!-- Secção Usuário -->
-                        <h2 class="profile-section-title">Usuário</h2>
+                    <!-- Card: Conta -->
+                    <div class="profile-section-card">
+                        <h2 class="profile-section-title">Dados da conta</h2>
                         <form id="profileForm" class="profile-form">
                             <div class="profile-row">
                                 <label class="profile-label" for="profileName">Nome</label>
@@ -133,8 +183,11 @@
                                 <button type="button" class="modal-cancel-button" id="cancelBtn">Cancelar</button>
                             </div>
                         </form>
+                    </div>
 
-                        <!-- Secção Contas do Google -->
+                    <!-- Card: Login social -->
+                    <div class="profile-section-card">
+                        <h2 class="profile-section-title">Acesso & ligações</h2>
                         <div class="profile-block">
                             <h3 class="profile-block-title">Contas do Google</h3>
                             <p class="profile-block-desc">Aceda ao PromoPing usando a sua conta do Google.</p>
@@ -142,8 +195,6 @@
                                 <button type="button" id="connectGoogleBtn" class="profile-secondary-btn">Conectar conta do Google</button>
                             </div>
                         </div>
-
-                        <!-- Secção Chaves de acesso -->
                         <div class="profile-block">
                             <h3 class="profile-block-title">Chaves de acesso</h3>
                             <p class="profile-block-desc">Aceda à conta com segurança usando biometria, PIN do dispositivo ou chave de segurança física. Verifique navegadores e dispositivos compatíveis antes de utilizar.</p>
@@ -151,8 +202,11 @@
                                 <button type="button" id="addAccessKeyBtn" class="profile-secondary-btn">Adicionar chave de acesso</button>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Secção Autenticação de duas etapas -->
+                    <!-- Card: Segurança -->
+                    <div class="profile-section-card">
+                        <h2 class="profile-section-title">Segurança</h2>
                         <div class="profile-block" id="twoFABlock">
                             <h3 class="profile-block-title">Autenticação de duas etapas</h3>
                             <p class="profile-block-desc">Reforce a segurança da conta ativando vários métodos de autenticação para confirmar a sua identidade.</p>
@@ -216,7 +270,7 @@
         </div>
     </div>
 
-    <!-- Modal 2FA - Escolher método e verificar -->
+    <!-- Modal 2FA -->
     <div id="twoFAModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
@@ -273,5 +327,4 @@
     <script src="../script/admin-role-guard.js"></script>
     <script src="../script/perfil.js"></script>
 </body>
-
 </html>

@@ -1259,4 +1259,76 @@ router.post("/discord/requests/:id/reject", async (req, res) => {
     }
 });
 
+/** GET /api/corporation/bugs - lista bugs/projetos (read-only) */
+router.get("/bugs", async (req, res) => {
+    try {
+        if (!(await tableExists("bugsprojetos"))) {
+            return res.json({ status: "ok", bugs: [], total: 0 });
+        }
+        const hasCreatedBy = await columnExists("bugsprojetos", "CreatedBy");
+        let bugs = [];
+        if (hasCreatedBy) {
+            const [rows] = await pool.query(
+                `SELECT b.Id, b.Titulo, b.Descricao, b.Tipo, b.Prioridade, b.Status,
+                        b.AnexoUrl, b.CreatedBy as author_id, u.Nome as author_nome,
+                        b.DataCriacao, b.DataAtualizacao
+                 FROM bugsprojetos b
+                 LEFT JOIN utilizadores u ON u.ReferenciaID = b.CreatedBy
+                 ORDER BY b.DataCriacao DESC LIMIT 200`
+            );
+            bugs = rows;
+        } else {
+            const [rows] = await pool.query(
+                `SELECT Id, Titulo, Descricao, Tipo, Prioridade, Status, AnexoUrl,
+                        DataCriacao, DataAtualizacao
+                 FROM bugsprojetos
+                 ORDER BY DataCriacao DESC LIMIT 200`
+            );
+            bugs = rows;
+        }
+        res.json({ status: "ok", bugs, total: bugs.length });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao buscar bugs:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar bugs");
+    }
+});
+
+/** GET /api/corporation/sugestoes - lista sugestões (read-only) */
+router.get("/sugestoes", async (req, res) => {
+    try {
+        if (!(await tableExists("sugestoes"))) {
+            return res.json({ status: "ok", sugestoes: [], total: 0 });
+        }
+        const [rows] = await pool.query(
+            `SELECT Id, Titulo, Descricao, Plataforma, Prioridade, Status, Votos,
+                    DataCriacao, DataAtualizacao
+             FROM sugestoes
+             ORDER BY DataCriacao DESC LIMIT 200`
+        );
+        res.json({ status: "ok", sugestoes: rows, total: rows.length });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao buscar sugestões:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar sugestões");
+    }
+});
+
+/** GET /api/corporation/incidents - lista incidentes (read-only) */
+router.get("/incidents", async (req, res) => {
+    try {
+        if (!(await tableExists("incidentes"))) {
+            return res.json({ status: "ok", incidents: [], total: 0 });
+        }
+        const [rows] = await pool.query(
+            `SELECT Id, Titulo, Descricao, ComponenteAfetado, Status, DataInicio, DataFim,
+                    Duracao, Impacto, DataCriacao, DataAtualizacao
+             FROM incidentes
+             ORDER BY DataInicio DESC LIMIT 200`
+        );
+        res.json({ status: "ok", incidents: rows, total: rows.length });
+    } catch (err) {
+        console.error("[CORPORATION] Erro ao buscar incidentes:", err);
+        return handleDatabaseError(err, res, "Erro ao buscar incidentes");
+    }
+});
+
 export default router;

@@ -50,12 +50,27 @@
             const nameInput = document.getElementById('profileName');
             const emailInput = document.getElementById('profileEmail');
             const phoneDisplay = document.getElementById('profilePhoneDisplay');
-            if (nameInput) nameInput.value = user.Nome || user.nome || '';
-            if (emailInput) emailInput.value = user.Email || user.email || '';
+            const nome = user.Nome || user.nome || '';
+            const email = user.Email || user.email || '';
+            if (nameInput) nameInput.value = nome;
+            if (emailInput) emailInput.value = email;
             if (phoneDisplay) {
                 const phone = user.Telefone || user.telefone || user.phone;
                 phoneDisplay.textContent = phone ? phone : '—';
             }
+
+            // Populate hero
+            const heroName = document.getElementById('profileHeroName');
+            const heroEmail = document.getElementById('profileHeroEmail');
+            const heroAvatar = document.getElementById('profileHeroAvatar');
+            if (heroName) heroName.textContent = nome || 'Sem nome';
+            if (heroEmail) heroEmail.textContent = email || '—';
+            if (heroAvatar) {
+                const initials = (nome || '?').split(' ').slice(0, 2)
+                    .map(s => s[0]?.toUpperCase() || '').join('') || '?';
+                heroAvatar.textContent = initials;
+            }
+
             userHasPassword = null;
 
             await load2FAStatus();
@@ -75,6 +90,8 @@
             if (statusEl) statusEl.textContent = twoFAStatus.enabled ? 'Ativo' : '';
             if (addBtn) addBtn.style.display = twoFAStatus.enabled ? 'none' : 'inline-block';
             if (disableBtn) disableBtn.style.display = twoFAStatus.enabled ? 'inline-block' : 'none';
+            const heroBadge = document.getElementById('profile2FABadge');
+            if (heroBadge) heroBadge.style.display = twoFAStatus.enabled ? 'inline-flex' : 'none';
         } catch (e) {
             twoFAStatus = { enabled: false };
             const addBtn = document.getElementById('add2FABtn');

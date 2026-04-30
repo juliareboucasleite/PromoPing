@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidentes - PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        .corp-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .corp-summary .summary-card {
+            background: linear-gradient(180deg, #1a1a1c 0%, #141416 100%);
+            border: 1px solid #2a2a2c; border-radius: 14px; padding: 1.1rem 1.2rem;
+        }
+        .corp-summary .summary-card .sc-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.85rem; background: rgba(251, 191, 36, 0.12); color: #fbbf24;
+        }
+        .corp-summary .summary-card.red .sc-icon { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+        .corp-summary .summary-card.green .sc-icon { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .corp-summary .summary-card.blue .sc-icon { background: rgba(96, 165, 250, 0.12); color: #60a5fa; }
+        .corp-summary .summary-card .sc-label {
+            font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; font-weight: 600;
+        }
+        .corp-summary .summary-card .sc-value {
+            font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: #f3f4f6;
+            font-variant-numeric: tabular-nums;
+        }
+        .corp-summary .summary-card .sc-trend { font-size: 0.78rem; margin-top: 0.4rem; color: #6b7280; }
+
+        .corp-toolbar {
+            display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+            margin-bottom: 1rem; padding: 0.85rem 1rem;
+            background: #18181b; border: 1px solid #2a2a2c; border-radius: 12px;
+        }
+        .corp-toolbar label {
+            font-size: 0.78rem; color: #9ca3af; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .corp-toolbar select, .corp-toolbar input {
+            background: #0f0f10; border: 1px solid #2a2a2c; color: #e5e7eb;
+            padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+        }
+        .corp-toolbar input { min-width: 220px; cursor: text; }
+        .corp-toolbar select:focus, .corp-toolbar input:focus { outline: none; border-color: #ff9800; }
+        .corp-toolbar .toolbar-spacer { flex: 1; }
+
+        .item-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .item-card {
+            background: linear-gradient(180deg, #18181b 0%, #141416 100%);
+            border: 1px solid #2a2a2c; border-left: 4px solid #6b7280;
+            border-radius: 12px; padding: 1.1rem 1.25rem;
+            transition: all 0.18s ease;
+        }
+        .item-card:hover {
+            border-color: #3a3a3d; transform: translateX(2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        .item-card.status-investigating { border-left-color: #fbbf24; }
+        .item-card.status-identified { border-left-color: #fb923c; }
+        .item-card.status-monitoring { border-left-color: #60a5fa; }
+        .item-card.status-resolved { border-left-color: #4ade80; }
+
+        .item-head {
+            display: flex; justify-content: space-between; gap: 0.75rem; align-items: flex-start;
+            margin-bottom: 0.5rem; flex-wrap: wrap;
+        }
+        .item-id { color: #fbbf24; font-weight: 700; font-size: 0.85rem; }
+        .item-title { margin: 0.2rem 0 0.4rem; font-size: 1.05rem; font-weight: 600; color: #f3f4f6; line-height: 1.3; }
+        .item-desc { margin: 0; color: #d1d5db; font-size: 0.9rem; line-height: 1.55; white-space: pre-wrap; }
+        .item-meta {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+            margin-top: 0.75rem; padding-top: 0.6rem;
+            border-top: 1px solid #232326;
+            font-size: 0.78rem; color: #9ca3af;
+        }
+        .item-meta strong { color: #cbd5e1; }
+        .status-pill {
+            display: inline-flex; padding: 0.2rem 0.6rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .status-pill.investigating { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .status-pill.identified { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+        .status-pill.monitoring { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .status-pill.resolved { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .status-pill.default { background: rgba(107,114,128,0.18); color: #cbd5e1; }
+        .impact-pill {
+            display: inline-flex; padding: 0.18rem 0.55rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 600;
+        }
+        .impact-pill.minor { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+        .impact-pill.major { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+        .impact-pill.critical { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="financeiro.html" class="nav-item"><span class="nav-icon"></span><span>Financeiro</span></a>
+                <a href="auditoria.html" class="nav-item"><span class="nav-icon"></span><span>Auditoria</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
+                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestões</span></a>
+                <a href="incidentes.html" class="nav-item active"><span class="nav-icon"></span><span>Incidentes</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Incidentes</h1>
+                        <p class="section-description">Histórico de incidentes registados pela equipa de suporte. (somente leitura)</p>
+                    </div>
+                    <button id="refreshIncBtn" class="refresh-button">Atualizar</button>
+                </div>
+
+                <div class="corp-summary">
+                    <div class="summary-card red">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
+                        <div class="sc-label">Em curso</div>
+                        <div class="sc-value" id="summaryActive">—</div>
+                        <div class="sc-trend">A decorrer</div>
+                    </div>
+                    <div class="summary-card green">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <div class="sc-label">Resolvidos</div>
+                        <div class="sc-value" id="summaryResolved">—</div>
+                        <div class="sc-trend">Concluídos</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                        <div class="sc-label">Última hora</div>
+                        <div class="sc-value" id="summaryRecent">—</div>
+                        <div class="sc-trend">Novos eventos</div>
+                    </div>
+                    <div class="summary-card blue">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+                        <div class="sc-label">Total</div>
+                        <div class="sc-value" id="summaryTotal">—</div>
+                        <div class="sc-trend">Histórico completo</div>
+                    </div>
+                </div>
+
+                <div class="corp-toolbar">
+                    <label for="filterStatus">Status</label>
+                    <select id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="investigating">A investigar</option>
+                        <option value="identified">Identificado</option>
+                        <option value="monitoring">A monitorar</option>
+                        <option value="resolved">Resolvido</option>
+                    </select>
+                    <label for="filterImpact">Impacto</label>
+                    <select id="filterImpact">
+                        <option value="">Todos</option>
+                        <option value="minor">Minor</option>
+                        <option value="major">Major</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <label for="filterSearch">Pesquisar</label>
+                    <input type="text" id="filterSearch" placeholder="Título, descrição ou componente…">
+                    <div class="toolbar-spacer"></div>
+                    <span id="filterCount" style="color:#9ca3af;font-size:0.85rem;"></span>
+                </div>
+
+                <div id="incidentList" class="item-list">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-incidentes.js"></script>
+</body>
+</html>

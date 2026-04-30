@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugestões - PromoPing Corporação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        .corp-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .corp-summary .summary-card {
+            background: linear-gradient(180deg, #1a1a1c 0%, #141416 100%);
+            border: 1px solid #2a2a2c; border-radius: 14px; padding: 1.1rem 1.2rem;
+        }
+        .corp-summary .summary-card .sc-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.85rem; background: rgba(255, 152, 0, 0.12); color: #ff9800;
+        }
+        .corp-summary .summary-card.green .sc-icon { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .corp-summary .summary-card.blue .sc-icon { background: rgba(96, 165, 250, 0.12); color: #60a5fa; }
+        .corp-summary .summary-card.purple .sc-icon { background: rgba(167, 139, 250, 0.12); color: #a78bfa; }
+        .corp-summary .summary-card .sc-label {
+            font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; font-weight: 600;
+        }
+        .corp-summary .summary-card .sc-value {
+            font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: #f3f4f6;
+            font-variant-numeric: tabular-nums;
+        }
+        .corp-summary .summary-card .sc-trend { font-size: 0.78rem; margin-top: 0.4rem; color: #6b7280; }
+
+        .corp-toolbar {
+            display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+            margin-bottom: 1rem; padding: 0.85rem 1rem;
+            background: #18181b; border: 1px solid #2a2a2c; border-radius: 12px;
+        }
+        .corp-toolbar label {
+            font-size: 0.78rem; color: #9ca3af; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .corp-toolbar select, .corp-toolbar input {
+            background: #0f0f10; border: 1px solid #2a2a2c; color: #e5e7eb;
+            padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+        }
+        .corp-toolbar input { min-width: 220px; cursor: text; }
+        .corp-toolbar select:focus, .corp-toolbar input:focus { outline: none; border-color: #ff9800; }
+        .corp-toolbar .toolbar-spacer { flex: 1; }
+
+        .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1rem; }
+        .item-card {
+            background: linear-gradient(180deg, #18181b 0%, #141416 100%);
+            border: 1px solid #2a2a2c; border-left: 4px solid #a78bfa;
+            border-radius: 12px; padding: 1rem 1.15rem;
+            transition: all 0.18s ease;
+        }
+        .item-card:hover {
+            border-color: #3a3a3d; transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        .item-head {
+            display: flex; justify-content: space-between; gap: 0.5rem;
+            align-items: flex-start; margin-bottom: 0.6rem;
+        }
+        .item-id { color: #a78bfa; font-weight: 700; font-size: 0.85rem; }
+        .item-votes {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: rgba(255, 152, 0, 0.15); color: #ff9800;
+            padding: 0.2rem 0.55rem; border-radius: 999px;
+            font-size: 0.78rem; font-weight: 700;
+        }
+        .item-title { margin: 0 0 0.4rem; font-size: 0.98rem; font-weight: 600; color: #f3f4f6; }
+        .item-desc {
+            margin: 0; color: #9ca3af; font-size: 0.85rem; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .item-meta {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+            margin-top: 0.75rem; padding-top: 0.6rem;
+            border-top: 1px solid #232326;
+            font-size: 0.78rem; color: #9ca3af;
+        }
+        .item-meta strong { color: #cbd5e1; }
+        .status-pill {
+            display: inline-flex; padding: 0.18rem 0.55rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em;
+        }
+        .status-pill.pending, .status-pill.pendente { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .status-pill.aceite, .status-pill.accepted, .status-pill.aprovada { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .status-pill.rejeitada, .status-pill.rejected { background: rgba(239,68,68,0.15); color: #f87171; }
+        .status-pill.implementada, .status-pill.implemented { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .status-pill.default { background: rgba(107,114,128,0.18); color: #cbd5e1; }
+        .platform-pill {
+            display: inline-flex; padding: 0.18rem 0.55rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 600;
+            background: rgba(167, 139, 250, 0.15); color: #c4b5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporação</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="financeiro.html" class="nav-item"><span class="nav-icon"></span><span>Financeiro</span></a>
+                <a href="auditoria.html" class="nav-item"><span class="nav-icon"></span><span>Auditoria</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionários</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
+                <a href="sugestoes.html" class="nav-item active"><span class="nav-icon"></span><span>Sugestões</span></a>
+                <a href="incidentes.html" class="nav-item"><span class="nav-icon"></span><span>Incidentes</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Sugestões</h1>
+                        <p class="section-description">Sugestões dos clientes recolhidas pela equipa de suporte. (somente leitura)</p>
+                    </div>
+                    <button id="refreshSugestoesBtn" class="refresh-button">Atualizar</button>
+                </div>
+
+                <div class="corp-summary">
+                    <div class="summary-card">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/><polyline points="7 11 12 6 17 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg></div>
+                        <div class="sc-label">Total</div>
+                        <div class="sc-value" id="summaryTotal">—</div>
+                        <div class="sc-trend">Sugestões recebidas</div>
+                    </div>
+                    <div class="summary-card green">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <div class="sc-label">Aceites</div>
+                        <div class="sc-value" id="summaryAccepted">—</div>
+                        <div class="sc-trend">Em fila</div>
+                    </div>
+                    <div class="summary-card blue">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 9V5a3 3 0 0 0-6 0v4H2v11h20V9z"/></svg></div>
+                        <div class="sc-label">Implementadas</div>
+                        <div class="sc-value" id="summaryImplemented">—</div>
+                        <div class="sc-trend">Lançadas</div>
+                    </div>
+                    <div class="summary-card purple">
+                        <div class="sc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                        <div class="sc-label">Mais votadas</div>
+                        <div class="sc-value" id="summaryTopVotes">—</div>
+                        <div class="sc-trend" id="summaryTopTitle">—</div>
+                    </div>
+                </div>
+
+                <div class="corp-toolbar">
+                    <label for="filterStatus">Status</label>
+                    <select id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="aceite">Aceite</option>
+                        <option value="rejeitada">Rejeitada</option>
+                        <option value="implementada">Implementada</option>
+                    </select>
+                    <label for="filterPlataforma">Plataforma</label>
+                    <select id="filterPlataforma">
+                        <option value="">Todas</option>
+                        <option value="site">Site</option>
+                        <option value="bot">Bot</option>
+                        <option value="app">App</option>
+                    </select>
+                    <label for="filterSort">Ordenar</label>
+                    <select id="filterSort">
+                        <option value="recent">Mais recentes</option>
+                        <option value="votes">Mais votadas</option>
+                        <option value="oldest">Mais antigas</option>
+                    </select>
+                    <label for="filterSearch">Pesquisar</label>
+                    <input type="text" id="filterSearch" placeholder="Título ou descrição…">
+                    <div class="toolbar-spacer"></div>
+                    <span id="filterCount" style="color:#9ca3af;font-size:0.85rem;"></span>
+                </div>
+
+                <div id="sugestoesList" class="item-grid">
+                    <div class="loading-state">A carregar...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-sugestoes.js"></script>
+</body>
+</html>
