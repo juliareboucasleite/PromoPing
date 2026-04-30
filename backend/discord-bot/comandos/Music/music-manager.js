@@ -4,6 +4,8 @@ const {
   ButtonStyle,
   EmbedBuilder,
 } = require("discord.js");
+const { PassThrough } = require("node:stream");
+const { spawn } = require("node:child_process");
 const { Player, QueryType, QueueRepeatMode } = require("discord-player");
 const { DefaultExtractors } = require("@discord-player/extractor");
 const { YoutubeSabrExtractor } = require("discord-player-googlevideo");
@@ -16,6 +18,7 @@ class MusicManager {
     this.initPromise = null;
     this.boundEvents = false;
     this.controlPanels = new Map();
+    this.ytdlpBinary = process.env.YTDLP_BINARY || "yt-dlp";
   }
 
   get enabled() {
@@ -159,10 +162,16 @@ class MusicManager {
         leaveOnEndCooldown: 15_000,
         leaveOnStop: true,
         leaveOnStopCooldown: 5_000,
+        onBeforeCreateStream: async (track, _queryType, liveQueue) => {
+          return this.createManagedStream(track, liveQueue || queue);
+        },
         volume: 80,
       });
     } else {
       queue.setMetadata(metadata);
+      queue.onBeforeCreateStream = async (track, _queryType, liveQueue) => {
+        return this.createManagedStream(track, liveQueue || queue);
+      };
     }
 
     if (!queue.connection || this.getVoiceChannelId(queue) !== voiceChannel.id) {
@@ -214,6 +223,168 @@ class MusicManager {
 
   isSpotifyTrack(track) {
     return String(track?.source || "").toLowerCase() === "spotify";
+  }
+
+  isYoutubeTrack(track) {
+    const source = String(track?.source || "").toLowerCase();
+    const url = String(track?.url || "").toLowerCase();
+    return source === "youtube"
+      || url.includes("youtube.com/")
+      || url.includes("youtu.be/");
+  }
+
+  getYtdlpCandidates() {
+    const candidates = [];
+    if (this.ytdlpBinary) {
+      candidates.push({
+        command: this.ytdlpBinary,
+        argsPrefix: [],
+      });
+    }
+
+    candidates.push(
+      { command: "python3", argsPrefix: ["-m", "yt_dlp"] },
+      { command: "python", argsPrefix: ["-m", "yt_dlp"] }
+    );
+
+    const seen = new Set();
+    return candidates.filter((candidate) => {
+      const key = `${candidate.command} ${candidate.argsPrefix.join(" ")}`;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+  }
+
+  buildYtdlpArgs(trackUrl, argsPrefix = []) {
+    return [
+      ...argsPrefix,
+      "--no-warnings",
+      "--ignore-errors",
+      "--no-playlist",
+      "--format",
+      "bestaudio/best",
+      "--output",
+      "-",
+      "--",
+      trackUrl,
+    ];
+  }
+
+  async createManagedStream(track, queue) {
+    if (!this.isYoutubeTrack(track)) {
+      return null;
+    }
+
+    return this.createYtdlpStream(track, queue);
+  }
+
+  async createYtdlpStream(track, queue) {
+    const trackUrl = String(track?.url || "").trim();
+    if (!trackUrl) {
+      return null;
+    }
+
+    let lastError = null;
+    for (const candidate of this.getYtdlpCandidates()) {
+      const attempt = await this.spawnYtdlpStream(candidate, trackUrl, queue);
+      if (attempt?.stream) {
+        return attempt.stream;
+      }
+
+      if (attempt?.missing) {
+        continue;
+      }
+
+      if (attempt?.error) {
+        lastError = attempt.error;
+        break;
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
+
+    return null;
+  }
+
+  async spawnYtdlpStream(candidate, trackUrl, queue) {
+    return new Promise((resolve) => {
+      const args = this.buildYtdlpArgs(trackUrl, candidate.argsPrefix);
+      const child = spawn(candidate.command, args, {
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      });
+
+      const stream = new PassThrough();
+      let settled = false;
+      let stderr = "";
+
+      const finalize = (result) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        resolve(result);
+      };
+
+      const stopChild = () => {
+        if (!child.killed) {
+          child.kill();
+        }
+      };
+
+      child.once("error", (error) => {
+        stream.destroy();
+        finalize({
+          stream: null,
+          missing: error?.code === "ENOENT",
+          error: error?.code === "ENOENT" ? null : error,
+        });
+      });
+
+      if (!child.stdout) {
+        finalize({ stream: null, missing: false, error: null });
+        return;
+      }
+
+      child.stdout.pipe(stream);
+      child.stderr?.on("data", (chunk) => {
+        if (stderr.length >= 1000) {
+          return;
+        }
+
+        stderr += String(chunk);
+      });
+
+      child.once("spawn", () => {
+        const queueId = queue?.guild?.id || "desconhecido";
+        console.log(`[music] stream via yt-dlp (${candidate.command}) para ${queueId}: ${trackUrl}`);
+        finalize({ stream, missing: false, error: null });
+      });
+
+      child.once("close", (code) => {
+        if (code === 0) {
+          if (!settled) {
+            finalize({ stream: null, missing: false, error: null });
+          }
+          return;
+        }
+
+        const message = stderr.trim() || `yt-dlp terminou com codigo ${code}`;
+        const error = new Error(message.slice(0, 400));
+        stream.destroy(error);
+        finalize({ stream: null, missing: false, error });
+      });
+
+      stream.once("close", stopChild);
+      stream.once("error", stopChild);
+    });
   }
 
   buildYoutubeBridgeQuery(track) {
