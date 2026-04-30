@@ -501,6 +501,107 @@ async function ensureDiscordGuildSettings(connection) {
     await ensureIndex(connection, "idx_discord_guild_settings_guild", "discord_guild_settings", "GuildId", true);
 }
 
+async function ensureWelcomeConfig(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_welcome_settings (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL UNIQUE,
+            Enabled BOOLEAN DEFAULT FALSE,
+            ChannelId VARCHAR(50),
+            MessageTemplate VARCHAR(500) DEFAULT 'Bem-vindo(a) {user} a {guild}!',
+            AutoRoleId VARCHAR(50),
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_welcome_settings");
+    await ensureColumn(connection, "discord_welcome_settings", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_welcome_settings", "Enabled", "BOOLEAN");
+    await ensureColumn(connection, "discord_welcome_settings", "ChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_welcome_settings", "MessageTemplate", "VARCHAR(500) DEFAULT 'Bem-vindo(a) {user} a {guild}!'");
+    await ensureColumn(connection, "discord_welcome_settings", "AutoRoleId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_welcome_settings", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_welcome_settings", "UpdatedAt", "TIMESTAMP");
+    await ensureBooleanColumn(connection, "discord_welcome_settings", "Enabled", false);
+    await ensureTimestampDefault(connection, "discord_welcome_settings", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_welcome_settings", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_welcome_settings_guild", "discord_welcome_settings", "GuildId", true);
+}
+
+async function ensureVerificationConfig(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_verification_settings (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL UNIQUE,
+            Enabled BOOLEAN DEFAULT FALSE,
+            ChannelId VARCHAR(50),
+            RoleId VARCHAR(50),
+            MessageId VARCHAR(50),
+            MessageText VARCHAR(700) DEFAULT 'Clica no botão abaixo para receber acesso ao servidor.',
+            ButtonLabel VARCHAR(80) DEFAULT 'Verificar',
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_verification_settings");
+    await ensureColumn(connection, "discord_verification_settings", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_verification_settings", "Enabled", "BOOLEAN");
+    await ensureColumn(connection, "discord_verification_settings", "ChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_verification_settings", "RoleId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_verification_settings", "MessageId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_verification_settings", "MessageText", "VARCHAR(700) DEFAULT 'Clica no botão abaixo para receber acesso ao servidor.'");
+    await ensureColumn(connection, "discord_verification_settings", "ButtonLabel", "VARCHAR(80) DEFAULT 'Verificar'");
+    await ensureColumn(connection, "discord_verification_settings", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_verification_settings", "UpdatedAt", "TIMESTAMP");
+    await ensureBooleanColumn(connection, "discord_verification_settings", "Enabled", false);
+    await ensureTimestampDefault(connection, "discord_verification_settings", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_verification_settings", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_verification_settings_guild", "discord_verification_settings", "GuildId", true);
+}
+
+async function ensureDiscordGiveaways(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS discord_giveaways (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            GuildId VARCHAR(50) NOT NULL,
+            ChannelId VARCHAR(50) NOT NULL,
+            MessageId VARCHAR(50) NOT NULL UNIQUE,
+            HostUserId VARCHAR(50) NOT NULL,
+            Prize VARCHAR(255) NOT NULL,
+            WinnerCount INT DEFAULT 1,
+            ReactionEmoji VARCHAR(32) DEFAULT '🎉',
+            EndsAt TIMESTAMP NOT NULL,
+            Ended BOOLEAN DEFAULT FALSE,
+            WinnerIds TEXT,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "discord_giveaways");
+    await ensureColumn(connection, "discord_giveaways", "GuildId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_giveaways", "ChannelId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_giveaways", "MessageId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_giveaways", "HostUserId", "VARCHAR(50)");
+    await ensureColumn(connection, "discord_giveaways", "Prize", "VARCHAR(255)");
+    await ensureColumn(connection, "discord_giveaways", "WinnerCount", "INTEGER DEFAULT 1");
+    await ensureColumn(connection, "discord_giveaways", "ReactionEmoji", "VARCHAR(32) DEFAULT '🎉'");
+    await ensureColumn(connection, "discord_giveaways", "EndsAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_giveaways", "Ended", "BOOLEAN");
+    await ensureColumn(connection, "discord_giveaways", "WinnerIds", "TEXT");
+    await ensureColumn(connection, "discord_giveaways", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "discord_giveaways", "UpdatedAt", "TIMESTAMP");
+    await ensureBooleanColumn(connection, "discord_giveaways", "Ended", false);
+    await ensureIntegerDefault(connection, "discord_giveaways", "WinnerCount", 1);
+    await ensureTimestampDefault(connection, "discord_giveaways", "CreatedAt");
+    await ensureTimestampDefault(connection, "discord_giveaways", "UpdatedAt");
+    await ensureIndex(connection, "idx_discord_giveaways_message", "discord_giveaways", "MessageId", true);
+    await ensureIndex(connection, "idx_discord_giveaways_guild", "discord_giveaways", "GuildId");
+    await ensureIndex(connection, "idx_discord_giveaways_pending", "discord_giveaways", "Ended, EndsAt");
+}
+
 async function setupDatabase() {
     console.log("Configurando banco de dados para Discord Bot...");
 
@@ -554,6 +655,15 @@ async function setupDatabase() {
 
         await ensureDiscordGuildSettings(connection);
         console.log("Tabela discord_guild_settings criada/ajustada");
+
+        await ensureWelcomeConfig(connection);
+        console.log("Tabela discord_welcome_settings criada/ajustada");
+
+        await ensureVerificationConfig(connection);
+        console.log("Tabela discord_verification_settings criada/ajustada");
+
+        await ensureDiscordGiveaways(connection);
+        console.log("Tabela discord_giveaways criada/ajustada");
 
         console.log("Configuracao do banco concluida");
         return true;

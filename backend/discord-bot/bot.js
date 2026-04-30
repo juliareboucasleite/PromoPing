@@ -141,6 +141,317 @@ class PromoPingBot {
         return normalizedPrefix;
     }
 
+    async getWelcomeSettings(guildId) {
+        const [rows] = await this.dbPool.execute(
+            "SELECT * FROM discord_welcome_settings WHERE GuildId = ? LIMIT 1",
+            [guildId]
+        );
+
+        if (rows[0]) {
+            return rows[0];
+        }
+
+        await this.dbPool.execute(
+            `INSERT INTO discord_welcome_settings (GuildId, Enabled, MessageTemplate)
+             VALUES (?, FALSE, ?)`,
+            [guildId, 'Bem-vindo(a) {user} a {guild}!']
+        );
+
+        return {
+            GuildId: guildId,
+            Enabled: false,
+            ChannelId: null,
+            MessageTemplate: 'Bem-vindo(a) {user} a {guild}!',
+            AutoRoleId: null,
+        };
+    }
+
+    async getVerificationSettings(guildId) {
+        const [rows] = await this.dbPool.execute(
+            "SELECT * FROM discord_verification_settings WHERE GuildId = ? LIMIT 1",
+            [guildId]
+        );
+
+        if (rows[0]) {
+            return rows[0];
+        }
+
+        await this.dbPool.execute(
+            `INSERT INTO discord_verification_settings (GuildId, Enabled, MessageText, ButtonLabel)
+             VALUES (?, FALSE, ?, ?)`,
+            [guildId, 'Clica no botão abaixo para receber acesso ao servidor.', 'Verificar']
+        );
+
+        return {
+            GuildId: guildId,
+            Enabled: false,
+            ChannelId: null,
+            RoleId: null,
+            MessageId: null,
+            MessageText: 'Clica no botão abaixo para receber acesso ao servidor.',
+            ButtonLabel: 'Verificar',
+        };
+    }
+
+    renderTemplate(template, member, guild) {
+        return String(template || '')
+            .replace(/\{user\}/gi, `<@${member.id}>`)
+            .replace(/\{username\}/gi, member.user.username)
+            .replace(/\{guild\}/gi, guild.name);
+    }
+
+    async handleConfiguredWelcome(member) {
+        try {
+            if (!member?.guild || member.user?.bot) {
+                return;
+            }
+
+            const settings = await this.getWelcomeSettings(member.guild.id);
+
+            if (settings.AutoRoleId) {
+                const role = member.guild.roles.cache.get(settings.AutoRoleId)
+                    || await member.guild.roles.fetch(settings.AutoRoleId).catch(() => null);
+                if (role && role.editable) {
+                    await member.roles.add(role, 'Autorole de boas-vindas do PromoPing').catch(() => {});
+                }
+            }
+
+            if (!settings.Enabled || !settings.ChannelId) {
+                return;
+            }
+
+            const channel = member.guild.channels.cache.get(settings.ChannelId)
+                || await member.guild.channels.fetch(settings.ChannelId).catch(() => null);
+            if (!channel || !channel.isTextBased || !channel.isTextBased()) {
+                return;
+            }
+
+            const content = this.renderTemplate(
+                settings.MessageTemplate || 'Bem-vindo(a) {user} a {guild}!',
+                member,
+                member.guild
+            );
+
+            await channel.send({ content }).catch(() => {});
+        } catch (error) {
+            console.error('[DISCORD] Erro ao processar welcome:', error.message);
+        }
+    }
+
+    async sendVerificationPanel(guild, channelId = null) {
+        const settings = await this.getVerificationSettings(guild.id);
+        const targetChannelId = channelId || settings.ChannelId;
+        if (!targetChannelId) {
+            throw new Error('Nenhum canal de verificação foi configurado.');
+        }
+
+        const channel = guild.channels.cache.get(targetChannelId)
+            || await guild.channels.fetch(targetChannelId).catch(() => null);
+        if (!channel || !channel.isTextBased || !channel.isTextBased()) {
+            throw new Error('Canal de verificação inválido.');
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle('Verificação do Servidor')
+            .setDescription(settings.MessageText || 'Clica no botão abaixo para receber acesso ao servidor.')
+            .setColor(0x5865F2)
+            .setTimestamp()
+            .setFooter({ text: `${guild.name} • Verificação` });
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`verify_accept_${guild.id}`)
+                .setLabel(settings.ButtonLabel || 'Verificar')
+                .setStyle(ButtonStyle.Success)
+        );
+
+        const sent = await channel.send({
+            embeds: [embed],
+            components: [row],
+        });
+
+        await this.dbPool.execute(
+            `UPDATE discord_verification_settings
+                SET ChannelId = ?, MessageId = ?, Enabled = TRUE, UpdatedAt = CURRENT_TIMESTAMP
+              WHERE GuildId = ?`,
+            [channel.id, sent.id, guild.id]
+        );
+
+        return sent;
+    }
+
+    async handleVerificationButton(interaction) {
+        try {
+            const guild = interaction.guild;
+            if (!guild) {
+                return await interaction.reply({ content: 'Este botão só funciona num servidor.', ephemeral: true });
+            }
+
+            const settings = await this.getVerificationSettings(guild.id);
+            if (!settings.Enabled || !settings.RoleId) {
+                return await interaction.reply({
+                    content: 'A verificação não está configurada neste servidor.',
+                    ephemeral: true,
+                });
+            }
+
+            const member = await guild.members.fetch(interaction.user.id).catch(() => null);
+            if (!member) {
+                return await interaction.reply({ content: 'Não consegui encontrar o teu perfil neste servidor.', ephemeral: true });
+            }
+
+            if (member.roles.cache.has(settings.RoleId)) {
+                return await interaction.reply({ content: 'Já tens o cargo de verificação.', ephemeral: true });
+            }
+
+            const role = guild.roles.cache.get(settings.RoleId)
+                || await guild.roles.fetch(settings.RoleId).catch(() => null);
+            if (!role) {
+                return await interaction.reply({ content: 'O cargo de verificação já não existe.', ephemeral: true });
+            }
+
+            const me = guild.members.me || await guild.members.fetchMe().catch(() => null);
+            if (!me || role.position >= me.roles.highest.position) {
+                return await interaction.reply({
+                    content: 'Não consigo atribuir esse cargo porque ele está acima do meu cargo mais alto.',
+                    ephemeral: true,
+                });
+            }
+
+            await member.roles.add(role, 'Verificação do servidor PromoPing');
+            return await interaction.reply({
+                content: `Verificação concluída. Recebeste o cargo ${role}.`,
+                ephemeral: true,
+            });
+        } catch (error) {
+            console.error('[DISCORD] Erro no botão de verificação:', error.message);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'Ocorreu um erro ao concluir a verificação.', ephemeral: true }).catch(() => {});
+            }
+        }
+    }
+
+    pickRandomUsers(items, count) {
+        const unique = [...new Set(items)];
+        for (let i = unique.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [unique[i], unique[j]] = [unique[j], unique[i]];
+        }
+        return unique.slice(0, Math.max(0, count));
+    }
+
+    async fetchGiveawayParticipants(record) {
+        const guild = this.client.guilds.cache.get(record.GuildId)
+            || await this.client.guilds.fetch(record.GuildId).catch(() => null);
+        if (!guild) {
+            throw new Error(`Guild ${record.GuildId} não encontrada.`);
+        }
+
+        const channel = guild.channels.cache.get(record.ChannelId)
+            || await guild.channels.fetch(record.ChannelId).catch(() => null);
+        if (!channel || !channel.isTextBased || !channel.isTextBased()) {
+            throw new Error(`Canal ${record.ChannelId} não encontrado.`);
+        }
+
+        const giveawayMessage = await channel.messages.fetch(record.MessageId).catch(() => null);
+        if (!giveawayMessage) {
+            throw new Error(`Mensagem ${record.MessageId} não encontrada.`);
+        }
+
+        const reaction = giveawayMessage.reactions.cache.find((entry) => {
+            return entry.emoji.toString() === record.ReactionEmoji
+                || entry.emoji.name === record.ReactionEmoji
+                || entry.emoji.id === record.ReactionEmoji;
+        });
+
+        const reactionUsers = reaction ? await reaction.users.fetch().catch(() => null) : null;
+        const participants = reactionUsers
+            ? [...reactionUsers.values()].filter((user) => !user.bot).map((user) => user.id)
+            : [];
+
+        return { guild, channel, giveawayMessage, participants };
+    }
+
+    buildGiveawayEmbed(record, winnerIds = [], ended = false) {
+        const endsAt = new Date(record.EndsAt);
+        const descriptionLines = ended
+            ? [
+                `Prémio: **${record.Prize}**`,
+                `Vencedores: ${winnerIds.length ? winnerIds.map((id) => `<@${id}>`).join(', ') : 'Sem vencedores'}`,
+                `Terminou em: <t:${Math.floor(endsAt.getTime() / 1000)}:F>`,
+            ]
+            : [
+                `Prémio: **${record.Prize}**`,
+                `Vencedores: **${record.WinnerCount}**`,
+                `Termina: <t:${Math.floor(endsAt.getTime() / 1000)}:R>`,
+                `Reage com ${record.ReactionEmoji || '🎉'} para participar.`,
+            ];
+
+        return new EmbedBuilder()
+            .setTitle(ended ? 'Giveaway Encerrado' : 'Giveaway Ativo')
+            .setDescription(descriptionLines.join('\n'))
+            .setColor(ended ? 0xef4444 : 0xf59e0b)
+            .setTimestamp();
+    }
+
+    async finalizeGiveaway(record, options = {}) {
+        const winnerCount = Number(options.winnerCount || record.WinnerCount || 1);
+        const reroll = Boolean(options.reroll);
+        const { channel, giveawayMessage, participants } = await this.fetchGiveawayParticipants(record);
+        const winnerIds = this.pickRandomUsers(participants, winnerCount);
+
+        await this.dbPool.execute(
+            `UPDATE discord_giveaways
+                SET Ended = ?, WinnerIds = ?, UpdatedAt = CURRENT_TIMESTAMP
+              WHERE MessageId = ?`,
+            [reroll ? record.Ended : true, JSON.stringify(winnerIds), record.MessageId]
+        );
+
+        await giveawayMessage.edit({
+            embeds: [this.buildGiveawayEmbed({ ...record, WinnerCount: winnerCount }, winnerIds, true)],
+        }).catch(() => {});
+
+        await channel.send({
+            content: winnerIds.length
+                ? `${reroll ? 'Novo resultado' : 'Giveaway encerrado'}: ${winnerIds.map((id) => `<@${id}>`).join(', ')} ganharam **${record.Prize}**.`
+                : `${reroll ? 'Novo resultado' : 'Giveaway encerrado'}: ninguém participou em **${record.Prize}**.`,
+            allowedMentions: { parse: ['users'] },
+        }).catch(() => {});
+
+        return winnerIds;
+    }
+
+    startGiveawayWorker() {
+        if (this.giveawayWorkerInterval) {
+            return;
+        }
+
+        this.giveawayWorkerInterval = setInterval(() => {
+            this.processScheduledGiveaways().catch((error) => {
+                console.error('[DISCORD] Erro no worker de giveaways:', error.message);
+            });
+        }, 15000);
+    }
+
+    async processScheduledGiveaways() {
+        const [rows] = await this.dbPool.execute(
+            `SELECT *
+               FROM discord_giveaways
+              WHERE Ended = FALSE
+                AND EndsAt <= CURRENT_TIMESTAMP
+              ORDER BY EndsAt ASC
+              LIMIT 10`
+        );
+
+        for (const row of rows) {
+            try {
+                await this.finalizeGiveaway(row);
+            } catch (error) {
+                console.error(`[DISCORD] Falha ao finalizar giveaway ${row.MessageId}:`, error.message);
+            }
+        }
+    }
+
     startCouponQueueWorker() {
         if (this.couponQueueInterval) return;
         const intervalMs = parseInt(process.env.COUPON_QUEUE_INTERVAL_MS) || 5000;
@@ -286,6 +597,7 @@ class PromoPingBot {
             this.startYoutubeFeedMonitoring();
             await this.syncCorporationGuilds();
             this.startCouponQueueWorker();
+            this.startGiveawayWorker();
             
             // Definir status/presença do bot
             // Alterna entre diferentes descrições de status a cada 20 segundos
@@ -356,6 +668,10 @@ class PromoPingBot {
             } catch (err) {
                 console.error('[DISCORD] Erro ao marcar guild removida:', err.message);
             }
+        });
+
+        this.client.on('guildMemberAdd', async (member) => {
+            await this.handleConfiguredWelcome(member);
         });
 
         // Quando alguém envia uma mensagem
@@ -539,6 +855,8 @@ class PromoPingBot {
                         await this.handleSupportTicketFechar(interaction);
                     } else if (interaction.customId.startsWith('support_ticket_chamar_')) {
                         await this.handleSupportTicketChamar(interaction);
+                    } else if (interaction.customId.startsWith('verify_accept_')) {
+                        await this.handleVerificationButton(interaction);
                     } else if (interaction.customId === 'aceitar_regras_promoping') {
                         await this.handleAceitarRegras(interaction);
                     } else if (interaction.customId === 'abrir_formulario_bug') {
