@@ -1,7 +1,6 @@
 /**
  * Overview - PromoPing Admin
  * View que conecta o OverviewViewModel ao DOM
- * Implementa padrão MVVM: View conecta ViewModel ao HTML
  */
 
 (function() {
@@ -9,99 +8,177 @@
 
     let viewModel = null;
 
-    /**
-     * Atualiza a View quando o estado do ViewModel muda
-     * @param {Object} newState - Novo estado
-     * @param {Object} oldState - Estado anterior
-     */
-    function updateView(newState, oldState) {
-        // Atualizar cards de estatísticas
-        if (newState.stats) {
-            const statUsersEl = document.getElementById('statUsersActive');
-            const statProductsEl = document.getElementById('statProductsMonitored');
-            const statSupportEl = document.getElementById('statSupportThreads');
-            const statBugsEl = document.getElementById('statBugsOpen');
+    function setHero() {
+        const userJson = localStorage.getItem('PROMOPING_USER');
+        let name = '';
+        try {
+            const u = userJson ? JSON.parse(userJson) : null;
+            name = (u?.nome || u?.Nome || u?.name || '').split(' ')[0] || '';
+        } catch (e) {}
 
-            if (statUsersEl) statUsersEl.textContent = newState.stats.usersActive || 0;
-            if (statProductsEl) statProductsEl.textContent = newState.stats.productsMonitored || 0;
-            if (statSupportEl) statSupportEl.textContent = newState.stats.supportThreads || 0;
-            if (statBugsEl) statBugsEl.textContent = newState.stats.bugsOpen || 0;
-        }
-
-        // Atualizar lista de atividade recente
-        if (newState.recentActivity !== undefined) {
-            renderRecentActivity(newState.recentActivity);
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Bom dia' : hour < 19 ? 'Boa tarde' : 'Boa noite';
+        const welcomeEl = document.getElementById('heroWelcome');
+        if (welcomeEl) welcomeEl.textContent = name ? `${greeting}, ${name}` : greeting;
+        const tsEl = document.getElementById('heroTimestamp');
+        if (tsEl) {
+            tsEl.textContent = new Date().toLocaleDateString('pt-PT', {
+                weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+            });
         }
     }
 
-    /**
-     * Renderiza a lista de atividade recente
-     * @param {Array} activities - Array de atividades
-     */
-    function renderRecentActivity(activities) {
-        const activityList = document.getElementById('recentActivity');
-        if (!activityList) return;
+    function escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(text);
+        return div.innerHTML;
+    }
 
-        if (activities.length === 0) {
-            activityList.innerHTML = '<div class="loading-state">Nenhuma atividade recente</div>';
+    function formatDateTime(s) {
+        if (!s) return '—';
+        return new Date(s).toLocaleString('pt-PT', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function updateView(newState) {
+        if (newState.stats) {
+            const s = newState.stats;
+            const set = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+            set('statUsersActive', s.usersActive ?? 0);
+            set('statProductsMonitored', s.productsMonitored ?? 0);
+            set('statSupportThreads', s.supportThreads ?? 0);
+            set('statBugsOpen', s.bugsOpen ?? 0);
+            set('statReviewsTotal', s.reviewsTotal ?? 0);
+            set('statIncidentsOpen', s.incidentsOpen ?? 0);
+
+            const avgEl = document.getElementById('statReviewsAvg');
+            if (avgEl) {
+                if (s.reviewsAvg && !isNaN(s.reviewsAvg)) {
+                    avgEl.textContent = `Média: ${s.reviewsAvg.toFixed(1)} ⭐`;
+                } else {
+                    avgEl.textContent = 'Média: —';
+                }
+            }
+        }
+
+        if (newState.recentActivity !== undefined) {
+            renderRecentActivity(newState.recentActivity);
+        }
+        if (newState.recentBugs !== undefined) {
+            renderRecentBugs(newState.recentBugs);
+        }
+        if (newState.recentIncidents !== undefined) {
+            renderRecentIncidents(newState.recentIncidents);
+        }
+    }
+
+    function renderRecentActivity(activities) {
+        const list = document.getElementById('recentActivity');
+        const count = document.getElementById('recentActivityCount');
+        if (!list) return;
+
+        if (count) count.textContent = activities.length;
+
+        if (!activities.length) {
+            list.innerHTML = '<div class="activity-empty">Sem atividade recente.</div>';
             return;
         }
 
-        activityList.innerHTML = activities.map(activity => {
-            const escapedTitle = viewModel.escapeHtml(activity.title);
-            const escapedDescription = viewModel.escapeHtml(activity.description);
-            const formattedTime = viewModel.formatDate(activity.time);
-
+        list.innerHTML = activities.map(a => {
+            const color = a.type === 'user' ? '#60a5fa' : a.type === 'product' ? '#4ade80' : '#a78bfa';
             return `
-                <div class="activity-item">
-                    <div class="activity-icon ${activity.type}">${activity.icon}</div>
-                    <div class="activity-content">
-                        <h4>${escapedTitle}</h4>
-                        <p>${escapedDescription}</p>
-                    </div>
-                    <div class="activity-time">${formattedTime}</div>
+                <div class="activity-mini">
+                    <strong style="color:${color}">${escapeHtml(a.title)}</strong>
+                    <div style="font-size:0.82rem;color:#9ca3af;margin-top:0.2rem">${escapeHtml(a.description)}</div>
+                    <div style="font-size:0.78rem;color:#6b7280;margin-top:0.2rem">${formatDateTime(a.time)}</div>
                 </div>
             `;
         }).join('');
     }
 
-    /**
-     * Inicializa a View e conecta ao ViewModel
-     */
-    async function init() {
-        // Criar instância do ViewModel
-        viewModel = new OverviewViewModel();
+    function renderRecentBugs(bugs) {
+        const list = document.getElementById('recentBugs');
+        const count = document.getElementById('recentBugsCount');
+        if (!list) return;
 
-        // Observar mudanças de estado e atualizar a View automaticamente
-        viewModel.observe(updateView);
+        if (count) count.textContent = bugs.length;
 
-        // Configurar event listeners
-        setupEventListeners();
-
-        // Inicializar ViewModel (carrega dados)
-        await viewModel.init();
-
-        // Auto-refresh a cada 60 segundos
-        setInterval(() => {
-            viewModel.loadOverview();
-        }, 60000);
-
-        console.log('[Overview] View inicializada com MVVM');
-    }
-
-    /**
-     * Configura event listeners da View
-     */
-    function setupEventListeners() {
-        // Botão de refresh
-        const refreshBtn = document.getElementById('refreshOverviewBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                viewModel.loadOverview();
-            });
+        if (!bugs.length) {
+            list.innerHTML = '<div class="activity-empty">Sem bugs recentes.</div>';
+            return;
         }
 
-        // Botão de logout
+        list.innerHTML = bugs.map(b => {
+            const titulo = (window.APIUtils?.stripBracketPrefix?.(b.Titulo)) || b.Titulo || 'Sem título';
+            const status = (b.Status || '').toLowerCase();
+            const statusColor = status === 'resolvido' || status === 'resolved' || status === 'fechado' || status === 'closed'
+                ? '#4ade80' : status === 'em progresso' || status === 'in_progress' ? '#fbbf24' : '#f87171';
+            return `
+                <div class="activity-mini">
+                    <span style="color:#60a5fa;font-weight:600">#${escapeHtml(b.Id ?? '?')}</span>
+                    <strong> ${escapeHtml(titulo)}</strong>
+                    <div style="font-size:0.78rem;margin-top:0.25rem">
+                        <span style="color:${statusColor};font-weight:500">${escapeHtml(b.Status || '—')}</span>
+                        ${b.Prioridade ? ` · ${escapeHtml(b.Prioridade)}` : ''}
+                    </div>
+                    <div style="font-size:0.78rem;color:#6b7280;margin-top:0.2rem">${formatDateTime(b.DataCriacao || b.created_at)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderRecentIncidents(incidents) {
+        const list = document.getElementById('recentIncidents');
+        const count = document.getElementById('recentIncidentsCount');
+        if (!list) return;
+
+        if (count) count.textContent = incidents.length;
+
+        if (!incidents.length) {
+            list.innerHTML = '<div class="activity-empty">Sem incidentes recentes.</div>';
+            return;
+        }
+
+        list.innerHTML = incidents.map(i => {
+            const titulo = (window.APIUtils?.stripBracketPrefix?.(i.Titulo)) || i.Titulo || i.title || 'Sem título';
+            const status = (i.Status || i.status || '—');
+            const statusLower = status.toLowerCase();
+            const statusColor = statusLower === 'resolved' || statusLower === 'resolvido' ? '#4ade80'
+                : statusLower === 'investigating' || statusLower === 'investigando' ? '#fbbf24'
+                : '#f87171';
+            return `
+                <div class="activity-mini">
+                    <strong style="color:#fbbf24">${escapeHtml(titulo)}</strong>
+                    <div style="font-size:0.78rem;margin-top:0.25rem">
+                        <span style="color:${statusColor};font-weight:500">${escapeHtml(status)}</span>
+                    </div>
+                    <div style="font-size:0.78rem;color:#6b7280;margin-top:0.2rem">${formatDateTime(i.DataCriacao || i.created_at || i.startDate)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function init() {
+        setHero();
+        viewModel = new OverviewViewModel();
+        viewModel.observe(updateView);
+        setupEventListeners();
+        await viewModel.init();
+
+        setInterval(() => { viewModel.loadOverview(); }, 60000);
+    }
+
+    function setupEventListeners() {
+        const refreshBtn = document.getElementById('refreshOverviewBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => viewModel.loadOverview());
+        }
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
@@ -114,17 +191,13 @@
         }
     }
 
-    // Inicializar quando DOM estiver pronto
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
-    // Limpar recursos quando a página for descarregada
     window.addEventListener('beforeunload', () => {
-        if (viewModel) {
-            viewModel.destroy();
-        }
+        if (viewModel) viewModel.destroy();
     });
 })();

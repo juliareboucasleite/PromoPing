@@ -8,17 +8,172 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-810832454');
+    </script>
+    <style>
+        .sup-hero {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(16, 185, 129, 0.08) 50%, rgba(15, 15, 16, 0) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 16px;
+            padding: 1.75rem 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .sup-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .sup-hero h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+        .sup-hero .greeting { color: #60a5fa; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+        .sup-hero p { margin: 0; color: #9ca3af; max-width: 640px; }
+        .sup-hero .timestamp { position: absolute; top: 1.5rem; right: 2rem; font-size: 0.8rem; color: #6b7280; }
+        .sup-hero .hero-actions { margin-top: 1rem; }
+        .sup-hero .hero-actions .refresh-button { background: rgba(96, 165, 250, 0.12); border-color: rgba(96, 165, 250, 0.3); color: #93c5fd; }
+        .sup-hero .hero-actions .refresh-button:hover { background: rgba(96, 165, 250, 0.2); border-color: #60a5fa; }
 
-    gtag('config', 'AW-810832454');
-  </script>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            position: relative;
+            background: linear-gradient(180deg, #1a1a1c 0%, #141416 100%);
+            border: 1px solid #2a2a2c;
+            border-radius: 14px;
+            padding: 1.1rem 1.2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.12), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96, 165, 250, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(96, 165, 250, 0.15);
+        }
+        .kpi-card:hover::before { opacity: 1; }
+        .kpi-card .kpi-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(96, 165, 250, 0.12);
+            display: flex; align-items: center; justify-content: center;
+            color: #60a5fa;
+            margin-bottom: 0.85rem;
+        }
+        .kpi-card.green .kpi-icon { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .kpi-card.orange .kpi-icon { background: rgba(255, 152, 0, 0.12); color: #ff9800; }
+        .kpi-card.purple .kpi-icon { background: rgba(167, 139, 250, 0.12); color: #a78bfa; }
+        .kpi-card.pink .kpi-icon { background: rgba(244, 114, 182, 0.12); color: #f472b6; }
+        .kpi-card.red .kpi-icon { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+        .kpi-card .kpi-label {
+            font-size: 0.72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; font-weight: 600;
+        }
+        .kpi-card .kpi-value {
+            font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: #f3f4f6;
+            font-variant-numeric: tabular-nums;
+        }
+        .kpi-card .kpi-trend { font-size: 0.78rem; margin-top: 0.4rem; color: #6b7280; }
+        .kpi-card .kpi-trend.up { color: #4ade80; }
+        .kpi-card .kpi-trend.down { color: #fca5a5; }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .quick-action {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: #18181b;
+            border: 1px solid #2a2a2c;
+            border-radius: 10px;
+            color: #f3f4f6;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.92rem;
+            transition: all 0.15s ease;
+        }
+        .quick-action:hover { border-color: #60a5fa; background: #1f1f23; transform: translateX(2px); }
+        .quick-action .qa-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: rgba(96, 165, 250, 0.1); color: #60a5fa;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .quick-action .qa-arrow { margin-left: auto; color: #6b7280; }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .activity-card {
+            background: #18181b;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .activity-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 1.1rem;
+            border-bottom: 1px solid #232326;
+        }
+        .activity-card-header h3 {
+            margin: 0; font-size: 0.95rem; font-weight: 600; color: #f3f4f6;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .activity-card-header .count-pill {
+            background: rgba(96, 165, 250, 0.15); color: #60a5fa;
+            padding: 0.15rem 0.55rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .activity-card-body { max-height: 360px; overflow-y: auto; }
+        .activity-card-body .activity-mini {
+            padding: 0.75rem 1.1rem;
+            border-bottom: 1px solid #232326;
+            font-size: 0.88rem;
+        }
+        .activity-card-body .activity-mini:last-child { border-bottom: none; }
+        .activity-empty {
+            padding: 2rem 1rem; text-align: center; color: #6b7280; font-size: 0.88rem;
+        }
+        .activity-card-footer {
+            padding: 0.6rem 1.1rem;
+            border-top: 1px solid #232326;
+            background: #15151a;
+        }
+        .activity-card-footer a {
+            font-size: 0.82rem; color: #60a5fa; text-decoration: none; font-weight: 500;
+        }
+        .activity-card-footer a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -83,72 +238,144 @@
 
         <!-- Main Content -->
         <main class="dashboard-main">
-            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
-                <div class="section-header">
-                    <h1>Visão Geral</h1>
-                    <button id="refreshOverviewBtn" class="refresh-button">Atualizar</button>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="statUsersActive">-</h3>
-                            <p>Utilizadores Ativos</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M3.27 6.96L12 12.01L20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 22.08V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="statProductsMonitored">-</h3>
-                            <p>Produtos Monitorados</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="statSupportThreads">-</h3>
-                            <p>Conversas de Suporte</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="statBugsOpen">-</h3>
-                            <p>Bugs Abertos</p>
-                        </div>
+            <section class="dashboard-section active">
+                <!-- Hero -->
+                <div class="sup-hero">
+                    <div class="timestamp" id="heroTimestamp"></div>
+                    <div class="greeting" id="heroGreeting">Painel de Suporte</div>
+                    <h1 id="heroWelcome">Bem-vindo de volta</h1>
+                    <p>Visão geral em tempo real: utilizadores, produtos, conversas, bugs e incidentes.</p>
+                    <div class="hero-actions">
+                        <button id="refreshOverviewBtn" class="refresh-button">Atualizar</button>
                     </div>
                 </div>
 
-                <!-- Recent Activity -->
-                <div class="activity-section">
-                    <h2>Atividade Recente</h2>
-                    <div id="recentActivity" class="activity-list">
-                        <div class="loading-state">Carregando atividade...</div>
+                <!-- KPI Grid -->
+                <div class="kpi-grid">
+                    <a href="utilizadores.html" class="kpi-card">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="kpi-label">Utilizadores ativos</div>
+                        <div class="kpi-value" id="statUsersActive">—</div>
+                        <div class="kpi-trend">Total na plataforma</div>
+                    </a>
+
+                    <a href="produtos.html" class="kpi-card green">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        </div>
+                        <div class="kpi-label">Produtos monitorados</div>
+                        <div class="kpi-value" id="statProductsMonitored">—</div>
+                        <div class="kpi-trend">Em vigilância</div>
+                    </a>
+
+                    <a href="suporte.html" class="kpi-card orange">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div class="kpi-label">Conversas de Suporte</div>
+                        <div class="kpi-value" id="statSupportThreads">—</div>
+                        <div class="kpi-trend">Tickets ativos</div>
+                    </a>
+
+                    <a href="bugs.html" class="kpi-card red">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <div class="kpi-label">Bugs abertos</div>
+                        <div class="kpi-value" id="statBugsOpen">—</div>
+                        <div class="kpi-trend">Em investigação</div>
+                    </a>
+
+                    <a href="avaliacoes.html" class="kpi-card pink">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <div class="kpi-label">Avaliações</div>
+                        <div class="kpi-value" id="statReviewsTotal">—</div>
+                        <div class="kpi-trend" id="statReviewsAvg">Média: —</div>
+                    </a>
+
+                    <a href="tabelas.html" class="kpi-card purple">
+                        <div class="kpi-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="kpi-label">Incidentes ativos</div>
+                        <div class="kpi-value" id="statIncidentsOpen">—</div>
+                        <div class="kpi-trend">A monitorizar</div>
+                    </a>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="suporte.html" class="quick-action">
+                        <span class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                        Atender suporte
+                        <span class="qa-arrow">→</span>
+                    </a>
+                    <a href="bugs.html" class="quick-action">
+                        <span class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                        Reportar bug
+                        <span class="qa-arrow">→</span>
+                    </a>
+                    <a href="tabelas.html" class="quick-action">
+                        <span class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+                        Abrir incidente
+                        <span class="qa-arrow">→</span>
+                    </a>
+                    <a href="calendar.html" class="quick-action">
+                        <span class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                        Calendário
+                        <span class="qa-arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Activity Cards -->
+                <div class="activity-grid">
+                    <div class="activity-card">
+                        <div class="activity-card-header">
+                            <h3>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                                Atividade recente
+                            </h3>
+                            <span class="count-pill" id="recentActivityCount">0</span>
+                        </div>
+                        <div class="activity-card-body" id="recentActivity">
+                            <div class="activity-empty">A carregar atividade…</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-card">
+                        <div class="activity-card-header">
+                            <h3>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                Bugs recentes
+                            </h3>
+                            <span class="count-pill" id="recentBugsCount">0</span>
+                        </div>
+                        <div class="activity-card-body" id="recentBugs">
+                            <div class="activity-empty">A carregar…</div>
+                        </div>
+                        <div class="activity-card-footer">
+                            <a href="bugs.html">Ver todos →</a>
+                        </div>
+                    </div>
+
+                    <div class="activity-card">
+                        <div class="activity-card-header">
+                            <h3>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                Incidentes recentes
+                            </h3>
+                            <span class="count-pill" id="recentIncidentsCount">0</span>
+                        </div>
+                        <div class="activity-card-body" id="recentIncidents">
+                            <div class="activity-empty">A carregar…</div>
+                        </div>
+                        <div class="activity-card-footer">
+                            <a href="tabelas.html">Ver todos →</a>
+                        </div>
                     </div>
                 </div>
             </section>
