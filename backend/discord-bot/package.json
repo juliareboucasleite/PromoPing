@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "node test.js"
+    "test": "node test.js",
+    "lavalink:download": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\download-lavalink.ps1",
+    "lavalink:start": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\start-lavalink.ps1",
+    "lavalink:stop": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\stop-lavalink.ps1",
+    "lavalink:status": "powershell -ExecutionPolicy Bypass -File .\\lavalink\\status-lavalink.ps1"
   },
   "keywords": [
     "discord",
