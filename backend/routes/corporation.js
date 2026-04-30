@@ -7,6 +7,8 @@ import express from "express";
 import { pool } from "../database/db.js";
 import { verifyToken } from "../middleware/auth.js";
 import financialRouter from "./corporation-financial.js";
+import auditRouter from "./corporation-audit.js";
+import { logAudit } from "../utils/audit.js";
 
 const router = express.Router();
 
@@ -72,6 +74,8 @@ router.use(verifyCorporation);
 
 // Sub-rotas financeiras (KPIs, transacções, payouts, export CSV)
 router.use("/financial", financialRouter);
+// Sub-rotas de auditoria (logs de acções)
+router.use("/audit", auditRouter);
 
 async function ensureCorporationDiscordCouponTables() {
     await pool.query(`
