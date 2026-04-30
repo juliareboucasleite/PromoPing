@@ -70,6 +70,9 @@ async function verifyCorporation(req, res, next) {
 router.use(verifyToken);
 router.use(verifyCorporation);
 
+// Sub-rotas financeiras (KPIs, transacções, payouts, export CSV)
+router.use("/financial", financialRouter);
+
 async function ensureCorporationDiscordCouponTables() {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS discord_coupon_requests (
