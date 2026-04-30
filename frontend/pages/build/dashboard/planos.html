@@ -851,6 +851,37 @@
             const plano = planoData?.plano || null;
             const stats = meData?.stats || {};
             if (!plano) {
+                if (currentUserPlanId > 1) {
+                    const planoFallback = planosFromApi.find((p) => Number(p.Id || p.id) === currentUserPlanId) || null;
+                    const planoNomeFallback = planoFallback?.Nome || planoFallback?.nome || 'Plano Pago';
+                    const limiteFallback = planoFallback?.LimiteProdutos ?? planoFallback?.limiteprodutos ?? '∞';
+                    planStatus.textContent = "Ativo";
+                    planStatus.className = "status-badge active";
+                    gracePeriodInfo.style.display = "none";
+                    currentPlanDetails.innerHTML = `
+                        <div class="plan-detail">
+                            <h4>Plano Atual</h4>
+                            <p>${planoNomeFallback}</p>
+                        </div>
+                        <div class="plan-detail">
+                            <h4>Produtos</h4>
+                            <p>${stats.produtos_total || 0} de ${limiteFallback}</p>
+                        </div>
+                        <div class="plan-detail">
+                            <h4>NotificaÃ§Ãµes</h4>
+                            <p>${stats.notificacoes_total || 0} enviadas</p>
+                        </div>
+                        <div class="plan-detail">
+                            <h4>Dinheiro PoupanÃ§a</h4>
+                            <p>â‚¬${stats.dinheiro_poupado || '0,00'}</p>
+                        </div>
+                    `;
+                    if (cancelButton) {
+                        cancelButton.style.display = "inline-flex";
+                    }
+                    currentPlanSection.style.display = "block";
+                    return;
+                }
                 console.log("Dados do usuário não encontrados");
                 return;
             }
