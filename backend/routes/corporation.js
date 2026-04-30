@@ -9,6 +9,9 @@ import { verifyToken } from "../middleware/auth.js";
 import financialRouter from "./corporation-financial.js";
 import auditRouter from "./corporation-audit.js";
 import { logAudit } from "../utils/audit.js";
+import { gerarReferenciaID } from "../utils/referenciaId.js";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 const router = express.Router();
 
