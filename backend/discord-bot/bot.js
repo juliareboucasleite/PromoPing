@@ -6,7 +6,7 @@ const mysql = require('./mysql2-compat');
 const setupDatabase = require('./setup-db');
 const comandos = require('./comandos');
 const YoutubeFeed = require('./comandos/Youtube/youtube-feed');
-const MusicManager = require('./comandos/Music/music-manager');
+const MusicManager = require('./comandos/Music/music-manager-lavalink');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 class PromoPingBot {

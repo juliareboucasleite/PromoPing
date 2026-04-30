@@ -16,7 +16,7 @@ module.exports = {
 
         return message.reply({
             embeds: [successEmbed("Music", [
-                `Runtime nativo ativo: **${runtimeReady ? "Sim" : "Nao"}**`,
+                `Runtime de musica ativo: **${runtimeReady ? "Sim" : "Nao"}**`,
                 `Infra Lavalink configurada: **${configured ? "Sim" : "Nao"}**`,
                 currentTrack
                     ? `A tocar agora: **${currentTrack.title}**`
@@ -25,8 +25,8 @@ module.exports = {
                 "Comandos: `!play`, `!skip`, `!pause`, `!resume`, `!queue`, `!nowplaying`, `!volume`, `!loop`, `!mstop`.",
                 "O `!play` abre um painel com botoes para pausar, passar, repetir, ver fila e parar a sessao.",
                 configured
-                    ? "O bot ja consegue tocar musica; o Lavalink fica disponivel como infra adicional."
-                    : "O bot toca musica pelo runtime nativo atual mesmo sem Lavalink configurado.",
+                    ? "A reproducao agora usa Lavalink para entregar audio com mais estabilidade."
+                    : "Sem Lavalink configurado o modulo de musica nao fica completo.",
             ])],
         });
     },
