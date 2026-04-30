@@ -1,58 +1,88 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder } = require("discord.js");
+const { buildModules } = require("../Sistema/helpCatalog");
 
 module.exports = {
-    name: 'helpadmin',
-    aliases: ['admin', 'comandosadmin', 'ha'],
-    description: 'Lista comandos de administrador (moderação e configuração). Apenas para staff.',
+    name: "helpadmin",
+    aliases: ["admin", "comandosadmin", "ha"],
+    description: "Lista comandos e setups administrativos do bot.",
+    category: "Moderation",
+    usage: "!helpadmin",
     execute: async (client, message, args, botInstance) => {
         if (!message.guild) {
-            return await message.reply('❌ Este comando só pode ser usado num servidor.');
+            return message.reply("Este comando só pode ser usado num servidor.");
         }
+
         const member = message.member;
         const userId = message.author?.id || member?.user?.id;
         const adminIds = Array.isArray(botInstance.adminIds) ? botInstance.adminIds : [];
         const adminRoleIds = Array.isArray(botInstance.adminRoleIds) ? botInstance.adminRoleIds : [];
-        const hasAdminRole = adminRoleIds.length > 0 && member?.roles?.cache && adminRoleIds.some(roleId => member.roles.cache.has(roleId));
+        const hasAdminRole = adminRoleIds.length > 0 && adminRoleIds.some((roleId) => member.roles.cache.has(roleId));
         const isInAdminList = userId && adminIds.includes(userId);
-        if (!hasAdminRole && !isInAdminList) {
-            return await message.reply('❌ Apenas utilizadores com o cargo de administrador podem ver este comando.');
+        const hasManageGuild = member.permissions.has("ManageGuild");
+
+        if (!hasAdminRole && !isInAdminList && !hasManageGuild) {
+            return message.reply("Apenas staff ou utilizadores com `Gerir Servidor` podem usar este comando.");
         }
 
-        const comandos = require('../index');
-
-        const comandosUnicos = new Map();
-        comandos.forEach(cmd => {
-            if (!comandosUnicos.has(cmd.name)) comandosUnicos.set(cmd.name, cmd);
-        });
-        const comandosArray = Array.from(comandosUnicos.values());
-
-        const moderação = comandosArray
-            .filter(cmd => ['lock', 'unlock', 'clear'].includes(cmd.name))
-            .map(cmd => {
-                const aliases = cmd.aliases?.length ? ` (${cmd.aliases.join(', ')})` : '';
-                let line = `• \`!${cmd.name}\`${aliases} — ${cmd.description}`;
-                if (cmd.name === 'clear') line += '\n  `!clear <1-100>` - Apaga mensagens no canal';
-                return line;
-            })
-            .join('\n');
+        const prefix = await botInstance.getGuildPrefix(message.guild.id);
+        const modules = buildModules(prefix);
+        const adminModules = modules.filter((module) => [
+            "birthday",
+            "comunidade",
+            "giveaways",
+            "moderation",
+            "painel",
+            "suporte",
+            "verify",
+            "welcome",
+            "youtube",
+        ].includes(module.key));
 
         const embed = new EmbedBuilder()
-            .setTitle('PromoPing Bot — Comandos de Administrador')
-            .setDescription(
-                '**Apenas utilizadores com permissões de staff podem usar estes comandos.**\n\n' +
-                '**Moderação**\n' + (moderação || 'Nenhum') + '\n\n' +
-                '**Configuração (apenas admins)**\n' +
-                '• `!counting configurar #canal` — Configura canal de contagem\n' +
-                '• `!announcements configurar <webhook>` — Configura anúncios\n' +
-                '• `!social-feed` — Configura feed (adicionar/listar/verificar)\n' +
-                '• `!ticket` — Configura sistema de tickets\n' +
-                '• `!news configurar <canal-id>` — Configura notícias\n\n' +
-                'Comandos de lock, unlock e clear requerem permissões de gerir canais/mensagens no servidor.'
-            )
+            .setTitle("PromoPing • Help Admin")
+            .setDescription("Resumo dos módulos que exigem setup, permissões ou manutenção de staff.")
             .setColor(0x5865F2)
-            .setTimestamp()
-            .setFooter({ text: 'PromoPing - Comandos de administrador' });
+            .addFields(
+                {
+                    name: "Moderação",
+                    value: [
+                        `\`${prefix}clear 20\``,
+                        `\`${prefix}lock\` / \`${prefix}unlock\``,
+                        `\`${prefix}hide\` / \`${prefix}unhide\``,
+                        `\`${prefix}ban\`, \`${prefix}kick\`, \`${prefix}timeout\`, \`${prefix}unmute\``,
+                    ].join("\n"),
+                    inline: false,
+                },
+                {
+                    name: "Setups Mais Usados",
+                    value: [
+                        `\`${prefix}welcome set #canal\``,
+                        `\`${prefix}verify setup #canal @cargo\``,
+                        `\`${prefix}birthday channel #canal\``,
+                        `\`${prefix}youtube enable <canal-youtube> #canal true\``,
+                        `\`${prefix}gstart 1h 1 Prémio\``,
+                    ].join("\n"),
+                    inline: false,
+                },
+                {
+                    name: "Painéis",
+                    value: [
+                        `\`${prefix}painel\``,
+                        `\`${prefix}community-panel #canal\``,
+                        `\`${prefix}review-panel #canal\``,
+                        `\`${prefix}ticket\``,
+                    ].join("\n"),
+                    inline: false,
+                },
+                {
+                    name: "Módulos Guiados",
+                    value: adminModules.map((module) => `• \`${prefix}ajuda ${module.key}\` — ${module.summary}`).join("\n"),
+                    inline: false,
+                }
+            )
+            .setFooter({ text: "Usa ajuda por módulo para ver exemplos completos." })
+            .setTimestamp();
 
-        await message.reply({ embeds: [embed] });
-    }
+        return message.reply({ embeds: [embed] });
+    },
 };

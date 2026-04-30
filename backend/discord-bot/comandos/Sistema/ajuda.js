@@ -1,241 +1,226 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const path = require("path");
-const fs = require("fs");
 const mysql = require("../../mysql2-compat");
+const { buildModules, getModuleByQuery } = require("./helpCatalog");
 
-function buildCategoryOrder(categories) {
-    const preferred = ["Sistema", "Conta", "Produtos", "Ticket", "Youtube", "Moderation", "Social", "Comunidade", "Paineis", "birthday", "Geral"];
-    const orderMap = new Map(preferred.map((name, index) => [name.toLowerCase(), index]));
-
-    return [...categories].sort((a, b) => {
-        const aOrder = orderMap.has(a.toLowerCase()) ? orderMap.get(a.toLowerCase()) : Number.MAX_SAFE_INTEGER;
-        const bOrder = orderMap.has(b.toLowerCase()) ? orderMap.get(b.toLowerCase()) : Number.MAX_SAFE_INTEGER;
-
-        if (aOrder !== bOrder) {
-            return aOrder - bOrder;
+function uniqueCommands(commandMap) {
+    const seen = new Set();
+    const list = [];
+    commandMap.forEach((command) => {
+        if (!seen.has(command.name)) {
+            seen.add(command.name);
+            list.push(command);
         }
-
-        return a.localeCompare(b);
     });
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function formatUsage(prefix, usage) {
+    if (!usage) return [];
+    const usageList = Array.isArray(usage) ? usage : [usage];
+    return usageList.map((entry) => {
+        const text = String(entry);
+        if (text.startsWith("!") || text.startsWith("/")) {
+            return text.replace(/^!/, prefix);
+        }
+        return `${prefix}${text}`;
+    });
+}
+
+function chunk(items, size) {
+    const pages = [];
+    for (let i = 0; i < items.length; i += size) {
+        pages.push(items.slice(i, i + size));
+    }
+    return pages;
+}
+
+async function getStats() {
+    const dbConfig = {
+        host: process.env.DB_HOST || "localhost",
+        user: process.env.DB_USER || "postgres",
+        password: process.env.DB_PASSWORD || "",
+        database: process.env.DB_NAME || "papv5",
+        port: parseInt(process.env.DB_PORT, 10) || 5432,
+    };
+
+    const stats = {
+        totalProdutos: 0,
+        totalUsuarios: 0,
+        usuariosDiscord: 0,
+        mudancasHoje: 0,
+    };
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [produtos] = await connection.execute("SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL");
+        const [usuarios] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores");
+        const [usuariosDiscord] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id <> ''");
+        const [mudancas] = await connection.execute("SELECT COUNT(*) as total FROM historicoprecos WHERE DATE(DataRegisto) = CURDATE()");
+
+        stats.totalProdutos = produtos[0]?.total || 0;
+        stats.totalUsuarios = usuarios[0]?.total || 0;
+        stats.usuariosDiscord = usuariosDiscord[0]?.total || 0;
+        stats.mudancasHoje = mudancas[0]?.total || 0;
+
+        await connection.end();
+    } catch (error) {
+        console.error("[DISCORD] Erro ao buscar estatísticas do help:", error.message);
+    }
+
+    return stats;
 }
 
 module.exports = {
     name: "ajuda",
     aliases: ["help", "comandos", "h"],
-    description: "Mostra a lista de comandos disponiveis e estatisticas do sistema com paginacao.",
+    description: "Mostra ajuda por comando, categoria ou módulo, com exemplos de configuração.",
     category: "Sistema",
-    execute: async (client, message) => {
+    usage: "!ajuda [comando|módulo]",
+    execute: async (client, message, args, botInstance) => {
+        const prefix = message.guild ? await botInstance.getGuildPrefix(message.guild.id) : (process.env.DISCORD_PREFIX || "!");
         const comandos = require("../index");
+        const commands = uniqueCommands(comandos);
+        const modules = buildModules(prefix);
+        const query = args.join(" ").trim();
 
-        const dbConfig = {
-            host: process.env.DB_HOST || "localhost",
-            user: process.env.DB_USER || "postgres",
-            password: process.env.DB_PASSWORD || "",
-            database: process.env.DB_NAME || "papv5",
-            port: parseInt(process.env.DB_PORT, 10) || 5432,
-        };
+        if (query) {
+            const command = comandos.get(query.toLowerCase());
+            if (command) {
+                const usageLines = formatUsage(prefix, command.usage);
+                const module = getModuleByQuery(command.name, prefix);
+                const embed = new EmbedBuilder()
+                    .setTitle(`Ajuda: ${prefix}${command.name}`)
+                    .setDescription(command.description || "Sem descrição.")
+                    .setColor(0xf59e0b)
+                    .addFields(
+                        { name: "Categoria", value: String(command.category || "Geral"), inline: true },
+                        { name: "Aliases", value: command.aliases?.length ? command.aliases.map((alias) => `\`${alias}\``).join(", ") : "Nenhum", inline: false },
+                        { name: "Uso", value: usageLines.length ? usageLines.map((line) => `\`${line}\``).join("\n") : "Sem uso documentado.", inline: false },
+                    )
+                    .setTimestamp();
 
-        const stats = {
-            totalProdutos: 0,
-            totalUsuarios: 0,
-            usuariosDiscord: 0,
-            mudancasHoje: 0,
-        };
+                if (module) {
+                    embed.addFields(
+                        { name: "Guia Rápido", value: module.setup.slice(0, 3).map((line) => `• ${line}`).join("\n"), inline: false }
+                    );
+                }
 
-        try {
-            const connection = await mysql.createConnection(dbConfig);
-            const [produtos] = await connection.execute("SELECT COUNT(*) as total FROM produtos WHERE DeletedAt IS NULL");
-            const [usuarios] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores");
-            const [usuariosDiscord] = await connection.execute("SELECT COUNT(*) as total FROM utilizadores WHERE discord_id IS NOT NULL AND discord_id <> ''");
-            const [mudancas] = await connection.execute("SELECT COUNT(*) as total FROM historicoprecos WHERE DATE(DataRegisto) = CURDATE()");
+                return message.reply({ embeds: [embed] });
+            }
 
-            stats.totalProdutos = produtos[0]?.total || 0;
-            stats.totalUsuarios = usuarios[0]?.total || 0;
-            stats.usuariosDiscord = usuariosDiscord[0]?.total || 0;
-            stats.mudancasHoje = mudancas[0]?.total || 0;
+            const module = getModuleByQuery(query, prefix);
+            if (module) {
+                const embed = new EmbedBuilder()
+                    .setTitle(`Módulo: ${module.title}`)
+                    .setDescription(`${module.summary}\n\nEstado: **${module.status}**`)
+                    .setColor(module.status === "parcial" ? 0x6366f1 : 0xf59e0b)
+                    .addFields(
+                        { name: "Comandos", value: module.commands.map((line) => `\`${line}\``).join("\n"), inline: false },
+                        { name: "Como Configurar", value: module.setup.map((line) => `• ${line}`).join("\n"), inline: false }
+                    )
+                    .setTimestamp();
 
-            await connection.end();
-        } catch (error) {
-            console.error("[DISCORD] Erro ao buscar estatisticas:", error.message);
+                return message.reply({ embeds: [embed] });
+            }
+
+            return message.reply(`Não encontrei ajuda para \`${query}\`. Usa \`${prefix}ajuda\` para ver os módulos disponíveis.`);
         }
 
-        const imagePath = path.join(__dirname, "../../frontend/assets/images/PromoPing.png");
-        const imageAttachment = fs.existsSync(imagePath)
-            ? { attachment: imagePath, name: "PromoPing.png" }
-            : null;
+        const stats = await getStats();
+        const modulePages = chunk(modules, 4).map((group) => ({
+            title: "Módulos",
+            lines: group.flatMap((module) => [
+                `**${module.title}** • ${module.status}`,
+                `${module.summary}`,
+                `Ex.: \`${module.commands[0]}\``,
+                "",
+            ]),
+        }));
 
-        const comandosUnicos = new Map();
-        comandos.forEach((cmd) => {
-            if (!comandosUnicos.has(cmd.name)) {
-                comandosUnicos.set(cmd.name, cmd);
-            }
+        const pages = [
+            {
+                title: "Visão Geral",
+                lines: [
+                    `Prefixo atual: \`${prefix}\``,
+                    `Comandos carregados: **${commands.length}**`,
+                    `Produtos monitorados: **${stats.totalProdutos}**`,
+                    `Utilizadores: **${stats.totalUsuarios}**`,
+                    `Contas ligadas ao Discord: **${stats.usuariosDiscord}**`,
+                    `Mudanças hoje: **${stats.mudancasHoje}**`,
+                    "",
+                    `Dica: usa \`${prefix}ajuda welcome\`, \`${prefix}ajuda verify\` ou \`${prefix}ajuda giveaways\` para configuração guiada.`,
+                ],
+            },
+            ...modulePages,
+            {
+                title: "Atalhos",
+                lines: [
+                    `\`${prefix}helpadmin\` mostra moderação e setup de staff.`,
+                    `\`${prefix}painel\` resume os painéis prontos.`,
+                    `\`${prefix}prefix ?\` altera o prefixo do servidor.`,
+                    `\`${prefix}music\` mostra o estado real do módulo de música.`,
+                ],
+            },
+        ];
+
+        let pageIndex = 0;
+
+        const buildEmbed = () => new EmbedBuilder()
+            .setTitle(`PromoPing Help • ${pages[pageIndex].title}`)
+            .setDescription(pages[pageIndex].lines.join("\n"))
+            .setColor(0xf59e0b)
+            .setFooter({ text: `Página ${pageIndex + 1}/${pages.length}` })
+            .setTimestamp();
+
+        const buildButtons = () => new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`help_prev_${message.author.id}`)
+                .setLabel("Anterior")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(pageIndex === 0),
+            new ButtonBuilder()
+                .setCustomId(`help_next_${message.author.id}`)
+                .setLabel("Próxima")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(pageIndex === pages.length - 1),
+            new ButtonBuilder()
+                .setCustomId(`help_close_${message.author.id}`)
+                .setLabel("Fechar")
+                .setStyle(ButtonStyle.Danger),
+        );
+
+        const reply = await message.reply({
+            embeds: [buildEmbed()],
+            components: [buildButtons()],
         });
 
-        const comandosArray = Array.from(comandosUnicos.values()).sort((a, b) => a.name.localeCompare(b.name));
-        const groupedCommands = new Map();
-
-        for (const command of comandosArray) {
-            const categoryName = String(command.category || "Geral").trim() || "Geral";
-            if (!groupedCommands.has(categoryName)) {
-                groupedCommands.set(categoryName, []);
-            }
-            groupedCommands.get(categoryName).push(command);
-        }
-
-        const sortedCategories = buildCategoryOrder(groupedCommands.keys());
-        const paginas = [{
-            titulo: "Estatisticas do Sistema",
-            conteudo: [
-                "**Sistema de monitoramento de precos via Discord**",
-                "Todos os comandos comecam com o prefixo `!`.",
-                "",
-                "**Estatisticas Atuais:**",
-                `- Produtos monitorados: **${stats.totalProdutos}**`,
-                `- Utilizadores cadastrados: **${stats.totalUsuarios}**`,
-                `- Utilizadores Discord: **${stats.usuariosDiscord}**`,
-                `- Mudancas hoje: **${stats.mudancasHoje}**`,
-                "",
-                "**Categorias carregadas:**",
-                sortedCategories.length > 0 ? `- ${sortedCategories.join(", ")}` : "- Nenhuma",
-                "",
-                "**Admin:** usa \`!helpadmin\` para configuracao e moderacao.",
-            ].join("\n"),
-        }];
-
-        for (const categoryName of sortedCategories) {
-            const categoryCommands = groupedCommands.get(categoryName) || [];
-            paginas.push({
-                titulo: `Categoria: ${categoryName}`,
-                conteudo: categoryCommands
-                    .map((cmd) => {
-                        const aliases = Array.isArray(cmd.aliases) && cmd.aliases.length > 0
-                            ? ` (${cmd.aliases.join(", ")})`
-                            : "";
-                        return `- \`!${cmd.name}\`${aliases} - ${cmd.description || "Sem descricao."}`;
-                    })
-                    .join("\n") || "Nenhum comando disponivel nesta categoria.",
-            });
-        }
-
-        let paginaAtual = 0;
-
-        const criarEmbed = (paginaIndex) => {
-            const pagina = paginas[paginaIndex];
-            const embed = new EmbedBuilder()
-                .setTitle(`PromoPing Bot - ${pagina.titulo}`)
-                .setDescription(pagina.conteudo)
-                .setColor(0xffa500)
-                .setTimestamp()
-                .setFooter({
-                    text: `Pagina ${paginaIndex + 1} de ${paginas.length} - PromoPing`,
-                    iconURL: process.env.PROMOPING_LOGO_URL || (imageAttachment ? "attachment://PromoPing.png" : ""),
-                });
-
-            if (imageAttachment) {
-                embed.setThumbnail("attachment://PromoPing.png");
-            }
-
-            return embed;
-        };
-
-        const criarBotoes = (paginaIndex) => {
-            return new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_anterior_${message.author.id}`)
-                    .setLabel("Anterior")
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(paginaIndex === 0),
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_proximo_${message.author.id}`)
-                    .setLabel("Proximo")
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(paginaIndex === paginas.length - 1),
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_fechar_${message.author.id}`)
-                    .setLabel("Fechar")
-                    .setStyle(ButtonStyle.Danger)
-            );
-        };
-
-        const payload = {
-            embeds: [criarEmbed(paginaAtual)],
-            components: [criarBotoes(paginaAtual)],
-            files: imageAttachment ? [imageAttachment] : [],
-        };
-
-        if (!message.channel) {
-            await message.reply({ ...payload, components: [] });
-            return;
-        }
-
-        const mensagemInicial = await message.reply(payload);
-        const mensagemId = mensagemInicial.id || mensagemInicial.message?.id || null;
-
-        const filter = (interaction) => {
-            const sameUser = interaction.user.id === message.author.id;
-            const sameMessage = !mensagemId || interaction.message?.id === mensagemId;
-            const validButton = interaction.customId.startsWith(`ajuda_anterior_${message.author.id}`)
-                || interaction.customId.startsWith(`ajuda_proximo_${message.author.id}`)
-                || interaction.customId.startsWith(`ajuda_fechar_${message.author.id}`);
-
-            return sameUser && sameMessage && validButton;
-        };
-
-        const collector = message.channel.createMessageComponentCollector({
-            filter,
+        const collector = reply.createMessageComponentCollector({
             time: 300000,
+            filter: (interaction) => {
+                return interaction.user.id === message.author.id
+                    && ["help_prev_", "help_next_", "help_close_"].some((prefixValue) => interaction.customId.startsWith(prefixValue));
+            },
         });
 
         collector.on("collect", async (interaction) => {
-            try {
-                if (interaction.customId.startsWith("ajuda_anterior_") && paginaAtual > 0) {
-                    paginaAtual -= 1;
-                } else if (interaction.customId.startsWith("ajuda_proximo_") && paginaAtual < paginas.length - 1) {
-                    paginaAtual += 1;
-                } else if (interaction.customId.startsWith("ajuda_fechar_")) {
-                    await interaction.update({
-                        embeds: [criarEmbed(paginaAtual)],
-                        components: [],
-                        files: imageAttachment ? [imageAttachment] : [],
-                    });
-                    collector.stop();
-                    return;
-                }
-
-                await interaction.update({
-                    embeds: [criarEmbed(paginaAtual)],
-                    components: [criarBotoes(paginaAtual)],
-                    files: imageAttachment ? [imageAttachment] : [],
-                });
-            } catch (error) {
-                console.error("[DISCORD] Erro ao processar interacao de ajuda:", error.message);
-                await interaction.reply({
-                    content: "Ocorreu um erro ao navegar na ajuda.",
-                    ephemeral: true,
-                }).catch(() => {});
+            if (interaction.customId.startsWith("help_prev_") && pageIndex > 0) {
+                pageIndex -= 1;
+            } else if (interaction.customId.startsWith("help_next_") && pageIndex < pages.length - 1) {
+                pageIndex += 1;
+            } else if (interaction.customId.startsWith("help_close_")) {
+                await interaction.update({ embeds: [buildEmbed()], components: [] });
+                collector.stop();
+                return;
             }
+
+            await interaction.update({
+                embeds: [buildEmbed()],
+                components: [buildButtons()],
+            });
         });
 
-        collector.on("end", () => {
-            const disabledRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_anterior_${message.author.id}_disabled`)
-                    .setLabel("Anterior")
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(true),
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_proximo_${message.author.id}_disabled`)
-                    .setLabel("Proximo")
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(true),
-                new ButtonBuilder()
-                    .setCustomId(`ajuda_fechar_${message.author.id}_disabled`)
-                    .setLabel("Fechar")
-                    .setStyle(ButtonStyle.Danger)
-                    .setDisabled(true)
-            );
-
-            mensagemInicial.edit({ components: [disabledRow] }).catch(() => {});
+        collector.on("end", async () => {
+            await reply.edit({ components: [] }).catch(() => {});
         });
     },
 };
