@@ -445,7 +445,7 @@ app.post("/api/internal/send-price-dm", async(req, res) => {
         if (f.status === 503) {
             return res.status(503).json({
                 error: "Bot Discord indisponível",
-                message: "O bot ainda não está pronto ou não está a correr. Certifica-te de que usas «npm start» (backend + bot) ou que o bot está ligado na porta 3001.",
+                message: "O bot ainda não está pronto ou não está a correr. Certifica-te de que o processo «promoping-bot» está online e ligado na porta 3001.",
                 detail: text || undefined,
             });
         }
@@ -454,7 +454,7 @@ app.post("/api/internal/send-price-dm", async(req, res) => {
         console.error("[BACKEND] Proxy send-price-dm:", err.message);
         res.status(503).json({
             error: "Bot Discord indisponível",
-            message: "Não foi possível contactar o bot. Certifica-te de que «npm start» está a correr (backend + bot) ou que o bot está ligado na porta 3001.",
+            message: "Não foi possível contactar o bot. Certifica-te de que o processo «promoping-bot» está online e ligado na porta 3001.",
             detail: err.message,
         });
     }
