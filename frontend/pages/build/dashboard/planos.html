@@ -718,7 +718,23 @@
                 await carregarPlanos();
 
                 // Mostrar seção do plano atual
-                mostrarPlanoAtual(data);
+                const [meResponse, planoResponse] = await Promise.all([
+                    makeRequest("/api/user/me", {
+                        headers: { Authorization: "Bearer " + token }
+                    }),
+                    makeRequest("/api/user/plano", {
+                        headers: { Authorization: "Bearer " + token }
+                    })
+                ]);
+
+                const meData = meResponse.ok ? await meResponse.json() : null;
+                const planoData = planoResponse.ok ? await planoResponse.json() : null;
+
+                mostrarPlanoAtual({
+                    profileData: data,
+                    meData,
+                    planoData
+                });
 
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
@@ -827,6 +843,7 @@
             const currentPlanDetails = document.getElementById('currentPlanDetails');
             const planStatus = document.getElementById('planStatus');
             const gracePeriodInfo = document.getElementById('gracePeriodInfo');
+            const cancelButton = document.querySelector('.cancel-subscription-btn');
             if (!data.user) {
                 console.log("Dados do usuário não encontrados");
                 return;
