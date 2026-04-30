@@ -1008,6 +1008,11 @@ router.post("/discord/requests/:id/approve", async (req, res) => {
             [req.user.ReferenciaID, req.body.note || null, id]
         );
 
+        logAudit(req, 'discord.approve', {
+            targetType: 'discord_coupon_request',
+            targetId: id,
+            details: { guild_id: requestRow.target_guild_id, channel_id: requestRow.target_channel_id, message_row_id: messageRowId }
+        });
         res.json({ status: "ok", ok: true, message_row_id: messageRowId });
     } catch (err) {
         console.error("[CORPORATION] Erro ao aprovar pedido Discord:", err);
@@ -1038,6 +1043,11 @@ router.post("/discord/requests/:id/reject", async (req, res) => {
             return res.status(404).json({ status: "error", error: "Solicitacao nao encontrada ou ja revista" });
         }
 
+        logAudit(req, 'discord.reject', {
+            targetType: 'discord_coupon_request',
+            targetId: id,
+            details: { note: req.body.note || null }
+        });
         res.json({ status: "ok", ok: true });
     } catch (err) {
         console.error("[CORPORATION] Erro ao rejeitar pedido Discord:", err);
