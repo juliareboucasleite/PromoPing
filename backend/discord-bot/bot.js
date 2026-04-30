@@ -49,6 +49,9 @@ class PromoPingBot {
         this.dbPool = mysql.createPool(this.dbConfig);
         this.prefixCache = new Map();
         this.client.music = new MusicManager(this.client);
+        this.client.music.init().catch((error) => {
+            console.error('[DISCORD] Erro ao preparar runtime de música:', error.message);
+        });
 
         // Configurações do bot
         this.prefix = process.env.DISCORD_PREFIX || '!';
