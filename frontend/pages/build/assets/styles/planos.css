@@ -389,7 +389,6 @@
     background: #fef3c7;
     color: #b45309;
     border-color: #fde68a;
-    animation: pulse 2.4s ease-in-out infinite;
 }
 
 .status-badge.active {
