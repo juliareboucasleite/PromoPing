@@ -1323,12 +1323,15 @@ router.get("/incidents", async (req, res) => {
         if (!(await tableExists("incidentes"))) {
             return res.json({ status: "ok", incidents: [], total: 0 });
         }
+        const hasDataCriacao = await columnExists("incidentes", "DataCriacao");
+        const dataCriacaoExpr = hasDataCriacao ? "DataCriacao" : "CreatedAt";
+        const dataAtualizacaoExpr = hasDataCriacao ? "DataAtualizacao" : "UpdatedAt";
         const [rows] = await pool.query(
             `SELECT Id AS "Id", Titulo AS "Titulo", Descricao AS "Descricao",
                     ComponenteAfetado AS "ComponenteAfetado", Status AS "Status",
                     DataInicio AS "DataInicio", DataFim AS "DataFim",
                     Duracao AS "Duracao", Impacto AS "Impacto",
-                    DataCriacao AS "DataCriacao", DataAtualizacao AS "DataAtualizacao"
+                    ${dataCriacaoExpr} AS "DataCriacao", ${dataAtualizacaoExpr} AS "DataAtualizacao"
              FROM incidentes
              ORDER BY DataInicio DESC LIMIT 200`
         );
