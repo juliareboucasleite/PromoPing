@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(PGPASSWORD=1234 /c/Program Files/PostgreSQL/18/bin/psql.exe *)"
     ]
   }
 }

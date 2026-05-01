@@ -1269,9 +1269,10 @@ router.get("/bugs", async (req, res) => {
         let bugs = [];
         if (hasCreatedBy) {
             const [rows] = await pool.query(
-                `SELECT b.Id, b.Titulo, b.Descricao, b.Tipo, b.Prioridade, b.Status,
-                        b.AnexoUrl, b.CreatedBy as author_id, u.Nome as author_nome,
-                        b.DataCriacao, b.DataAtualizacao
+                `SELECT b.Id AS "Id", b.Titulo AS "Titulo", b.Descricao AS "Descricao",
+                        b.Tipo AS "Tipo", b.Prioridade AS "Prioridade", b.Status AS "Status",
+                        b.AnexoUrl AS "AnexoUrl", b.CreatedBy AS "author_id", u.Nome AS "author_nome",
+                        b.DataCriacao AS "DataCriacao", b.DataAtualizacao AS "DataAtualizacao"
                  FROM bugsprojetos b
                  LEFT JOIN utilizadores u ON u.ReferenciaID = b.CreatedBy
                  ORDER BY b.DataCriacao DESC LIMIT 200`
@@ -1279,8 +1280,10 @@ router.get("/bugs", async (req, res) => {
             bugs = rows;
         } else {
             const [rows] = await pool.query(
-                `SELECT Id, Titulo, Descricao, Tipo, Prioridade, Status, AnexoUrl,
-                        DataCriacao, DataAtualizacao
+                `SELECT Id AS "Id", Titulo AS "Titulo", Descricao AS "Descricao",
+                        Tipo AS "Tipo", Prioridade AS "Prioridade", Status AS "Status",
+                        AnexoUrl AS "AnexoUrl",
+                        DataCriacao AS "DataCriacao", DataAtualizacao AS "DataAtualizacao"
                  FROM bugsprojetos
                  ORDER BY DataCriacao DESC LIMIT 200`
             );
@@ -1300,8 +1303,10 @@ router.get("/sugestoes", async (req, res) => {
             return res.json({ status: "ok", sugestoes: [], total: 0 });
         }
         const [rows] = await pool.query(
-            `SELECT Id, Titulo, Descricao, Plataforma, Prioridade, Status, Votos,
-                    DataCriacao, DataAtualizacao
+            `SELECT Id AS "Id", Titulo AS "Titulo", Descricao AS "Descricao",
+                    Plataforma AS "Plataforma", Prioridade AS "Prioridade", Status AS "Status",
+                    Votos AS "Votos",
+                    DataCriacao AS "DataCriacao", DataAtualizacao AS "DataAtualizacao"
              FROM sugestoes
              ORDER BY DataCriacao DESC LIMIT 200`
         );
@@ -1319,8 +1324,11 @@ router.get("/incidents", async (req, res) => {
             return res.json({ status: "ok", incidents: [], total: 0 });
         }
         const [rows] = await pool.query(
-            `SELECT Id, Titulo, Descricao, ComponenteAfetado, Status, DataInicio, DataFim,
-                    Duracao, Impacto, DataCriacao, DataAtualizacao
+            `SELECT Id AS "Id", Titulo AS "Titulo", Descricao AS "Descricao",
+                    ComponenteAfetado AS "ComponenteAfetado", Status AS "Status",
+                    DataInicio AS "DataInicio", DataFim AS "DataFim",
+                    Duracao AS "Duracao", Impacto AS "Impacto",
+                    DataCriacao AS "DataCriacao", DataAtualizacao AS "DataAtualizacao"
              FROM incidentes
              ORDER BY DataInicio DESC LIMIT 200`
         );
