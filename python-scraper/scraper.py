@@ -215,6 +215,61 @@ def get_chrome_major_version():
 
     return None
 
+def resolve_existing_path(*candidates):
+    for candidate in candidates:
+        if candidate and os.path.exists(candidate):
+            return candidate
+    return None
+
+
+def get_browser_executable_path():
+    candidates = [
+        SCRAPER_CONFIG.get('chrome_bin'),
+        os.environ.get('CHROME_BIN'),
+    ]
+
+    if os.name == "nt":
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        program_files = os.environ.get("PROGRAMFILES", r"C:\Program Files")
+        program_files_x86 = os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")
+        candidates.extend([
+            os.path.join(program_files, "Google", "Chrome", "Application", "chrome.exe"),
+            os.path.join(program_files_x86, "Google", "Chrome", "Application", "chrome.exe"),
+            os.path.join(local_app_data, "Google", "Chrome", "Application", "chrome.exe"),
+            os.path.join(program_files, "Chromium", "Application", "chrome.exe"),
+            os.path.join(program_files_x86, "Chromium", "Application", "chrome.exe"),
+        ])
+    else:
+        candidates.extend([
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/chromium",
+        ])
+
+    return resolve_existing_path(*candidates)
+
+
+def get_chromedriver_path():
+    candidates = [
+        SCRAPER_CONFIG.get('chromedriver_path'),
+        os.environ.get('CHROMEDRIVER_PATH'),
+    ]
+
+    if os.name == "nt":
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        program_files = os.environ.get("PROGRAMFILES", r"C:\Program Files")
+        candidates.extend([
+            os.path.join(program_files, "ChromeDriver", "chromedriver.exe"),
+            os.path.join(local_app_data, "Programs", "Python", "Python313", "Scripts", "chromedriver.exe"),
+        ])
+    else:
+        candidates.extend([
+            "/usr/bin/chromedriver",
+            "/usr/local/bin/chromedriver",
+        ])
+
+    return resolve_existing_path(*candidates)
+
 
 def extract_browser_major_from_error(err):
     """Extrai a versão major do Chrome da mensagem de erro do Selenium."""
@@ -225,35 +280,32 @@ def extract_browser_major_from_error(err):
 
 
 def start_chrome_with_version(options, version_main=None, headless=False):
-    # Resolve explicit executable paths from config or environment
-    browser_exec = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN')
-    driver_exec = SCRAPER_CONFIG.get('chromedriver_path') or os.environ.get('CHROMEDRIVER_PATH')
+    browser_exec = get_browser_executable_path()
+    driver_exec = get_chromedriver_path()
+    chrome_kwargs = {
+        "options": options,
+        "use_subprocess": True,
+        "headless": headless,
+    }
+
+    if browser_exec:
+        chrome_kwargs["browser_executable_path"] = browser_exec
+    if driver_exec:
+        chrome_kwargs["driver_executable_path"] = driver_exec
 
     if version_main:
         logger.info(f"Iniciando ChromeDriver com version_main={version_main} (headless={headless})")
-        return uc.Chrome(
-            options=options,
-            browser_executable_path=browser_exec,
-            driver_executable_path=driver_exec,
-            use_subprocess=True,
-            version_main=version_main,
-            headless=headless,
-        )
+        return uc.Chrome(version_main=version_main, **chrome_kwargs)
 
     logger.info(f"Iniciando ChromeDriver com autodetecção de versão (headless={headless})")
-    return uc.Chrome(
-        options=options,
-        browser_executable_path=browser_exec,
-        driver_executable_path=driver_exec,
-        use_subprocess=True,
-        headless=headless,
-    )
+    return uc.Chrome(**chrome_kwargs)
 
 
 def build_options():
     options = uc.ChromeOptions()
-    # Prefer explicit configured chrome binary, fall back to common Linux path
-    options.binary_location = SCRAPER_CONFIG.get('chrome_bin') or os.environ.get('CHROME_BIN') or "/usr/bin/chromium-browser"
+    browser_exec = get_browser_executable_path()
+    if browser_exec:
+        options.binary_location = browser_exec
     # Use new headless mode
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
