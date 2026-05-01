@@ -3,6 +3,7 @@ import re
 import traceback
 from datetime import datetime
 from time import sleep
+from urllib.parse import urlparse
 import psycopg2
 import psycopg2.errors
 from psycopg2.extras import RealDictCursor
@@ -457,6 +458,107 @@ def extract_continente_price(driver):
 
     return None
 
+def is_amazon_url(url):
+    if not url:
+        return False
+
+    try:
+        hostname = (urlparse(url).hostname or "").lower()
+    except Exception:
+        hostname = str(url).lower()
+
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+
+    return hostname.startswith("amazon.") or ".amazon." in hostname or hostname in ("amzn.eu", "amzn.to")
+
+def extract_first_price_from_elements(driver, selectors, log_prefix):
+    for selector in selectors:
+        try:
+            elements = driver.find_elements(By.CSS_SELECTOR, selector)
+        except Exception as err:
+            logger.debug(f"[{log_prefix}] Erro ao buscar seletor '{selector}': {err}")
+            continue
+
+        for el in elements:
+            raw_candidates = [
+                el.text,
+                el.get_attribute("textContent"),
+                el.get_attribute("innerText"),
+                el.get_attribute("content"),
+                el.get_attribute("aria-label"),
+                el.get_attribute("value"),
+            ]
+
+            for raw_text in raw_candidates:
+                price = clean_price_text(raw_text)
+                if price:
+                    logger.info(f"[{log_prefix}] Preço encontrado via seletor '{selector}': €{price}")
+                    return price
+
+    return None
+
+def extract_amazon_price(driver):
+    selectors = [
+        "#corePrice_feature_div span.a-price span.a-offscreen",
+        "#corePriceDisplay_desktop_feature_div span.a-price span.a-offscreen",
+        "#corePrice_desktop span.a-price span.a-offscreen",
+        "#apex_desktop span.a-price span.a-offscreen",
+        "#corePrice_feature_div .reinventPricePriceToPayMargin span.a-offscreen",
+        "span.priceToPay span.a-offscreen",
+        "#price_inside_buybox",
+        "#priceblock_ourprice",
+        "#priceblock_dealprice",
+        "#priceblock_saleprice",
+        "span.a-price[data-a-size='xl'] span.a-offscreen",
+        "span.a-price span.a-offscreen",
+        "span[data-a-size='xl'] span.a-offscreen",
+    ]
+
+    try:
+        WebDriverWait(driver, 12).until(
+            EC.any_of(*[
+                EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                for selector in selectors
+            ])
+        )
+    except Exception:
+        logger.debug("[AMAZON] Nenhum seletor principal apareceu a tempo; tentando fallbacks.")
+
+    price = extract_first_price_from_elements(driver, selectors, "AMAZON")
+    if price:
+        return price
+
+    try:
+        whole = driver.find_element(By.CSS_SELECTOR, "span.a-price-whole").text
+        frac = driver.find_element(By.CSS_SELECTOR, "span.a-price-fraction").text
+        price = clean_price_text(f"{whole},{frac}")
+        if price:
+            logger.info(f"[AMAZON] Preço encontrado via whole/fraction: €{price}")
+            return price
+    except Exception as err:
+        logger.debug(f"[AMAZON] Fallback whole/fraction falhou: {err}")
+
+    try:
+        page_source = driver.page_source
+
+        regex_candidates = [
+            r'"priceToPay"\s*:\s*\{.*?"priceAmount"\s*:\s*([\d.,]+)',
+            r'"priceAmount"\s*:\s*([\d.,]+)',
+            r'"displayPrice"\s*:\s*"([^"]+)"',
+        ]
+
+        for pattern in regex_candidates:
+            for match in re.finditer(pattern, page_source, re.IGNORECASE | re.DOTALL):
+                price = clean_price_text(match.group(1))
+                if price:
+                    logger.info(f"[AMAZON] Preço encontrado via regex '{pattern}': €{price}")
+                    return price
+    except Exception as err:
+        logger.debug(f"[AMAZON] Fallback por regex falhou: {err}")
+
+    return None
+
 # ==================== LIGHTWEIGHT (requests + BS4) ====================
 
 LIGHTWEIGHT_SUPPORTED = ("continente.pt", "worten", "fnac")
@@ -603,15 +705,15 @@ def extract_price(driver, url):
     fechar_modais(driver)  # Fechar modal de localização e outros popups
     sleep(2)
 
-    u = url.lower()
+    current_url = driver.current_url or url
+    u = current_url.lower()
 
     # AMAZON
-    if "amazon." in u:
+    if is_amazon_url(u):
         try:
-            whole = driver.find_element(By.CSS_SELECTOR, "span.a-price-whole").text
-            frac = driver.find_element(By.CSS_SELECTOR, "span.a-price-fraction").text
-            return "Amazon", clean_price_text(f"{whole},{frac}")
-        except:
+            return "Amazon", extract_amazon_price(driver)
+        except Exception as err:
+            logger.debug(f"[AMAZON] Erro ao extrair preço: {err}")
             return "Amazon", None
 
     # WORTEN

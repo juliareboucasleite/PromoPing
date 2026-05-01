@@ -14,6 +14,14 @@ export function detectStore(link) {
       hostname = hostname.substring(4);
     }
 
+    if (hostname === 'amzn.eu' || hostname === 'amzn.to' || hostname.startsWith('amazon.') || hostname.includes('.amazon.')) {
+      return {
+        name: 'Amazon',
+        domain: hostname,
+        logo: `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`
+      };
+    }
+
     // Mapeamento de lojas conhecidas (simplificado)
     const storeMap = {
       //  Lojas portuguesas
@@ -43,9 +51,6 @@ export function detectStore(link) {
       'lefties.pt': { name: 'Lefties', domain: 'lefties.pt', logo: 'https://www.google.com/s2/favicons?domain=lefties.pt&sz=32' },
       
       //  Lojas internacionais
-      'amazon.pt': { name: 'Amazon', domain: 'amazon.pt', logo: 'https://www.google.com/s2/favicons?domain=amazon.pt&sz=32' },
-      'amazon.es': { name: 'Amazon', domain: 'amazon.es', logo: 'https://www.google.com/s2/favicons?domain=amazon.es&sz=32' },
-      'amazon.com': { name: 'Amazon', domain: 'amazon.com', logo: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
       'apple.com': { name: 'Apple', domain: 'apple.com', logo: 'https://www.google.com/s2/favicons?domain=apple.com&sz=32' },
       'microsoft.com': { name: 'Microsoft', domain: 'microsoft.com', logo: 'https://www.google.com/s2/favicons?domain=microsoft.com&sz=32' },
       'samsung.com': { name: 'Samsung', domain: 'samsung.com', logo: 'https://www.google.com/s2/favicons?domain=samsung.com&sz=32' },
