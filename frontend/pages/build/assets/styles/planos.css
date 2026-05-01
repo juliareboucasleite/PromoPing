@@ -454,41 +454,39 @@
 
 .current-plan-details {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 10px;
-    overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
 }
 
 .plan-detail {
-    background: transparent;
-    padding: 1.1rem 1.25rem;
-    border-radius: 0;
-    border: none;
-    border-right: 1px solid #f1f5f9;
+    background: #f8fafc;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
     position: relative;
 }
 
-.plan-detail:last-child { border-right: none; }
-
 .plan-detail h4 {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.66rem;
+    font-weight: 700;
     color: #94a3b8;
-    margin: 0 0 0.4rem 0;
+    margin: 0 0 0.5rem 0;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.1em;
 }
 
 .plan-detail p {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
     color: #0f172a;
     margin: 0;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    line-height: 1.15;
 }
 
 .plan-detail .feature-list {
