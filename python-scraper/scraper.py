@@ -611,6 +611,51 @@ def extract_amazon_price(driver):
 
     return None
 
+def is_amazon_unavailable(driver):
+    selectors = [
+        "#availability",
+        "#outOfStock",
+        "#buybox",
+        "#centerCol",
+    ]
+
+    phrases = [
+        "não disponível",
+        "nao disponível",
+        "nao disponivel",
+        "currently unavailable",
+        "temporarily out of stock",
+        "we don't know when or if this item will be back in stock",
+        "não temos previsão de quando este produto estará disponível novamente",
+        "este produto estará disponível novamente",
+    ]
+
+    for selector in selectors:
+        try:
+            elements = driver.find_elements(By.CSS_SELECTOR, selector)
+        except Exception:
+            continue
+
+        for el in elements:
+            text = " ".join(filter(None, [
+                el.text,
+                el.get_attribute("textContent"),
+                el.get_attribute("innerText"),
+            ])).lower()
+            if any(phrase in text for phrase in phrases):
+                logger.info(f"[AMAZON] Produto marcado como indisponível via seletor '{selector}'")
+                return True
+
+    try:
+        body = driver.find_element(By.TAG_NAME, "body").text.lower()
+        if any(phrase in body for phrase in phrases):
+            logger.info("[AMAZON] Produto marcado como indisponível via conteúdo da página")
+            return True
+    except Exception:
+        pass
+
+    return False
+
 # ==================== LIGHTWEIGHT (requests + BS4) ====================
 
 LIGHTWEIGHT_SUPPORTED = ("continente.pt", "worten", "fnac")
@@ -763,7 +808,12 @@ def extract_price(driver, url):
     # AMAZON
     if is_amazon_url(u):
         try:
-            return "Amazon", extract_amazon_price(driver)
+            price = extract_amazon_price(driver)
+            if price:
+                return "Amazon", price
+            if is_amazon_unavailable(driver):
+                return "Amazon", None
+            return "Amazon", None
         except Exception as err:
             logger.debug(f"[AMAZON] Erro ao extrair preço: {err}")
             return "Amazon", None
