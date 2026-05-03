@@ -288,7 +288,7 @@
           // Redireciona para a página inicial
           window.location.href = "/";
         } catch (err) {
-          showError("Erro", "Erro ao sair: " + (err && err.message ? err.message : err));
+          showError("Error", "Error signing out: " + (err && err.message ? err.message : err));
           // fallback
           window.location.href = "/index.html";
         }
@@ -327,8 +327,8 @@
 
     // Cria card HTML de produto dinamicamente, dado o objeto do produto (dados escapados para XSS)
     function createProductCard(p) {
-      const nome = escapeHtml((p.Nome || p.nome || "Sem nome").toString());
-      const loja = escapeHtml((p.Loja || "Loja").toString());
+      const nome = escapeHtml((p.Nome || p.nome || "Unnamed").toString());
+      const loja = escapeHtml((p.Loja || "Store").toString());
       console.log("Loja recebida:", p.Loja || p.Loja);
       const rawLink = (p.Link || p.link || "").toString().trim();
       const safeLink = rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : "#";
@@ -378,14 +378,14 @@
                 <span class="${storeTagClass}">${loja}</span>
               </div>
               <div class="product-actions-new">
-                <button class="action-btn-new" title="Ir ao site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
+                <button class="action-btn-new" title="Go to site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                     <polyline points="15,3 21,3 21,9"></polyline>
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                   </svg>
                 </button>
-                <button class="action-btn-new" title="Editar data" onclick="editarData(${Number(p.Id || p.id) || 0}, '${dataLimiteAttr}', '${escapeHtmlAttr(String(nome || 'produto'))}')">
+                <button class="action-btn-new" title="Edit date" onclick="editarData(${Number(p.Id || p.id) || 0}, '${dataLimiteAttr}', '${escapeHtmlAttr(String(nome || 'product'))}')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -393,7 +393,7 @@
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
                 </button>
-                <button class="action-btn-new delete-btn-new" title="Remover" onclick="openConfirmRemoverModal(${p.Id || p.id})">
+                <button class="action-btn-new delete-btn-new" title="Remove" onclick="openConfirmRemoverModal(${p.Id || p.id})">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3,6 5,6 21,6"></polyline>
                     <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
@@ -404,15 +404,15 @@
             <div class="product-details-new">
               <div class="price-row">
                 <div class="price-item-new">
-                  <span class="price-label-new">Preço atual</span>
+                  <span class="price-label-new">Current price</span>
                   <span class="price-value-new" id="preco-atual-${p.Id || p.id}">${precoAtual}</span>
                 </div>
                 <div class="price-item-new">
-                  <span class="price-label-new">Preço alvo</span>
+                  <span class="price-label-new">Target price</span>
                   <span class="price-value-new target-price-new">${precoAlvo}</span>
                 </div>
                 <div class="price-item-new">
-                  <span class="price-label-new">Adicionado em</span>
+                  <span class="price-label-new">Added on</span>
                   <span class="price-value-new">${dataAdicao}</span>
                 </div>
               </div>
@@ -439,7 +439,7 @@
         console.error("Token não encontrado no localStorage!");
         if (loadingState) loadingState.style.display = "none";
         productsList.style.display = "block";
-        productsList.innerHTML = "<p>Erro: Token não encontrado. Faça login novamente.</p>";
+        productsList.innerHTML = "<p>Error: Token not found. Please sign in again.</p>";
         return;
       }
 
@@ -479,17 +479,17 @@
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <h3>Nenhum produto encontrado</h3>
-              <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
+              <h3>No products found</h3>
+              <p>Start tracking products to follow prices and find the best deals.</p>
               <div class="empty-state-actions">
                 <button type="button" class="pp-btn" onclick="focusAddProductForm()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  Adicionar primeiro produto
+                  Add first product
                 </button>
-                <a href="/dashboard/produtos" class="btn-ghost">Ver Produtos</a>
+                <a href="/dashboard/produtos" class="btn-ghost">View Products</a>
               </div>
             </div>`;
           document.getElementById("productCount").textContent = 0;
@@ -499,9 +499,9 @@
         if (loadingState) loadingState.style.display = "none";
         productsList.style.display = "block";
         if (err.message && err.message.includes("Rate limit")) {
-          productsList.innerHTML = "<p>Muitas requisições. Aguarde alguns minutos.</p>";
+          productsList.innerHTML = "<p>Too many requests. Please wait a few minutes.</p>";
         } else {
-          productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
+          productsList.innerHTML = "<p>Error loading products.</p>";
         }
       }
     }
