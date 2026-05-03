@@ -319,521 +319,305 @@
   </div>
   <script src="docs/documentation-navigation.js"></script>
   <script>
-    // ================== CARREGAR STATUS REAL DA API ==================
-    async function carregarStatus() {
-      try {
-        const apiUrl = '/api/status';
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.status === "ok") {
-          // Atualizar estatÃ­sticas em tempo real
-          const valUtilizadores = (data.metricas && data.metricas.UtilizadoresAtivos != null) ? String(data.metricas.UtilizadoresAtivos) : '0';
-          const valNotificacoes = (data.metricas && data.metricas.NotificacoesEnviadas != null) ? String(data.metricas.NotificacoesEnviadas) : '0';
-          atualizarElemento('requests-per-minute', valUtilizadores);
-          atualizarElemento('users-online', valUtilizadores);
-          atualizarElemento('users-online-card', valUtilizadores);
-          atualizarElemento('notifications-today', valNotificacoes);
-
-          // Atualizar timestamp
-          const footer = document.getElementById('footer-update');
-          const lastUpdate = document.getElementById('last-update');
-          const ts = (data.ultimaAtualizacao) ? new Date(data.ultimaAtualizacao) : new Date();
-
-          if (footer) {
-            footer.textContent = ts.toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'UTC'
-            }) + ' UTC';
-          }
-
-          if (lastUpdate) {
-            lastUpdate.textContent = ts.toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'UTC'
-            }) + ' UTC';
-          }
-
-          // Atualizar componentes do sistema se existirem dados reais
-          if (data.componentes && data.componentes.length > 0) {
-            atualizarComponentes(data.componentes);
-          }
-
-          // Atualizar incidentes se existirem dados reais
-          if (data.incidentes && data.incidentes.length > 0) {
-            atualizarIncidentes(data.incidentes);
-          }
-
-          console.log(" Status atualizado com sucesso:", data);
-        } else {
-          console.error(" Erro na resposta da API:", data);
-        }
-      } catch (error) {
-        console.error(" Erro ao carregar status:", error);
-        // Fallback para dados simulados em caso de erro (API unavailable ou tabelas em falta)
-        updateRealtimeStatsFallback();
-      }
+    function ci(obj, key) {
+      if (!obj) return undefined;
+      if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+      const lower = key.toLowerCase();
+      if (obj[lower] !== undefined && obj[lower] !== null) return obj[lower];
+      return undefined;
     }
 
-    // ================== FALLBACK PARA DADOS SIMULADOS ==================
-    function updateRealtimeStatsFallback() {
-      // Simular dados realistas baseados em padrÃµes reais
-      const dadosSimulados = gerarDadosSimulados();
-
-      // Atualizar estatÃ­sticas em tempo real
-      atualizarElemento('requests-per-minute', dadosSimulados.requisicoesPorMinuto.toLocaleString());
-      const u = dadosSimulados.utilizadoresOnline.toLocaleString();
-      atualizarElemento('users-online', u);
-      atualizarElemento('users-online-card', u);
-      atualizarElemento('notifications-today', dadosSimulados.notificacoesHoje.toLocaleString());
-
-      // Atualizar mÃ©tricas de performance
-      atualizarElemento('uptime-value', `${dadosSimulados.uptime}%`);
-      atualizarElemento('response-time-value', `${dadosSimulados.tempoResposta}ms`);
-      atualizarElemento('active-users-value', dadosSimulados.utilizadoresAtivos.toLocaleString());
-      atualizarElemento('monitored-products-value', formatarNumero(dadosSimulados.produtosMonitorizados));
-
-      // Atualizar tendÃªncias
-      atualizarElemento('uptime-trend', `+${dadosSimulados.uptimeGrowth}% vs previous month`);
-      atualizarElemento('response-time-trend', `${dadosSimulados.tempoRespostaChange}ms vs previous month`);
-      atualizarElemento('active-users-trend', `+${dadosSimulados.utilizadoresGrowth}% vs previous month`);
-      atualizarElemento('monitored-products-trend', `+${dadosSimulados.produtosGrowth}% vs previous month`);
-
-      console.log(" Dados simulados atualizados:", dadosSimulados);
+    function slugify(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
     }
 
-    // ================== GERAR DADOS SIMULADOS REALISTAS ==================
-    function gerarDadosSimulados() {
-      const agora = new Date();
-      const hora = agora.getHours();
-
-      // PadrÃµes baseados na hora do dia
-      let multiplicadorUtilizadores = 1;
-      let multiplicadorRequisicoes = 1;
-
-      if (hora >= 9 && hora <= 17) {
-        // HorÃ¡rio comercial - pico de atividade
-        multiplicadorUtilizadores = 1.2;
-        multiplicadorRequisicoes = 1.3;
-      } else if (hora >= 18 && hora <= 22) {
-        // Final do dia - atividade moderada
-        multiplicadorUtilizadores = 1.1;
-        multiplicadorRequisicoes = 1.1;
-      } else {
-        // Madrugada/noite - atividade reduzida
-        multiplicadorUtilizadores = 0.8;
-        multiplicadorRequisicoes = 0.7;
-      }
-
-      // Dados base com variaÃ§Ã£o realista
-      const baseUtilizadores = 12847;
-      const baseRequisicoes = 1241;
-      const baseProdutos = 1200000;
-
-      return {
-        utilizadoresOnline: Math.floor(baseUtilizadores * multiplicadorUtilizadores + (Math.random() * 200 - 100)),
-        utilizadoresAtivos: Math.floor(baseUtilizadores * multiplicadorUtilizadores + (Math.random() * 300 - 150)),
-        requisicoesPorMinuto: Math.floor(baseRequisicoes * multiplicadorRequisicoes + (Math.random() * 100 - 50)),
-        produtosMonitorizados: Math.floor(baseProdutos + (Math.random() * 50000 - 25000)),
-        notificacoesHoje: Math.floor(8542 + (Math.random() * 100)),
-        uptime: 99.9 + (Math.random() * 0.1),
-        tempoResposta: 45 + (Math.random() * 10 - 5),
-        uptimeGrowth: 0.1 + (Math.random() * 0.2),
-        tempoRespostaChange: -5 + (Math.random() * 10 - 5),
-        utilizadoresGrowth: 8.2 + (Math.random() * 2 - 1),
-        produtosGrowth: 15.3 + (Math.random() * 3 - 1.5)
-      };
+    function formatNumber(value) {
+      if (value === null || value === undefined || value === '') return '--';
+      const parsed = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(parsed) ? parsed.toLocaleString('en-US') : String(value);
     }
 
-    function atualizarComponentes(componentes) {
-      // Esta funÃ§Ã£o pode ser expandida para atualizar dinamicamente
-      // os componentes do sistema com dados reais da API
-      console.log("Componentes atualizados:", componentes);
+    function formatMetric(value, suffix = '') {
+      if (value === null || value === undefined || value === '') return '--';
+      return `${formatNumber(value)}${suffix}`;
     }
 
-    function atualizarIncidentes(incidentes) {
-      // Esta funÃ§Ã£o pode ser expandida para atualizar dinamicamente
-      // a timeline de incidentes com dados reais da API
-      console.log("Incidentes atualizados:", incidentes);
+    function formatUtcTimestamp(value) {
+      const date = value ? new Date(value) : new Date();
+      if (Number.isNaN(date.getTime())) return 'Unavailable';
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC'
+      }) + ' UTC';
     }
 
-    // ================== CARREGAR ESTATÃSTICAS EM TEMPO REAL ==================
-    async function carregarEstatisticasRealtime() {
-      try {
-        const apiUrl = '/api/status/realtime';
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.status === "ok") {
-          const requestsElement = document.getElementById('requests-per-minute');
-          const usersElement = document.getElementById('users-online');
-          const notificationsElement = document.getElementById('notifications-today');
-
-          if (requestsElement) {
-            requestsElement.textContent = data.dados.requestsPerMinute?.toLocaleString() || '1,241';
-          }
-
-          if (usersElement) {
-            usersElement.textContent = data.dados.usersOnline?.toLocaleString() || '12,847';
-          }
-
-          if (notificationsElement) {
-            notificationsElement.textContent = data.dados.notificationsToday?.toLocaleString() || '8,542';
-          }
-
-          console.log(" EstatÃ­sticas em tempo real atualizadas:", data.dados);
-        }
-      } catch (error) {
-        console.error(" Erro ao carregar estatÃ­sticas em tempo real:", error);
-        // Usar fallback em caso de erro
-        updateRealtimeStatsFallback();
-      }
+    function formatRelativeTime(value) {
+      if (!value) return 'Unavailable';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Unavailable';
+      const diffMinutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+      if (diffMinutes < 1) return 'Just now';
+      if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
+      const diffHours = Math.round(diffMinutes / 60);
+      if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+      const diffDays = Math.round(diffHours / 24);
+      return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
     }
 
-    // ================== BUSCAR DADOS REAIS DA BASE DE DADOS ==================
-    async function buscarDadosReais() {
-      try {
-        // Usar rota /api/status que existe (nÃ£o /api/status/complete que nÃ£o existe)
-        const apiUrl = '/api/status';
-        const systemResponse = await fetch(apiUrl);
-
-        if (!systemResponse.ok) {
-          throw new Error(`HTTP error! status: ${systemResponse.status}`);
-        }
-
-        const systemData = await systemResponse.json();
-
-        if (systemData.status === "ok") {
-          // Atualizar mÃ©tricas de performance
-          if (systemData.metricas) {
-            atualizarMetricasPerformance(systemData.metricas);
-          }
-
-          // Atualizar componentes do sistema
-          if (systemData.componentes) {
-            atualizarComponentesSistema(systemData.componentes);
-          }
-
-          console.log(" Dados completos carregados da base de dados:", systemData);
-        } else {
-          // Fallback para APIs individuais
-          await buscarDadosIndividuais();
-        }
-      } catch (error) {
-        console.error(" Erro ao buscar dados completos:", error);
-        // Tentar APIs individuais como fallback
-        await buscarDadosIndividuais();
+    function formatDuration(startValue, endValue, fallbackDuration) {
+      if (fallbackDuration) return fallbackDuration;
+      if (!startValue || !endValue) return 'In progress';
+      const start = new Date(startValue);
+      const end = new Date(endValue);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'Unavailable';
+      const diffMinutes = Math.max(0, Math.round((end - start) / 60000));
+      if (diffMinutes >= 1440) {
+        const days = Math.round(diffMinutes / 1440);
+        return `${days} day${days === 1 ? '' : 's'}`;
       }
+      if (diffMinutes >= 60) {
+        const hours = Math.round(diffMinutes / 60);
+        return `${hours} hour${hours === 1 ? '' : 's'}`;
+      }
+      return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'}`;
     }
 
-    // ================== BUSCAR DADOS INDIVIDUAIS (FALLBACK) ==================
-    async function buscarDadosIndividuais() {
-      try {
-        // Usar rota /api/status que existe (em vez de rotas que nÃ£o existem)
-        const apiUrl = '/api/status';
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Usar dados da resposta para simular formato individual
-        let usersData = { status: "error", total: 0 };
-        let productsData = { status: "error", total: 0 };
-        let notificationsData = { status: "error", today: 0 };
-        let uptimeData = { status: "error", percentage: 99.9 };
-
-        if (data.status === "ok" && data.metricas) {
-          usersData = { status: "ok", total: data.metricas.UtilizadoresAtivos || 0 };
-          productsData = { status: "ok", total: data.metricas.ProdutosMonitorizados || 0 };
-          notificationsData = { status: "ok", today: data.metricas.NotificacoesEnviadas || 0 };
-          uptimeData = { status: "ok", percentage: data.metricas.UptimeGeral || 99.9 };
-        }
-
-        // Atualizar mÃ©tricas com dados reais
-        if (usersData.status === "ok") {
-          const uTotal = usersData.total;
-          atualizarElemento('users-online', uTotal);
-          atualizarElemento('users-online-card', uTotal);
-          atualizarElemento('active-users-value', uTotal);
-          atualizarElemento('active-users-trend', `+${usersData.growth || 8.2}% vs previous month`);
-        }
-
-        if (productsData.status === "ok") {
-          const formattedProducts = formatarNumero(productsData.total);
-          atualizarElemento('monitored-products-value', formattedProducts);
-          atualizarElemento('monitored-products-trend', `+${productsData.growth || 15.3}% vs previous month`);
-
-          // Atualizar componente de monitoramento
-          const productCountElement = document.querySelector('.component-details p:first-child');
-          if (productCountElement) {
-            productCountElement.innerHTML = `<strong>Tracked products:</strong> ${productsData.total.toLocaleString()}`;
-          }
-        }
-
-        if (notificationsData.status === "ok") {
-          atualizarElemento('notifications-today', notificationsData.today);
-        }
-
-        if (uptimeData.status === "ok") {
-          atualizarElemento('uptime-value', `${uptimeData.percentage}%`);
-          atualizarElemento('uptime-trend', `+${uptimeData.growth || 0.1}% vs previous month`);
-        }
-
-        console.log(" Dados individuais carregados da base de dados");
-      } catch (error) {
-        console.error(" Erro ao buscar dados individuais:", error);
-      }
+    function updateStatusBadge(card, status) {
+      const badge = card.querySelector('.status-badge');
+      if (!badge) return;
+      const normalized = String(status || 'unknown').toLowerCase();
+      const badgeClass = normalized === 'operational' ? 'operational' : normalized === 'degraded' ? 'degraded' : 'unavailable';
+      const badgeText = normalized === 'operational' ? 'Operational' : normalized === 'degraded' ? 'Degraded' : 'Unavailable';
+      badge.className = `status-badge ${badgeClass}`;
+      badge.textContent = badgeText;
     }
 
-    // ================== ATUALIZAR MÃ‰TRICAS DE PERFORMANCE ==================
-    function atualizarMetricasPerformance(metricas) {
-      if (metricas.UptimeGeral) {
-        atualizarElemento('uptime-value', `${metricas.UptimeGeral}%`);
-        atualizarElemento('uptime-trend', `+${metricas.uptimeGrowth || 0.1}% vs previous month`);
-      }
-
-      if (metricas.TempoRespostaMedia) {
-        atualizarElemento('response-time-value', `${metricas.TempoRespostaMedia}ms`);
-        atualizarElemento('response-time-trend', `${metricas.responseTimeChange || '-5'}ms vs previous month`);
-      }
-
-      if (metricas.UtilizadoresAtivos) {
-        atualizarElemento('active-users-value', metricas.UtilizadoresAtivos.toLocaleString());
-        atualizarElemento('active-users-trend', `+${metricas.activeUsersGrowth || 8.2}% vs previous month`);
-      }
-
-      if (metricas.ProdutosMonitorizados) {
-        const formatted = formatarNumero(metricas.ProdutosMonitorizados);
-        atualizarElemento('monitored-products-value', formatted);
-        atualizarElemento('monitored-products-trend', `+${metricas.monitoredProductsGrowth || 15.3}% vs previous month`);
-      }
+    function updateCardDetails(card, detailsMap) {
+      Object.entries(detailsMap).forEach(([key, value]) => {
+        const detail = card.querySelector(`[data-detail="${key}"]`);
+        if (detail) detail.textContent = value;
+      });
     }
 
-    // ================== ATUALIZAR ESTATÃSTICAS EM TEMPO REAL ==================
-    function atualizarEstatisticasTempoReal(tempoReal) {
-      if (tempoReal.requisicoesPorMinuto) {
-        atualizarElemento('requests-per-minute', tempoReal.requisicoesPorMinuto.toLocaleString());
-      }
+    function renderComponents(metricas, componentes, lastUpdated) {
+      const bySlug = new Map();
+      (componentes || []).forEach((component) => {
+        bySlug.set(slugify(ci(component, 'Nome') || ci(component, 'nome')), component);
+      });
 
-      if (tempoReal.utilizadoresOnline) {
-        atualizarElemento('users-online', tempoReal.utilizadoresOnline.toLocaleString());
-      }
-
-      if (tempoReal.notificacoesHoje) {
-        atualizarElemento('notifications-today', tempoReal.notificacoesHoje.toLocaleString());
-      }
-    }
-
-    // ================== ATUALIZAR COMPONENTES DO SISTEMA ==================
-    function atualizarComponentesSistema(componentes) {
-      if (componentes && componentes.length > 0) {
-        componentes.forEach(componente => {
-          const nome = (componente.Nome || componente.nome || '').toLowerCase().replace(/\s+/g, '-').replace(/Ã§/g, 'c');
-          const card = document.querySelector(`[data-component="${nome}"]`);
-          if (card) {
-            const statusBadge = card.querySelector('.status-badge');
-            if (statusBadge) {
-              const status = (componente.Status || componente.status || 'operational').toLowerCase();
-              statusBadge.textContent = status === 'operational' ? 'Operational' : status === 'degraded' ? 'Degraded' : 'Unavailable';
-              statusBadge.className = `status-badge ${status}`;
-            }
-
-            // Atualizar detalhes especÃ­ficos do componente
-            if (componente.detalhes) {
-              Object.keys(componente.detalhes).forEach(key => {
-                const detailElement = card.querySelector(`[data-detail="${key}"]`);
-                if (detailElement) {
-                  detailElement.textContent = componente.detalhes[key];
-                }
-              });
-            }
-          }
+      const apiCard = document.querySelector('[data-component="api-principal"]');
+      if (apiCard) {
+        const apiComponent = bySlug.get('core-api') || bySlug.get('api-principal');
+        updateStatusBadge(apiCard, ci(apiComponent, 'Status') || 'operational');
+        updateCardDetails(apiCard, {
+          uptime: formatMetric(ci(apiComponent, 'Uptime') ?? ci(metricas, 'UptimeGeral'), '%'),
+          latencia: formatMetric(ci(apiComponent, 'Latencia') ?? ci(metricas, 'TempoRespostaMedia'), 'ms'),
+          ultima-verificacao: formatRelativeTime(ci(apiComponent, 'UltimaVerificacao') || lastUpdated),
+          requisicoes: formatNumber(ci(apiComponent, 'RequisicoesPorMinuto') ?? ci(apiComponent, 'RequestsPerMinute'))
         });
       }
-    }
 
-    // ================== FUNÃ‡Ã•ES AUXILIARES ==================
-    function atualizarElemento(id, valor) {
-      const elemento = document.getElementById(id);
-      if (elemento) {
-        elemento.textContent = valor;
+      const monitoringCard = document.querySelector('[data-component="price-monitoring"]');
+      if (monitoringCard) {
+        const monitoring = bySlug.get('price-monitoring') || bySlug.get('monitoramento-de-precos') || bySlug.get('monitoramento-de-precos');
+        updateStatusBadge(monitoringCard, ci(monitoring, 'Status') || 'operational');
+        updateCardDetails(monitoringCard, {
+          produtos: formatNumber(ci(monitoring, 'ProdutosMonitorizados') ?? ci(metricas, 'ProdutosMonitorizados')),
+          'atualizacoes-hora': formatNumber(ci(monitoring, 'AtualizacoesPorHora')),
+          precisao: formatMetric(ci(monitoring, 'Precisao'), '%'),
+          verificacoes: formatNumber(ci(monitoring, 'VerificacoesAtivas') ?? ci(monitoring, 'Verificacoes'))
+        });
+      }
+
+      const notificationsCard = document.querySelector('[data-component="notification-system"]');
+      if (notificationsCard) {
+        const notifications = bySlug.get('notification-system') || bySlug.get('sistema-de-notificacoes');
+        updateStatusBadge(notificationsCard, ci(notifications, 'Status') || 'operational');
+        const details = notificationsCard.querySelector('.component-details');
+        if (details) {
+          details.innerHTML = `
+            <p><strong>Emails sent (24h):</strong> <span data-detail="emails-24h">${formatNumber(ci(notifications, 'EmailsEnviados24h') ?? ci(metricas, 'NotificacoesEnviadas'))}</span></p>
+            <p><strong>WhatsApp (24h):</strong> <span data-detail="whatsapp-24h">${formatNumber(ci(notifications, 'WhatsApp24h'))}</span></p>
+            <p><strong>Discord (24h):</strong> <span data-detail="discord-24h">${formatNumber(ci(notifications, 'Discord24h'))}</span></p>
+            <p><strong>Total notifications today:</strong> <span data-detail="total-notificacoes">${formatNumber(ci(metricas, 'NotificacoesEnviadas'))}</span></p>
+          `;
+        }
+      }
+
+      const databaseCard = document.querySelector('[data-component="database"]');
+      if (databaseCard) {
+        const database = bySlug.get('database') || bySlug.get('banco-de-dados');
+        updateStatusBadge(databaseCard, ci(database, 'Status') || 'operational');
+        const details = databaseCard.querySelector('.component-details');
+        if (details) {
+          details.innerHTML = `
+            <p><strong>Uptime:</strong> ${formatMetric(ci(database, 'Uptime'), '%')}</p>
+            <p><strong>Queries per second:</strong> ${formatNumber(ci(database, 'ConsultasPorSegundo'))}</p>
+            <p><strong>Storage used:</strong> ${ci(database, 'EspacoUtilizado') || '—'}</p>
+          `;
+        }
+      }
+
+      const authCard = document.querySelector('[data-component="authentication"]');
+      if (authCard) {
+        const auth = bySlug.get('authentication') || bySlug.get('autenticacao');
+        updateStatusBadge(authCard, ci(auth, 'Status') || 'operational');
+        const details = authCard.querySelector('.component-details');
+        if (details) {
+          details.innerHTML = `
+            <p><strong>Logins (24h):</strong> ${formatNumber(ci(auth, 'Logins24h'))}</p>
+            <p><strong>Response time:</strong> ${formatMetric(ci(auth, 'TempoResposta') ?? ci(metricas, 'TempoRespostaMedia'), 'ms')}</p>
+            <p><strong>Success rate:</strong> ${formatMetric(ci(auth, 'TaxaSucesso'), '%')}</p>
+            <p><strong>Users online:</strong> <span id="users-online-card">${formatNumber(ci(auth, 'UtilizadoresOnline') ?? ci(metricas, 'UtilizadoresAtivos'))}</span></p>
+          `;
+        }
+      }
+
+      const paymentsCard = document.querySelector('[data-component="payments-system"]');
+      if (paymentsCard) {
+        const payments = bySlug.get('payments-system') || bySlug.get('sistema-de-pagamentos');
+        updateStatusBadge(paymentsCard, ci(payments, 'Status') || 'operational');
+        const details = paymentsCard.querySelector('.component-details');
+        if (details) {
+          details.innerHTML = `
+            <p><strong>Transactions (24h):</strong> ${formatNumber(ci(payments, 'Transacoes24h'))}</p>
+            <p><strong>Success rate:</strong> ${formatMetric(ci(payments, 'TaxaSucesso'), '%')}</p>
+            <p><strong>Stripe integration:</strong> ${ci(payments, 'IntegracaoStripe') || '—'}</p>
+          `;
+        }
       }
     }
 
-    function formatarNumero(numero) {
-      if (numero >= 1000000) {
-        return (numero / 1000000).toFixed(1) + 'M+';
-      } else if (numero >= 1000) {
-        return (numero / 1000).toFixed(1) + 'K+';
-      }
-      return numero.toLocaleString();
+    function renderPerformanceMetrics(metricas) {
+      const uptime = ci(metricas, 'UptimeGeral');
+      const responseTime = ci(metricas, 'TempoRespostaMedia');
+      const activeUsers = ci(metricas, 'UtilizadoresAtivos');
+      const trackedProducts = ci(metricas, 'ProdutosMonitorizados');
+      const notifications = ci(metricas, 'NotificacoesEnviadas');
+
+      document.getElementById('uptime-value').textContent = formatMetric(uptime, '%');
+      document.getElementById('response-time-value').textContent = formatMetric(responseTime, 'ms');
+      document.getElementById('active-users-value').textContent = formatNumber(activeUsers);
+      document.getElementById('monitored-products-value').textContent = formatNumber(trackedProducts);
+
+      document.getElementById('uptime-trend').textContent = 'Live server data';
+      document.getElementById('response-time-trend').textContent = 'Live server data';
+      document.getElementById('active-users-trend').textContent = 'Live server data';
+      document.getElementById('monitored-products-trend').textContent = 'Live server data';
+
+      document.getElementById('requests-per-minute').textContent = '--';
+      document.getElementById('users-online').textContent = formatNumber(activeUsers);
+      document.getElementById('notifications-today').textContent = formatNumber(notifications);
     }
 
-    // ================== ATUALIZAR MÃ‰TRICAS DA BASE DE DADOS ==================
-    async function atualizarMetricasBaseDados() {
+    function renderIncidents(incidentes) {
+      const timeline = document.querySelector('.incidents-timeline');
+      if (!timeline) return;
+
+      timeline.querySelectorAll('.incident-item').forEach((item) => item.remove());
+      const insertionPoint = timeline.querySelector('.metrics-grid')?.previousElementSibling;
+
+      const items = (incidentes && incidentes.length > 0) ? incidentes : [];
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'incident-item resolved';
+        empty.innerHTML = `
+          <div class="incident-date">—</div>
+          <div class="incident-content">
+            <h4>No recent incidents</h4>
+            <p><strong>Status:</strong> Operational</p>
+            <p><strong>Impact:</strong> No active service disruptions were reported.</p>
+          </div>
+          <span class="card-status-dot resolved" aria-label="Resolved"></span>
+        `;
+        timeline.insertBefore(empty, insertionPoint);
+        return;
+      }
+
+      items.forEach((incident) => {
+        const statusRaw = String(ci(incident, 'Status') || 'unknown').toLowerCase();
+        const isResolved = statusRaw.includes('resolved') || statusRaw.includes('resolvido');
+        const statusClass = isResolved ? 'resolved' : statusRaw.includes('degraded') ? 'degraded' : 'investigating';
+        const statusText = isResolved ? 'Resolved' : statusRaw.includes('degraded') ? 'Degraded' : 'Investigating';
+        const item = document.createElement('div');
+        item.className = `incident-item ${statusClass}`;
+        item.innerHTML = `
+          <div class="incident-date">${formatUtcTimestamp(ci(incident, 'DataInicio')).replace(/, \d{2}:\d{2} UTC$/, '')}</div>
+          <div class="incident-content">
+            <h4>${ci(incident, 'Titulo') || 'Untitled incident'}</h4>
+            <p><strong>Duration:</strong> ${formatDuration(ci(incident, 'DataInicio'), ci(incident, 'DataFim'), ci(incident, 'Duracao'))}</p>
+            <p><strong>Impact:</strong> ${ci(incident, 'Impacto') || 'Not specified'}</p>
+            <p><strong>Status:</strong> ${statusText}</p>
+          </div>
+          <span class="card-status-dot ${statusClass}" aria-label="${statusText}"></span>
+        `;
+        timeline.insertBefore(item, insertionPoint);
+      });
+    }
+
+    function renderOverview(componentes, lastUpdated) {
+      const hasIssue = (componentes || []).some((component) => {
+        const status = String(ci(component, 'Status') || '').toLowerCase();
+        return status && status !== 'operational';
+      });
+      const overviewTitle = document.querySelector('.status-overview-text strong');
+      if (overviewTitle) {
+        overviewTitle.textContent = hasIssue ? 'Some systems are experiencing issues' : 'All systems operational';
+      }
+      document.getElementById('last-update').textContent = formatUtcTimestamp(lastUpdated);
+      document.getElementById('footer-update').textContent = formatUtcTimestamp(lastUpdated);
+    }
+
+    function showUnavailableState() {
+      const overviewTitle = document.querySelector('.status-overview-text strong');
+      if (overviewTitle) overviewTitle.textContent = 'Status data unavailable';
+      document.getElementById('last-update').textContent = 'Unavailable';
+      document.getElementById('footer-update').textContent = 'Unavailable';
+      ['uptime-value', 'response-time-value', 'active-users-value', 'monitored-products-value', 'requests-per-minute', 'users-online', 'notifications-today'].forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = '--';
+      });
+      ['uptime-trend', 'response-time-trend', 'active-users-trend', 'monitored-products-trend'].forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = 'Server data unavailable';
+      });
+    }
+
+    async function loadServerStatus() {
       try {
-        const apiUrl = '/api/status';
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch('/api/status', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
+        if (data.status !== 'ok') throw new Error(data.error || data.message || 'Unknown status error');
 
-        if (data.status === "ok" && data.metricas) {
-          // Atualizar mÃ©tricas de performance com dados reais da base de dados
-          const metricas = data.metricas;
+        const metricas = data.metricas || {};
+        const componentes = data.componentes || [];
+        const incidentes = data.incidentes || [];
+        const timestamp = data.ultimaAtualizacao || new Date().toISOString();
 
-          // Uptime (30 days) - verificar se Ã© nÃºmero antes de usar toFixed e arredondar para inteiro
-          if (metricas.UptimeGeral !== undefined && metricas.UptimeGeral !== null) {
-            const uptime = typeof metricas.UptimeGeral === 'number' ? metricas.UptimeGeral : parseFloat(metricas.UptimeGeral) || 99.9;
-            atualizarElemento('uptime-value', `${Math.round(uptime)}%`);
-          }
-
-          // Response Time - verificar se Ã© nÃºmero antes de usar toFixed e arredondar para inteiro
-          if (metricas.TempoRespostaMedia !== undefined && metricas.TempoRespostaMedia !== null) {
-            const tempoResposta = typeof metricas.TempoRespostaMedia === 'number' ? metricas.TempoRespostaMedia : parseFloat(metricas.TempoRespostaMedia) || 45;
-            atualizarElemento('response-time-value', `${Math.round(tempoResposta)}ms`);
-          }
-
-          // Active Users (atualizar em tempo real)
-          if (metricas.UtilizadoresAtivos !== undefined) {
-            const totalUsuarios = metricas.UtilizadoresAtivos;
-            const uStr = totalUsuarios.toLocaleString('en-US');
-            atualizarElemento('active-users-value', uStr);
-            atualizarElemento('users-online', uStr);
-            atualizarElemento('users-online-card', uStr);
-
-            // Calcular crescimento (comparar com mÃªs anterior - usar valor fixo por enquanto)
-            const crescimentoUsuarios = ((totalUsuarios - 12847) / 12847 * 100).toFixed(2);
-            const tendenciaUsuarios = crescimentoUsuarios >= 0 ? '+' : '';
-            atualizarElemento('active-users-trend', `${tendenciaUsuarios}${crescimentoUsuarios}% vs previous month`);
-          }
-
-          // Produtos Monitorizados (atualizar em tempo real)
-          if (metricas.ProdutosMonitorizados !== undefined) {
-            const totalProdutos = metricas.ProdutosMonitorizados;
-            const formattedProducts = formatarNumero(totalProdutos);
-            atualizarElemento('monitored-products-value', formattedProducts);
-
-            // Calcular crescimento (comparar com mÃªs anterior)
-            const crescimentoProdutos = ((totalProdutos - 1200000) / 1200000 * 100).toFixed(2);
-            const tendenciaProdutos = crescimentoProdutos >= 0 ? '+' : '';
-            atualizarElemento('monitored-products-trend', `${tendenciaProdutos}${crescimentoProdutos}% vs previous month`);
-
-            // Atualizar componente de monitoramento
-            const produtoElement = document.querySelector('[data-detail="produtos"]');
-            if (produtoElement) {
-              produtoElement.textContent = totalProdutos.toLocaleString('en-US');
-            }
-          }
-
-          // NotificaÃ§Ãµes enviadas hoje
-          if (metricas.NotificacoesEnviadas !== undefined) {
-            atualizarElemento('notifications-today', metricas.NotificacoesEnviadas.toLocaleString('en-US'));
-            const notificacoesElement = document.querySelector('[data-detail="total-notificacoes"]');
-            if (notificacoesElement) {
-              notificacoesElement.textContent = metricas.NotificacoesEnviadas.toLocaleString('en-US');
-            }
-          }
-
-          // Atualizar timestamp
-          const footer = document.getElementById('footer-update');
-          const lastUpdate = document.getElementById('last-update');
-          if (footer) {
-            footer.textContent = new Date().toLocaleString('pt-BR', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-          }
-          if (lastUpdate) {
-            lastUpdate.textContent = new Date().toLocaleString('pt-BR', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-          }
-
-          console.log(" MÃ©tricas atualizadas da base de dados:", metricas);
-        }
+        renderOverview(componentes, timestamp);
+        renderComponents(metricas, componentes, timestamp);
+        renderPerformanceMetrics(metricas);
+        renderIncidents(incidentes);
       } catch (error) {
-        console.error(" Erro ao atualizar mÃ©tricas da base de dados:", error);
+        console.error('Error loading service status:', error);
+        showUnavailableState();
       }
     }
 
-    // ================== INICIALIZAÃ‡ÃƒO ==================
-    // Carregar status inicial
-    carregarStatus();
-
-    // Buscar dados reais da base de dados
-    buscarDadosReais();
-
-    // Atualizar mÃ©tricas da base de dados imediatamente e em tempo real
-    atualizarMetricasBaseDados();
-
-    // Atualizar mÃ©tricas da base de dados a cada 30 segundos (tempo real)
-    setInterval(atualizarMetricasBaseDados, 30000);
-
-    // Atualizar status geral a cada 5 minutos
-    setInterval(carregarStatus, 300000);
-
-    // Atualizar estatÃ­sticas em tempo real a cada 2 minutos
-    setInterval(carregarEstatisticasRealtime, 120000);
-
-    // Buscar dados reais da base de dados a cada 10 minutos
-    setInterval(buscarDadosReais, 600000);
-
-    // ================== HEALTH CHECK ==================
-    async function verificarSaudeAPI() {
-      try {
-        const apiUrl = '/api/status/health';
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.status === "ok") {
-          console.log(" API saudÃ¡vel:", data.health);
-        } else {
-          console.warn(" API com problemas:", data);
-        }
-      } catch (error) {
-        console.error(" Erro no health check:", error);
-      }
-    }
-
-    // Verificar saÃºde da API a cada 5 minutos
-    setInterval(verificarSaudeAPI, 300000);
+    document.addEventListener('DOMContentLoaded', function () {
+      loadServerStatus();
+      setInterval(loadServerStatus, 30000);
+    });
   </script>
 
   <!-- FOOTER -->
