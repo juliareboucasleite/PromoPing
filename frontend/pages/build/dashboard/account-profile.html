@@ -81,7 +81,7 @@
                     <h1 class="page-title">Profile</h1>
                     <p class="page-subtitle">Manage your account and notification preferences</p>
                 </div>
-                <p class="page-greeting">OlÃ¡, <span id="profileGreetingName">User</span>!</p>
+                <p class="page-greeting">Hello, <span id="profileGreetingName">User</span>!</p>
             </header>
 
             <div class="profile-layout">
@@ -302,7 +302,7 @@
                     </div>
                     <div class="profile-card">
                         <div class="card-header">
-                            <h2 class="card-title">RelatÃ³rios e HistÃ³rico</h2>
+                            <h2 class="card-title">Reports and History</h2>
                         </div>
                         <div class="history-actions">
                             <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
@@ -526,7 +526,7 @@
                         <p class="twofa-backup-label">Store the backup codes in a safe place (each code can only be used once):</p>
                         <div class="twofa-backup-codes-wrap">
                             <pre id="twoFABackupCodes" class="twofa-backup-codes"></pre>
-                            <button type="button" class="twofa-download-codes-btn" id="btnDownloadBackupCodes" title="Download .txt">â†“ .txt</button>
+                            <button type="button" class="twofa-download-codes-btn" id="btnDownloadBackupCodes" title="Download .txt">Download .txt</button>
                         </div>
                     </div>
                     <div id="twoFASetupEmail" style="display: none;">
@@ -750,8 +750,8 @@
                     if (window.notificationSystem) window.notificationSystem.success('Success', 'Information saved successfully!', 5000);
                     else alert("Information saved successfully!");
                 } else {
-                    if (window.notificationSystem) window.notificationSystem.error('Error', data.message || data.error || "Error ao salvar informaÃ§Ãµes.", 6000);
-                    else alert(data.message || data.error || "Error ao salvar informaÃ§Ãµes.");
+                    if (window.notificationSystem) window.notificationSystem.error('Error', data.message || data.error || "Error saving information.", 6000);
+                    else alert(data.message || data.error || "Error saving information.");
                 }
             } catch (err) {
                 console.error("Error ao salvar:", err);
@@ -1195,7 +1195,7 @@
         async function confirmarDeactivate() {
             const token = localStorage.getItem("token");
             if (!token) {
-                alert("Error: NÃ£o autenticado");
+                alert("Error: not authenticated");
                 fecharModalDeactivate();
                 return;
             }
@@ -1239,7 +1239,7 @@
                         localStorage.setItem('accountDaysRemaining', data.daysRemaining || 20);
                     }
 
-                    alert(`Conta desativada com sucesso. VocÃª tem ${data.daysRemaining || 20} dias para reativar fazendo login. ApÃ³s esse perÃ­odo, sua conta serÃ¡ permanentemente excluÃ­da.`);
+                    alert(`Account deactivated successfully. You have ${data.daysRemaining || 20} days to reactivate it by signing in. After that period, your account will be permanently deleted.`);
                     localStorage.removeItem('token');
                     window.location.href = '/';
                 } else {
@@ -1287,7 +1287,7 @@
 
             const token = localStorage.getItem("token");
             if (!token) {
-                alert("Error: NÃ£o autenticado");
+                alert("Error: not authenticated");
                 fecharModalDelete();
                 return;
             }

@@ -6,7 +6,7 @@ window.openLoginModal = function() {
   
   // Se não tiver os elementos essenciais, vaza logo pra não quebrar tudo
   if (!overlay || !loginModal) {
-    console.error('Elementos não encontrados:', { overlay, loginModal });
+    console.error('Elements not found:', { overlay, loginModal });
     return;
   }
   
@@ -16,7 +16,7 @@ window.openLoginModal = function() {
   }
   
   // Limpa as mensagens de erro/sucesso anteriores - tipo resetar o estado do modal
-  const errorElement = document.getElementById('loginErrorrMessage');
+  const errorElement = document.getElementById('loginErrorMessage');
   const successElement = document.getElementById('loginSuccessMessage');
   if (errorElement) {
     errorElement.textContent = '';
@@ -36,7 +36,7 @@ window.openLoginModal = function() {
   if (dividerOU) dividerOU.style.display = '';
   if (socialOptions) socialOptions.style.display = '';
   const sendEmailBtn = document.getElementById('login2FASendEmail');
-  if (sendEmailBtn) sendEmailBtn.textContent = 'Enviar código por email';
+  if (sendEmailBtn) sendEmailBtn.textContent = 'Send code by email';
 
   // Mostra o modal e bloqueia o scroll da página (pra não rolar enquanto o modal tá aberto)
   loginModal.style.display = 'block';
@@ -52,7 +52,7 @@ window.openRegisterModal = function() {
   
   // Se não tiver os elementos essenciais, vaza logo pra não quebrar tudo
   if (!overlay || !registerModal) {
-    console.error('Elementos não encontrados:', { overlay, registerModal });
+    console.error('Elements not found:', { overlay, registerModal });
     return;
   }
   
@@ -128,7 +128,7 @@ function updateQRCodeImage(dataUrl) {
   // Mostra a imagem do QR
   if (!qrImgElement) {
     qrImgElement = document.createElement('img');
-    qrImgElement.alt = 'Código QR para login';
+    qrImgElement.alt = 'QR code for sign-in';
     qrImgElement.className = 'qr-code-image';
     qrImgElement.setAttribute('width', '280');
     qrImgElement.setAttribute('height', '280');
@@ -204,7 +204,7 @@ window.openQRModal = function() {
           if (!token || token.length < 20) {
             var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
             if (placeholderText) {
-              placeholderText.textContent = 'Sessão confirmada mas token em falta. Fecha e tenta outra vez.';
+              placeholderText.textContent = 'Session confirmed but token is missing. Close this and try again.';
               placeholderText.style.display = 'block';
             }
             return;
@@ -217,7 +217,7 @@ window.openQRModal = function() {
           if (err && err.message && err.message.indexOf('Rate limit') !== -1) {
             var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
             if (placeholderText) {
-              placeholderText.textContent = 'Muitas tentativas. Espera uns minutos e tenta outra vez.';
+              placeholderText.textContent = 'Too many attempts. Wait a few minutes and try again.';
               placeholderText.style.display = 'block';
             }
           }
@@ -225,10 +225,10 @@ window.openQRModal = function() {
       }, 3000);
     })
     .catch(function (err) {
-      console.error('Error ao obter sessão QR:', err);
+      console.error('Error fetching QR session:', err);
       var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
       if (placeholderText) {
-        placeholderText.textContent = 'Error ao carregar o código. Tenta novamente.';
+        placeholderText.textContent = 'Error loading the code. Please try again.';
         placeholderText.style.display = 'block';
       }
     });
@@ -260,7 +260,7 @@ window.openVerificationModal = function(email) {
   const registerModal = document.getElementById('registerModal');
   
   if (!overlay || !verificationModal) {
-    console.error('Elementos não encontrados:', { overlay, verificationModal });
+    console.error('Elements not found:', { overlay, verificationModal });
     return;
   }
   
@@ -278,7 +278,7 @@ window.openVerificationModal = function(email) {
   const codeInput = document.getElementById('verificationCode');
   if (codeInput) codeInput.value = '';
   
-  const errorMsg = document.getElementById('verificationErrorrMessage');
+  const errorMsg = document.getElementById('verificationErrorMessage');
   const successMsg = document.getElementById('verificationSuccessMessage');
   if (errorMsg) errorMsg.textContent = '';
   if (successMsg) successMsg.textContent = '';
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Limpa as mensagens de erro quando o user começa a digitar de novo (UX melhor)
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
-      const errorElement = document.getElementById('loginErrorrMessage');
+      const errorElement = document.getElementById('loginErrorMessage');
       
       // Função pra limpar o erro (reutilizável)
       const clearErrorr = () => {
@@ -581,9 +581,9 @@ document.addEventListener('DOMContentLoaded', function() {
           let data;
           try {
             data = await res.json();
-          } catch (parseErrorr) {
-            console.error("Error ao fazer parse da resposta:", parseErrorr);
-            throw new Errorr("Resposta inválida do servidor");
+          } catch (parseError) {
+            console.error("Error parsing response:", parseError);
+            throw new Error("Invalid server response");
           }
 
           // Se login exige 2FA, mostrar passo de código (esconder só o form, não o wrapper)
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Se deu erro, mostra a mensagem de erro no modal
             const errorMessage = data.error || data.message || "Incorrect email or password";
             
-            const errorElement = document.getElementById('loginErrorrMessage');
+            const errorElement = document.getElementById('loginErrorMessage');
             if (errorElement) {
               errorElement.textContent = errorMessage;
               errorElement.style.display = 'block';
@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error("Sign-in error:", err);
           const errorMessage = err.message || "Server connection error";
           
-          const errorElement = document.getElementById('loginErrorrMessage');
+          const errorElement = document.getElementById('loginErrorMessage');
           if (errorElement) {
             errorElement.textContent = errorMessage;
             errorElement.style.display = 'block';
@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tempToken = stepEl.dataset.tempToken;
         const code = codeInput.value.trim();
         if (!tempToken || !code) {
-          const errEl = document.getElementById('loginErrorrMessage');
+          const errEl = document.getElementById('loginErrorMessage');
           if (errEl) { errEl.textContent = 'Enter the code.'; errEl.style.display = 'block'; }
           return;
         }
@@ -675,12 +675,12 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('token', data.token);
             window.location.href = '/dashboard';
           } else {
-            const errEl = document.getElementById('loginErrorrMessage');
+            const errEl = document.getElementById('loginErrorMessage');
             if (errEl) { errEl.textContent = data.error || 'Invalid code.'; errEl.style.display = 'block'; }
             login2FAVerifyBtn.disabled = false;
           }
         } catch (e) {
-          const errEl = document.getElementById('loginErrorrMessage');
+          const errEl = document.getElementById('loginErrorMessage');
           if (errEl) { errEl.textContent = 'Connection error.'; errEl.style.display = 'block'; }
           login2FAVerifyBtn.disabled = false;
         }
@@ -705,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           const data = await res.json();
           if (res.ok && data.sent) {
-            const errEl = document.getElementById('loginErrorrMessage');
+            const errEl = document.getElementById('loginErrorMessage');
             if (errEl) { errEl.style.display = 'none'; }
             login2FASendEmailBtn.textContent = 'Code sent. Check your email.';
           }
@@ -739,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         } catch (error) {
           // Se der erro, tenta o fluxo normal mesmo
-          console.error("Error ao verificar usuário Discord:", error);
+          console.error("Error checking Discord user:", error);
           window.location.href = "/auth/discord";
         }
       });
@@ -811,22 +811,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const nome = document.getElementById('registerNome')?.value.trim() || email.split("@")[0];
 
         if (!email || !email.includes("@")) {
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", "Please enter a valid email");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", "Please enter a valid email");
           }
           return;
         }
 
         if (password.length < 8) {
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", "The password must be at least 8 characters long");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", "The password must be at least 8 characters long");
           }
           return;
         }
 
         if (!birthdate) {
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", "Please enter your birth date");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", "Please enter your birth date");
           }
           return;
         }
@@ -843,8 +843,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Se for menor de 13, não deixa criar conta
         if (age < 13) {
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", "You must be at least 13 years old to create a PromoPing account");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", "You must be at least 13 years old to create a PromoPing account");
           }
           if (btnCriar) {
             btnCriar.disabled = false;
@@ -898,14 +898,14 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModals();
             openVerificationModal(email);
           } else {
-            if (typeof window.showErrorr === 'function') {
-              window.showErrorr("Error", data.error || data.message || "Errorr creating account");
+            if (typeof window.showError === 'function') {
+              window.showError("Error", data.error || data.message || "Error creating account");
             }
           }
         } catch (error) {
           console.error("Registration error:", error);
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", error.message || "Error de ligação ao servidor");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", error.message || "Server connection error");
           }
         } finally {
           if (btnCriar) {
@@ -932,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const codeInput = document.getElementById('verificationCode');
         const emailSpan = document.getElementById('verificationEmail');
-        const errorMsg = document.getElementById('verificationErrorrMessage');
+        const errorMsg = document.getElementById('verificationErrorMessage');
         const successMsg = document.getElementById('verificationSuccessMessage');
         const btnVerify = document.getElementById('btnVerify');
         
@@ -988,18 +988,18 @@ document.addEventListener('DOMContentLoaded', function() {
               errorMsg.textContent = data.error || "Invalid or expired code";
               errorMsg.style.display = 'block';
             }
-            if (typeof window.showErrorr === 'function') {
-              window.showErrorr("Error", data.error || "Invalid or expired code");
+            if (typeof window.showError === 'function') {
+              window.showError("Error", data.error || "Invalid or expired code");
             }
           }
         } catch (error) {
-          console.error("Error ao verificar código:", error);
+          console.error("Error verifying code:", error);
           if (errorMsg) {
-            errorMsg.textContent = "Error de ligação ao servidor";
+            errorMsg.textContent = "Server connection error";
             errorMsg.style.display = 'block';
           }
-          if (typeof window.showErrorr === 'function') {
-            window.showErrorr("Error", "Error de ligação ao servidor");
+          if (typeof window.showError === 'function') {
+            window.showError("Error", "Server connection error");
           }
         } finally {
           if (btnVerify) {
@@ -1015,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnResendCode) {
       btnResendCode.addEventListener('click', async () => {
         const emailSpan = document.getElementById('verificationEmail');
-        const errorMsg = document.getElementById('verificationErrorrMessage');
+        const errorMsg = document.getElementById('verificationErrorMessage');
         const successMsg = document.getElementById('verificationSuccessMessage');
         
         const email = emailSpan ? emailSpan.textContent.trim() : '';
@@ -1045,9 +1045,9 @@ document.addEventListener('DOMContentLoaded', function() {
             successMsg.style.display = 'block';
           }
         } catch (error) {
-          console.error("Error ao reenviar código:", error);
+          console.error("Error resending code:", error);
           if (errorMsg) {
-            errorMsg.textContent = "Error de ligação ao servidor";
+            errorMsg.textContent = "Server connection error";
             errorMsg.style.display = 'block';
           }
         } finally {
