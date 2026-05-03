@@ -185,19 +185,19 @@
                     repeatCount="indefinite" />
                 </circle>
               </svg>
-              Adicionando...
+              Adding...
             </span>
           </button>
         </form>
       </div>
       <section class="products-section">
-        <h2 class="section-title">Produtos monitorizados (<span id="productCount">0</span>)</h2>
+        <h2 class="section-title">Tracked products (<span id="productCount">0</span>)</h2>
         <div id="productsList" class="products-list"></div>
         <div id="loadingState" class="loading-state" style="display: none;">
           <div class="loading-spinner">
             <div class="spinner"></div>
           </div>
-          <p>A carregar produtos...</p>
+          <p>Loading products...</p>
         </div>
       </section>
     </div>
@@ -252,7 +252,7 @@
           if (data.status === "ok" && data.profile) {
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
-              userNameEl.textContent = data.profile.nome || 'Utilizador';
+              userNameEl.textContent = data.profile.nome || 'User';
               console.log(" [PAINEL] Nome do usuário atualizado:", data.profile.nome);
             } else {
               console.error(" [PAINEL] Elemento userName não encontrado");
