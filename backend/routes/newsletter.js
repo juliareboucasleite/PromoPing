@@ -148,17 +148,25 @@ router.post("/subscribe", async (req, res) => {
         articles: articles || false
       });
 
-      await sendEmail(
-        email,
-        "Bem-vindo à Newsletter PromoPing!",
-        emailHtml
-      );
+      let emailSent = true;
+      try {
+        await sendEmail(
+          email,
+          "Bem-vindo à Newsletter PromoPing!",
+          emailHtml
+        );
+      } catch (emailError) {
+        emailSent = false;
+        console.warn("⚠️ [NEWSLETTER] Subscrição guardada, mas falhou o envio do email de confirmação:", emailError.message);
+      }
 
       console.log(`✅ [NEWSLETTER] Nova subscrição: ${email}`);
 
       res.json({
         success: true,
-        message: "Subscrição realizada com sucesso! Verifica o teu email para confirmar."
+        message: emailSent
+          ? "Subscrição realizada com sucesso! Verifica o teu email para confirmar."
+          : "Subscrição realizada com sucesso, mas não foi possível enviar o email de confirmação."
       });
 
     } catch (dbError) {
