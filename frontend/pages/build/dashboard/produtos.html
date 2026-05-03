@@ -461,25 +461,25 @@
               <div class="product-content-dashboard">
                 <div class="price-section-dashboard">
                   <div class="current-price-dashboard">
-                    <span class="price-label-dashboard">Preço atual</span>
+                    <span class="price-label-dashboard">Current price</span>
                     <span class="price-value-dashboard">${precoAtual}</span>
                     ${priceChangeHtml}
                   </div>
                   <div class="price-details-dashboard">
                     <div class="price-item-dashboard">
-                      <span class="price-label-dashboard">Preço anterior</span>
+                      <span class="price-label-dashboard">Previous price</span>
                       <span class="price-value-dashboard">${precoAnterior}</span>
                     </div>
                     <div class="price-item-dashboard">
-                      <span class="price-label-dashboard">Preço alvo</span>
+                      <span class="price-label-dashboard">Target price</span>
                       <span class="price-value-dashboard target-price-dashboard">${precoAlvo}</span>
                     </div>
                     <div class="price-item-dashboard">
-                      <span class="price-label-dashboard">Adicionado</span>
+                      <span class="price-label-dashboard">Added</span>
                       <span class="price-value-dashboard">${dataAdicao}</span>
                     </div>
                     <div class="price-item-dashboard">
-                      <span class="price-label-dashboard">Data limite</span>
+                      <span class="price-label-dashboard">End date</span>
                       <span class="price-value-dashboard">${dataLimiteFmt}</span>
                     </div>
                   </div>
@@ -491,10 +491,10 @@
                       <polyline points="15,3 21,3 21,9"></polyline>
                       <line x1="10" y1="14" x2="21" y2="3"></line>
                     </svg>
-                    <span class="history-title-dashboard">Histórico de preços</span>
+                    <span class="history-title-dashboard">Price history</span>
                   </div>
                   <div class="history-list-dashboard">
-                    ${historicoHtml || '<div class="history-item">Nenhum histórico disponível</div>'}
+                    ${historicoHtml || '<div class="history-item">No history available</div>'}
                   </div>
                 </div>
               </div>
@@ -509,7 +509,7 @@
         console.error("Erro ao carregar produtos:", err);
         loadingState.style.display = "none";
         productsList.style.display = "block";
-        productsList.innerHTML = "<p>Erro ao carregar produtos.</p>";
+        productsList.innerHTML = "<p>Error loading products.</p>";
       }
     }
 
@@ -524,7 +524,7 @@
         carregarProdutos();
       } catch (err) {
         console.error("Erro ao remover produto:", err);
-        alert("Erro ao remover produto.");
+        alert("Error removing product.");
       }
     }
 
@@ -648,13 +648,13 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data.status !== "ok") {
-          throw new Error(data.message || "Erro ao guardar data limite");
+          throw new Error(data.message || "Error saving end date");
         }
         closeDataLimiteModal();
         await carregarProdutos();
       } catch (err) {
         if (errEl) {
-          errEl.textContent = err.message || "Erro ao guardar.";
+          errEl.textContent = err.message || "Error saving.";
           errEl.style.display = "block";
         }
       } finally {
@@ -678,13 +678,13 @@
         const month = parseInt(monthInput?.value || "", 10);
         const year = parseInt(yearInput?.value || "", 10);
         if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
-          if (errEl) { errEl.textContent = "Escolhe uma data."; errEl.style.display = "block"; }
+          if (errEl) { errEl.textContent = "Please choose a date."; errEl.style.display = "block"; }
           return;
         }
         const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
         const escolhida = new Date(valor + "T00:00:00");
         if (escolhida < hoje) {
-          if (errEl) { errEl.textContent = "A data não pode ser no passado."; errEl.style.display = "block"; }
+          if (errEl) { errEl.textContent = "The date cannot be in the past."; errEl.style.display = "block"; }
           return;
         }
         salvarDataLimite(valor);
@@ -705,20 +705,20 @@
         const year = parseInt(yearInput?.value || "", 10);
 
         if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
-          if (errEl) { errEl.textContent = "Escolhe uma data."; errEl.style.display = "block"; }
+          if (errEl) { errEl.textContent = "Please choose a date."; errEl.style.display = "block"; }
           return;
         }
 
         const escolhida = new Date(year, month - 1, day);
         if (escolhida.getDate() !== day || escolhida.getMonth() !== month - 1 || escolhida.getFullYear() !== year) {
-          if (errEl) { errEl.textContent = "Data invalida."; errEl.style.display = "block"; }
+          if (errEl) { errEl.textContent = "Invalid date."; errEl.style.display = "block"; }
           return;
         }
 
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         if (escolhida < hoje) {
-          if (errEl) { errEl.textContent = "A data nao pode ser no passado."; errEl.style.display = "block"; }
+          if (errEl) { errEl.textContent = "The date cannot be in the past."; errEl.style.display = "block"; }
           return;
         }
 
