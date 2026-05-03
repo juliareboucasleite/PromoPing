@@ -20,58 +20,58 @@ class DocumentationSearch {
     buildSearchIndex() {
         this.searchIndex = [
             {
-                title: "Sobre o PromoPing",
+                title: "About PromoPing",
                 url: "/docs",
-                content: "PromoPing Ã© uma plataforma de monitoramento de preÃ§os que permite aos utilizadores acompanhar produtos em mÃºltiplas lojas online, receber notificaÃ§Ãµes sobre mudanÃ§as de preÃ§os e aceder a anÃ¡lises detalhadas.",
-                keywords: ["sobre", "promoping", "plataforma", "monitoramento", "preÃ§os", "lojas", "online", "notificaÃ§Ãµes", "anÃ¡lises"]
+                content: "PromoPing is a price monitoring platform that lets users track products across multiple online stores, receive price-drop notifications, and review detailed analytics.",
+                keywords: ["about", "promoping", "platform", "price", "monitoring", "stores", "online", "notifications", "analytics"]
             },
             {
-                title: "Primeiro LanÃ§amento",
+                title: "First Launch",
                 url: "/docs/FirstLaunch",
-                content: "Guia completo para comeÃ§ar a usar o PromoPing. Inclui requisitos do sistema, passos de instalaÃ§Ã£o, configuraÃ§Ã£o inicial e resoluÃ§Ã£o de problemas comuns.",
-                keywords: ["primeiro", "lanÃ§amento", "comeÃ§ar", "guia", "instalaÃ§Ã£o", "configuraÃ§Ã£o", "requisitos", "sistema", "problemas", "troubleshooting"]
+                content: "Complete guide to getting started with PromoPing, including system requirements, setup steps, first configuration, and common troubleshooting tips.",
+                keywords: ["first", "launch", "getting started", "guide", "installation", "setup", "requirements", "system", "problems", "troubleshooting"]
             },
             {
-                title: "Guia de UtilizaÃ§Ã£o",
+                title: "Usage Guide",
                 url: "/docs/usage-guide",
-                content: "Aprenda a usar todas as funcionalidades do PromoPing: adicionar produtos, configurar alertas, gerir produtos, visualizar anÃ¡lises e utilizar funcionalidades avanÃ§adas.",
-                keywords: ["guia", "utilizaÃ§Ã£o", "funcionalidades", "produtos", "alertas", "anÃ¡lises", "dashboard", "configuraÃ§Ã£o", "gestÃ£o"]
+                content: "Learn how to use all PromoPing features: adding products, configuring alerts, managing tracked items, viewing analytics, and using advanced tools.",
+                keywords: ["guide", "usage", "features", "products", "alerts", "analytics", "dashboard", "configuration", "management"]
             },
             {
-                title: "ReferÃªncia da API",
+                title: "API Reference",
                 url: "/docs/api-reference",
-                content: "DocumentaÃ§Ã£o completa da API PromoPing. Inclui autenticaÃ§Ã£o, endpoints para perfil do utilizador, estatÃ­sticas, notificaÃ§Ãµes, preferÃªncias e exemplos de SDK.",
-                keywords: ["api", "referÃªncia", "documentaÃ§Ã£o", "autenticaÃ§Ã£o", "endpoints", "perfil", "estatÃ­sticas", "notificaÃ§Ãµes", "preferÃªncias", "sdk", "exemplos"]
+                content: "Complete PromoPing API documentation covering authentication, profile endpoints, metrics, notifications, preferences, and SDK examples.",
+                keywords: ["api", "reference", "documentation", "authentication", "endpoints", "profile", "metrics", "notifications", "preferences", "sdk", "examples"]
             },
             {
-                title: "Suporte",
+                title: "Support",
                 url: "/docs/support",
-                content: "Centro de ajuda e suporte tÃ©cnico. Encontre respostas para perguntas frequentes, contacte a nossa equipa de suporte e aceda a recursos de ajuda.",
-                keywords: ["suporte", "ajuda", "faq", "perguntas", "frequentes", "contacto", "tÃ©cnico", "recursos", "problemas"]
+                content: "Help center and technical support resources. Find answers to common questions, contact our support team, and access troubleshooting material.",
+                keywords: ["support", "help", "faq", "questions", "contact", "technical", "resources", "problems"]
             },
             {
-                title: "Status do ServiÃ§o",
+                title: "Service Status",
                 url: "/docs/service-status",
-                content: "Monitorize o estado atual dos serviÃ§os PromoPing. Visualize mÃ©tricas de performance, estado dos componentes, estatÃ­sticas em tempo real e histÃ³rico de incidentes.",
-                keywords: ["status", "serviÃ§o", "monitorizaÃ§Ã£o", "mÃ©tricas", "performance", "componentes", "tempo", "real", "incidentes", "uptime"]
+                content: "Monitor the current status of PromoPing services. Review performance metrics, component health, real-time statistics, and recent incidents.",
+                keywords: ["status", "service", "monitoring", "metrics", "performance", "components", "real-time", "incidents", "uptime"]
             },
             {
-                title: "HistÃ³rico de Incidentes",
+                title: "Incident History",
                 url: "/docs/incident-history",
-                content: "Registo completo de incidentes e atualizaÃ§Ãµes do sistema. Acompanhe o estado atual, incidentes recentes e atualizaÃ§Ãµes de manutenÃ§Ã£o.",
-                keywords: ["histÃ³rico", "incidentes", "atualizaÃ§Ãµes", "sistema", "manutenÃ§Ã£o", "estado", "recentes", "registo"]
+                content: "Complete record of incidents and system updates. Follow the current state of the platform, recent issues, and maintenance changes.",
+                keywords: ["incident", "history", "updates", "system", "maintenance", "status", "recent", "log"]
             },
             {
-                title: "Termos de ServiÃ§o",
+                title: "Terms of Service",
                 url: "/docs/terms-of-service",
-                content: "Termos e condiÃ§Ãµes de uso do PromoPing. Inclui aceitaÃ§Ã£o dos termos, descriÃ§Ã£o do serviÃ§o, conta de utilizador, uso aceitÃ¡vel, propriedade intelectual e limitaÃ§Ãµes de responsabilidade.",
-                keywords: ["termos", "serviÃ§o", "condiÃ§Ãµes", "uso", "aceitaÃ§Ã£o", "conta", "utilizador", "propriedade", "intelectual", "responsabilidade"]
+                content: "Terms and conditions for using PromoPing, including acceptance of terms, service description, user accounts, acceptable use, intellectual property, and liability limits.",
+                keywords: ["terms", "service", "conditions", "usage", "acceptance", "account", "user", "intellectual property", "liability"]
             },
             {
-                title: "PolÃ­tica de Privacidade",
+                title: "Privacy Policy",
                 url: "/docs/privacy-policy",
-                content: "PolÃ­tica de privacidade e proteÃ§Ã£o de dados. Explica como recolhemos, utilizamos e protegemos as suas informaÃ§Ãµes pessoais em conformidade com o RGPD.",
-                keywords: ["polÃ­tica", "privacidade", "dados", "proteÃ§Ã£o", "rgpd", "informaÃ§Ãµes", "pessoais", "recolha", "utilizaÃ§Ã£o", "seguranÃ§a"]
+                content: "Privacy and data protection policy explaining how we collect, use, and protect your personal information in compliance with the GDPR.",
+                keywords: ["privacy", "policy", "data", "protection", "gdpr", "information", "personal", "collection", "usage", "security"]
             }
         ];
     }
@@ -236,12 +236,12 @@ class DocumentationSearch {
         header.className = 'search-results-header';
         const countSpan = document.createElement('span');
         countSpan.className = 'search-results-count';
-        countSpan.textContent = `${results.length} resultado${results.length !== 1 ? 's' : ''} encontrado${results.length !== 1 ? 's' : ''}`;
+        countSpan.textContent = `${results.length} result${results.length !== 1 ? 's' : ''} found`;
         const closeBtn = document.createElement('button');
         closeBtn.className = 'search-results-close';
         closeBtn.type = 'button';
-        closeBtn.setAttribute('aria-label', 'Fechar resultados de pesquisa');
-        closeBtn.textContent = 'Ã—';
+        closeBtn.setAttribute('aria-label', 'Close search results');
+        closeBtn.textContent = '×';
         closeBtn.addEventListener('click', () => resultsContainer.remove());
         header.appendChild(countSpan);
         header.appendChild(closeBtn);
@@ -304,7 +304,7 @@ class DocumentationSearch {
             // fallback (nÃ£o deve acontecer porque tratÃ¡mos antes)
             const noRes = document.createElement('div');
             noRes.className = 'search-no-results';
-            noRes.innerHTML = `<p>Nenhum resultado encontrado</p>`;
+            noRes.innerHTML = `<p>No results found</p>`;
             list.appendChild(noRes);
         }
 
@@ -324,11 +324,11 @@ class DocumentationSearch {
         header.className = 'search-results-header';
         const countSpan = document.createElement('span');
         countSpan.className = 'search-results-count';
-        countSpan.textContent = 'Nenhum resultado encontrado';
+        countSpan.textContent = 'No results found';
         const closeBtn = document.createElement('button');
         closeBtn.className = 'search-results-close';
         closeBtn.type = 'button';
-        closeBtn.textContent = 'Ã—';
+        closeBtn.textContent = '×';
         closeBtn.addEventListener('click', () => resultsContainer.remove());
         header.appendChild(countSpan);
         header.appendChild(closeBtn);
@@ -338,12 +338,12 @@ class DocumentationSearch {
         const noRes = document.createElement('div');
         noRes.className = 'search-no-results';
         noRes.innerHTML = `
-            <p>NÃ£o foram encontrados resultados para "<strong>${this.escapeHTML(query)}</strong>"</p>
-            <p class="search-suggestions">Tente:</p>
+            <p>No results were found for "<strong>${this.escapeHTML(query)}</strong>"</p>
+            <p class="search-suggestions">Try:</p>
             <ul>
-                <li>Verificar a ortografia</li>
-                <li>Usar termos mais gerais</li>
-                <li>Experimentar palavras-chave diferentes</li>
+                <li>Checking the spelling</li>
+                <li>Using broader terms</li>
+                <li>Trying different keywords</li>
             </ul>
         `;
         list.appendChild(noRes);

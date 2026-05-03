@@ -103,8 +103,8 @@
 
       <h2>Incident and Update Log</h2>
       <p>
-        Esta pÃ¡gina mantÃ©m um registo completo de todos os incidentes, atualizaÃ§Ãµes e melhorias do PromoPing.
-        Aqui pode acompanhar o estado dos nossos serviÃ§os e as Ãºltimas correÃ§Ãµes implementadas.
+        This page keeps a complete record of incidents, updates, and improvements across PromoPing.
+        You can track service health here and review the latest fixes we have deployed.
       </p>
 
       <!-- Incident Status Summary -->
@@ -126,7 +126,7 @@
           <div class="incident-content">
             <h4>Scheduled Maintenance - API</h4>
             <div class="incident-details">
-              <p><strong>Duration:</strong> 15 minutos (14:00 - 14:15 UTC)</p>
+              <p><strong>Duration:</strong> 15 minutes (14:00 - 14:15 UTC)</p>
               <p><strong>Impact:</strong> Temporary API interruption</p>
               <p><strong>Status:</strong> <span class="status-resolved">Resolved</span></p>
             </div>
@@ -138,7 +138,7 @@
           <div class="incident-content">
             <h4>Latency Issue - Notifications</h4>
             <div class="incident-details">
-              <p><strong>Duration:</strong> 2 horas (09:30 - 11:30 UTC)</p>
+              <p><strong>Duration:</strong> 2 hours (09:30 - 11:30 UTC)</p>
               <p><strong>Impact:</strong> Delay in email notifications</p>
               <p><strong>Status:</strong> <span class="status-resolved">Resolved</span></p>
             </div>
@@ -166,7 +166,7 @@
       </div>
 
       <footer>
-        <p>Last updated: <span id="footer-update">15 de Janeiro, 2025 - 14:30 UTC</span></p>
+        <p>Last updated: <span id="footer-update">January 15, 2025 - 14:30 UTC</span></p>
       </footer>
     </main>
 
@@ -260,7 +260,7 @@
           <div class="incident-details">
             <p><strong>Duration:</strong> ${duracao}</p>
             <p><strong>Impact:</strong> ${impacto}</p>
-            ${componente ? `<p><strong>Componente afetado:</strong> ${componente}</p>` : ''}
+            ${componente ? `<p><strong>Affected component:</strong> ${componente}</p>` : ''}
             <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
             ${descricao ? `<p><strong>Description:</strong> ${descricao}</p>` : ''}
           </div>
@@ -272,7 +272,7 @@
     }
 
     function formatarData(data) {
-      return data.toLocaleDateString('pt-PT', {
+      return data.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
@@ -286,11 +286,11 @@
       const diffDays = Math.floor(diffHours / 24);
 
       if (diffDays > 0) {
-        return `${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+        return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
       } else if (diffHours > 0) {
-        return `${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+        return `${diffHours} hour${diffHours > 1 ? 's' : ''}`;
       } else {
-        return `${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+        return `${diffMins} minute${diffMins > 1 ? 's' : ''}`;
       }
     }
 
@@ -299,7 +299,7 @@
       const lastUpdate = document.getElementById('last-update');
       const footerUpdate = document.getElementById('footer-update');
 
-      const timestamp = now.toLocaleString('pt-PT', {
+      const timestamp = now.toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -371,19 +371,19 @@
       const status = ci(atualizacao, 'Status');
       const temStatus = status !== undefined && status !== null && status !== '';
       const titulo = ci(atualizacao, 'Titulo') || 'â€”';
-      const descricao = ci(atualizacao, 'Descricao') || 'Sem descriÃ§Ã£o';
+      const descricao = ci(atualizacao, 'Descricao') || 'No description provided';
 
       card.innerHTML = `
         <div class="update-date">${formatarData(dataPublicacao)}</div>
         <div class="update-content">
           <h4>${titulo}</h4>
           <div class="update-details">
-            <p><strong>Tipo:</strong> ${tipo}</p>
+            <p><strong>Type:</strong> ${tipo}</p>
             <p><strong>Description:</strong> ${descricao}</p>
             ${temStatus ? `<p><strong>Status:</strong> <span class="status-completed">${status}</span></p>` : ''}
           </div>
         </div>
-        <span class="card-status-dot resolved" aria-label="Publicado"></span>
+        <span class="card-status-dot resolved" aria-label="Published"></span>
       `;
 
       return card;

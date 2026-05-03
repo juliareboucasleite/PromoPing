@@ -6,23 +6,26 @@ const NAVIGATION_HTML = `
     <nav>
       <ul>
         <li class="sidebar-nav-about">
-          <a href="/docs">Sobre o PromoPing</a>
+          <a href="/docs">About PromoPing</a>
         </li>
-        <li class="sidebar-nav-section"><span>COMEÃ‡AR</span></li>
-        <li><a href="/docs/FirstLaunch" class="sidebar-nav-link">Primeiro LanÃ§amento</a></li>
-        <li><a href="/docs/usage-guide" class="sidebar-nav-link">Guia de UtilizaÃ§Ã£o</a></li>
-        <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
-        <li><a href="/docs/api-reference" class="sidebar-nav-link inactive">ReferÃªncia da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
-        <li class="sidebar-nav-item"><span>SUPORTE</span></li>
-        <li><a href="/docs/support" class="sidebar-nav-link">Suporte</a></li>
+        <li class="sidebar-nav-section"><span>GETTING STARTED</span></li>
+        <li><a href="/docs/FirstLaunch" class="sidebar-nav-link">First Launch</a></li>
+        <li><a href="/docs/usage-guide" class="sidebar-nav-link">Usage Guide</a></li>
+        <li class="sidebar-nav-item"><span>UI SCRIPTING</span></li>
+        <li><a href="/docs/api-reference" class="sidebar-nav-link inactive">API Reference <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
+        <li class="sidebar-nav-item"><span>SUPPORT</span></li>
+        <li><a href="/docs/support" class="sidebar-nav-link">Support</a></li>
         <li><a href="/docs/faq" class="sidebar-nav-link">FAQ</a></li>
         <li><a href="/docs/changelog" class="sidebar-nav-link">Changelog</a></li>
-        <li><a href="/docs/service-status" class="sidebar-nav-link">Status do ServiÃ§o</a></li>
-        <li><a href="/docs/incident-history" class="sidebar-nav-link">HistÃ³rico de Incidentes</a></li>
-        <li><a href="/docs/terms" class="sidebar-nav-link">Termos de Uso</a></li>
+        <li><a href="/docs/service-status" class="sidebar-nav-link">Service Status</a></li>
+        <li><a href="/docs/incident-history" class="sidebar-nav-link">Incident History</a></li>
+        <li><a href="/docs/terms-of-service" class="sidebar-nav-link">Terms of Service</a></li>
+        <li><a href="/docs/privacy-policy" class="sidebar-nav-link">Privacy Policy</a></li>
+        <li><a href="/docs/alternative-dispute-resolution" class="sidebar-nav-link">Alternative Dispute Resolution</a></li>
+        <li><a href="/docs/complaints-book" class="sidebar-nav-link">Complaints Book</a></li>
       </ul>
     </nav>
-    <div class="powered"><p>Made by PromoPingg</p></div>
+    <div class="powered"><p>Made by PromoPing</p></div>
   </aside>
 `;
 
