@@ -137,10 +137,16 @@ router.post("/subscribe", async (req, res) => {
       `, [newsletter || false, promotions || false, articles || false, email]);
 
       if (!updateResult || (updateResult.rowCount || 0) === 0) {
+        const [nextIdRows] = await connection.query(`
+          SELECT COALESCE(MAX(id), 0) + 1 AS next_id
+          FROM newsletter_subscribers
+        `);
+        const nextId = nextIdRows?.[0]?.next_id || 1;
+
         await connection.query(`
-          INSERT INTO newsletter_subscribers (email, newsletter, promotions, articles)
-          VALUES (?, ?, ?, ?)
-        `, [email, newsletter || false, promotions || false, articles || false]);
+          INSERT INTO newsletter_subscribers (id, email, newsletter, promotions, articles)
+          VALUES (?, ?, ?, ?, ?)
+        `, [nextId, email, newsletter || false, promotions || false, articles || false]);
       }
 
       connection.release();
