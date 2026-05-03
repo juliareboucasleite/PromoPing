@@ -171,7 +171,8 @@ router.post("/subscribe", async (req, res) => {
     console.error("❌ [NEWSLETTER] Erro ao processar subscrição:", error);
     
     // Se for erro de email duplicado, retornar sucesso (já está subscrito)
-    if (error.code === 'ER_DUP_ENTRY') {
+    // 23505 = unique_violation em Postgres; ER_DUP_ENTRY mantido para compat com mysql2.
+    if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
       return res.json({
         success: true,
         message: "Já estás subscrito! As tuas preferências foram atualizadas."
