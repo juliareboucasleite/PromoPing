@@ -1,21 +1,22 @@
-﻿<!-- 
-CONFIGURAÃ‡ÃƒO DE SEGURANÃ‡A PARA DOCUMENTAÃ‡ÃƒO PROMOPING
+<!--
+PROMOPING DOCUMENTATION SECURITY CONFIGURATION
 
-Este arquivo contÃ©m as configuraÃ§Ãµes de seguranÃ§a recomendadas para o servidor.
-Aplique estes headers HTTP para proteger contra ataques XSS, clickjacking e outros.
+This file contains the recommended server-side security settings for the
+documentation pages. Apply these HTTP headers to reduce XSS, clickjacking,
+and related browser-side attack risks.
 
-=== HEADERS HTTP RECOMENDADOS ===
+=== RECOMMENDED HTTP HEADERS ===
 
 1. Content Security Policy (CSP)
-   Content-Security-Policy: default-src 'self'; 
-                           script-src 'self' 'unsafe-inline'; 
-                           style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
-                           font-src 'self' https://fonts.gstatic.com; 
-                           img-src 'self' data:; 
-                           connect-src 'self'; 
-                           object-src 'none'; 
-                           frame-ancestors 'none'; 
-                           base-uri 'self'; 
+   Content-Security-Policy: default-src 'self';
+                           script-src 'self' 'unsafe-inline';
+                           style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                           font-src 'self' https://fonts.gstatic.com;
+                           img-src 'self' data:;
+                           connect-src 'self';
+                           object-src 'none';
+                           frame-ancestors 'none';
+                           base-uri 'self';
                            form-action 'self';
 
 2. X-Frame-Options
@@ -24,13 +25,13 @@ Aplique estes headers HTTP para proteger contra ataques XSS, clickjacking e outr
 3. X-Content-Type-Options
    X-Content-Type-Options: nosniff
 
-4. Referrer Policy
+4. Referrer-Policy
    Referrer-Policy: strict-origin-when-cross-origin
 
-5. Permissions Policy
+5. Permissions-Policy
    Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 
-=== CONFIGURAÃ‡ÃƒO PARA DIFERENTES SERVIDORES ===
+=== SERVER EXAMPLES ===
 
 NGINX:
 location /docs/ {
@@ -60,66 +61,65 @@ app.use((req, res, next) => {
     next();
 });
 
-=== MEDIDAS ADICIONAIS DE SEGURANÃ‡A ===
+=== ADDITIONAL SECURITY MEASURES ===
 
-1. VALIDAÃ‡ÃƒO DE INPUT
-   - Todos os inputs sÃ£o sanitizados antes do processamento
-   - Escape HTML em todos os outputs
-   - ValidaÃ§Ã£o de comprimento e formato
+1. INPUT VALIDATION
+   - Sanitize all user input before processing
+   - Escape HTML in every rendered output
+   - Validate length and format constraints
 
-2. PROTEÃ‡ÃƒO CONTRA XSS
-   - Uso de textContent em vez de innerHTML quando possÃ­vel
-   - Escape de caracteres especiais em regex
-   - SanitizaÃ§Ã£o de queries de pesquisa
+2. XSS PROTECTION
+   - Prefer textContent over innerHTML whenever possible
+   - Escape special characters in regex patterns
+   - Sanitize documentation search queries
 
-3. PROTEÃ‡ÃƒO CONTRA INJEÃ‡ÃƒO
-   - NÃ£o uso de eval() ou Function()
-   - ValidaÃ§Ã£o de URLs antes de navegaÃ§Ã£o
-   - Escape de caracteres em regex
+3. INJECTION PROTECTION
+   - Do not use eval() or Function()
+   - Validate URLs before navigation
+   - Escape regex-sensitive characters
 
-4. ACESSIBILIDADE E SEGURANÃ‡A
-   - Atributos ARIA apropriados
-   - NavegaÃ§Ã£o por teclado
-   - Foco visÃ­vel e lÃ³gico
+4. ACCESSIBILITY AND SECURITY
+   - Use appropriate ARIA attributes
+   - Support keyboard navigation
+   - Keep focus states visible and logical
 
-=== TESTES DE SEGURANÃ‡A RECOMENDADOS ===
+=== RECOMMENDED TESTS ===
 
-1. Teste de XSS:
-   - Inserir <script>alert('XSS')</script> na pesquisa
-   - Inserir javascript:alert('XSS') em links
-   - Testar com payloads de XSS conhecidos
+1. XSS testing:
+   - Insert <script>alert('XSS')</script> in search input
+   - Insert javascript:alert('XSS') in links
+   - Test known XSS payloads
 
-2. Teste de InjeÃ§Ã£o:
-   - Tentar inserir SQL injection na pesquisa
-   - Testar com caracteres especiais: <>&"'
-   - Verificar escape de caracteres Unicode
+2. Injection testing:
+   - Try SQL injection strings in search input
+   - Test special characters: <>&"'
+   - Verify Unicode escaping behavior
 
-3. Teste de CSP:
-   - Verificar se scripts inline sÃ£o bloqueados
-   - Testar carregamento de recursos externos
-   - Validar headers de seguranÃ§a
+3. CSP testing:
+   - Confirm inline scripts are blocked when expected
+   - Test external resource loading
+   - Validate the returned security headers
 
-=== MONITORIZAÃ‡ÃƒO ===
+=== MONITORING ===
 
-1. Logs de SeguranÃ§a:
-   - Registrar tentativas de XSS
-   - Monitorizar queries suspeitas
-   - Alertar sobre violaÃ§Ãµes de CSP
+1. Security logs:
+   - Record XSS attempts
+   - Monitor suspicious queries
+   - Alert on CSP violations
 
-2. MÃ©tricas:
-   - NÃºmero de pesquisas por minuto
-   - Queries bloqueadas por CSP
-   - Tentativas de acesso malicioso
+2. Metrics:
+   - Searches per minute
+   - CSP-blocked requests
+   - Malicious access attempts
 
-=== ATUALIZAÃ‡Ã•ES DE SEGURANÃ‡A ===
+=== SECURITY MAINTENANCE ===
 
-Este arquivo deve ser revisto regularmente para:
-- Atualizar CSP conforme novas funcionalidades
-- Revisar headers de seguranÃ§a
-- Testar novas vulnerabilidades
-- Manter documentaÃ§Ã£o atualizada
+Review this file regularly to:
+- Update CSP rules as new features are added
+- Revisit security headers
+- Test for newly disclosed vulnerabilities
+- Keep the documentation guidance current
 
-Ãšltima atualizaÃ§Ã£o: 15 de Janeiro, 2025
-VersÃ£o de seguranÃ§a: 1.0.0
+Last updated: January 15, 2025
+Security version: 1.0.0
 -->
-

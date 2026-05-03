@@ -389,9 +389,9 @@
     }
 
     function formatShortUtcDate(value) {
-      if (!value) return '—';
+      if (!value) return '--';
       const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
+      if (Number.isNaN(date.getTime())) return '--';
       return date.toLocaleDateString('en-GB', {
         day: 'numeric',
         month: 'short',
@@ -643,7 +643,7 @@
         const empty = document.createElement('div');
         empty.className = 'incident-item resolved';
         empty.innerHTML = `
-          <div class="incident-date">—</div>
+          <div class="incident-date">--</div>
           <div class="incident-content">
             <h4>No recent incidents</h4>
             <p><strong>Status:</strong> Operational</p>
