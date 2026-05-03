@@ -675,7 +675,7 @@
                     function formatarDataPT(isoString) {
                         if (!isoString) return "";
                         const d = new Date(isoString);
-                        return d.toLocaleDateString("pt-PT", {
+                        return d.toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "2-digit",
                             year: "numeric"
@@ -687,7 +687,7 @@
                     if (profile.pode_alterar_senha === false && profile.proxima_alteracao_senha) {
                         if (passwordFieldset) passwordFieldset.disabled = true;
                         if (cooldownSenhaEl) {
-                            cooldownSenhaEl.textContent = "Pode alterar a senha novamente a " + formatarDataPT(profile.proxima_alteracao_senha) + ".";
+                            cooldownSenhaEl.textContent = "You can change your password again on " + formatarDataPT(profile.proxima_alteracao_senha) + ".";
                             cooldownSenhaEl.style.display = "block";
                         }
                     } else {
@@ -770,35 +770,35 @@
 
             // ValidaÃ§Ãµes
             if (!currentPassword) {
-                if (typeof window.showErrorr === 'function') {
-                    window.showErrorr("Required field", "Please enter your current password.", 3000);
+                if (typeof window.showError === 'function') {
+                    window.showError("Required field", "Please enter your current password.", 3000);
                 } else {
-                    alert("Por favor, insira a sua senha atual!");
+                    alert("Please enter your current password.");
                 }
                 return;
             }
 
             if (newPassword.length < 6) {
-                if (typeof window.showErrorr === 'function') {
-                    window.showErrorr("Invalid password", "The new password must have at least 6 characters.", 3000);
+                if (typeof window.showError === 'function') {
+                    window.showError("Invalid password", "The new password must have at least 6 characters.", 3000);
                 } else {
-                    alert("A nova senha deve ter pelo menos 6 caracteres!");
+                    alert("The new password must have at least 6 characters.");
                 }
                 return;
             }
 
             if (newPassword === currentPassword) {
-                if (typeof window.showErrorr === 'function') {
-                    window.showErrorr("Invalid password", "The new password must be different from the current password.", 3000);
+                if (typeof window.showError === 'function') {
+                    window.showError("Invalid password", "The new password must be different from the current password.", 3000);
                 } else {
-                    alert("A nova senha deve ser diferente da senha atual!");
+                    alert("The new password must be different from the current password.");
                 }
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                if (typeof window.showErrorr === 'function') {
-                    window.showErrorr("Passwords do not match", "The passwords do not match. Check them and try again.", 3000);
+                if (typeof window.showError === 'function') {
+                    window.showError("Passwords do not match", "The passwords do not match. Check them and try again.", 3000);
                 } else {
                     alert("Passwords do not match!");
                 }
@@ -824,12 +824,12 @@
                     // Mostrar notificaÃ§Ã£o de sucesso
                     if (typeof window.showSuccess === 'function') {
                         window.showSuccess(
-                            "Senha alterada com sucesso!",
+                            "Password changed successfully!",
                             "You will be redirected to sign in again.",
                             3000
                         );
                     } else {
-                        alert("Senha alterada com sucesso! You will be redirected to sign in again.");
+                        alert("Password changed successfully! You will be redirected to sign in again.");
                     }
 
                     // Limpar token e fazer logout
@@ -842,20 +842,20 @@
                     }, 2000);
                 } else {
                     // Mostrar notificaÃ§Ã£o de erro
-                    if (typeof window.showErrorr === 'function') {
-                        window.showErrorr(
-                            "Error ao alterar senha",
-                            data.message || data.error || "Ocorreu um erro ao alterar a senha. Tente novamente.",
+                    if (typeof window.showError === 'function') {
+                        window.showError(
+                            "Password change error",
+                            data.message || data.error || "An error occurred while changing the password. Please try again.",
                             5000
                         );
                     } else {
-                        alert(data.message || data.error || "Error ao alterar senha.");
+                        alert(data.message || data.error || "Error changing password.");
                     }
                 }
             } catch (err) {
                 console.error("Error ao alterar senha:", err);
-                if (typeof window.showErrorr === 'function') {
-                    window.showErrorr(
+                if (typeof window.showError === 'function') {
+                    window.showError(
                         "Connection error",
                         "Could not connect to the server. Check your connection and try again.",
                         5000
@@ -1045,7 +1045,7 @@
                 });
                 const data = await res.json();
                 if (data.status !== "ok") {
-                    alert(data.error || "Error ao iniciar 2FA");
+                    alert(data.error || "Error starting 2FA");
                     return;
                 }
                 document.getElementById("twoFASetupStep1").style.display = "none";
@@ -1068,7 +1068,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                alert("Error ao iniciar 2FA. Tente novamente.");
+                alert("Error starting 2FA. Please try again.");
             }
         }
 
@@ -1093,13 +1093,13 @@
                     if (twoFASetupBackupCodes.length) {
                         alert("2FA enabled. Store the backup codes in a safe place. Each code can only be used once.");
                     } else {
-                        alert("2FA ativado com sucesso.");
+                        alert("2FA enabled successfully.");
                     }
                 } else {
                     alert(data.error || "Invalid code.");
                 }
             } catch (e) {
-                alert("Error ao ativar 2FA. Tente novamente.");
+                alert("Error enabling 2FA. Please try again.");
             }
         }
 
@@ -1121,12 +1121,12 @@
                 if (data.status === "ok") {
                     fecharModal2FADisable();
                     await carregarStatus2FA();
-                    alert("2FA desativado.");
+                    alert("2FA disabled.");
                 } else {
                     alert(data.error || "Invalid code.");
                 }
             } catch (e) {
-                alert("Error ao desativar 2FA. Tente novamente.");
+                alert("Error disabling 2FA. Please try again.");
             }
         }
 
@@ -1203,7 +1203,7 @@
             const btn = document.querySelector('#deactivateModal .modal-btn.confirm');
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Processando...';
+            btn.textContent = 'Processing...';
 
             const code2FA = window.twoFAEnabled ? document.getElementById("deactivate2FACode").value.trim() : "";
             if (window.twoFAEnabled && !code2FA) {
@@ -1243,13 +1243,13 @@
                     localStorage.removeItem('token');
                     window.location.href = '/';
                 } else {
-                    alert(data.message || data.error || 'Error ao desativar conta');
+                    alert(data.message || data.error || 'Error deactivating account');
                     btn.disabled = false;
                     btn.textContent = originalText;
                 }
             } catch (error) {
                 console.error('[PERFIL] Error ao desativar conta:', error);
-                alert('Error ao desativar conta. Tente novamente mais tarde.');
+                alert('Error deactivating account. Please try again later.');
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -1273,7 +1273,7 @@
             const input = document.getElementById('deleteConfirmInput');
             const btn = document.getElementById('confirmDeleteBtn');
             const code2FA = window.twoFAEnabled ? (document.getElementById('delete2FACode') && document.getElementById('delete2FACode').value.trim()) : '';
-            const ok = input.value === 'EXCLUIR' && (!window.twoFAEnabled || (code2FA && code2FA.length > 0));
+            const ok = input.value === 'DELETE' && (!window.twoFAEnabled || (code2FA && code2FA.length > 0));
             btn.disabled = !ok;
         }
         var delete2FACodeEl = document.getElementById('delete2FACode');
@@ -1281,7 +1281,7 @@
 
         async function confirmarDelete() {
             const input = document.getElementById('deleteConfirmInput');
-            if (input.value !== 'EXCLUIR') {
+            if (input.value !== 'DELETE') {
                 return;
             }
 
@@ -1295,7 +1295,7 @@
             const btn = document.getElementById('confirmDeleteBtn');
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Excluindo...';
+            btn.textContent = 'Deleting...';
 
             const code2FA = window.twoFAEnabled ? document.getElementById("delete2FACode").value.trim() : "";
             if (window.twoFAEnabled && !code2FA) {
@@ -1328,13 +1328,13 @@
                     localStorage.removeItem('token');
                     window.location.href = '/';
                 } else {
-                    alert(data.message || data.error || 'Error ao excluir conta');
+                    alert(data.message || data.error || 'Error deleting account');
                     btn.disabled = false;
                     btn.textContent = originalText;
                 }
             } catch (error) {
                 console.error('Error ao excluir conta:', error);
-                alert('Error ao excluir conta. Tente novamente mais tarde.');
+                alert('Error deleting account. Please try again later.');
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -1430,35 +1430,35 @@
                         // FREE
                         document.getElementById("plano-nome").textContent = "Free";
                         document.getElementById("plano-descricao").textContent = "Free plan with basic features";
-                        document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
+                        document.getElementById("plano-intervalo").textContent = "24 hours (Free)";
                         document.getElementById("plano-produtos").textContent = "No (5 products)";
                     } else if (plano.id === 2) {
                         // BASIC
                         document.getElementById("plano-nome").textContent = "Basic";
                         document.getElementById("plano-descricao").textContent = "Basic plan with essential features";
-                        document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
+                        document.getElementById("plano-intervalo").textContent = "4 hours (Basic)";
                         document.getElementById("plano-produtos").textContent = "No (25 products)";
                     } else if (plano.id === 3) {
                         // STANDARD
                         document.getElementById("plano-nome").textContent = "Standard";
                         document.getElementById("plano-descricao").textContent = "Standard plan with advanced features";
-                        document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
-                        document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+                        document.getElementById("plano-intervalo").textContent = "30 minutes (Standard)";
+                        document.getElementById("plano-produtos").textContent = "Yes (Unlimited)";
                     } else if (plano.id === 4) {
                         // PREMIUM
                         document.getElementById("plano-nome").textContent = "Premium";
                         document.getElementById("plano-descricao").textContent = "Premium plan with all features";
-                        document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
-                        document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
+                        document.getElementById("plano-intervalo").textContent = "5 minutes (Premium)";
+                        document.getElementById("plano-produtos").textContent = "Yes (Unlimited)";
                     } else {
                         // FALLBACK se id nÃ£o reconhecido
                         document.getElementById("plano-nome").textContent = "Free";
                         document.getElementById("plano-descricao").textContent = "Free plan with basic features";
-                        document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
+                        document.getElementById("plano-intervalo").textContent = "24 hours (Free)";
                         document.getElementById("plano-produtos").textContent = "No (5 products)";
                     }
                 } else {
-                    document.getElementById("plano-nome").textContent = "Error ao carregar";
+                    document.getElementById("plano-nome").textContent = "Error loading";
                     document.getElementById("plano-descricao").textContent = "Could not load plan information";
                     atualizarBotoesHistorico(1);
                 }
@@ -1558,7 +1558,7 @@
                 window.URL.revokeObjectURL(urlBlob);
             } catch (err) {
                 console.error("Error ao exportar PDF:", err);
-                alert("Error ao exportar PDF: " + err.message);
+                alert("Error exporting PDF: " + err.message);
             } finally {
                 if (botaoClicado) {
                     botaoClicado.disabled = false;
@@ -1647,7 +1647,7 @@
 
             } catch (error) {
                 console.error(" Error ao conectar Discord:", error);
-                alert("Error ao conectar com Discord. Tente novamente.");
+                alert("Error connecting to Discord. Please try again.");
             }
         }
 
@@ -1664,7 +1664,7 @@
 
             } catch (error) {
                 console.error(" Error ao configurar email:", error);
-                alert("Error ao configurar email. Tente novamente.");
+                alert("Error configuring email. Please try again.");
             }
         }
 
@@ -1681,7 +1681,7 @@
 
             } catch (error) {
                 console.error(" Error ao configurar SMS:", error);
-                alert("Error ao configurar SMS. Tente novamente.");
+                alert("Error configuring SMS. Please try again.");
             }
         }
     </script>
