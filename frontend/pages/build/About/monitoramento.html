@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
-  <title>Monitoramento | PromoPing</title>
+  <title>Monitoring | PromoPing</title>
   
-  <link rel="stylesheet" href="About/styles.css">
+  <link rel="stylesheet" href="assets/styles/about-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
@@ -20,6 +20,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
+  <link rel="stylesheet" href="assets/styles/monitoramento.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -39,7 +40,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <input type="text" placeholder="Ask or search..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -49,13 +50,13 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Monitoramento de Preços</h1>
+        <h1>Price Monitoring</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -100,25 +101,25 @@
         </div>
       </div>
 
-      <p>Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra</p>
+      <p>Track products in real time and never miss a buying opportunity</p>
 
-      <h2>Monitoramento em Tempo Real</h2>
-      <h3>Como Funciona</h3>
-      <p>O PromoPing monitora constantemente milhares de produtos em dezenas de lojas online, verificando preços, disponibilidade e ofertas especiais.</p>
+      <h2>Real-Time Monitoring</h2>
+      <h3>How It Works</h3>
+      <p>PromoPing constantly monitors thousands of products across dozens of online stores, checking prices, availability and special offers.</p>
 
-      <h3>Recursos de Monitoramento</h3>
+      <h3>Monitoring Features</h3>
       <ul>
-        <li><strong>Verificação Contínua:</strong> Produtos verificados a cada 15 minutos</li>
-        <li><strong>Múltiplas Lojas:</strong> Monitora PCDiga, Worten, Globaldata e muito mais</li>
-        <li><strong>Histórico Completo:</strong> Acompanha a evolução dos preços ao longo do tempo</li>
-        <li><strong>Análise Inteligente:</strong> Identifica padrões e tendências de preços</li>
+        <li><strong>Continuous Checking:</strong> Products checked every 15 minutes</li>
+        <li><strong>Multiple Stores:</strong> Monitors PCDiga, Worten, Globaldata and many more</li>
+        <li><strong>Complete History:</strong> Tracks price evolution over time</li>
+        <li><strong>Smart Analysis:</strong> Identifies price patterns and trends</li>
       </ul>
 
-      <h3>Benefícios</h3>
-      <p>Seja notificado instantaneamente quando o preço do produto que deseja baixar, garantindo que nunca perca uma oportunidade.</p>
+      <h3>Benefits</h3>
+      <p>Be notified instantly when the price of the product you want drops, ensuring you never miss an opportunity.</p>
 
-      <h2>Lojas Suportadas</h2>
-      <p>O PromoPing monitora produtos em mais de 50 lojas online portuguesas, incluindo:</p>
+      <h2>Supported Stores</h2>
+      <p>PromoPing monitors products in over 50 online Portuguese stores, including:</p>
       <ul>
         <li>PCDiga</li>
         <li>Worten</li>
@@ -127,23 +128,23 @@
         <li>El Corte Inglés</li>
         <li>Continente</li>
         <li>Pingo Doce</li>
-        <li>E muitas outras...</li>
+        <li>And many more...</li>
       </ul>
 
-      <h2>Frequência de Verificação</h2>
-      <p>Dependendo do seu plano, os produtos são verificados com diferentes frequências:</p>
+      <h2>Check Frequency</h2>
+      <p>Depending on your plan, products are checked at different frequencies:</p>
       <ul>
-        <li><strong>Plano Free:</strong> Verificação diária</li>
-        <li><strong>Plano Basic:</strong> Verificação a cada 4 horas</li>
-        <li><strong>Plano Standard:</strong> Verificação a cada 2 horas</li>
-        <li><strong>Plano Premium:</strong> Verificação em tempo real</li>
+        <li><strong>Free Plan:</strong> Daily check</li>
+        <li><strong>Basic Plan:</strong> Every 4 hours</li>
+        <li><strong>Standard Plan:</strong> Every 2 hours</li>
+        <li><strong>Premium Plan:</strong> Real-time check</li>
       </ul>
 
-      <h2>Histórico de Preços</h2>
-      <p>Mantenha um histórico completo de todos os preços dos produtos que monitora. Veja gráficos detalhados mostrando a evolução dos preços ao longo do tempo e identifique os melhores momentos para comprar.</p>
+      <h2>Price History</h2>
+      <p>Keep a complete history of all the prices of products you monitor. See detailed charts showing how prices have changed over time and identify the best moments to buy.</p>
 
       <footer>
-        <p>Última actualização há 1 dia</p>
+        <p>Last updated 1 day ago</p>
       </footer>
     </main>
 
@@ -153,25 +154,9 @@
   <script src="About/script.js"></script>
   <script src="About/search.js"></script>
 
-  <style>
-    /* Esconder scrollbar da área de conteúdo principal (main.content) */
-    main.content {
-      scrollbar-width: none !important;
-      -ms-overflow-style: none !important;
-    }
-
-    main.content::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      background: transparent !important;
-    }
-
-    /* Manter funcionalidade de scroll */
-    main.content {
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-  </style>
+  
 </body>
 
 </html>
+
+

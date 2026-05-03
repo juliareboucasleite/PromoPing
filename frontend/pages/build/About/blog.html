@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
   <meta charset="UTF-8">
   <title>Blog | PromoPing</title>
-  <link rel="stylesheet" href="About/styles.css">
+  <link rel="stylesheet" href="assets/styles/about-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
@@ -17,6 +17,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
+  <link rel="stylesheet" href="assets/styles/blog.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -36,7 +37,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <input type="text" placeholder="Ask or search..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -46,7 +47,7 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
@@ -54,14 +55,14 @@
       <div class="blog-header">
         <div class="blog-header-content">
           <h1 class="blog-title">PromoPing</h1>
-          <p class="blog-subtitle">Dicas, truques e insights para maximizar as suas poupanças</p>
-          <div class="blog-date">Janeiro 2026</div>
+          <p class="blog-subtitle">Tips, tricks and insights to maximise your savings</p>
+          <div class="blog-date">January 2026</div>
         </div>
-        
-        <!-- Filtros e Busca -->
+
+        <!-- Filters and Search -->
         <div class="blog-filters">
           <div class="blog-search-container">
-            <input type="text" id="blog-search-input" class="blog-search-input" placeholder="Pesquisar artigos..." />
+            <input type="text" id="blog-search-input" class="blog-search-input" placeholder="Search articles..." />
             <button id="blog-search-btn" class="blog-search-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>
@@ -70,40 +71,40 @@
             </button>
           </div>
           <div class="blog-category-filters" id="blog-category-filters">
-            <button class="category-filter-btn active" data-category="all">Todos</button>
-            <!-- Categorias serão carregadas dinamicamente -->
+            <button class="category-filter-btn active" data-category="all">All</button>
+            <!-- Categories will be loaded dynamically -->
           </div>
         </div>
       </div>
 
-      <!-- Destaque Principal -->
+      <!-- Featured -->
       <section class="featured-section" id="featured-articles">
         <div id="articles-loading" style="text-align: center; padding: 3rem; color: #888;">
-          <p>A carregar notícias...</p>
+          <p>Loading articles...</p>
         </div>
         <div id="articles-error" style="display: none; text-align: center; padding: 3rem; color: #ff6b35;">
-          <p>Erro ao carregar notícias. Por favor, tente novamente mais tarde.</p>
+          <p>Failed to load articles. Please try again later.</p>
         </div>
-        <!-- Artigos serão carregados dinamicamente aqui -->
+        <!-- Articles will be loaded dynamically here -->
       </section>
 
-      <!-- Lista de Artigos -->
+      <!-- Articles List -->
       <section class="articles-list-section" id="articles-list-section">
-        <h2 class="section-title">Todos os Artigos</h2>
+        <h2 class="section-title">All Articles</h2>
         <div id="articles-list" class="articles-grid">
-          <!-- Artigos serão carregados aqui -->
+          <!-- Articles will be loaded here -->
         </div>
         <div id="articles-list-loading" style="text-align: center; padding: 2rem; color: #888; display: none;">
-          <p>A carregar mais artigos...</p>
+          <p>Loading more articles...</p>
         </div>
         <div id="articles-pagination" class="articles-pagination">
-          <!-- Paginação será carregada aqui -->
+          <!-- Pagination will be loaded here -->
         </div>
       </section>
 
-      <!-- Seção de Categorias -->
+      <!-- Categories Section -->
       <section class="categories-section">
-        <h2 class="section-title">Categorias Populares</h2>
+        <h2 class="section-title">Popular Categories</h2>
         <div class="categories-grid">
           <div class="category-card">
             <div class="category-icon">
@@ -111,9 +112,9 @@
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
             </div>
-            <h3>Estratégias de Poupança</h3>
-            <p>Dicas práticas para maximizar as suas poupanças</p>
-            <span class="category-count">12 artigos</span>
+            <h3>Saving Strategies</h3>
+            <p>Practical tips to maximise your savings</p>
+            <span class="category-count">12 articles</span>
           </div>
           <div class="category-card">
             <div class="category-icon">
@@ -122,9 +123,9 @@
                 <line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
             </div>
-            <h3>Tecnologia</h3>
-            <p>Análises de preços e tendências em eletrónicos</p>
-            <span class="category-count">8 artigos</span>
+            <h3>Technology</h3>
+            <p>Price analysis and trends in electronics</p>
+            <span class="category-count">8 articles</span>
           </div>
           <div class="category-card">
             <div class="category-icon">
@@ -133,9 +134,9 @@
                 <line x1="7" y1="7" x2="7.01" y2="7"/>
               </svg>
             </div>
-            <h3>Moda e Beleza</h3>
-            <p>Guias para encontrar as melhores ofertas</p>
-            <span class="category-count">15 artigos</span>
+            <h3>Fashion and Beauty</h3>
+            <p>Guides to find the best deals</p>
+            <span class="category-count">15 articles</span>
           </div>
           <div class="category-card">
             <div class="category-icon">
@@ -144,9 +145,9 @@
                 <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
             </div>
-            <h3>Casa e Jardim</h3>
-            <p>Dicas para mobilar sem gastar uma fortuna</p>
-            <span class="category-count">10 artigos</span>
+            <h3>Home and Garden</h3>
+            <p>Tips to furnish your home without breaking the bank</p>
+            <span class="category-count">10 articles</span>
           </div>
           <div class="category-card">
             <div class="category-icon">
@@ -156,8 +157,8 @@
               </svg>
             </div>
             <h3>Gaming</h3>
-            <p>Ofertas em jogos e consolas</p>
-            <span class="category-count">6 artigos</span>
+            <p>Deals on games and consoles</p>
+            <span class="category-count">6 articles</span>
           </div>
           <div class="category-card">
             <div class="category-icon">
@@ -166,76 +167,76 @@
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               </svg>
             </div>
-            <h3>Livros e Educação</h3>
-            <p>Encontre os melhores preços em livros</p>
-            <span class="category-count">9 artigos</span>
+            <h3>Books and Education</h3>
+            <p>Find the best prices on books</p>
+            <span class="category-count">9 articles</span>
           </div>
         </div>
       </section>
 
-      <!-- Análises e Tendências -->
+      <!-- Analysis and Trends -->
       <section class="analysis-section">
-        <h2 class="section-title">Análises e Tendências</h2>
+        <h2 class="section-title">Analysis and Trends</h2>
         <div class="analysis-grid">
           <article class="analysis-card">
             <div class="analysis-header">
-              <h3>Relatório Mensal de Preços</h3>
-              <span class="analysis-badge">Janeiro 2024</span>
+              <h3>Monthly Price Report</h3>
+              <span class="analysis-badge">January 2024</span>
             </div>
-            <p>A nossa equipa analisou os dados do mês passado, trazendo as melhores dicas para poupar mais.</p>
+            <p>Our team analysed last month's data, bringing the best tips to save more.</p>
             <div class="analysis-stats">
               <div class="stat-item">
                 <span class="stat-value">-15%</span>
-                <span class="stat-label">média de desconto</span>
+                <span class="stat-label">average discount</span>
               </div>
               <div class="stat-item">
                 <span class="stat-value" id="total-saved">€0</span>
-                <span class="stat-label">poupados</span>
+                <span class="stat-label">saved</span>
               </div>
             </div>
           </article>
 
           <article class="analysis-card">
             <div class="analysis-header">
-              <h3>Top 10 Produtos com Maior Poupança</h3>
-              <span class="analysis-badge">Destaque</span>
+              <h3>Top 10 Products with Biggest Savings</h3>
+              <span class="analysis-badge">Featured</span>
             </div>
-            <p>Confira o ranking de produtos com maior poupança segundo os utilizadores do nosso serviço.</p>
+            <p>Check out the ranking of products with the biggest savings reported by our users.</p>
             <div class="analysis-stats">
               <div class="stat-item">
                 <span class="stat-value">70%</span>
-                <span class="stat-label">desconto máximo</span>
+                <span class="stat-label">max discount</span>
               </div>
               <div class="stat-item">
                 <span class="stat-value" id="total-notifications">0</span>
-                <span class="stat-label">alertas enviados</span>
+                <span class="stat-label">alerts sent</span>
               </div>
             </div>
           </article>
 
           <article class="analysis-card">
             <div class="analysis-header">
-              <h3>Previsões para o Próximo Mês</h3>
-              <span class="analysis-badge">Fevereiro 2024</span>
+              <h3>Forecasts for Next Month</h3>
+              <span class="analysis-badge">February 2024</span>
             </div>
-            <p>Utilize estes dados e tenha acesso antecipado às próximas melhores oportunidades de poupança.</p>
+            <p>Use this data to get early access to the next best saving opportunities.</p>
             <div class="analysis-stats">
               <div class="stat-item">
                 <span class="stat-value">85%</span>
-                <span class="stat-label">precisão</span>
+                <span class="stat-label">accuracy</span>
               </div>
               <div class="stat-item">
                 <span class="stat-value" id="data-analyzed">0</span>
-                <span class="stat-label">dados analisados</span>
+                <span class="stat-label">data points analysed</span>
               </div>
             </div>
           </article>
         </div>
       </section>
 
-      <!-- Dicas Rápidas -->
+      <!-- Quick Tips -->
       <section class="tips-section">
-        <h2 class="section-title">Dicas Rápidas</h2>
+        <h2 class="section-title">Quick Tips</h2>
         <div class="tips-grid">
           <div class="tip-card">
             <div class="tip-icon">
@@ -244,8 +245,8 @@
                 <polyline points="12 6 12 12 16 14"/>
               </svg>
             </div>
-            <h3>Melhor Hora para Comprar</h3>
-            <p>As promoções online são mais frequentes entre as 9h e 11h da manhã.</p>
+            <h3>Best Time to Buy</h3>
+            <p>Online promotions are most frequent between 9am and 11am.</p>
           </div>
           <div class="tip-card">
             <div class="tip-icon">
@@ -256,8 +257,8 @@
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
             </div>
-            <h3>Dias da Semana</h3>
-            <p>Terças e quartas-feiras têm 23% mais promoções que outros dias.</p>
+            <h3>Days of the Week</h3>
+            <p>Tuesdays and Wednesdays have 23% more promotions than other days.</p>
           </div>
           <div class="tip-card">
             <div class="tip-icon">
@@ -267,8 +268,8 @@
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
               </svg>
             </div>
-            <h3>Carrinho Abandonado</h3>
-            <p>Deixar produtos no carrinho por 24h pode gerar ofertas personalizadas.</p>
+            <h3>Abandoned Cart</h3>
+            <p>Leaving products in the cart for 24h can trigger personalised offers.</p>
           </div>
           <div class="tip-card">
             <div class="tip-icon">
@@ -277,8 +278,8 @@
                 <line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
             </div>
-            <h3>Apps Móveis</h3>
-            <p>Muitas lojas oferecem descontos exclusivos através das suas apps.</p>
+            <h3>Mobile Apps</h3>
+            <p>Many stores offer exclusive discounts through their apps.</p>
           </div>
         </div>
       </section>
@@ -286,45 +287,45 @@
       <!-- Newsletter -->
       <section class="newsletter-section">
         <div class="newsletter-card">
-          <h2>Newsletter PromoPing</h2>
-          <p>Mantenha-se atualizado. Receba semanalmente as melhores dicas de poupança e alertas de promoções exclusivas.</p>
-          <p class="newsletter-subscribers">Junte-se a mais de <strong id="newsletter-subscribers-count">...</strong> utilizadores que já poupam com as nossas dicas!</p>
-          <button class="newsletter-button" id="newsletter-btn">Subscrever Newsletter</button>
-          
+          <h2>PromoPing Newsletter</h2>
+          <p>Stay up to date. Get the best saving tips and exclusive promotion alerts every week.</p>
+          <p class="newsletter-subscribers">Join over <strong id="newsletter-subscribers-count">...</strong> users who already save with our tips!</p>
+          <button class="newsletter-button" id="newsletter-btn">Subscribe to Newsletter</button>
+
           <div class="newsletter-form-container" id="newsletter-form-container">
             <form class="newsletter-form" id="newsletter-form">
-              <h3>Preferências de Email</h3>
-              <p class="newsletter-form-description">Configure como deseja receber as nossas notícias e dicas.</p>
-              
+              <h3>Email Preferences</h3>
+              <p class="newsletter-form-description">Configure how you'd like to receive our news and tips.</p>
+
               <div class="form-group">
-                <label for="newsletter-email">Endereço de Email</label>
-                <input type="email" id="newsletter-email" name="email" placeholder="seu@email.com" required>
+                <label for="newsletter-email">Email Address</label>
+                <input type="email" id="newsletter-email" name="email" placeholder="you@email.com" required>
               </div>
-              
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" name="newsletter" checked>
-                  <span>Receber newsletter semanal com dicas de poupança</span>
+                  <span>Receive weekly newsletter with saving tips</span>
                 </label>
               </div>
-              
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" name="promotions" checked>
-                  <span>Receber alertas de promoções exclusivas</span>
+                  <span>Receive exclusive promotion alerts</span>
                 </label>
               </div>
-              
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" name="articles">
-                  <span>Receber notificações de novos artigos do blog</span>
+                  <span>Receive notifications of new blog articles</span>
                 </label>
               </div>
-              
+
               <div class="form-actions">
-                <button type="button" class="newsletter-cancel-btn" id="newsletter-cancel">Cancelar</button>
-                <button type="submit" class="newsletter-submit-btn">Subscrever</button>
+                <button type="button" class="newsletter-cancel-btn" id="newsletter-cancel">Cancel</button>
+                <button type="submit" class="newsletter-submit-btn">Subscribe</button>
               </div>
             </form>
           </div>
@@ -332,7 +333,7 @@
       </section>
 
       <footer>
-        <p>Última actualização há 1 dia</p>
+        <p>Last updated 1 day ago</p>
       </footer>
     </main>
 
@@ -342,25 +343,23 @@
   <script src="About/script.js"></script>
   <script src="About/search.js"></script>
   <script>
-    // Carregar estatísticas reais
+    // Load real statistics
     async function loadStats() {
       try {
         const response = await fetch('/api/newsletter/stats');
         const data = await response.json();
-        
+
         if (data.success && data.stats) {
           const stats = data.stats;
-          
-          // Atualizar número de subscritores da newsletter
+
+          // Update newsletter subscribers count
           const subscribersElement = document.getElementById('newsletter-subscribers-count');
           if (subscribersElement) {
-            // Usar especificamente newsletterSubscribers (número de assinantes da newsletter)
             const count = stats.newsletterSubscribers || 0;
-            // Formatar número (ex: 1234 -> 1,234)
-            subscribersElement.textContent = count.toLocaleString('pt-PT');
+            subscribersElement.textContent = count.toLocaleString('en-GB');
           }
 
-          // Atualizar total poupado
+          // Update total saved
           const totalSavedElement = document.getElementById('total-saved');
           if (totalSavedElement && stats.totalSaved) {
             const saved = stats.totalSaved;
@@ -369,22 +368,22 @@
             } else if (saved >= 1000) {
               totalSavedElement.textContent = `€${(saved / 1000).toFixed(1)}K`;
             } else {
-              totalSavedElement.textContent = `€${saved.toLocaleString('pt-PT', { maximumFractionDigits: 0 })}`;
+              totalSavedElement.textContent = `€${saved.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
             }
           }
 
-          // Atualizar total de notificações
+          // Update total notifications
           const totalNotificationsElement = document.getElementById('total-notifications');
           if (totalNotificationsElement && stats.totalNotifications) {
             const notifications = stats.totalNotifications;
             if (notifications >= 1000) {
               totalNotificationsElement.textContent = `${(notifications / 1000).toFixed(0)}K+`;
             } else {
-              totalNotificationsElement.textContent = notifications.toLocaleString('pt-PT');
+              totalNotificationsElement.textContent = notifications.toLocaleString('en-GB');
             }
           }
 
-          // Atualizar dados analisados
+          // Update data analysed
           const dataAnalyzedElement = document.getElementById('data-analyzed');
           if (dataAnalyzedElement && stats.dataAnalyzed) {
             const analyzed = stats.dataAnalyzed;
@@ -393,21 +392,20 @@
             } else if (analyzed >= 1000) {
               dataAnalyzedElement.textContent = `${(analyzed / 1000).toFixed(0)}K+`;
             } else {
-              dataAnalyzedElement.textContent = analyzed.toLocaleString('pt-PT');
+              dataAnalyzedElement.textContent = analyzed.toLocaleString('en-GB');
             }
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error);
-        // Fallback para número padrão se houver erro
+        console.error('Error loading statistics:', error);
         const subscribersElement = document.getElementById('newsletter-subscribers-count');
         if (subscribersElement) {
-          subscribersElement.textContent = 'milhares de';
+          subscribersElement.textContent = 'thousands of';
         }
       }
     }
 
-    // Estado global do blog
+    // Global blog state
     let blogState = {
       currentPage: 1,
       currentCategory: 'all',
@@ -415,23 +413,22 @@
       articlesPerPage: 12
     };
 
-    // Carregar categorias
+    // Load categories
     async function loadCategories() {
       try {
         const response = await fetch('/api/blog/categories');
         const data = await response.json();
-        
+
         if (data.success && data.categories) {
           const filtersContainer = document.getElementById('blog-category-filters');
-          let html = '<button class="category-filter-btn active" data-category="all">Todos</button>';
-          
+          let html = '<button class="category-filter-btn active" data-category="all">All</button>';
+
           data.categories.forEach(cat => {
             html += `<button class="category-filter-btn" data-category="${cat.name}">${cat.name} (${cat.count})</button>`;
           });
-          
+
           filtersContainer.innerHTML = html;
-          
-          // Adicionar event listeners aos botões
+
           filtersContainer.querySelectorAll('.category-filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
               filtersContainer.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
@@ -443,42 +440,41 @@
           });
         }
       } catch (error) {
-        console.error('Erro ao carregar categorias:', error);
+        console.error('Error loading categories:', error);
       }
     }
 
-    // Carregar artigos em destaque
+    // Load featured articles
     async function loadBlogArticles() {
       const featuredSection = document.getElementById('featured-articles');
       const loadingEl = document.getElementById('articles-loading');
       const errorEl = document.getElementById('articles-error');
-      
+
       try {
         const response = await fetch('/api/blog/articles?limit=4&minScore=7');
         const data = await response.json();
-        
+
         if (!data.success || !data.articles || data.articles.length === 0) {
           loadingEl.style.display = 'none';
           errorEl.style.display = 'block';
-          errorEl.innerHTML = '<p>Nenhuma notícia disponível no momento.</p>';
+          errorEl.innerHTML = '<p>No articles available at the moment.</p>';
           return;
         }
-        
+
         const articles = data.articles;
         loadingEl.style.display = 'none';
-        
-        // Criar estrutura HTML
+
         let html = '<div class="featured-main-wrapper">';
-        
-        // Primeiro artigo (destaque principal)
+
+        // Main featured article
         if (articles[0]) {
           const article = articles[0];
-          const date = new Date(article.publishedAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
+          const date = new Date(article.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           html += `
             <article class="featured-article featured-main" onclick="window.location.href='/blog/article/${article.id}'">
               <div class="article-image-placeholder" style="${article.imageUrl ? `background-image: url('${article.imageUrl}'); background-size: cover; background-position: center;` : ''}">
                 <div class="article-image-overlay"></div>
-                <div class="article-category">${article.category || 'Geral'}</div>
+                <div class="article-category">${article.category || 'General'}</div>
               </div>
               <div class="article-content">
                 <h2 class="article-title-large">${article.title}</h2>
@@ -486,22 +482,22 @@
                 <div class="article-meta">
                   <span class="article-author">${article.source || 'PromoPing'}</span>
                   <span class="article-date">${date}</span>
-                  <span class="article-read-time">Impacto ${article.impactScore}/10</span>
+                  <span class="article-read-time">Impact ${article.impactScore}/10</span>
                 </div>
               </div>
             </article>
           `;
         }
-        
-        // Segundo artigo (secundário)
+
+        // Secondary article
         if (articles[1]) {
           const article = articles[1];
-          const date = new Date(article.publishedAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
+          const date = new Date(article.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           html += `
             <article class="featured-article featured-main-secondary" onclick="window.location.href='/blog/article/${article.id}'">
               <div class="article-image-placeholder small" style="${article.imageUrl ? `background-image: url('${article.imageUrl}'); background-size: cover; background-position: center;` : ''}">
                 <div class="article-image-overlay"></div>
-                <div class="article-category">${article.category || 'Geral'}</div>
+                <div class="article-category">${article.category || 'General'}</div>
               </div>
               <div class="article-content">
                 <h3 class="article-title">${article.title}</h3>
@@ -509,23 +505,23 @@
                 <div class="article-meta">
                   <span class="article-author">${article.source || 'PromoPing'}</span>
                   <span class="article-date">${date}</span>
-                  <span class="article-read-time">Impacto ${article.impactScore}/10</span>
+                  <span class="article-read-time">Impact ${article.impactScore}/10</span>
                 </div>
               </div>
             </article>
           `;
         }
-        
+
         html += '</div><div class="featured-secondary">';
-        
-        // Terceiro e quarto artigos (pequenos)
+
+        // Smaller third and fourth articles
         if (articles[2]) {
           const article = articles[2];
-          const date = new Date(article.publishedAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+          const date = new Date(article.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
           html += `
             <article class="featured-article featured-small" onclick="window.location.href='/blog/article/${article.id}'">
               <div class="article-image-placeholder small" style="${article.imageUrl ? `background-image: url('${article.imageUrl}'); background-size: cover; background-position: center;` : ''}">
-                <div class="article-category">${article.category || 'Geral'}</div>
+                <div class="article-category">${article.category || 'General'}</div>
               </div>
               <div class="article-content">
                 <h3 class="article-title">${article.title}</h3>
@@ -539,14 +535,14 @@
             </article>
           `;
         }
-        
+
         if (articles[3]) {
           const article = articles[3];
-          const date = new Date(article.publishedAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+          const date = new Date(article.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
           html += `
             <article class="featured-article featured-small" onclick="window.location.href='/blog/article/${article.id}'">
               <div class="article-image-placeholder small" style="${article.imageUrl ? `background-image: url('${article.imageUrl}'); background-size: cover; background-position: center;` : ''}">
-                <div class="article-category">${article.category || 'Geral'}</div>
+                <div class="article-category">${article.category || 'General'}</div>
               </div>
               <div class="article-content">
                 <h3 class="article-title">${article.title}</h3>
@@ -560,57 +556,56 @@
             </article>
           `;
         }
-        
+
         html += '</div>';
         featuredSection.innerHTML = html;
-        
+
       } catch (error) {
-        console.error('Erro ao carregar artigos do blog:', error);
+        console.error('Error loading blog articles:', error);
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
       }
     }
 
-    // Carregar lista de artigos com paginação
+    // Load article list with pagination
     async function loadArticlesList() {
       const articlesList = document.getElementById('articles-list');
       const loadingEl = document.getElementById('articles-list-loading');
       const paginationEl = document.getElementById('articles-pagination');
-      
+
       loadingEl.style.display = 'block';
       articlesList.innerHTML = '';
-      
+
       try {
         const offset = (blogState.currentPage - 1) * blogState.articlesPerPage;
         let url = `/api/blog/articles?limit=${blogState.articlesPerPage}&offset=${offset}`;
-        
+
         if (blogState.currentCategory !== 'all') {
           url += `&category=${encodeURIComponent(blogState.currentCategory)}`;
         }
-        
+
         if (blogState.currentSearch) {
           url += `&search=${encodeURIComponent(blogState.currentSearch)}`;
         }
-        
+
         const response = await fetch(url);
         const data = await response.json();
-        
+
         loadingEl.style.display = 'none';
-        
+
         if (!data.success || !data.articles || data.articles.length === 0) {
-          articlesList.innerHTML = '<p style="text-align: center; color: #888; padding: 3rem;">Nenhum artigo encontrado.</p>';
+          articlesList.innerHTML = '<p style="text-align: center; color: #888; padding: 3rem;">No articles found.</p>';
           paginationEl.innerHTML = '';
           return;
         }
-        
-        // Renderizar artigos
+
         let html = '';
         data.articles.forEach(article => {
-          const date = new Date(article.publishedAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
+          const date = new Date(article.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           html += `
             <article class="article-card" onclick="window.location.href='/blog/article/${article.id}'">
               <div class="article-card-image" style="${article.imageUrl ? `background-image: url('${article.imageUrl}'); background-size: cover; background-position: center;` : 'background: linear-gradient(135deg, #2a2a2d 0%, #1a1a1c 100%);'}">
-                <div class="article-card-category">${article.category || 'Geral'}</div>
+                <div class="article-card-category">${article.category || 'General'}</div>
               </div>
               <div class="article-card-content">
                 <h3 class="article-card-title">${article.title}</h3>
@@ -618,88 +613,87 @@
                 <div class="article-card-meta">
                   <span class="article-card-source">${article.source || 'PromoPing'}</span>
                   <span class="article-card-date">${date}</span>
-                  <span class="article-card-score">Impacto ${article.impactScore}/10</span>
+                  <span class="article-card-score">Impact ${article.impactScore}/10</span>
                 </div>
               </div>
             </article>
           `;
         });
-        
+
         articlesList.innerHTML = html;
-        
-        // Renderizar paginação
+
         renderPagination(data.pagination);
-        
+
       } catch (error) {
-        console.error('Erro ao carregar lista de artigos:', error);
+        console.error('Error loading article list:', error);
         loadingEl.style.display = 'none';
-        articlesList.innerHTML = '<p style="text-align: center; color: #ff6b35; padding: 3rem;">Erro ao carregar artigos. Por favor, tente novamente.</p>';
+        articlesList.innerHTML = '<p style="text-align: center; color: #ff6b35; padding: 3rem;">Failed to load articles. Please try again.</p>';
       }
     }
 
-    // Renderizar paginação
+    // Render pagination
     function renderPagination(pagination) {
       const paginationEl = document.getElementById('articles-pagination');
       const totalPages = Math.ceil(pagination.total / blogState.articlesPerPage);
-      
+
       if (totalPages <= 1) {
         paginationEl.innerHTML = '';
         return;
       }
-      
+
       let html = '<div class="pagination-controls">';
-      
-      // Botão anterior
+
+      // Previous button
       if (blogState.currentPage > 1) {
-        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage - 1})">« Anterior</button>`;
+        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage - 1})">« Previous</button>`;
       }
-      
-      // Números de página
+
+      // Page numbers
       const maxVisible = 5;
       let startPage = Math.max(1, blogState.currentPage - Math.floor(maxVisible / 2));
       let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-      
+
       if (endPage - startPage < maxVisible - 1) {
         startPage = Math.max(1, endPage - maxVisible + 1);
       }
-      
+
       if (startPage > 1) {
         html += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
         if (startPage > 2) {
           html += `<span class="pagination-ellipsis">...</span>`;
         }
       }
-      
+
       for (let i = startPage; i <= endPage; i++) {
         html += `<button class="pagination-btn ${i === blogState.currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
       }
-      
+
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
           html += `<span class="pagination-ellipsis">...</span>`;
         }
         html += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
       }
-      
-      // Botão próximo
+
+      // Next button
       if (blogState.currentPage < totalPages) {
-        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage + 1})">Próximo »</button>`;
+        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage + 1})">Next »</button>`;
       }
-      
+
       html += '</div>';
-      html += `<div class="pagination-info">Página ${blogState.currentPage} de ${totalPages} (${pagination.total} artigos)</div>`;
-      
+      html += `<div class="pagination-info">Page ${blogState.currentPage} of ${totalPages} (${pagination.total} articles)</div>`;
+
       paginationEl.innerHTML = html;
     }
 
-    // Mudar página
+    // Change page
     function changePage(page) {
       blogState.currentPage = page;
       loadArticlesList();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Buscar artigos
+    // Search articles
     function searchArticles() {
       const searchInput = document.getElementById('blog-search-input');
       blogState.currentSearch = searchInput.value.trim();
@@ -709,19 +703,14 @@
 
     // Newsletter Form Toggle
     document.addEventListener('DOMContentLoaded', function() {
-      // Carregar estatísticas ao carregar a página
       loadStats();
-      // Carregar categorias
       loadCategories();
-      // Carregar artigos em destaque
       loadBlogArticles();
-      // Carregar lista de artigos
       loadArticlesList();
-      
-      // Event listeners para busca
+
       const searchInput = document.getElementById('blog-search-input');
       const searchBtn = document.getElementById('blog-search-btn');
-      
+
       searchBtn.addEventListener('click', searchArticles);
       searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -733,33 +722,29 @@
       const newsletterCancelBtn = document.getElementById('newsletter-cancel');
       const newsletterForm = document.getElementById('newsletter-form');
 
-      // Mostrar formulário
       newsletterBtn.addEventListener('click', function() {
         newsletterFormContainer.classList.add('active');
         newsletterBtn.style.display = 'none';
       });
 
-      // Fechar formulário
       newsletterCancelBtn.addEventListener('click', function() {
         newsletterFormContainer.classList.remove('active');
         newsletterBtn.style.display = 'block';
         newsletterForm.reset();
       });
 
-      // Submeter formulário
       newsletterForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+
         const email = document.getElementById('newsletter-email').value;
         const newsletter = document.querySelector('input[name="newsletter"]').checked;
         const promotions = document.querySelector('input[name="promotions"]').checked;
         const articles = document.querySelector('input[name="articles"]').checked;
 
-        // Desabilitar botão durante o envio
         const submitBtn = newsletterForm.querySelector('.newsletter-submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'A processar...';
+        submitBtn.textContent = 'Processing...';
 
         try {
           const response = await fetch('/api/newsletter/subscribe', {
@@ -778,21 +763,18 @@
           const data = await response.json();
 
           if (data.success) {
-            // Mostrar mensagem de sucesso
-            alert(data.message || 'Subscrição realizada com sucesso! Verifica o teu email para confirmar.');
-            
-            // Fechar formulário
+            alert(data.message || 'Subscription successful! Check your email to confirm.');
+
             newsletterFormContainer.classList.remove('active');
             newsletterBtn.style.display = 'block';
             newsletterForm.reset();
           } else {
-            alert(data.message || 'Erro ao processar subscrição. Por favor, tenta novamente.');
+            alert(data.message || 'Failed to process subscription. Please try again.');
           }
         } catch (error) {
-          console.error('Erro ao subscrever newsletter:', error);
-          alert('Erro ao processar subscrição. Por favor, tenta novamente mais tarde.');
+          console.error('Error subscribing to newsletter:', error);
+          alert('Failed to process subscription. Please try again later.');
         } finally {
-          // Reabilitar botão
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
         }
@@ -800,844 +782,9 @@
     });
   </script>
 
-  <style>
-    /* Esconder scrollbar da área de conteúdo principal (main.content) */
-    main.content {
-      scrollbar-width: none !important;
-      -ms-overflow-style: none !important;
-    }
-
-    main.content::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      background: transparent !important;
-    }
-
-    /* Manter funcionalidade de scroll */
-    main.content {
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-
-    /* Blog Magazine Style */
-    .blog-header {
-      border-bottom: 2px solid #2a2a2d;
-      padding: 2rem 0;
-      margin-bottom: 3rem;
-    }
-
-    .blog-header-content {
-      text-align: center;
-    }
-
-    .blog-title {
-      font-size: 3.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
-      color: #fff;
-      font-family: 'Inter', serif;
-    }
-
-    .blog-subtitle {
-      font-size: 1.1rem;
-      color: #888;
-      margin-bottom: 0.5rem;
-      font-weight: 400;
-    }
-
-    .blog-date {
-      font-size: 0.9rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Featured Section */
-    .featured-section {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 2rem;
-      margin-bottom: 4rem;
-    }
-
-    .featured-main-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .featured-article {
-      background: #18181a;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid #232326;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-
-    .featured-article:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-
-   
-
-   
-
-    .article-image-placeholder {
-      width: 100%;
-      height: 300px;
-      background: linear-gradient(135deg, #2a2a2d 0%, #1a1a1c 100%);
-      position: relative;
-      display: flex;
-      align-items: flex-end;
-      padding: 1.5rem;
-    }
-
-    .article-image-placeholder.small {
-      height: 180px;
-    }
-
-    .article-image-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
-    }
-
-    .article-category {
-      position: relative;
-      z-index: 1;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .article-content {
-      padding: 2.9rem;
-    }
-
-    .article-title-large {
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 1rem;
-      color: #fff;
-      letter-spacing: -0.01em;
-    }
-
-    .article-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      line-height: 1.3;
-      margin-bottom: 0.75rem;
-      color: #fff;
-    }
-
-    .article-excerpt {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: #bbb;
-      margin-bottom: 1.5rem;
-    }
-
-    .article-excerpt-small {
-      font-size: 0.9rem;
-      line-height: 1.5;
-      color: #999;
-      margin-bottom: 1rem;
-    }
-
-    .article-meta {
-      display: flex;
-      gap: 1rem;
-      font-size: 0.85rem;
-      color: #666;
-      padding-top: 1rem;
-      border-top: 1px solid #232326;
-    }
-
-    /* mais pra baixo */
-    .article-meta-small {
-      display: flex;
-      gap: 0.2rem;
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 1.2rem;
-    }
-
-    .featured-secondary {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    /* Categories Section */
-    .categories-section {
-      margin-bottom: 4rem;
-    }
-
-    .section-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 2rem;
-      color: #fff;
-      letter-spacing: -0.01em;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #2a2a2d;
-    }
-
-    .categories-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    .category-card {
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-      cursor: pointer;
-    }
-
-    .category-card:hover {
-      transform: translateY(-4px);
-      border-color: #3a3a3d;
-    }
-
-    .category-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 0.75rem;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .category-icon svg {
-      width: 100%;
-      height: 100%;
-      stroke: currentColor;
-    }
-
-    .category-card h3 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #fff;
-    }
-
-    .category-card p {
-      font-size: 0.9rem;
-      color: #999;
-      margin-bottom: 1rem;
-    }
-
-    .category-count {
-      font-size: 0.85rem;
-      color: #666;
-      font-weight: 500;
-    }
-
-    /* Analysis Section */
-    .analysis-section {
-      margin-bottom: 4rem;
-    }
-
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    .analysis-card {
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 12px;
-      padding: 2rem;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .analysis-card:hover {
-      transform: translateY(-2px);
-      border-color: #3a3a3d;
-    }
-
-    .analysis-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    }
-
-    .analysis-header h3 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #fff;
-      flex: 1;
-    }
-
-    .analysis-badge {
-      background: #2a2a2d;
-      padding: 0.3rem 0.7rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      color: #888;
-      font-weight: 500;
-    }
-
-    .analysis-card p {
-      color: #bbb;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-
-    .analysis-stats {
-      display: flex;
-      gap: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #232326;
-    }
-
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 0.3rem;
-    }
-
-    /* Tips Section */
-    .tips-section {
-      margin-bottom: 4rem;
-    }
-
-    .tips-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-    }
-
-    .tip-card {
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .tip-card:hover {
-      transform: translateY(-2px);
-      border-color: #3a3a3d;
-    }
-
-    .tip-icon {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 1rem;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .tip-icon svg {
-      width: 100%;
-      height: 100%;
-      stroke: currentColor;
-    }
-
-    .tip-card h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: #fff;
-    }
-
-    .tip-card p {
-      font-size: 0.9rem;
-      color: #999;
-      line-height: 1.5;
-    }
-
-    /* Newsletter Section */
-    .newsletter-section {
-      margin-bottom: 4rem;
-    }
-
-    .newsletter-card {
-      background: linear-gradient(135deg, #1a1a1c 0%, #18181a 100%);
-      border: 1px solid #2a2a2d;
-      border-radius: 16px;
-      padding: 3rem;
-      text-align: center;
-    }
-
-    .newsletter-card h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: #fff;
-    }
-
-    .newsletter-card p {
-      font-size: 1.05rem;
-      color: #bbb;
-      line-height: 1.6;
-      margin-bottom: 1rem;
-    }
-
-    .newsletter-subscribers {
-      font-size: 0.95rem;
-      color: #888;
-      margin-bottom: 2rem;
-    }
-
-    .newsletter-button {
-      background: #fff;
-      color: #0f0f10;
-      border: none;
-      padding: 1rem 2.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .newsletter-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-    }
-
-    /* Newsletter Form */
-    .newsletter-form-container {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-      margin-top: 2rem;
-    }
-
-    .newsletter-form-container.active {
-      max-height: 800px;
-      opacity: 1;
-    }
-
-    .newsletter-form {
-      background: #18181a;
-      border: 1px solid #2a2a2d;
-      border-radius: 12px;
-      padding: 2rem;
-      text-align: left;
-    }
-
-    .newsletter-form h3 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      color: #fff;
-      text-align: center;
-    }
-
-    .newsletter-form-description {
-      font-size: 0.9rem;
-      color: #999;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-group input[type="email"] {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background: #0f0f10;
-      border: 1px solid #232326;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
-    }
-
-    .form-group input[type="email"]:focus {
-      outline: none;
-      border-color: #fff;
-    }
-
-    .form-group input[type="email"]::placeholder {
-      color: #666;
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-      font-weight: 400;
-    }
-
-    .checkbox-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: #fff;
-    }
-
-    .checkbox-label span {
-      color: #bbb;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #232326;
-    }
-
-    .newsletter-cancel-btn {
-      background: transparent;
-      color: #bbb;
-      border: 1px solid #232326;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .newsletter-cancel-btn:hover {
-      background: #232326;
-      color: #fff;
-      border-color: #3a3a3d;
-    }
-
-    .newsletter-submit-btn {
-      background: #fff;
-      color: #0f0f10;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .newsletter-submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-    }
-
-    /* Filtros e Busca */
-    .blog-filters {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid #2a2a2d;
-    }
-
-    .blog-search-container {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .blog-search-input {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
-    }
-
-    .blog-search-input:focus {
-      outline: none;
-      border-color: #fff;
-    }
-
-    .blog-search-input::placeholder {
-      color: #666;
-    }
-
-    .blog-search-btn {
-      padding: 0.75rem 1.5rem;
-      background: #fff;
-      color: #0f0f10;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .blog-search-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .blog-category-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
-
-    .category-filter-btn {
-      padding: 0.5rem 1rem;
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 6px;
-      color: #bbb;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .category-filter-btn:hover {
-      border-color: #3a3a3d;
-      color: #fff;
-    }
-
-    .category-filter-btn.active {
-      background: #fff;
-      color: #0f0f10;
-      border-color: #fff;
-    }
-
-    /* Lista de Artigos */
-    .articles-list-section {
-      margin-top: 4rem;
-    }
-
-    .articles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .article-card {
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .article-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-      border-color: #3a3a3d;
-    }
-
-    .article-card-image {
-      width: 100%;
-      height: 200px;
-      position: relative;
-      display: flex;
-      align-items: flex-end;
-      padding: 1rem;
-    }
-
-    .article-card-category {
-      position: relative;
-      z-index: 1;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .article-card-content {
-      padding: 1.5rem;
-    }
-
-    .article-card-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: #fff;
-      line-height: 1.3;
-    }
-
-    .article-card-description {
-      font-size: 0.9rem;
-      color: #999;
-      line-height: 1.5;
-      margin-bottom: 1rem;
-    }
-
-    .article-card-meta {
-      display: flex;
-      gap: 1rem;
-      font-size: 0.85rem;
-      color: #666;
-      padding-top: 1rem;
-      border-top: 1px solid #232326;
-      flex-wrap: wrap;
-    }
-
-    .article-card-source,
-    .article-card-date,
-    .article-card-score {
-      display: flex;
-      align-items: center;
-    }
-
-    /* Paginação */
-    .articles-pagination {
-      margin-top: 3rem;
-      text-align: center;
-    }
-
-    .pagination-controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-
-    .pagination-btn {
-      padding: 0.5rem 1rem;
-      background: #18181a;
-      border: 1px solid #232326;
-      border-radius: 6px;
-      color: #bbb;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .pagination-btn:hover {
-      border-color: #3a3a3d;
-      color: #fff;
-    }
-
-    .pagination-btn.active {
-      background: #fff;
-      color: #0f0f10;
-      border-color: #fff;
-    }
-
-    .pagination-ellipsis {
-      color: #666;
-      padding: 0 0.5rem;
-    }
-
-    .pagination-info {
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 1rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .featured-section {
-        grid-template-columns: 1fr;
-      }
-
-      .featured-main {
-        grid-row: 1;
-      }
-
-      .featured-secondary {
-        flex-direction: row;
-      }
-
-      .categories-grid,
-      .analysis-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .tips-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .articles-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      }
-    }
-
-    @media (max-width: 768px) {
-      .blog-title {
-        font-size: 2.5rem;
-      }
-
-      .categories-grid,
-      .analysis-grid,
-      .tips-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .featured-secondary {
-        flex-direction: column;
-      }
-
-      .articles-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .blog-search-container {
-        flex-direction: column;
-      }
-
-      .blog-category-filters {
-        justify-content: center;
-      }
-    }
-  </style>
+  
 </body>
 
 </html>
+
+
