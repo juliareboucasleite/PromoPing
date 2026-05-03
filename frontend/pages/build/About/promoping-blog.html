@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <base href="/">
   <meta charset="UTF-8">
   <title>Blog | PromoPing</title>
-  <link rel="stylesheet" href="assets/styles/about-shared.css">
+  <link rel="stylesheet" href="assets/styles/about-pages-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
@@ -17,7 +17,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
-  <link rel="stylesheet" href="assets/styles/blog.css">
+  <link rel="stylesheet" href="assets/styles/promoping-blog.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -47,7 +47,7 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Loaded dynamically from nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from about-navigation.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
@@ -190,7 +190,7 @@
                 <span class="stat-label">average discount</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value" id="total-saved">€0</span>
+                <span class="stat-value" id="total-saved">â‚¬0</span>
                 <span class="stat-label">saved</span>
               </div>
             </div>
@@ -340,8 +340,8 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="About/script.js"></script>
-  <script src="About/search.js"></script>
+  <script src="About/about-navigation.js"></script>
+  <script src="About/about-search.js"></script>
   <script>
     // Load real statistics
     async function loadStats() {
@@ -364,11 +364,11 @@
           if (totalSavedElement && stats.totalSaved) {
             const saved = stats.totalSaved;
             if (saved >= 1000000) {
-              totalSavedElement.textContent = `€${(saved / 1000000).toFixed(1)}M`;
+              totalSavedElement.textContent = `â‚¬${(saved / 1000000).toFixed(1)}M`;
             } else if (saved >= 1000) {
-              totalSavedElement.textContent = `€${(saved / 1000).toFixed(1)}K`;
+              totalSavedElement.textContent = `â‚¬${(saved / 1000).toFixed(1)}K`;
             } else {
-              totalSavedElement.textContent = `€${saved.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+              totalSavedElement.textContent = `â‚¬${saved.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
             }
           }
 
@@ -645,7 +645,7 @@
 
       // Previous button
       if (blogState.currentPage > 1) {
-        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage - 1})">« Previous</button>`;
+        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage - 1})">Â« Previous</button>`;
       }
 
       // Page numbers
@@ -677,7 +677,7 @@
 
       // Next button
       if (blogState.currentPage < totalPages) {
-        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage + 1})">Next »</button>`;
+        html += `<button class="pagination-btn" onclick="changePage(${blogState.currentPage + 1})">Next Â»</button>`;
       }
 
       html += '</div>';
@@ -786,5 +786,7 @@
 </body>
 
 </html>
+
+
 
 

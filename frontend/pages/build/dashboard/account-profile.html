@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-PT">
 
 <head>
@@ -7,10 +7,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Perfil PromoPing — altere nome, email, senha e consulte o histórico de notificações e relatórios.">
+    <meta name="description" content="Perfil PromoPing â€” altere nome, email, senha e consulte o histÃ³rico de notificaÃ§Ãµes e relatÃ³rios.">
     <title>Perfil PromoPing | promoping.pt</title>
-    <link rel="stylesheet" href="../../assets/styles/painel.css">
-    <link rel="stylesheet" href="../../assets/styles/perfil.css">
+    <link rel="stylesheet" href="../../assets/styles/dashboard-shared.css">
+    <link rel="stylesheet" href="../../assets/styles/account-profile.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
     <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
     <script src="../../assets/scripts/request-manager.js"></script>
@@ -79,9 +79,9 @@
             <header class="page-header page-header-perfil">
                 <div class="page-header-left">
                     <h1 class="page-title">Perfil</h1>
-                    <p class="page-subtitle">Gerencie a sua conta e preferências de notificação</p>
+                    <p class="page-subtitle">Gerencie a sua conta e preferÃªncias de notificaÃ§Ã£o</p>
                 </div>
-                <p class="page-greeting">Olá, <span id="profileGreetingName">Utilizador</span>!</p>
+                <p class="page-greeting">OlÃ¡, <span id="profileGreetingName">Utilizador</span>!</p>
             </header>
 
             <div class="profile-layout">
@@ -94,7 +94,7 @@
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
-                            <h2 class="card-title">Informações pessoais</h2>
+                            <h2 class="card-title">InformaÃ§Ãµes pessoais</h2>
                         </div>
 
                         <form class="profile-form" id="personalInfoForm">
@@ -108,7 +108,7 @@
                                 <input type="email" class="form-input" id="email" value="" required>
                             </div>
 
-                            <button type="submit" class="save-btn">Guardar alterações</button>
+                            <button type="submit" class="save-btn">Guardar alteraÃ§Ãµes</button>
                         </form>
                     </div>
 
@@ -143,7 +143,7 @@
                                     <div class="form-group">
                                         <label class="form-label" for="newPassword">Nova senha</label>
                                         <div class="input-wrapper password-wrapper">
-                                            <input type="password" class="form-input password-input" id="newPassword" placeholder="Mínimo 6 caracteres" required>
+                                            <input type="password" class="form-input password-input" id="newPassword" placeholder="MÃ­nimo 6 caracteres" required>
                                             <button type="button" class="password-toggle" aria-label="Ver senha" onclick="toggleNewPassword()" id="toggle-newPassword">
                                                 <svg aria-hidden="true" aria-label="" class="eye-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
                                                     <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m11.8 3.4a.9.9 0 0 0 0-.8c-.21-.43-.63-1.19-1.23-2.08C20.77 6.86 17.24 3 12 3 6.65 3 3.1 7.02 1.32 9.69.78 10.5.4 11.19.19 11.6a.9.9 0 0 0 0 .8 23 23 0 0 0 1.24 2.08C3.23 17.14 6.76 21 12 21c5.35 0 8.9-4.02 10.68-6.69m-1.66-1.11a17 17 0 0 1-3.25 3.63A9.2 9.2 0 0 1 12 19a9.2 9.2 0 0 1-5.77-2.17q-.54-.43-1.02-.9c-.93-.92-1.68-1.9-2.23-2.73a2.1 2.1 0 0 1 0-2.4 17 17 0 0 1 3.25-3.63A9.2 9.2 0 0 1 12 5c2.28 0 4.21.92 5.77 2.17q.54.43 1.02.9c.93.92 1.68 1.9 2.23 2.73.49.74.49 1.66 0 2.4"></path>
@@ -176,7 +176,7 @@
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                             </svg>
-                            <h2 class="card-title">Preferências de notificação</h2>
+                            <h2 class="card-title">PreferÃªncias de notificaÃ§Ã£o</h2>
                         </div>
 
                         <div class="notification-preferences">
@@ -234,7 +234,7 @@
                                     </svg>
                                     <div class="account-action-details">
                                         <span class="account-action-name">Desativar Conta</span>
-                                        <span class="account-action-desc">Temporariamente desativa sua conta. Você pode reativar depois.</span>
+                                        <span class="account-action-desc">Temporariamente desativa sua conta. VocÃª pode reativar depois.</span>
                                     </div>
                                 </div>
                                 <button class="account-action-btn deactivate-btn" onclick="desativarConta()">
@@ -253,7 +253,7 @@
                                     </svg>
                                     <div class="account-action-details">
                                         <span class="account-action-name">Excluir Conta</span>
-                                        <span class="account-action-desc">Remove permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.</span>
+                                        <span class="account-action-desc">Remove permanentemente sua conta e todos os dados. Esta aÃ§Ã£o nÃ£o pode ser desfeita.</span>
                                     </div>
                                 </div>
                                 <button class="account-action-btn delete-btn" onclick="excluirConta()">
@@ -302,31 +302,31 @@
                     </div>
                     <div class="profile-card">
                         <div class="card-header">
-                            <h2 class="card-title">Relatórios e Histórico</h2>
+                            <h2 class="card-title">RelatÃ³rios e HistÃ³rico</h2>
                         </div>
                         <div class="history-actions">
                             <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
-                                Relatórios PDF
+                                RelatÃ³rios PDF
                             </button>
                             <button type="button" id="btnHistoricoCompleto" class="history-action-btn history-btn-completo">
-                                Histórico completo
+                                HistÃ³rico completo
                             </button>
                         </div>
                         <p class="history-plan-hint" id="historyPlanHint" aria-live="polite"></p>
                         <ul id="notificacoesList" class="notification-list"></ul>
                     </div>
 
-                    <!-- Autenticação em dois fatores (2FA) -->
+                    <!-- AutenticaÃ§Ã£o em dois fatores (2FA) -->
                     <div class="profile-card" id="twoFA-card">
                         <div class="card-header">
                             <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                             </svg>
-                            <h2 class="card-title">Autenticação em dois fatores (2FA)</h2>
+                            <h2 class="card-title">AutenticaÃ§Ã£o em dois fatores (2FA)</h2>
                         </div>
                         <div class="twofa-section">
-                            <p class="twofa-desc">Proteja a sua conta com um código por email ou app de autenticação. Códigos de backup são gerados ao ativar.</p>
+                            <p class="twofa-desc">Proteja a sua conta com um cÃ³digo por email ou app de autenticaÃ§Ã£o. CÃ³digos de backup sÃ£o gerados ao ativar.</p>
                             <div id="twoFAStatus" class="twofa-status"></div>
                             <div class="twofa-actions">
                                 <button type="button" id="btn2FAEnable" class="history-action-btn history-btn-pdf" style="display: none;">Ativar 2FA</button>
@@ -342,7 +342,7 @@
                                 <path d="M12 20V4"></path>
                                 <path d="M6 20v-6"></path>
                             </svg>
-                            <h2 class="card-title">Estatísticas</h2>
+                            <h2 class="card-title">EstatÃ­sticas</h2>
                         </div>
 
                         <div class="statistics">
@@ -352,7 +352,7 @@
                             </div>
 
                             <div class="stat-item">
-                                <span class="stat-label">Notificações enviadas</span>
+                                <span class="stat-label">NotificaÃ§Ãµes enviadas</span>
                                 <span class="stat-value" id="notificacoes-enviadas"></span>
                             </div>
 
@@ -387,7 +387,7 @@
                                             <path d="M9 12l2 2 4-4"></path>
                                             <circle cx="12" cy="12" r="10"></circle>
                                         </svg>
-                                        <span>Intervalo de verificação: <strong id="plano-intervalo">-</strong></span>
+                                        <span>Intervalo de verificaÃ§Ã£o: <strong id="plano-intervalo">-</strong></span>
                                     </div>
                                     <div class="feature-item">
                                         <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -436,11 +436,11 @@
             </div>
             <div class="modal-body account-modal-body">
                 <p class="modal-message">
-                    Tem certeza que deseja desativar sua conta? Você poderá reativá-la depois fazendo login novamente.
+                    Tem certeza que deseja desativar sua conta? VocÃª poderÃ¡ reativÃ¡-la depois fazendo login novamente.
                 </p>
                 <div id="deactivate2FACodeWrap" class="twofa-code-wrap" style="display: none;">
-                    <label for="deactivate2FACode">Código de verificação 2FA</label>
-                    <input type="text" id="deactivate2FACode" class="twofa-code-input" placeholder="Código 6 dígitos ou backup" maxlength="10" autocomplete="one-time-code">
+                    <label for="deactivate2FACode">CÃ³digo de verificaÃ§Ã£o 2FA</label>
+                    <input type="text" id="deactivate2FACode" class="twofa-code-input" placeholder="CÃ³digo 6 dÃ­gitos ou backup" maxlength="10" autocomplete="one-time-code">
                 </div>
                 <div class="modal-actions">
                     <button class="modal-btn cancel" onclick="fecharModalDesativar()">Cancelar</button>
@@ -474,21 +474,21 @@
             <div class="modal-body account-modal-body">
                 <div class="delete-warning">
                     <p class="modal-message warning-text">
-                        <strong>Esta ação é PERMANENTE e não pode ser desfeita!</strong>
+                        <strong>Esta aÃ§Ã£o Ã© PERMANENTE e nÃ£o pode ser desfeita!</strong>
                     </p>
                     <p class="modal-message">
-                        Todos os seus dados serão permanentemente removidos, incluindo:
+                        Todos os seus dados serÃ£o permanentemente removidos, incluindo:
                     </p>
                     <ul class="delete-list">
                         <li>Seus produtos monitorizados</li>
-                        <li>Histórico de notificações</li>
-                        <li>Configurações e preferências</li>
+                        <li>HistÃ³rico de notificaÃ§Ãµes</li>
+                        <li>ConfiguraÃ§Ãµes e preferÃªncias</li>
                         <li>Assinaturas ativas</li>
                     </ul>
                 </div>
                   <div id="delete2FACodeWrap" class="twofa-code-wrap" style="display: none;">
-                    <label for="delete2FACode">Código de verificação 2FA <span aria-hidden="true">*</span></label>
-                    <input type="text" id="delete2FACode" class="twofa-code-input" placeholder="Código 6 dígitos ou backup" maxlength="10" autocomplete="one-time-code">
+                    <label for="delete2FACode">CÃ³digo de verificaÃ§Ã£o 2FA <span aria-hidden="true">*</span></label>
+                    <input type="text" id="delete2FACode" class="twofa-code-input" placeholder="CÃ³digo 6 dÃ­gitos ou backup" maxlength="10" autocomplete="one-time-code">
                 </div>
                 <div class="delete-confirmation">
                     <label for="deleteConfirmInput" class="delete-label">
@@ -504,7 +504,7 @@
         </div>
     </div>
 
-    <!-- Modal 2FA: Escolher método e configurar -->
+    <!-- Modal 2FA: Escolher mÃ©todo e configurar -->
     <div class="modal-overlay" id="twoFASetupModal" style="display: none;">
         <div class="modal-content account-modal-content">
             <div class="modal-header account-modal-header">
@@ -513,27 +513,27 @@
             </div>
             <div class="modal-body account-modal-body">
                 <div id="twoFASetupStep1">
-                    <p class="modal-message">Escolha o método de verificação:</p>
+                    <p class="modal-message">Escolha o mÃ©todo de verificaÃ§Ã£o:</p>
                     <div class="twofa-method-buttons">
                         <button type="button" class="modal-btn" onclick="iniciarSetup2FA('totp')">App autenticador (Google Authenticator, etc.)</button>
-                        <button type="button" class="modal-btn" onclick="iniciarSetup2FA('email')">Código por email</button>
+                        <button type="button" class="modal-btn" onclick="iniciarSetup2FA('email')">CÃ³digo por email</button>
                     </div>
                 </div>
                 <div id="twoFASetupStep2" style="display: none;">
                     <div id="twoFASetupTOTP" style="display: none;">
-                        <p>Escaneie o QR code com a sua app de autenticação:</p>
+                        <p>Escaneie o QR code com a sua app de autenticaÃ§Ã£o:</p>
                         <div id="twoFAQRContainer" class="twofa-qr-container"></div>
-                        <p class="twofa-backup-label">Guarde os códigos de backup num local seguro (cada um só pode ser usado uma vez):</p>
+                        <p class="twofa-backup-label">Guarde os cÃ³digos de backup num local seguro (cada um sÃ³ pode ser usado uma vez):</p>
                         <div class="twofa-backup-codes-wrap">
                             <pre id="twoFABackupCodes" class="twofa-backup-codes"></pre>
-                            <button type="button" class="twofa-download-codes-btn" id="btnDownloadBackupCodes" title="Descarregar .txt">↓ .txt</button>
+                            <button type="button" class="twofa-download-codes-btn" id="btnDownloadBackupCodes" title="Descarregar .txt">â†“ .txt</button>
                         </div>
                     </div>
                     <div id="twoFASetupEmail" style="display: none;">
-                        <p>Foi enviado um código de 6 dígitos para o seu email. Introduza-o abaixo.</p>
+                        <p>Foi enviado um cÃ³digo de 6 dÃ­gitos para o seu email. Introduza-o abaixo.</p>
                     </div>
-                    <label for="twoFAVerifyCode">Código de verificação</label>
-                    <input type="text" id="twoFAVerifyCode" class="twofa-code-input" placeholder="6 dígitos" maxlength="8" autocomplete="one-time-code">
+                    <label for="twoFAVerifyCode">CÃ³digo de verificaÃ§Ã£o</label>
+                    <input type="text" id="twoFAVerifyCode" class="twofa-code-input" placeholder="6 dÃ­gitos" maxlength="8" autocomplete="one-time-code">
                     <div class="modal-actions" style="margin-top: 1rem;">
                         <button class="modal-btn cancel" onclick="fecharModal2FASetup()">Cancelar</button>
                         <button class="modal-btn confirm" id="btn2FAConfirmSetup" onclick="confirmarSetup2FA()">Ativar</button>
@@ -551,10 +551,10 @@
                 <button class="modal-close" onclick="fecharModal2FADisable()" aria-label="Fechar">&times;</button>
             </div>
             <div class="modal-body account-modal-body">
-                <p class="modal-message">Introduza o seu código de verificação (app, email ou código de backup) para desativar o 2FA.</p>
-                <input type="text" id="twoFADisableCode" class="twofa-code-input" placeholder="Código" maxlength="10" autocomplete="one-time-code">
+                <p class="modal-message">Introduza o seu cÃ³digo de verificaÃ§Ã£o (app, email ou cÃ³digo de backup) para desativar o 2FA.</p>
+                <input type="text" id="twoFADisableCode" class="twofa-code-input" placeholder="CÃ³digo" maxlength="10" autocomplete="one-time-code">
                 <div id="twoFADisableSendEmailWrap" class="twofa-send-email-wrap" style="display: none;">
-                    <button type="button" class="twofa-send-email-link" id="twoFADisableSendEmailBtn">Enviar código por email</button>
+                    <button type="button" class="twofa-send-email-link" id="twoFADisableSendEmailBtn">Enviar cÃ³digo por email</button>
                 </div>
                 <div class="modal-actions" style="margin-top: 1rem;">
                     <button class="modal-btn cancel" onclick="fecharModal2FADisable()">Cancelar</button>
@@ -574,13 +574,13 @@
     <script type="module">
         import { formatDateTime } from "../../assets/scripts/utils.js";
 
-    // Tornar formatDateTime disponível globalmente
+    // Tornar formatDateTime disponÃ­vel globalmente
     window.formatDateTime = formatDateTime;
   </script>
 
     <script>
-        // Atualiza estatísticas (produtos, notificações, dinheiro poupado, membro desde) na página de perfil
-        // forcarRefresh: true para evitar cache (ex.: ao voltar ao separador ou após registar poupança noutro separador)
+        // Atualiza estatÃ­sticas (produtos, notificaÃ§Ãµes, dinheiro poupado, membro desde) na pÃ¡gina de perfil
+        // forcarRefresh: true para evitar cache (ex.: ao voltar ao separador ou apÃ³s registar poupanÃ§a noutro separador)
         async function atualizarStatsPerfil(token, forcarRefresh) {
             if (!token) return;
             try {
@@ -602,22 +602,22 @@
                 if (produtosEl) produtosEl.textContent = (stats.produtos_total != null ? stats.produtos_total : 0);
                 const notificacoesEl = document.getElementById("notificacoes-enviadas");
                 if (notificacoesEl) notificacoesEl.textContent = (stats.notificacoes_total != null ? stats.notificacoes_total : 0);
-                // Aceitar dinheiro_poupado em minúsculas (API) ou DinheiroPoupado; garantir número
+                // Aceitar dinheiro_poupado em minÃºsculas (API) ou DinheiroPoupado; garantir nÃºmero
                 const rawPoupado = stats.dinheiro_poupado != null ? stats.dinheiro_poupado : (stats.DinheiroPoupado != null ? stats.DinheiroPoupado : 0);
                 const dinheiroPoupado = typeof rawPoupado === "number" ? rawPoupado : Number(String(rawPoupado).replace(",", ".")) || 0;
                 const dinheiroEl = document.getElementById("dinheiro-poupado");
-                if (dinheiroEl) dinheiroEl.textContent = "€" + dinheiroPoupado.toFixed(2);
+                if (dinheiroEl) dinheiroEl.textContent = "â‚¬" + dinheiroPoupado.toFixed(2);
                 const membroEl = document.getElementById("membro-desde");
                 if (membroEl) membroEl.textContent = stats.membro_desde || "N/A";
                 sessionStorage.removeItem("perfil_stats_atualizar");
             } catch (e) {
-                console.warn("[PERFIL] Erro ao atualizar estatísticas:", e);
+                console.warn("[PERFIL] Erro ao atualizar estatÃ­sticas:", e);
             }
         }
 
-        // Função executada ao carregar a página para buscar perfil, notificações, stats, plano
+        // FunÃ§Ã£o executada ao carregar a pÃ¡gina para buscar perfil, notificaÃ§Ãµes, stats, plano
         document.addEventListener('DOMContentLoaded', async () => {
-            // Verificar se há token na URL (do Google OAuth)
+            // Verificar se hÃ¡ token na URL (do Google OAuth)
             const urlParams = new URLSearchParams(window.location.search);
             const urlToken = urlParams.get('token');
 
@@ -636,10 +636,10 @@
             }
 
             try {
-                // Primeiro carregar nome do usuário no header
+                // Primeiro carregar nome do usuÃ¡rio no header
                 await carregarNomeUsuario();
 
-                // Depois buscar perfil do usuário da API
+                // Depois buscar perfil do usuÃ¡rio da API
                 const resProfile = await makeRequest("/api/user/profile", {
                     headers: {
                         Authorization: "Bearer " + token
@@ -650,7 +650,7 @@
 
                 if (dataProfile.status === "ok") {
                     const profile = dataProfile.profile;
-                    console.log(" [FRONTEND] Perfil do usuário:", profile);
+                    console.log(" [FRONTEND] Perfil do usuÃ¡rio:", profile);
 
                     // Verificar se os elementos existem
                     const fullNameEl = document.getElementById("fullName");
@@ -671,7 +671,7 @@
                         email: profile.email
                     });
 
-                    // Cooldown 30 dias: nome e senha — desabilitar campos e mostrar próxima data permitida
+                    // Cooldown 30 dias: nome e senha â€” desabilitar campos e mostrar prÃ³xima data permitida
                     function formatarDataPT(isoString) {
                         if (!isoString) return "";
                         const d = new Date(isoString);
@@ -696,16 +696,16 @@
                     }
 
                     updateConnectedAccounts(profile.contas_conectadas); // Atualiza UI de contas conectadas
-                    updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferências
+                    updateNotificationPreferences(profile.preferencias); // Atualiza UI de preferÃªncias
                 } else {
                     console.error(" [FRONTEND] Erro na resposta da API:", dataProfile);
                 }
 
                 await carregarStatus2FA();
 
-                // Buscar e atualizar estatísticas (reutilizado ao voltar à página)
+                // Buscar e atualizar estatÃ­sticas (reutilizado ao voltar Ã  pÃ¡gina)
                 await atualizarStatsPerfil(token);
-                // Buscar informações do plano atual
+                // Buscar informaÃ§Ãµes do plano atual
                 await carregarPlano();
 
             } catch (err) {
@@ -721,13 +721,13 @@
             }
         });
 
-        // Função para remover token da storage e sair
+        // FunÃ§Ã£o para remover token da storage e sair
         function logout() {
             localStorage.removeItem("token");
             window.location.href = "/index.html";
         }
 
-        // Evento de submit das informações pessoais
+        // Evento de submit das informaÃ§Ãµes pessoais
         document.getElementById("personalInfoForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const formData = {
@@ -747,20 +747,20 @@
 
                 const data = await res.json();
                 if (data.status === "ok") {
-                    if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'Informações salvas com sucesso!', 5000);
-                    else alert("Informações salvas com sucesso!");
+                    if (window.notificationSystem) window.notificationSystem.success('Sucesso', 'InformaÃ§Ãµes salvas com sucesso!', 5000);
+                    else alert("InformaÃ§Ãµes salvas com sucesso!");
                 } else {
-                    if (window.notificationSystem) window.notificationSystem.error('Erro', data.message || data.error || "Erro ao salvar informações.", 6000);
-                    else alert(data.message || data.error || "Erro ao salvar informações.");
+                    if (window.notificationSystem) window.notificationSystem.error('Erro', data.message || data.error || "Erro ao salvar informaÃ§Ãµes.", 6000);
+                    else alert(data.message || data.error || "Erro ao salvar informaÃ§Ãµes.");
                 }
             } catch (err) {
                 console.error("Erro ao salvar:", err);
-                if (window.notificationSystem) window.notificationSystem.error('Erro', 'Erro de ligação ao servidor.', 6000);
-                else alert("Erro de ligação ao servidor.");
+                if (window.notificationSystem) window.notificationSystem.error('Erro', 'Erro de ligaÃ§Ã£o ao servidor.', 6000);
+                else alert("Erro de ligaÃ§Ã£o ao servidor.");
             }
         });
 
-        // Evento de submit para alteração da senha do usuário
+        // Evento de submit para alteraÃ§Ã£o da senha do usuÃ¡rio
         document.getElementById("passwordForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -768,10 +768,10 @@
             const newPassword = document.getElementById("newPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
 
-            // Validações
+            // ValidaÃ§Ãµes
             if (!currentPassword) {
                 if (typeof window.showError === 'function') {
-                    window.showError("Campo obrigatório", "Por favor, insira a sua senha atual.", 3000);
+                    window.showError("Campo obrigatÃ³rio", "Por favor, insira a sua senha atual.", 3000);
                 } else {
                     alert("Por favor, insira a sua senha atual!");
                 }
@@ -780,7 +780,7 @@
 
             if (newPassword.length < 6) {
                 if (typeof window.showError === 'function') {
-                    window.showError("Senha inválida", "A nova senha deve ter pelo menos 6 caracteres.", 3000);
+                    window.showError("Senha invÃ¡lida", "A nova senha deve ter pelo menos 6 caracteres.", 3000);
                 } else {
                     alert("A nova senha deve ter pelo menos 6 caracteres!");
                 }
@@ -789,7 +789,7 @@
 
             if (newPassword === currentPassword) {
                 if (typeof window.showError === 'function') {
-                    window.showError("Senha inválida", "A nova senha deve ser diferente da senha atual.", 3000);
+                    window.showError("Senha invÃ¡lida", "A nova senha deve ser diferente da senha atual.", 3000);
                 } else {
                     alert("A nova senha deve ser diferente da senha atual!");
                 }
@@ -798,9 +798,9 @@
 
             if (newPassword !== confirmPassword) {
                 if (typeof window.showError === 'function') {
-                    window.showError("Senhas não coincidem", "As senhas não coincidem. Verifique e tente novamente.", 3000);
+                    window.showError("Senhas nÃ£o coincidem", "As senhas nÃ£o coincidem. Verifique e tente novamente.", 3000);
                 } else {
-                    alert("As senhas não coincidem!");
+                    alert("As senhas nÃ£o coincidem!");
                 }
                 return;
             }
@@ -821,27 +821,27 @@
 
                 const data = await res.json();
                 if (data.status === "ok") {
-                    // Mostrar notificação de sucesso
+                    // Mostrar notificaÃ§Ã£o de sucesso
                     if (typeof window.showSuccess === 'function') {
                         window.showSuccess(
                             "Senha alterada com sucesso!",
-                            "Será redirecionado para fazer login novamente.",
+                            "SerÃ¡ redirecionado para fazer login novamente.",
                             3000
                         );
                     } else {
-                        alert("Senha alterada com sucesso! Será redirecionado para fazer login novamente.");
+                        alert("Senha alterada com sucesso! SerÃ¡ redirecionado para fazer login novamente.");
                     }
 
                     // Limpar token e fazer logout
                     localStorage.removeItem("token");
                     sessionStorage.removeItem("token");
 
-                    // Redirecionar para o index após 2 segundos (tempo para ver a notificação)
+                    // Redirecionar para o index apÃ³s 2 segundos (tempo para ver a notificaÃ§Ã£o)
                     setTimeout(() => {
                         window.location.href = "/index.html";
                     }, 2000);
                 } else {
-                    // Mostrar notificação de erro
+                    // Mostrar notificaÃ§Ã£o de erro
                     if (typeof window.showError === 'function') {
                         window.showError(
                             "Erro ao alterar senha",
@@ -856,12 +856,12 @@
                 console.error("Erro ao alterar senha:", err);
                 if (typeof window.showError === 'function') {
                     window.showError(
-                        "Erro de ligação",
-                        "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+                        "Erro de ligaÃ§Ã£o",
+                        "NÃ£o foi possÃ­vel conectar ao servidor. Verifique sua conexÃ£o e tente novamente.",
                         5000
                     );
                 } else {
-                    alert("Erro de ligação ao servidor.");
+                    alert("Erro de ligaÃ§Ã£o ao servidor.");
                 }
             }
         });
@@ -1003,7 +1003,7 @@
                 if (data.twoFA && data.twoFA.enabled) {
                     window.twoFAEnabled = true;
                     window.twoFAMethod = data.twoFA.method || null;
-                    statusEl.textContent = "2FA ativo (" + (data.twoFA.method === "email" ? "código por email" : "app autenticador") + ").";
+                    statusEl.textContent = "2FA ativo (" + (data.twoFA.method === "email" ? "cÃ³digo por email" : "app autenticador") + ").";
                     statusEl.className = "twofa-status twofa-on";
                     btnEnable.style.display = "none";
                     btnDisable.style.display = "inline-block";
@@ -1075,7 +1075,7 @@
         async function confirmarSetup2FA() {
             const code = document.getElementById("twoFAVerifyCode").value.trim();
             if (!code) {
-                alert("Introduza o código de verificação.");
+                alert("Introduza o cÃ³digo de verificaÃ§Ã£o.");
                 return;
             }
             const token = localStorage.getItem("token");
@@ -1091,12 +1091,12 @@
                     fecharModal2FASetup();
                     await carregarStatus2FA();
                     if (twoFASetupBackupCodes.length) {
-                        alert("2FA ativado. Guarde os códigos de backup num local seguro. Cada um só pode ser usado uma vez.");
+                        alert("2FA ativado. Guarde os cÃ³digos de backup num local seguro. Cada um sÃ³ pode ser usado uma vez.");
                     } else {
                         alert("2FA ativado com sucesso.");
                     }
                 } else {
-                    alert(data.error || "Código inválido.");
+                    alert(data.error || "CÃ³digo invÃ¡lido.");
                 }
             } catch (e) {
                 alert("Erro ao ativar 2FA. Tente novamente.");
@@ -1106,7 +1106,7 @@
         async function confirmarDesativar2FA() {
             const code = document.getElementById("twoFADisableCode").value.trim();
             if (!code) {
-                alert("Introduza o código de verificação.");
+                alert("Introduza o cÃ³digo de verificaÃ§Ã£o.");
                 return;
             }
             const token = localStorage.getItem("token");
@@ -1123,7 +1123,7 @@
                     await carregarStatus2FA();
                     alert("2FA desativado.");
                 } else {
-                    alert(data.error || "Código inválido.");
+                    alert(data.error || "CÃ³digo invÃ¡lido.");
                 }
             } catch (e) {
                 alert("Erro ao desativar 2FA. Tente novamente.");
@@ -1153,7 +1153,7 @@
                 });
                 var data = await res.json();
                 if (data.status === "ok" && data.sent) {
-                    btn.textContent = "Código enviado. Verifique o email.";
+                    btn.textContent = "CÃ³digo enviado. Verifique o email.";
                 } else {
                     btn.textContent = originalText;
                     btn.disabled = false;
@@ -1168,7 +1168,7 @@
 
         function descarregarCodigosBackup2FA() {
             if (!twoFASetupBackupCodes || twoFASetupBackupCodes.length === 0) return;
-            var texto = "PromoPing - Códigos de backup 2FA\n\nGuarde num local seguro. Cada código só pode ser usado uma vez.\n\n" + twoFASetupBackupCodes.join("\n") + "\n";
+            var texto = "PromoPing - CÃ³digos de backup 2FA\n\nGuarde num local seguro. Cada cÃ³digo sÃ³ pode ser usado uma vez.\n\n" + twoFASetupBackupCodes.join("\n") + "\n";
             var blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
             var url = URL.createObjectURL(blob);
             var a = document.createElement("a");
@@ -1195,7 +1195,7 @@
         async function confirmarDesativar() {
             const token = localStorage.getItem("token");
             if (!token) {
-                alert("Erro: Não autenticado");
+                alert("Erro: NÃ£o autenticado");
                 fecharModalDesativar();
                 return;
             }
@@ -1207,7 +1207,7 @@
 
             const code2FA = window.twoFAEnabled ? document.getElementById("deactivate2FACode").value.trim() : "";
             if (window.twoFAEnabled && !code2FA) {
-                alert("Introduza o código de verificação 2FA para desativar a conta.");
+                alert("Introduza o cÃ³digo de verificaÃ§Ã£o 2FA para desativar a conta.");
                 btn.disabled = false;
                 btn.textContent = originalText;
                 return;
@@ -1225,21 +1225,21 @@
 
                 const data = await response.json();
                 if (data.requires2FACode && data.status !== 'ok') {
-                    alert("É necessário o código 2FA para desativar a conta.");
+                    alert("Ã‰ necessÃ¡rio o cÃ³digo 2FA para desativar a conta.");
                     document.getElementById("deactivate2FACodeWrap").style.display = "block";
                     btn.disabled = false;
                     btn.textContent = originalText;
                     return;
                 }
                 if (data.status === 'ok') {
-                    // Guardar data de expiração no localStorage
+                    // Guardar data de expiraÃ§Ã£o no localStorage
                     if (data.expirationDate) {
                         localStorage.setItem('accountDeactivated', 'true');
                         localStorage.setItem('accountExpirationDate', data.expirationDate);
                         localStorage.setItem('accountDaysRemaining', data.daysRemaining || 20);
                     }
 
-                    alert(`Conta desativada com sucesso. Você tem ${data.daysRemaining || 20} dias para reativar fazendo login. Após esse período, sua conta será permanentemente excluída.`);
+                    alert(`Conta desativada com sucesso. VocÃª tem ${data.daysRemaining || 20} dias para reativar fazendo login. ApÃ³s esse perÃ­odo, sua conta serÃ¡ permanentemente excluÃ­da.`);
                     localStorage.removeItem('token');
                     window.location.href = '/';
                 } else {
@@ -1287,7 +1287,7 @@
 
             const token = localStorage.getItem("token");
             if (!token) {
-                alert("Erro: Não autenticado");
+                alert("Erro: NÃ£o autenticado");
                 fecharModalExcluir();
                 return;
             }
@@ -1299,7 +1299,7 @@
 
             const code2FA = window.twoFAEnabled ? document.getElementById("delete2FACode").value.trim() : "";
             if (window.twoFAEnabled && !code2FA) {
-                alert("Introduza o código de verificação 2FA para excluir a conta.");
+                alert("Introduza o cÃ³digo de verificaÃ§Ã£o 2FA para excluir a conta.");
                 btn.disabled = false;
                 btn.textContent = originalText;
                 return;
@@ -1317,14 +1317,14 @@
 
                 const data = await response.json();
                 if (data.requires2FACode && data.status !== 'ok') {
-                    alert("É necessário o código 2FA para excluir a conta.");
+                    alert("Ã‰ necessÃ¡rio o cÃ³digo 2FA para excluir a conta.");
                     document.getElementById("delete2FACodeWrap").style.display = "block";
                     btn.disabled = false;
                     btn.textContent = originalText;
                     return;
                 }
                 if (data.status === 'ok') {
-                    alert('Conta excluída com sucesso.');
+                    alert('Conta excluÃ­da com sucesso.');
                     localStorage.removeItem('token');
                     window.location.href = '/';
                 } else {
@@ -1364,7 +1364,7 @@
             }
         });
 
-        // Atualizar switches de preferências de notificação (carrega estado e guarda ao mudar)
+        // Atualizar switches de preferÃªncias de notificaÃ§Ã£o (carrega estado e guarda ao mudar)
         function updateNotificationPreferences(preferencias) {
             const prefMap = {};
             (preferencias || []).forEach(p => {
@@ -1408,7 +1408,7 @@
             });
         }
 
-        // Buscar info do plano do usuário e preencher UI do plano
+        // Buscar info do plano do usuÃ¡rio e preencher UI do plano
         async function carregarPlano() {
             const token = localStorage.getItem("token");
 
@@ -1425,23 +1425,23 @@
                     const plano = data.plano;
                     atualizarBotoesHistorico(plano.id);
 
-                    // Mostrar informações baseadas no ID do plano
+                    // Mostrar informaÃ§Ãµes baseadas no ID do plano
                     if (plano.id === 1) {
                         // FREE
                         document.getElementById("plano-nome").textContent = "Free";
-                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
+                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades bÃ¡sicas";
                         document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
-                        document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
+                        document.getElementById("plano-produtos").textContent = "NÃ£o (5 produtos)";
                     } else if (plano.id === 2) {
                         // BASIC
                         document.getElementById("plano-nome").textContent = "Basic";
-                        document.getElementById("plano-descricao").textContent = "Plano básico com funcionalidades essenciais";
+                        document.getElementById("plano-descricao").textContent = "Plano bÃ¡sico com funcionalidades essenciais";
                         document.getElementById("plano-intervalo").textContent = "4 horas (Basic)";
-                        document.getElementById("plano-produtos").textContent = "Não (25 produtos)";
+                        document.getElementById("plano-produtos").textContent = "NÃ£o (25 produtos)";
                     } else if (plano.id === 3) {
                         // STANDARD
                         document.getElementById("plano-nome").textContent = "Standard";
-                        document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avançadas";
+                        document.getElementById("plano-descricao").textContent = "Plano standard com funcionalidades avanÃ§adas";
                         document.getElementById("plano-intervalo").textContent = "30 minutos (Standard)";
                         document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
                     } else if (plano.id === 4) {
@@ -1451,28 +1451,28 @@
                         document.getElementById("plano-intervalo").textContent = "5 minutos (Premium)";
                         document.getElementById("plano-produtos").textContent = "Sim (Ilimitado)";
                     } else {
-                        // FALLBACK se id não reconhecido
+                        // FALLBACK se id nÃ£o reconhecido
                         document.getElementById("plano-nome").textContent = "Free";
-                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades básicas";
+                        document.getElementById("plano-descricao").textContent = "Plano gratuito com funcionalidades bÃ¡sicas";
                         document.getElementById("plano-intervalo").textContent = "24 horas (Free)";
-                        document.getElementById("plano-produtos").textContent = "Não (5 produtos)";
+                        document.getElementById("plano-produtos").textContent = "NÃ£o (5 produtos)";
                     }
                 } else {
                     document.getElementById("plano-nome").textContent = "Erro ao carregar";
-                    document.getElementById("plano-descricao").textContent = "Não foi possível carregar as informações do plano";
+                    document.getElementById("plano-descricao").textContent = "NÃ£o foi possÃ­vel carregar as informaÃ§Ãµes do plano";
                     atualizarBotoesHistorico(1);
                 }
             } catch (err) {
                 console.error("Erro ao carregar plano:", err);
-                document.getElementById("plano-nome").textContent = "Erro de conexão";
-                document.getElementById("plano-descricao").textContent = "Verifique sua conexão com a internet";
+                document.getElementById("plano-nome").textContent = "Erro de conexÃ£o";
+                document.getElementById("plano-descricao").textContent = "Verifique sua conexÃ£o com a internet";
                 atualizarBotoesHistorico(1);
             }
         }
 
-        // Plano atual (para os botões de relatório vs histórico)
+        // Plano atual (para os botÃµes de relatÃ³rio vs histÃ³rico)
         let planoIdAtual = 1;
-        // Dias para "Histórico completo" conforme plano: Basic 30, Standard 50, Premium 100
+        // Dias para "HistÃ³rico completo" conforme plano: Basic 30, Standard 50, Premium 100
         function diasParaHistorico(planoId) {
             if (planoId === 4) return 100;
             if (planoId === 3) return 50;
@@ -1487,27 +1487,27 @@
             const hint = document.getElementById("historyPlanHint");
             if (!btnPdf || !btnHistorico || !hint) return;
 
-            const temRelatorio = planoId === 3 || planoId === 4; // Relatório PDF: Standard ou Premium
-            const temHistorico = planoId >= 2; // Histórico: Basic, Standard, Premium
+            const temRelatorio = planoId === 3 || planoId === 4; // RelatÃ³rio PDF: Standard ou Premium
+            const temHistorico = planoId >= 2; // HistÃ³rico: Basic, Standard, Premium
 
             btnPdf.disabled = !temRelatorio;
-            btnPdf.title = temRelatorio ? "Descarregar relatório em PDF (últimos 30 dias)" : "Disponível no plano Standard ou superior";
+            btnPdf.title = temRelatorio ? "Descarregar relatÃ³rio em PDF (Ãºltimos 30 dias)" : "DisponÃ­vel no plano Standard ou superior";
             btnHistorico.disabled = !temHistorico;
             if (planoId === 2) {
-                btnHistorico.title = "Descarregar histórico em PDF (30 dias)";
-                hint.textContent = "Relatório: plano Standard+. Histórico: 30 dias no plano Basic.";
+                btnHistorico.title = "Descarregar histÃ³rico em PDF (30 dias)";
+                hint.textContent = "RelatÃ³rio: plano Standard+. HistÃ³rico: 30 dias no plano Basic.";
             } else if (planoId === 3) {
-                btnHistorico.title = "Descarregar histórico em PDF (50 dias)";
-                hint.textContent = "Relatório PDF (30 dias) e histórico completo (50 dias).";
+                btnHistorico.title = "Descarregar histÃ³rico em PDF (50 dias)";
+                hint.textContent = "RelatÃ³rio PDF (30 dias) e histÃ³rico completo (50 dias).";
             } else if (planoId === 4) {
-                btnHistorico.title = "Descarregar histórico em PDF (100 dias)";
-                hint.textContent = "Relatório PDF (30 dias) e histórico completo (100 dias).";
+                btnHistorico.title = "Descarregar histÃ³rico em PDF (100 dias)";
+                hint.textContent = "RelatÃ³rio PDF (30 dias) e histÃ³rico completo (100 dias).";
             } else {
-                hint.textContent = "Faça upgrade para aceder a relatórios e histórico.";
+                hint.textContent = "FaÃ§a upgrade para aceder a relatÃ³rios e histÃ³rico.";
             }
         }
 
-        // Mesmo padrão do admin (utilizadores): fetch PDF, blob, link download
+        // Mesmo padrÃ£o do admin (utilizadores): fetch PDF, blob, link download
         function formatarData(d) {
             var y = d.getFullYear();
             var m = String(d.getMonth() + 1).padStart(2, "0");
@@ -1522,7 +1522,7 @@
                 alert("Precisa estar logado.");
                 return;
             }
-            var labelBtn = tipo === "historico" ? "Histórico completo" : "Relatórios PDF";
+            var labelBtn = tipo === "historico" ? "HistÃ³rico completo" : "RelatÃ³rios PDF";
             var nomeFicheiro = tipo === "historico" ? "historico-promoping-" : "relatorio-promoping-";
             if (botaoClicado) {
                 botaoClicado.disabled = true;
@@ -1580,18 +1580,18 @@
             exportarPDF("historico", dias, btn);
         });
 
-        // Abre página de planos para troca de plano
+        // Abre pÃ¡gina de planos para troca de plano
         function abrirModalPlanos() {
             window.location.href = "/dashboard/planos";
         }
 
-        // Busca o nome do usuário e preenche no topo do painel (nav)
+        // Busca o nome do usuÃ¡rio e preenche no topo do painel (nav)
         async function carregarNomeUsuario() {
             try {
-                console.log("Carregando nome do usuário...");
+                console.log("Carregando nome do usuÃ¡rio...");
                 const token = localStorage.getItem("token");
                 if (!token) {
-                    console.error("Token não encontrado para carregar nome");
+                    console.error("Token nÃ£o encontrado para carregar nome");
                     return;
                 }
 
@@ -1611,9 +1611,9 @@
                         const userNameEl = document.getElementById("userName");
                         if (userNameEl) {
                             userNameEl.textContent = data.profile.nome || 'Utilizador';
-                            console.log("Nome do usuário atualizado:", data.profile.nome);
+                            console.log("Nome do usuÃ¡rio atualizado:", data.profile.nome);
                         } else {
-                            console.error("Elemento userName não encontrado");
+                            console.error("Elemento userName nÃ£o encontrado");
                         }
                         const greetingEl = document.getElementById("profileGreetingName");
                         if (greetingEl) greetingEl.textContent = data.profile.nome || 'Utilizador';
@@ -1624,23 +1624,23 @@
                     console.error("Erro na resposta:", response.status);
                 }
             } catch (error) {
-                console.error("Erro ao carregar nome do usuário:", error);
+                console.error("Erro ao carregar nome do usuÃ¡rio:", error);
             }
         }
 
-        // Funções de conexão para diferentes serviços
+        // FunÃ§Ãµes de conexÃ£o para diferentes serviÃ§os
         async function conectarDiscord() {
             try {
-                console.log(" Iniciando conexão com Discord...");
+                console.log(" Iniciando conexÃ£o com Discord...");
 
-                // Verificar se usuário está logado
+                // Verificar se usuÃ¡rio estÃ¡ logado
                 const token = localStorage.getItem("token");
                 if (token) {
-                    // Se estiver logado, passar parâmetro para associar ao perfil
+                    // Se estiver logado, passar parÃ¢metro para associar ao perfil
                     const discordAuthUrl = `/auth/discord?from=profile&token=${encodeURIComponent(token)}`;
                     window.location.href = discordAuthUrl;
                 } else {
-                    // Se não estiver logado, fazer login normal
+                    // Se nÃ£o estiver logado, fazer login normal
                     const discordAuthUrl = "/auth/discord";
                     window.location.href = discordAuthUrl;
                 }
@@ -1655,11 +1655,11 @@
             try {
                 console.log(" Configurando email...");
 
-                // Mostrar modal ou redirecionar para configuração de email
-                const email = prompt("Digite seu email para configuração:");
+                // Mostrar modal ou redirecionar para configuraÃ§Ã£o de email
+                const email = prompt("Digite seu email para configuraÃ§Ã£o:");
                 if (email && email.includes("@")) {
-                    // Aqui você pode implementar a lógica de configuração de email
-                    alert("Configuração de email em desenvolvimento!");
+                    // Aqui vocÃª pode implementar a lÃ³gica de configuraÃ§Ã£o de email
+                    alert("ConfiguraÃ§Ã£o de email em desenvolvimento!");
                 }
 
             } catch (error) {
@@ -1672,11 +1672,11 @@
             try {
                 console.log(" Configurando SMS...");
 
-                // Mostrar modal ou redirecionar para configuração de SMS
-                const telefone = prompt("Digite seu número de telefone (com código do país):");
+                // Mostrar modal ou redirecionar para configuraÃ§Ã£o de SMS
+                const telefone = prompt("Digite seu nÃºmero de telefone (com cÃ³digo do paÃ­s):");
                 if (telefone && telefone.length >= 10) {
-                    // Aqui você pode implementar a lógica de configuração de SMS
-                    alert("Configuração de SMS em desenvolvimento!");
+                    // Aqui vocÃª pode implementar a lÃ³gica de configuraÃ§Ã£o de SMS
+                    alert("ConfiguraÃ§Ã£o de SMS em desenvolvimento!");
                 }
 
             } catch (error) {
@@ -1687,3 +1687,4 @@
     </script>
 </body>
 </html>
+

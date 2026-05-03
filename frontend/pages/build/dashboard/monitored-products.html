@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,9 +7,9 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="PromoPing Products — list and edit the products you're tracking and follow price changes.">
+  <meta name="description" content="PromoPing Products â€” list and edit the products you're tracking and follow price changes.">
   <title>Products PromoPing | promoping.pt</title>
-  <link rel="stylesheet" href="../../assets/styles/painel.css">
+  <link rel="stylesheet" href="../../assets/styles/dashboard-shared.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
   <script src="../../assets/scripts/request-manager.js"></script>
@@ -23,7 +23,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
-  <link rel="stylesheet" href="assets/styles/produtos.css">
+  <link rel="stylesheet" href="assets/styles/monitored-products.css">
 </head>
 <body class="dashboard-body">
   <nav class="dashboard-nav">
@@ -103,7 +103,7 @@
               <option>FNAC</option>
               <option>PCDiga</option>
               <option>Globaldata</option>
-              <option>Rádio Popular</option>
+              <option>RÃ¡dio Popular</option>
               <option>MediaMarkt</option>
               <option>IKEA</option>
               <option>Leroy Merlin</option>
@@ -141,7 +141,7 @@
     </div>
   </main>
 
-  <!-- Modal de confirmação para remover produto (fora do main, como no Painel) -->
+  <!-- Modal de confirmaÃ§Ã£o para remover produto (fora do main, como no Painel) -->
   <div id="confirmRemoverModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirmRemoverTitle">
     <div class="modal-content">
       <div class="modal-header">
@@ -158,7 +158,7 @@
     </div>
   </div>
 
-  <!-- Modal de data limite (calendário) -->
+  <!-- Modal de data limite (calendÃ¡rio) -->
   <div id="dataLimiteModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="dataLimiteTitle">
     <div class="modal-content">
       <div class="modal-header">
@@ -225,7 +225,7 @@
             Full history
           </span>
         </div>
-        <button class="upgrade-btn" onclick="window.open('/dashboard/planos.html', '_blank')">
+        <button class="upgrade-btn" onclick="window.open('/dashboard/subscription-plans.html', '_blank')">
           View Available Plans
         </button>
         <button class="upgrade-close" onclick="fecharModalUpgrade()">
@@ -239,13 +239,13 @@
   </div>
 
   <script>
-    // Função: deslogar usuário e voltar para página inicial
+    // FunÃ§Ã£o: deslogar usuÃ¡rio e voltar para pÃ¡gina inicial
     function logout() {
       localStorage.removeItem("token");
       window.location.href = "/index.html";
     }
 
-    // Sanitização XSS: escapar HTML e atributos ao renderizar dados do utilizador
+    // SanitizaÃ§Ã£o XSS: escapar HTML e atributos ao renderizar dados do utilizador
     function escapeHtml(text) {
       if (text == null || typeof text !== "string") return "";
       const div = document.createElement("div");
@@ -257,7 +257,7 @@
       return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Função principal: carregar lista de produtos do usuário, aplica filtros e monta cards
+    // FunÃ§Ã£o principal: carregar lista de produtos do usuÃ¡rio, aplica filtros e monta cards
     async function carregarProdutos() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -321,16 +321,16 @@
           const nomeOk = !query || nome.toLowerCase().includes(query);
           const lojaOk = !lojaFiltro || (loja && loja.toLowerCase() === lojaFiltro.toLowerCase());
           const metaAtingida = precoAlvo != null && precoAtual != null && precoAtual <= precoAlvo;
-          const subiu = false; // PrecoAnterior não existe mais
+          const subiu = false; // PrecoAnterior nÃ£o existe mais
           const estadoOk = !estadoFiltro || (estadoFiltro === 'meta' && metaAtingida) || (estadoFiltro === 'subiu' && subiu) || (estadoFiltro === 'monitorar' && !metaAtingida && !subiu);
           return nomeOk && lojaOk && estadoOk;
         });
         itens.forEach((p, index) => {
           const hist = Array.isArray(p.Historico) ? p.Historico : [];
-          const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `€${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : '—';
-          const precoAnterior = hist.length > 0 ? `€${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : '—';
-          const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '—';
-          const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '—';
+          const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `â‚¬${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : 'â€”';
+          const precoAnterior = hist.length > 0 ? `â‚¬${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : 'â€”';
+          const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `â‚¬${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : 'â€”';
+          const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : 'â€”';
           const dataLimiteRaw = p.DataLimite || p.dataLimite || p.data_limite || null;
           const dataLimiteFmt = dataLimiteRaw ? new Date(dataLimiteRaw).toLocaleDateString('pt-PT') : 'No end date';
           const dataLimiteIso = dataLimiteRaw ? String(dataLimiteRaw).slice(0, 10) : '';
@@ -371,7 +371,7 @@
             else if (lojaLower.includes('pingo doce')) storeTagClass = 'store-tag store-pingodoce';
             else if (lojaLower.includes('continente')) storeTagClass = 'store-tag store-continente';
             else if (lojaLower.includes('auchan')) storeTagClass = 'store-tag store-auchan';
-            else if (lojaLower.includes('el corte inglés') || lojaLower.includes('elcorteingles')) storeTagClass = 'store-tag store-elcorteingles';
+            else if (lojaLower.includes('el corte inglÃ©s') || lojaLower.includes('elcorteingles')) storeTagClass = 'store-tag store-elcorteingles';
             else if (lojaLower.includes('primark')) storeTagClass = 'store-tag store-primark';
             else if (lojaLower.includes('decathlon')) storeTagClass = 'store-tag store-decathlon';
             else if (lojaLower.includes('sport zone')) storeTagClass = 'store-tag store-sportzone';
@@ -384,30 +384,30 @@
             else if (lojaLower.includes('lefties')) storeTagClass = 'store-tag store-lefties';
           }
 
-          // Gerar histórico de preços
+          // Gerar histÃ³rico de preÃ§os
           const historicoHtml = hist.slice(0, 3).map(h =>
-            `<div class="history-item">${h.Preco || h.preco}€ (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
+            `<div class="history-item">${h.Preco || h.preco}â‚¬ (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
           ).join('');
 
-          // Gerar indicador de mudança de preço
+          // Gerar indicador de mudanÃ§a de preÃ§o
           let priceChangeHtml = '';
           if (delta !== null) {
-            const arrow = delta < 0 ? '' : delta > 0 ? '' : '—';
+            const arrow = delta < 0 ? '' : delta > 0 ? '' : 'â€”';
             const color = delta < 0 ? 'price-down' : delta > 0 ? 'price-up' : 'price-neutral';
             priceChangeHtml = `<div class="price-change-indicator ${color}">
               <span class="change-arrow">${arrow}</span>
-              <span class="change-amount">${delta < 0 ? '-' : delta > 0 ? '+' : ''}${Math.abs(delta).toFixed(2)}€ (${Math.abs(percentual).toFixed(1)}%)</span>
+              <span class="change-amount">${delta < 0 ? '-' : delta > 0 ? '+' : ''}${Math.abs(delta).toFixed(2)}â‚¬ (${Math.abs(percentual).toFixed(1)}%)</span>
             </div>`;
           }
 
-          // Verificar se deve aplicar blur (apenas para plano Free e produtos além do limite)
+          // Verificar se deve aplicar blur (apenas para plano Free e produtos alÃ©m do limite)
           const shouldBlur = userPlan === "Free" && index >= 2;
           const blurClass = shouldBlur ? " blurred" : "";
           const upgradeOverlay = shouldBlur ? `
             <div class="product-upgrade-overlay">
               <h4>Product Locked</h4>
               <p>Upgrade to <strong>Basic</strong> or higher to view all products.</p>
-              <button class="upgrade-btn-small" onclick="window.open('/dashboard/planos.html', '_blank')">
+              <button class="upgrade-btn-small" onclick="window.open('/dashboard/subscription-plans.html', '_blank')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M7 17L17 7"></path>
                   <path d="M7 7h10v10"></path>
@@ -513,7 +513,7 @@
       }
     }
 
-    // Função: remove produto do usuário através do id
+    // FunÃ§Ã£o: remove produto do usuÃ¡rio atravÃ©s do id
     async function removerProduto(id) {
       const token = localStorage.getItem("token");
       try {
@@ -529,7 +529,7 @@
     }
 
     const poupancaJaPedida = new Set();
-    // Clicou "Ir ao site" = regista preço alvo como poupado (1 vez por produto).
+    // Clicou "Ir ao site" = regista preÃ§o alvo como poupado (1 vez por produto).
     async function abrirProdutoNoSite(produtoId, link) {
       const token = localStorage.getItem("token");
       if (token && !poupancaJaPedida.has(produtoId)) {
@@ -549,7 +549,7 @@
       if (link && link !== "#") window.open(link, "_blank");
     }
 
-    // Modal de confirmação para remover produto
+    // Modal de confirmaÃ§Ã£o para remover produto
     let pendingDeleteId = null;
     function onEscapeConfirmRemover(e) {
       if (e.key === "Escape") closeConfirmRemoverModal();
@@ -582,7 +582,7 @@
       if (modal) modal.addEventListener("click", function (e) { if (e.target === this) closeConfirmRemoverModal(); });
     })();
 
-    // Modal de data limite (calendário)
+    // Modal de data limite (calendÃ¡rio)
     const dataLimiteModalState = {
       id: null,
       dataIso: ""
@@ -746,7 +746,7 @@
 
     let lastSyncTime = Date.now();
 
-    // Função: verifica se há mudanças/sincronização dos produtos no backend
+    // FunÃ§Ã£o: verifica se hÃ¡ mudanÃ§as/sincronizaÃ§Ã£o dos produtos no backend
     async function verificarSincronizacao() {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -758,27 +758,27 @@
 
         const data = await res.json();
         if (data.status === "ok" && data.produtos.length > 0) {
-          // Há produtos atualizados, recarregar a lista
+          // HÃ¡ produtos atualizados, recarregar a lista
           carregarProdutos();
           lastSyncTime = data.timestamp;
         }
       } catch (err) {
-        console.error("Erro na sincronização:", err);
+        console.error("Erro na sincronizaÃ§Ã£o:", err);
       }
     }
 
-    // Sincronização removida - página estática não precisa de atualizações automáticas
+    // SincronizaÃ§Ã£o removida - pÃ¡gina estÃ¡tica nÃ£o precisa de atualizaÃ§Ãµes automÃ¡ticas
     // setInterval(verificarSincronizacao, 120000);
 
-    let userPlan = "Free"; // Plano padrão
+    let userPlan = "Free"; // Plano padrÃ£o
 
-    // Função: verifica o plano atual do usuário (Free, Basic, etc)
+    // FunÃ§Ã£o: verifica o plano atual do usuÃ¡rio (Free, Basic, etc)
     async function verificarPlanoUsuario() {
-      console.log("Verificando plano do usuário...");
+      console.log("Verificando plano do usuÃ¡rio...");
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          console.log("Usuário não autenticado");
+          console.log("UsuÃ¡rio nÃ£o autenticado");
           return;
         }
 
@@ -808,7 +808,7 @@
       }
     }
 
-    // Função: exibe o modal para upgrade de plano
+    // FunÃ§Ã£o: exibe o modal para upgrade de plano
     function mostrarModalUpgrade(planoAtual) {
       const modal = document.getElementById("upgradeModal");
       const currentPlanSpan = document.getElementById("currentPlan");
@@ -822,7 +822,7 @@
       console.log("Modal de upgrade exibido");
     }
 
-    // Função: fecha o modal de upgrade de plano
+    // FunÃ§Ã£o: fecha o modal de upgrade de plano
     function fecharModalUpgrade() {
       const modal = document.getElementById("upgradeModal");
       modal.style.display = "none";
@@ -847,13 +847,13 @@
       }
     });
 
-    // Função: carrega o nome do usuário logado e mostra no header
+    // FunÃ§Ã£o: carrega o nome do usuÃ¡rio logado e mostra no header
     async function carregarNomeUsuario() {
       try {
-        console.log(" [PRODUTOS] Carregando nome do usuário...");
+        console.log(" [PRODUTOS] Carregando nome do usuÃ¡rio...");
         const token = localStorage.getItem("token");
         if (!token) {
-          console.error(" [PRODUTOS] Token não encontrado para carregar nome");
+          console.error(" [PRODUTOS] Token nÃ£o encontrado para carregar nome");
           return;
         }
 
@@ -871,9 +871,9 @@
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
               userNameEl.textContent = data.profile.nome || 'Utilizador';
-              console.log(" [PRODUTOS] Nome do usuário atualizado:", data.profile.nome);
+              console.log(" [PRODUTOS] Nome do usuÃ¡rio atualizado:", data.profile.nome);
             } else {
-              console.error(" [PRODUTOS] Elemento userName não encontrado");
+              console.error(" [PRODUTOS] Elemento userName nÃ£o encontrado");
             }
           } else {
             console.error(" [PRODUTOS] Estrutura de dados incorreta:", data);
@@ -882,13 +882,13 @@
           console.error(" [PRODUTOS] Erro na resposta:", response.status);
         }
       } catch (error) {
-        console.error(" [PRODUTOS] Erro ao carregar nome do usuário:", error);
+        console.error(" [PRODUTOS] Erro ao carregar nome do usuÃ¡rio:", error);
       }
     }
 
-    // Executado ao carregar página: inicia fluxo painel (carrega usuário, verifica plano, exibe produtos e ativa filtros)
+    // Executado ao carregar pÃ¡gina: inicia fluxo painel (carrega usuÃ¡rio, verifica plano, exibe produtos e ativa filtros)
     window.onload = async () => {
-      // Carregar nome do usuário
+      // Carregar nome do usuÃ¡rio
       await carregarNomeUsuario();
       // Verificar plano primeiro, depois carregar produtos
       await verificarPlanoUsuario();
@@ -902,4 +902,5 @@
 </body>
 
 </html>
+
 

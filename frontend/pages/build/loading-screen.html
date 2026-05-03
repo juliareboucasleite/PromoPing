@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
-  <link rel="stylesheet" href="assets/styles/carregamento.css">
+  <link rel="stylesheet" href="assets/styles/loading-screen.css">
 </head>
 <body>
     <div class="loading-container">
@@ -111,7 +111,7 @@
 
                 // Fallback: if after 5s we haven't redirected, force the redirect
                 setTimeout(function() {
-                    if (window.location.href.includes('carregamento.html')) {
+                    if (window.location.href.includes('loading-screen.html')) {
                         window.location.href = addCacheBuster(CONFIG.targetUrl);
                     }
                 }, 5000);
@@ -127,4 +127,5 @@
     </script>
 </body>
 </html>
+
 

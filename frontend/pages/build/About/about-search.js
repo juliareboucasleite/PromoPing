@@ -1,4 +1,4 @@
-// Sistema de Pesquisa para About PromoPing
+﻿// Sistema de Pesquisa para About PromoPing
 class AboutSearch {
     constructor() {
         this.searchIndex = [];
@@ -9,7 +9,7 @@ class AboutSearch {
     getCurrentPage() {
         const path = window.location.pathname;
         const filename = path.split('/').pop();
-        return filename || 'about.html';
+        return filename || 'about-promoping.html';
     }
 
     initializeSearch() {
@@ -22,50 +22,50 @@ class AboutSearch {
         this.searchIndex = [
             {
                 title: "Sobre o PromoPing",
-                url: "About/about.html",
-                content: "O PromoPing é uma plataforma especializada concebida para o ajudar a monitorizar e comparar preços de produtos num só local. Funciona como uma ferramenta inteligente que recolhe dados de múltiplas lojas online, oferecendo aos utilizadores a capacidade de rastrear preços, receber alertas quando aparecem descontos e tomar decisões de compra mais inteligentes.",
-                keywords: ["sobre", "promoping", "plataforma", "monitorizar", "comparar", "preços", "produtos", "lojas", "online", "alertas", "descontos", "compras", "inteligentes", "configurar", "configuração"]
+                url: "About/about-promoping.html",
+                content: "O PromoPing Ã© uma plataforma especializada concebida para o ajudar a monitorizar e comparar preÃ§os de produtos num sÃ³ local. Funciona como uma ferramenta inteligente que recolhe dados de mÃºltiplas lojas online, oferecendo aos utilizadores a capacidade de rastrear preÃ§os, receber alertas quando aparecem descontos e tomar decisÃµes de compra mais inteligentes.",
+                keywords: ["sobre", "promoping", "plataforma", "monitorizar", "comparar", "preÃ§os", "produtos", "lojas", "online", "alertas", "descontos", "compras", "inteligentes", "configurar", "configuraÃ§Ã£o"]
             },
             {
                 title: "Alertas Inteligentes",
-                url: "About/alertas.html",
-                content: "Receba alertas imediatos quando os preços dos produtos que monitora baixam ou quando há novas ofertas disponíveis. Tipos de alertas incluem: alerta de preço, alerta de estoque, alerta de oferta e alerta de novo produto. Nunca perca uma oportunidade de compra e seja sempre o primeiro a saber sobre as melhores ofertas.",
-                keywords: ["alertas", "notificações", "preços", "ofertas", "estoque", "produtos", "descontos", "promoções", "avisos", "tempo", "real", "instantâneos", "sms", "email"]
+                url: "About/smart-alerts.html",
+                content: "Receba alertas imediatos quando os preÃ§os dos produtos que monitora baixam ou quando hÃ¡ novas ofertas disponÃ­veis. Tipos de alertas incluem: alerta de preÃ§o, alerta de estoque, alerta de oferta e alerta de novo produto. Nunca perca uma oportunidade de compra e seja sempre o primeiro a saber sobre as melhores ofertas.",
+                keywords: ["alertas", "notificaÃ§Ãµes", "preÃ§os", "ofertas", "estoque", "produtos", "descontos", "promoÃ§Ãµes", "avisos", "tempo", "real", "instantÃ¢neos", "sms", "email"]
             },
             {
                 title: "Blog PromoPing",
-                url: "About/blog.html",
-                content: "Dicas, truques e insights para maximizar as suas poupanças. Artigos sobre estratégias de poupança, tecnologia, moda, casa e jardim, gaming e entretenimento, livros e educação. Análises mensais de preços, top produtos com maior poupança e previsões para o próximo mês.",
-                keywords: ["blog", "dicas", "truques", "poupanças", "artigos", "estratégias", "tecnologia", "moda", "casa", "jardim", "gaming", "livros", "educação", "análises", "tendências", "black", "friday", "promoções"]
+                url: "About/promoping-blog.html",
+                content: "Dicas, truques e insights para maximizar as suas poupanÃ§as. Artigos sobre estratÃ©gias de poupanÃ§a, tecnologia, moda, casa e jardim, gaming e entretenimento, livros e educaÃ§Ã£o. AnÃ¡lises mensais de preÃ§os, top produtos com maior poupanÃ§a e previsÃµes para o prÃ³ximo mÃªs.",
+                keywords: ["blog", "dicas", "truques", "poupanÃ§as", "artigos", "estratÃ©gias", "tecnologia", "moda", "casa", "jardim", "gaming", "livros", "educaÃ§Ã£o", "anÃ¡lises", "tendÃªncias", "black", "friday", "promoÃ§Ãµes"]
             },
             {
                 title: "Casos de Uso",
-                url: "About/casos-uso.html",
-                content: "Descubra como o PromoPing pode transformar a sua experiência de compras. Casos de uso para profissionais de tecnologia, mães de família, estudantes universitários, entusiastas de moda, proprietários de casa e gamers. Cada caso mostra como o PromoPing ajuda a poupar dinheiro e a encontrar as melhores ofertas.",
-                keywords: ["casos", "uso", "exemplos", "profissionais", "tecnologia", "família", "estudantes", "moda", "casa", "gaming", "poupanças", "ofertas", "experiência", "compras", "cenários", "aplicações"]
+                url: "About/use-cases.html",
+                content: "Descubra como o PromoPing pode transformar a sua experiÃªncia de compras. Casos de uso para profissionais de tecnologia, mÃ£es de famÃ­lia, estudantes universitÃ¡rios, entusiastas de moda, proprietÃ¡rios de casa e gamers. Cada caso mostra como o PromoPing ajuda a poupar dinheiro e a encontrar as melhores ofertas.",
+                keywords: ["casos", "uso", "exemplos", "profissionais", "tecnologia", "famÃ­lia", "estudantes", "moda", "casa", "gaming", "poupanÃ§as", "ofertas", "experiÃªncia", "compras", "cenÃ¡rios", "aplicaÃ§Ãµes"]
             },
             {
-                title: "Monitoramento de Preços",
-                url: "About/monitoramento.html",
-                content: "Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra. O PromoPing monitora constantemente milhares de produtos em dezenas de lojas online, verificando preços, disponibilidade e ofertas especiais. Suporta mais de 50 lojas portuguesas incluindo PCDiga, Worten, Globaldata, FNAC e muitas outras.",
-                keywords: ["monitoramento", "preços", "tempo", "real", "produtos", "lojas", "verificação", "disponibilidade", "ofertas", "pcdiga", "worten", "globaldata", "fnac", "rastreamento", "acompanhamento", "histórico"]
+                title: "Monitoramento de PreÃ§os",
+                url: "About/price-monitoring.html",
+                content: "Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra. O PromoPing monitora constantemente milhares de produtos em dezenas de lojas online, verificando preÃ§os, disponibilidade e ofertas especiais. Suporta mais de 50 lojas portuguesas incluindo PCDiga, Worten, Globaldata, FNAC e muitas outras.",
+                keywords: ["monitoramento", "preÃ§os", "tempo", "real", "produtos", "lojas", "verificaÃ§Ã£o", "disponibilidade", "ofertas", "pcdiga", "worten", "globaldata", "fnac", "rastreamento", "acompanhamento", "histÃ³rico"]
             },
             {
-                title: "Relatórios e Análises",
-                url: "About/relatorios.html",
-                content: "Compreenda os seus padrões de compra e maximize as suas poupanças. Visualize quanto dinheiro poupou com o PromoPing através de gráficos detalhados e estatísticas precisas. Tipos de relatórios incluem: relatório mensal, relatório por categoria, relatório por loja e relatório de tendências.",
-                keywords: ["relatórios", "análises", "gráficos", "estatísticas", "poupanças", "padrões", "compras", "dashboard", "visualizações", "insights", "recomendações", "tendências", "mensal", "categoria", "loja"]
+                title: "RelatÃ³rios e AnÃ¡lises",
+                url: "About/reports-and-analytics.html",
+                content: "Compreenda os seus padrÃµes de compra e maximize as suas poupanÃ§as. Visualize quanto dinheiro poupou com o PromoPing atravÃ©s de grÃ¡ficos detalhados e estatÃ­sticas precisas. Tipos de relatÃ³rios incluem: relatÃ³rio mensal, relatÃ³rio por categoria, relatÃ³rio por loja e relatÃ³rio de tendÃªncias.",
+                keywords: ["relatÃ³rios", "anÃ¡lises", "grÃ¡ficos", "estatÃ­sticas", "poupanÃ§as", "padrÃµes", "compras", "dashboard", "visualizaÃ§Ãµes", "insights", "recomendaÃ§Ãµes", "tendÃªncias", "mensal", "categoria", "loja"]
             },
             {
-                title: "Política de Cookies",
-                url: "About/privacy-cookies.html",
-                content: "Política de cookies e privacidade do PromoPing. Informações sobre como utilizamos cookies e tecnologias similares para melhorar a sua experiência, recolher dados de utilização e personalizar conteúdo. Conheça os seus direitos e como gerir as preferências de cookies.",
-                keywords: ["política", "cookies", "privacidade", "dados", "proteção", "rgpd", "preferências", "configurações", "rastreamento", "análise", "personalização"]
+                title: "PolÃ­tica de Cookies",
+                url: "About/cookie-policy.html",
+                content: "PolÃ­tica de cookies e privacidade do PromoPing. InformaÃ§Ãµes sobre como utilizamos cookies e tecnologias similares para melhorar a sua experiÃªncia, recolher dados de utilizaÃ§Ã£o e personalizar conteÃºdo. ConheÃ§a os seus direitos e como gerir as preferÃªncias de cookies.",
+                keywords: ["polÃ­tica", "cookies", "privacidade", "dados", "proteÃ§Ã£o", "rgpd", "preferÃªncias", "configuraÃ§Ãµes", "rastreamento", "anÃ¡lise", "personalizaÃ§Ã£o"]
             }
         ];
     }
 
-    /* ---------- UTILITÁRIOS DE SEGURANÇA ---------- */
+    /* ---------- UTILITÃRIOS DE SEGURANÃ‡A ---------- */
 
     // Escapa HTML de forma segura (usa textContent para evitar XSS)
     escapeHTML(str) {
@@ -89,7 +89,7 @@ class AboutSearch {
         return str.replace(/[<>'"&]/g, '');
     }
 
-    // Gera uma versão "highlighted" segura:
+    // Gera uma versÃ£o "highlighted" segura:
     highlightSafe(text, query) {
         if (!query) return this.escapeHTML(text);
         
@@ -114,11 +114,11 @@ class AboutSearch {
         
         try {
             const regex = new RegExp(`(${pattern})`, 'ig');
-            // Substituir no texto escapado. Como o texto está escapado, a substituição é segura.
+            // Substituir no texto escapado. Como o texto estÃ¡ escapado, a substituiÃ§Ã£o Ã© segura.
             return escapedText.replace(regex, '<mark>$1</mark>');
         } catch (e) {
             // Se regex falhar, retornar texto escapado sem highlight
-            console.warn('Regex inválido na pesquisa:', e);
+            console.warn('Regex invÃ¡lido na pesquisa:', e);
             return escapedText;
         }
     }
@@ -205,7 +205,7 @@ class AboutSearch {
             .slice(0, 8);
     }
 
-    //Renderização segura
+    //RenderizaÃ§Ã£o segura
 
     removeExistingResults() {
         const existing = document.querySelector('.search-results');
@@ -221,7 +221,7 @@ class AboutSearch {
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'search-results';
 
-        // Cabeçalho
+        // CabeÃ§alho
         const header = document.createElement('div');
         header.className = 'search-results-header';
         const countSpan = document.createElement('span');
@@ -231,7 +231,7 @@ class AboutSearch {
         closeBtn.className = 'search-results-close';
         closeBtn.type = 'button';
         closeBtn.setAttribute('aria-label', 'Fechar resultados de pesquisa');
-        closeBtn.textContent = '×';
+        closeBtn.textContent = 'Ã—';
         closeBtn.addEventListener('click', () => resultsContainer.remove());
         header.appendChild(countSpan);
         header.appendChild(closeBtn);
@@ -246,12 +246,12 @@ class AboutSearch {
             item.className = 'search-result-item';
             if (result.url === this.currentPage || result.url.includes(this.currentPage)) item.classList.add('current-page');
 
-            // Título (highlight seguro)
+            // TÃ­tulo (highlight seguro)
             const titleDiv = document.createElement('div');
             titleDiv.className = 'search-result-title';
             titleDiv.innerHTML = this.highlightSafe(result.title, query);
 
-            // Conteúdo (resumo) - limita e highlight
+            // ConteÃºdo (resumo) - limita e highlight
             const excerpt = result.content.length > 120 ? result.content.substring(0, 120) + '...' : result.content;
             const contentDiv = document.createElement('div');
             contentDiv.className = 'search-result-content';
@@ -262,7 +262,7 @@ class AboutSearch {
             urlDiv.className = 'search-result-url';
             urlDiv.textContent = result.url;
 
-            // Evento de clique (navegação) — sem inline JS
+            // Evento de clique (navegaÃ§Ã£o) â€” sem inline JS
             item.addEventListener('click', (ev) => {
                 // permite Ctrl/Cmd+click para abrir nova aba
                 if (ev.ctrlKey || ev.metaKey) {
@@ -272,7 +272,7 @@ class AboutSearch {
                 }
             });
 
-            // Accessibility: tornar clicável com Enter quando focado
+            // Accessibility: tornar clicÃ¡vel com Enter quando focado
             item.tabIndex = 0;
             item.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Enter') {
@@ -310,7 +310,7 @@ class AboutSearch {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'search-results-close';
         closeBtn.type = 'button';
-        closeBtn.textContent = '×';
+        closeBtn.textContent = 'Ã—';
         closeBtn.addEventListener('click', () => resultsContainer.remove());
         header.appendChild(countSpan);
         header.appendChild(closeBtn);
@@ -320,7 +320,7 @@ class AboutSearch {
         const noRes = document.createElement('div');
         noRes.className = 'search-no-results';
         noRes.innerHTML = `
-            <p>Não foram encontrados resultados para "<strong>${this.escapeHTML(query)}</strong>"</p>
+            <p>NÃ£o foram encontrados resultados para "<strong>${this.escapeHTML(query)}</strong>"</p>
             <p class="search-suggestions">Tente:</p>
             <ul>
                 <li>Verificar a ortografia</li>
@@ -346,7 +346,9 @@ class AboutSearch {
 
 // Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
-    window.AboutSearch = AboutSearch; // expõe a classe
+    window.AboutSearch = AboutSearch; // expÃµe a classe
     new AboutSearch();
 });
+
+
 

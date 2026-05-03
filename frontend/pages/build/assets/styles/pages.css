@@ -1,5 +1,5 @@
-/* ===== PAGES SPECIFIC STYLES ===== */
-/* Used by: blog.html, casos-uso.html, alertas.html, relatorios.html, monitoramento.html */
+﻿/* ===== PAGES SPECIFIC STYLES ===== */
+/* Used by: promoping-blog.html, use-cases.html, smart-alerts.html, reports-and-analytics.html, price-monitoring.html */
 
 /* ===== HEADER ===== */
 body {
@@ -512,3 +512,4 @@ body {
     text-align: center;
   }
 }
+

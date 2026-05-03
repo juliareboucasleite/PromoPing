@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import express from "express";
 import passport from "passport";
 import {
@@ -54,7 +54,7 @@ import QRCode from "qrcode";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
-}); // Garante que .env está sendo lido da raiz
+}); // Garante que .env estÃ¡ sendo lido da raiz
 
 const router = express.Router();
 
@@ -84,7 +84,7 @@ const USER_SELECT_FIELDS = `
     dinheiro_poupado
 `;
 
-// Expiração: access 30 dias, refresh 60 dias (renovação automática)
+// ExpiraÃ§Ã£o: access 30 dias, refresh 60 dias (renovaÃ§Ã£o automÃ¡tica)
 const JWT_ACCESS_EXPIRY = "30d";
 const JWT_REFRESH_EXPIRY = "60d";
 
@@ -109,7 +109,7 @@ function gerarParesToken(ReferenciaID, email) {
     return { token, refreshToken };
 }
 
-/** Token de curta duração (5 min) usado apenas para completar 2FA no login. */
+/** Token de curta duraÃ§Ã£o (5 min) usado apenas para completar 2FA no login. */
 function gerarToken2FAPending(ReferenciaID, email) {
     const secret = process.env.JWT_SECRET;
     return jwt.sign(
@@ -123,7 +123,7 @@ function gerarCodigo() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Função para enviar email
+// FunÃ§Ã£o para enviar email
 async function enviarEmail(to, subject, text) {
     try {
         const {
@@ -171,17 +171,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
                     // Verificar se profile tem emails
                     if (!profile.emails || profile.emails.length === 0) {
-                        const error = new Error("Email não fornecido pelo Google. Certifique-se de que seu email está visível no Google.");
-                        console.error("[GOOGLE STRATEGY] Erro: Email não fornecido pelo Google");
+                        const error = new Error("Email nÃ£o fornecido pelo Google. Certifique-se de que seu email estÃ¡ visÃ­vel no Google.");
+                        console.error("[GOOGLE STRATEGY] Erro: Email nÃ£o fornecido pelo Google");
                         return done(error, null);
                     }
 
                     const email = profile.emails[0].value;
                     const googleId = profile.id;
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-                    const nome = profile.displayName || profile.name?.givenName || 'Usuário Google';
+                    const nome = profile.displayName || profile.name?.givenName || 'UsuÃ¡rio Google';
 
-                    console.log("[GOOGLE STRATEGY] Processando usuário:", { email, nome, googleId });
+                    console.log("[GOOGLE STRATEGY] Processando usuÃ¡rio:", { email, nome, googleId });
 
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
@@ -214,8 +214,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                     );
                                 }
                             } catch (updateErr) {
-                                // Se campo não existe, tentar atualizar apenas o que existe
-                                console.log("[GOOGLE STRATEGY] Erro ao atualizar (campo pode não existir):", updateErr.message);
+                                // Se campo nÃ£o existe, tentar atualizar apenas o que existe
+                                console.log("[GOOGLE STRATEGY] Erro ao atualizar (campo pode nÃ£o existir):", updateErr.message);
                                 try {
                                     if (fotoPerfil) {
                                         await pool.query(
@@ -224,7 +224,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                         );
                                     }
                                 } catch (fotoErr) {
-                                    console.log("[GOOGLE STRATEGY] FotoPerfil não existe, ignorando");
+                                    console.log("[GOOGLE STRATEGY] FotoPerfil nÃ£o existe, ignorando");
                                 }
                                 try {
                                     if (googleId) {
@@ -234,22 +234,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                         );
                                     }
                                 } catch (googleIdErr) {
-                                    console.log("[GOOGLE STRATEGY] google_id não existe, ignorando");
+                                    console.log("[GOOGLE STRATEGY] google_id nÃ£o existe, ignorando");
                                 }
                             }
                         }
-                        console.log("[GOOGLE STRATEGY] Usuário Google já existe:", email);
+                        console.log("[GOOGLE STRATEGY] UsuÃ¡rio Google jÃ¡ existe:", email);
                     } else {
-                        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
+                        // Determinar PerfilId: se nÃ£o existe admin (PerfilId=1), o primeiro registro vira admin; caso contrÃ¡rio, padrÃ£o user (2)
                         const [adminCountRows] = await pool.query(
                             "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
                         );
                         const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
                         
-                        // Gerar ReferenciaID para novo usuário
+                        // Gerar ReferenciaID para novo usuÃ¡rio
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Inserir novo usuário com foto de perfil, google_id e campos necessários
+                        // Inserir novo usuÃ¡rio com foto de perfil, google_id e campos necessÃ¡rios
                         try {
                             // Tentar inserir com google_id, FotoPerfil, SenhaHash, Ativo e PerfilId
                             const [result] = await pool.query(
@@ -257,18 +257,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 [novaReferenciaID, nome, email, null, fotoPerfil, googleId, '', perfilId]
                             );
                             referenciaID = novaReferenciaID;
-                            console.log("[GOOGLE STRATEGY] Novo usuário criado com ReferenciaID:", referenciaID);
+                            console.log("[GOOGLE STRATEGY] Novo usuÃ¡rio criado com ReferenciaID:", referenciaID);
                             
-                            // Atualizar métricas automaticamente
+                            // Atualizar mÃ©tricas automaticamente
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
                             } catch (metricError) {
-                                console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
                             }
                         } catch (insertErr) {
                             console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (primeira tentativa):', insertErr.stack || insertErr.message || insertErr);
-                            // Se campos não existem, tentar inserir sem eles
+                            // Se campos nÃ£o existem, tentar inserir sem eles
                             try {
                                 const [result] = await pool.query(
                                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
@@ -276,7 +276,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 );
                                 referenciaID = novaReferenciaID;
                                 
-                                // Tentar atualizar google_id separadamente se possível
+                                // Tentar atualizar google_id separadamente se possÃ­vel
                                 if (googleId) {
                                     try {
                                         await pool.query(
@@ -284,27 +284,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo google_id nÃ£o existe, ignorando");
                                     }
                                 }
                                 
-                                // Atualizar métricas automaticamente
+                                // Atualizar mÃ©tricas automaticamente
                                 try {
                                     await atualizarMetricasAutomaticamente();
-                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                    console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
                                 } catch (metricError) {
-                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
                                 }
                             } catch (insertErr2) {
                                 console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (segunda tentativa):', insertErr2.stack || insertErr2.message || insertErr2);
-                                // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
+                                // Se FotoPerfil nÃ£o existe, inserir sem ele mas com campos essenciais
                                 const [result] = await pool.query(
                                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
                                     [novaReferenciaID, nome, email, null, '', perfilId]
                                 );
                                 referenciaID = novaReferenciaID;
                                 
-                                // Tentar atualizar google_id separadamente se possível
+                                // Tentar atualizar google_id separadamente se possÃ­vel
                                 if (googleId) {
                                     try {
                                         await pool.query(
@@ -312,11 +312,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo google_id nÃ£o existe, ignorando");
                                     }
                                 }
                                 
-                                // Tentar atualizar FotoPerfil separadamente se possível
+                                // Tentar atualizar FotoPerfil separadamente se possÃ­vel
                                 if (fotoPerfil) {
                                     try {
                                         await pool.query(
@@ -324,16 +324,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [fotoPerfil, referenciaID]
                                         );
                                     } catch (fotoErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil não existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil nÃ£o existe, ignorando");
                                     }
                                 }
                                 
-                                // Atualizar métricas automaticamente
+                                // Atualizar mÃ©tricas automaticamente
                                 try {
                                     await atualizarMetricasAutomaticamente();
-                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
+                                    console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
                                 } catch (metricError) {
-                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
                                 }
                             }
                         }
@@ -346,7 +346,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         [referenciaID, "email"]
                     );
 
-                    // Salvar tokens OAuth para sincronização de calendário
+                    // Salvar tokens OAuth para sincronizaÃ§Ã£o de calendÃ¡rio
                     if (accessToken) {
                         try {
                             // Garantir que a tabela existe
@@ -368,17 +368,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                             `);
 
-                            // Garantir índice/constraint único em ReferenciaID para ON CONFLICT funcionar no Postgres
+                            // Garantir Ã­ndice/constraint Ãºnico em ReferenciaID para ON CONFLICT funcionar no Postgres
                             try {
                                 await pool.query(
                                     "CREATE UNIQUE INDEX IF NOT EXISTS idx_google_oauth_tokens_referenciaid ON google_oauth_tokens (ReferenciaID)"
                                 );
                             } catch (idxErr) {
-                                // Alguns ambientes (compat shim) podem não suportar IF NOT EXISTS na criação de index; ignorar erros
-                                console.log("[GOOGLE STRATEGY] Aviso ao criar índice único google_oauth_tokens.ReferenciaID:", idxErr.message || idxErr);
+                                // Alguns ambientes (compat shim) podem nÃ£o suportar IF NOT EXISTS na criaÃ§Ã£o de index; ignorar erros
+                                console.log("[GOOGLE STRATEGY] Aviso ao criar Ã­ndice Ãºnico google_oauth_tokens.ReferenciaID:", idxErr.message || idxErr);
                             }
 
-                            // Calcular data de expiração (tokens do Google geralmente expiram em 1 hora)
+                            // Calcular data de expiraÃ§Ã£o (tokens do Google geralmente expiram em 1 hora)
                             const expiresAt = new Date();
                             expiresAt.setHours(expiresAt.getHours() + 1);
 
@@ -393,10 +393,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                      updated_at = NOW()`,
                                 [referenciaID, accessToken, refreshToken || null, expiresAt, 'calendar.readonly']
                             );
-                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronização de calendário");
+                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronizaÃ§Ã£o de calendÃ¡rio");
                         } catch (tokenErr) {
                             console.error("[GOOGLE STRATEGY] Erro ao salvar tokens OAuth:", tokenErr);
-                            // Não falhar o login se não conseguir salvar tokens
+                            // NÃ£o falhar o login se nÃ£o conseguir salvar tokens
                         }
                     }
 
@@ -416,7 +416,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         )
     );
 } else {
-    // Google OAuth não configurado - silencioso
+    // Google OAuth nÃ£o configurado - silencioso
 }
 
 // estrategia do github
@@ -436,10 +436,10 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    // GitHub pode não ter email público, então precisamos buscar da API
+                    // GitHub pode nÃ£o ter email pÃºblico, entÃ£o precisamos buscar da API
                     let email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
-                    // Se não houver email no perfil, tentar buscar da API do GitHub
+                    // Se nÃ£o houver email no perfil, tentar buscar da API do GitHub
                     if (!email) {
                         try {
                             const response = await fetch('https://api.github.com/user/emails', {
@@ -465,7 +465,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value :
                         profile._json ?.avatar_url || null;
-                    const nome = profile.displayName || profile.username || 'Usuário GitHub';
+                    const nome = profile.displayName || profile.username || 'UsuÃ¡rio GitHub';
 
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
@@ -485,15 +485,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                                     [fotoPerfil, referenciaID]
                                 );
                             } catch (updateErr) {
-                                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
+                                console.log("Erro ao atualizar foto de perfil (campo pode nÃ£o existir):", updateErr.message);
                             }
                         }
-                        console.log("Usuário GitHub já existe:", email);
+                        console.log("UsuÃ¡rio GitHub jÃ¡ existe:", email);
                     } else {
-                        // Gerar ReferenciaID para novo usuário
+                        // Gerar ReferenciaID para novo usuÃ¡rio
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Inserir novo usuário com foto de perfil se disponível
+                        // Inserir novo usuÃ¡rio com foto de perfil se disponÃ­vel
                         try {
                             const [result] = await pool.query(
                                 "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash) VALUES (?, ?, ?, ?, ?, ?)",
@@ -501,30 +501,30 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                             );
                             referenciaID = novaReferenciaID;
 
-                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+                            // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via GitHub
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+                                console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via GitHub");
                             } catch (metricError) {
-                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-                                // Não bloquear resposta em caso de erro nas métricas
+                                console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
+                                // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
                             }
                         } catch (insertErr) {
                             console.error('[GITHUB STRATEGY] Erro ao inserir utilizador com FotoPerfil:', insertErr.stack || insertErr.message || insertErr);
-                            // Se campo FotoPerfil não existe, inserir sem ele
+                            // Se campo FotoPerfil nÃ£o existe, inserir sem ele
                             const [result] = await pool.query(
                                 "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash) VALUES (?, ?, ?, ?, ?)",
                                 [novaReferenciaID, nome, email, null, '']
                             );
                             referenciaID = novaReferenciaID;
 
-                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
+                            // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via GitHub
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
+                                console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via GitHub");
                             } catch (metricError) {
-                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-                                // Não bloquear resposta em caso de erro nas métricas
+                                console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
+                                // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
                             }
                         }
                     }
@@ -549,7 +549,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         )
     );
 } else {
-    // GitHub OAuth não configurado - silencioso
+    // GitHub OAuth nÃ£o configurado - silencioso
 }
 
 // uma estrategia que eu peguei de um bot q usei em 2020 usando js
@@ -569,7 +569,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    console.log(" [DISCORD STRATEGY] ========== INÍCIO DA ESTRATÉGIA ==========");
+                    console.log(" [DISCORD STRATEGY] ========== INÃCIO DA ESTRATÃ‰GIA ==========");
                     console.log(" [DISCORD STRATEGY] Profile recebido:", {
                         id: profile.id,
                         username: profile.username,
@@ -578,10 +578,10 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         verified: profile.verified
                     });
 
-                    // Verificar se o email está disponível e verificado
+                    // Verificar se o email estÃ¡ disponÃ­vel e verificado
                     if (!profile.email) {
-                        const error = new Error("Email não fornecido pelo Discord. Certifique-se de que seu email está verificado no Discord.");
-                        console.error(" Erro: Email não fornecido pelo Discord");
+                        const error = new Error("Email nÃ£o fornecido pelo Discord. Certifique-se de que seu email estÃ¡ verificado no Discord.");
+                        console.error(" Erro: Email nÃ£o fornecido pelo Discord");
                         return done(error, null);
                     }
 
@@ -590,25 +590,25 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     const username = profile.username;
                     const avatar = profile.avatar;
 
-                    // Verificar se usuário Discord já existe no JSON
+                    // Verificar se usuÃ¡rio Discord jÃ¡ existe no JSON
                     let discordUser = findDiscordUser(discordId);
 
                     if (discordUser && discordUser.ReferenciaID) {
-                        // Usuário Discord já existe e está associado - LOGIN DIRETO
-                        console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
+                        // UsuÃ¡rio Discord jÃ¡ existe e estÃ¡ associado - LOGIN DIRETO
+                        console.log(" UsuÃ¡rio Discord jÃ¡ registrado - Login direto:", discordUser.username);
 
-                        // Garantir que discord_id está salvo no banco (caso não esteja)
+                        // Garantir que discord_id estÃ¡ salvo no banco (caso nÃ£o esteja)
                         try {
                             await pool.query(
                                 "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ? AND (discord_id IS NULL OR discord_id = '')",
                                 [discordId, discordUser.ReferenciaID]
                             );
                         } catch (dbError) {
-                            console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
+                            console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode nÃ£o existir):", dbError.message);
                             // Continuar mesmo se falhar
                         }
 
-                        // Garantir que está na tabela contasconectadas
+                        // Garantir que estÃ¡ na tabela contasconectadas
                         try {
                             await pool.query(
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
@@ -620,7 +620,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
 
-                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.ReferenciaID);
+                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuÃ¡rio:", discordUser.ReferenciaID);
                         const userObject = {
                             ReferenciaID: discordUser.ReferenciaID,
                             email: discordUser.email,
@@ -632,9 +632,9 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         return done(null, userObject);
                     }
 
-                    // Usuário Discord não existe ou não está associado
+                    // UsuÃ¡rio Discord nÃ£o existe ou nÃ£o estÃ¡ associado
                     if (!discordUser) {
-                        // Registrar novo usuário Discord no JSON
+                        // Registrar novo usuÃ¡rio Discord no JSON
                         discordUser = registerDiscordUser({
                             id: discordId,
                             username: username,
@@ -643,7 +643,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         });
                     }
 
-                    // Verificar se usuário existe no banco de dados
+                    // Verificar se usuÃ¡rio existe no banco de dados
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
                          FROM Utilizadores
@@ -656,11 +656,11 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         const existingUser = rows[0] || {};
                         const existingNome = existingUser.Nome ?? existingUser.nome;
                         const existingReferenciaID = existingUser.ReferenciaID ?? existingUser.referenciaid;
-                        // Usuário já existe no banco - ASSOCIAR DISCORD
-                        console.log(" Usuário existente encontrado - Associando Discord:", existingNome);
+                        // UsuÃ¡rio jÃ¡ existe no banco - ASSOCIAR DISCORD
+                        console.log(" UsuÃ¡rio existente encontrado - Associando Discord:", existingNome);
                         referenciaID = existingReferenciaID;
 
-                        // Associar Discord com usuário do banco
+                        // Associar Discord com usuÃ¡rio do banco
                         linkDiscordUser(discordId, referenciaID);
                         
                         // Atualizar discord_id no banco de dados (se a coluna existir)
@@ -669,10 +669,10 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
                                 [discordId, referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuÃ¡rio ${referenciaID}`);
                         } catch (dbError) {
-                            console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode não existir):", dbError.message);
-                            // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                            console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode nÃ£o existir):", dbError.message);
+                            // Continuar mesmo se falhar - o linkDiscordUser jÃ¡ foi feito
                         }
 
                         // Inserir ou atualizar na tabela contasconectadas
@@ -681,16 +681,16 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
                                 [referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuário ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuÃ¡rio ${referenciaID}`);
                         } catch (contasError) {
                             console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
                     } else {
-                        // Gerar ReferenciaID para novo usuário
+                        // Gerar ReferenciaID para novo usuÃ¡rio
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Criar novo usuário no banco (tentar com discord_id, se falhar, criar sem)
-                        console.log("🆕 Criando novo usuário no banco:", username);
+                        // Criar novo usuÃ¡rio no banco (tentar com discord_id, se falhar, criar sem)
+                        console.log("ðŸ†• Criando novo usuÃ¡rio no banco:", username);
                         let result;
                         try {
                             // Tentar criar com discord_id
@@ -698,11 +698,11 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id, SenhaHash) VALUES (?, ?, ?, 1, ?, ?)",
                                 [novaReferenciaID, username, email, discordId, '']
                             );
-                            console.log(` [DISCORD STRATEGY] Novo usuário criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
+                            console.log(` [DISCORD STRATEGY] Novo usuÃ¡rio criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
                         } catch (dbError) {
-                            console.error(' [DISCORD STRATEGY] Erro ao criar usuário com discord_id:', dbError.stack || dbError.message || dbError);
-                            // Se falhar (coluna não existe), criar sem discord_id
-                            console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
+                            console.error(' [DISCORD STRATEGY] Erro ao criar usuÃ¡rio com discord_id:', dbError.stack || dbError.message || dbError);
+                            // Se falhar (coluna nÃ£o existe), criar sem discord_id
+                            console.log(" [DISCORD STRATEGY] Coluna discord_id nÃ£o encontrada, criando usuÃ¡rio sem ela");
                             [result] = await pool.query(
                                 "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, SenhaHash) VALUES (?, ?, ?, 1, ?)",
                                 [novaReferenciaID, username, email, '']
@@ -710,13 +710,13 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         }
                         referenciaID = novaReferenciaID;
 
-                        // Inserir Discord na tabela contasconectadas para novo usuário
+                        // Inserir Discord na tabela contasconectadas para novo usuÃ¡rio
                         try {
                             await pool.query(
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
                                 [referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuário ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuÃ¡rio ${referenciaID}`);
                         } catch (contasError) {
                             console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
@@ -728,30 +728,30 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         const planoFreeId = planoFree.length > 0 ? (planoFree[0].Id ?? planoFree[0].id ?? 1) : 1; // Fallback para ID 1
 
-                        // Criar configuração do usuário com plano FREE
+                        // Criar configuraÃ§Ã£o do usuÃ¡rio com plano FREE
                         await pool.query(
                             "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
                             [referenciaID, "discord", planoFreeId]
                         );
 
-                        console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
+                        console.log(` UsuÃ¡rio Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
 
-                        // Associar Discord com novo usuário
+                        // Associar Discord com novo usuÃ¡rio
                         linkDiscordUser(discordId, referenciaID);
 
-                        // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
+                        // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via Discord
                         try {
                             await atualizarMetricasAutomaticamente();
-                            console.log(" Métricas atualizadas após criação de novo utilizador via Discord");
+                            console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Discord");
                         } catch (metricError) {
-                            console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
-                            // Não bloquear resposta em caso de erro nas métricas
+                            console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
+                            // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
                         }
                     }
 
                     const { token, refreshToken } = gerarParesToken(referenciaID, email);
 
-                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", referenciaID);
+                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuÃ¡rio:", referenciaID);
                     const userObject = {
                         ReferenciaID: referenciaID,
                         email,
@@ -762,7 +762,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     console.log(" [DISCORD STRATEGY] Chamando done() com user:", JSON.stringify(userObject, null, 2));
                     return done(null, userObject);
                 } catch (error) {
-                    console.error(" [DISCORD STRATEGY] ERRO na autenticação Discord:", error);
+                    console.error(" [DISCORD STRATEGY] ERRO na autenticaÃ§Ã£o Discord:", error);
                     console.error(" [DISCORD STRATEGY] Stack trace:", error.stack);
                     return done(error, null);
                 }
@@ -770,13 +770,13 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
         )
     );
 } else {
-    // Discord OAuth não configurado - silencioso
+    // Discord OAuth nÃ£o configurado - silencioso
 }
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-// Verificar se usuário Discord já existe
+// Verificar se usuÃ¡rio Discord jÃ¡ existe
 router.get('/discord/check/:discordId', async (req, res) => {
     try {
         const {
@@ -785,24 +785,24 @@ router.get('/discord/check/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            // Usuário já existe - pode fazer login direto
+            // UsuÃ¡rio jÃ¡ existe - pode fazer login direto
             res.json({
                 exists: true,
-                message: "Usuário Discord já registrado - pode fazer login direto",
+                message: "UsuÃ¡rio Discord jÃ¡ registrado - pode fazer login direto",
                 user: {
                     username: discordUser.username,
                     email: discordUser.email
                 }
             });
         } else {
-            // Usuário não existe - precisa registrar
+            // UsuÃ¡rio nÃ£o existe - precisa registrar
             res.json({
                 exists: false,
-                message: "Usuário Discord não encontrado - precisa registrar primeiro"
+                message: "UsuÃ¡rio Discord nÃ£o encontrado - precisa registrar primeiro"
             });
         }
     } catch (error) {
-        console.error(" Erro ao verificar usuário Discord:", error);
+        console.error(" Erro ao verificar usuÃ¡rio Discord:", error);
         res.status(500).json({
             error: "Erro interno do servidor"
         });
@@ -820,7 +820,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         if (discordUser && discordUser.ReferenciaID) {
             const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
 
-            console.log(" Login direto via rota alternativa para usuário:", discordUser.ReferenciaID);
+            console.log(" Login direto via rota alternativa para usuÃ¡rio:", discordUser.ReferenciaID);
 
             const html = `
         <!DOCTYPE html>
@@ -853,7 +853,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
             res.send(html);
         } else {
             res.status(404).json({
-                error: "Usuário Discord não encontrado"
+                error: "UsuÃ¡rio Discord nÃ£o encontrado"
             });
         }
     } catch (error) {
@@ -864,7 +864,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
     }
 });
 
-// Serviços SMS e WhatsApp foram removidos - apenas Email e Discord disponíveis
+// ServiÃ§os SMS e WhatsApp foram removidos - apenas Email e Discord disponÃ­veis
 
 // Buscar contas por nome/email/username (estilo Pinterest)
 router.get("/search-accounts", async (req, res) => {
@@ -882,7 +882,7 @@ router.get("/search-accounts", async (req, res) => {
 
         const searchTerm = `%${query.trim()}%`;
 
-        // Buscar usuários por nome, email ou username (usando nome como username)
+        // Buscar usuÃ¡rios por nome, email ou username (usando nome como username)
         const [userRows] = await pool.query(
             `SELECT Id, Nome, Email, FotoPerfil 
        FROM Utilizadores 
@@ -916,7 +916,7 @@ router.get("/search-accounts", async (req, res) => {
                 ReferenciaID: user.ReferenciaID,
                 nome: user.Nome,
                 email: email, // Email real para envio
-                maskedEmail: maskedEmail, // Email mascarado para exibição
+                maskedEmail: maskedEmail, // Email mascarado para exibiÃ§Ã£o
                 fotoPerfil: user.FotoPerfil || null
             };
         });
@@ -944,27 +944,27 @@ router.post("/forgot-password", async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 status: "error",
-                error: "Email é obrigatório",
+                error: "Email Ã© obrigatÃ³rio",
             });
         }
 
-        // Buscar usuário
+        // Buscar usuÃ¡rio
         const [userRows] = await pool.query(
             "SELECT ReferenciaID, Nome, Email FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
-        // SEMPRE retornar sucesso (por segurança, não revelar se email existe)
+        // SEMPRE retornar sucesso (por seguranÃ§a, nÃ£o revelar se email existe)
         if (userRows.length === 0) {
             return res.json({
                 status: "ok",
-                message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+                message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
             });
         }
 
         const user = userRows[0];
 
-        // Gerar token único
+        // Gerar token Ãºnico
         const crypto = await import("crypto");
         const token = crypto.default.randomBytes(32).toString("hex");
 
@@ -972,7 +972,7 @@ router.post("/forgot-password", async (req, res) => {
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 24);
 
-        // Criar tabela se não existir
+        // Criar tabela se nÃ£o existir
         await pool.query(`
       CREATE TABLE IF NOT EXISTS password_reset_tokens (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -990,7 +990,7 @@ router.post("/forgot-password", async (req, res) => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-        // Invalidar tokens anteriores do usuário
+        // Invalidar tokens anteriores do usuÃ¡rio
         await pool.query(
             "UPDATE password_reset_tokens SET Used = 1 WHERE ReferenciaID = ? AND Used = 0",
             [user.ReferenciaID]
@@ -1033,7 +1033,7 @@ router.post("/forgot-password", async (req, res) => {
                 <!-- Content -->
                 <tr>
                   <td style="padding: 0 40px 20px;">
-                    <p style="margin: 0 0 30px; color: #000000; font-size: 16px; line-height: 24px;">Já podes repor a tua palavra-passe!</p>
+                    <p style="margin: 0 0 30px; color: #000000; font-size: 16px; line-height: 24px;">JÃ¡ podes repor a tua palavra-passe!</p>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
@@ -1043,9 +1043,9 @@ router.post("/forgot-password", async (req, res) => {
                       </tr>
                     </table>
                     
-                    <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Informamos que tens 24 horas para escolher uma palavra-passe. Depois disso, terás de solicitar uma nova.</p>
+                    <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Informamos que tens 24 horas para escolher uma palavra-passe. Depois disso, terÃ¡s de solicitar uma nova.</p>
                     
-                    <p style="margin: 20px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Não solicitaste uma nova palavra-passe? Podes ignorar este e-mail.</p>
+                    <p style="margin: 20px 0 0; color: #666666; font-size: 14px; line-height: 20px;">NÃ£o solicitaste uma nova palavra-passe? Podes ignorar este e-mail.</p>
                   </td>
                 </tr>
                 
@@ -1054,9 +1054,9 @@ router.post("/forgot-password", async (req, res) => {
                   <td style="padding: 40px; border-top: 1px solid #e5e5e5;">
                     <p style="margin: 0 0 10px; color: #666666; font-size: 12px; line-height: 18px;">Este e-mail foi enviado para <strong>${user.Email}</strong></p>
                     <p style="margin: 10px 0; color: #999999; font-size: 12px;">
-                      <a href="${baseUrl}" style="color: #666666; text-decoration: none;">Central de Ajuda</a> · 
-                      <a href="${baseUrl}/pages/privacidade.html" style="color: #666666; text-decoration: none;">Política de Privacidade</a> · 
-                      <a href="${baseUrl}/pages/termos.html" style="color: #666666; text-decoration: none;">Termos e condições</a>
+                      <a href="${baseUrl}" style="color: #666666; text-decoration: none;">Central de Ajuda</a> Â· 
+                      <a href="${baseUrl}/pages/privacidade.html" style="color: #666666; text-decoration: none;">PolÃ­tica de Privacidade</a> Â· 
+                      <a href="${baseUrl}/pages/termos.html" style="color: #666666; text-decoration: none;">Termos e condiÃ§Ãµes</a>
                     </p>
                     <p style="margin: 20px 0 0; color: #999999; font-size: 11px; line-height: 16px;">PromoPing. Todos os direitos reservados.</p>
                   </td>
@@ -1072,7 +1072,7 @@ router.post("/forgot-password", async (req, res) => {
         // Enviar email
         const emailResult = await enviarEmail(
             user.Email,
-            "Repõe a palavra-passe - PromoPing",
+            "RepÃµe a palavra-passe - PromoPing",
             emailHtml
         );
 
@@ -1082,14 +1082,14 @@ router.post("/forgot-password", async (req, res) => {
 
         res.json({
             status: "ok",
-            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+            message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
         });
     } catch (err) {
-        console.error("[FORGOT-PASSWORD] Erro ao processar solicitação:", err);
-        // Sempre retornar sucesso por segurança
+        console.error("[FORGOT-PASSWORD] Erro ao processar solicitaÃ§Ã£o:", err);
+        // Sempre retornar sucesso por seguranÃ§a
         res.json({
             status: "ok",
-            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
+            message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
         });
     }
 });
@@ -1104,11 +1104,11 @@ router.get("/reset-password/:token", async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 status: "error",
-                error: "Token é obrigatório",
+                error: "Token Ã© obrigatÃ³rio",
             });
         }
 
-        // Buscar token válido
+        // Buscar token vÃ¡lido
         const [tokenRows] = await pool.query(
             `SELECT u.Email
        FROM password_reset_tokens prt
@@ -1120,7 +1120,7 @@ router.get("/reset-password/:token", async (req, res) => {
         if (tokenRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Token inválido ou expirado",
+                error: "Token invÃ¡lido ou expirado",
             });
         }
 
@@ -1149,7 +1149,7 @@ router.post("/reset-password", async (req, res) => {
         if (!token || !newPassword) {
             return res.status(400).json({
                 status: "error",
-                error: "Token e nova senha são obrigatórios",
+                error: "Token e nova senha sÃ£o obrigatÃ³rios",
             });
         }
 
@@ -1160,7 +1160,7 @@ router.post("/reset-password", async (req, res) => {
             });
         }
 
-        // Buscar token válido
+        // Buscar token vÃ¡lido
         const [tokenRows] = await pool.query(
             `SELECT u.ReferenciaID
        FROM password_reset_tokens prt
@@ -1172,7 +1172,7 @@ router.post("/reset-password", async (req, res) => {
         if (tokenRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Token inválido ou expirado",
+                error: "Token invÃ¡lido ou expirado",
             });
         }
 
@@ -1194,7 +1194,7 @@ router.post("/reset-password", async (req, res) => {
             [token]
         );
 
-        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.ReferenciaID}`);
+        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuÃ¡rio ${tokenData.ReferenciaID}`);
 
         res.json({
             status: "ok",
@@ -1221,7 +1221,7 @@ router.post("/login", async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({
                 status: "error",
-                error: "Email e senha são obrigatórios",
+                error: "Email e senha sÃ£o obrigatÃ³rios",
             });
         }
 
@@ -1242,7 +1242,7 @@ router.post("/login", async (req, res) => {
         }
 
         const user = rows[0];
-        console.log(" Usuário retornado:", user);
+        console.log(" UsuÃ¡rio retornado:", user);
 
         const userEmail = user.Email ?? user.email;
         const userNome = user.Nome ?? user.nome;
@@ -1255,17 +1255,17 @@ router.post("/login", async (req, res) => {
         if (!userSenhaHash) {
             return res.status(400).json({
                 status: "error",
-                error: "Conta não tem senha configurada. Use Google ou configure uma senha no perfil.",
+                error: "Conta nÃ£o tem senha configurada. Use Google ou configure uma senha no perfil.",
             });
         }
 
         // Verifica senha usando bcrypt
-        // ESSA PARTE AQUI É CRÍTICA: valida se a senha está correta
-        // Se tu mudar a lógica, pode deixar qualquer um fazer login
+        // ESSA PARTE AQUI Ã‰ CRÃTICA: valida se a senha estÃ¡ correta
+        // Se tu mudar a lÃ³gica, pode deixar qualquer um fazer login
         // Ou bloquear quem tem a senha certa
-        // NÃO MEXA NESSA MERDA
+        // NÃƒO MEXA NESSA MERDA
         const validPassword = await bcrypt.compare(password, userSenhaHash);
-        console.log(" Senha válida?:", validPassword);
+        console.log(" Senha vÃ¡lida?:", validPassword);
 
         if (!validPassword) {
             return res.status(400).json({
@@ -1274,15 +1274,15 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // Verificar se conta está desativada e permitir reativação se ainda não expirou
+        // Verificar se conta estÃ¡ desativada e permitir reativaÃ§Ã£o se ainda nÃ£o expirou
         const isInactive = userAtivo === 0 || userAtivo === false || String(userAtivo).toLowerCase() === "0" || String(userAtivo).toLowerCase() === "false" || String(userAtivo).toLowerCase() === "f";
         if (isInactive) {
-            // Verificar se ainda está dentro do período de 20 dias
+            // Verificar se ainda estÃ¡ dentro do perÃ­odo de 20 dias
             let canReactivate = false;
             let expirationDate = null;
 
             try {
-                // Verificar se DataDesativacao existe e não expirou
+                // Verificar se DataDesativacao existe e nÃ£o expirou
                 const [deactivatedInfo] = await pool.query(
                     "SELECT DataDesativacao FROM Utilizadores WHERE ReferenciaID = ?",
                     [userReferenciaID]
@@ -1293,7 +1293,7 @@ router.post("/login", async (req, res) => {
                     const now = new Date();
                     canReactivate = expirationDate > now;
                 } else {
-                    // Se não tem DataDesativacao, usar DataRegisto como fallback (20 dias)
+                    // Se nÃ£o tem DataDesativacao, usar DataRegisto como fallback (20 dias)
                     const registerDate = new Date(user.DataRegisto);
                     const expirationDateFallback = new Date(registerDate);
                     expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
@@ -1301,8 +1301,8 @@ router.post("/login", async (req, res) => {
                     expirationDate = expirationDateFallback;
                 }
             } catch (error) {
-                console.error("[AUTH] Erro ao verificar data de desativação:", error);
-                // Em caso de erro, permitir tentativa de reativação
+                console.error("[AUTH] Erro ao verificar data de desativaÃ§Ã£o:", error);
+                // Em caso de erro, permitir tentativa de reativaÃ§Ã£o
                 canReactivate = true;
             }
 
@@ -1319,24 +1319,24 @@ router.post("/login", async (req, res) => {
             } else {
                 return res.status(403).json({
                     status: "error",
-                    error: "Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.",
+                    error: "Sua conta foi desativada hÃ¡ mais de 20 dias e foi permanentemente excluÃ­da. Entre em contato com o suporte.",
                     accountExpired: true
                 });
             }
         }
 
-        // Verificar se email está verificado
+        // Verificar se email estÃ¡ verificado
         const isEmailVerified = userEmailVerificado === 1 || userEmailVerificado === true || String(userEmailVerificado).toLowerCase() === "1" || String(userEmailVerificado).toLowerCase() === "true" || String(userEmailVerificado).toLowerCase() === "t";
         if (!isEmailVerified) {
             return res.status(403).json({
                 status: "error",
-                error: "Email não verificado. Verifique seu email antes de fazer login.",
+                error: "Email nÃ£o verificado. Verifique seu email antes de fazer login.",
                 needsVerification: true,
                 email: userEmail
             });
         }
 
-        // Se 2FA ativo, não devolver token; devolver tempToken para completar verificação
+        // Se 2FA ativo, nÃ£o devolver token; devolver tempToken para completar verificaÃ§Ã£o
         const twoFA = await is2FAEnabled(userReferenciaID);
         if (twoFA) {
             const tempToken = gerarToken2FAPending(userReferenciaID, userEmail);
@@ -1353,13 +1353,13 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // IMPORTANTE: Verificar se o usuário é admin (PerfilId = 1) para acesso ao Painel Administrativo
-        // Se a requisição vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
-        // CARALHO, NÃO MEXA NESSA PARTE
-        // Se tu fuder isso, qualquer zé ruela pode acessar o painel admin
-        // E aí pode foder tudo: deletar usuários, mudar planos, ver dados sensíveis
-        // PerfilId = 1 é ADMIN, qualquer outro número NÃO É ADMIN
-        // NÃO MUDE ESSA LÓGICA SEM ENTENDER AS CONSEQUÊNCIAS
+        // IMPORTANTE: Verificar se o usuÃ¡rio Ã© admin (PerfilId = 1) para acesso ao Painel Administrativo
+        // Se a requisiÃ§Ã£o vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
+        // CARALHO, NÃƒO MEXA NESSA PARTE
+        // Se tu fuder isso, qualquer zÃ© ruela pode acessar o painel admin
+        // E aÃ­ pode foder tudo: deletar usuÃ¡rios, mudar planos, ver dados sensÃ­veis
+        // PerfilId = 1 Ã© ADMIN, qualquer outro nÃºmero NÃƒO Ã‰ ADMIN
+        // NÃƒO MUDE ESSA LÃ“GICA SEM ENTENDER AS CONSEQUÃŠNCIAS
         const referer = req.headers['referer'] || '';
         const origin = req.headers['origin'] || '';
         const adminPanelHeader = req.headers['x-admin-panel'] || req.headers['X-Admin-Panel'] || '';
@@ -1372,9 +1372,9 @@ router.post("/login", async (req, res) => {
 
         if (isAdminPanel) {
             const perfilId = userPerfilId;
-            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation (gestão dos funcionários)
+            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation (gestÃ£o dos funcionÃ¡rios)
             if (perfilId !== 1 && perfilId !== 3) {
-                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${userEmail} (PerfilId=${perfilId})`);
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: UsuÃ¡rio ${userEmail} (PerfilId=${perfilId})`);
                 return res.status(403).json({
                     status: "error",
                     error: "Acesso negado. Apenas administradores e utilizadores corporativos podem acessar o painel.",
@@ -1406,7 +1406,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Completar login com código 2FA (após resposta requires2FA do login)
+// Completar login com cÃ³digo 2FA (apÃ³s resposta requires2FA do login)
 router.post("/2fa/verify", async (req, res) => {
     try {
         const { tempToken, code } = req.body;
@@ -1452,7 +1452,7 @@ router.post("/2fa/verify", async (req, res) => {
     }
 });
 
-// Enviar código 2FA por email (durante login, quando utilizador escolhe "enviar por email")
+// Enviar cÃ³digo 2FA por email (durante login, quando utilizador escolhe "enviar por email")
 router.post("/2fa/send-email-code", async (req, res) => {
     try {
         const { tempToken } = req.body;
@@ -1482,15 +1482,15 @@ router.post("/refresh", async (req, res) => {
     try {
         const { refreshToken: refToken } = req.body;
         if (!refToken) {
-            return res.status(401).json({ error: "Refresh token não fornecido" });
+            return res.status(401).json({ error: "Refresh token nÃ£o fornecido" });
         }
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            return res.status(500).json({ error: "Configuração inválida" });
+            return res.status(500).json({ error: "ConfiguraÃ§Ã£o invÃ¡lida" });
         }
         const decoded = jwt.verify(refToken, secret);
         if (decoded.type !== "refresh" || !decoded.ReferenciaID || !decoded.email) {
-            return res.status(403).json({ error: "Refresh token inválido" });
+            return res.status(403).json({ error: "Refresh token invÃ¡lido" });
         }
         const { token, refreshToken: newRefreshToken } = gerarParesToken(decoded.ReferenciaID, decoded.email);
         return res.json({ status: "ok", token, refreshToken: newRefreshToken });
@@ -1498,13 +1498,13 @@ router.post("/refresh", async (req, res) => {
         if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
             return res.status(401).json({ error: "Refresh token expirado", code: "REFRESH_EXPIRED" });
         }
-        return res.status(403).json({ error: "Refresh token inválido" });
+        return res.status(403).json({ error: "Refresh token invÃ¡lido" });
     }
 });
 
-// Código no QR muda a cada 30s; o telemóvel escaneia e confirma com o token do utilizador.
+// CÃ³digo no QR muda a cada 30s; o telemÃ³vel escaneia e confirma com o token do utilizador.
 
-// POST /api/auth/qr-init — gera código QR (alternativa ao GET qr-session; devolve code + expiresAt)
+// POST /api/auth/qr-init â€” gera cÃ³digo QR (alternativa ao GET qr-session; devolve code + expiresAt)
 router.post("/qr-init", async (req, res) => {
     try {
         const sessionId = req.body?.sessionId || null;
@@ -1520,11 +1520,11 @@ router.post("/qr-init", async (req, res) => {
         });
     } catch (err) {
         console.error("[QR-INIT] Erro:", err);
-        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
+        return res.status(500).json({ error: "Erro ao gerar sessÃ£o QR" });
     }
 });
 
-// GET /api/auth/qr-session — obtém sessionId + código atual (e imagem QR em data URL)
+// GET /api/auth/qr-session â€” obtÃ©m sessionId + cÃ³digo atual (e imagem QR em data URL)
 router.get("/qr-session", async (req, res) => {
     try {
         const sessionId = req.query.sessionId || null;
@@ -1545,26 +1545,26 @@ router.get("/qr-session", async (req, res) => {
         });
     } catch (err) {
         console.error("[QR-SESSION] Erro:", err);
-        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
+        return res.status(500).json({ error: "Erro ao gerar sessÃ£o QR" });
     }
 });
 
-// GET /api/auth/qr-session/poll — polling para ver se o telemóvel confirmou
+// GET /api/auth/qr-session/poll â€” polling para ver se o telemÃ³vel confirmou
 router.get("/qr-session/poll", async (req, res) => {
     const sessionId = req.query.sessionId;
     if (!sessionId) {
-        return res.status(400).json({ error: "sessionId obrigatório" });
+        return res.status(400).json({ error: "sessionId obrigatÃ³rio" });
     }
     const status = await getSessionStatus(sessionId);
     return res.json(status);
 });
 
-// POST /api/auth/qr-confirm — telemóvel envia o código escaneado + Bearer token do utilizador
+// POST /api/auth/qr-confirm â€” telemÃ³vel envia o cÃ³digo escaneado + Bearer token do utilizador
 router.post("/qr-confirm", verifyToken, async (req, res) => {
     try {
         const { code } = req.body;
         if (!code || typeof code !== "string") {
-            return res.status(400).json({ error: "Código é obrigatório" });
+            return res.status(400).json({ error: "CÃ³digo Ã© obrigatÃ³rio" });
         }
         const user = { ReferenciaID: req.user.ReferenciaID, email: req.user.email };
         const tokens = gerarParesToken(user.ReferenciaID, user.email);
@@ -1577,13 +1577,13 @@ router.post("/qr-confirm", verifyToken, async (req, res) => {
         }
         return res.json({
             status: "ok",
-            message: "Login no browser será concluído em instantes.",
+            message: "Login no browser serÃ¡ concluÃ­do em instantes.",
             token: tokens.token,
             refreshToken: tokens.refreshToken,
         });
     } catch (err) {
         console.error("[QR-CONFIRM] Erro:", err);
-        return res.status(500).json({ error: "Erro ao confirmar código" });
+        return res.status(500).json({ error: "Erro ao confirmar cÃ³digo" });
     }
 });
 
@@ -1603,15 +1603,15 @@ router.post("/register", async (req, res) => {
         console.log("[REGISTRO] Tentativa de registro:", {
             nome,
             email,
-            telefone: telefone ? "fornecido" : "não fornecido",
-            data_nascimento: data_nascimento ? "fornecido" : "não fornecido"
+            telefone: telefone ? "fornecido" : "nÃ£o fornecido",
+            data_nascimento: data_nascimento ? "fornecido" : "nÃ£o fornecido"
         });
 
         if (!nome || !email || !password || !data_nascimento) {
-            console.log("[REGISTRO] Campos obrigatórios faltando");
+            console.log("[REGISTRO] Campos obrigatÃ³rios faltando");
             return res.status(400).json({
                 status: "error",
-                error: "Nome, email, senha e data de nascimento são obrigatórios",
+                error: "Nome, email, senha e data de nascimento sÃ£o obrigatÃ³rios",
             });
         }
 
@@ -1623,25 +1623,25 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Validar idade mínima (13 anos) - obrigatório
+        // Validar idade mÃ­nima (13 anos) - obrigatÃ³rio
         const birthDate = new Date(data_nascimento);
 
-        // Verificar se a data é válida
+        // Verificar se a data Ã© vÃ¡lida
         if (isNaN(birthDate.getTime())) {
-            console.log("[REGISTRO] Data de nascimento inválida");
+            console.log("[REGISTRO] Data de nascimento invÃ¡lida");
             return res.status(400).json({
                 status: "error",
-                error: "Data de nascimento inválida",
+                error: "Data de nascimento invÃ¡lida",
             });
         }
 
-        // Verificar se a data não é no futuro
+        // Verificar se a data nÃ£o Ã© no futuro
         const today = new Date();
         if (birthDate > today) {
             console.log("[REGISTRO] Data de nascimento no futuro");
             return res.status(400).json({
                 status: "error",
-                error: "Data de nascimento não pode ser no futuro",
+                error: "Data de nascimento nÃ£o pode ser no futuro",
             });
         }
 
@@ -1652,28 +1652,28 @@ router.post("/register", async (req, res) => {
             age--;
         }
 
-        // Validar idade mínima de 13 anos
+        // Validar idade mÃ­nima de 13 anos
         if (age < 13) {
-            console.log(`[REGISTRO] Usuário menor de 13 anos tentou se registrar (idade: ${age})`);
+            console.log(`[REGISTRO] UsuÃ¡rio menor de 13 anos tentou se registrar (idade: ${age})`);
             return res.status(403).json({
                 status: "error",
-                error: "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing",
+                error: "Ã‰ necessÃ¡rio ter pelo menos 13 anos para criar uma conta no PromoPing",
             });
         }
 
         console.log(`[REGISTRO] Idade validada: ${age} anos`);
 
-        console.log("[REGISTRO] Verificando se email já existe...");
+        console.log("[REGISTRO] Verificando se email jÃ¡ existe...");
         const [existing] = await pool.query(
             "SELECT ReferenciaID FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
         if (existing.length > 0) {
-            console.log("[REGISTRO] Email já em uso");
+            console.log("[REGISTRO] Email jÃ¡ em uso");
             return res.status(400).json({
                 status: "error",
-                error: "Email já está em uso",
+                error: "Email jÃ¡ estÃ¡ em uso",
             });
         }
 
@@ -1681,8 +1681,8 @@ router.post("/register", async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
-        console.log("[REGISTRO] Verificando perfil do usuário...");
+        // Determinar PerfilId: se nÃ£o existe admin (PerfilId=1), o primeiro registro vira admin; caso contrÃ¡rio, padrÃ£o user (2)
+        console.log("[REGISTRO] Verificando perfil do usuÃ¡rio...");
         const [adminCountRows] = await pool.query(
             "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
         );
@@ -1693,12 +1693,12 @@ router.post("/register", async (req, res) => {
         const referenciaID = gerarReferenciaID();
         console.log(`[REGISTRO] ReferenciaID gerado: ${referenciaID}`);
 
-        console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
+        console.log("[REGISTRO] Inserindo usuÃ¡rio na tabela Utilizadores...");
 
         // Tentar inserir com data_nascimento e/ou google_id se fornecidos
         let result;
         try {
-            // Construir query dinamicamente baseado nos campos disponíveis
+            // Construir query dinamicamente baseado nos campos disponÃ­veis
             const fields = ['ReferenciaID', 'Nome', 'Email', 'SenhaHash', 'EmailVerificado', 'Telefone', 'PerfilId', 'Ativo', 'DataRegisto'];
             const values = [referenciaID, nome, email, hashedPassword, 0, telefone || null, perfilId, 1];
             const placeholders = ['?', '?', '?', '?', '?', '?', '?', '?', 'NOW()'];
@@ -1726,12 +1726,12 @@ router.post("/register", async (req, res) => {
             const query = `INSERT INTO Utilizadores (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`;
             const [insertResult] = await pool.query(query, values);
             result = insertResult;
-            console.log(`[REGISTRO] Usuário criado com campos: ${fields.join(', ')}`);
+            console.log(`[REGISTRO] UsuÃ¡rio criado com campos: ${fields.join(', ')}`);
         } catch (insertError) {
-            // Se algum campo não existir, tentar inserir sem ele
+            // Se algum campo nÃ£o existir, tentar inserir sem ele
             console.log("[REGISTRO] Erro ao inserir, tentando sem campos opcionais:", insertError.message);
             
-            // Tentar inserir apenas com campos básicos
+            // Tentar inserir apenas com campos bÃ¡sicos
             try {
                 const [insertResult] = await pool.query(
                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, DataRegisto) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW())",
@@ -1739,29 +1739,29 @@ router.post("/register", async (req, res) => {
                 );
                 result = insertResult;
                 
-                // Tentar atualizar google_id separadamente se disponível
+                // Tentar atualizar google_id separadamente se disponÃ­vel
                 if (oauthProvider === 'google' && oauthId) {
                     try {
                         await pool.query(
                             "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
                             [oauthId, referenciaID]
                         );
-                        console.log("[REGISTRO] google_id atualizado após criação:", oauthId);
+                        console.log("[REGISTRO] google_id atualizado apÃ³s criaÃ§Ã£o:", oauthId);
                     } catch (googleIdErr) {
-                        console.log("[REGISTRO] Campo google_id não existe, ignorando");
+                        console.log("[REGISTRO] Campo google_id nÃ£o existe, ignorando");
                     }
                 }
                 
-                // Tentar atualizar FotoPerfil separadamente se disponível
+                // Tentar atualizar FotoPerfil separadamente se disponÃ­vel
                 if (fotoPerfil) {
                     try {
                         await pool.query(
                             "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
                             [fotoPerfil, referenciaID]
                         );
-                        console.log("[REGISTRO] FotoPerfil atualizado após criação");
+                        console.log("[REGISTRO] FotoPerfil atualizado apÃ³s criaÃ§Ã£o");
                     } catch (fotoErr) {
-                        console.log("[REGISTRO] Campo FotoPerfil não existe, ignorando");
+                        console.log("[REGISTRO] Campo FotoPerfil nÃ£o existe, ignorando");
                     }
                 }
             } catch (retryError) {
@@ -1769,7 +1769,7 @@ router.post("/register", async (req, res) => {
             }
         }
 
-        console.log(`[REGISTRO] Usuário criado com ReferenciaID: ${referenciaID}`);
+        console.log(`[REGISTRO] UsuÃ¡rio criado com ReferenciaID: ${referenciaID}`);
 
         // Buscar ID do plano FREE
         console.log("[REGISTRO] Buscando plano FREE...");
@@ -1780,105 +1780,105 @@ router.post("/register", async (req, res) => {
         const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
         console.log(`[REGISTRO] Plano FREE ID: ${planoFreeId}`);
 
-        // Criar configuração do usuário
-        console.log("[REGISTRO] Criando configuração do usuário...");
+        // Criar configuraÃ§Ã£o do usuÃ¡rio
+        console.log("[REGISTRO] Criando configuraÃ§Ã£o do usuÃ¡rio...");
         try {
-            // Verificar se já existe configuração para este usuário
+            // Verificar se jÃ¡ existe configuraÃ§Ã£o para este usuÃ¡rio
             const [existingConfig] = await pool.query(
                 "SELECT Id FROM configutilizador WHERE ReferenciaID = ?",
                 [referenciaID]
             );
 
             if (existingConfig.length > 0) {
-                // Atualizar configuração existente
-                console.log("[REGISTRO] Configuração já existe, atualizando...");
+                // Atualizar configuraÃ§Ã£o existente
+                console.log("[REGISTRO] ConfiguraÃ§Ã£o jÃ¡ existe, atualizando...");
                 await pool.query(
                     "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE ReferenciaID = ?",
                     ["email", planoFreeId, referenciaID]
                 );
-                console.log("[REGISTRO] Configuração do usuário atualizada");
+                console.log("[REGISTRO] ConfiguraÃ§Ã£o do usuÃ¡rio atualizada");
             } else {
-                // Inserir nova configuração
-                console.log("[REGISTRO] Inserindo nova configuração...");
+                // Inserir nova configuraÃ§Ã£o
+                console.log("[REGISTRO] Inserindo nova configuraÃ§Ã£o...");
                 await pool.query(
                     "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
                     [referenciaID, "email", planoFreeId]
                 );
-                console.log("[REGISTRO] Configuração do usuário criada");
+                console.log("[REGISTRO] ConfiguraÃ§Ã£o do usuÃ¡rio criada");
             }
         } catch (configError) {
-            console.error("[REGISTRO] Erro ao criar configuração do usuário:", configError.message);
-            console.error("[REGISTRO] Código SQL:", configError.code);
+            console.error("[REGISTRO] Erro ao criar configuraÃ§Ã£o do usuÃ¡rio:", configError.message);
+            console.error("[REGISTRO] CÃ³digo SQL:", configError.code);
             console.error("[REGISTRO] SQL State:", configError.sqlState);
             console.error("[REGISTRO] Stack trace:", configError.stack);
-            // Não falhar o registro se a configuração falhar - pode ser criada depois
+            // NÃ£o falhar o registro se a configuraÃ§Ã£o falhar - pode ser criada depois
         }
 
-        console.log(`[REGISTRO] Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+        console.log(`[REGISTRO] UsuÃ¡rio ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
 
-        console.log("[REGISTRO] Gerando código de verificação...");
+        console.log("[REGISTRO] Gerando cÃ³digo de verificaÃ§Ã£o...");
         const codigo = gerarCodigo();
-        console.log(`[REGISTRO] Código gerado: ${codigo}`);
+        console.log(`[REGISTRO] CÃ³digo gerado: ${codigo}`);
 
-        console.log("[REGISTRO] Salvando código no banco de dados...");
+        console.log("[REGISTRO] Salvando cÃ³digo no banco de dados...");
         await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE ReferenciaID=?", [
             codigo,
             referenciaID,
         ]);
-        console.log("[REGISTRO] Código salvo no banco de dados");
+        console.log("[REGISTRO] CÃ³digo salvo no banco de dados");
 
         // Responder IMEDIATAMENTE ao cliente (antes de enviar email)
         console.log("[REGISTRO] Enviando resposta ao cliente IMEDIATAMENTE...");
         res.json({
             status: "ok",
             message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
-            codigo: codigo // Para desenvolvimento - remover em produção
+            codigo: codigo // Para desenvolvimento - remover em produÃ§Ã£o
         });
         console.log(" [REGISTRO] Resposta enviada ao cliente");
 
-        // Enviar código por email EM BACKGROUND (não bloqueia a resposta)
+        // Enviar cÃ³digo por email EM BACKGROUND (nÃ£o bloqueia a resposta)
         console.log("[REGISTRO] Agendando envio de email em background...");
         (async () => {
             try {
-                console.log(`[REGISTRO] Destinatário: ${email}`);
+                console.log(`[REGISTRO] DestinatÃ¡rio: ${email}`);
                 console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
                 console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
-                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
-                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
+                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'NÃ£o configurado'}`);
+                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'NÃ£o configurado'}`);
 
                 const {
                     sendEmail
                 } = await import("../services/notify.js");
-                console.log("[REGISTRO] Função sendEmail importada com sucesso");
+                console.log("[REGISTRO] FunÃ§Ã£o sendEmail importada com sucesso");
 
                 const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
-          <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
-          <p>Olá <b>${nome}</b>,</p>
+          <h2 style="color: #ff6b35; text-align: center;">VerificaÃ§Ã£o de Conta</h2>
+          <p>OlÃ¡ <b>${nome}</b>,</p>
           <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
-          <p>Use o código abaixo para verificar sua conta:</p>
+          <p>Use o cÃ³digo abaixo para verificar sua conta:</p>
           <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px solid #ff6b35;">
             <h1 style="color: #ff6b35; font-size: 2.5em; margin: 0; letter-spacing: 5px;">${codigo}</h1>
           </div>
-          <p style="color: #666; font-size: 14px;">Este código expira em 10 minutos.</p>
-          <p style="color: #666; font-size: 14px;">Se não foi você, ignore este e-mail.</p>
+          <p style="color: #666; font-size: 14px;">Este cÃ³digo expira em 10 minutos.</p>
+          <p style="color: #666; font-size: 14px;">Se nÃ£o foi vocÃª, ignore este e-mail.</p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           <p style="color: #999; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados</p>
         </div>
       `;
 
                 console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
-                console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
+                console.log(`[REGISTRO] CÃ³digo a ser enviado: ${codigo}`);
 
-                await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
+                await sendEmail(email, "PromoPing - VerificaÃ§Ã£o de conta", messageHtml);
 
                 console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
-                console.log(`[REGISTRO] Código de verificação: ${codigo}`);
+                console.log(`[REGISTRO] CÃ³digo de verificaÃ§Ã£o: ${codigo}`);
             } catch (emailError) {
                 console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
                 console.error("[REGISTRO] Tipo do erro:", emailError.name);
                 console.error("[REGISTRO] Mensagem:", emailError.message);
-                console.error("[REGISTRO] Código:", emailError.code);
+                console.error("[REGISTRO] CÃ³digo:", emailError.code);
                 if (emailError.response) {
                     console.error("[REGISTRO] Resposta do servidor:", emailError.response);
                 }
@@ -1889,23 +1889,23 @@ router.post("/register", async (req, res) => {
                 console.error(emailError.stack);
                 console.error("[REGISTRO] ==========================================");
 
-                // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
-                console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
-                console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
-                console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
+                // NÃ£o falhar o registro se o email falhar, mas logar o erro detalhadamente
+                console.log("[REGISTRO] Conta criada com sucesso, mas email nÃ£o foi enviado.");
+                console.log("[REGISTRO] Para desenvolvimento, use o cÃ³digo exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+                console.log(`[REGISTRO] CÃ³digo de verificaÃ§Ã£o para ${email}: ${codigo}`);
             }
         })();
 
-        // Atualizar métricas em background
-        console.log("[REGISTRO] Agendando atualização de métricas em background...");
+        // Atualizar mÃ©tricas em background
+        console.log("[REGISTRO] Agendando atualizaÃ§Ã£o de mÃ©tricas em background...");
         atualizarMetricasAutomaticamente().catch(metricError => {
-            console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
-            console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
+            console.error("[REGISTRO] Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError.message);
+            console.error("[REGISTRO] Stack trace das mÃ©tricas:", metricError.stack);
         });
 
-        console.log("[REGISTRO] Registro concluído com sucesso!");
+        console.log("[REGISTRO] Registro concluÃ­do com sucesso!");
     } catch (err) {
-        console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
+        console.error(" [REGISTRO] ERRO CRÃTICO no registro:", err);
         console.error(" [REGISTRO] Mensagem de erro:", err.message);
         console.error(" [REGISTRO] Stack trace completo:", err.stack);
 
@@ -1937,30 +1937,30 @@ router.get("/google", (req, res) => {
             scope: ["profile", "email", "https://www.googleapis.com/auth/calendar.readonly"]
         })(req, res);
     } else {
-        console.error(" Google OAuth não configurado:");
+        console.error(" Google OAuth nÃ£o configurado:");
         console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
         console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
         res.status(400).json({
-            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "Google OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
 router.get("/google/callback", (req, res) => {
     if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-        const loginUrl = process.env.LOGIN_URL || "/inc/Login.html";
+        const loginUrl = process.env.LOGIN_URL || "/login";
         console.log("[GOOGLE CALLBACK] Iniciando callback do Google OAuth");
         console.log("[GOOGLE CALLBACK] Query params:", JSON.stringify(req.query));
         
         passport.authenticate("google", {
-            session: false, // Não usar sessões para OAuth
+            session: false, // NÃ£o usar sessÃµes para OAuth
             failureRedirect: loginUrl
         })(req, res, async (err, googleUser) => {
-            // Função auxiliar para salvar dados OAuth em cookie quando houver erro
+            // FunÃ§Ã£o auxiliar para salvar dados OAuth em cookie quando houver erro
             const saveOAuthData = (oauthData) => {
                 const dataString = JSON.stringify(oauthData);
                 res.cookie('oauth_temp_data', dataString, {
-                    httpOnly: false, // Precisa ser acessível via JavaScript
+                    httpOnly: false, // Precisa ser acessÃ­vel via JavaScript
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     maxAge: 15 * 60 * 1000 // 15 minutos
@@ -1969,35 +1969,35 @@ router.get("/google/callback", (req, res) => {
             };
 
             if (err) {
-                console.error("[GOOGLE CALLBACK] Erro na autenticação Google:", err);
+                console.error("[GOOGLE CALLBACK] Erro na autenticaÃ§Ã£o Google:", err);
                 console.error("[GOOGLE CALLBACK] Stack trace:", err.stack);
                 const errorDetails = err.message || 'Erro desconhecido';
                 
-                // Tentar obter dados do profile mesmo com erro (se disponível)
-                // Isso pode não funcionar se o erro ocorrer antes do profile ser retornado
+                // Tentar obter dados do profile mesmo com erro (se disponÃ­vel)
+                // Isso pode nÃ£o funcionar se o erro ocorrer antes do profile ser retornado
                 return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent(errorDetails)}`);
             }
 
-            // Tentar obter o usuário de várias fontes (sem sessões)
+            // Tentar obter o usuÃ¡rio de vÃ¡rias fontes (sem sessÃµes)
             let user = googleUser || req.user;
             
             console.log("[GOOGLE CALLBACK] googleUser:", googleUser ? JSON.stringify(googleUser, null, 2) : "undefined");
             console.log("[GOOGLE CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "undefined");
             
             if (!user) {
-                console.error("[GOOGLE CALLBACK] Usuário está undefined após autenticação");
+                console.error("[GOOGLE CALLBACK] UsuÃ¡rio estÃ¡ undefined apÃ³s autenticaÃ§Ã£o");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
-            // Verificar se user tem os campos necessários
+            // Verificar se user tem os campos necessÃ¡rios
             if (!user.ReferenciaID || !user.email) {
-                console.error("[GOOGLE CALLBACK] user não tem campos necessários:", {
+                console.error("[GOOGLE CALLBACK] user nÃ£o tem campos necessÃ¡rios:", {
                     hasReferenciaID: !!user.ReferenciaID,
                     hasEmail: !!user.email,
                     user: user
                 });
                 
-                // Salvar dados OAuth disponíveis para permitir completar registro/login
+                // Salvar dados OAuth disponÃ­veis para permitir completar registro/login
                 const oauthData = {
                     provider: 'google',
                     email: user.email || null,
@@ -2012,11 +2012,11 @@ router.get("/google/callback", (req, res) => {
                     return res.redirect(`/index.html?oauth_data=google&action=complete`);
                 }
                 
-                return res.redirect(`${loginUrl}?error=user_incomplete&details=${encodeURIComponent('Dados do usuário incompletos')}`);
+                return res.redirect(`${loginUrl}?error=user_incomplete&details=${encodeURIComponent('Dados do usuÃ¡rio incompletos')}`);
             }
 
             try {
-                // Garantir que google_id está salvo no banco
+                // Garantir que google_id estÃ¡ salvo no banco
                 if (user.googleId) {
                     try {
                         await pool.query(
@@ -2025,12 +2025,12 @@ router.get("/google/callback", (req, res) => {
                         );
                         console.log("[GOOGLE CALLBACK] google_id salvo no banco:", user.googleId);
                     } catch (dbError) {
-                        console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode não existir):", dbError.message);
-                        // Continuar mesmo se falhar - não é crítico
+                        console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode nÃ£o existir):", dbError.message);
+                        // Continuar mesmo se falhar - nÃ£o Ã© crÃ­tico
                     }
                 }
 
-                // Salvar tokens OAuth se disponíveis
+                // Salvar tokens OAuth se disponÃ­veis
                 if (user.accessToken) {
                     try {
                         await pool.query(`
@@ -2065,16 +2065,16 @@ router.get("/google/callback", (req, res) => {
                                  updated_at = NOW()`,
                             [user.ReferenciaID, user.accessToken, user.refreshToken || null, expiresAt, 'calendar.readonly']
                         );
-                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronização");
+                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronizaÃ§Ã£o");
                     } catch (tokenErr) {
                         console.error("[GOOGLE CALLBACK] Erro ao salvar tokens OAuth:", tokenErr);
-                        // Não falhar o login se não conseguir salvar tokens
+                        // NÃ£o falhar o login se nÃ£o conseguir salvar tokens
                     }
                 }
 
                 const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.email);
 
-                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.ReferenciaID);
+                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuÃ¡rio:", user.ReferenciaID);
 
                 const returnTo = req.cookies?.oauth_return_to;
                 const redirectPath = (returnTo && typeof returnTo === "string" && returnTo.startsWith("/")) ? returnTo : "/dashboard";
@@ -2135,14 +2135,14 @@ router.get("/google/callback", (req, res) => {
             }
         });
     } else {
-        console.error("Google OAuth não configurado");
+        console.error("Google OAuth nÃ£o configurado");
         res.status(400).json({
-            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "Google OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
-//rotas onde é usado o github
+//rotas onde Ã© usado o github
 router.get("/github", (req, res) => {
     if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         console.log(" GitHub OAuth configurado:");
@@ -2152,11 +2152,11 @@ router.get("/github", (req, res) => {
             scope: ["user:email"]
         })(req, res);
     } else {
-        console.error(" GitHub OAuth não configurado:");
+        console.error(" GitHub OAuth nÃ£o configurado:");
         console.log("   GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID ? "Presente" : "Ausente");
         console.log("   GITHUB_CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "Presente" : "Ausente");
         res.status(400).json({
-            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "GitHub OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2168,12 +2168,12 @@ router.get("/github/callback", (req, res) => {
             failureRedirect: loginUrl
         })(req, res, (err) => {
             if (err) {
-                console.error("Erro na autenticação GitHub:", err);
+                console.error("Erro na autenticaÃ§Ã£o GitHub:", err);
                 return res.redirect(`${loginUrl}?error=auth_failed`);
             }
 
             if (!req.user) {
-                console.error("req.user está undefined");
+                console.error("req.user estÃ¡ undefined");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
@@ -2193,7 +2193,7 @@ router.get("/github/callback", (req, res) => {
         });
     } else {
         res.status(400).json({
-            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "GitHub OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2201,7 +2201,7 @@ router.get("/github/callback", (req, res) => {
 
 router.get("/discord", (req, res) => {
     if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-        // Armazenar parâmetros na sessão (se disponível) ou usar cookies como fallback
+        // Armazenar parÃ¢metros na sessÃ£o (se disponÃ­vel) ou usar cookies como fallback
         if (req.query.from === 'profile' && req.query.token) {
             // Armazenar token temporariamente em cookie seguro
             res.cookie('discord_connect_token', req.query.token, {
@@ -2224,7 +2224,7 @@ router.get("/discord", (req, res) => {
         })(req, res);
     } else {
         res.status(400).json({
-            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "Discord OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2232,10 +2232,10 @@ router.get("/discord", (req, res) => {
 router.get("/discord/callback", async (req, res) => {
     console.log(" Discord callback recebido:", JSON.stringify(req.query));
     
-    // Verificar se há erro do Discord
+    // Verificar se hÃ¡ erro do Discord
     if (req.query.error) {
         console.error(" Erro retornado pelo Discord:", req.query.error);
-        console.error(" Descrição do erro:", req.query.error_description);
+        console.error(" DescriÃ§Ã£o do erro:", req.query.error_description);
         const fromProfile = req.query.state && req.query.state.includes('from=profile');
         const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_connection_failed' : `/login?error=discord_${req.query.error}&description=${encodeURIComponent(req.query.error_description || '')}`;
         return res.redirect(redirectUrl);
@@ -2246,19 +2246,19 @@ router.get("/discord/callback", async (req, res) => {
         passport.authenticate("discord", {
             session: false
         })(req, res, async (err, discordUser) => {
-            console.log(" [DISCORD CALLBACK] ========== INÍCIO DO CALLBACK ==========");
+            console.log(" [DISCORD CALLBACK] ========== INÃCIO DO CALLBACK ==========");
             console.log(" [DISCORD CALLBACK] Erro recebido:", err ? err.message : "Nenhum erro");
             console.log(" [DISCORD CALLBACK] DiscordUser recebido do passport:", discordUser ? JSON.stringify(discordUser, null, 2) : "null/undefined");
             console.log(" [DISCORD CALLBACK] Query params:", JSON.stringify(req.query));
             console.log(" [DISCORD CALLBACK] State:", req.query.state);
             console.log(" [DISCORD CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "null/undefined");
-            console.log(" [DISCORD CALLBACK] req.isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "método não disponível");
+            console.log(" [DISCORD CALLBACK] req.isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "mÃ©todo nÃ£o disponÃ­vel");
             
             if (err) {
-                console.error(" [DISCORD CALLBACK] ERRO na autenticação Discord:", err);
+                console.error(" [DISCORD CALLBACK] ERRO na autenticaÃ§Ã£o Discord:", err);
                 console.error(" [DISCORD CALLBACK] Stack trace:", err.stack);
                 
-                // Determinar tipo de erro específico
+                // Determinar tipo de erro especÃ­fico
                 let errorType = "discord_auth_failed";
                 if (err.message && err.message.includes("email")) {
                     errorType = "discord_email_required";
@@ -2271,31 +2271,31 @@ router.get("/discord/callback", async (req, res) => {
                 return res.redirect(redirectUrl);
             }
 
-            // Tentar obter o usuário de várias fontes
+            // Tentar obter o usuÃ¡rio de vÃ¡rias fontes
             if (!discordUser) {
-                console.log(" [DISCORD CALLBACK] discordUser é null, tentando req.user...");
+                console.log(" [DISCORD CALLBACK] discordUser Ã© null, tentando req.user...");
                 discordUser = req.user;
             }
             
             if (!discordUser) {
-                console.error(" [DISCORD CALLBACK] ERRO CRÍTICO: discordUser é null/undefined após todas as tentativas");
+                console.error(" [DISCORD CALLBACK] ERRO CRÃTICO: discordUser Ã© null/undefined apÃ³s todas as tentativas");
                 console.error(" [DISCORD CALLBACK] Query params completos:", JSON.stringify(req.query));
                 console.error(" [DISCORD CALLBACK] req.user:", req.user);
                 console.error(" [DISCORD CALLBACK] req.session:", req.session);
-                console.error(" [DISCORD CALLBACK] Verificando se a estratégia foi executada...");
+                console.error(" [DISCORD CALLBACK] Verificando se a estratÃ©gia foi executada...");
                 
-                // Se chegou aqui, a estratégia pode não ter sido executada ou não chamou done()
+                // Se chegou aqui, a estratÃ©gia pode nÃ£o ter sido executada ou nÃ£o chamou done()
                 const fromProfile = req.query.state && req.query.state.includes('from=profile');
                 const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_user_not_found' : '/login?error=discord_user_not_found';
                 return res.redirect(redirectUrl);
             }
 
-            console.log(" [DISCORD CALLBACK] Usuário Discord autenticado com sucesso!");
+            console.log(" [DISCORD CALLBACK] UsuÃ¡rio Discord autenticado com sucesso!");
             console.log(" [DISCORD CALLBACK] Email:", discordUser.email);
             console.log(" [DISCORD CALLBACK] ReferenciaID:", discordUser.ReferenciaID);
             console.log(" [DISCORD CALLBACK] DiscordId:", discordUser.discordId);
 
-            // Verificar se veio do perfil (usuário já logado querendo conectar)
+            // Verificar se veio do perfil (usuÃ¡rio jÃ¡ logado querendo conectar)
             // Tentar obter dos cookies primeiro, depois do state
             const tokenFromCookie = req.cookies?.discord_connect_token;
             const fromProfileCookie = req.cookies?.discord_connect_from === 'profile';
@@ -2312,29 +2312,29 @@ router.get("/discord/callback", async (req, res) => {
 
             if (fromProfile && tokenFromProfile) {
                 try {
-                    // Limpar cookies após uso
+                    // Limpar cookies apÃ³s uso
                     res.clearCookie('discord_connect_token');
                     res.clearCookie('discord_connect_from');
                     
-                    // Verificar token JWT do usuário logado
+                    // Verificar token JWT do usuÃ¡rio logado
                     const decoded = jwt.verify(tokenFromProfile, process.env.JWT_SECRET);
                     const loggedInReferenciaID = decoded.ReferenciaID;
                     
-                    console.log(` Associando Discord ao usuário logado: ${loggedInReferenciaID}`);
+                    console.log(` Associando Discord ao usuÃ¡rio logado: ${loggedInReferenciaID}`);
 
-                    // Obter discordId do objeto retornado pela estratégia (agora incluído)
+                    // Obter discordId do objeto retornado pela estratÃ©gia (agora incluÃ­do)
                     const discordIdToLink = discordUser.discordId;
                     
                     if (!discordIdToLink) {
-                        console.error(" Discord ID não encontrado no objeto de autenticação");
-                        throw new Error("Não foi possível obter o ID do Discord");
+                        console.error(" Discord ID nÃ£o encontrado no objeto de autenticaÃ§Ã£o");
+                        throw new Error("NÃ£o foi possÃ­vel obter o ID do Discord");
                     }
 
-                    // Verificar se o Discord já está associado a outro usuário
+                    // Verificar se o Discord jÃ¡ estÃ¡ associado a outro usuÃ¡rio
                     const existingDiscordUser = findDiscordUser(discordIdToLink);
                     
                     if (existingDiscordUser && existingDiscordUser.ReferenciaID && existingDiscordUser.ReferenciaID !== loggedInReferenciaID) {
-                        // Discord já está associado a outro usuário
+                        // Discord jÃ¡ estÃ¡ associado a outro usuÃ¡rio
                         const html = `
                             <!DOCTYPE html>
                             <html>
@@ -2343,7 +2343,7 @@ router.get("/discord/callback", async (req, res) => {
                             </head>
                             <body>
                               <script>
-                                alert('Esta conta Discord já está associada a outra conta.');
+                                alert('Esta conta Discord jÃ¡ estÃ¡ associada a outra conta.');
                                 window.location.href = '/dashboard/perfil';
                               </script>
                               <p>Redirecionando...</p>
@@ -2353,7 +2353,7 @@ router.get("/discord/callback", async (req, res) => {
                         return res.send(html);
                     }
 
-                    // Associar Discord ao usuário logado
+                    // Associar Discord ao usuÃ¡rio logado
                     linkDiscordUser(discordIdToLink, loggedInReferenciaID);
                     
                     // Atualizar discord_id no banco: desvincular de outras contas (trocar conta) e vincular a esta
@@ -2367,8 +2367,8 @@ router.get("/discord/callback", async (req, res) => {
                             [discordIdToLink, loggedInReferenciaID]
                         );
                     } catch (dbError) {
-                        console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
-                        // Continuar mesmo se falhar - o linkDiscordUser já foi feito
+                        console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode nÃ£o existir):", dbError.message);
+                        // Continuar mesmo se falhar - o linkDiscordUser jÃ¡ foi feito
                     }
 
                     // Inserir ou atualizar na tabela contasconectadas
@@ -2383,7 +2383,7 @@ router.get("/discord/callback", async (req, res) => {
                         // Continuar mesmo se falhar
                     }
 
-                    console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInReferenciaID}`);
+                    console.log(` Discord ${discordIdToLink} associado ao usuÃ¡rio ${loggedInReferenciaID}`);
 
                     // Redirecionar de volta ao perfil
                     const html = `
@@ -2411,7 +2411,7 @@ router.get("/discord/callback", async (req, res) => {
                 }
             }
 
-            // Login normal (não veio do perfil ou token inválido)
+            // Login normal (nÃ£o veio do perfil ou token invÃ¡lido)
             const html = `
         <!DOCTYPE html>
         <html>
@@ -2420,7 +2420,7 @@ router.get("/discord/callback", async (req, res) => {
         </head>
         <body>
           <script>
-            // Salvar dados do usuário no localStorage
+            // Salvar dados do usuÃ¡rio no localStorage
             localStorage.setItem('user', JSON.stringify({
               ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
@@ -2442,24 +2442,24 @@ router.get("/discord/callback", async (req, res) => {
             res.send(html);
         });
     } else {
-        console.error(" Discord OAuth não configurado");
+        console.error(" Discord OAuth nÃ£o configurado");
         res.status(400).json({
-            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
+            error: "Discord OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
 
-// WhatsApp foi removido do sistema - apenas Email e Discord disponíveis
-// Se precisar verificar telefone, use a rota de verificação de email
+// WhatsApp foi removido do sistema - apenas Email e Discord disponÃ­veis
+// Se precisar verificar telefone, use a rota de verificaÃ§Ã£o de email
 
-// Verificar email - enviar código por email
+// Verificar email - enviar cÃ³digo por email
 router.post("/verificar/email", verifyToken, async (req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
         const codigo = gerarCodigo();
 
-        // Buscar email do usuário
+        // Buscar email do usuÃ¡rio
         const [userRows] = await pool.query(
             "SELECT Email, Nome FROM Utilizadores WHERE ReferenciaID = ?",
             [referenciaID]
@@ -2468,13 +2468,13 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "Usuário não encontrado",
+                error: "UsuÃ¡rio nÃ£o encontrado",
             });
         }
 
         const user = userRows[0];
 
-        // Salvar código no banco
+        // Salvar cÃ³digo no banco
         await pool.query(
             "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
             [codigo, referenciaID]
@@ -2486,36 +2486,36 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
                 sendEmail
             } = await import("../services/notify.js");
             const messageHtml = `
-        <h2> Verificação de Conta</h2>
-        <p>Olá <b>${user.Nome}</b> ,</p>
-        <p>Use o código abaixo para verificar sua conta:</p>
+        <h2> VerificaÃ§Ã£o de Conta</h2>
+        <p>OlÃ¡ <b>${user.Nome}</b> ,</p>
+        <p>Use o cÃ³digo abaixo para verificar sua conta:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
-        <p>Este código expira em 10 minutos.</p>
-        <p>Se não foi você, ignore este e-mail.</p>
+        <p>Este cÃ³digo expira em 10 minutos.</p>
+        <p>Se nÃ£o foi vocÃª, ignore este e-mail.</p>
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
 
-            await sendEmail(user.Email, "PromoPing - Verificação de conta", messageHtml);
-            console.log(` Código de verificação enviado para ${user.Email}: ${codigo}`);
+            await sendEmail(user.Email, "PromoPing - VerificaÃ§Ã£o de conta", messageHtml);
+            console.log(` CÃ³digo de verificaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
         } catch (emailError) {
-            console.log(" Email não configurado, mas código salvo:", codigo);
+            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
         }
 
         res.json({
             status: "ok",
-            message: "Código enviado por email!",
+            message: "CÃ³digo enviado por email!",
         });
     } catch (err) {
-        console.error(" Erro ao enviar código por email:", err);
+        console.error(" Erro ao enviar cÃ³digo por email:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao enviar código de verificação",
+            error: "Erro ao enviar cÃ³digo de verificaÃ§Ã£o",
         });
     }
 });
 
-// Validar código de verificação
+// Validar cÃ³digo de verificaÃ§Ã£o
 router.post("/verificar/validar", verifyToken, async (req, res) => {
     try {
         const {
@@ -2527,7 +2527,7 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         if (!codigo || !tipo) {
             return res.status(400).json({
                 status: "error",
-                error: "Código e tipo são obrigatórios",
+                error: "CÃ³digo e tipo sÃ£o obrigatÃ³rios",
             });
         }
 
@@ -2538,7 +2538,7 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
             });
         }
 
-        // Buscar usuário e verificar código
+        // Buscar usuÃ¡rio e verificar cÃ³digo
         const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
@@ -2550,7 +2550,7 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Código inválido ou expirado",
+                error: "CÃ³digo invÃ¡lido ou expirado",
             });
         }
 
@@ -2561,29 +2561,29 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
                 [referenciaID]
             );
         } else {
-            // Para telefone, podemos adicionar um campo TelefoneVerificado se necessário
+            // Para telefone, podemos adicionar um campo TelefoneVerificado se necessÃ¡rio
             await pool.query(
                 "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE ReferenciaID = ?",
                 [referenciaID]
             );
         }
 
-        console.log(` ${tipo} verificado com sucesso para usuário ${referenciaID}`);
+        console.log(` ${tipo} verificado com sucesso para usuÃ¡rio ${referenciaID}`);
 
         res.json({
             status: "ok",
             message: `${tipo === 'email' ? 'Email' : 'Telefone'} verificado com sucesso!`,
         });
     } catch (err) {
-        console.error(" Erro ao validar código:", err);
+        console.error(" Erro ao validar cÃ³digo:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao validar código",
+            error: "Erro ao validar cÃ³digo",
         });
     }
 });
 
-// Esqueci a senha - enviar código
+// Esqueci a senha - enviar cÃ³digo
 router.post("/esqueci-senha", async (req, res) => {
     try {
         const {
@@ -2593,16 +2593,16 @@ router.post("/esqueci-senha", async (req, res) => {
         if (!emailOuTelefone) {
             return res.status(400).json({
                 status: "error",
-                error: "Email ou telefone é obrigatório",
+                error: "Email ou telefone Ã© obrigatÃ³rio",
             });
         }
 
-        // WhatsApp foi removido - apenas email disponível para recuperação de senha
-        // Verificar se é email válido
+        // WhatsApp foi removido - apenas email disponÃ­vel para recuperaÃ§Ã£o de senha
+        // Verificar se Ã© email vÃ¡lido
         if (!emailOuTelefone.includes('@')) {
             return res.status(400).json({
                 status: "error",
-                error: "Apenas email é suportado para recuperação de senha. WhatsApp foi removido.",
+                error: "Apenas email Ã© suportado para recuperaÃ§Ã£o de senha. WhatsApp foi removido.",
             });
         }
 
@@ -2617,14 +2617,14 @@ router.post("/esqueci-senha", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "Usuário não encontrado",
+                error: "UsuÃ¡rio nÃ£o encontrado",
             });
         }
 
         const user = userRows[0];
         const codigo = gerarCodigo();
 
-        // Salvar código no banco
+        // Salvar cÃ³digo no banco
         await pool.query(
             "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
             [codigo, user.ReferenciaID]
@@ -2633,31 +2633,31 @@ router.post("/esqueci-senha", async (req, res) => {
         // Enviar por email
         const emailResult = await enviarEmail(
             user.Email,
-            "PromoPing - Recuperação de senha",
-            `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
+            "PromoPing - RecuperaÃ§Ã£o de senha",
+            `OlÃ¡ ${user.Nome}!\n\nVocÃª solicitou a recuperaÃ§Ã£o de senha.\n\nSeu cÃ³digo Ã©: ${codigo}\n\nEste cÃ³digo expira em 10 minutos.\n\nSe nÃ£o foi vocÃª, ignore este e-mail.\n\nPromoPing`
         );
 
         if (emailResult.success) {
-            console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
+            console.log(` CÃ³digo de recuperaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
         } else {
-            console.log(" Email não configurado, mas código salvo:", codigo);
+            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
         }
 
         res.json({
             status: "ok",
-            message: "Código enviado por email!",
+            message: "CÃ³digo enviado por email!",
             canal: 'email'
         });
     } catch (err) {
-        console.error(" Erro na recuperação de senha:", err);
+        console.error(" Erro na recuperaÃ§Ã£o de senha:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao processar recuperação de senha",
+            error: "Erro ao processar recuperaÃ§Ã£o de senha",
         });
     }
 });
 
-// Resetar senha com código
+// Resetar senha com cÃ³digo
 router.post("/resetar-senha", async (req, res) => {
     try {
         const {
@@ -2669,7 +2669,7 @@ router.post("/resetar-senha", async (req, res) => {
         if (!emailOuTelefone || !codigo || !novaSenha) {
             return res.status(400).json({
                 status: "error",
-                error: "Email/telefone, código e nova senha são obrigatórios",
+                error: "Email/telefone, cÃ³digo e nova senha sÃ£o obrigatÃ³rios",
             });
         }
 
@@ -2680,16 +2680,16 @@ router.post("/resetar-senha", async (req, res) => {
             });
         }
 
-        // WhatsApp foi removido - apenas email disponível para reset de senha
-        // Verificar se é email válido
+        // WhatsApp foi removido - apenas email disponÃ­vel para reset de senha
+        // Verificar se Ã© email vÃ¡lido
         if (!emailOuTelefone.includes('@')) {
             return res.status(400).json({
                 status: "error",
-                error: "Apenas email é suportado para reset de senha. WhatsApp foi removido.",
+                error: "Apenas email Ã© suportado para reset de senha. WhatsApp foi removido.",
             });
         }
 
-        // Buscar por email e verificar código de email
+        // Buscar por email e verificar cÃ³digo de email
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2700,7 +2700,7 @@ router.post("/resetar-senha", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Código inválido ou expirado",
+                error: "CÃ³digo invÃ¡lido ou expirado",
             });
         }
 
@@ -2710,13 +2710,13 @@ router.post("/resetar-senha", async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(novaSenha, saltRounds);
 
-        // Atualizar senha e limpar códigos
+        // Atualizar senha e limpar cÃ³digos
         await pool.query(
             "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE ReferenciaID = ?",
             [hashedPassword, user.ReferenciaID]
         );
 
-        console.log(` Senha redefinida com sucesso para usuário ${user.ReferenciaID} via email`);
+        console.log(` Senha redefinida com sucesso para usuÃ¡rio ${user.ReferenciaID} via email`);
 
         res.json({
             status: "ok",
@@ -2732,7 +2732,7 @@ router.post("/resetar-senha", async (req, res) => {
 });
 
 
-// Reenviar código de verificação (para usuários não logados)
+// Reenviar cÃ³digo de verificaÃ§Ã£o (para usuÃ¡rios nÃ£o logados)
 router.post("/reenviar-codigo", async (req, res) => {
     try {
         const {
@@ -2742,11 +2742,11 @@ router.post("/reenviar-codigo", async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 status: "error",
-                error: "Email é obrigatório",
+                error: "Email Ã© obrigatÃ³rio",
             });
         }
 
-        // Buscar usuário
+        // Buscar usuÃ¡rio
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2757,17 +2757,17 @@ router.post("/reenviar-codigo", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "Usuário não encontrado",
+                error: "UsuÃ¡rio nÃ£o encontrado",
             });
         }
 
         const user = userRows[0];
 
-        // Se já está verificado, não precisa reenviar
+        // Se jÃ¡ estÃ¡ verificado, nÃ£o precisa reenviar
         if (user.EmailVerificado) {
             return res.status(400).json({
                 status: "error",
-                error: "Email já está verificado",
+                error: "Email jÃ¡ estÃ¡ verificado",
             });
         }
 
@@ -2783,38 +2783,38 @@ router.post("/reenviar-codigo", async (req, res) => {
                 sendEmail
             } = await import("../services/notify.js");
             const messageHtml = `
-        <h2> Código de Verificação</h2>
-        <p>Olá <b>${user.Nome}</b> ,</p>
-        <p>Você solicitou um novo código de verificação:</p>
+        <h2> CÃ³digo de VerificaÃ§Ã£o</h2>
+        <p>OlÃ¡ <b>${user.Nome}</b> ,</p>
+        <p>VocÃª solicitou um novo cÃ³digo de verificaÃ§Ã£o:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
-        <p>Este código expira em 10 minutos.</p>
-        <p>Se não foi você, ignore este e-mail.</p>
+        <p>Este cÃ³digo expira em 10 minutos.</p>
+        <p>Se nÃ£o foi vocÃª, ignore este e-mail.</p>
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
 
-            await sendEmail(user.Email, "PromoPing - Novo código de verificação", messageHtml);
-            console.log(` Novo código de verificação enviado para ${user.Email}: ${codigo}`);
+            await sendEmail(user.Email, "PromoPing - Novo cÃ³digo de verificaÃ§Ã£o", messageHtml);
+            console.log(` Novo cÃ³digo de verificaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
         } catch (emailError) {
-            console.log(" Email não configurado, mas código salvo:", codigo);
+            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
         }
 
-        // WhatsApp foi removido do sistema - apenas email disponível
+        // WhatsApp foi removido do sistema - apenas email disponÃ­vel
 
         res.json({
             status: "ok",
-            message: "Código reenviado com sucesso!",
+            message: "CÃ³digo reenviado com sucesso!",
         });
     } catch (err) {
-        console.error(" Erro ao reenviar código:", err);
+        console.error(" Erro ao reenviar cÃ³digo:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao reenviar código",
+            error: "Erro ao reenviar cÃ³digo",
         });
     }
 });
 
-// Verificar código sem login (para usuários não logados)
+// Verificar cÃ³digo sem login (para usuÃ¡rios nÃ£o logados)
 router.post("/verificar-codigo", async (req, res) => {
     try {
         const {
@@ -2825,11 +2825,11 @@ router.post("/verificar-codigo", async (req, res) => {
         if (!email || !codigo) {
             return res.status(400).json({
                 status: "error",
-                error: "Email e código são obrigatórios",
+                error: "Email e cÃ³digo sÃ£o obrigatÃ³rios",
             });
         }
 
-        // Buscar usuário e verificar código
+        // Buscar usuÃ¡rio e verificar cÃ³digo
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2840,7 +2840,7 @@ router.post("/verificar-codigo", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Código inválido ou expirado",
+                error: "CÃ³digo invÃ¡lido ou expirado",
             });
         }
 
@@ -2854,7 +2854,7 @@ router.post("/verificar-codigo", async (req, res) => {
 
         const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
 
-        console.log(` Email verificado com sucesso para usuário ${user.ReferenciaID}`);
+        console.log(` Email verificado com sucesso para usuÃ¡rio ${user.ReferenciaID}`);
 
         res.json({
             status: "ok",
@@ -2868,16 +2868,16 @@ router.post("/verificar-codigo", async (req, res) => {
             },
         });
     } catch (err) {
-        console.error(" Erro ao verificar código:", err);
+        console.error(" Erro ao verificar cÃ³digo:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao verificar código",
+            error: "Erro ao verificar cÃ³digo",
         });
     }
 });
 
 
-// Atualizar telefone do usuário
+// Atualizar telefone do usuÃ¡rio
 router.put("/telefone", verifyToken, async (req, res) => {
     try {
         const {
@@ -2888,16 +2888,16 @@ router.put("/telefone", verifyToken, async (req, res) => {
         if (!telefone) {
             return res.status(400).json({
                 status: "error",
-                error: "Telefone é obrigatório",
+                error: "Telefone Ã© obrigatÃ³rio",
             });
         }
 
-        // Validar formato do telefone (básico)
+        // Validar formato do telefone (bÃ¡sico)
         const telefoneRegex = /^[0-9+\-\s()]{9,15}$/;
         if (!telefoneRegex.test(telefone)) {
             return res.status(400).json({
                 status: "error",
-                error: "Formato de telefone inválido",
+                error: "Formato de telefone invÃ¡lido",
             });
         }
 
@@ -2919,7 +2919,7 @@ router.put("/telefone", verifyToken, async (req, res) => {
     }
 });
 
-// Buscar dados do usuário
+// Buscar dados do usuÃ¡rio
 router.get("/profile", verifyToken, async (req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
@@ -2932,7 +2932,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "Usuário não encontrado",
+                error: "UsuÃ¡rio nÃ£o encontrado",
             });
         }
 
@@ -2972,7 +2972,7 @@ router.get("/oauth-temp-data", (req, res) => {
         try {
             const oauthData = JSON.parse(oauthDataCookie);
             
-            // Verificar se os dados não expiraram (15 minutos)
+            // Verificar se os dados nÃ£o expiraram (15 minutos)
             const dataAge = Date.now() - (oauthData.timestamp || 0);
             const maxAge = 15 * 60 * 1000; // 15 minutos
             
@@ -3010,12 +3010,12 @@ router.get("/oauth-temp-data", (req, res) => {
     }
 });
 
-// Rota para limpar dados OAuth temporários
+// Rota para limpar dados OAuth temporÃ¡rios
 router.post("/oauth-temp-data/clear", (req, res) => {
     res.clearCookie('oauth_temp_data');
     res.json({
         status: "ok",
-        message: "Dados OAuth temporários limpos"
+        message: "Dados OAuth temporÃ¡rios limpos"
     });
 });
 

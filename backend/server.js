@@ -1,7 +1,7 @@
-process.env.DOTENV_CONFIG_SILENT = 'true';
+﻿process.env.DOTENV_CONFIG_SILENT = 'true';
 process.env.DOTENV_CONFIG_DEBUG = 'false';
 
-// Interceptar console.log para filtrar mensagens do dotenv e logs desnecessários
+// Interceptar console.log para filtrar mensagens do dotenv e logs desnecessÃ¡rios
 const originalConsoleLog = console.log;
 console.log = (...args) => {
     const message = args.join(' ');
@@ -12,7 +12,7 @@ console.log = (...args) => {
         message.includes('add access controls to secrets')) {
         return;
     }
-    // Filtrar mensagens de verificação de Twitch repetitivas
+    // Filtrar mensagens de verificaÃ§Ã£o de Twitch repetitivas
     if (message.includes('[DISCORD] Verificando lives da Twitch...') ||
         message.includes('[DISCORD] Verificando') && message.includes('canal(is) da Twitch')) {
         return;
@@ -39,7 +39,7 @@ const __filename = fileURLToPath(
     import.meta.url);
 const __dirname = dirname(__filename);
 
-// Carrega variáveis de ambiente do .env
+// Carrega variÃ¡veis de ambiente do .env
 dotenv.config({
     path: join(__dirname, "../.env"),
     silent: true,
@@ -51,37 +51,37 @@ dotenv.config({
 
 import authRoutes from "./routes/auth.js"; // Login/Registro + Google OAuth
 import produtosRoutes from "./routes/produtos.js"; // Produtos
-import configRoutes from "./routes/config.js"; // Configurações
-import userRoutes from "./routes/user.js"; // Usuários
-import notificacoesRoutes from "./routes/notificacoes.js"; // Notificações
+import configRoutes from "./routes/config.js"; // ConfiguraÃ§Ãµes
+import userRoutes from "./routes/user.js"; // UsuÃ¡rios
+import notificacoesRoutes from "./routes/notificacoes.js"; // NotificaÃ§Ãµes
 import contasRoutes from "./routes/contas.js"; // Contas
-import preferencesRoutes from "./routes/preferences.js"; // Preferências
-import authEmailVerifyRoutes from "./routes/auth-email-verify.js"; // Verificação email
+import preferencesRoutes from "./routes/preferences.js"; // PreferÃªncias
+import authEmailVerifyRoutes from "./routes/auth-email-verify.js"; // VerificaÃ§Ã£o email
 import paymentRoutes, { stripeWebhookHandler } from "./routes/payment.js"; // Pagamentos
 import statusRoutes from "./routes/status.js"; // Status
-import chartsRoutes from "./routes/charts.js"; // Gráficos/series
-import exportRoutes from "./routes/exportRoutes.js"; // Exportação
-import gracePeriodRoutes from "./routes/grace-period.js"; // Períodos de graça
+import chartsRoutes from "./routes/charts.js"; // GrÃ¡ficos/series
+import exportRoutes from "./routes/exportRoutes.js"; // ExportaÃ§Ã£o
+import gracePeriodRoutes from "./routes/grace-period.js"; // PerÃ­odos de graÃ§a
 import supportRoutes from "./routes/support.js"; // Suporte
 import githubRoutes from "./routes/github.js"; // GitHub API
 import adminRoutes from "./routes/admin.js"; // Admin Panel
-import corporationRoutes from "./routes/corporation.js"; // Painel Corporação (PerfilId 3)
+import corporationRoutes from "./routes/corporation.js"; // Painel CorporaÃ§Ã£o (PerfilId 3)
 import newsletterRoutes from "./routes/newsletter.js"; // Newsletter
 import blogRoutes from "./routes/blog.js"; // Blog
 import heraldRoutes from "./routes/herald.js"; // Herald API
 import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
 import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
-import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupões corporativos
+import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupÃµes corporativos
 import { verifyToken } from "./middleware/auth.js"; // JWT
 
-import { pool } from "./database/db.js"; // Pool de conexão
-import { sendNotification } from "./services/notify.js"; // Notificações
+import { pool } from "./database/db.js"; // Pool de conexÃ£o
+import { sendNotification } from "./services/notify.js"; // NotificaÃ§Ãµes
 
 const app = express();
 
 // Trust proxy para funcionar corretamente com NGINX/proxy reverso
-// Em produção, confiar apenas no primeiro proxy (NGINX)
-// Em desenvolvimento, confiar apenas em localhost (usando IPs válidos)
+// Em produÃ§Ã£o, confiar apenas no primeiro proxy (NGINX)
+// Em desenvolvimento, confiar apenas em localhost (usando IPs vÃ¡lidos)
 if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1); // Confiar apenas no primeiro proxy
 } else {
@@ -94,33 +94,33 @@ app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado p
 // Rate limiting geral para todas as rotas
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 500, // máximo 500 requisições por IP por janela (aumentado)
+    max: 500, // mÃ¡ximo 500 requisiÃ§Ãµes por IP por janela (aumentado)
     message: {
-        error: "Muitas requisições deste IP, tente novamente em 15 minutos",
+        error: "Muitas requisiÃ§Ãµes deste IP, tente novamente em 15 minutos",
         retryAfter: "15 minutos"
     },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// Rate limiting mais restritivo para APIs de autenticação
+// Rate limiting mais restritivo para APIs de autenticaÃ§Ã£o
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 50, // máximo 50 tentativas de login por IP por janela (aumentado para desenvolvimento)
+    max: 50, // mÃ¡ximo 50 tentativas de login por IP por janela (aumentado para desenvolvimento)
     message: {
         error: "Muitas tentativas de login, tente novamente em 15 minutos",
         retryAfter: "15 minutos"
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // QR login faz polling a cada 2s; não contar esses pedidos no limite de login
+    // QR login faz polling a cada 2s; nÃ£o contar esses pedidos no limite de login
     skip: (req) => /\/api\/auth\/qr-session/.test(req.originalUrl || req.path || ""),
 })
 
 // Rate limiting mais permissivo para OAuth (Google, Discord, etc.)
 const oauthLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // máximo 100 tentativas OAuth por IP por janela
+    max: 100, // mÃ¡ximo 100 tentativas OAuth por IP por janela
     message: {
         error: "Muitas tentativas de OAuth, tente novamente em 15 minutos",
         retryAfter: "15 minutos"
@@ -129,12 +129,12 @@ const oauthLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Rate limiting para APIs de produtos (mais permissivo para usuários autenticados)
+// Rate limiting para APIs de produtos (mais permissivo para usuÃ¡rios autenticados)
 const productLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minuto
-    max: 100, // máximo 100 requisições por IP por minuto (aumentado)
+    max: 100, // mÃ¡ximo 100 requisiÃ§Ãµes por IP por minuto (aumentado)
     message: {
-        error: "Muitas requisições de produtos, tente novamente em 1 minuto",
+        error: "Muitas requisiÃ§Ãµes de produtos, tente novamente em 1 minuto",
         retryAfter: "1 minuto"
     },
     standardHeaders: true,
@@ -153,21 +153,21 @@ const allowedOrigins = [
     `http://127.0.0.1:8080`,
     `http://localhost:5500`,
     `http://127.0.0.1:5500`,
-    // Suporte para páginas servidas via Apache/XAMPP sem porta explícita
+    // Suporte para pÃ¡ginas servidas via Apache/XAMPP sem porta explÃ­cita
     `http://localhost`,
     `http://127.0.0.1`,
-    // Adicionar variações comuns do XAMPP
+    // Adicionar variaÃ§Ãµes comuns do XAMPP
     `http://localhost:80`,
     `http://127.0.0.1:80`,
-    // Domínios de produção
+    // DomÃ­nios de produÃ§Ã£o
     `http://promoping.pt`,
     `https://promoping.pt`,
     `http://www.promoping.pt`,
     `https://www.promoping.pt`,
-    // file:// removido por segurança
+    // file:// removido por seguranÃ§a
 ];
 
-// Adicionar domínios do .env se existirem
+// Adicionar domÃ­nios do .env se existirem
 if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
 }
@@ -176,23 +176,23 @@ if (process.env.ALLOWED_ORIGINS) {
     allowedOrigins.push(...customOrigins);
 }
 
-// Função para validar origem
+// FunÃ§Ã£o para validar origem
 const corsOptions = {
     origin: function(origin, callback) {
-        // Permitir requisições sem origem (ex: mobile apps, Postman, mesma origem, requisições diretas)
-        // Verificação mais robusta para null, undefined, string "null" ou string vazia
-        // Requisições sem origem são sempre permitidas (mesma origem, Postman, etc)
+        // Permitir requisiÃ§Ãµes sem origem (ex: mobile apps, Postman, mesma origem, requisiÃ§Ãµes diretas)
+        // VerificaÃ§Ã£o mais robusta para null, undefined, string "null" ou string vazia
+        // RequisiÃ§Ãµes sem origem sÃ£o sempre permitidas (mesma origem, Postman, etc)
         if (!origin || origin === 'null' || origin === '' || origin === 'undefined') {
-            // Permite silenciosamente - não precisa log
+            // Permite silenciosamente - nÃ£o precisa log
             return callback(null, true);
         }
 
-        // Verificar se a origem está na lista permitida
+        // Verificar se a origem estÃ¡ na lista permitida
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        // Permitir promoping.pt em qualquer ambiente (produção e desenvolvimento)
+        // Permitir promoping.pt em qualquer ambiente (produÃ§Ã£o e desenvolvimento)
         try {
             const url = new URL(origin);
             const hostname = url.hostname.toLowerCase();
@@ -201,7 +201,7 @@ const corsOptions = {
                 return callback(null, true);
             }
         } catch (e) {
-            // URL inválida - continuar para verificar outras condições
+            // URL invÃ¡lida - continuar para verificar outras condiÃ§Ãµes
         }
 
         // Em desenvolvimento, permitir qualquer origem localhost/127.0.0.1
@@ -226,7 +226,7 @@ const corsOptions = {
                     }
                 }
             } catch (e) {
-                // URL inválida - continuar para verificar outras condições
+                // URL invÃ¡lida - continuar para verificar outras condiÃ§Ãµes
             }
         }
 
@@ -235,7 +235,7 @@ const corsOptions = {
             console.warn(`[CORS] Origem bloqueada: ${origin} (Ambiente: ${process.env.NODE_ENV || 'development'})`);
         }
 
-        callback(new Error('Não permitido pelo CORS'));
+        callback(new Error('NÃ£o permitido pelo CORS'));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -245,12 +245,12 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Aplicar rate limiting específico para cada tipo de autenticação
+// Aplicar rate limiting especÃ­fico para cada tipo de autenticaÃ§Ã£o
 app.use("/api/auth/google", oauthLimiter); // Google OAuth - mais permissivo
 app.use("/api/auth/discord", oauthLimiter); // Discord OAuth - mais permissivo
 app.use("/api/auth", authLimiter); // Login/Registro tradicional - mais restritivo
 app.use("/api/auth", authRoutes); // Login/Registro + Google OAuth
-app.use("/api/auth", authEmailVerifyRoutes); // Verificação email
+app.use("/api/auth", authEmailVerifyRoutes); // VerificaÃ§Ã£o email
 
 app.get("/auth/google", (req, res) => {
     const queryString = new URLSearchParams(req.query).toString();
@@ -310,7 +310,7 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
 
-        // Buscar dados completos do usuário incluindo foto de perfil e PerfilId
+        // Buscar dados completos do usuÃ¡rio incluindo foto de perfil e PerfilId
         try {
             const [rows] = await pool.query(
                 "SELECT ReferenciaID, Nome, Email, Telefone, FotoPerfil, DataRegisto, cidade, location, PerfilId FROM Utilizadores WHERE ReferenciaID = ?", [referenciaID]
@@ -336,7 +336,7 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
                 });
             }
         } catch (dbErr) {
-            // Se campo FotoPerfil não existe, buscar sem ele mas com PerfilId
+            // Se campo FotoPerfil nÃ£o existe, buscar sem ele mas com PerfilId
             try {
                 const [rows] = await pool.query(
                     "SELECT ReferenciaID, Nome, Email, Telefone, DataRegisto, PerfilId FROM Utilizadores WHERE ReferenciaID = ?", [referenciaID]
@@ -359,7 +359,7 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
                     });
                 }
             } catch (dbErr2) {
-                console.error("Erro ao buscar dados do usuário:", dbErr2);
+                console.error("Erro ao buscar dados do usuÃ¡rio:", dbErr2);
             }
         }
 
@@ -369,7 +369,7 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
             user: req.user
         });
     } catch (err) {
-        console.error("Erro ao buscar dados do usuário:", err);
+        console.error("Erro ao buscar dados do usuÃ¡rio:", err);
         res.json({
             status: "ok",
             user: req.user
@@ -380,20 +380,20 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
 // Aplicar rate limiting para produtos
 app.use("/api/produtos", productLimiter);
 app.use("/api/produtos", produtosRoutes); // Produtos
-app.use("/api/config", configRoutes); // Configurações
-app.use("/api/user", userRoutes); // Usuários
+app.use("/api/config", configRoutes); // ConfiguraÃ§Ãµes
+app.use("/api/user", userRoutes); // UsuÃ¡rios
 app.use("/api/user/accounts", contasRoutes); // Contas (deve vir depois de /api/user)
-app.use("/api/user/preferences", preferencesRoutes); // Preferências (deve vir depois de /api/user)
-app.use("/api/notificacoes", notificacoesRoutes); // Notificações
-app.use("/api/grace-period", gracePeriodRoutes); // Períodos de graça
+app.use("/api/user/preferences", preferencesRoutes); // PreferÃªncias (deve vir depois de /api/user)
+app.use("/api/notificacoes", notificacoesRoutes); // NotificaÃ§Ãµes
+app.use("/api/grace-period", gracePeriodRoutes); // PerÃ­odos de graÃ§a
 app.use("/api/payment", paymentRoutes); // Pagamentos
-app.use("/api/exportar", exportRoutes); // Exportação
+app.use("/api/exportar", exportRoutes); // ExportaÃ§Ã£o
 app.use("/api/relatorios", relatoriosRoutes); // Relatorios PDF
 app.use("/api/historico", historicoRoutes); // Historico PDF (sem graficos)
-app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho específico
-app.use("/api/admin", adminRoutes); // Admin Panel - verificação de admin dentro da rota
-app.use("/api/corporation", corporationRoutes); // Painel Corporação - apenas PerfilId 3
-app.use("/api/discord/panel", discordPanelRoutes); // Discord OAuth painel + cupões corporativos
+app.use("/api/support", supportRoutes); // Suporte (GET/POST) - caminho especÃ­fico
+app.use("/api/admin", adminRoutes); // Admin Panel - verificaÃ§Ã£o de admin dentro da rota
+app.use("/api/corporation", corporationRoutes); // Painel CorporaÃ§Ã£o - apenas PerfilId 3
+app.use("/api/discord/panel", discordPanelRoutes); // Discord OAuth painel + cupÃµes corporativos
 app.use("/api/newsletter", newsletterRoutes); // Newsletter
 app.use("/api/blog", blogRoutes); // Blog
 app.use("/api/herald", heraldRoutes); // Herald API
@@ -411,7 +411,7 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Servido em todos os ambientes; em produção o NGINX deve fazer proxy de /.well-known/ para o backend
+// Servido em todos os ambientes; em produÃ§Ã£o o NGINX deve fazer proxy de /.well-known/ para o backend
 app.get("/.well-known/discord", (req, res) => {
     res.type("text/plain").send("dh=2ff358f6828299158d812b46a60a3a8c7476cd8b");
 });
@@ -431,8 +431,8 @@ app.get("/api/", (req, res) => {
     });
 });
 
-// O bot escuta na porta 3001; o backend reencaminha para usar as mesmas notificações
-// que o bot já envia (embed com Preço alvo atingido / Preço diminuiu, etc.) conforme preferências.
+// O bot escuta na porta 3001; o backend reencaminha para usar as mesmas notificaÃ§Ãµes
+// que o bot jÃ¡ envia (embed com PreÃ§o alvo atingido / PreÃ§o diminuiu, etc.) conforme preferÃªncias.
 app.post("/api/internal/send-price-dm", async(req, res) => {
     try {
         const botUrl = process.env.INTERNAL_BOT_URL || "http://127.0.0.1:3001";
@@ -444,8 +444,8 @@ app.post("/api/internal/send-price-dm", async(req, res) => {
         const text = await f.text();
         if (f.status === 503) {
             return res.status(503).json({
-                error: "Bot Discord indisponível",
-                message: "O bot ainda não está pronto ou não está a correr. Certifica-te de que o processo «promoping-bot» está online e ligado na porta 3001.",
+                error: "Bot Discord indisponÃ­vel",
+                message: "O bot ainda nÃ£o estÃ¡ pronto ou nÃ£o estÃ¡ a correr. Certifica-te de que o processo Â«promoping-botÂ» estÃ¡ online e ligado na porta 3001.",
                 detail: text || undefined,
             });
         }
@@ -453,8 +453,8 @@ app.post("/api/internal/send-price-dm", async(req, res) => {
     } catch (err) {
         console.error("[BACKEND] Proxy send-price-dm:", err.message);
         res.status(503).json({
-            error: "Bot Discord indisponível",
-            message: "Não foi possível contactar o bot. Certifica-te de que o processo «promoping-bot» está online e ligado na porta 3001.",
+            error: "Bot Discord indisponÃ­vel",
+            message: "NÃ£o foi possÃ­vel contactar o bot. Certifica-te de que o processo Â«promoping-botÂ» estÃ¡ online e ligado na porta 3001.",
             detail: err.message,
         });
     }
@@ -471,7 +471,7 @@ app.post("/notify", async(req, res) => {
 
         if (!mensagem || !canal) {
             return res.status(400).json({
-                error: "Campos obrigatórios: mensagem e canal (email ou sms)",
+                error: "Campos obrigatÃ³rios: mensagem e canal (email ou sms)",
             });
         }
 
@@ -487,18 +487,18 @@ app.post("/notify", async(req, res) => {
             mensagem
         });
     } catch (err) {
-        console.error("Erro na notificação:", err);
+        console.error("Erro na notificaÃ§Ã£o:", err);
         res.status(500).json({
             error: err.message || "erro desconhecido"
         });
     }
 });
 
-// Verificar se a pasta build existe (usado em várias partes do código)
+// Verificar se a pasta build existe (usado em vÃ¡rias partes do cÃ³digo)
 const buildPath = path.join(__dirname, "../frontend/pages/build");
 const buildExists = fs.existsSync(buildPath);
 
-// Servir includes específicos ANTES dos arquivos estáticos
+// Servir includes especÃ­ficos ANTES dos arquivos estÃ¡ticos
 app.get("/inc/header.html", (req, res) => {
     const filePath = buildExists ?
         path.join(buildPath, "inc/header.html") :
@@ -564,14 +564,14 @@ app.get("/openapi.yaml", (req, res) => {
     res.sendFile(path.join(__dirname, "../openapi.yaml"));
 });
 
-// Em produção, o NGINX serve o frontend estático
+// Em produÃ§Ã£o, o NGINX serve o frontend estÃ¡tico
 // Em desenvolvimento, o Express serve o frontend
 const isProduction = process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND !== 'true';
 
 if (!isProduction) {
-    // Servir arquivos estáticos apenas em desenvolvimento
-    // Usar a pasta build se existir, senão usar frontend direto
-    // buildPath e buildExists já foram definidos acima
+    // Servir arquivos estÃ¡ticos apenas em desenvolvimento
+    // Usar a pasta build se existir, senÃ£o usar frontend direto
+    // buildPath e buildExists jÃ¡ foram definidos acima
     const frontendPath = path.join(__dirname, "../frontend");
 
     if (buildExists) {
@@ -582,11 +582,11 @@ if (!isProduction) {
         app.use(express.static(frontendPath));
     }
 
-    // Servir arquivos estáticos do Painel Administrativo
+    // Servir arquivos estÃ¡ticos do Painel Administrativo
     const painelPath = path.join(__dirname, "../Painel_Administrativo");
     app.use("/Painel_Administrativo", express.static(painelPath));
 
-    // Servir arquivos estáticos do Painel Suporte e Corporação
+    // Servir arquivos estÃ¡ticos do Painel Suporte e CorporaÃ§Ã£o
     const adminPath = path.join(__dirname, "../painel-suporte-corporacao");
     app.use("/painel-suporte-corporacao", express.static(adminPath));
 
@@ -641,12 +641,12 @@ if (!isProduction) {
     });
 
     app.get("/auth/discord/callback", (req, res) => {
-        // Preservar os parâmetros da query string
+        // Preservar os parÃ¢metros da query string
         const queryString = new URLSearchParams(req.query).toString();
         res.redirect(`/api/auth/discord/callback?${queryString}`);
     });
 
-    // Página inicial
+    // PÃ¡gina inicial
     app.get("/auth/discord/check/:discordId", (req, res) => {
         const queryString = new URLSearchParams(req.query).toString();
         const encodedDiscordId = encodeURIComponent(req.params.discordId);
@@ -672,7 +672,7 @@ if (!isProduction) {
         res.sendFile(indexPath);
     });
 
-    // Caminhos de visualização do Google Ads — servem a homepage
+    // Caminhos de visualizaÃ§Ã£o do Google Ads â€” servem a homepage
     app.get(/^\/alertas-precos(\/email-discord)?\/?$/i, (req, res) => {
         const indexPath = buildExists ?
             path.join(buildPath, "index.html") :
@@ -680,80 +680,87 @@ if (!isProduction) {
         res.sendFile(indexPath);
     });
 
-    // Páginas principais
+    // PÃ¡ginas principais
     app.get("/monitoramento", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/monitoramento.html") :
-            path.join(__dirname, "../frontend/pages/inc/monitoramento.html");
+            path.join(buildPath, "About/price-monitoring.html") :
+            path.join(__dirname, "../frontend/pages/build/About/price-monitoring.html");
         res.sendFile(filePath);
     });
 
     app.get("/alertas", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/alertas.html") :
-            path.join(__dirname, "../frontend/pages/inc/alertas.html");
+            path.join(buildPath, "About/smart-alerts.html") :
+            path.join(__dirname, "../frontend/pages/build/About/smart-alerts.html");
         res.sendFile(filePath);
     });
 
     app.get("/relatorios", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/relatorios.html") :
-            path.join(__dirname, "../frontend/pages/inc/relatorios.html");
+            path.join(buildPath, "About/reports-and-analytics.html") :
+            path.join(__dirname, "../frontend/pages/build/About/reports-and-analytics.html");
         res.sendFile(filePath);
     });
 
     app.get("/casos-uso", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/casos-uso.html") :
-            path.join(__dirname, "../frontend/pages/inc/casos-uso.html");
+            path.join(buildPath, "About/use-cases.html") :
+            path.join(__dirname, "../frontend/pages/build/About/use-cases.html");
         res.sendFile(filePath);
     });
 
     app.get("/blog", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/blog.html") :
-            path.join(__dirname, "../frontend/pages/inc/blog.html");
+            path.join(buildPath, "About/promoping-blog.html") :
+            path.join(__dirname, "../frontend/pages/build/About/promoping-blog.html");
         res.sendFile(filePath);
     });
 
     app.get("/blog/article/:id", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/blog-article.html") :
-            path.join(__dirname, "../frontend/pages/About/blog-article.html");
+            path.join(buildPath, "About/promoping-blog-article.html") :
+            path.join(__dirname, "../frontend/pages/build/About/promoping-blog-article.html");
         res.sendFile(filePath);
     });
 
-    // Páginas de autenticação
+    // PÃ¡ginas de autenticaÃ§Ã£o
     app.get("/login", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/login.html") :
-            path.join(__dirname, "../frontend/pages/inc/Login.html");
+            path.join(buildPath, "business/create/login-page.html") :
+            path.join(__dirname, "../frontend/pages/build/business/create/login-page.html");
         res.sendFile(filePath);
     });
 
     app.get("/register", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/registar.html") :
-            path.join(__dirname, "../frontend/pages/inc/register.html");
+            path.join(buildPath, "business/create/register-account.html") :
+            path.join(__dirname, "../frontend/pages/build/business/create/register-account.html");
         res.sendFile(filePath);
     });
 
     // Rotas adicionais para compatibilidade com frontend
+    app.get("/inc/login-redirect.html", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "inc/login-redirect.html") :
+            path.join(__dirname, "../frontend/pages/build/inc/login-redirect.html");
+        res.sendFile(filePath);
+    });
+
     app.get("/inc/Login.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/login.html") :
-            path.join(__dirname, "../frontend/pages/inc/Login.html");
+            path.join(buildPath, "inc/login-redirect.html") :
+            path.join(__dirname, "../frontend/pages/build/inc/login-redirect.html");
         res.sendFile(filePath);
     });
 
     app.get("/inc/register.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/registar.html") :
-            path.join(__dirname, "../frontend/pages/inc/register.html");
+            path.join(buildPath, "business/create/register-account.html") :
+            path.join(__dirname, "../frontend/pages/build/business/create/register-account.html");
         res.sendFile(filePath);
     });
 
-    // Página de recuperação de senha
+    // PÃ¡gina de recuperaÃ§Ã£o de senha
     app.get("/forgot-password", (req, res) => {
         const filePath = buildExists ?
             path.join(buildPath, "inc/forgot-password.html") :
@@ -768,76 +775,97 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
-    // Páginas do dashboard
+    // PÃ¡ginas do dashboard
     app.get("/dashboard", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/Painel.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+            path.join(buildPath, "dashboard/dashboard-home.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/dashboard-home.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/painel", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/Painel.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+            path.join(buildPath, "dashboard/dashboard-home.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/dashboard-home.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/perfil", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/perfil.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/perfil.html");
+            path.join(buildPath, "dashboard/account-profile.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/account-profile.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/planos", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/planos.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/planos.html");
+            path.join(buildPath, "dashboard/subscription-plans.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/subscription-plans.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/produtos", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/produtos.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/produtos.html");
+            path.join(buildPath, "dashboard/monitored-products.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/monitored-products.html");
         res.sendFile(filePath);
     });
 
     // Rotas adicionais para compatibilidade com frontend (com .html)
+    app.get("/dashboard/dashboard-home.html", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "dashboard/dashboard-home.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/dashboard-home.html");
+        res.sendFile(filePath);
+    });
+
     app.get("/dashboard/Painel.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/Painel.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/Painel.html");
+            path.join(buildPath, "dashboard/dashboard-home.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/dashboard-home.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/dashboard/account-profile.html", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "dashboard/account-profile.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/account-profile.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/dashboard/subscription-plans.html", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "dashboard/subscription-plans.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/subscription-plans.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/perfil.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/perfil.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/perfil.html");
+            path.join(buildPath, "dashboard/account-profile.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/account-profile.html");
         res.sendFile(filePath);
     });
 
-    app.get("/dashboard/planos.html", (req, res) => {
+    app.get("/dashboard/monitored-products.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/planos.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/planos.html");
+            path.join(buildPath, "dashboard/monitored-products.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/monitored-products.html");
         res.sendFile(filePath);
     });
 
     app.get("/dashboard/produtos.html", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "dashboard/produtos.html") :
-            path.join(__dirname, "../frontend/pages/dashboard/produtos.html");
+            path.join(buildPath, "dashboard/monitored-products.html") :
+            path.join(__dirname, "../frontend/pages/build/dashboard/monitored-products.html");
         res.sendFile(filePath);
     });
 
-    // Páginas de documentação
+    // PÃ¡ginas de documentaÃ§Ã£o
     app.get("/docs", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "docs/docs.html") :
-            path.join(__dirname, "../frontend/pages/docs/docs.html");
+            path.join(buildPath, "docs/documentation-home.html") :
+            path.join(__dirname, "../frontend/pages/build/docs/documentation-home.html");
         res.sendFile(filePath);
     });
 
@@ -857,8 +885,8 @@ if (!isProduction) {
 
     app.get("/docs/terms", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "docs/terms.html") :
-            path.join(__dirname, "../frontend/pages/docs/terms.html");
+            path.join(buildPath, "docs/terms-of-service.html") :
+            path.join(__dirname, "../frontend/pages/build/docs/terms-of-service.html");
         res.sendFile(filePath);
     });
 
@@ -899,22 +927,22 @@ if (!isProduction) {
 
     app.get("/docs/privacy", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "docs/privacy.html") :
-            path.join(__dirname, "../frontend/pages/docs/privacy.html");
+            path.join(buildPath, "docs/privacy-policy.html") :
+            path.join(__dirname, "../frontend/pages/build/docs/privacy-policy.html");
         res.sendFile(filePath);
     });
 
     app.get("/docs/ral", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "docs/ral.html") :
-            path.join(__dirname, "../frontend/pages/docs/ral.html");
+            path.join(buildPath, "docs/alternative-dispute-resolution.html") :
+            path.join(__dirname, "../frontend/pages/build/docs/alternative-dispute-resolution.html");
         res.sendFile(filePath);
     });
 
     app.get("/docs/livro-reclamacoes", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "docs/livro-reclamacoes.html") :
-            path.join(__dirname, "../frontend/pages/docs/livro-reclamacoes.html");
+            path.join(buildPath, "docs/complaints-book.html") :
+            path.join(__dirname, "../frontend/pages/build/docs/complaints-book.html");
         res.sendFile(filePath);
     });
 
@@ -939,68 +967,68 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
-    // Páginas About
+    // PÃ¡ginas About
     app.get("/about", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/about.html") :
-            path.join(__dirname, "../frontend/pages/About/about.html");
+            path.join(buildPath, "About/about-promoping.html") :
+            path.join(__dirname, "../frontend/pages/build/About/about-promoping.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/alertas", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/alertas.html") :
-            path.join(__dirname, "../frontend/pages/About/alertas.html");
+            path.join(buildPath, "About/smart-alerts.html") :
+            path.join(__dirname, "../frontend/pages/build/About/smart-alerts.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/blog", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/blog.html") :
-            path.join(__dirname, "../frontend/pages/About/blog.html");
+            path.join(buildPath, "About/promoping-blog.html") :
+            path.join(__dirname, "../frontend/pages/build/About/promoping-blog.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/casos-uso", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/casos-uso.html") :
-            path.join(__dirname, "../frontend/pages/About/casos-uso.html");
+            path.join(buildPath, "About/use-cases.html") :
+            path.join(__dirname, "../frontend/pages/build/About/use-cases.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/monitoramento", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/monitoramento.html") :
-            path.join(__dirname, "../frontend/pages/About/monitoramento.html");
+            path.join(buildPath, "About/price-monitoring.html") :
+            path.join(__dirname, "../frontend/pages/build/About/price-monitoring.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/relatorios", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/relatorios.html") :
-            path.join(__dirname, "../frontend/pages/About/relatorios.html");
+            path.join(buildPath, "About/reports-and-analytics.html") :
+            path.join(__dirname, "../frontend/pages/build/About/reports-and-analytics.html");
         res.sendFile(filePath);
     });
 
     app.get("/about/privacy-cookies", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "About/privacy-cookies.html") :
-            path.join(__dirname, "../frontend/pages/About/privacy-cookies.html");
+            path.join(buildPath, "About/cookie-policy.html") :
+            path.join(__dirname, "../frontend/pages/build/About/cookie-policy.html");
         res.sendFile(filePath);
     });
 
     // Rotas adicionais para compatibilidade
     app.get("/business/create/login", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/login.html") :
-            path.join(__dirname, "../frontend/pages/business/create/login.html");
+            path.join(buildPath, "business/create/login-page.html") :
+            path.join(__dirname, "../frontend/pages/build/business/create/login-page.html");
         res.sendFile(filePath);
     });
 
     app.get("/business/create/registar", (req, res) => {
         const filePath = buildExists ?
-            path.join(buildPath, "business/create/registar.html") :
-            path.join(__dirname, "../frontend/pages/business/create/registar.html");
+            path.join(buildPath, "business/create/register-account.html") :
+            path.join(__dirname, "../frontend/pages/build/business/create/register-account.html");
         res.sendFile(filePath);
     });
 
@@ -1022,7 +1050,7 @@ if (!isProduction) {
             res.setHeader('Access-Control-Allow-Credentials', 'true');
         }
 
-        console.error('Erro não tratado:', err);
+        console.error('Erro nÃ£o tratado:', err);
         res.status(err.status || 500).json({
             status: 'error',
             message: err.message || 'Erro interno do servidor',
@@ -1032,15 +1060,15 @@ if (!isProduction) {
         });
     });
 
-    // Captura todas as rotas não encontradas e redireciona para a página 404 personalizada
+    // Captura todas as rotas nÃ£o encontradas e redireciona para a pÃ¡gina 404 personalizada
     // IMPORTANTE: Este middleware deve vir DEPOIS de todas as rotas registradas
     app.use((req, res) => {
         // Se for uma rota de API, retornar JSON em vez de HTML
         if (req.path.startsWith('/api/')) {
-            console.log(`[404] Rota não encontrada: ${req.method} ${req.path}`);
+            console.log(`[404] Rota nÃ£o encontrada: ${req.method} ${req.path}`);
             return res.status(404).json({
                 status: 'error',
-                error: 'Rota não encontrada',
+                error: 'Rota nÃ£o encontrada',
                 path: req.path,
                 method: req.method
             });
@@ -1052,9 +1080,9 @@ if (!isProduction) {
         res.status(404).sendFile(filePath);
     });
 } else {
-    // Em produção, apenas retornar 404 para rotas não-API
+    // Em produÃ§Ã£o, apenas retornar 404 para rotas nÃ£o-API
     app.use((req, res, next) => {
-        // Se não começar com /api/, retornar 404 (NGINX deve servir o frontend)
+        // Se nÃ£o comeÃ§ar com /api/, retornar 404 (NGINX deve servir o frontend)
         if (!req.path.startsWith('/api/') && req.path !== '/openapi.yaml') {
             return res.status(404).json({
                 error: 'Not found'
@@ -1063,7 +1091,7 @@ if (!isProduction) {
         next();
     });
 
-    // Middleware de tratamento de erros em produção
+    // Middleware de tratamento de erros em produÃ§Ã£o
     app.use((err, req, res, next) => {
         // Aplicar CORS mesmo em caso de erro
         const origin = req.headers.origin;
@@ -1073,7 +1101,7 @@ if (!isProduction) {
             res.setHeader('Access-Control-Allow-Credentials', 'true');
         }
 
-        console.error('Erro não tratado:', err);
+        console.error('Erro nÃ£o tratado:', err);
         res.status(err.status || 500).json({
             status: 'error',
             message: err.message || 'Erro interno do servidor'
@@ -1103,21 +1131,21 @@ app.listen(PORT, HOST, async() => {
     try {
         await initializeAllTables();
     } catch (error) {
-        console.error('[INIT] Erro ao inicializar tabelas (sistema continuará):', error.message);
-        // Não bloquear inicialização do servidor se houver erro nas tabelas
+        console.error('[INIT] Erro ao inicializar tabelas (sistema continuarÃ¡):', error.message);
+        // NÃ£o bloquear inicializaÃ§Ã£o do servidor se houver erro nas tabelas
     }
 
-    // Limpeza periódica de qr_tokens (pending/expired e used antigos) a cada 10 min
+    // Limpeza periÃ³dica de qr_tokens (pending/expired e used antigos) a cada 10 min
     setInterval(() => {
         cleanupOldQrTokens().catch((err) => console.error('[QR-TOKENS] Erro na limpeza:', err.message));
     }, 10 * 60 * 1000);
 
     if (process.env.NODE_ENV === 'development') {
-        // Mostrar também o IP local da rede para acesso via dispositivos móveis
+        // Mostrar tambÃ©m o IP local da rede para acesso via dispositivos mÃ³veis
         const os = await
         import ('os');
         const networkInterfaces = os.networkInterfaces();
-        let localIP = '192.168.1.64'; // IP padrão
+        let localIP = '192.168.1.64'; // IP padrÃ£o
 
         // Tentar encontrar o IP da rede local automaticamente
         for (const interfaceName in networkInterfaces) {
@@ -1139,33 +1167,34 @@ app.listen(PORT, HOST, async() => {
 
     const PUBLIC_URL = (process.env.BASE_URL || process.env.FRONTEND_URL || 'https://promoping.pt').replace(/\/$/, '');
 
-    console.log(`  Página normal (local):      http://localhost:${PORT}/`);
-    console.log(`  Página normal (público):    ${PUBLIC_URL}/`);
+    console.log(`  PÃ¡gina normal (local):      http://localhost:${PORT}/`);
+    console.log(`  PÃ¡gina normal (pÃºblico):    ${PUBLIC_URL}/`);
     console.log(`  Suporte (local):            http://localhost:${PORT}/suporte`);
-    console.log(`  Suporte (público):          ${PUBLIC_URL}/suporte`);
+    console.log(`  Suporte (pÃºblico):          ${PUBLIC_URL}/suporte`);
     console.log(`  Corporativo (local):        http://localhost:${PORT}/corporativo`);
-    console.log(`  Corporativo (público):      ${PUBLIC_URL}/corporativo`);
+    console.log(`  Corporativo (pÃºblico):      ${PUBLIC_URL}/corporativo`);
     console.log(`  Login Painel (local):       http://localhost:${PORT}/painel-suporte-corporacao/pages/login.html`);
-    console.log(`  Login Painel (público):     ${PUBLIC_URL}/painel-suporte-corporacao/pages/login.html\n`);
+    console.log(`  Login Painel (pÃºblico):     ${PUBLIC_URL}/painel-suporte-corporacao/pages/login.html\n`);
 
-    // Iniciar verificação automática de períodos de graça
+    // Iniciar verificaÃ§Ã£o automÃ¡tica de perÃ­odos de graÃ§a
     try {
         await GracePeriodManager.startAutomaticCheck();
     } catch (error) {
-        console.error('Erro ao iniciar verificação automática de períodos de graça:', error);
+        console.error('Erro ao iniciar verificaÃ§Ã£o automÃ¡tica de perÃ­odos de graÃ§a:', error);
     }
 
-    // Iniciar verificação automática de contas desativadas
+    // Iniciar verificaÃ§Ã£o automÃ¡tica de contas desativadas
     try {
         await DeactivatedAccountsManager.startAutomaticCheck();
     } catch (error) {
-        console.error('Erro ao iniciar verificação automática de contas desativadas:', error);
+        console.error('Erro ao iniciar verificaÃ§Ã£o automÃ¡tica de contas desativadas:', error);
     }
 
-    // Notificador de aniversário (parabéns por email e Discord no dia do aniversário)
+    // Notificador de aniversÃ¡rio (parabÃ©ns por email e Discord no dia do aniversÃ¡rio)
     try {
         startBirthdayNotifier();
     } catch (error) {
-        console.error('Erro ao iniciar notificador de aniversário:', error);
+        console.error('Erro ao iniciar notificador de aniversÃ¡rio:', error);
     }
 });
+

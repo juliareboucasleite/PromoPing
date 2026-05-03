@@ -1,23 +1,23 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <meta name="description" content="PromoPing — track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
+  <meta name="description" content="PromoPing â€” track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
   <title>PromoPing - Always on</title>
   <!-- Open Graph (Facebook, LinkedIn, etc.) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://promoping.pt/">
   <meta property="og:title" content="PromoPing - Always on">
-  <meta property="og:description" content="PromoPing — track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
+  <meta property="og:description" content="PromoPing â€” track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
   <meta property="og:image" content="https://promoping.pt/assets/images/PromoPing.png">
   <meta property="og:locale" content="en_GB">
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://promoping.pt/">
   <meta name="twitter:title" content="PromoPing - Always on">
-  <meta name="twitter:description" content="PromoPing — track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
+  <meta name="twitter:description" content="PromoPing â€” track prices in online stores, set alerts and save. Email and Discord notifications when the price drops.">
   <meta name="twitter:image" content="https://promoping.pt/assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="assets/styles/style.css">
   <link rel="stylesheet" href="assets/styles/dashboard.css">
   <link rel="stylesheet" href="assets/styles/header.css">
-  <link rel="stylesheet" href="assets/styles/painel.css">
+  <link rel="stylesheet" href="assets/styles/dashboard-shared.css">
   <link rel="stylesheet" href="assets/styles/register.css">
   <link rel="stylesheet" href="assets/styles/login.css">
   <link rel="stylesheet" href="assets/styles/cookie-banner.css">
@@ -45,7 +45,7 @@
   <script src="assets/scripts/partner-carousel.js"></script>
   <script src="assets/scripts/testimonials.js"></script>
   <script>
-    // Verificar parâmetros de erro na URL e abrir modal de login se necessário
+    // Verificar parÃ¢metros de erro na URL e abrir modal de login se necessÃ¡rio
     document.addEventListener("DOMContentLoaded", function () {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
@@ -54,9 +54,9 @@
       const oauthData = urlParams.get('oauth_data');
       const action = urlParams.get('action');
       
-      // Verificar se há dados OAuth para completar registro/login
+      // Verificar se hÃ¡ dados OAuth para completar registro/login
       if (oauthData && action === 'complete') {
-        // Limpar parâmetros da URL
+        // Limpar parÃ¢metros da URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
         // Buscar dados OAuth salvos no backend
@@ -73,15 +73,15 @@
                   window.openRegisterModal();
                 }
                 
-                // Aguardar modal abrir e pré-preencher campos
+                // Aguardar modal abrir e prÃ©-preencher campos
                 setTimeout(() => {
-                  // Pré-preencher campos do formulário de registro
+                  // PrÃ©-preencher campos do formulÃ¡rio de registro
                   const registerEmail = document.getElementById('registerEmail');
                   const registerName = document.getElementById('registerName');
                   
                   if (registerEmail && oauthInfo.email) {
                     registerEmail.value = oauthInfo.email;
-                    registerEmail.readOnly = true; // Email do OAuth não pode ser alterado
+                    registerEmail.readOnly = true; // Email do OAuth nÃ£o pode ser alterado
                     registerEmail.style.backgroundColor = '#f5f5f5';
                   }
                   
@@ -103,21 +103,21 @@
                     registerErrorMessage.style.borderRadius = '4px';
                     registerErrorMessage.style.marginBottom = '10px';
                     
-                    // Salvar dados OAuth em variável global para uso no registro
+                    // Salvar dados OAuth em variÃ¡vel global para uso no registro
                     window.oauthTempData = oauthInfo;
                     
-                    // Mostrar notificação
+                    // Mostrar notificaÃ§Ã£o
                     if (typeof window.showInfo === 'function') {
                       window.showInfo('Dados OAuth', 'Complete seu cadastro com os dados do ' + providerName);
                     }
                   } else {
-                    // Salvar dados OAuth mesmo se não houver elemento de erro
+                    // Salvar dados OAuth mesmo se nÃ£o houver elemento de erro
                     window.oauthTempData = oauthInfo;
                   }
                 }, 300);
               }, 500);
             } else {
-              // Se não houver dados, apenas mostrar erro se existir
+              // Se nÃ£o houver dados, apenas mostrar erro se existir
               if (error) {
                 setTimeout(() => {
                   if (typeof window.openLoginModal === 'function') {
@@ -138,7 +138,7 @@
             }
           });
       } else if (error) {
-        // Limpar parâmetros da URL
+        // Limpar parÃ¢metros da URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
         // Aguardar um pouco para garantir que os scripts estejam carregados
@@ -155,16 +155,16 @@
             const errorElement = document.getElementById('loginErrorMessage');
             let errorMessage = '';
             
-            // Mapear códigos de erro para mensagens amigáveis
+            // Mapear cÃ³digos de erro para mensagens amigÃ¡veis
             const errorMessages = {
-              'auth_failed': 'Falha na autenticação. Por favor, tente novamente.',
-              'user_undefined': 'Erro ao obter informações do usuário. Tente novamente.',
-              'user_incomplete': 'Dados do usuário incompletos. Verifique se seu email está visível no Google.',
+              'auth_failed': 'Falha na autenticaÃ§Ã£o. Por favor, tente novamente.',
+              'user_undefined': 'Erro ao obter informaÃ§Ãµes do usuÃ¡rio. Tente novamente.',
+              'user_incomplete': 'Dados do usuÃ¡rio incompletos. Verifique se seu email estÃ¡ visÃ­vel no Google.',
               'token_error': 'Erro ao gerar token de acesso. Tente novamente.',
-              'discord_auth_failed': 'Falha na autenticação com Discord. Tente novamente.',
-              'discord_email_required': 'É necessário ter um email verificado no Discord para fazer login.',
+              'discord_auth_failed': 'Falha na autenticaÃ§Ã£o com Discord. Tente novamente.',
+              'discord_email_required': 'Ã‰ necessÃ¡rio ter um email verificado no Discord para fazer login.',
               'discord_redirect_invalid': 'Erro no redirecionamento do Discord. Tente novamente.',
-              'discord_user_not_found': 'Usuário Discord não encontrado. Tente novamente.'
+              'discord_user_not_found': 'UsuÃ¡rio Discord nÃ£o encontrado. Tente novamente.'
             };
             
             // Obter mensagem de erro
@@ -175,7 +175,7 @@
             } else if (description) {
               errorMessage = decodeURIComponent(description);
             } else {
-              errorMessage = 'Ocorreu um erro durante a autenticação. Tente novamente.';
+              errorMessage = 'Ocorreu um erro durante a autenticaÃ§Ã£o. Tente novamente.';
             }
             
             // Exibir mensagem de erro
@@ -184,9 +184,9 @@
               errorElement.style.display = 'block';
             }
             
-            // Também usar sistema de notificações se disponível
+            // TambÃ©m usar sistema de notificaÃ§Ãµes se disponÃ­vel
             if (typeof window.showError === 'function') {
-              window.showError('Erro de Autenticação', errorMessage);
+              window.showError('Erro de AutenticaÃ§Ã£o', errorMessage);
             }
           }, 300);
         }, 500);
@@ -194,14 +194,14 @@
       
       const h = document.querySelector('.pp-hero-left h1');
       if (h) {
-        // Remove qualquer classe de animação e deixa o texto visível
+        // Remove qualquer classe de animaÃ§Ã£o e deixa o texto visÃ­vel
         h.classList.remove('blur-text');
         h.style.opacity = '1';
         h.style.filter = 'none';
         h.style.transform = 'none';
       }
 
-      // Scroll customizado para centralizar a seção "sobre" verticalmente ao clicar em "Saber mais"
+      // Scroll customizado para centralizar a seÃ§Ã£o "sobre" verticalmente ao clicar em "Saber mais"
       const saberMaisBtn = document.querySelector('a[href="#sobre"]');
       if (saberMaisBtn) {
         saberMaisBtn.addEventListener('click', function (e) {
@@ -222,14 +222,14 @@
       }
     });
 
-    // Abre/fecha dropdown do menu de navegação
+    // Abre/fecha dropdown do menu de navegaÃ§Ã£o
     function openNavigation(btn) {
       const l = btn.nextElementSibling, isOpen = l.style.display === 'block';
       document.querySelectorAll('.pp-header-nav-links').forEach(x => x.style.display = 'none');
       l.style.display = isOpen ? 'none' : 'block';
     }
 
-    // Alterna o menu de navegação mobile
+    // Alterna o menu de navegaÃ§Ã£o mobile
     function toggleNavigation() {
       document.documentElement.classList.toggle('opened-nav');
     }
@@ -240,25 +240,25 @@
         document.querySelectorAll('.pp-header-nav-links').forEach(x => x.style.display = 'none');
     });
 
-    // Armazena os textos originais em português
+    // Armazena os textos originais em portuguÃªs
     let originalTexts = {};
 
-    // Função auxiliar para normalizar texto
+    // FunÃ§Ã£o auxiliar para normalizar texto
     function normalizeText(text) {
       if (!text) return '';
       return text.replace(/\s+/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ').trim();
     }
 
-    // Salva os textos originais quando a página carrega
+    // Salva os textos originais quando a pÃ¡gina carrega
     function saveOriginalTexts() {
-      // Não sobrescreve se já salvou: em PT apenas atualiza header; em EN nunca sobrescrever (preserva PT para restaurar)
+      // NÃ£o sobrescreve se jÃ¡ salvou: em PT apenas atualiza header; em EN nunca sobrescrever (preserva PT para restaurar)
       const langText = document.getElementById('lang-text');
       const isEnglish = langText && langText.textContent.trim() === 'EN';
       
       if (Object.keys(originalTexts).length > 0) {
-        // Já temos textos guardados: em inglês NUNCA sobrescrever (senão perdemos o PT e o "voltar a PT" deixa de funcionar)
+        // JÃ¡ temos textos guardados: em inglÃªs NUNCA sobrescrever (senÃ£o perdemos o PT e o "voltar a PT" deixa de funcionar)
         if (isEnglish) return;
-        // Em português: apenas atualiza elementos do header que podem ter sido carregados depois
+        // Em portuguÃªs: apenas atualiza elementos do header que podem ter sido carregados depois
         const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
         const headerEntrar = document.querySelector('.pp-header-cta-button span');
         if (headerInscreve && !originalTexts['header-inscreve']) {
@@ -342,20 +342,20 @@
         elements.forEach((el, index) => {
           const key = `${selector}:${index}`;
           if (el.textContent && el.textContent.trim()) {
-            // Normaliza o texto removendo quebras de linha extras e espaços múltiplos
+            // Normaliza o texto removendo quebras de linha extras e espaÃ§os mÃºltiplos
             const normalizedText = normalizeText(el.textContent);
             originalTexts[key] = {
               element: el,
               text: normalizedText,
-              originalText: el.textContent, // Mantém o texto original também
-              html: el.innerHTML, // Salva HTML também para elementos com HTML interno
+              originalText: el.textContent, // MantÃ©m o texto original tambÃ©m
+              html: el.innerHTML, // Salva HTML tambÃ©m para elementos com HTML interno
               placeholder: el.placeholder || null
             };
           }
         });
       });
 
-      // Salva textos específicos do header que são carregados dinamicamente
+      // Salva textos especÃ­ficos do header que sÃ£o carregados dinamicamente
       setTimeout(() => {
         const headerInscreve = document.querySelector('.pp-header-cta-button-secondary span');
         const headerEntrar = document.querySelector('.pp-header-cta-button span');
@@ -374,22 +374,22 @@
       }, 500);
     }
 
-    // Tradução para inglês britânico
+    // TraduÃ§Ã£o para inglÃªs britÃ¢nico
     const translationsGB = {
       'Sempre ligado': 'Always on',
-      'O PromoPing monitoriza preços em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing tracks prices in Portuguese online stores and alerts you by email or Discord when they drop.',
+      'O PromoPing monitoriza preÃ§os em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing tracks prices in Portuguese online stores and alerts you by email or Discord when they drop.',
       'Saber mais': 'Find out more',
       'Conecte-se com o bot no Discord ou receba por email': 'Connect with our Discord bot or receive by email',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático — sem complicações.': 'Add our bot to your Discord server or use your email to receive instant alerts when prices drop. Setup is simple and the process is fully automatic — no hassle.',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático sem complicações.': 'Add our bot to your Discord server or use your email to receive instant alerts when prices drop. Setup is simple and the process is fully automatic with no hassle.',
-      'Cole o link dos produtos que quer acompanhar na sua área de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. Nós monitorizamos os preços por si e avisamos assim que houver uma descida.': 'Paste the links of the products you want to track in your user area and choose how you prefer to be notified: on Discord in real time, or by email. We monitor prices for you and alert you as soon as there is a drop.',
-      'Milhares de utilizadores já poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoção nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Thousands of users already save on their purchases with PromoPing. Join them and never miss a promotion at your favourite stores again. Discover the best shopping opportunities.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico â€” sem complicaÃ§Ãµes.': 'Add our bot to your Discord server or use your email to receive instant alerts when prices drop. Setup is simple and the process is fully automatic â€” no hassle.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico sem complicaÃ§Ãµes.': 'Add our bot to your Discord server or use your email to receive instant alerts when prices drop. Setup is simple and the process is fully automatic with no hassle.',
+      'Cole o link dos produtos que quer acompanhar na sua Ã¡rea de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. NÃ³s monitorizamos os preÃ§os por si e avisamos assim que houver uma descida.': 'Paste the links of the products you want to track in your user area and choose how you prefer to be notified: on Discord in real time, or by email. We monitor prices for you and alert you as soon as there is a drop.',
+      'Milhares de utilizadores jÃ¡ poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoÃ§Ã£o nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Thousands of users already save on their purchases with PromoPing. Join them and never miss a promotion at your favourite stores again. Discover the best shopping opportunities.',
       'Adicionar bot ao Discord': 'Add bot to Discord',
       'Entrar na Comunidade': 'Join Community',
-      'Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Thousands of people already save every month with PromoPing. And it goes beyond notifications—it\'s about being part of an intelligent community that shares the best shopping opportunities. Discover, save and enjoy.',
-      'PromoPing. O preço certo, na hora certa.': 'PromoPing. The right price, at the right time.',
+      'Milhares de pessoas jÃ¡ economizam todos os meses com o PromoPing. E isso vai alÃ©m de notificaÃ§Ãµes Ã© sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Thousands of people already save every month with PromoPing. And it goes beyond notificationsâ€”it\'s about being part of an intelligent community that shares the best shopping opportunities. Discover, save and enjoy.',
+      'PromoPing. O preÃ§o certo, na hora certa.': 'PromoPing. The right price, at the right time.',
       'Algumas marcas': 'Some brands',
-      ' que estão': ' that are',
+      ' que estÃ£o': ' that are',
       ' a monitorizar no PromoPing.': ' monitoring on PromoPing.',
       'Como funciona': 'How it works',
       'Em apenas 3 passos simples': 'In just 3 simple steps',
@@ -397,351 +397,351 @@
       'Cole o link do produto que pretende monitorizar': 'Paste the link of the product you want to monitor',
       'Configure alertas': 'Configure alerts',
       'Defina quando quer ser notificado': 'Set when you want to be notified',
-      'Receba notificações': 'Receive notifications',
-      'Seja alertado quando os preços baixarem': 'Be alerted when prices drop',
+      'Receba notificaÃ§Ãµes': 'Receive notifications',
+      'Seja alertado quando os preÃ§os baixarem': 'Be alerted when prices drop',
       'Escolha o seu plano': 'Choose your plan',
-      'Escolha o plano que melhor se adapta às suas necessidades': 'Choose the plan that best fits your needs',
+      'Escolha o plano que melhor se adapta Ã s suas necessidades': 'Choose the plan that best fits your needs',
       'Mais Popular': 'Most Popular',
-      'Até 5 produtos': 'Up to 5 products',
-      'Notificações por Email': 'Email notifications',
-      'Alertas básicos': 'Basic alerts',
-      'Verificação diária': 'Daily verification',
-      'Até 25 produtos': 'Up to 25 products',
-      'Até 50 produtos': 'Up to 50 products',
+      'AtÃ© 5 produtos': 'Up to 5 products',
+      'NotificaÃ§Ãµes por Email': 'Email notifications',
+      'Alertas bÃ¡sicos': 'Basic alerts',
+      'VerificaÃ§Ã£o diÃ¡ria': 'Daily verification',
+      'AtÃ© 25 produtos': 'Up to 25 products',
+      'AtÃ© 50 produtos': 'Up to 50 products',
       'Email + Discord': 'Email + Discord',
       'Alertas personalizados': 'Custom alerts',
-      'Verificação de 4h/4h': '4-hour verification',
-      'Verificação a cada 2h': 'Verification every 2h',
-      'Verificação a cada 1h': 'Verification every 1h',
-      'Histórico de preços': 'Price history',
-      'Histórico de 50 dias': '50-day history',
-      'Histórico de 100 dias': '100-day history',
-      'Até 100 produtos': 'Up to 100 products',
+      'VerificaÃ§Ã£o de 4h/4h': '4-hour verification',
+      'VerificaÃ§Ã£o a cada 2h': 'Verification every 2h',
+      'VerificaÃ§Ã£o a cada 1h': 'Verification every 1h',
+      'HistÃ³rico de preÃ§os': 'Price history',
+      'HistÃ³rico de 50 dias': '50-day history',
+      'HistÃ³rico de 100 dias': '100-day history',
+      'AtÃ© 100 produtos': 'Up to 100 products',
       'Email, SMS + Discord': 'Email, SMS + Discord',
-      'Verificação de 2h/2h': '2-hour verification',
-      'Histórico completo': 'Complete history',
-      'Relatórios avançados': 'Advanced reports',
+      'VerificaÃ§Ã£o de 2h/2h': '2-hour verification',
+      'HistÃ³rico completo': 'Complete history',
+      'RelatÃ³rios avanÃ§ados': 'Advanced reports',
       'Produtos ilimitados': 'Unlimited products',
-      'Todas as notificações': 'All notifications',
+      'Todas as notificaÃ§Ãµes': 'All notifications',
       'Email, Discord, Telegram, WhatsApp': 'Email, Discord, Telegram, WhatsApp',
-      'Verificação em tempo real': 'Real-time verification',
-      'API de integração': 'Integration API',
-      'Suporte prioritário': 'Priority support',
-      'Relatórios personalizados': 'Custom reports',
-      '/mês': '/month',
+      'VerificaÃ§Ã£o em tempo real': 'Real-time verification',
+      'API de integraÃ§Ã£o': 'Integration API',
+      'Suporte prioritÃ¡rio': 'Priority support',
+      'RelatÃ³rios personalizados': 'Custom reports',
+      '/mÃªs': '/month',
       'Pronto para poupar dinheiro?': 'Ready to save money?',
-      'Junte-se a milhares de portugueses que já poupam com o PromoPing': 'Join thousands of Portuguese people who already save with PromoPing',
-      'Começar agora grátis': 'Start now for free',
+      'Junte-se a milhares de portugueses que jÃ¡ poupam com o PromoPing': 'Join thousands of Portuguese people who already save with PromoPing',
+      'ComeÃ§ar agora grÃ¡tis': 'Start now for free',
       'Inscreve-te': 'Sign up',
       'Entrar': 'Log in',
       'Bem-vindo(a) ao PromoPing': 'Welcome to PromoPing',
       'E-mail': 'Email',
       'Palavra-passe': 'Password',
       'Esqueceste a palavra-passe?': 'Forgotten your password?',
-      'Iniciar sessão': 'Log in',
+      'Iniciar sessÃ£o': 'Log in',
       'OU': 'OR',
       'Continuar com Google': 'Continue with Google',
       'Continuar com Discord': 'Continue with Discord',
-      'Usa o código QR': 'Use QR code',
-      'Ainda não estás no PromoPing? Inscreve-te': 'Not on PromoPing yet? Sign up',
-      'És uma empresa? Começa aqui!': 'Are you a business? Start here!',
-      'Ao continuar, estás a concordar com os': 'By continuing, you agree to PromoPing\'s',
-      'Termos de Serviço': 'Terms of Service',
+      'Usa o cÃ³digo QR': 'Use QR code',
+      'Ainda nÃ£o estÃ¡s no PromoPing? Inscreve-te': 'Not on PromoPing yet? Sign up',
+      'Ã‰s uma empresa? ComeÃ§a aqui!': 'Are you a business? Start here!',
+      'Ao continuar, estÃ¡s a concordar com os': 'By continuing, you agree to PromoPing\'s',
+      'Termos de ServiÃ§o': 'Terms of Service',
       ' do PromoPing e a confirmar que leste a nossa': ' and confirm that you have read our',
-      'Política de Privacidade': 'Privacy Policy',
+      'PolÃ­tica de Privacidade': 'Privacy Policy',
       '.': '.',
-      'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'By continuing, you agree to PromoPing\'s Terms of Service and confirm that you have read our Privacy Policy.',
+      'Ao continuar, estÃ¡s a concordar com os Termos de ServiÃ§o do PromoPing e a confirmar que leste a nossa PolÃ­tica de Privacidade.': 'By continuing, you agree to PromoPing\'s Terms of Service and confirm that you have read our Privacy Policy.',
       'Encontra novas ideias para experimentares': 'Find new ideas to try',
       'Cria uma palavra-passe': 'Create a password',
       'Data de nascimento': 'Date of birth',
       'Continuar': 'Continue',
-      'Já és membro?': 'Already a member?',
-      'Criar uma conta de empresa grátis': 'Create a free business account',
+      'JÃ¡ Ã©s membro?': 'Already a member?',
+      'Criar uma conta de empresa grÃ¡tis': 'Create a free business account',
       'Verifica o teu email': 'Verify your email',
-      'Enviamos um código de verificação para': 'We sent a verification code to',
-      'Código de verificação': 'Verification code',
-      'Insere o código': 'Enter the code',
+      'Enviamos um cÃ³digo de verificaÃ§Ã£o para': 'We sent a verification code to',
+      'CÃ³digo de verificaÃ§Ã£o': 'Verification code',
+      'Insere o cÃ³digo': 'Enter the code',
       'Verificar': 'Verify',
-      'Não recebeste o código?': 'Didn\'t receive the code?',
-      'Reenviar código': 'Resend code',
-      'Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa': 'We use cookies to show ads and personalised experiences and to analyse traffic on your site. For more information, see our',
-      'política de cookies': 'cookie policy',
+      'NÃ£o recebeste o cÃ³digo?': 'Didn\'t receive the code?',
+      'Reenviar cÃ³digo': 'Resend code',
+      'Utilizamos cookies para apresentar anÃºncios e experiÃªncias personalizadas e para analisar o trÃ¡fego no teu site. Para mais informaÃ§Ãµes, consulta a nossa': 'We use cookies to show ads and personalised experiences and to analyse traffic on your site. For more information, see our',
+      'polÃ­tica de cookies': 'cookie policy',
       '.': '.',
       'Aceitar tudo': 'Accept all',
       'Rejeitar tudo': 'Reject all',
       'Quero escolher': 'I want to choose',
       'Privacidade e dados': 'Privacy and data',
-      'Preferências de cookies': 'Cookie preferences',
+      'PreferÃªncias de cookies': 'Cookie preferences',
       'A tua privacidade': 'Your privacy',
-      'Podes alterar as preferências de cookies quando quiseres.': 'You can change your cookie preferences at any time.',
+      'Podes alterar as preferÃªncias de cookies quando quiseres.': 'You can change your cookie preferences at any time.',
       'Essencial': 'Essential',
-      'Necessários para o funcionamento do site': 'Necessary for the website to function',
+      'NecessÃ¡rios para o funcionamento do site': 'Necessary for the website to function',
       'Sempre ativo': 'Always active',
-      'Estes cookies são necessários para que o PromoPing funcione corretamente. Permitem manter a tua sessão iniciada e guardar as tuas preferências de monitorização de preços.': 'These cookies are necessary for PromoPing to function correctly. They allow you to stay logged in and save your price monitoring preferences.',
-      'Análises': 'Analytics',
-      'Ajudam a melhorar o serviço': 'Help improve the service',
-      'Estes cookies recolhem informações sobre como utilizas o PromoPing para melhorarmos o serviço de monitorização de preços e a experiência de utilização.': 'These cookies collect information about how you use PromoPing to improve the price monitoring service and user experience.',
+      'Estes cookies sÃ£o necessÃ¡rios para que o PromoPing funcione corretamente. Permitem manter a tua sessÃ£o iniciada e guardar as tuas preferÃªncias de monitorizaÃ§Ã£o de preÃ§os.': 'These cookies are necessary for PromoPing to function correctly. They allow you to stay logged in and save your price monitoring preferences.',
+      'AnÃ¡lises': 'Analytics',
+      'Ajudam a melhorar o serviÃ§o': 'Help improve the service',
+      'Estes cookies recolhem informaÃ§Ãµes sobre como utilizas o PromoPing para melhorarmos o serviÃ§o de monitorizaÃ§Ã£o de preÃ§os e a experiÃªncia de utilizaÃ§Ã£o.': 'These cookies collect information about how you use PromoPing to improve the price monitoring service and user experience.',
       'Guardar': 'Save',
-      'Deteta com o telemóvel': 'Scan with your mobile',
-      'Inicia sessão na app do PromoPing no teu telemóvel': 'Log in to the PromoPing app on your mobile',
-      'Deteta o código QR com a câmara do telemóvel': 'Scan the QR code with your mobile camera',
-      'Confirma o início de sessão na app do PromoPing': 'Confirm login in the PromoPing app',
-      'O código QR estará disponível em breve': 'The QR code will be available soon',
+      'Deteta com o telemÃ³vel': 'Scan with your mobile',
+      'Inicia sessÃ£o na app do PromoPing no teu telemÃ³vel': 'Log in to the PromoPing app on your mobile',
+      'Deteta o cÃ³digo QR com a cÃ¢mara do telemÃ³vel': 'Scan the QR code with your mobile camera',
+      'Confirma o inÃ­cio de sessÃ£o na app do PromoPing': 'Confirm login in the PromoPing app',
+      'O cÃ³digo QR estarÃ¡ disponÃ­vel em breve': 'The QR code will be available soon',
       'Depoimentos': 'Testimonials',
-      'Confiança de quem poupa todos os dias': 'Trust from those who save every day',
-      'Milhares de portugueses já economizam com o PromoPing': 'Thousands of Portuguese people already save with PromoPing',
+      'ConfianÃ§a de quem poupa todos os dias': 'Trust from those who save every day',
+      'Milhares de portugueses jÃ¡ economizam com o PromoPing': 'Thousands of Portuguese people already save with PromoPing',
       'A carregar depoimentos...': 'Loading testimonials...',
-      'Ainda não há depoimentos disponíveis.': 'No testimonials available yet.',
+      'Ainda nÃ£o hÃ¡ depoimentos disponÃ­veis.': 'No testimonials available yet.',
       'Erro ao carregar depoimentos.': 'Error loading testimonials.',
-      'Anónimo': 'Anonymous',
+      'AnÃ³nimo': 'Anonymous',
       'Utilizador': 'User',
       'Utilizador do Bot': 'Bot User'
     };
 
-    // Tradução para espanhol
+    // TraduÃ§Ã£o para espanhol
     const translationsES = {
       'Sempre ligado': 'Siempre conectado',
-      'O PromoPing monitoriza preços em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing monitoriza precios en tiendas online portuguesas y te avisa por email o Discord cuando bajan.',
-      'Saber mais': 'Saber más',
-      'Conecte-se com o bot no Discord ou receba por email': 'Conéctate con el bot de Discord o recibe por email',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático — sem complicações.': 'Añade nuestro bot a tu servidor de Discord o usa tu email para recibir alertas al instante cuando bajen los precios. La configuración es sencilla y el proceso es totalmente automático.',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático sem complicações.': 'Añade nuestro bot a tu servidor de Discord o usa tu email para recibir alertas al instante cuando bajen los precios. La configuración es sencilla y el proceso es totalmente automático.',
-      'Cole o link dos produtos que quer acompanhar na sua área de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. Nós monitorizamos os preços por si e avisamos assim que houver uma descida.': 'Pega el enlace de los productos que quieras seguir en tu área de usuario y elige cómo prefieres que te avisemos: por Discord en tiempo real o por email. Nosotros monitorizamos los precios y te avisamos cuando bajen.',
-      'Milhares de utilizadores já poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoção nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Miles de usuarios ya ahorran en sus compras con PromoPing. Únete a ellos y no vuelvas a perder una promoción en tus tiendas favoritas.',
-      'Adicionar bot ao Discord': 'Añadir bot a Discord',
+      'O PromoPing monitoriza preÃ§os em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing monitoriza precios en tiendas online portuguesas y te avisa por email o Discord cuando bajan.',
+      'Saber mais': 'Saber mÃ¡s',
+      'Conecte-se com o bot no Discord ou receba por email': 'ConÃ©ctate con el bot de Discord o recibe por email',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico â€” sem complicaÃ§Ãµes.': 'AÃ±ade nuestro bot a tu servidor de Discord o usa tu email para recibir alertas al instante cuando bajen los precios. La configuraciÃ³n es sencilla y el proceso es totalmente automÃ¡tico.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico sem complicaÃ§Ãµes.': 'AÃ±ade nuestro bot a tu servidor de Discord o usa tu email para recibir alertas al instante cuando bajen los precios. La configuraciÃ³n es sencilla y el proceso es totalmente automÃ¡tico.',
+      'Cole o link dos produtos que quer acompanhar na sua Ã¡rea de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. NÃ³s monitorizamos os preÃ§os por si e avisamos assim que houver uma descida.': 'Pega el enlace de los productos que quieras seguir en tu Ã¡rea de usuario y elige cÃ³mo prefieres que te avisemos: por Discord en tiempo real o por email. Nosotros monitorizamos los precios y te avisamos cuando bajen.',
+      'Milhares de utilizadores jÃ¡ poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoÃ§Ã£o nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Miles de usuarios ya ahorran en sus compras con PromoPing. Ãšnete a ellos y no vuelvas a perder una promociÃ³n en tus tiendas favoritas.',
+      'Adicionar bot ao Discord': 'AÃ±adir bot a Discord',
       'Entrar na Comunidade': 'Unirse a la comunidad',
-      'Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Miles de personas ya ahorran cada mes con PromoPing. Va más allá de las notificaciones: es formar parte de una comunidad que comparte las mejores ofertas. Descubre, ahorra y disfruta.',
-      'PromoPing. O preço certo, na hora certa.': 'PromoPing. El precio adecuado en el momento adecuado.',
+      'Milhares de pessoas jÃ¡ economizam todos os meses com o PromoPing. E isso vai alÃ©m de notificaÃ§Ãµes Ã© sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Miles de personas ya ahorran cada mes con PromoPing. Va mÃ¡s allÃ¡ de las notificaciones: es formar parte de una comunidad que comparte las mejores ofertas. Descubre, ahorra y disfruta.',
+      'PromoPing. O preÃ§o certo, na hora certa.': 'PromoPing. El precio adecuado en el momento adecuado.',
       'Algumas marcas': 'Algunas marcas',
-      ' que estão': ' que están',
+      ' que estÃ£o': ' que estÃ¡n',
       ' a monitorizar no PromoPing.': ' monitorizando en PromoPing.',
-      'Como funciona': 'Cómo funciona',
+      'Como funciona': 'CÃ³mo funciona',
       'Em apenas 3 passos simples': 'En solo 3 pasos',
-      'Adicione produtos': 'Añade productos',
+      'Adicione produtos': 'AÃ±ade productos',
       'Cole o link do produto que pretende monitorizar': 'Pega el enlace del producto que quieras monitorizar',
       'Configure alertas': 'Configura alertas',
-      'Defina quando quer ser notificado': 'Define cuándo quieres que te avisemos',
-      'Receba notificações': 'Recibe notificaciones',
-      'Seja alertado quando os preços baixarem': 'Recibe alertas cuando bajen los precios',
+      'Defina quando quer ser notificado': 'Define cuÃ¡ndo quieres que te avisemos',
+      'Receba notificaÃ§Ãµes': 'Recibe notificaciones',
+      'Seja alertado quando os preÃ§os baixarem': 'Recibe alertas cuando bajen los precios',
       'Escolha o seu plano': 'Elige tu plan',
-      'Escolha o plano que melhor se adapta às suas necessidades': 'Elige el plan que mejor se adapte a tus necesidades',
-      'Mais Popular': 'Más popular',
-      'Até 5 produtos': 'Hasta 5 productos',
-      'Notificações por Email': 'Notificaciones por email',
-      'Alertas básicos': 'Alertas básicos',
-      'Verificação diária': 'Verificación diaria',
-      'Até 25 produtos': 'Hasta 25 productos',
-      'Até 50 produtos': 'Hasta 50 productos',
+      'Escolha o plano que melhor se adapta Ã s suas necessidades': 'Elige el plan que mejor se adapte a tus necesidades',
+      'Mais Popular': 'MÃ¡s popular',
+      'AtÃ© 5 produtos': 'Hasta 5 productos',
+      'NotificaÃ§Ãµes por Email': 'Notificaciones por email',
+      'Alertas bÃ¡sicos': 'Alertas bÃ¡sicos',
+      'VerificaÃ§Ã£o diÃ¡ria': 'VerificaciÃ³n diaria',
+      'AtÃ© 25 produtos': 'Hasta 25 productos',
+      'AtÃ© 50 produtos': 'Hasta 50 productos',
       'Email + Discord': 'Email + Discord',
       'Alertas personalizados': 'Alertas personalizados',
-      'Verificação de 4h/4h': 'Verificación cada 4 h',
-      'Verificação a cada 2h': 'Verificación cada 2 h',
-      'Verificação a cada 1h': 'Verificación cada 1 h',
-      'Histórico de preços': 'Historial de precios',
-      'Histórico de 50 dias': 'Historial de 50 días',
-      'Histórico de 100 dias': 'Historial de 100 días',
-      'Até 100 produtos': 'Hasta 100 productos',
+      'VerificaÃ§Ã£o de 4h/4h': 'VerificaciÃ³n cada 4 h',
+      'VerificaÃ§Ã£o a cada 2h': 'VerificaciÃ³n cada 2 h',
+      'VerificaÃ§Ã£o a cada 1h': 'VerificaciÃ³n cada 1 h',
+      'HistÃ³rico de preÃ§os': 'Historial de precios',
+      'HistÃ³rico de 50 dias': 'Historial de 50 dÃ­as',
+      'HistÃ³rico de 100 dias': 'Historial de 100 dÃ­as',
+      'AtÃ© 100 produtos': 'Hasta 100 productos',
       'Email, SMS + Discord': 'Email, SMS + Discord',
-      'Verificação de 2h/2h': 'Verificación cada 2 h',
-      'Histórico completo': 'Historial completo',
-      'Relatórios avançados': 'Informes avanzados',
+      'VerificaÃ§Ã£o de 2h/2h': 'VerificaciÃ³n cada 2 h',
+      'HistÃ³rico completo': 'Historial completo',
+      'RelatÃ³rios avanÃ§ados': 'Informes avanzados',
       'Produtos ilimitados': 'Productos ilimitados',
-      'Todas as notificações': 'Todas las notificaciones',
+      'Todas as notificaÃ§Ãµes': 'Todas las notificaciones',
       'Email, Discord, Telegram, WhatsApp': 'Email, Discord, Telegram, WhatsApp',
-      'Verificação em tempo real': 'Verificación en tiempo real',
-      'API de integração': 'API de integración',
-      'Suporte prioritário': 'Soporte prioritario',
-      'Relatórios personalizados': 'Informes personalizados',
-      '/mês': '/mes',
-      'Pronto para poupar dinheiro?': '¿Listo para ahorrar?',
-      'Junte-se a milhares de portugueses que já poupam com o PromoPing': 'Únete a miles de usuarios que ya ahorran con PromoPing',
-      'Começar agora grátis': 'Empezar gratis',
-      'Inscreve-te': 'Regístrate',
+      'VerificaÃ§Ã£o em tempo real': 'VerificaciÃ³n en tiempo real',
+      'API de integraÃ§Ã£o': 'API de integraciÃ³n',
+      'Suporte prioritÃ¡rio': 'Soporte prioritario',
+      'RelatÃ³rios personalizados': 'Informes personalizados',
+      '/mÃªs': '/mes',
+      'Pronto para poupar dinheiro?': 'Â¿Listo para ahorrar?',
+      'Junte-se a milhares de portugueses que jÃ¡ poupam com o PromoPing': 'Ãšnete a miles de usuarios que ya ahorran con PromoPing',
+      'ComeÃ§ar agora grÃ¡tis': 'Empezar gratis',
+      'Inscreve-te': 'RegÃ­strate',
       'Entrar': 'Entrar',
       'Bem-vindo(a) ao PromoPing': 'Bienvenido/a a PromoPing',
       'E-mail': 'Email',
-      'Palavra-passe': 'Contraseña',
-      'Esqueceste a palavra-passe?': '¿Olvidaste la contraseña?',
-      'Iniciar sessão': 'Iniciar sesión',
+      'Palavra-passe': 'ContraseÃ±a',
+      'Esqueceste a palavra-passe?': 'Â¿Olvidaste la contraseÃ±a?',
+      'Iniciar sessÃ£o': 'Iniciar sesiÃ³n',
       'OU': 'O',
       'Continuar com Google': 'Continuar con Google',
       'Continuar com Discord': 'Continuar con Discord',
-      'Usa o código QR': 'Usar código QR',
-      'Ainda não estás no PromoPing? Inscreve-te': '¿Aún no estás en PromoPing? Regístrate',
-      'És uma empresa? Começa aqui!': '¿Eres empresa? ¡Empieza aquí!',
-      'Ao continuar, estás a concordar com os': 'Al continuar, aceptas los',
-      'Termos de Serviço': 'Términos de Servicio',
-      ' do PromoPing e a confirmar que leste a nossa': ' de PromoPing y confirmas que has leído nuestra',
-      'Política de Privacidade': 'Política de Privacidad',
+      'Usa o cÃ³digo QR': 'Usar cÃ³digo QR',
+      'Ainda nÃ£o estÃ¡s no PromoPing? Inscreve-te': 'Â¿AÃºn no estÃ¡s en PromoPing? RegÃ­strate',
+      'Ã‰s uma empresa? ComeÃ§a aqui!': 'Â¿Eres empresa? Â¡Empieza aquÃ­!',
+      'Ao continuar, estÃ¡s a concordar com os': 'Al continuar, aceptas los',
+      'Termos de ServiÃ§o': 'TÃ©rminos de Servicio',
+      ' do PromoPing e a confirmar que leste a nossa': ' de PromoPing y confirmas que has leÃ­do nuestra',
+      'PolÃ­tica de Privacidade': 'PolÃ­tica de Privacidad',
       '.': '.',
-      'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'Al continuar, aceptas los Términos de Servicio y la Política de Privacidad de PromoPing.',
+      'Ao continuar, estÃ¡s a concordar com os Termos de ServiÃ§o do PromoPing e a confirmar que leste a nossa PolÃ­tica de Privacidade.': 'Al continuar, aceptas los TÃ©rminos de Servicio y la PolÃ­tica de Privacidad de PromoPing.',
       'Encontra novas ideias para experimentares': 'Encuentra nuevas ideas para probar',
-      'Cria uma palavra-passe': 'Crea una contraseña',
+      'Cria uma palavra-passe': 'Crea una contraseÃ±a',
       'Data de nascimento': 'Fecha de nacimiento',
       'Continuar': 'Continuar',
-      'Já és membro?': '¿Ya eres miembro?',
-      'Criar uma conta de empresa grátis': 'Crear cuenta de empresa gratis',
+      'JÃ¡ Ã©s membro?': 'Â¿Ya eres miembro?',
+      'Criar uma conta de empresa grÃ¡tis': 'Crear cuenta de empresa gratis',
       'Verifica o teu email': 'Verifica tu email',
-      'Enviamos um código de verificação para': 'Enviamos un código de verificación a',
-      'Código de verificação': 'Código de verificación',
-      'Insere o código': 'Introduce el código',
+      'Enviamos um cÃ³digo de verificaÃ§Ã£o para': 'Enviamos un cÃ³digo de verificaciÃ³n a',
+      'CÃ³digo de verificaÃ§Ã£o': 'CÃ³digo de verificaciÃ³n',
+      'Insere o cÃ³digo': 'Introduce el cÃ³digo',
       'Verificar': 'Verificar',
-      'Não recebeste o código?': '¿No recibiste el código?',
-      'Reenviar código': 'Reenviar código',
-      'Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa': 'Usamos cookies para anuncios y experiencias personalizadas y para analizar el tráfico. Para más información, consulta nuestra',
-      'política de cookies': 'política de cookies',
+      'NÃ£o recebeste o cÃ³digo?': 'Â¿No recibiste el cÃ³digo?',
+      'Reenviar cÃ³digo': 'Reenviar cÃ³digo',
+      'Utilizamos cookies para apresentar anÃºncios e experiÃªncias personalizadas e para analisar o trÃ¡fego no teu site. Para mais informaÃ§Ãµes, consulta a nossa': 'Usamos cookies para anuncios y experiencias personalizadas y para analizar el trÃ¡fico. Para mÃ¡s informaciÃ³n, consulta nuestra',
+      'polÃ­tica de cookies': 'polÃ­tica de cookies',
       '.': '.',
       'Aceitar tudo': 'Aceptar todo',
       'Rejeitar tudo': 'Rechazar todo',
       'Quero escolher': 'Quiero elegir',
       'Privacidade e dados': 'Privacidad y datos',
-      'Preferências de cookies': 'Preferencias de cookies',
+      'PreferÃªncias de cookies': 'Preferencias de cookies',
       'A tua privacidade': 'Tu privacidad',
-      'Podes alterar as preferências de cookies quando quiseres.': 'Puedes cambiar las preferencias de cookies cuando quieras.',
+      'Podes alterar as preferÃªncias de cookies quando quiseres.': 'Puedes cambiar las preferencias de cookies cuando quieras.',
       'Essencial': 'Esencial',
-      'Necessários para o funcionamento do site': 'Necesarios para el funcionamiento del sitio',
+      'NecessÃ¡rios para o funcionamento do site': 'Necesarios para el funcionamiento del sitio',
       'Sempre ativo': 'Siempre activo',
-      'Estes cookies são necessários para que o PromoPing funcione corretamente. Permitem manter a tua sessão iniciada e guardar as tuas preferências de monitorização de preços.': 'Estas cookies son necesarias para que PromoPing funcione. Mantienen tu sesión y tus preferencias.',
-      'Análises': 'Análisis',
-      'Ajudam a melhorar o serviço': 'Ayudan a mejorar el servicio',
-      'Estes cookies recolhem informações sobre como utilizas o PromoPing para melhorarmos o serviço de monitorização de preços e a experiência de utilização.': 'Estas cookies recopilan información de uso para mejorar el servicio y la experiencia.',
+      'Estes cookies sÃ£o necessÃ¡rios para que o PromoPing funcione corretamente. Permitem manter a tua sessÃ£o iniciada e guardar as tuas preferÃªncias de monitorizaÃ§Ã£o de preÃ§os.': 'Estas cookies son necesarias para que PromoPing funcione. Mantienen tu sesiÃ³n y tus preferencias.',
+      'AnÃ¡lises': 'AnÃ¡lisis',
+      'Ajudam a melhorar o serviÃ§o': 'Ayudan a mejorar el servicio',
+      'Estes cookies recolhem informaÃ§Ãµes sobre como utilizas o PromoPing para melhorarmos o serviÃ§o de monitorizaÃ§Ã£o de preÃ§os e a experiÃªncia de utilizaÃ§Ã£o.': 'Estas cookies recopilan informaciÃ³n de uso para mejorar el servicio y la experiencia.',
       'Guardar': 'Guardar',
-      'Deteta com o telemóvel': 'Escanea con el móvil',
-      'Inicia sessão na app do PromoPing no teu telemóvel': 'Inicia sesión en la app de PromoPing en tu móvil',
-      'Deteta o código QR com a câmara do telemóvel': 'Escanea el código QR con la cámara del móvil',
-      'Confirma o início de sessão na app do PromoPing': 'Confirma el inicio de sesión en la app',
-      'O código QR estará disponível em breve': 'El código QR estará disponible pronto',
+      'Deteta com o telemÃ³vel': 'Escanea con el mÃ³vil',
+      'Inicia sessÃ£o na app do PromoPing no teu telemÃ³vel': 'Inicia sesiÃ³n en la app de PromoPing en tu mÃ³vil',
+      'Deteta o cÃ³digo QR com a cÃ¢mara do telemÃ³vel': 'Escanea el cÃ³digo QR con la cÃ¡mara del mÃ³vil',
+      'Confirma o inÃ­cio de sessÃ£o na app do PromoPing': 'Confirma el inicio de sesiÃ³n en la app',
+      'O cÃ³digo QR estarÃ¡ disponÃ­vel em breve': 'El cÃ³digo QR estarÃ¡ disponible pronto',
       'Depoimentos': 'Testimonios',
-      'Confiança de quem poupa todos os dias': 'La confianza de quien ahorra cada día',
-      'Milhares de portugueses já economizam com o PromoPing': 'Miles de usuarios ya ahorran con PromoPing',
+      'ConfianÃ§a de quem poupa todos os dias': 'La confianza de quien ahorra cada dÃ­a',
+      'Milhares de portugueses jÃ¡ economizam com o PromoPing': 'Miles de usuarios ya ahorran con PromoPing',
       'A carregar depoimentos...': 'Cargando testimonios...',
-      'Ainda não há depoimentos disponíveis.': 'Aún no hay testimonios.',
+      'Ainda nÃ£o hÃ¡ depoimentos disponÃ­veis.': 'AÃºn no hay testimonios.',
       'Erro ao carregar depoimentos.': 'Error al cargar testimonios.',
-      'Anónimo': 'Anónimo',
+      'AnÃ³nimo': 'AnÃ³nimo',
       'Utilizador': 'Usuario',
       'Utilizador do Bot': 'Usuario del Bot'
     };
 
-    // Tradução para francês
+    // TraduÃ§Ã£o para francÃªs
     const translationsFR = {
-      'Sempre ligado': 'Toujours connecté',
-      'O PromoPing monitoriza preços em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing surveille les prix dans les boutiques en ligne portugaises et vous alerte par email ou Discord lorsqu\'ils baissent.',
+      'Sempre ligado': 'Toujours connectÃ©',
+      'O PromoPing monitoriza preÃ§os em lojas online portuguesas e avisa-te por email ou Discord quando descem.': 'PromoPing surveille les prix dans les boutiques en ligne portugaises et vous alerte par email ou Discord lorsqu\'ils baissent.',
       'Saber mais': 'En savoir plus',
       'Conecte-se com o bot no Discord ou receba por email': 'Connectez-vous au bot Discord ou recevez par email',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático — sem complicações.': 'Ajoutez notre bot à votre serveur Discord ou utilisez votre email pour recevoir des alertes instantanées quand les prix baissent. La configuration est simple et le processus est entièrement automatique.',
-      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantâneos quando os preços baixarem. A configuração é simples e o processo é totalmente automático sem complicações.': 'Ajoutez notre bot à votre serveur Discord ou utilisez votre email pour recevoir des alertes instantanées quand les prix baissent. La configuration est simple et le processus est entièrement automatique.',
-      'Cole o link dos produtos que quer acompanhar na sua área de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. Nós monitorizamos os preços por si e avisamos assim que houver uma descida.': 'Collez le lien des produits à suivre dans votre espace utilisateur et choisissez comment être notifié : sur Discord en temps réel ou par email. Nous surveillons les prix et vous alertons dès une baisse.',
-      'Milhares de utilizadores já poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoção nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Des milliers d\'utilisateurs économisent déjà avec PromoPing. Rejoignez-les et ne manquez plus jamais une promo dans vos magasins préférés.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico â€” sem complicaÃ§Ãµes.': 'Ajoutez notre bot Ã  votre serveur Discord ou utilisez votre email pour recevoir des alertes instantanÃ©es quand les prix baissent. La configuration est simple et le processus est entiÃ¨rement automatique.',
+      'Adicione o nosso bot ao seu servidor Discord ou use o seu email para receber alertas instantÃ¢neos quando os preÃ§os baixarem. A configuraÃ§Ã£o Ã© simples e o processo Ã© totalmente automÃ¡tico sem complicaÃ§Ãµes.': 'Ajoutez notre bot Ã  votre serveur Discord ou utilisez votre email pour recevoir des alertes instantanÃ©es quand les prix baissent. La configuration est simple et le processus est entiÃ¨rement automatique.',
+      'Cole o link dos produtos que quer acompanhar na sua Ã¡rea de utilizador e escolha como prefere ser avisado: no Discord, em tempo real, ou por email. NÃ³s monitorizamos os preÃ§os por si e avisamos assim que houver uma descida.': 'Collez le lien des produits Ã  suivre dans votre espace utilisateur et choisissez comment Ãªtre notifiÃ© : sur Discord en temps rÃ©el ou par email. Nous surveillons les prix et vous alertons dÃ¨s une baisse.',
+      'Milhares de utilizadores jÃ¡ poupam nas compras com o PromoPing. Junte-se a eles e nunca mais perca uma promoÃ§Ã£o nas suas lojas favoritas. Descubra as melhores oportunidades de compra.': 'Des milliers d\'utilisateurs Ã©conomisent dÃ©jÃ  avec PromoPing. Rejoignez-les et ne manquez plus jamais une promo dans vos magasins prÃ©fÃ©rÃ©s.',
       'Adicionar bot ao Discord': 'Ajouter le bot Discord',
-      'Entrar na Comunidade': 'Rejoindre la communauté',
-      'Milhares de pessoas já economizam todos os meses com o PromoPing. E isso vai além de notificações é sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Des milliers de personnes économisent déjà chaque mois avec PromoPing. Au-delà des notifications, c\'est rejoindre une communauté qui partage les meilleures offres. Découvrez, économisez et profitez.',
-      'PromoPing. O preço certo, na hora certa.': 'PromoPing. Le bon prix au bon moment.',
+      'Entrar na Comunidade': 'Rejoindre la communautÃ©',
+      'Milhares de pessoas jÃ¡ economizam todos os meses com o PromoPing. E isso vai alÃ©m de notificaÃ§Ãµes Ã© sobre fazer parte de uma comunidade inteligente que compartilha as melhores oportunidades de compra. Descubra, economize e aproveite.': 'Des milliers de personnes Ã©conomisent dÃ©jÃ  chaque mois avec PromoPing. Au-delÃ  des notifications, c\'est rejoindre une communautÃ© qui partage les meilleures offres. DÃ©couvrez, Ã©conomisez et profitez.',
+      'PromoPing. O preÃ§o certo, na hora certa.': 'PromoPing. Le bon prix au bon moment.',
       'Algumas marcas': 'Quelques marques',
-      ' que estão': ' qui sont',
+      ' que estÃ£o': ' qui sont',
       ' a monitorizar no PromoPing.': ' en train de suivre sur PromoPing.',
-      'Como funciona': 'Comment ça marche',
-      'Em apenas 3 passos simples': 'En 3 étapes simples',
+      'Como funciona': 'Comment Ã§a marche',
+      'Em apenas 3 passos simples': 'En 3 Ã©tapes simples',
       'Adicione produtos': 'Ajoutez des produits',
-      'Cole o link do produto que pretende monitorizar': 'Collez le lien du produit à suivre',
+      'Cole o link do produto que pretende monitorizar': 'Collez le lien du produit Ã  suivre',
       'Configure alertas': 'Configurez les alertes',
-      'Defina quando quer ser notificado': 'Définissez quand vous voulez être notifié',
-      'Receba notificações': 'Recevez les notifications',
-      'Seja alertado quando os preços baixarem': 'Soyez alerté quand les prix baissent',
+      'Defina quando quer ser notificado': 'DÃ©finissez quand vous voulez Ãªtre notifiÃ©',
+      'Receba notificaÃ§Ãµes': 'Recevez les notifications',
+      'Seja alertado quando os preÃ§os baixarem': 'Soyez alertÃ© quand les prix baissent',
       'Escolha o seu plano': 'Choisissez votre forfait',
-      'Escolha o plano que melhor se adapta às suas necessidades': 'Choisissez le forfait qui vous convient',
+      'Escolha o plano que melhor se adapta Ã s suas necessidades': 'Choisissez le forfait qui vous convient',
       'Mais Popular': 'Le plus populaire',
-      'Até 5 produtos': 'Jusqu\'à 5 produits',
-      'Notificações por Email': 'Notifications par email',
-      'Alertas básicos': 'Alertes de base',
-      'Verificação diária': 'Vérification quotidienne',
-      'Até 25 produtos': 'Jusqu\'à 25 produits',
-      'Até 50 produtos': 'Jusqu\'à 50 produits',
+      'AtÃ© 5 produtos': 'Jusqu\'Ã  5 produits',
+      'NotificaÃ§Ãµes por Email': 'Notifications par email',
+      'Alertas bÃ¡sicos': 'Alertes de base',
+      'VerificaÃ§Ã£o diÃ¡ria': 'VÃ©rification quotidienne',
+      'AtÃ© 25 produtos': 'Jusqu\'Ã  25 produits',
+      'AtÃ© 50 produtos': 'Jusqu\'Ã  50 produits',
       'Email + Discord': 'Email + Discord',
-      'Alertas personalizados': 'Alertes personnalisés',
-      'Verificação de 4h/4h': 'Vérification toutes les 4 h',
-      'Verificação a cada 2h': 'Vérification toutes les 2 h',
-      'Verificação a cada 1h': 'Vérification toutes les 1 h',
-      'Histórico de preços': 'Historique des prix',
-      'Histórico de 50 dias': 'Historique de 50 jours',
-      'Histórico de 100 dias': 'Historique de 100 jours',
-      'Até 100 produtos': 'Jusqu\'à 100 produits',
+      'Alertas personalizados': 'Alertes personnalisÃ©s',
+      'VerificaÃ§Ã£o de 4h/4h': 'VÃ©rification toutes les 4 h',
+      'VerificaÃ§Ã£o a cada 2h': 'VÃ©rification toutes les 2 h',
+      'VerificaÃ§Ã£o a cada 1h': 'VÃ©rification toutes les 1 h',
+      'HistÃ³rico de preÃ§os': 'Historique des prix',
+      'HistÃ³rico de 50 dias': 'Historique de 50 jours',
+      'HistÃ³rico de 100 dias': 'Historique de 100 jours',
+      'AtÃ© 100 produtos': 'Jusqu\'Ã  100 produits',
       'Email, SMS + Discord': 'Email, SMS + Discord',
-      'Verificação de 2h/2h': 'Vérification toutes les 2 h',
-      'Histórico completo': 'Historique complet',
-      'Relatórios avançados': 'Rapports avancés',
-      'Produtos ilimitados': 'Produits illimités',
-      'Todas as notificações': 'Toutes les notifications',
+      'VerificaÃ§Ã£o de 2h/2h': 'VÃ©rification toutes les 2 h',
+      'HistÃ³rico completo': 'Historique complet',
+      'RelatÃ³rios avanÃ§ados': 'Rapports avancÃ©s',
+      'Produtos ilimitados': 'Produits illimitÃ©s',
+      'Todas as notificaÃ§Ãµes': 'Toutes les notifications',
       'Email, Discord, Telegram, WhatsApp': 'Email, Discord, Telegram, WhatsApp',
-      'Verificação em tempo real': 'Vérification en temps réel',
-      'API de integração': 'API d\'intégration',
-      'Suporte prioritário': 'Support prioritaire',
-      'Relatórios personalizados': 'Rapports personnalisés',
-      '/mês': '/mois',
-      'Pronto para poupar dinheiro?': 'Prêt à économiser ?',
-      'Junte-se a milhares de portugueses que já poupam com o PromoPing': 'Rejoignez des milliers d\'utilisateurs qui économisent avec PromoPing',
-      'Começar agora grátis': 'Commencer gratuitement',
+      'VerificaÃ§Ã£o em tempo real': 'VÃ©rification en temps rÃ©el',
+      'API de integraÃ§Ã£o': 'API d\'intÃ©gration',
+      'Suporte prioritÃ¡rio': 'Support prioritaire',
+      'RelatÃ³rios personalizados': 'Rapports personnalisÃ©s',
+      '/mÃªs': '/mois',
+      'Pronto para poupar dinheiro?': 'PrÃªt Ã  Ã©conomiser ?',
+      'Junte-se a milhares de portugueses que jÃ¡ poupam com o PromoPing': 'Rejoignez des milliers d\'utilisateurs qui Ã©conomisent avec PromoPing',
+      'ComeÃ§ar agora grÃ¡tis': 'Commencer gratuitement',
       'Inscreve-te': 'S\'inscrire',
       'Entrar': 'Connexion',
       'Bem-vindo(a) ao PromoPing': 'Bienvenue sur PromoPing',
       'E-mail': 'Email',
       'Palavra-passe': 'Mot de passe',
-      'Esqueceste a palavra-passe?': 'Mot de passe oublié ?',
-      'Iniciar sessão': 'Connexion',
+      'Esqueceste a palavra-passe?': 'Mot de passe oubliÃ© ?',
+      'Iniciar sessÃ£o': 'Connexion',
       'OU': 'OU',
       'Continuar com Google': 'Continuer avec Google',
       'Continuar com Discord': 'Continuer avec Discord',
-      'Usa o código QR': 'Utiliser le code QR',
-      'Ainda não estás no PromoPing? Inscreve-te': 'Pas encore sur PromoPing ? Inscrivez-vous',
-      'És uma empresa? Começa aqui!': 'Vous êtes une entreprise ? C\'est par ici !',
-      'Ao continuar, estás a concordar com os': 'En continuant, vous acceptez les',
-      'Termos de Serviço': 'Conditions d\'utilisation',
+      'Usa o cÃ³digo QR': 'Utiliser le code QR',
+      'Ainda nÃ£o estÃ¡s no PromoPing? Inscreve-te': 'Pas encore sur PromoPing ? Inscrivez-vous',
+      'Ã‰s uma empresa? ComeÃ§a aqui!': 'Vous Ãªtes une entreprise ? C\'est par ici !',
+      'Ao continuar, estÃ¡s a concordar com os': 'En continuant, vous acceptez les',
+      'Termos de ServiÃ§o': 'Conditions d\'utilisation',
       ' do PromoPing e a confirmar que leste a nossa': ' de PromoPing et confirmez avoir lu notre',
-      'Política de Privacidade': 'Politique de confidentialité',
+      'PolÃ­tica de Privacidade': 'Politique de confidentialitÃ©',
       '.': '.',
-      'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'En continuant, vous acceptez les Conditions d\'utilisation et la Politique de confidentialité de PromoPing.',
-      'Encontra novas ideias para experimentares': 'Découvrez de nouvelles idées à essayer',
-      'Cria uma palavra-passe': 'Créez un mot de passe',
+      'Ao continuar, estÃ¡s a concordar com os Termos de ServiÃ§o do PromoPing e a confirmar que leste a nossa PolÃ­tica de Privacidade.': 'En continuant, vous acceptez les Conditions d\'utilisation et la Politique de confidentialitÃ© de PromoPing.',
+      'Encontra novas ideias para experimentares': 'DÃ©couvrez de nouvelles idÃ©es Ã  essayer',
+      'Cria uma palavra-passe': 'CrÃ©ez un mot de passe',
       'Data de nascimento': 'Date de naissance',
       'Continuar': 'Continuer',
-      'Já és membro?': 'Déjà membre ?',
-      'Criar uma conta de empresa grátis': 'Créer un compte entreprise gratuit',
-      'Verifica o teu email': 'Vérifiez votre email',
-      'Enviamos um código de verificação para': 'Nous avons envoyé un code de vérification à',
-      'Código de verificação': 'Code de vérification',
-      'Insere o código': 'Entrez le code',
-      'Verificar': 'Vérifier',
-      'Não recebeste o código?': 'Vous n\'avez pas reçu le code ?',
-      'Reenviar código': 'Renvoyer le code',
-      'Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa': 'Nous utilisons des cookies pour les annonces et l\'analyse du trafic. Pour en savoir plus, consultez notre',
-      'política de cookies': 'politique des cookies',
+      'JÃ¡ Ã©s membro?': 'DÃ©jÃ  membre ?',
+      'Criar uma conta de empresa grÃ¡tis': 'CrÃ©er un compte entreprise gratuit',
+      'Verifica o teu email': 'VÃ©rifiez votre email',
+      'Enviamos um cÃ³digo de verificaÃ§Ã£o para': 'Nous avons envoyÃ© un code de vÃ©rification Ã ',
+      'CÃ³digo de verificaÃ§Ã£o': 'Code de vÃ©rification',
+      'Insere o cÃ³digo': 'Entrez le code',
+      'Verificar': 'VÃ©rifier',
+      'NÃ£o recebeste o cÃ³digo?': 'Vous n\'avez pas reÃ§u le code ?',
+      'Reenviar cÃ³digo': 'Renvoyer le code',
+      'Utilizamos cookies para apresentar anÃºncios e experiÃªncias personalizadas e para analisar o trÃ¡fego no teu site. Para mais informaÃ§Ãµes, consulta a nossa': 'Nous utilisons des cookies pour les annonces et l\'analyse du trafic. Pour en savoir plus, consultez notre',
+      'polÃ­tica de cookies': 'politique des cookies',
       '.': '.',
       'Aceitar tudo': 'Tout accepter',
       'Rejeitar tudo': 'Tout rejeter',
       'Quero escolher': 'Je veux choisir',
-      'Privacidade e dados': 'Confidentialité et données',
-      'Preferências de cookies': 'Préférences de cookies',
-      'A tua privacidade': 'Votre vie privée',
-      'Podes alterar as preferências de cookies quando quiseres.': 'Vous pouvez modifier les préférences de cookies à tout moment.',
+      'Privacidade e dados': 'ConfidentialitÃ© et donnÃ©es',
+      'PreferÃªncias de cookies': 'PrÃ©fÃ©rences de cookies',
+      'A tua privacidade': 'Votre vie privÃ©e',
+      'Podes alterar as preferÃªncias de cookies quando quiseres.': 'Vous pouvez modifier les prÃ©fÃ©rences de cookies Ã  tout moment.',
       'Essencial': 'Essentiel',
-      'Necessários para o funcionamento do site': 'Nécessaires au fonctionnement du site',
+      'NecessÃ¡rios para o funcionamento do site': 'NÃ©cessaires au fonctionnement du site',
       'Sempre ativo': 'Toujours actif',
-      'Estes cookies são necessários para que o PromoPing funcione corretamente. Permitem manter a tua sessão iniciada e guardar as tuas preferências de monitorização de preços.': 'Ces cookies sont nécessaires au fonctionnement de PromoPing. Ils gardent votre session et vos préférences.',
-      'Análises': 'Analytiques',
-      'Ajudam a melhorar o serviço': 'Aident à améliorer le service',
-      'Estes cookies recolhem informações sobre como utilizas o PromoPing para melhorarmos o serviço de monitorização de preços e a experiência de utilização.': 'Ces cookies recueillent des informations d\'utilisation pour améliorer le service et l\'expérience.',
+      'Estes cookies sÃ£o necessÃ¡rios para que o PromoPing funcione corretamente. Permitem manter a tua sessÃ£o iniciada e guardar as tuas preferÃªncias de monitorizaÃ§Ã£o de preÃ§os.': 'Ces cookies sont nÃ©cessaires au fonctionnement de PromoPing. Ils gardent votre session et vos prÃ©fÃ©rences.',
+      'AnÃ¡lises': 'Analytiques',
+      'Ajudam a melhorar o serviÃ§o': 'Aident Ã  amÃ©liorer le service',
+      'Estes cookies recolhem informaÃ§Ãµes sobre como utilizas o PromoPing para melhorarmos o serviÃ§o de monitorizaÃ§Ã£o de preÃ§os e a experiÃªncia de utilizaÃ§Ã£o.': 'Ces cookies recueillent des informations d\'utilisation pour amÃ©liorer le service et l\'expÃ©rience.',
       'Guardar': 'Enregistrer',
-      'Deteta com o telemóvel': 'Scannez avec votre téléphone',
-      'Inicia sessão na app do PromoPing no teu telemóvel': 'Connectez-vous à l\'app PromoPing sur votre téléphone',
-      'Deteta o código QR com a câmara do telemóvel': 'Scannez le code QR avec l\'appareil photo',
-      'Confirma o início de sessão na app do PromoPing': 'Confirmez la connexion dans l\'app',
-      'O código QR estará disponível em breve': 'Le code QR sera bientôt disponible',
-      'Depoimentos': 'Témoignages',
-      'Confiança de quem poupa todos os dias': 'La confiance de ceux qui économisent au quotidien',
-      'Milhares de portugueses já economizam com o PromoPing': 'Des milliers d\'utilisateurs économisent avec PromoPing',
-      'A carregar depoimentos...': 'Chargement des témoignages...',
-      'Ainda não há depoimentos disponíveis.': 'Aucun témoignage pour le moment.',
+      'Deteta com o telemÃ³vel': 'Scannez avec votre tÃ©lÃ©phone',
+      'Inicia sessÃ£o na app do PromoPing no teu telemÃ³vel': 'Connectez-vous Ã  l\'app PromoPing sur votre tÃ©lÃ©phone',
+      'Deteta o cÃ³digo QR com a cÃ¢mara do telemÃ³vel': 'Scannez le code QR avec l\'appareil photo',
+      'Confirma o inÃ­cio de sessÃ£o na app do PromoPing': 'Confirmez la connexion dans l\'app',
+      'O cÃ³digo QR estarÃ¡ disponÃ­vel em breve': 'Le code QR sera bientÃ´t disponible',
+      'Depoimentos': 'TÃ©moignages',
+      'ConfianÃ§a de quem poupa todos os dias': 'La confiance de ceux qui Ã©conomisent au quotidien',
+      'Milhares de portugueses jÃ¡ economizam com o PromoPing': 'Des milliers d\'utilisateurs Ã©conomisent avec PromoPing',
+      'A carregar depoimentos...': 'Chargement des tÃ©moignages...',
+      'Ainda nÃ£o hÃ¡ depoimentos disponÃ­veis.': 'Aucun tÃ©moignage pour le moment.',
       'Erro ao carregar depoimentos.': 'Erreur lors du chargement.',
-      'Anónimo': 'Anonyme',
+      'AnÃ³nimo': 'Anonyme',
       'Utilizador': 'Utilisateur',
       'Utilizador do Bot': 'Utilisateur du Bot'
     };
@@ -752,8 +752,8 @@
       return LANG_ORDER[(i + 1) % LANG_ORDER.length];
     }
 
-    // Os mapas existentes (translationsGB/ES/FR) têm chaves em PT e valores na lingua-alvo.
-    // Como o markup base agora é EN, derivamos mapas com chave EN para todas as linguas.
+    // Os mapas existentes (translationsGB/ES/FR) tÃªm chaves em PT e valores na lingua-alvo.
+    // Como o markup base agora Ã© EN, derivamos mapas com chave EN para todas as linguas.
     const translationsEnToPt = Object.fromEntries(
       Object.entries(translationsGB).map(([pt, en]) => [en, pt])
     );
@@ -771,7 +771,7 @@
       return { PT: translationsEnToPt, ES: translationsEnToEs, FR: translationsEnToFr }[code] || null;
     }
 
-    // Alterna idioma: EN → PT → ES → FR → EN (ciclo no botão)
+    // Alterna idioma: EN â†’ PT â†’ ES â†’ FR â†’ EN (ciclo no botÃ£o)
     function toggleLanguage() {
       const langDesktop = document.getElementById('lang-text-desktop');
       const langMobile = document.getElementById('lang-text-mobile');
@@ -793,7 +793,7 @@
       }
     }
 
-    // Função auxiliar para traduzir texto preservando HTML interno (map = objeto PT -> idioma)
+    // FunÃ§Ã£o auxiliar para traduzir texto preservando HTML interno (map = objeto PT -> idioma)
     function translateTextWithHTML(element, originalText, map) {
       const t = map || translationsGB;
       if (element.children.length > 0 || element.querySelector('a, span, strong, em')) {
@@ -847,7 +847,7 @@
       }
     }
 
-    // Função auxiliar para obter nós de texto
+    // FunÃ§Ã£o auxiliar para obter nÃ³s de texto
     function getTextNodes(element) {
       const textNodes = [];
       const walker = document.createTreeWalker(
@@ -863,7 +863,7 @@
       return textNodes;
     }
 
-    // Aplica um mapa de tradução (PT -> idioma) a toda a página
+    // Aplica um mapa de traduÃ§Ã£o (PT -> idioma) a toda a pÃ¡gina
     function applyTranslations(map) {
       saveOriginalTexts();
       Object.entries(originalTexts).forEach(([key, data]) => {
@@ -916,11 +916,11 @@
       applyTranslations(translationsGB);
     }
 
-    // Restaura os textos originais em português
+    // Restaura os textos originais em portuguÃªs
     function restoreOriginalTexts() {
       Object.entries(originalTexts).forEach(([key, data]) => {
         if (data.element && data.text) {
-          // Se tem HTML salvo, restaura o HTML, senão restaura apenas o texto
+          // Se tem HTML salvo, restaura o HTML, senÃ£o restaura apenas o texto
           if (data.html) {
             data.element.innerHTML = data.html;
           } else {
@@ -945,15 +945,15 @@
       }, 100);
     }
 
-    // Salva os textos originais quando a página carrega
+    // Salva os textos originais quando a pÃ¡gina carrega
     document.addEventListener('DOMContentLoaded', function() {
       // Salva textos iniciais
       setTimeout(saveOriginalTexts, 500);
       
-      // Salva novamente após o header ser carregado (pode ser carregado dinamicamente)
+      // Salva novamente apÃ³s o header ser carregado (pode ser carregado dinamicamente)
       setTimeout(saveOriginalTexts, 1500);
       
-      // Observa mudanças no DOM para capturar elementos carregados dinamicamente
+      // Observa mudanÃ§as no DOM para capturar elementos carregados dinamicamente
       const observer = new MutationObserver(function(mutations) {
         let shouldSave = false;
         mutations.forEach(function(mutation) {
@@ -977,7 +977,7 @@
         }
       });
       
-      // Observa mudanças no header placeholder
+      // Observa mudanÃ§as no header placeholder
       const headerPlaceholder = document.getElementById('header-placeholder');
       if (headerPlaceholder) {
         observer.observe(headerPlaceholder, {
@@ -1107,7 +1107,7 @@
             <div class="card-header">
               <h3>Free</h3>
               <div class="price">
-                <span class="currency">€</span>
+                <span class="currency">â‚¬</span>
                 <span class="amount">0</span>
                 <span class="period">/month</span>
               </div>
@@ -1126,7 +1126,7 @@
             <div class="card-header">
               <h3>Basic</h3>
               <div class="price">
-                <span class="currency">€</span>
+                <span class="currency">â‚¬</span>
                 <span class="amount">4.99</span>
                 <span class="period">/month</span>
               </div>
@@ -1147,7 +1147,7 @@
             <div class="card-header">
               <h3>Standard</h3>
               <div class="price">
-                <span class="currency">€</span>
+                <span class="currency">â‚¬</span>
                 <span class="amount">12.99</span>
                 <span class="period">/month</span>
               </div>
@@ -1168,7 +1168,7 @@
             <div class="card-header">
               <h3>Premium</h3>
               <div class="price">
-                <span class="currency">€</span>
+                <span class="currency">â‚¬</span>
                 <span class="amount">15.30</span>
                 <span class="period">/month</span>
               </div>
@@ -1203,8 +1203,8 @@
     </section>
   </main>
   <div id="footer-placeholder">
-    <!-- Footer estático: visível para crawlers sem JS (verificação OAuth do Google).
-         Será substituído pela versão completa quando inc/footer.html carregar via JS. -->
+    <!-- Footer estÃ¡tico: visÃ­vel para crawlers sem JS (verificaÃ§Ã£o OAuth do Google).
+         SerÃ¡ substituÃ­do pela versÃ£o completa quando inc/footer.html carregar via JS. -->
     <footer class="modern-footer" role="contentinfo">
       <div class="footer-container" style="max-width:1200px;margin:0 auto;padding:40px 16px;">
         <p style="color:#a0a0a0;font-size:0.95rem;line-height:1.6;margin:0 0 20px;max-width:760px;">
@@ -1215,8 +1215,8 @@
         <nav aria-label="Legal links" style="display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;">
           <a href="/docs/privacy-policy.html" rel="privacy-policy" data-test-id="privacy" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Privacy Policy</a>
           <a href="/docs/terms-of-service.html" rel="terms-of-service" data-test-id="tos" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Terms of Service</a>
-          <a href="/About/privacy-cookies.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Cookie Policy</a>
-          <a href="/About/about.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">About PromoPing</a>
+          <a href="/About/cookie-policy.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Cookie Policy</a>
+          <a href="/About/about-promoping.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">About PromoPing</a>
           <a href="/docs/support.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Contact / Support</a>
         </nav>
         <p style="color:#a0a0a0;font-size:0.85rem;margin:20px 0 0;">
@@ -1400,17 +1400,17 @@
           <img src="assets/images/PromoPing.png" alt="PromoPing Logo" style="height: 45px; width: auto;">
         </div>
 
-        <!-- Título -->
+        <!-- TÃ­tulo -->
         <div class="title-wrapper">
           <h1 class="modal-title">Bem-vindo(a) ao PromoPing</h1>
         </div>
 
-        <!-- Subtítulo -->
+        <!-- SubtÃ­tulo -->
         <div class="subtitle-wrapper">
           <p class="modal-subtitle">Encontra novas ideias para experimentares</p>
         </div>
 
-        <!-- Botão fechar -->
+        <!-- BotÃ£o fechar -->
         <div class="close-button-wrapper">
           <button aria-label="fechar" class="close-button" type="button" onclick="closeModals()">
             <svg aria-hidden="true" aria-label="" class="close-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
@@ -1423,7 +1423,7 @@
         <div class="error-message" id="registerErrorMessage"></div>
         <div class="success-message" id="registerSuccessMessage"></div>
 
-        <!-- Formulário de Registro -->
+        <!-- FormulÃ¡rio de Registro -->
         <div class="form-wrapper" data-test-id="signup-options">
           <form class="register-form" id="regForm" method="POST" novalidate>
             <!-- Email -->
@@ -1482,7 +1482,7 @@
                 </div>
                 <div class="password-strength-text">
                   <div class="password-strength-status" id="passwordStrengthStatus"></div>
-                  <div class="password-strength-hint">Utiliza 8 ou mais letras, números e símbolos</div>
+                  <div class="password-strength-hint">Utiliza 8 ou mais letras, nÃºmeros e sÃ­mbolos</div>
                 </div>
               </div>
             </div>
@@ -1509,7 +1509,7 @@
                     <path d="M13 18v-8h-3v2h1v6zm-1-9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m0 15a12 12 0 1 0 0-24 12 12 0 0 0 0 24M2 12a10 10 0 1 1 20 0 10 10 0 0 1-20 0"></path>
                   </svg>
                   <div class="info-tooltip">
-                    Esta informação é apenas para os desenvolvedores saberem o padrão de pessoas que está utilizando o PromoPing. Não vai afetar nada.
+                    Esta informaÃ§Ã£o Ã© apenas para os desenvolvedores saberem o padrÃ£o de pessoas que estÃ¡ utilizando o PromoPing. NÃ£o vai afetar nada.
                   </div>
                 </div>
               </div>
@@ -1526,7 +1526,7 @@
               </div>
             </div>
 
-            <!-- Botão Submit -->
+            <!-- BotÃ£o Submit -->
             <div class="submit-wrapper">
               <button 
                 class="submit-button" 
@@ -1544,7 +1544,7 @@
           <!-- Divisor OU -->
           <p class="divider-text">OU</p>
 
-          <!-- Opções de Login Social -->
+          <!-- OpÃ§Ãµes de Login Social -->
           <div class="social-login-options">
             <!-- Google -->
             <div class="social-button-wrapper" data-test-id="google-connect-button">
@@ -1560,26 +1560,26 @@
             </div>
           </div>
 
-          <!-- Termos de Serviço -->
+          <!-- Termos de ServiÃ§o -->
           <div class="terms-wrapper" data-test-id="terms-of-service">
             <span class="terms-text">
-              Ao continuar, estás a concordar com os <a class="terms-link" href="/docs/terms" target="_blank" rel="noopener noreferrer" data-test-id="tos">Termos de Serviço</a> do PromoPing e a confirmar que leste a nossa <a class="terms-link" href="/docs/privacy" target="_blank" rel="noopener noreferrer" data-test-id="privacy">Política de Privacidade</a>.
+              Ao continuar, estÃ¡s a concordar com os <a class="terms-link" href="/docs/terms" target="_blank" rel="noopener noreferrer" data-test-id="tos">Termos de ServiÃ§o</a> do PromoPing e a confirmar que leste a nossa <a class="terms-link" href="/docs/privacy" target="_blank" rel="noopener noreferrer" data-test-id="privacy">PolÃ­tica de Privacidade</a>.
             </span>
           </div>
 
           <!-- Links inferiores -->
           <div class="footer-links">
             <div class="footer-link-row">
-              <span class="footer-text">Já és membro?</span>
-              <a class="footer-link" href="#" onclick="closeModals(); openLoginModal(); return false;" data-test-id="login-signup-toggle">Iniciar sessão</a>
+              <span class="footer-text">JÃ¡ Ã©s membro?</span>
+              <a class="footer-link" href="#" onclick="closeModals(); openLoginModal(); return false;" data-test-id="login-signup-toggle">Iniciar sessÃ£o</a>
             </div>
           </div>
         </div>
 
-        <!-- Botão Empresa -->
+        <!-- BotÃ£o Empresa -->
         <div class="business-button-wrapper" data-test-id="create-business-account-button">
           <button class="business-button" type="button" tabindex="0">
-            <span class="business-button-text">Criar uma conta de empresa grátis</span>
+            <span class="business-button-text">Criar uma conta de empresa grÃ¡tis</span>
           </button>
         </div>
       </div>
@@ -1588,7 +1588,7 @@
     <!-- Verification Code Modal -->
     <div class="pinterest-modal modal-verification" id="verificationModal" onclick="event.stopPropagation()">
       <div class="modal-content">
-        <!-- Botão fechar -->
+        <!-- BotÃ£o fechar -->
         <div class="close-button-wrapper">
           <button aria-label="fechar" class="close-button" type="button" onclick="closeModals()">
             <svg aria-hidden="true" aria-label="" class="close-icon" height="16" role="img" viewBox="0 0 24 24" width="16">
@@ -1602,26 +1602,26 @@
           <img src="assets/images/PromoPing.png" alt="PromoPing Logo" style="height: 45px; width: auto;">
         </div>
 
-        <!-- Título -->
+        <!-- TÃ­tulo -->
         <div class="title-wrapper">
           <h1 class="modal-title">Verifica o teu email</h1>
         </div>
 
-        <!-- Subtítulo -->
+        <!-- SubtÃ­tulo -->
         <div class="subtitle-wrapper">
-          <p class="modal-subtitle">Enviamos um código de verificação para <span id="verificationEmail"></span></p>
+          <p class="modal-subtitle">Enviamos um cÃ³digo de verificaÃ§Ã£o para <span id="verificationEmail"></span></p>
         </div>
 
-        <!-- Formulário de Verificação -->
+        <!-- FormulÃ¡rio de VerificaÃ§Ã£o -->
         <form class="verification-form" id="verificationForm">
           <div class="form-field">
-            <label class="field-label" for="verificationCode">Código de verificação</label>
+            <label class="field-label" for="verificationCode">CÃ³digo de verificaÃ§Ã£o</label>
             <div class="input-wrapper">
               <input 
                 type="text" 
                 class="form-input" 
                 id="verificationCode" 
-                placeholder="Insere o código"
+                placeholder="Insere o cÃ³digo"
                 maxlength="6"
                 required
                 autocomplete="off"
@@ -1632,11 +1632,11 @@
           <div class="error-message" id="verificationErrorMessage"></div>
           <div class="success-message" id="verificationSuccessMessage"></div>
 
-          <!-- Botão Submit -->
+          <!-- BotÃ£o Submit -->
           <div class="submit-wrapper">
             <button 
               class="submit-button" 
-              aria-label="Verificar código" 
+              aria-label="Verificar cÃ³digo" 
               type="submit" 
               tabindex="0"
               id="btnVerificar"
@@ -1646,11 +1646,11 @@
           </div>
         </form>
 
-        <!-- Reenviar código -->
+        <!-- Reenviar cÃ³digo -->
         <div class="resend-code-wrapper">
-          <p class="resend-text">Não recebeste o código?</p>
+          <p class="resend-text">NÃ£o recebeste o cÃ³digo?</p>
           <button class="resend-button" type="button" id="btnResendCode">
-            Reenviar código
+            Reenviar cÃ³digo
           </button>
         </div>
       </div>
@@ -1662,7 +1662,7 @@
     <div class="cookie-banner-content">
       <div class="cookie-banner-text">
         <img src="assets/images/Cookies.png" alt="Cookie" class="cookie-icon">
-        <span>Utilizamos cookies para apresentar anúncios e experiências personalizadas e para analisar o tráfego no teu site. Para mais informações, consulta a nossa <a href="/docs/privacy" target="_blank" rel="noopener noreferrer">política de cookies</a>.</span>
+        <span>Utilizamos cookies para apresentar anÃºncios e experiÃªncias personalizadas e para analisar o trÃ¡fego no teu site. Para mais informaÃ§Ãµes, consulta a nossa <a href="/docs/privacy" target="_blank" rel="noopener noreferrer">polÃ­tica de cookies</a>.</span>
       </div>
       <div class="cookie-banner-buttons">
         <button class="cookie-banner-btn accept-all" id="cookieAcceptAll">Aceitar tudo</button>
@@ -1678,8 +1678,8 @@
       <!-- Header -->
       <div class="cookie-modal-header">
         <div class="cookie-modal-subtitle">Privacidade e dados</div>
-        <h2 class="cookie-modal-title">Preferências de cookies</h2>
-        <button id="cookieModalClose" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='none'">×</button>
+        <h2 class="cookie-modal-title">PreferÃªncias de cookies</h2>
+        <button id="cookieModalClose" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='none'">Ã—</button>
       </div>
 
       <!-- Body -->
@@ -1688,10 +1688,10 @@
         <div class="cookie-privacy-section">
           <h3 class="cookie-privacy-title">A tua privacidade</h3>
           <p class="cookie-privacy-text">
-            Podes alterar as preferências de cookies quando quiseres.
+            Podes alterar as preferÃªncias de cookies quando quiseres.
           </p>
-          <a href="/docs/privacy" target="_blank" rel="noopener noreferrer" class="cookie-privacy-link">Política de cookies</a>
-          <a href="/docs/terms" target="_blank" rel="noopener noreferrer" class="cookie-privacy-link" style="margin-left: 0.5em;">Termos de Serviço</a>
+          <a href="/docs/privacy" target="_blank" rel="noopener noreferrer" class="cookie-privacy-link">PolÃ­tica de cookies</a>
+          <a href="/docs/terms" target="_blank" rel="noopener noreferrer" class="cookie-privacy-link" style="margin-left: 0.5em;">Termos de ServiÃ§o</a>
         </div>
 
         <!-- Essencial -->
@@ -1699,7 +1699,7 @@
           <div class="cookie-category-header">
             <div class="cookie-category-info">
               <div class="cookie-category-title">Essencial</div>
-              <div class="cookie-category-subtitle">Necessários para o funcionamento do site</div>
+              <div class="cookie-category-subtitle">NecessÃ¡rios para o funcionamento do site</div>
               <div class="cookie-category-status">Sempre ativo</div>
             </div>
             <label class="cookie-toggle">
@@ -1708,16 +1708,16 @@
             </label>
           </div>
           <p class="cookie-category-description">
-            Estes cookies são necessários para que o PromoPing funcione corretamente. Permitem manter a tua sessão iniciada e guardar as tuas preferências de monitorização de preços.
+            Estes cookies sÃ£o necessÃ¡rios para que o PromoPing funcione corretamente. Permitem manter a tua sessÃ£o iniciada e guardar as tuas preferÃªncias de monitorizaÃ§Ã£o de preÃ§os.
           </p>
         </div>
 
-        <!-- Análises -->
+        <!-- AnÃ¡lises -->
         <div class="cookie-category">
           <div class="cookie-category-header">
             <div class="cookie-category-info">
-              <div class="cookie-category-title">Análises</div>
-              <div class="cookie-category-subtitle">Ajudam a melhorar o serviço</div>
+              <div class="cookie-category-title">AnÃ¡lises</div>
+              <div class="cookie-category-subtitle">Ajudam a melhorar o serviÃ§o</div>
             </div>
             <label class="cookie-toggle">
               <input type="checkbox" id="cookieAnalytics">
@@ -1725,7 +1725,7 @@
             </label>
           </div>
           <p class="cookie-category-description">
-            Estes cookies recolhem informações sobre como utilizas o PromoPing para melhorarmos o serviço de monitorização de preços e a experiência de utilização.
+            Estes cookies recolhem informaÃ§Ãµes sobre como utilizas o PromoPing para melhorarmos o serviÃ§o de monitorizaÃ§Ã£o de preÃ§os e a experiÃªncia de utilizaÃ§Ã£o.
           </p>
         </div>
       </div>
@@ -1763,13 +1763,13 @@
           <img src="assets/images/PromoPing.png" alt="PromoPing" class="qr-logo-img">
         </div>
         
-        <h2 class="qr-modal-title">Deteta com o telemóvel</h2>
+        <h2 class="qr-modal-title">Deteta com o telemÃ³vel</h2>
         
         <div class="qr-instructions">
           <ol class="qr-instructions-list">
-            <li>Inicia sessão na app do PromoPing no teu telemóvel</li>
-            <li>Deteta o código QR com a câmara do telemóvel</li>
-            <li>Confirma o início de sessão na app do PromoPing</li>
+            <li>Inicia sessÃ£o na app do PromoPing no teu telemÃ³vel</li>
+            <li>Deteta o cÃ³digo QR com a cÃ¢mara do telemÃ³vel</li>
+            <li>Confirma o inÃ­cio de sessÃ£o na app do PromoPing</li>
           </ol>
         </div>
         
@@ -1782,7 +1782,7 @@
                 QR Code em breve
               </text>
             </svg>
-            <p class="qr-placeholder-text">O código QR estará disponível em breve</p>
+            <p class="qr-placeholder-text">O cÃ³digo QR estarÃ¡ disponÃ­vel em breve</p>
           </div>
         </div>
       </div>

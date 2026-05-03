@@ -1,9 +1,9 @@
-// Script para carregar includes (header e footer)
+﻿// Script para carregar includes (header e footer)
 document.addEventListener('DOMContentLoaded', function() {
     // Carrega o header
     makeRequest('inc/header.html')
         .then(response => {
-            // Clonar a resposta para evitar problemas de stream já lido
+            // Clonar a resposta para evitar problemas de stream jÃ¡ lido
             return response.clone().text();
         })
         .then(data => {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.warn('Header não encontrado, usando conteúdo estático');
+            console.warn('Header nÃ£o encontrado, usando conteÃºdo estÃ¡tico');
             const headerPlaceholder = document.getElementById('header-placeholder');
             if (headerPlaceholder) {
                 headerPlaceholder.innerHTML = `
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="pp-header-title">PromoPing</span>
                             </div>
                             <nav class="pp-header-nav">
-                                <a href="inc/Login.html" class="pp-header-nav-link">Entrar</a>
+                                <a href="/login" class="pp-header-nav-link">Entrar</a>
                                 <a href="inc/register.html" class="pp-btn pp-btn-primary">Registar</a>
                             </nav>
                         </div>
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Carrega o footer
     makeRequest('inc/footer.html')
         .then(response => {
-            // Clonar a resposta para evitar problemas de stream já lido
+            // Clonar a resposta para evitar problemas de stream jÃ¡ lido
             return response.clone().text();
         })
         .then(data => {
@@ -53,12 +53,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Substitui todos os caminhos relativos de imagens no HTML antes de inserir
                 let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
                 footerPlaceholder.innerHTML = correctedData;
-                // Atualiza a versão do GitHub após o footer ser carregado
+                // Atualiza a versÃ£o do GitHub apÃ³s o footer ser carregado
                 updateVersionFromGitHub();
             }
         })
         .catch(error => {
-            console.warn('Footer não encontrado, usando conteúdo estático');
+            console.warn('Footer nÃ£o encontrado, usando conteÃºdo estÃ¡tico');
             const footerPlaceholder = document.getElementById('footer-placeholder');
             if (footerPlaceholder) {
                 footerPlaceholder.innerHTML = `
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// Função para abrir o dropdown de navegação
+// FunÃ§Ã£o para abrir o dropdown de navegaÃ§Ã£o
 function openNavigation(button) {
   const navLinks = button.nextElementSibling;
   const isOpen = navLinks.style.display === 'block';
@@ -99,7 +99,7 @@ function openNavigation(button) {
   navLinks.style.display = isOpen ? 'none' : 'block';
 }
 
-// Alterna o menu móvel
+// Alterna o menu mÃ³vel
 function toggleNavigation() {
   const html = document.documentElement;
   html.classList.toggle('opened-nav');
@@ -114,21 +114,21 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// Função de alternância de idioma
+// FunÃ§Ã£o de alternÃ¢ncia de idioma
 function toggleLanguage() {
   const langText = document.getElementById('lang-text');
   const currentLang = langText.textContent;
   
   if (currentLang === 'PT') {
     langText.textContent = 'EN';
-    // Função para traduzir para inglês não implementada ainda
+    // FunÃ§Ã£o para traduzir para inglÃªs nÃ£o implementada ainda
   } else {
     langText.textContent = 'PT';
-    // Função para traduzir para português não implementada ainda
+    // FunÃ§Ã£o para traduzir para portuguÃªs nÃ£o implementada ainda
   }
 }
 
-// Busca a versão mais recente do GitHub Releases API
+// Busca a versÃ£o mais recente do GitHub Releases API
 async function fetchGitHubVersion() {
   const githubOwner = 'juliareboucasleite';
   const githubRepo = 'PromoPing';
@@ -140,17 +140,17 @@ async function fetchGitHubVersion() {
       throw new Error(`GitHub API error: ${response.status}`);
     }
     const data = await response.json();
-    // Extrai a versão do tag_name (remove o 'v' se existir)
+    // Extrai a versÃ£o do tag_name (remove o 'v' se existir)
     const version = data.tag_name || data.name || 'v2.3.3';
     return version.startsWith('v') ? version : `v${version}`;
   } catch (error) {
-    console.warn('Erro ao buscar versão do GitHub:', error);
-    // Retorna versão padrão em caso de erro
+    console.warn('Erro ao buscar versÃ£o do GitHub:', error);
+    // Retorna versÃ£o padrÃ£o em caso de erro
     return 'v2.3.3';
   }
 }
 
-// Atualiza o badge de versão com a versão do GitHub
+// Atualiza o badge de versÃ£o com a versÃ£o do GitHub
 async function updateVersionFromGitHub() {
   const versionBadge = document.querySelector('.version-badge span');
   if (versionBadge) {
@@ -158,3 +158,4 @@ async function updateVersionFromGitHub() {
     versionBadge.textContent = latestVersion;
   }
 }
+

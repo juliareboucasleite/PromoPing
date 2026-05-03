@@ -1,36 +1,32 @@
-// script.js
+﻿// script.js para About
 
-// Navegação completa (fallback)
+// NavegaÃ§Ã£o completa (fallback)
 const NAVIGATION_HTML = `
   <aside class="sidebar">
     <nav>
       <ul>
         <li class="sidebar-nav-about">
-          <a href="/docs">Sobre o PromoPing</a>
+          <a href="../index.html">PromoPing</a>
         </li>
-        <li class="sidebar-nav-section"><span>COMEÇAR</span></li>
-        <li><a href="/docs/FirstLaunch" class="sidebar-nav-link">Primeiro Lançamento</a></li>
-        <li><a href="/docs/usage-guide" class="sidebar-nav-link">Guia de Utilização</a></li>
-        <li class="sidebar-nav-item"><span>SCRIPTING DA UI</span></li>
-        <li><a href="/docs/api-reference" class="sidebar-nav-link inactive">Referência da API <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2"><polyline points="9,6 15,12 9,18"></polyline></svg></a></li>
-        <li class="sidebar-nav-item"><span>SUPORTE</span></li>
-        <li><a href="/docs/support" class="sidebar-nav-link">Suporte</a></li>
-        <li><a href="/docs/faq" class="sidebar-nav-link">FAQ</a></li>
-        <li><a href="/docs/changelog" class="sidebar-nav-link">Changelog</a></li>
-        <li><a href="/docs/service-status" class="sidebar-nav-link">Status do Serviço</a></li>
-        <li><a href="/docs/incident-history" class="sidebar-nav-link">Histórico de Incidentes</a></li>
-        <li><a href="/docs/terms" class="sidebar-nav-link">Termos de Uso</a></li>
+        <li class="sidebar-nav-section"><span>SOBRE NÃ“S</span></li>
+        <li><a href="about-promoping.html" class="sidebar-nav-link">O que Ã© o PromoPing?</a></li>
+        <li><a href="promoping-blog.html" class="sidebar-nav-link">Blog</a></li>
+        <li><a href="use-cases.html" class="sidebar-nav-link">Casos de uso</a></li>
+        <li><a href="price-monitoring.html" class="sidebar-nav-link">Monitoramento</a></li>
+        <li><a href="smart-alerts.html" class="sidebar-nav-link">Alertas</a></li>
+        <li><a href="reports-and-analytics.html" class="sidebar-nav-link">RelatÃ³rios</a></li>
+        <li><a href="../docs/privacy-policy.html" class="sidebar-nav-link">PolÃ­tica de cookies</a></li>
       </ul>
     </nav>
-    <div class="powered"><p>Made by PromoPingg</p></div>
+    <div class="powered"><p>Made by PromoPing</p></div>
   </aside>
 `;
 
-// Função para carregar navegação dinamicamente
+// FunÃ§Ã£o para carregar navegaÃ§Ã£o dinamicamente
 async function loadNavigation() {
   let sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
   
-  // Tentar encontrar o placeholder até 10 vezes (1 segundo)
+  // Tentar encontrar o placeholder atÃ© 10 vezes (1 segundo)
   let attempts = 0;
   while (!sidebarPlaceholder && attempts < 10) {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -39,19 +35,21 @@ async function loadNavigation() {
   }
   
   if (!sidebarPlaceholder) {
-    console.error('Placeholder de navegação não encontrado após 1 segundo');
+    console.error('Placeholder de navegaÃ§Ã£o nÃ£o encontrado apÃ³s 1 segundo');
     return;
   }
   
-  // Se já tiver conteúdo completo (mais de 100 caracteres), apenas atualizar link ativo
+  // Se jÃ¡ tiver conteÃºdo completo (mais de 100 caracteres), apenas atualizar link ativo
   if (sidebarPlaceholder.innerHTML.trim().length > 100) {
     highlightActiveLink();
     return;
   }
   
   try {
-    // Tentar carregar nav.html - sempre do mesmo diretório
-    const navPath = 'docs/nav.html';
+    // Tentar carregar about-navigation.html - sempre do mesmo diretÃ³rio
+    const baseTag = document.querySelector('base');
+    const baseHref = baseTag ? baseTag.getAttribute('href') : '/';
+    const navPath = baseHref + 'About/about-navigation.html';
     const response = await fetch(`${navPath}?t=${Date.now()}`, {
       cache: 'no-cache',
       headers: {
@@ -66,17 +64,17 @@ async function loadNavigation() {
     
     const html = await response.text();
     if (!html || html.trim() === '') {
-      throw new Error('Navegação está vazia');
+      throw new Error('NavegaÃ§Ã£o estÃ¡ vazia');
     }
     
-    // Limpar placeholder antes de inserir novo conteúdo
+    // Limpar placeholder antes de inserir novo conteÃºdo
     sidebarPlaceholder.innerHTML = '';
     sidebarPlaceholder.innerHTML = html;
     
-    // Forçar re-renderização
+    // ForÃ§ar re-renderizaÃ§Ã£o
     sidebarPlaceholder.offsetHeight;
     
-    // Após carregar, marcar link ativo com múltiplas tentativas
+    // ApÃ³s carregar, marcar link ativo com mÃºltiplas tentativas
     setTimeout(() => {
       highlightActiveLink();
     }, 50);
@@ -86,12 +84,12 @@ async function loadNavigation() {
     }, 200);
     
   } catch (error) {
-    console.error('Erro ao carregar navegação:', error);
-    // Fallback: usar navegação embutida
+    console.error('Erro ao carregar navegaÃ§Ã£o:', error);
+    // Fallback: usar navegaÃ§Ã£o embutida
     sidebarPlaceholder.innerHTML = '';
     sidebarPlaceholder.innerHTML = NAVIGATION_HTML;
     
-    // Forçar re-renderização
+    // ForÃ§ar re-renderizaÃ§Ã£o
     sidebarPlaceholder.offsetHeight;
     
     setTimeout(() => {
@@ -104,40 +102,99 @@ async function loadNavigation() {
   }
 }
 
-// Função para marcar link ativo
+// FunÃ§Ã£o para marcar link ativo
 function highlightActiveLink() {
   const links = document.querySelectorAll(".sidebar nav ul li a");
   const currentPath = window.location.pathname;
-  const currentFile = currentPath.split("/").pop() || window.location.href.split("/").pop() || "docs.html";
+  const currentFile = currentPath.split("/").pop() || window.location.href.split("/").pop() || "about-promoping.html";
   
   links.forEach(link => {
     const href = link.getAttribute("href");
     // Remover classe active de todos os links
     link.classList.remove("active");
     
-    // Verificar se é a página atual
+    // Verificar se Ã© a pÃ¡gina atual
     if (href === currentFile || 
         href === currentPath ||
-        (currentFile === "" && (href === "docs.html" || href === "#")) ||
+        (currentFile === "" && (href === "about-promoping.html" || href === "#")) ||
         (href && (href === currentFile || href.includes(currentFile)) && currentFile !== "" && href !== "#")) {
       link.classList.add("active");
       // Remover classe inactive se presente
       link.classList.remove("inactive");
     } else if (href && href !== "#" && href !== currentFile) {
-      // Adicionar inactive se não for a página atual e não for um link genérico
-      if (!link.classList.contains("inactive") && link.closest("li").querySelector("svg")) {
+      // Adicionar inactive se nÃ£o for a pÃ¡gina atual e nÃ£o for um link genÃ©rico
+      if (!link.classList.contains("inactive") && link.closest("li")?.querySelector("svg")) {
         link.classList.add("inactive");
       }
     }
   });
 }
 
-// Função de inicialização
+// FunÃ§Ã£o para carregar footer dinamicamente - DESATIVADA
+/*
+async function loadFooter() {
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+  if (!footerPlaceholder) {
+    return;
+  }
+  
+  try {
+    const baseTag = document.querySelector('base');
+    const baseHref = baseTag ? baseTag.getAttribute('href') : '/';
+    const footerPath = baseHref + 'inc/footer.html';
+    
+    const response = await fetch(`${footerPath}?t=${Date.now()}`, {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load footer: ${response.status} ${response.statusText}`);
+    }
+    
+    let data = await response.text();
+    
+    // Corrige os caminhos das imagens e links ANTES de inserir o HTML
+    let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
+    correctedData = correctedData.replace(/href="pages\//g, `href="${baseHref}pages/`);
+    correctedData = correctedData.replace(/href="#/g, `href="${baseHref}#`);
+    
+    footerPlaceholder.innerHTML = correctedData;
+  } catch (error) {
+    console.warn('Erro ao carregar footer:', error);
+    // Fallback estÃ¡tico
+    footerPlaceholder.innerHTML = `
+      <footer class="pp-footer">
+        <div class="pp-container">
+          <div class="pp-footer-content">
+            <div class="pp-footer-brand">
+              <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="pp-footer-logo">
+              <span class="pp-footer-title">PromoPing</span>
+            </div>
+            <div class="pp-footer-links">
+              <a href="about-promoping.html" class="pp-footer-link">Sobre</a>
+              <a href="promoping-blog.html" class="pp-footer-link">Blog</a>
+              <a href="use-cases.html" class="pp-footer-link">Casos de uso</a>
+            </div>
+          </div>
+          <div class="pp-footer-bottom">
+            <p>&copy; 2024-2025 PromoPing. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </footer>
+    `;
+  }
+}
+*/
+
+// FunÃ§Ã£o de inicializaÃ§Ã£o
 function init() {
-  // Carregar navegação imediatamente
+  // Carregar navegaÃ§Ã£o imediatamente
   loadNavigation();
   
-  // === Smooth scroll for internal anchors ===
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
@@ -150,7 +207,6 @@ function init() {
     });
   });
 
-  // === Copy Button Dropdown Functionality ===
   const copyButtonWrapper = document.querySelector('.copy-button-wrapper');
   const copyButton = document.querySelector('.copy-button');
   
@@ -319,77 +375,6 @@ function init() {
     return div.innerHTML;
   }
 
-  // === Emoji Feedback System ===
-  const emojiButtons = document.querySelectorAll('.emoji-btn');
-  const thankYouMessage = document.querySelector('.thank-you-message');
-  const commentSection = document.querySelector('.comment-section');
-  
-  emojiButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      emojiButtons.forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
-      button.classList.add('active');
-      
-      // Get the emoji data
-      const emoji = button.getAttribute('data-emoji');
-      
-      // Show "Thank you!" message
-      if (thankYouMessage) {
-        thankYouMessage.style.display = 'block';
-      }
-      
-      // Show comment section after a short delay
-      if (commentSection) {
-        setTimeout(() => {
-          commentSection.style.display = 'block';
-        }, 500);
-      }
-      
-      // Log feedback
-      console.log(`User feedback: ${emoji}`);
-      
-      // Optional: Send feedback to server
-      // sendFeedback(emoji);
-    });
-  });
-
-  // === Submit Feedback ===
-  const submitButton = document.querySelector('.submit-feedback');
-  const textarea = document.querySelector('.comment-section textarea');
-  
-  if (submitButton) {
-    submitButton.addEventListener('click', () => {
-      const comment = textarea ? textarea.value.trim() : '';
-      const selectedEmoji = document.querySelector('.emoji-btn.active');
-      
-      if (comment) {
-        console.log(`Feedback submitted: ${selectedEmoji?.getAttribute('data-emoji')} - ${comment}`);
-        
-        // Show success message
-        submitButton.textContent = 'Submitted!';
-        submitButton.style.background = '#10b981';
-        
-        // Disable form
-        if (textarea) {
-          textarea.disabled = true;
-        }
-        submitButton.disabled = true;
-        
-        // Optional: Send to server
-        // sendFeedbackWithComment(selectedEmoji, comment);
-      } else if (selectedEmoji) {
-        // Just submit emoji feedback
-        console.log(`Emoji feedback submitted: ${selectedEmoji.getAttribute('data-emoji')}`);
-        submitButton.textContent = 'Submitted!';
-        submitButton.style.background = '#10b981';
-        submitButton.disabled = true;
-      }
-    });
-  }
-
-  // === Search Functionality ===
   const searchInput = document.querySelector('.search-box input');
   if (searchInput) {
     searchInput.addEventListener('keydown', (e) => {
@@ -406,7 +391,6 @@ function init() {
     });
   }
 
-  // === Keyboard Shortcuts ===
   document.addEventListener('keydown', (e) => {
     // Ctrl + K for search
     if (e.ctrlKey && e.key === 'k') {
@@ -414,69 +398,24 @@ function init() {
       searchInput?.focus();
     }
   });
-
-  // === Scroll to Top Functionality ===
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-  // Add scroll to top button if needed
-  const addScrollToTopButton = () => {
-    const button = document.createElement('button');
-    button.innerHTML = '↑';
-    button.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    `;
-    
-    button.addEventListener('click', scrollToTop);
-    document.body.appendChild(button);
-    
-    // Show/hide based on scroll position
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        button.style.opacity = '1';
-      } else {
-        button.style.opacity = '0';
-      }
-    });
-  };
-
-  // Initialize scroll to top button
-  addScrollToTopButton();
   
-  // Garantir que a navegação foi carregada após 500ms
+  // Garantir que a navegaÃ§Ã£o foi carregada apÃ³s 500ms
   setTimeout(() => {
     const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
     if (sidebarPlaceholder && !sidebarPlaceholder.innerHTML.trim()) {
-      console.warn('Navegação não carregada, tentando novamente...');
+      console.warn('NavegaÃ§Ã£o nÃ£o carregada, tentando novamente...');
       loadNavigation();
     }
   }, 500);
 }
 
-// Carregar navegação IMEDIATAMENTE (antes mesmo do DOMContentLoaded)
+  // Carregar navegaÃ§Ã£o IMEDIATAMENTE (antes mesmo do DOMContentLoaded)
 loadNavigation();
 
 // Carregar assim que o script for executado
 if (document.readyState === 'loading') {
   document.addEventListener("DOMContentLoaded", () => {
-    // Carregar navegação novamente caso não tenha carregado
+    // Carregar navegaÃ§Ã£o novamente caso nÃ£o tenha carregado
     setTimeout(() => {
       const sidebarPlaceholder = document.getElementById('sidebar-nav-placeholder');
       if (sidebarPlaceholder && sidebarPlaceholder.innerHTML.trim().length < 100) {
@@ -486,26 +425,10 @@ if (document.readyState === 'loading') {
     }, 100);
   });
 } else {
-  // DOM já carregado
+  // DOM jÃ¡ carregado
   setTimeout(() => {
     init();
   }, 100);
 }
 
-// === Optional: Send feedback to server ===
-function sendFeedback(emoji) {
-  // This is a placeholder - implement your feedback system
-  fetch('/api/feedback', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      emoji: emoji,
-      page: window.location.pathname,
-      timestamp: new Date().toISOString()
-    })
-  }).catch(err => {
-    console.error('Failed to send feedback:', err);
-  });
-}
+

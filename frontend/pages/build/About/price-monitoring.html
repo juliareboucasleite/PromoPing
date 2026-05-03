@@ -1,15 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
+﻿<!DOCTYPE html>
+<html lang="en">
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
-  <title>Sobre o PromoPing | PromoPing Docs</title>
-  <link rel="stylesheet" href="assets/styles/docs-shared.css">
+  <title>Monitoring | PromoPing</title>
+  
+  <link rel="stylesheet" href="assets/styles/about-pages-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
+  <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
   <script>
@@ -19,6 +20,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
+  <link rel="stylesheet" href="assets/styles/price-monitoring.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -26,9 +28,8 @@
     <div class="header-content">
       <div class="header-left">
         <div class="logo">
-          <img src="../../assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="/" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
-            Docs</a>
+          <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
+          <a href="index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing</a>
         </div>
       </div>
       <div class="header-right">
@@ -39,7 +40,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <input type="text" placeholder="Ask or search..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -49,13 +50,13 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from about-navigation.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Sobre o PromoPing</h1>
+        <h1>Price Monitoring</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -100,73 +101,64 @@
         </div>
       </div>
 
-      <h2>Bem-vindo!</h2>
-      <h3>O que é o PromoPing e como o configuro?</h3>
-      <p>
-        O PromoPing é uma plataforma especializada concebida para o ajudar a monitorizar e comparar preços de produtos
-        num só local.
-        Funciona como uma ferramenta inteligente que recolhe dados de múltiplas lojas online, oferecendo aos
-        utilizadores a capacidade de
-        rastrear preços, receber alertas quando aparecem descontos e tomar decisões de compra mais inteligentes.
-      </p>
-      <p>
-        Com o PromoPing, os utilizadores podem desfrutar de funcionalidades como rastreamento de preços em tempo real,
-        alertas de queda de preços,
-        painéis centralizados para produtos favoritos e comparações rápidas entre vendedores.
-        O PromoPing poupa-lhe tempo e dinheiro, garantindo que nunca perde a melhor oferta.
-      </p>
+      <p>Track products in real time and never miss a buying opportunity</p>
 
+      <h2>Real-Time Monitoring</h2>
+      <h3>How It Works</h3>
+      <p>PromoPing constantly monitors thousands of products across dozens of online stores, checking prices, availability and special offers.</p>
 
-      <p>
-        Para configurar o PromoPing, pode seguir os passos escritos fornecidos na secção Começar.
-      </p>
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='FirstLaunch.html'">
-        <div class="next-content">
-          <span class="next-label">Seguinte</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Primeiro Lançamento</span>
-        </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <polyline points="9,18 15,12 9,6"></polyline>
-        </svg>
-      </div>
+      <h3>Monitoring Features</h3>
+      <ul>
+        <li><strong>Continuous Checking:</strong> Products checked every 15 minutes</li>
+        <li><strong>Multiple Stores:</strong> Monitors PCDiga, Worten, Globaldata and many more</li>
+        <li><strong>Complete History:</strong> Tracks price evolution over time</li>
+        <li><strong>Smart Analysis:</strong> Identifies price patterns and trends</li>
+      </ul>
+
+      <h3>Benefits</h3>
+      <p>Be notified instantly when the price of the product you want drops, ensuring you never miss an opportunity.</p>
+
+      <h2>Supported Stores</h2>
+      <p>PromoPing monitors products in over 50 online Portuguese stores, including:</p>
+      <ul>
+        <li>PCDiga</li>
+        <li>Worten</li>
+        <li>Globaldata</li>
+        <li>FNAC</li>
+        <li>El Corte InglÃ©s</li>
+        <li>Continente</li>
+        <li>Pingo Doce</li>
+        <li>And many more...</li>
+      </ul>
+
+      <h2>Check Frequency</h2>
+      <p>Depending on your plan, products are checked at different frequencies:</p>
+      <ul>
+        <li><strong>Free Plan:</strong> Daily check</li>
+        <li><strong>Basic Plan:</strong> Every 4 hours</li>
+        <li><strong>Standard Plan:</strong> Every 2 hours</li>
+        <li><strong>Premium Plan:</strong> Real-time check</li>
+      </ul>
+
+      <h2>Price History</h2>
+      <p>Keep a complete history of all the prices of products you monitor. See detailed charts showing how prices have changed over time and identify the best moments to buy.</p>
 
       <footer>
-        <p>Última actualização há 1 dia</p>
+        <p>Last updated 1 day ago</p>
       </footer>
     </main>
 
   </div>
 
-  <!-- FOOTER -->
-  <div id="footer-placeholder"></div>
-
   <!-- SCRIPTS -->
-  <script src="docs/script.js"></script>
-  <script src="docs/search.js"></script>
+  <script src="About/about-navigation.js"></script>
+  <script src="About/about-search.js"></script>
 
-  <style>
-    /* Esconder scrollbar da área de conteúdo principal (main.content) */
-    main.content {
-      scrollbar-width: none !important;
-      /* Firefox */
-      -ms-overflow-style: none !important;
-      /* IE e Edge */
-    }
-
-    main.content::-webkit-scrollbar {
-      display: none !important;
-      /* Chrome, Safari, Opera */
-      width: 0 !important;
-      background: transparent !important;
-    }
-
-    /* Manter funcionalidade de scroll */
-    main.content {
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-  </style>
+  
 </body>
 
 </html>
+
+
+
+

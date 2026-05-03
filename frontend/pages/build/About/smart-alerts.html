@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
-  <title>About PromoPing | PromoPing About</title>
+  <title>Alerts | PromoPing</title>
   
-  <link rel="stylesheet" href="assets/styles/about-shared.css">
+  <link rel="stylesheet" href="assets/styles/about-pages-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
@@ -20,7 +20,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
-  <link rel="stylesheet" href="assets/styles/about.css">
+  <link rel="stylesheet" href="assets/styles/smart-alerts.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -29,8 +29,7 @@
       <div class="header-left">
         <div class="logo">
           <img src="assets/images/PromoPing.png" alt="PromoPing" class="logo-icon" />
-          <a href="index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing
-            About</a>
+          <a href="index.html" class="logo-text" style="text-decoration: none; color: inherit;">PromoPing</a>
         </div>
       </div>
       <div class="header-right">
@@ -51,13 +50,13 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Loaded dynamically from nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from about-navigation.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>About PromoPing</h1>
+        <h1>Smart Alerts</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,33 +101,66 @@
         </div>
       </div>
 
-      <h2>What is PromoPing?</h2>
-      <p>
-        PromoPing is a specialised platform designed to help you monitor and compare product prices in a single place.
-        It works as a smart tool that gathers data from multiple online stores, giving users the ability to track
-        prices, receive alerts when discounts appear, and make smarter buying decisions.
-      </p>
-
-      <h2>Why was it created?</h2>
-      <p>
-        PromoPing was built to help shoppers save money on their online purchases. With prices constantly rising and
-        the difficulty of keeping up with promotions across multiple stores, PromoPing simplifies the process, letting
-        users always find the best deals without wasting time searching manually across dozens of different sites.
-      </p>
-
-      <p>
-        Our mission is to help people shop smarter, saving time and money, and making sure they never miss the best
-        offer available on the market.
-      </p>
-      <div class="next-card" style="cursor: pointer;" onclick="window.location.href='About/casos-uso.html'">
-        <div class="next-content">
-          <span class="next-label">Next</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">See the use cases</span>
+      <div class="alert-item">
+        <h2>Alert Types</h2>
+        <div class="alert-content">
+          <ul>
+            <li><strong>Price Alert:</strong> Notification when the price drops below your set threshold</li>
+            <li><strong>Stock Alert:</strong> Notice when a product is back in stock after being sold out</li>
+            <li><strong>Offer Alert:</strong> Notification of special promotions and temporary discounts</li>
+            <li><strong>Increase Alert:</strong> Notice when the price rises significantly</li>
+          </ul>
         </div>
-        <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <polyline points="9,18 15,12 9,6"></polyline>
-        </svg>
+      </div>
+
+      <div class="alert-item">
+        <h2>Notification Channels</h2>
+        <div class="alert-content">
+          <h3>Email</h3>
+          <p>Receive alerts directly in your inbox. Set up your email in the notification preferences and receive updates whenever prices change.</p>
+
+          <h3>Discord</h3>
+          <p>Add our Discord bot to your servers and receive real-time notifications in your channels. Ideal for those who want to stay up to date without constantly checking email.</p>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <h2>How to Set Up Alerts</h2>
+        <div class="alert-content">
+          <ol>
+            <li>Go to your notification preferences in the dashboard</li>
+            <li>Choose the desired notification channels (Email or Discord)</li>
+            <li>Set the price threshold for each monitored product</li>
+            <li>Configure the alert frequency (instant, daily, weekly)</li>
+            <li>Enable alerts for the products you want to monitor</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <h2>Customising Alerts</h2>
+        <div class="alert-content">
+          <p>Customise your alerts according to your needs:</p>
+          <ul>
+            <li><strong>Price Threshold:</strong> Set the target price for each product</li>
+            <li><strong>Frequency:</strong> Choose to receive instant alerts or periodic summaries</li>
+            <li><strong>Filters:</strong> Configure alerts only for specific products or categories</li>
+            <li><strong>Schedule:</strong> Set preferred hours to receive notifications</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <h2>Manage Alerts</h2>
+        <div class="alert-content">
+          <p>Have full control over your alerts:</p>
+          <ul>
+            <li>Enable or disable alerts for specific products</li>
+            <li>Temporarily pause all notifications</li>
+            <li>View the history of received alerts</li>
+            <li>Set up bulk alerts for multiple products</li>
+          </ul>
+        </div>
       </div>
 
       <footer>
@@ -139,11 +171,26 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="About/script.js"></script>
-  <script src="About/search.js"></script>
+  <script src="About/about-navigation.js"></script>
+  <script src="About/about-search.js"></script>
+  <script>
+    // Toggle Alert items
+    document.addEventListener('DOMContentLoaded', function() {
+      const alertItems = document.querySelectorAll('.alert-item');
+      alertItems.forEach(item => {
+        const title = item.querySelector('h2');
+        title.addEventListener('click', function() {
+          item.classList.toggle('active');
+        });
+      });
+    });
+  </script>
 
   
 </body>
 
 </html>
+
+
+
 

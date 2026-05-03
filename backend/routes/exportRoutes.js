@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import {
   exportarPDF,
   exportarRelatorioCompleto,
@@ -12,13 +12,13 @@ import {
   verificarPlanoPremium,
   obterInfoPlano
 } from "../middleware/verificarPlano.js";
-import { verifyToken } from "../middleware/auth.js"; // Middleware de autenticação existente
+import { verifyToken } from "../middleware/auth.js"; // Middleware de autenticaÃ§Ã£o existente
 
 const router = express.Router();
 
 /**
  * GET /api/user/plano
- * Obter informações do plano do usuário
+ * Obter informaÃ§Ãµes do plano do usuÃ¡rio
  */
 router.get("/user/plano", verifyToken, obterPlanoUsuario);
 
@@ -36,7 +36,7 @@ router.get("/produtos/pdf",
 
 /**
  * GET /api/exportar/relatorio/completo
- * Exportar relatório completo (Premium apenas)
+ * Exportar relatÃ³rio completo (Premium apenas)
  */
 router.get("/relatorio/completo",
   verifyToken,
@@ -60,12 +60,12 @@ router.get("/pdf",
 
 /**
  * GET /api/exportar/teste/plano
- * Testar verificação de plano (apenas para desenvolvimento)
+ * Testar verificaÃ§Ã£o de plano (apenas para desenvolvimento)
  */
 router.get("/teste/plano", verifyToken, obterInfoPlano, (req, res) => {
   res.json({
     status: "ok",
-    message: "Teste de verificação de plano",
+    message: "Teste de verificaÃ§Ã£o de plano",
     plano: req.planoInfo,
     usuario: {
       ReferenciaID: req.user.ReferenciaID,
@@ -77,7 +77,7 @@ router.get("/teste/plano", verifyToken, obterInfoPlano, (req, res) => {
 
 /**
  * GET /api/exportar/status
- * Status das funcionalidades de exportação
+ * Status das funcionalidades de exportaÃ§Ã£o
  */
 router.get("/status", verifyToken, obterInfoPlano, (req, res) => {
   const plano = req.planoInfo;
@@ -104,7 +104,7 @@ router.use((err, req, res, next) => {
       status: "error",
       message: "Acesso negado - plano insuficiente",
       error: err.message,
-      upgrade_url: "/planos.html",
+      upgrade_url: "/dashboard/subscription-plans.html",
       timestamp: new Date().toISOString()
     });
   }
@@ -112,8 +112,8 @@ router.use((err, req, res, next) => {
   if (err.status === 401) {
     return res.status(401).json({
       status: "error",
-      message: "Não autorizado - faça login primeiro",
-      login_url: "/Login.html",
+      message: "NÃ£o autorizado - faÃ§a login primeiro",
+      login_url: "/login",
       timestamp: new Date().toISOString()
     });
   }
@@ -122,3 +122,4 @@ router.use((err, req, res, next) => {
 });
 
 export default router;
+
