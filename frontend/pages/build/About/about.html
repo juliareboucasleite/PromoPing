@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
   
   
   <meta charset="UTF-8">
-  <title>Sobre o PromoPing | PromoPing About</title>
+  <title>About PromoPing | PromoPing About</title>
   
-  <link rel="stylesheet" href="About/styles.css">
+  <link rel="stylesheet" href="assets/styles/about-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
@@ -20,6 +20,7 @@
 
     gtag('config', 'AW-810832454');
   </script>
+  <link rel="stylesheet" href="assets/styles/about.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -40,7 +41,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Perguntar ou pesquisar..." />
+            <input type="text" placeholder="Ask or search..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -50,13 +51,13 @@
 
   <div class="docs-container">
 
-    <!-- SIDEBAR - Carregado dinamicamente de nav.html -->
+    <!-- SIDEBAR - Loaded dynamically from nav.html -->
     <div id="sidebar-nav-placeholder"></div>
 
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>Sobre o PromoPing</h1>
+        <h1>About PromoPing</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -101,29 +102,28 @@
         </div>
       </div>
 
-      <h2>O que é o PromoPing?</h2>
+      <h2>What is PromoPing?</h2>
       <p>
-        O PromoPing é uma plataforma especializada concebida para o ajudar a monitorizar e comparar preços de produtos
-        num só local. Funciona como uma ferramenta inteligente que recolhe dados de múltiplas lojas online, oferecendo aos
-        utilizadores a capacidade de rastrear preços, receber alertas quando aparecem descontos e tomar decisões de compra mais inteligentes.
+        PromoPing is a specialised platform designed to help you monitor and compare product prices in a single place.
+        It works as a smart tool that gathers data from multiple online stores, giving users the ability to track
+        prices, receive alerts when discounts appear, and make smarter buying decisions.
       </p>
 
-      <h2>Para que foi criado?</h2>
+      <h2>Why was it created?</h2>
       <p>
-        O PromoPing foi criado com o objetivo de ajudar os portugueses a poupar dinheiro nas suas compras online. 
-        Com o aumento constante dos preços e a dificuldade em acompanhar promoções em múltiplas lojas, o PromoPing 
-        simplifica este processo, permitindo que os utilizadores encontrem sempre as melhores ofertas sem perder tempo 
-        a pesquisar manualmente em dezenas de sites diferentes.
+        PromoPing was built to help shoppers save money on their online purchases. With prices constantly rising and
+        the difficulty of keeping up with promotions across multiple stores, PromoPing simplifies the process, letting
+        users always find the best deals without wasting time searching manually across dozens of different sites.
       </p>
 
       <p>
-        A nossa missão é ajudar os portugueses a fazerem compras mais inteligentes, poupando tempo e dinheiro, 
-        garantindo que nunca perdem a melhor oferta disponível no mercado.
+        Our mission is to help people shop smarter, saving time and money, and making sure they never miss the best
+        offer available on the market.
       </p>
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='About/casos-uso.html'">
         <div class="next-content">
-          <span class="next-label">Seguinte</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Veja os casos de uso</span>
+          <span class="next-label">Next</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">See the use cases</span>
         </div>
         <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2">
@@ -132,7 +132,7 @@
       </div>
 
       <footer>
-        <p>Última actualização há 1 dia</p>
+        <p>Last updated 1 day ago</p>
       </footer>
     </main>
 
@@ -142,28 +142,8 @@
   <script src="About/script.js"></script>
   <script src="About/search.js"></script>
 
-  <style>
-    /* Esconder scrollbar da área de conteúdo principal (main.content) */
-    main.content {
-      scrollbar-width: none !important;
-      /* Firefox */
-      -ms-overflow-style: none !important;
-      /* IE e Edge */
-    }
-
-    main.content::-webkit-scrollbar {
-      display: none !important;
-      /* Chrome, Safari, Opera */
-      width: 0 !important;
-      background: transparent !important;
-    }
-
-    /* Manter funcionalidade de scroll */
-    main.content {
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-  </style>
+  
 </body>
 
 </html>
+
