@@ -126,18 +126,22 @@ router.post("/subscribe", async (req, res) => {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      await connection.query(`CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_email ON newsletter_subscribers (email)`);
+      // Atualizar primeiro para não depender de constraint unique já existente no schema
+      const [updateResult] = await connection.query(`
+        UPDATE newsletter_subscribers
+        SET newsletter = ?,
+            promotions = ?,
+            articles = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE email = ?
+      `, [newsletter || false, promotions || false, articles || false, email]);
 
-      // Inserir ou atualizar subscriber
-      await connection.query(`
-        INSERT INTO newsletter_subscribers (email, newsletter, promotions, articles)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT (email) DO UPDATE SET
-          newsletter = EXCLUDED.newsletter,
-          promotions = EXCLUDED.promotions,
-          articles = EXCLUDED.articles,
-          updated_at = CURRENT_TIMESTAMP
-      `, [email, newsletter || false, promotions || false, articles || false]);
+      if (!updateResult || (updateResult.rowCount || 0) === 0) {
+        await connection.query(`
+          INSERT INTO newsletter_subscribers (email, newsletter, promotions, articles)
+          VALUES (?, ?, ?, ?)
+        `, [email, newsletter || false, promotions || false, articles || false]);
+      }
 
       connection.release();
 
