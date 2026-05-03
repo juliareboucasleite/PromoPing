@@ -327,10 +327,10 @@
         });
         itens.forEach((p, index) => {
           const hist = Array.isArray(p.Historico) ? p.Historico : [];
-          const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `â‚¬${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : 'â€”';
-          const precoAnterior = hist.length > 0 ? `â‚¬${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : 'â€”';
-          const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `â‚¬${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : 'â€”';
-          const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : 'â€”';
+          const precoAtual = (p.PrecoAtual || p.precoAtual || p.preco_atual) != null ? `\u20AC${Number(p.PrecoAtual || p.precoAtual || p.preco_atual).toFixed(2)}` : '\u2014';
+          const precoAnterior = hist.length > 0 ? `\u20AC${Number(hist[0].Preco || hist[0].preco).toFixed(2)}` : '\u2014';
+          const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `\u20AC${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '\u2014';
+          const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '\u2014';
           const dataLimiteRaw = p.DataLimite || p.dataLimite || p.data_limite || null;
           const dataLimiteFmt = dataLimiteRaw ? new Date(dataLimiteRaw).toLocaleDateString('pt-PT') : 'No end date';
           const dataLimiteIso = dataLimiteRaw ? String(dataLimiteRaw).slice(0, 10) : '';
@@ -386,17 +386,17 @@
 
           // Gerar histÃ³rico de preÃ§os
           const historicoHtml = hist.slice(0, 3).map(h =>
-            `<div class="history-item">${h.Preco || h.preco}â‚¬ (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
+            `<div class="history-item">${h.Preco || h.preco}\u20AC (${new Date(h.Data || h.data).toLocaleDateString('pt-PT')})</div>`
           ).join('');
 
           // Gerar indicador de mudanÃ§a de preÃ§o
           let priceChangeHtml = '';
           if (delta !== null) {
-            const arrow = delta < 0 ? '' : delta > 0 ? '' : 'â€”';
+            const arrow = delta < 0 ? '' : delta > 0 ? '' : '\u2014';
             const color = delta < 0 ? 'price-down' : delta > 0 ? 'price-up' : 'price-neutral';
             priceChangeHtml = `<div class="price-change-indicator ${color}">
               <span class="change-arrow">${arrow}</span>
-              <span class="change-amount">${delta < 0 ? '-' : delta > 0 ? '+' : ''}${Math.abs(delta).toFixed(2)}â‚¬ (${Math.abs(percentual).toFixed(1)}%)</span>
+              <span class="change-amount">${delta < 0 ? '-' : delta > 0 ? '+' : ''}${Math.abs(delta).toFixed(2)}\u20AC (${Math.abs(percentual).toFixed(1)}%)</span>
             </div>`;
           }
 

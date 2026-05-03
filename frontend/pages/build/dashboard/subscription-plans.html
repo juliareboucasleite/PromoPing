@@ -129,7 +129,7 @@
                 <div class="plan-card" data-plan-id="1" data-monthly="0">
                     <div class="plan-header">
                         <div class="plan-name">Free</div>
-                        <div class="plan-price">€0<span class="currency">,00</span></div>
+                        <div class="plan-price">&euro;0<span class="currency">,00</span></div>
                         <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
@@ -178,7 +178,7 @@
                 <div class="plan-card" data-plan-id="2" data-monthly="4.99">
                     <div class="plan-header">
                         <div class="plan-name">Basic</div>
-                        <div class="plan-price">€4<span class="currency">,99</span></div>
+                        <div class="plan-price">&euro;4<span class="currency">,99</span></div>
                         <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
@@ -225,7 +225,7 @@
                 <div class="plan-card featured" data-plan-id="3" data-monthly="12.99">
                     <div class="plan-header">
                         <div class="plan-name">Standard</div>
-                        <div class="plan-price">€12<span class="currency">,99</span></div>
+                        <div class="plan-price">&euro;12<span class="currency">,99</span></div>
                         <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
@@ -273,7 +273,7 @@
                 <div class="plan-card" data-plan-id="4" data-monthly="15.30">
                     <div class="plan-header">
                         <div class="plan-name">Premium</div>
-                        <div class="plan-price">€15<span class="currency">,30</span></div>
+                        <div class="plan-price">&euro;15<span class="currency">,30</span></div>
                         <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
@@ -344,7 +344,7 @@
                     <div class="plan-header-row">
                         <span class="plan-name-compact" id="purchasePlanName">Plan</span>
                         <span class="plan-price-compact">
-                            <span class="price-amount-compact" id="purchasePlanPrice">€0,00</span>
+                            <span class="price-amount-compact" id="purchasePlanPrice">&euro;0,00</span>
                             <span class="price-period-compact">/month</span>
                         </span>
                     </div>
@@ -451,7 +451,7 @@
             const nextPaymentDateEl = document.getElementById('nextPaymentDate');
             
             planNameEl.textContent = planoNome;
-            planPriceEl.textContent = `€${precoExibir.toFixed(2).replace('.', ',')}`;
+            planPriceEl.textContent = `\u20AC${precoExibir.toFixed(2).replace('.', ',')}`;
             if (planPeriodEl) planPeriodEl.textContent = anual ? '/year' : '/month';
             
             const today = new Date();
@@ -1073,7 +1073,7 @@
                     valor = (precoYearly != null && !isNaN(precoYearly)) ? precoYearly : monthly * 12;
                 }
                 const { intPart, decPart } = formatarPreco(valor);
-                priceEl.innerHTML = '€' + intPart + '<span class="currency">,' + decPart + '</span>';
+                priceEl.innerHTML = '\u20AC' + intPart + '<span class="currency">,' + decPart + '</span>';
                 periodEl.textContent = billingYearly ? 'por ano' : 'per month';
             });
         }
