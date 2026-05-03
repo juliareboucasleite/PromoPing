@@ -52,7 +52,7 @@ discord-users.json
 node_modules/.bin/eslint
 node_modules/.bin/eslint
 
-docs
+/docs/
 src/generated
 **/*.min.js
 
