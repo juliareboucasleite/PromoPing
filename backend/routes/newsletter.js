@@ -93,6 +93,9 @@ function getNewsletterConfirmationEmail(preferences) {
 router.post("/subscribe", async (req, res) => {
   try {
     const { email, newsletter, promotions, articles } = req.body;
+    const newsletterFlag = newsletter ? 1 : 0;
+    const promotionsFlag = promotions ? 1 : 0;
+    const articlesFlag = articles ? 1 : 0;
 
     // Validação
     if (!email || !email.includes("@")) {
@@ -119,9 +122,9 @@ router.post("/subscribe", async (req, res) => {
         CREATE TABLE IF NOT EXISTS newsletter_subscribers (
           id SERIAL PRIMARY KEY,
           email VARCHAR(255) NOT NULL UNIQUE,
-          newsletter BOOLEAN DEFAULT TRUE,
-          promotions BOOLEAN DEFAULT TRUE,
-          articles BOOLEAN DEFAULT FALSE,
+          newsletter INTEGER DEFAULT 1,
+          promotions INTEGER DEFAULT 1,
+          articles INTEGER DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -134,7 +137,7 @@ router.post("/subscribe", async (req, res) => {
             articles = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE email = ?
-      `, [newsletter || false, promotions || false, articles || false, email]);
+      `, [newsletterFlag, promotionsFlag, articlesFlag, email]);
 
       if (!updateResult || (updateResult.rowCount || 0) === 0) {
         const [nextIdRows] = await connection.query(`
@@ -146,16 +149,16 @@ router.post("/subscribe", async (req, res) => {
         await connection.query(`
           INSERT INTO newsletter_subscribers (id, email, newsletter, promotions, articles)
           VALUES (?, ?, ?, ?, ?)
-        `, [nextId, email, newsletter || false, promotions || false, articles || false]);
+        `, [nextId, email, newsletterFlag, promotionsFlag, articlesFlag]);
       }
 
       connection.release();
 
       // Enviar email de confirmação
       const emailHtml = getNewsletterConfirmationEmail({
-        newsletter: newsletter || false,
-        promotions: promotions || false,
-        articles: articles || false
+        newsletter: newsletterFlag === 1,
+        promotions: promotionsFlag === 1,
+        articles: articlesFlag === 1
       });
 
       let emailSent = true;
