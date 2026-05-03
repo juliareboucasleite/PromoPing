@@ -93,10 +93,10 @@ export async function notifySubscribersOfNewArticles(articles) {
 
   try {
     const [rows] = await pool.query(
-      "SELECT email FROM newsletter_subscribers WHERE articles = 1 AND email IS NOT NULL AND email != ''"
+      "SELECT email FROM newsletter_subscribers WHERE email IS NOT NULL AND email != ''"
     );
     if (!rows || rows.length === 0) {
-      console.log("[NEWSLETTER] Nenhum subscritor com notificações de artigos ativas.");
+      console.log("[NEWSLETTER] Nenhum subscritor registado.");
       return;
     }
 
