@@ -202,10 +202,10 @@
     <div class="upgrade-modal-backdrop"></div>
     <div class="upgrade-modal-content">
       <div class="upgrade-content">
-        <h3>Funcionalidade Exclusiva</h3>
-        <p>As funcionalidades de exportação estão disponíveis apenas para os planos <strong>Basic</strong>,
-          <strong>Standard</strong> e <strong>Premium</strong>.</p>
-        <p><strong>Seu plano atual: <span id="currentPlan">Free</span></strong></p>
+        <h3>Exclusive Feature</h3>
+        <p>Export features are only available on the <strong>Basic</strong>,
+          <strong>Standard</strong> and <strong>Premium</strong> plans.</p>
+        <p><strong>Your current plan: <span id="currentPlan">Free</span></strong></p>
         <div class="upgrade-benefits">
           <span class="benefit">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -215,18 +215,18 @@
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <polyline points="10,9 9,9 8,9"></polyline>
             </svg>
-            Relatórios PDF
+            PDF Reports
           </span>
           <span class="benefit">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 3v18h18"></path>
               <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
             </svg>
-            Histórico completo
+            Full history
           </span>
         </div>
         <button class="upgrade-btn" onclick="window.open('/dashboard/planos.html', '_blank')">
-          Ver Planos Disponíveis
+          View Available Plans
         </button>
         <button class="upgrade-close" onclick="fecharModalUpgrade()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -261,7 +261,7 @@
     async function carregarProdutos() {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Precisa estar logado!");
+        alert("You need to be signed in!");
         return (window.location.href = "/index.html");
       }
 
@@ -290,17 +290,17 @@
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <h3>Nenhum produto encontrado</h3>
-              <p>Comece a monitorizar produtos para acompanhar preços e encontrar as melhores ofertas.</p>
+              <h3>No products found</h3>
+              <p>Start tracking products to follow prices and find the best deals.</p>
               <div class="empty-state-actions">
                 <a href="/dashboard" class="pp-btn">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  Adicionar primeiro produto
+                  Add first product
                 </a>
-                <a href="/dashboard" class="btn-ghost">Ver Dashboard</a>
+                <a href="/dashboard" class="btn-ghost">View Dashboard</a>
               </div>
             </div>`;
           document.getElementById("productCount").textContent = 0;
@@ -332,7 +332,7 @@
           const precoAlvo = (p.PrecoAlvo || p.precoAlvo || p.preco_alvo) ? `€${Number(p.PrecoAlvo || p.precoAlvo || p.preco_alvo).toFixed(2)}` : '—';
           const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString('pt-PT') : '—';
           const dataLimiteRaw = p.DataLimite || p.dataLimite || p.data_limite || null;
-          const dataLimiteFmt = dataLimiteRaw ? new Date(dataLimiteRaw).toLocaleDateString('pt-PT') : 'Sem data limite';
+          const dataLimiteFmt = dataLimiteRaw ? new Date(dataLimiteRaw).toLocaleDateString('pt-PT') : 'No end date';
           const dataLimiteIso = dataLimiteRaw ? String(dataLimiteRaw).slice(0, 10) : '';
           const delta = ((p.PrecoAtual || p.precoAtual || p.preco_atual) != null && hist.length > 0)
             ? (Number(p.PrecoAtual || p.precoAtual || p.preco_atual) - Number(hist[0].Preco || hist[0].preco))
@@ -342,13 +342,13 @@
           let statusTag = '';
           let statusClass = '';
           if ((p.PrecoAlvo || p.precoAlvo || p.preco_alvo) && (p.PrecoAtual || p.precoAtual || p.preco_atual) != null && (p.PrecoAtual || p.precoAtual || p.preco_atual) <= (p.PrecoAlvo || p.precoAlvo || p.preco_alvo)) {
-            statusTag = 'Meta atingida';
+            statusTag = 'Target reached';
             statusClass = 'status-target-reached';
           } else if (delta && delta > 0) {
-            statusTag = 'Preço subiu';
+            statusTag = 'Price went up';
             statusClass = 'status-price-up';
           } else {
-            statusTag = 'A monitorizar';
+            statusTag = 'Tracking';
             statusClass = 'status-monitoring';
           }
 
@@ -405,20 +405,20 @@
           const blurClass = shouldBlur ? " blurred" : "";
           const upgradeOverlay = shouldBlur ? `
             <div class="product-upgrade-overlay">
-              <h4>Produto Bloqueado</h4>
-              <p>Upgrade para <strong>Basic</strong> ou superior para ver todos os produtos.</p>
+              <h4>Product Locked</h4>
+              <p>Upgrade to <strong>Basic</strong> or higher to view all products.</p>
               <button class="upgrade-btn-small" onclick="window.open('/dashboard/planos.html', '_blank')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M7 17L17 7"></path>
                   <path d="M7 7h10v10"></path>
                 </svg>
-                Ver Planos
+                View Plans
               </button>
             </div>
           ` : "";
 
-          const nomeSafe = escapeHtml(String(p.Nome || p.nome || 'Sem nome'));
-          const lojaSafe = escapeHtml(String(loja || 'Loja'));
+          const nomeSafe = escapeHtml(String(p.Nome || p.nome || 'Unnamed'));
+          const lojaSafe = escapeHtml(String(loja || 'Store'));
           const rawLink = String(p.Link || p.link || '').trim();
           const safeLink = rawLink.startsWith('http://') || rawLink.startsWith('https://') ? rawLink : '#';
           const linkAttr = escapeHtmlAttr(safeLink);
@@ -435,7 +435,7 @@
                   </div>
                 </div>
                 <div class="product-actions-dashboard">
-                  <button class="action-btn-dashboard" title="Ir ao site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
+                  <button class="action-btn-dashboard" title="Go to site" onclick="abrirProdutoNoSite(${Number(p.Id || p.id) || 0}, '${linkAttr}')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                       <polyline points="15,3 21,3 21,9"></polyline>
