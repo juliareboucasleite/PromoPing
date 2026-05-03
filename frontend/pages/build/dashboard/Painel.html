@@ -529,7 +529,7 @@
         submitBtn.disabled = false;
         btnText.style.display = "block";
         btnLoading.style.display = "none";
-        showError("Link inválido", "O link do produto deve começar por http:// ou https://.");
+        showError("Invalid link", "The product link must start with http:// or https://.");
         return;
       }
 
@@ -548,7 +548,7 @@
         // Verificar se é erro de rate limit
         if (res.status === 429) {
           const errorData = await res.json();
-          showWarning("Rate Limit", "Muitas requisições. Aguarde alguns minutos antes de tentar novamente.");
+          showWarning("Rate Limit", "Too many requests. Please wait a few minutes before trying again.");
           return;
         }
 
@@ -556,13 +556,13 @@
         if (data.status === "ok") {
           document.getElementById("formLink").reset();
           carregarProdutos();
-          showSuccess("Sucesso", "Produto adicionado com sucesso!");
+          showSuccess("Success", "Product added successfully!");
         } else {
-          showError("Erro", data.message || data.error || "Erro ao adicionar produto");
+          showError("Error", data.message || data.error || "Error adding product");
         }
       } catch (err) {
         console.error("Erro ao adicionar produto:", err);
-        showError("Erro", "Erro no servidor");
+        showError("Error", "Server error");
       } finally {
         // Esconder loading
         submitBtn.disabled = false;
@@ -583,7 +583,7 @@
         // Verificar se é erro de rate limit
         if (res.status === 429) {
           const errorData = await res.json();
-          showWarning("Rate Limit", "Muitas requisições. Aguarde alguns minutos antes de tentar novamente.");
+          showWarning("Rate Limit", "Too many requests. Please wait a few minutes before trying again.");
           return;
         }
 
@@ -591,11 +591,11 @@
         if (data.status === "ok") {
           carregarProdutos();
         } else {
-          showError("Erro", data.message || data.error || "Erro ao remover produto");
+          showError("Error", data.message || data.error || "Error removing product");
         }
       } catch (err) {
         console.error("Erro ao remover produto:", err);
-        showError("Erro", "Erro no servidor");
+        showError("Error", "Server error");
       }
     }
 
@@ -645,7 +645,7 @@
         modal.innerHTML = `
             <div class="modal-content">
               <div class="modal-header">
-                <h3>Atualizando Preços</h3>
+                <h3>Updating Prices</h3>
                 <button class="modal-close" onclick="fecharModalScraping()">&times;</button>
               </div>
               <div class="modal-body">
@@ -659,15 +659,15 @@
                     </svg>
                   </div>
                   <div class="scraping-text">
-                    <h4>Scraping em andamento...</h4>
-                    <p>Estamos coletando os preços mais recentes dos produtos.</p>
-                    <p class="scraping-time">Tempo estimado: 2-5 minutos</p>
-                    <p class="scraping-info">Os preços serão atualizados automaticamente quando o processo terminar.</p>
+                    <h4>Scraping in progress...</h4>
+                    <p>We're collecting the latest prices for your products.</p>
+                    <p class="scraping-time">Estimated time: 2-5 minutes</p>
+                    <p class="scraping-info">Prices will be updated automatically once the process finishes.</p>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="fecharModalScraping()">Entendi</button>
+                <button class="btn btn-secondary" onclick="fecharModalScraping()">Got it</button>
               </div>
             </div>
           `;
@@ -689,7 +689,7 @@
       const modal = document.getElementById('scraping-modal');
       if (modal) {
         modal.style.display = 'none';
-        showSuccess("Scraping Iniciado", "O processo de atualização de preços foi iniciado. Os preços serão atualizados em alguns minutos.");
+        showSuccess("Scraping Started", "The price update process has started. Prices will be updated within a few minutes.");
       }
     }
 
@@ -703,7 +703,7 @@
       notification.innerHTML = `
           <div class="notification-content">
             <span class="notification-icon"></span>
-            <span class="notification-text">Scraping iniciado! Os preços serão atualizados em alguns minutos.</span>
+            <span class="notification-text">Scraping started! Prices will be updated within a few minutes.</span>
           </div>
         `;
       document.body.appendChild(notification);
@@ -729,7 +729,7 @@
 
       dataLimiteModalState.id = id;
       dataLimiteModalState.atual = (atual || '').split('T')[0] || '';
-      dataLimiteModalState.nome = nome || 'produto';
+      dataLimiteModalState.nome = nome || 'product';
 
       productName.textContent = dataLimiteModalState.nome;
 
@@ -769,21 +769,21 @@
       const year = parseInt(yearInput.value, 10);
 
       if (!day || !month || !year || day < 1 || day > 31 || month < 1 || month > 12 || year < 2026 || year > 2099) {
-        showWarning('Data limite', 'Preenche uma data válida (dia, mês e ano).');
+        showWarning('End date', 'Please enter a valid date (day, month and year).');
         return;
       }
 
       // Validar se a data é válida e está no futuro
       const dataObj = new Date(year, month - 1, day);
       if (dataObj.getDate() !== day || dataObj.getMonth() !== month - 1) {
-        showWarning('Data limite', 'Data inválida (ex: 31 de fevereiro não existe).');
+        showWarning('End date', 'Invalid date (e.g. February 31st does not exist).');
         return;
       }
 
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
       if (dataObj < hoje) {
-        showWarning('Data limite', 'A data deve estar no futuro.');
+        showWarning('End date', 'The date must be in the future.');
         return;
       }
 
@@ -801,7 +801,7 @@
         // Verificar se é erro de rate limit
         if (res.status === 429) {
           const errorData = await res.json();
-          showWarning("Rate Limit", "Muitas requisições. Aguarde alguns minutos antes de tentar novamente.");
+          showWarning("Rate Limit", "Too many requests. Please wait a few minutes before trying again.");
           return;
         }
 
@@ -809,17 +809,17 @@
         if (data.status === 'ok') {
           fecharDataLimiteModal();
           carregarProdutos();
-          showSuccess('Data limite atualizada', 'A nova data foi guardada com sucesso.');
+          showSuccess('End date updated', 'The new date was saved successfully.');
         }
-        else showError("Erro", data.message || data.error || 'Erro ao atualizar data');
+        else showError("Error", data.message || data.error || 'Error updating date');
       } catch (e) {
-        showError("Erro", 'Erro no servidor');
+        showError("Error", 'Server error');
       } finally {
         if (btn) btn.disabled = false;
       }
     }
 
-    async function editarData(id, atual, nome = 'produto') {
+    async function editarData(id, atual, nome = 'product') {
       abrirDataLimiteModal(id, atual, nome);
     }
 

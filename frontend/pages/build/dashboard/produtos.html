@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
-  
-  
+
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Produtos PromoPing — liste e edite os produtos que está a monitorizar e acompanhe a evolução dos preços.">
-  <title>Produtos PromoPing | promoping.pt</title>
+  <meta name="description" content="PromoPing Products — list and edit the products you're tracking and follow price changes.">
+  <title>Products PromoPing | promoping.pt</title>
   <link rel="stylesheet" href="../../assets/styles/painel.css">
   <link rel="stylesheet" href="../../assets/styles/style.css">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
@@ -51,26 +51,26 @@
             <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
             <line x1="12" y1="22.08" x2="12" y2="12"></line>
           </svg>
-          Produtos
+          Products
         </a>
         <a href="/dashboard/perfil" class="nav-item">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Perfil
+          Profile
         </a>
       </div>
 
       <div class="nav-actions">
-        <span class="nav-user" id="userName">Utilizador</span>
+        <span class="nav-user" id="userName">User</span>
         <button class="nav-logout" onclick="logout()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16,17 21,12 16,7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
-          Sair
+          Sign out
         </button>
       </div>
     </div>
@@ -81,8 +81,8 @@
       <header class="page-header page-header-produtos">
         <div class="page-header-content">
           <div class="page-title-section">
-            <h1 class="page-title">Produtos guardados (<span id="productCount">0</span>)</h1>
-            <p class="page-subtitle">Acompanhe o histórico de preços dos seus produtos favoritos</p>
+            <h1 class="page-title">Saved products (<span id="productCount">0</span>)</h1>
+            <p class="page-subtitle">Follow the price history of your favorite products</p>
           </div>
         </div>
       </header>
@@ -94,11 +94,11 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" id="pesquisa" placeholder="Pesquisar produtos..." class="search-input" aria-label="Pesquisar produtos">
+            <input type="text" id="pesquisa" placeholder="Search products..." class="search-input" aria-label="Search products">
           </div>
           <div class="filter-group">
-            <select id="filtroLoja" class="filter-select" aria-label="Filtrar por loja">
-              <option value="">Todas as lojas</option>
+            <select id="filtroLoja" class="filter-select" aria-label="Filter by store">
+              <option value="">All stores</option>
               <option>Worten</option>
               <option>FNAC</option>
               <option>PCDiga</option>
@@ -111,11 +111,11 @@
               <option>H&M</option>
               <option>Amazon</option>
             </select>
-            <select id="filtroEstado" class="filter-select" aria-label="Filtrar por estado">
-              <option value="">Todos os estados</option>
-              <option value="meta">Meta atingida</option>
-              <option value="subiu">Preço subiu</option>
-              <option value="monitorar">A monitorizar</option>
+            <select id="filtroEstado" class="filter-select" aria-label="Filter by status">
+              <option value="">All statuses</option>
+              <option value="meta">Target reached</option>
+              <option value="subiu">Price went up</option>
+              <option value="monitorar">Tracking</option>
             </select>
           </div>
           <div class="filter-count">
@@ -125,7 +125,7 @@
               <path d="M3.27 6.96L12 12.01l8.73-5.05"></path>
               <path d="M12 22.08V12"></path>
             </svg>
-            <span id="filterProductCount">0</span> produtos
+            <span id="filterProductCount">0</span> products
           </div>
         </div>
       </div>
@@ -136,7 +136,7 @@
         <div class="loading-spinner">
           <div class="spinner"></div>
         </div>
-        <p>A carregar produtos...</p>
+        <p>Loading products...</p>
       </div>
     </div>
   </main>
@@ -145,15 +145,15 @@
   <div id="confirmRemoverModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirmRemoverTitle">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="confirmRemoverTitle">Remover produto?</h3>
-        <button type="button" class="modal-close" onclick="closeConfirmRemoverModal()" aria-label="Fechar">&times;</button>
+        <h3 id="confirmRemoverTitle">Remove product?</h3>
+        <button type="button" class="modal-close" onclick="closeConfirmRemoverModal()" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Tem a certeza que deseja remover este produto? Esta ação não pode ser desfeita.</p>
+        <p>Are you sure you want to remove this product? This action cannot be undone.</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeConfirmRemoverModal()">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmRemoverBtn">Remover</button>
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmRemoverModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmRemoverBtn">Remove</button>
       </div>
     </div>
   </div>
@@ -162,32 +162,32 @@
   <div id="dataLimiteModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="dataLimiteTitle">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="dataLimiteTitle">Data limite de monitorização</h3>
-        <button type="button" class="modal-close" onclick="closeDataLimiteModal()" aria-label="Fechar">&times;</button>
+        <h3 id="dataLimiteTitle">Tracking end date</h3>
+        <button type="button" class="modal-close" onclick="closeDataLimiteModal()" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
         <p id="dataLimiteProductName" style="margin-top:0; font-weight:600;"></p>
-        <p>Define a data até à qual queres monitorizar este produto. Após essa data, o produto deixa de ser verificado automaticamente.</p>
+        <p>Set the date until which you want to track this product. After that date, the product will no longer be checked automatically.</p>
         <div class="date-fields-group">
           <div class="date-field">
-            <label for="dataLimiteDay">Dia</label>
+            <label for="dataLimiteDay">Day</label>
             <input type="number" id="dataLimiteDay" min="1" max="31" placeholder="01" inputmode="numeric">
           </div>
           <div class="date-field">
-            <label for="dataLimiteMonth">Mes</label>
+            <label for="dataLimiteMonth">Month</label>
             <input type="number" id="dataLimiteMonth" min="1" max="12" placeholder="01" inputmode="numeric">
           </div>
           <div class="date-field">
-            <label for="dataLimiteYear">Ano</label>
+            <label for="dataLimiteYear">Year</label>
             <input type="number" id="dataLimiteYear" min="2026" max="2099" placeholder="2026" inputmode="numeric">
           </div>
         </div>
         <p id="dataLimiteError" style="color:#c33; margin-top:8px; display:none;"></p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="dataLimiteRemoveBtn" style="margin-right:auto;">Remover data</button>
-        <button type="button" class="btn btn-secondary" onclick="closeDataLimiteModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="dataLimiteSaveBtn">Guardar</button>
+        <button type="button" class="btn btn-danger" id="dataLimiteRemoveBtn" style="margin-right:auto;">Remove date</button>
+        <button type="button" class="btn btn-secondary" onclick="closeDataLimiteModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="dataLimiteSaveBtn">Save</button>
       </div>
     </div>
   </div>
