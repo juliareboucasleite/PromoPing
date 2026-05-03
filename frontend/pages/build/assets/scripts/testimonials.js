@@ -27,11 +27,11 @@
 
   const translations = {
     'A carregar depoimentos...': 'Loading testimonials...',
-    'Ainda não há depoimentos disponíveis.': 'No testimonials available yet.',
-    'Erro ao carregar depoimentos.': 'Error loading testimonials.',
-    'Anónimo': 'Anonymous',
-    'Utilizador': 'User',
-    'Utilizador do Bot': 'Bot User'
+    'No testimonials available yet.': 'No testimonials available yet.',
+    'Error loading testimonials.': 'Error loading testimonials.',
+    'Anonymous': 'Anonymous',
+    'User': 'User',
+    'Bot User': 'Bot User'
   };
 
   let canvas = null;
@@ -56,14 +56,14 @@
   }
 
   function getAuthorName(review) {
-    const name = review.author.isAnonymous ? 'Anónimo' : (review.author.name || 'Utilizador');
+    const name = review.author.isAnonymous ? 'Anonymous' : (review.author.name || 'User');
     return translate(name);
   }
 
   function getRole(review) {
-    const role = review.type === 'site' ? 'Utilizador' :
-      review.type === 'bot' ? 'Utilizador do Bot' :
-      review.type === 'suporte' ? 'Utilizador' : 'Utilizador';
+    const role = review.type === 'site' ? 'User' :
+      review.type === 'bot' ? 'Bot User' :
+      review.type === 'suporte' ? 'User' : 'User';
     return translate(role);
   }
 
@@ -310,7 +310,7 @@
       animationId = null;
     }
 
-    showMessage(translate('A carregar depoimentos...'), false);
+    showMessage(translate('Loading testimonials...'), false);
 
     try {
       const response = await fetch(API_ENDPOINT + '?limit=30');
@@ -318,7 +318,7 @@
 
       const data = await response.json();
       if (data.status !== 'ok' || !data.reviews || data.reviews.length === 0) {
-        showMessage(translate('Ainda não há depoimentos disponíveis.'), false);
+        showMessage(translate('No testimonials available yet.'), false);
         reviewsData = [];
         return;
       }
@@ -342,7 +342,7 @@
       startAnimation();
     } catch (err) {
       console.error('[TESTIMONIALS]', err);
-      showMessage(translate('Erro ao carregar depoimentos.'), false);
+      showMessage(translate('Error loading testimonials.'), false);
       reviewsData = [];
     }
   }

@@ -336,10 +336,10 @@
       const dataLimiteAttr = escapeHtmlAttr((p.DataLimite || p.dataLimite || "").toString());
       const precoAtualNum = (p.PrecoAtual ?? p.precoAtual ?? p.preco_atual) != null ? Number(p.PrecoAtual ?? p.precoAtual ?? p.preco_atual) : null;
       const precoAlvoNum = (p.PrecoAlvo ?? p.precoAlvo ?? p.preco_alvo) != null ? Number(p.PrecoAlvo ?? p.precoAlvo ?? p.preco_alvo) : null;
-      const precoAtual = precoAtualNum != null ? "â‚¬" + precoAtualNum.toFixed(2) : "â€”";
-      const precoAlvo = precoAlvoNum != null ? "â‚¬" + precoAlvoNum.toFixed(2) : "â€”";
+      const precoAtual = precoAtualNum != null ? "€" + precoAtualNum.toFixed(2) : "—";
+      const precoAlvo = precoAlvoNum != null ? "€" + precoAlvoNum.toFixed(2) : "—";
       const metaAtingida = precoAlvoNum != null && precoAtualNum != null && precoAtualNum <= precoAlvoNum;
-      const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("pt-PT") : "â€”";
+      const dataAdicao = (p.DataCriacao || p.dataCriacao || p.criado_em) ? new Date(p.DataCriacao || p.dataCriacao || p.criado_em).toLocaleDateString("en-GB") : "—";
       let storeTagClass = "store-tag";
       if (loja) {
         const lojaLower = loja.toLowerCase();
@@ -896,7 +896,7 @@
           const elPoupado = document.getElementById("dinheiroPoupado");
           if (elProdutos) elProdutos.textContent = stats.produtos_total || 0;
           if (elNotif) elNotif.textContent = stats.notificacoes_total || 0;
-          if (elPoupado) elPoupado.textContent = `â‚¬${(stats.dinheiro_poupado || 0).toFixed(2)}`;
+          if (elPoupado) elPoupado.textContent = `€${(stats.dinheiro_poupado || 0).toFixed(2)}`;
           console.log("EstatÃ­sticas atualizadas na UI");
         } else {
           console.error("Erro na resposta:", data.error);

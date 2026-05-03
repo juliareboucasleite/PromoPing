@@ -261,17 +261,17 @@
    * Renderiza uma thread na lista lateral
    * @param {Object} thread - Objeto da thread com id, message, createdAt, replyCount, etc
    * @param {boolean} isActive - Se esta thread está atualmente selecionada
-   * @param {boolean} hasUnread - Se há mensagens não lidas (respostas do suporte)
+   * @param {boolean} hasUnread - Se há mensagens não lidas (replies do suporte)
    * @returns {string} HTML da thread renderizada
    */
   function renderThread(thread, isActive = false, hasUnread = false) {
     const createdAt = parseValidDate(getMessageCreatedAt(thread));
     const date = createdAt
-      ? createdAt.toLocaleDateString('pt-BR', {
+      ? createdAt.toLocaleDateString('en-US', {
           day: '2-digit',
           month: '2-digit'
         })
-      : 'Sem data';
+      : 'No date';
     const preview = thread.message.length > 50 
       ? thread.message.substring(0, 50) + '...' 
       : thread.message;
@@ -299,7 +299,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#999;">
               <span>${date}</span>
-              ${replyCount > 0 ? `<span style="background:#f17603;color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;">${replyCount} respostas</span>` : ''}
+              ${replyCount > 0 ? `<span style="background:#f17603;color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;">${replyCount} replies</span>` : ''}
             </div>
           </div>
         </div>
@@ -317,33 +317,33 @@
     const isUser = senderType === 'user';
     const createdAt = parseValidDate(getMessageCreatedAt(msg));
     const time = createdAt
-      ? createdAt.toLocaleTimeString('pt-BR', {
+      ? createdAt.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit'
         })
       : '';
     const date = createdAt
-      ? createdAt.toLocaleDateString('pt-BR', {
+      ? createdAt.toLocaleDateString('en-US', {
           day: '2-digit',
           month: '2-digit'
         })
       : '';
     const supportAvatarUrl = getSupportAvatarUrl();
     const userDisplayName = getMessageUserName(msg).trim();
-    const senderLabel = isUser ? (userDisplayName || 'Você') : 'Suporte';
-    const dateLabel = date && time ? `${date} às ${time}` : '';
+    const senderLabel = isUser ? (userDisplayName || 'You') : 'Support';
+    const dateLabel = date && time ? `${date} at ${time}` : '';
     
     const html = `
       <div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:20px;align-items:flex-end;gap:12px;">
         ${!isUser ? `
-          <img src="${supportAvatarUrl}" alt="suporte"
+          <img src="${supportAvatarUrl}" alt="support"
                onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
                style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid white;">
         ` : ''}
         <div style="max-width:75%;display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};gap:4px;">
           <div style="display:flex;align-items:center;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
-            <span style="font-size:11px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;">${isUser ? 'Você' : 'Suporte'}</span>
-            <span style="font-size:10px;color:#adb5bd;">${date} às ${time}</span>
+            <span style="font-size:11px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;">${isUser ? 'You' : 'Support'}</span>
+            <span style="font-size:10px;color:#adb5bd;">${date} at ${time}</span>
           </div>
           <div style="display:flex;align-items:flex-end;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
             <div style="padding:12px 16px;border-radius:18px;background:${isUser ? 'linear-gradient(135deg, #f17603 0%, #ff9800 100%)' : '#ffffff'};color:${isUser ? '#fff' : '#344767'};word-wrap:break-word;box-shadow:0 2px 12px rgba(0,0,0,0.1);${isUser ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'};max-width:100%;border:${isUser ? 'none' : '1px solid #e9ecef'};">
@@ -362,7 +362,7 @@
       </div>
     `;
     return html
-      .replace(`>${isUser ? 'VocÃª' : 'Suporte'}</span>`, `>${escapeHtml(senderLabel)}</span>`)
+      .replace(`>${isUser ? 'You' : 'Support'}</span>`, `>${escapeHtml(senderLabel)}</span>`)
       .replace(
         /<span style="font-size:10px;color:#adb5bd;">.*?<\/span>/,
         dateLabel ? `<span style="font-size:10px;color:#adb5bd;">${dateLabel}</span>` : ''
@@ -374,13 +374,13 @@
     const isUser = senderType === 'user';
     const createdAt = parseValidDate(getMessageCreatedAt(msg));
     const time = createdAt
-      ? createdAt.toLocaleTimeString('pt-BR', {
+      ? createdAt.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit'
         })
       : '';
     const date = createdAt
-      ? createdAt.toLocaleDateString('pt-BR', {
+      ? createdAt.toLocaleDateString('en-US', {
           day: '2-digit',
           month: '2-digit'
         })
@@ -388,13 +388,13 @@
     const supportAvatarUrl = getSupportAvatarUrl();
     const userAvatarUrl = getCurrentUserAvatarUrl(msg);
     const userDisplayName = getMessageUserName(msg).trim();
-    const senderLabel = isUser ? (userDisplayName || 'Voce') : 'Suporte';
-    const dateLabel = date && time ? `${date} às ${time}` : '';
+    const senderLabel = isUser ? (userDisplayName || 'You') : 'Support';
+    const dateLabel = date && time ? `${date} at ${time}` : '';
 
     return `
       <div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:20px;align-items:flex-end;gap:12px;">
         ${!isUser ? `
-          <img src="${supportAvatarUrl}" alt="suporte"
+          <img src="${supportAvatarUrl}" alt="support"
                onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
                style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid white;">
         ` : ''}
@@ -408,7 +408,7 @@
               <div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(msg.message)}</div>
             </div>
             ${isUser ? `
-              <img src="${userAvatarUrl}" alt="utilizador"
+              <img src="${userAvatarUrl}" alt="user"
                    onerror="this.onerror=null;this.src='${supportAvatarUrl}'"
                    style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(241,118,3,0.25);border:2px solid rgba(255,255,255,0.9);">
             ` : ''}
@@ -425,7 +425,7 @@
    */
   async function refreshMessages(threadId, container) {
     if (!threadId) {
-      container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Nenhuma conversa selecionada.</div>';
+      container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">No conversation selected.</div>';
       return;
     }
     
@@ -433,11 +433,11 @@
       const messages = await loadConversation(threadId);
       container.innerHTML = messages.length > 0 
         ? messages.map(renderSupportMessage).join('')
-        : '<div style="text-align:center;color:#999;padding:20px;">Nenhuma mensagem nesta conversa.</div>';
+        : '<div style="text-align:center;color:#999;padding:20px;">No messages in this conversation.</div>';
       container.scrollTop = container.scrollHeight;
     } catch (error) {
-      console.error(' [Support Widget] Erro ao atualizar mensagens:', error);
-      container.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Erro ao carregar mensagens.</div>';
+      console.error(' [Support Widget] Error refreshing messages:', error);
+      container.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Error loading messages.</div>';
     }
   }
 
@@ -508,16 +508,16 @@
      */
     function renderWizardStep() {
       const prompts = [
-        'Olá! Para te ajudar, diz-me o teu nome (ou um nickname).',
-        'Qual é o teu email?',
-        'Descreve o problema ou a tua mensagem.'
+        'Hi! To help you, tell me your name (or a nickname).',
+        'What is your email?',
+        'Describe the issue or your message.'
       ];
-      const placeholders = ['O teu nome', 'O teu email', 'Descreve o problema...'];
+      const placeholders = ['Your name', 'Your email', 'Describe the issue...'];
       textEl.placeholder = placeholders[wizardStep];
       messagesContainer.innerHTML = `
         <div style="padding:20px;color:#333;">
           <p style="margin:0 0 12px 0;font-size:15px;line-height:1.4;">${prompts[wizardStep]}</p>
-          ${wizardStep === 0 && wizardUserName ? '<p style="margin:8px 0 0 0;color:#666;font-size:13px;">Nome: ' + escapeHtml(wizardUserName) + '</p>' : ''}
+          ${wizardStep === 0 && wizardUserName ? '<p style="margin:8px 0 0 0;color:#666;font-size:13px;">Name: ' + escapeHtml(wizardUserName) + '</p>' : ''}
           ${wizardStep === 1 && wizardUserEmail ? '<p style="margin:8px 0 0 0;color:#666;font-size:13px;">Email: ' + escapeHtml(wizardUserEmail) + '</p>' : ''}
         </div>`;
     }
@@ -553,7 +553,7 @@
         updatePaginationControls();
       } catch (error) {
         console.error(' [Support Widget] Erro ao carregar threads:', error);
-        threadsList.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;font-size:12px;">Erro ao carregar conversas.</div>';
+        threadsList.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;font-size:12px;">Error loading conversations.</div>';
       }
     }
 
@@ -567,7 +567,7 @@
       }
 
       paginationContainer.style.display = 'flex';
-      pageInfo.textContent = `Página ${paginationInfo.page} de ${paginationInfo.totalPages}`;
+      pageInfo.textContent = `Page ${paginationInfo.page} of ${paginationInfo.totalPages}`;
       
       // Habilitar/desabilitar botões
       prevPageBtn.disabled = !paginationInfo.hasPrev;
@@ -581,17 +581,17 @@
 
     /**
      * Renderiza a lista de threads na sidebar
-     * Detecta threads com respostas do suporte (não lidas)
+     * Detecta threads com replies do suporte (não lidas)
      */
     function renderThreadsList() {
       if (allThreads.length === 0) {
-        threadsList.innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:12px;">Nenhuma conversa ainda.</div>';
+        threadsList.innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:12px;">No conversations yet.</div>';
         return;
       }
 
       threadsList.innerHTML = allThreads.map(thread => {
         const isActive = thread.id === currentThreadId;
-        // Thread tem respostas não lidas se:
+        // Thread tem replies não lidas se:
         // 1. Tem replyCount > 0
         // 2. lastReplyAt existe e é mais recente que createdAt
         // 3. Não está atualmente selecionada (presumimos que se está selecionada, foi lida)
@@ -618,7 +618,7 @@
     async function selectThread(threadId) {
       currentThreadId = threadId;
       wizardStep = null;
-      textEl.placeholder = 'Digite sua mensagem...';
+      textEl.placeholder = 'Type your message...';
       await refreshMessages(threadId, messagesContainer);
       updateThreadInfo();
       renderThreadsList();
@@ -637,7 +637,7 @@
           const latestThread = allThreads[0];
           currentThreadId = latestThread.id;
           wizardStep = null;
-          textEl.placeholder = 'Digite sua mensagem...';
+          textEl.placeholder = 'Type your message...';
           await refreshMessages(currentThreadId, messagesContainer);
           updateThreadInfo();
         } else {
@@ -650,7 +650,7 @@
         }
       } catch (error) {
         console.error(' [Support Widget] Erro ao carregar thread:', error);
-        messagesContainer.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Erro ao carregar conversas.</div>';
+        messagesContainer.innerHTML = '<div style="text-align:center;color:#d32f2f;padding:20px;">Error loading conversations.</div>';
         currentThreadId = null;
         updateThreadInfo();
       }
@@ -664,7 +664,7 @@
     async function sendMessage() {
       const message = (textEl.value || '').trim();
       if (!message) {
-        fb.textContent = 'Escreva algo para continuar.';
+        fb.textContent = 'Write something to continue.';
         fb.style.color = '#a66';
         return;
       }
@@ -691,7 +691,7 @@
           return;
         }
         if (wizardStep === 2) {
-          fb.textContent = 'A abrir ticket...';
+          fb.textContent = 'Opening ticket...';
           const result = await fetchJSON('/api/support/messages', {
             method: 'POST',
             body: JSON.stringify({
@@ -705,8 +705,8 @@
           wizardUserName = '';
           wizardUserEmail = '';
           textEl.value = '';
-          textEl.placeholder = 'Digite sua mensagem...';
-          fb.textContent = 'Enviado! A equipa pode responder aqui.';
+          textEl.placeholder = 'Type your message...';
+          fb.textContent = 'Sent! The team can reply here.';
           fb.style.color = '#2e7d32';
           setTimeout(() => { fb.textContent = ''; }, 2500);
           await refreshMessages(currentThreadId, messagesContainer);
@@ -736,14 +736,14 @@
         }
 
         textEl.value = '';
-        fb.textContent = 'Enviado com sucesso!';
+        fb.textContent = 'Sent successfully!';
         fb.style.color = '#2e7d32';
         setTimeout(() => { fb.textContent = ''; }, 2000);
         await refreshMessages(currentThreadId, messagesContainer);
         await loadAllThreads();
       } catch (error) {
         console.error(' [Support Widget] Erro ao enviar mensagem:', error);
-        fb.textContent = `Falha ao enviar: ${error.message}`;
+        fb.textContent = `Failed to send: ${error.message}`;
         fb.style.color = '#c62828';
       }
     }
@@ -790,10 +790,10 @@
       }
     });
 
-    // Enviar mensagem
+    // Send mensagem
     modal.querySelector('#pp-support-send').addEventListener('click', sendMessage);
 
-    // Enviar com Enter (Ctrl+Enter para nova linha)
+    // Send com Enter (Ctrl+Enter para nova linha)
     textEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
         e.preventDefault();
@@ -844,7 +844,7 @@
     btn.id = 'pp-support-btn';
     btn.className = 'pp-support-btn';
     btn.textContent = '?';
-    btn.setAttribute('aria-label', 'Abrir suporte');
+    btn.setAttribute('aria-label', 'Open support');
     Object.assign(btn.style, {
       width: '48px',
       height: '48px',
@@ -901,10 +901,10 @@
 
     modal.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#fff;border-bottom:1px solid #eee;flex-shrink:0;">
-        <strong style="font-size:16px;">Contato de Suporte</strong>
+        <strong style="font-size:16px;">Support Contact</strong>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button id="pp-support-toggle-threads" style="border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;transition:all 0.2s;" title="Mostrar/Ocultar conversas">Conversas</button>
-          <button id="pp-support-new" style="border:1px solid #f17603;background:#fff;color:#f17603;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s;">Nova Conversa</button>
+          <button id="pp-support-toggle-threads" style="border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;transition:all 0.2s;" title="Show/Hide conversations">Conversations</button>
+          <button id="pp-support-new" style="border:1px solid #f17603;background:#fff;color:#f17603;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s;">New Conversation</button>
           <button id="pp-support-close" style="border:none;background:none;color:#777;font-size:20px;cursor:pointer;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;">✕</button>
         </div>
       </div>
@@ -912,29 +912,29 @@
         <!-- Sidebar de Threads -->
         <div id="pp-support-threads-sidebar" style="width:250px;border-right:1px solid #eee;background:#fafafa;overflow-y:auto;display:none;flex-shrink:0;flex-direction:column;">
           <div style="padding:12px;border-bottom:1px solid #eee;background:#fff;flex-shrink:0;">
-            <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">SUAS CONVERSAS</div>
+            <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;">YOUR CONVERSATIONS</div>
             <div id="pp-support-threads-list" style="max-height:400px;overflow-y:auto;">
-              <div style="text-align:center;color:#999;padding:20px;font-size:12px;">Carregando conversas...</div>
+              <div style="text-align:center;color:#999;padding:20px;font-size:12px;">Loading conversations...</div>
             </div>
             <!-- Controles de Paginação -->
             <div id="pp-support-pagination" style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;display:none;gap:4px;justify-content:space-between;align-items:center;">
-              <button id="pp-support-prev-page" style="padding:4px 8px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;disabled:true;">« Anterior</button>
-              <span id="pp-support-page-info" style="font-size:11px;color:#666;">Página 1</span>
-              <button id="pp-support-next-page" style="padding:4px 8px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;">Próxima »</button>
+              <button id="pp-support-prev-page" style="padding:4px 8px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;disabled:true;">« Previous</button>
+              <span id="pp-support-page-info" style="font-size:11px;color:#666;">Page 1</span>
+              <button id="pp-support-next-page" style="padding:4px 8px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;">Next »</button>
             </div>
           </div>
         </div>
         <!-- Área de Mensagens -->
         <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
           <div id="pp-support-messages" style="flex:1;overflow-y:auto;padding:16px;background:#fafafa;">
-            <div style="text-align:center;color:#999;padding:20px;">Carregando conversas...</div>
+            <div style="text-align:center;color:#999;padding:20px;">Loading conversations...</div>
           </div>
           <div style="padding:12px 16px;border-top:1px solid #eee;background:#fff;flex-shrink:0;">
             <div id="pp-support-thread-info" style="margin-bottom:8px;padding:8px;background:#fff3e0;border-radius:6px;font-size:12px;color:#e65100;display:none;">
-              <strong>Respondendo à conversa:</strong> <span id="pp-support-thread-preview"></span>
+              <strong>Replying to conversation:</strong> <span id="pp-support-thread-preview"></span>
             </div>
-            <textarea id="pp-support-text" rows="2" placeholder="Digite sua mensagem..." style="width:90%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:none;font-size:14px;margin-bottom:8px;font-family:inherit;"></textarea>
-            <button id="pp-support-send" style="width:100%;background:#f17603;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.2s;">Enviar</button>
+            <textarea id="pp-support-text" rows="2" placeholder="Type your message..." style="width:90%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:none;font-size:14px;margin-bottom:8px;font-family:inherit;"></textarea>
+            <button id="pp-support-send" style="width:100%;background:#f17603;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.2s;">Send</button>
             <div id="pp-support-feedback" style="margin-top:6px;font-size:12px;color:#666;text-align:center;"></div>
           </div>
         </div>

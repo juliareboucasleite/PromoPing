@@ -11,13 +11,13 @@ export function adicionarProduto() {
     const data = inputData.value;
 
     if (!link || !data) {
-        alert("Preencha todos os campos!");
+        alert("Fill in all fields!");
         return;
     }
 
     const anoSelecionado = parseInt(data.split("-")[0], 10);
     if (anoSelecionado < 2025) {
-        alert("Data inválida. Só a partir de 2025.");
+        alert("Invalid date. Only 2025 onward is allowed.");
         return;
     }
 
@@ -26,7 +26,7 @@ export function adicionarProduto() {
         link: link,
         preco: "100€",
         data: data,
-        status: "Ativo"
+        status: "Active"
     };
 
     adicionarProdutoNaTabela(produto);
@@ -42,33 +42,33 @@ export function adicionarProdutoNaTabela(produto) {
 
     novaLinha.innerHTML = `
     <td>${produto.nome}</td>
-    <td><a href="${produto.link}" target="_blank">Ver produto</a></td>
+    <td><a href="${produto.link}" target="_blank">View product</a></td>
     <td>${produto.preco}</td>
     <td>${produto.data}</td>
     <td>${produto.status}</td>
     <td>
-      <button class="editar">Editar</button>
-      <button class="remover">Remover</button>
-      <button class="historico">Histórico</button>
+      <button class="editar">Edit</button>
+      <button class="remover">Remove</button>
+      <button class="historico">History</button>
     </td>
   `;
 
-    // Editar
+    // Edit
     novaLinha.querySelector('.editar').addEventListener('click', () => {
-        const novaData = prompt("Nova data (AAAA-MM-DD):", produto.data);
+        const novaData = prompt("New date (YYYY-MM-DD):", produto.data);
         if (novaData) {
             novaLinha.cells[3].innerText = novaData;
             salvarProdutos();
         }
     });
 
-    // Remover
+    // Remove
     novaLinha.querySelector('.remover').addEventListener('click', () => {
         tabela.deleteRow(novaLinha.rowIndex);
         salvarProdutos();
     });
 
-    // Histórico
+    // History
     novaLinha.querySelector('.historico').addEventListener('click', () => {
         gerarHistorico(produto);
     });

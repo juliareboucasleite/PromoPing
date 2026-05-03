@@ -16,7 +16,7 @@ window.openLoginModal = function() {
   }
   
   // Limpa as mensagens de erro/sucesso anteriores - tipo resetar o estado do modal
-  const errorElement = document.getElementById('loginErrorMessage');
+  const errorElement = document.getElementById('loginErrorrMessage');
   const successElement = document.getElementById('loginSuccessMessage');
   if (errorElement) {
     errorElement.textContent = '';
@@ -225,10 +225,10 @@ window.openQRModal = function() {
       }, 3000);
     })
     .catch(function (err) {
-      console.error('Erro ao obter sessão QR:', err);
+      console.error('Error ao obter sessão QR:', err);
       var placeholderText = document.querySelector('#qrCodePlaceholder .qr-placeholder-text');
       if (placeholderText) {
-        placeholderText.textContent = 'Erro ao carregar o código. Tenta novamente.';
+        placeholderText.textContent = 'Error ao carregar o código. Tenta novamente.';
         placeholderText.style.display = 'block';
       }
     });
@@ -278,7 +278,7 @@ window.openVerificationModal = function(email) {
   const codeInput = document.getElementById('verificationCode');
   if (codeInput) codeInput.value = '';
   
-  const errorMsg = document.getElementById('verificationErrorMessage');
+  const errorMsg = document.getElementById('verificationErrorrMessage');
   const successMsg = document.getElementById('verificationSuccessMessage');
   if (errorMsg) errorMsg.textContent = '';
   if (successMsg) successMsg.textContent = '';
@@ -526,10 +526,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Limpa as mensagens de erro quando o user começa a digitar de novo (UX melhor)
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
-      const errorElement = document.getElementById('loginErrorMessage');
+      const errorElement = document.getElementById('loginErrorrMessage');
       
       // Função pra limpar o erro (reutilizável)
-      const clearError = () => {
+      const clearErrorr = () => {
         if (errorElement) {
           errorElement.textContent = '';
           errorElement.style.display = 'none';
@@ -537,13 +537,13 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       
       if (emailInput) {
-        emailInput.addEventListener('input', clearError);
-        emailInput.addEventListener('focus', clearError);
+        emailInput.addEventListener('input', clearErrorr);
+        emailInput.addEventListener('focus', clearErrorr);
       }
       
       if (passwordInput) {
-        passwordInput.addEventListener('input', clearError);
-        passwordInput.addEventListener('focus', clearError);
+        passwordInput.addEventListener('input', clearErrorr);
+        passwordInput.addEventListener('focus', clearErrorr);
       }
       
       // Handler do submit do formulário de login
@@ -581,9 +581,9 @@ document.addEventListener('DOMContentLoaded', function() {
           let data;
           try {
             data = await res.json();
-          } catch (parseError) {
-            console.error("Erro ao fazer parse da resposta:", parseError);
-            throw new Error("Resposta inválida do servidor");
+          } catch (parseErrorr) {
+            console.error("Error ao fazer parse da resposta:", parseErrorr);
+            throw new Errorr("Resposta inválida do servidor");
           }
 
           // Se login exige 2FA, mostrar passo de código (esconder só o form, não o wrapper)
@@ -618,20 +618,20 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = "/dashboard";
           } else {
             // Se deu erro, mostra a mensagem de erro no modal
-            const errorMessage = data.error || data.message || "Email ou senha incorretos";
+            const errorMessage = data.error || data.message || "Incorrect email or password";
             
-            const errorElement = document.getElementById('loginErrorMessage');
+            const errorElement = document.getElementById('loginErrorrMessage');
             if (errorElement) {
               errorElement.textContent = errorMessage;
               errorElement.style.display = 'block';
             }
           }
         } catch (err) {
-          // Erro de rede ou qualquer outra merda que deu errado
-          console.error("Erro no login:", err);
-          const errorMessage = err.message || "Erro de ligação com o servidor";
+          // Error de rede ou qualquer outra merda que deu errado
+          console.error("Sign-in error:", err);
+          const errorMessage = err.message || "Server connection error";
           
-          const errorElement = document.getElementById('loginErrorMessage');
+          const errorElement = document.getElementById('loginErrorrMessage');
           if (errorElement) {
             errorElement.textContent = errorMessage;
             errorElement.style.display = 'block';
@@ -648,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // 2FA: Verificar código após login
+    // 2FA: Verify código após login
     const login2FAVerifyBtn = document.getElementById('login2FAVerify');
     if (login2FAVerifyBtn) {
       login2FAVerifyBtn.addEventListener('click', async () => {
@@ -658,8 +658,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const tempToken = stepEl.dataset.tempToken;
         const code = codeInput.value.trim();
         if (!tempToken || !code) {
-          const errEl = document.getElementById('loginErrorMessage');
-          if (errEl) { errEl.textContent = 'Introduza o código.'; errEl.style.display = 'block'; }
+          const errEl = document.getElementById('loginErrorrMessage');
+          if (errEl) { errEl.textContent = 'Enter the code.'; errEl.style.display = 'block'; }
           return;
         }
         login2FAVerifyBtn.disabled = true;
@@ -675,13 +675,13 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('token', data.token);
             window.location.href = '/dashboard';
           } else {
-            const errEl = document.getElementById('loginErrorMessage');
-            if (errEl) { errEl.textContent = data.error || 'Código inválido.'; errEl.style.display = 'block'; }
+            const errEl = document.getElementById('loginErrorrMessage');
+            if (errEl) { errEl.textContent = data.error || 'Invalid code.'; errEl.style.display = 'block'; }
             login2FAVerifyBtn.disabled = false;
           }
         } catch (e) {
-          const errEl = document.getElementById('loginErrorMessage');
-          if (errEl) { errEl.textContent = 'Erro de ligação.'; errEl.style.display = 'block'; }
+          const errEl = document.getElementById('loginErrorrMessage');
+          if (errEl) { errEl.textContent = 'Connection error.'; errEl.style.display = 'block'; }
           login2FAVerifyBtn.disabled = false;
         }
       });
@@ -705,9 +705,9 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           const data = await res.json();
           if (res.ok && data.sent) {
-            const errEl = document.getElementById('loginErrorMessage');
+            const errEl = document.getElementById('loginErrorrMessage');
             if (errEl) { errEl.style.display = 'none'; }
-            login2FASendEmailBtn.textContent = 'Código enviado. Verifique o email.';
+            login2FASendEmailBtn.textContent = 'Code sent. Check your email.';
           }
         } catch (e) {}
         login2FASendEmailBtn.disabled = false;
@@ -739,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         } catch (error) {
           // Se der erro, tenta o fluxo normal mesmo
-          console.error("Erro ao verificar usuário Discord:", error);
+          console.error("Error ao verificar usuário Discord:", error);
           window.location.href = "/auth/discord";
         }
       });
@@ -811,22 +811,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const nome = document.getElementById('registerNome')?.value.trim() || email.split("@")[0];
 
         if (!email || !email.includes("@")) {
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", "Por favor, insira um email válido");
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", "Please enter a valid email");
           }
           return;
         }
 
         if (password.length < 8) {
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", "A palavra-passe deve ter pelo menos 8 caracteres");
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", "The password must be at least 8 characters long");
           }
           return;
         }
 
         if (!birthdate) {
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", "Por favor, insira a sua data de nascimento");
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", "Please enter your birth date");
           }
           return;
         }
@@ -843,12 +843,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Se for menor de 13, não deixa criar conta
         if (age < 13) {
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing");
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", "You must be at least 13 years old to create a PromoPing account");
           }
           if (btnCriar) {
             btnCriar.disabled = false;
-            btnCriar.querySelector('.button-text').textContent = "Continuar";
+            btnCriar.querySelector('.button-text').textContent = "Continue";
           }
           return;
         }
@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnCriar = document.getElementById('btnCriar');
         if (btnCriar) {
           btnCriar.disabled = true;
-          btnCriar.querySelector('.button-text').textContent = "A criar conta...";
+          btnCriar.querySelector('.button-text').textContent = "Creating account...";
         }
 
         try {
@@ -898,19 +898,19 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModals();
             openVerificationModal(email);
           } else {
-            if (typeof window.showError === 'function') {
-              window.showError("Erro", data.error || data.message || "Erro ao criar conta");
+            if (typeof window.showErrorr === 'function') {
+              window.showErrorr("Error", data.error || data.message || "Errorr creating account");
             }
           }
         } catch (error) {
-          console.error("Erro ao registrar:", error);
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", error.message || "Erro de ligação ao servidor");
+          console.error("Registration error:", error);
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", error.message || "Error de ligação ao servidor");
           }
         } finally {
           if (btnCriar) {
             btnCriar.disabled = false;
-            btnCriar.querySelector('.button-text').textContent = "Continuar";
+            btnCriar.querySelector('.button-text').textContent = "Continue";
           }
         }
       });
@@ -932,24 +932,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const codeInput = document.getElementById('verificationCode');
         const emailSpan = document.getElementById('verificationEmail');
-        const errorMsg = document.getElementById('verificationErrorMessage');
+        const errorMsg = document.getElementById('verificationErrorrMessage');
         const successMsg = document.getElementById('verificationSuccessMessage');
-        const btnVerificar = document.getElementById('btnVerificar');
+        const btnVerify = document.getElementById('btnVerify');
         
         const codigo = codeInput.value.trim();
         const email = emailSpan ? emailSpan.textContent.trim() : '';
         
         if (!codigo) {
           if (errorMsg) {
-            errorMsg.textContent = 'Por favor, insira o código de verificação';
+            errorMsg.textContent = 'Please enter the verification code';
             errorMsg.style.display = 'block';
           }
           return;
         }
         
-        if (btnVerificar) {
-          btnVerificar.disabled = true;
-          btnVerificar.querySelector('.button-text').textContent = "A verificar...";
+        if (btnVerify) {
+          btnVerify.disabled = true;
+          btnVerify.querySelector('.button-text').textContent = "Verifying...";
         }
         
         if (errorMsg) errorMsg.textContent = '';
@@ -970,13 +970,13 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem("token", data.token);
             
             if (successMsg) {
-              successMsg.textContent = "Email verificado com sucesso!";
+              successMsg.textContent = "Email verified successfully!";
               successMsg.style.display = 'block';
             }
             
             // Mostra notificação (ainda tem aqui, mas pode remover depois se quiser)
             if (typeof window.showSuccess === 'function') {
-              window.showSuccess("Sucesso", "Email verificado! Redirecionando...");
+              window.showSuccess("Success", "Email verified! Redirecting...");
             }
             
             // Redireciona pro dashboard depois de 1 segundo (dá tempo de ver a mensagem)
@@ -985,51 +985,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
           } else {
             if (errorMsg) {
-              errorMsg.textContent = data.error || "Código inválido ou expirado";
+              errorMsg.textContent = data.error || "Invalid or expired code";
               errorMsg.style.display = 'block';
             }
-            if (typeof window.showError === 'function') {
-              window.showError("Erro", data.error || "Código inválido ou expirado");
+            if (typeof window.showErrorr === 'function') {
+              window.showErrorr("Error", data.error || "Invalid or expired code");
             }
           }
         } catch (error) {
-          console.error("Erro ao verificar código:", error);
+          console.error("Error ao verificar código:", error);
           if (errorMsg) {
-            errorMsg.textContent = "Erro de ligação ao servidor";
+            errorMsg.textContent = "Error de ligação ao servidor";
             errorMsg.style.display = 'block';
           }
-          if (typeof window.showError === 'function') {
-            window.showError("Erro", "Erro de ligação ao servidor");
+          if (typeof window.showErrorr === 'function') {
+            window.showErrorr("Error", "Error de ligação ao servidor");
           }
         } finally {
-          if (btnVerificar) {
-            btnVerificar.disabled = false;
-            btnVerificar.querySelector('.button-text').textContent = "Verificar";
+          if (btnVerify) {
+            btnVerify.disabled = false;
+            btnVerify.querySelector('.button-text').textContent = "Verify";
           }
         }
       });
     }
 
-    // Reenviar código
+    // Resend code
     const btnResendCode = document.getElementById('btnResendCode');
     if (btnResendCode) {
       btnResendCode.addEventListener('click', async () => {
         const emailSpan = document.getElementById('verificationEmail');
-        const errorMsg = document.getElementById('verificationErrorMessage');
+        const errorMsg = document.getElementById('verificationErrorrMessage');
         const successMsg = document.getElementById('verificationSuccessMessage');
         
         const email = emailSpan ? emailSpan.textContent.trim() : '';
         
         if (!email) {
           if (errorMsg) {
-            errorMsg.textContent = 'Email não encontrado';
+            errorMsg.textContent = 'Email not found';
             errorMsg.style.display = 'block';
           }
           return;
         }
         
         btnResendCode.disabled = true;
-        btnResendCode.textContent = "A enviar...";
+        btnResendCode.textContent = "Sending...";
         
         if (errorMsg) errorMsg.textContent = '';
         if (successMsg) successMsg.textContent = '';
@@ -1038,21 +1038,21 @@ document.addEventListener('DOMContentLoaded', function() {
           // TODO: O backend precisa ter um endpoint pra reenviar código de verdade
           // Por enquanto só mostra uma mensagem pro user (não faz request real)
           if (typeof window.showSuccess === 'function') {
-            window.showSuccess("Info", "Se o código não chegou, verifica a pasta de spam ou tenta fazer login novamente.");
+            window.showSuccess("Info", "If the code did not arrive, check your spam folder or try signing in again.");
           }
           if (successMsg) {
-            successMsg.textContent = "Se não recebeste o código, verifica a pasta de spam.";
+            successMsg.textContent = "If you did not receive the code, check your spam folder.";
             successMsg.style.display = 'block';
           }
         } catch (error) {
-          console.error("Erro ao reenviar código:", error);
+          console.error("Error ao reenviar código:", error);
           if (errorMsg) {
-            errorMsg.textContent = "Erro de ligação ao servidor";
+            errorMsg.textContent = "Error de ligação ao servidor";
             errorMsg.style.display = 'block';
           }
         } finally {
           btnResendCode.disabled = false;
-          btnResendCode.textContent = "Reenviar código";
+          btnResendCode.textContent = "Resend code";
         }
       });
     }

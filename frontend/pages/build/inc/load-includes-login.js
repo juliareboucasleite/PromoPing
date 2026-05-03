@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <span class="pp-header-title">PromoPing</span>
                                     </div>
                                     <nav class="pp-header-nav">
-                                        <a href="inc/register.html" class="pp-header-nav-link">Registar</a>
+                                        <a href="inc/register.html" class="pp-header-nav-link">Register</a>
                                     </nav>
                                 </div>
                             </header>
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="pp-header-title">PromoPing</span>
                             </div>
                             <nav class="pp-header-nav">
-                                <a href="inc/register.html" class="pp-header-nav-link">Registar</a>
+                                <a href="inc/register.html" class="pp-header-nav-link">Register</a>
                             </nav>
                         </div>
                     </header>
@@ -235,7 +235,7 @@ async function fetchGitHubVersion() {
     const version = data.tag_name || data.name || 'v2.3.3';
     return version.startsWith('v') ? version : `v${version}`;
   } catch (error) {
-    console.warn('Erro ao buscar versão do GitHub:', error);
+    console.warn('Error fetching GitHub version:', error);
     // Retorna versão padrão em caso de erro
     return 'v2.3.3';
   }

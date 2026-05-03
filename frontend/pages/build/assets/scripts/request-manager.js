@@ -66,7 +66,7 @@ class RequestManager {
     // Se já tá em rate limit de verdade (tomou o bloqueio), não deixa fazer requisição
     if (this.isRateLimited()) {
       console.warn(`Rate limit ativo. Aguardando ${this.getRetryAfter()}ms`);
-      throw new Error('Rate limit ativo. Tente novamente em alguns minutos.');
+      throw new Error('Rate limit active. Please try again in a few minutes.');
     }
 
     // Incrementa o contador (conta quantas requisições já fez)
@@ -93,7 +93,7 @@ class RequestManager {
       if (response.status === 429) {
         const errorData = await response.json();
         this.handleRateLimit(errorData.retryAfter || this.config.rateLimitRetryAfter);
-        throw new Error('Rate limit atingido. Tente novamente em alguns minutos.');
+        throw new Error('Rate limit reached. Please try again in a few minutes.');
       }
 
       // Se deu certo, atualiza info de rate limit
@@ -328,16 +328,16 @@ class RequestManager {
           <div style="margin-bottom: 30px;">
             <img src="assets/images/PromoPing.png" alt="PromoPing" style="max-width: 150px; animation: pulse 2s ease-in-out infinite;">
           </div>
-          <h2 style="font-size: 24px; margin-bottom: 20px; color: #fff;">A otimizar a ligação...</h2>
+          <h2 style="font-size: 24px; margin-bottom: 20px; color: #fff;">Optimizing the connection...</h2>
           <p style="font-size: 16px; color: rgba(255,255,255,0.8); margin-bottom: 30px; line-height: 1.6;">
-            Estamos a fazer uma pausa breve para garantir o melhor desempenho e evitar sobrecarga do servidor.
+            We are taking a short pause to ensure the best performance and avoid overloading the server.
           </p>
           <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 10px;">Tempo restante:</div>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 10px;">Time remaining:</div>
             <div id="cooldown-timer" style="font-size: 32px; font-weight: bold; color: #FFA54B;">${Math.floor(this.config.cooldownDuration / 60000)}:${((this.config.cooldownDuration % 60000) / 1000).toString().padStart(2, '0')}</div>
           </div>
           <p style="font-size: 14px; color: rgba(255,255,255,0.6);">
-            Por favor, aguarde enquanto otimizamos a ligação...
+            Please wait while we optimize the connection...
           </p>
         </div>
         <style>
@@ -414,4 +414,4 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   }, 30000);
 }
 
-console.log('Sistema de controle de requisições inicializado');
+console.log('Request control system initialized');

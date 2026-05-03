@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
@@ -7,8 +7,8 @@
   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Planos PromoPing â€” escolha o plano que melhor se adapta: Free, Basic, Standard ou Premium.">
-    <title>Planos PromoPing | promoping.pt</title>
+    <meta name="description" content="PromoPing Plans - choose the plan that best fits your needs: Free, Basic, Standard, or Premium.">
+    <title>PromoPing Plans | promoping.pt</title>
     <link rel="stylesheet" href="../../assets/styles/dashboard-shared.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
     <link rel="stylesheet" href="../../assets/styles/subscription-plans.css">
@@ -49,14 +49,14 @@
                         <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
                     </svg>
-                    Produtos
+                    Products
                 </a>
                 <a href="/dashboard/perfil" class="nav-item">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    Perfil
+                    Profile
                 </a>
                 <a href="/dashboard/planos" class="nav-item nav-item-active">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,19 +64,19 @@
                             d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
                         </path>
                     </svg>
-                    Planos
+                    Plans
                 </a>
             </div>
 
             <div class="nav-actions">
-                <span class="nav-user" id="userName">Utilizador</span>
+                <span class="nav-user" id="userName">User</span>
                 <button class="nav-logout" onclick="logout()">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16,17 21,12 16,7"></polyline>
                         <line x1="21" y1="12" x2="9" y2="12"></line>
                     </svg>
-                    Sair
+                    Sign out
                 </button>
             </div>
         </div>
@@ -88,25 +88,25 @@
             <!-- Header -->
             <div class="plans-header">
                 <div class="plans-header-text">
-                    <h1>Escolha o Plano Perfeito</h1>
-                    <p>Selecione o plano que melhor se adequa Ã s suas necessidades e comece a economizar hoje mesmo</p>
+                    <h1>Choose the Perfect Plan</h1>
+                    <p>Select the plan that best fits your needs and start saving today.</p>
                 </div>
-                <div class="plan-billing-toggle" role="group" aria-label="FaturaÃ§Ã£o">
-                    <button type="button" class="toggle-option active" id="toggleMensal" aria-pressed="true">Mensal</button>
-                    <button type="button" class="toggle-option" id="toggleAnual" aria-pressed="false">Anual</button>
+                <div class="plan-billing-toggle" role="group" aria-label="Billing">
+                    <button type="button" class="toggle-option active" id="toggleMonthly" aria-pressed="true">Monthly</button>
+                    <button type="button" class="toggle-option" id="toggleYearly" aria-pressed="false">Yearly</button>
                 </div>
             </div>
 
             <div class="current-plan-section" id="currentPlanSection" style="display: none;">
                 <div class="current-plan-header">
-                    <h3>Plano Atual</h3>
-                    <span class="status-badge" id="planStatus">Ativo</span>
+                    <h3>Current Plan</h3>
+                    <span class="status-badge" id="planStatus">Active</span>
                 </div>
                 <div class="current-plan-details" id="currentPlanDetails">
                 </div>
                 <div class="grace-period-info" id="gracePeriodInfo" style="display: none;">
-                    <h4>PerÃ­odo de GraÃ§a Ativo</h4>
-                    <p>Seu plano foi cancelado, mas vocÃª ainda tem acesso completo atÃ© <span class="countdown"
+                    <h4>Grace Period Active</h4>
+                    <p>Your plan was canceled, but you still have full access until <span class="countdown"
                             id="gracePeriodEnd"></span></p>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
@@ -116,10 +116,10 @@
                             <path d="M7 17L17 7"></path>
                             <path d="M7 7h10v10"></path>
                         </svg>
-                        Alterar Plano
+                        Change Plan
                     </button>
                     <button class="cancel-subscription-btn" onclick="cancelarAssinatura()">
-                        Cancelar
+                        Cancel
                     </button>
                 </div>
             </div>
@@ -129,8 +129,8 @@
                 <div class="plan-card" data-plan-id="1" data-monthly="0">
                     <div class="plan-header">
                         <div class="plan-name">Free</div>
-                        <div class="plan-price">â‚¬0<span class="currency">,00</span></div>
-                        <div class="plan-period">por mÃªs</div>
+                        <div class="plan-price">€0<span class="currency">,00</span></div>
+                        <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
                         <li>
@@ -138,28 +138,28 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            AtÃ© 5 produtos
+                            Up to 5 products
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            VerificaÃ§Ã£o a cada 24h
+                            Checks every 24h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            Apenas Email
+                            Email only
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            HistÃ³rico de 7 dias
+                            7-day history
                         </li>
                         <li>
                             <svg class="feature-icon cross" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -167,19 +167,19 @@
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
-                            Sem relatÃ³rios
+                            No reports
                         </li>
                     </ul>
                     <button class="plan-button secondary" onclick="abrirModalCompra(1, 'Free', 0.00)">
-                        Escolher Free
+                        Choose Free
                     </button>
                 </div>
 
                 <div class="plan-card" data-plan-id="2" data-monthly="4.99">
                     <div class="plan-header">
                         <div class="plan-name">Basic</div>
-                        <div class="plan-price">â‚¬4<span class="currency">,99</span></div>
-                        <div class="plan-period">por mÃªs</div>
+                        <div class="plan-price">€4<span class="currency">,99</span></div>
+                        <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
                         <li>
@@ -187,14 +187,14 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            AtÃ© 25 produtos
+                            Up to 25 products
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            VerificaÃ§Ã£o a cada 4h
+                            Checks every 4h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -208,25 +208,25 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            HistÃ³rico de 30 dias
+                            30-day history
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            RelatÃ³rios bÃ¡sicos
+                            Basic reports
                         </li>
                     </ul>
                     <button class="plan-button primary" onclick="abrirModalCompra(2, 'Basic', 4.99)">
-                        Escolher Basic
+                        Choose Basic
                     </button>
                 </div>
                 <div class="plan-card featured" data-plan-id="3" data-monthly="12.99">
                     <div class="plan-header">
                         <div class="plan-name">Standard</div>
-                        <div class="plan-price">â‚¬12<span class="currency">,99</span></div>
-                        <div class="plan-period">por mÃªs</div>
+                        <div class="plan-price">€12<span class="currency">,99</span></div>
+                        <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
                         <li>
@@ -234,14 +234,14 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            AtÃ© 50 produtos
+                            Up to 50 products
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            VerificaÃ§Ã£o a cada 2h
+                            Checks every 2h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -255,26 +255,26 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            HistÃ³rico de 50 dias
+                            50-day history
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            RelatÃ³rios avanÃ§ados
+                            Advanced reports
                         </li>
                     </ul>
                     <button class="plan-button primary" onclick="abrirModalCompra(3, 'Standard', 12.99)">
-                        Escolher Standard
+                        Choose Standard
                     </button>
                 </div>
 
                 <div class="plan-card" data-plan-id="4" data-monthly="15.30">
                     <div class="plan-header">
                         <div class="plan-name">Premium</div>
-                        <div class="plan-price">â‚¬15<span class="currency">,30</span></div>
-                        <div class="plan-period">por mÃªs</div>
+                        <div class="plan-price">€15<span class="currency">,30</span></div>
+                        <div class="plan-period">per month</div>
                     </div>
                     <ul class="plan-features">
                         <li>
@@ -282,14 +282,14 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            AtÃ© 100 produtos
+                            Up to 100 products
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            VerificaÃ§Ã£o a cada 1h
+                            Checks every 1h
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -303,18 +303,18 @@
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            HistÃ³rico de 100 dias
+                            100-day history
                         </li>
                         <li>
                             <svg class="feature-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <polyline points="20,6 9,17 4,12"></polyline>
                             </svg>
-                            RelatÃ³rios avanÃ§ados
+                            Advanced reports
                         </li>
                     </ul>
                     <button class="plan-button primary" onclick="abrirModalCompra(4, 'Premium', 15.30)">
-                        Escolher Premium
+                        Choose Premium
                     </button>
                 </div>
             </div>
@@ -327,7 +327,7 @@
         });
     </script>
 
-    <!-- Modal de Compra de Plano -->
+    <!-- Modal de Compra de Plan -->
     <div class="modal-overlay" id="purchaseModal" style="display: none;">
         <div class="modal-content purchase-modal-content">
             <div class="modal-header purchase-modal-header">
@@ -342,30 +342,30 @@
             <div class="modal-body purchase-modal-body">
                 <div class="purchase-plan-info">
                     <div class="plan-header-row">
-                        <span class="plan-name-compact" id="purchasePlanName">Plano</span>
+                        <span class="plan-name-compact" id="purchasePlanName">Plan</span>
                         <span class="plan-price-compact">
-                            <span class="price-amount-compact" id="purchasePlanPrice">â‚¬0,00</span>
-                            <span class="price-period-compact">/mÃªs</span>
+                            <span class="price-amount-compact" id="purchasePlanPrice">€0,00</span>
+                            <span class="price-period-compact">/month</span>
                         </span>
                     </div>
                     <div class="payment-dates">
                         <div class="date-info">
-                            <span class="date-label">Data de hoje:</span>
+                            <span class="date-label">Today's date:</span>
                             <span class="date-value" id="currentDate"></span>
                         </div>
                         <div class="date-info">
-                            <span class="date-label">PrÃ³ximo pagamento:</span>
+                            <span class="date-label">Next payment:</span>
                             <span class="date-value" id="nextPaymentDate"></span>
                         </div>
                     </div>
                 </div>
 
                 <div class="payment-methods">
-                    <h4>MÃ©todo de Pagamento</h4>
+                    <h4>Payment Method</h4>
                     <div class="payment-options">
                         <label class="payment-option">
                             <input type="radio" name="paymentMethod" value="stripe" checked>
-                            <span>CartÃ£o de CrÃ©dito/DÃ©bito (Stripe)</span>
+                            <span>Credit/Debit Card (Stripe)</span>
                             <div class="radio-check"></div>
                         </label>
                     </div>
@@ -380,15 +380,15 @@
                             </svg>
                         </div>
                         <span class="terms-text">
-                            Concordo com os <a href="https://promoping.gitbook.io/promoping-docs/termos-do-usuario" target="_blank" rel="noopener noreferrer">Termos de ServiÃ§o</a> e
-                            <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer">PolÃ­tica de Privacidade</a>
+                            I agree to the <a href="https://promoping.gitbook.io/promoping-docs/termos-do-usuario" target="_blank" rel="noopener noreferrer">Terms of Service</a> and
+                            <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
                         </span>
                     </label>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="modal-btn cancel" onclick="fecharModalCompra()">Cancelar</button>
-                    <button class="modal-btn confirm" id="confirmPurchaseBtn" onclick="confirmarCompra()" disabled>Comprar</button>
+                    <button class="modal-btn cancel" onclick="fecharModalCompra()">Cancel</button>
+                    <button class="modal-btn confirm" id="confirmPurchaseBtn" onclick="confirmarCompra()" disabled>Purchase</button>
                 </div>
             </div>
         </div>
@@ -405,17 +405,17 @@
                     </svg>
                 </div>
                 <div class="header-content">
-                    <h3>Cancelar Assinatura</h3>
-                    <p>Tem certeza que deseja cancelar sua assinatura? VocÃª terÃ¡ um perÃ­odo de graÃ§a de 30 dias antes
-                        que os serviÃ§os sejam limitados.</p>
+                    <h3>Cancel Subscription</h3>
+                    <p>Are you sure you want to cancel your subscription? You will have a 30-day grace period before
+                        services are limited.</p>
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel" onclick="fecharModalCancelamento()">
-                    Manter Assinatura
+                    Keep Subscription
                 </button>
                 <button class="modal-btn confirm" onclick="confirmarCancelamento()">
-                    Cancelar Assinatura
+                    Cancel Subscription
                 </button>
             </div>
         </div>
@@ -431,17 +431,17 @@
         }
 
 
-        // VariÃ¡vel global para armazenar dados do plano selecionado (anual = conforme toggle Mensal/Anual)
+        // VariÃ¡vel global para armazenar dados do plano selecionado (anual = conforme toggle Monthly/Yearly)
         let selectedPlanData = null;
 
         // FunÃ§Ã£o para abrir modal de compra (preco = preÃ§o mensal do plano)
         function abrirModalCompra(planoId, planoNome, preco) {
             const anual = !!billingYearly;
-            const precoAnualDb = getPrecoAnualPorPlanId(planoId);
+            const precoYearlyDb = getPrecoYearlyPorPlanId(planoId);
             const precoExibir = anual
-                ? (precoAnualDb != null && !isNaN(precoAnualDb) ? precoAnualDb : preco * 12)
+                ? (precoYearlyDb != null && !isNaN(precoYearlyDb) ? precoYearlyDb : preco * 12)
                 : preco;
-            selectedPlanData = { id: planoId, name: planoNome, price: preco, priceAnual: precoAnualDb, anual: anual };
+            selectedPlanData = { id: planoId, name: planoNome, price: preco, priceYearly: precoYearlyDb, anual: anual };
             
             const modal = document.getElementById('purchaseModal');
             const planNameEl = document.getElementById('purchasePlanName');
@@ -451,8 +451,8 @@
             const nextPaymentDateEl = document.getElementById('nextPaymentDate');
             
             planNameEl.textContent = planoNome;
-            planPriceEl.textContent = `â‚¬${precoExibir.toFixed(2).replace('.', ',')}`;
-            if (planPeriodEl) planPeriodEl.textContent = anual ? '/ano' : '/mÃªs';
+            planPriceEl.textContent = `€${precoExibir.toFixed(2).replace('.', ',')}`;
+            if (planPeriodEl) planPeriodEl.textContent = anual ? '/year' : '/month';
             
             const today = new Date();
             const nextPayment = new Date(today);
@@ -515,7 +515,7 @@
         // FunÃ§Ã£o para confirmar compra e redirecionar para Stripe
         async function confirmarCompra() {
             if (!selectedPlanData) {
-                alert('Erro: Dados do plano nÃ£o encontrados');
+                alert('Error: plan data not found');
                 return;
             }
 
@@ -523,7 +523,7 @@
             const token = localStorage.getItem("token");
             
             if (!token) {
-                alert('VocÃª precisa estar logado para comprar um plano.');
+                alert('You must be signed in to purchase a plan.');
                 window.location.href = '/login';
                 return;
             }
@@ -549,11 +549,11 @@
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || 'Erro ao ativar plano gratuito');
+                        throw new Error(errorData.error || 'Error enabling free plan');
                     }
 
                     const data = await response.json();
-                    alert('Plano Free ativado com sucesso!');
+                    alert('Plan Free ativado com sucesso!');
                     fecharModalCompra();
                     location.reload();
                     return;
@@ -595,19 +595,19 @@
                     }, 100);
                     return; // Importante: sair da funÃ§Ã£o apÃ³s iniciar o redirecionamento
                 } else if (data.status === 'ok' && data.message) {
-                    // Plano gratuito ativado
-                    console.log("[COMPRA] Plano gratuito ativado");
+                    // Plan gratuito ativado
+                    console.log("[COMPRA] Plan gratuito ativado");
                     alert(data.message);
                     fecharModalCompra();
                     location.reload();
                 } else {
                     console.error("[COMPRA] URL de checkout nÃ£o encontrada na resposta:", data);
-                    throw new Error("URL de checkout nÃ£o recebida do servidor");
+                    throw new Error("Checkout URL not received from the server");
                 }
 
             } catch (error) {
                 console.error('[COMPRA] Erro ao processar compra:', error);
-                alert(`Erro ao processar pagamento: ${error.message || 'Tente novamente mais tarde.'}`);
+                alert(`Error processing payment: ${error.message || 'Please try again later.'}`);
                 
                 // Reabilitar botÃ£o
                 confirmBtn.disabled = false;
@@ -675,13 +675,13 @@
                 console.log("Assinatura cancelada:", data);
                 // Fechar modal
                 fecharModalCancelamento();
-                alert("Assinatura cancelada com sucesso.");
+                alert("Subscription canceled successfully.");
                 // Recarregar a pÃ¡gina para mostrar as mudanÃ§as
                 location.reload();
 
             } catch (error) {
-                console.error("Erro ao cancelar assinatura:", error);
-                alert(`Erro ao cancelar assinatura: ${error.message || 'Tente novamente.'}`);
+                console.error("Error canceling subscription:", error);
+                alert(`Error canceling subscription: ${error.message || 'Please try again.'}`);
             }
         }
 
@@ -708,14 +708,14 @@
                 // Atualizar nome do usuÃ¡rio no header
                 const userNameElement = document.getElementById('userName');
                 if (userNameElement && data.status === "ok" && data.profile) {
-                    userNameElement.textContent = data.profile.nome || 'Utilizador';
+                    userNameElement.textContent = data.profile.nome || 'User';
                     console.log(" [PLANOS] Nome do usuÃ¡rio atualizado:", data.profile.nome);
                 } else {
                     console.error(" [PLANOS] Estrutura de dados incorreta ou elemento nÃ£o encontrado:", data);
                 }
 
                 // Carregar planos do banco de dados
-                await carregarPlanos();
+                await carregarPlans();
 
                 // Mostrar seÃ§Ã£o do plano atual
                 const [meResponse, planoResponse] = await Promise.all([
@@ -730,7 +730,7 @@
                 const meData = meResponse.ok ? await meResponse.json() : null;
                 const planoData = planoResponse.ok ? await planoResponse.json() : null;
 
-                mostrarPlanoAtual({
+                mostrarPlanAtual({
                     profileData: data,
                     meData,
                     planoData
@@ -738,16 +738,16 @@
 
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
-                alert("Erro ao carregar dados do usuÃ¡rio");
+                alert("Error loading user data");
             }
         }
 
-        // Planos vindos da API (com Preco, PrecoAnual, LinksPlanos, LinksPlanosAnual)
+        // Plans vindos da API (com Preco, PrecoYearly, LinksPlans, LinksPlansYearly)
         let planosFromApi = [];
         let currentUserPlanId = 1;
 
         // FunÃ§Ã£o para buscar do backend o plano atual do usuÃ¡rio e destacar no UI
-        async function carregarPlanos() {
+        async function carregarPlans() {
             const token = localStorage.getItem("token");
             try {
                 console.log("Carregando plano atual do usuÃ¡rio...");
@@ -762,25 +762,25 @@
                     planosFromApi = data.planos;
                     atualizarPrecosExibicao();
                 }
-                console.log("Plano atual carregado:", data.userPlanId);
+                console.log("Plan atual carregado:", data.userPlanId);
                 currentUserPlanId = Number(data.userPlanId || 1);
-                destacarPlanoAtual(data.userPlanId);
+                destacarPlanAtual(data.userPlanId);
             } catch (error) {
                 console.error("Erro ao carregar plano atual:", error);
                 // Manter planos estÃ¡ticos em caso de erro
             }
         }
 
-        function getPrecoAnualPorPlanId(planId) {
+        function getPrecoYearlyPorPlanId(planId) {
             const plan = planosFromApi.find(p => (p.Id || p.id) === parseInt(planId, 10));
-            const precoAnual = plan && (plan.PrecoAnual != null || plan.precoAnual != null)
-                ? (Number(plan.PrecoAnual) ?? Number(plan.precoAnual))
+            const precoYearly = plan && (plan.PrecoYearly != null || plan.precoYearly != null)
+                ? (Number(plan.PrecoYearly) ?? Number(plan.precoYearly))
                 : null;
-            return precoAnual;
+            return precoYearly;
         }
 
         // FunÃ§Ã£o para destacar o botÃ£o do plano atual do usuÃ¡rio
-        function destacarPlanoAtual(userPlanId) {
+        function destacarPlanAtual(userPlanId) {
             console.log(`Destacando plano atual: ID ${userPlanId}`);
             // Resetar todos os botÃµes para estado normal
             const allButtons = document.querySelectorAll('.plan-button');
@@ -792,16 +792,16 @@
                     button.removeAttribute('data-onclick-backup');
                 }
                 const currentText = button.textContent;
-                if (currentText.includes('Plano Atual')) {
+                if (currentText.includes('Current Plan')) {
                     const onclick = button.getAttribute('onclick');
                     if (onclick && onclick.includes('Free')) {
-                        button.textContent = 'Escolher Free';
+                        button.textContent = 'Choose Free';
                     } else if (onclick && onclick.includes('Basic')) {
-                        button.textContent = 'Escolher Basic';
+                        button.textContent = 'Choose Basic';
                     } else if (onclick && onclick.includes('Standard')) {
-                        button.textContent = 'Escolher Standard';
+                        button.textContent = 'Choose Standard';
                     } else if (onclick && onclick.includes('Premium')) {
-                        button.textContent = 'Escolher Premium';
+                        button.textContent = 'Choose Premium';
                     }
                 }
             });
@@ -829,18 +829,18 @@
             }
             if (currentButton) {
                 currentButton.className = 'plan-button current';
-                currentButton.textContent = 'Plano Atual';
+                currentButton.textContent = 'Current Plan';
                 currentButton.setAttribute('data-onclick-backup', currentButton.getAttribute('onclick') || '');
                 currentButton.removeAttribute('onclick');
                 currentButton.disabled = true;
-                console.log(`Plano atual destacado: ${planName} (ID: ${userPlanId})`);
+                console.log(`Plan atual destacado: ${planName} (ID: ${userPlanId})`);
             } else {
-                console.log(`Plano atual nÃ£o encontrado: ID ${userPlanId}`);
+                console.log(`Plan atual nÃ£o encontrado: ID ${userPlanId}`);
             }
         }
 
         // FunÃ§Ã£o que mostra a seÃ§Ã£o dos detalhes do plano atual e preenche com dados do usuÃ¡rio
-        function mostrarPlanoAtual(data) {
+        function mostrarPlanAtual(data) {
             const currentPlanSection = document.getElementById('currentPlanSection');
             const currentPlanDetails = document.getElementById('currentPlanDetails');
             const planStatus = document.getElementById('planStatus');
@@ -853,27 +853,27 @@
             if (!plano) {
                 if (currentUserPlanId > 1) {
                     const planoFallback = planosFromApi.find((p) => Number(p.Id || p.id) === currentUserPlanId) || null;
-                    const planoNomeFallback = planoFallback?.Nome || planoFallback?.nome || 'Plano Pago';
-                    const limiteFallback = planoFallback?.LimiteProdutos ?? planoFallback?.limiteprodutos ?? 'âˆž';
-                    planStatus.textContent = "Ativo";
+                    const planoNomeFallback = planoFallback?.Nome || planoFallback?.nome || 'Paid Plan';
+                    const limiteFallback = planoFallback?.LimiteProducts ?? planoFallback?.limiteprodutos ?? '∞';
+                    planStatus.textContent = "Active";
                     planStatus.className = "status-badge active";
                     gracePeriodInfo.style.display = "none";
                     currentPlanDetails.innerHTML = `
                         <div class="plan-detail">
-                            <h4>Plano Atual</h4>
+                            <h4>Current Plan</h4>
                             <p>${planoNomeFallback}</p>
                         </div>
                         <div class="plan-detail">
-                            <h4>Produtos</h4>
-                            <p>${stats.produtos_total || 0} de ${limiteFallback}</p>
+                            <h4>Products</h4>
+                            <p>${stats.produtos_total || 0} of ${limiteFallback}</p>
                         </div>
                         <div class="plan-detail">
-                            <h4>NotificaÃƒÂ§ÃƒÂµes</h4>
-                            <p>${stats.notificacoes_total || 0} enviadas</p>
+                            <h4>Notifications</h4>
+                            <p>${stats.notificacoes_total || 0} sent</p>
                         </div>
                         <div class="plan-detail">
-                            <h4>Dinheiro PoupanÃƒÂ§a</h4>
-                            <p>Ã¢â€šÂ¬${stats.dinheiro_poupado || '0,00'}</p>
+                            <h4>Money Saved</h4>
+                            <p>€${stats.dinheiro_poupado || '0,00'}</p>
                         </div>
                     `;
                     if (cancelButton) {
@@ -895,13 +895,13 @@
             }
             
             // Determinar status do plano baseado no banco de dados
-            let status = "Ativo";
+            let status = "Active";
             let statusClass = "active";
             // Verificar se estÃ¡ em perÃ­odo de graÃ§a
             gracePeriodInfo.style.display = "none";
             const isGracePeriod = Boolean(planoData?.is_in_grace_period) || plano.status === 'PeriodoGraca';
             if (isGracePeriod) {
-                status = "PerÃ­odo de GraÃ§a";
+                status = "Grace Period";
                 statusClass = "grace-period";
                 gracePeriodInfo.style.display = "block";
                 // Calcular tempo restante do perÃ­odo de graÃ§a
@@ -914,7 +914,7 @@
                         const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         document.getElementById('gracePeriodEnd').textContent =
-                            `${days} dias e ${hours} horas`;
+                            `${days} days and ${hours} hours`;
                     }
                 }
             }
@@ -924,20 +924,20 @@
             // Preencher detalhes do plano atual com dados reais do banco
             currentPlanDetails.innerHTML = `
                 <div class="plan-detail">
-                    <h4>Plano Atual</h4>
+                    <h4>Current Plan</h4>
                     <p>${plano.nome || 'Free'}</p>
                 </div>
                 <div class="plan-detail">
-                    <h4>Produtos</h4>
-                    <p>${stats.produtos_total || 0} de ${plano.limite_produtos ?? plano.limiteprodutos ?? 'âˆž'}</p>
+                    <h4>Products</h4>
+                    <p>${stats.produtos_total || 0} of ${plano.limite_produtos ?? plano.limiteprodutos ?? '∞'}</p>
                 </div>
                 <div class="plan-detail">
-                    <h4>NotificaÃ§Ãµes</h4>
-                    <p>${stats.notificacoes_total || 0} enviadas</p>
+                    <h4>Notifications</h4>
+                    <p>${stats.notificacoes_total || 0} sent</p>
                 </div>
                 <div class="plan-detail">
-                    <h4>Dinheiro PoupanÃ§a</h4>
-                    <p>â‚¬${stats.dinheiro_poupado || '0,00'}</p>
+                    <h4>Money Saved</h4>
+                    <p>€${stats.dinheiro_poupado || '0,00'}</p>
                 </div>
             `;
             if (cancelButton) {
@@ -1012,7 +1012,7 @@
                 location.reload();
             } else if (canceled === 'true') {
                 // UsuÃ¡rio cancelou o pagamento
-                alert('Pagamento cancelado. VocÃª pode tentar novamente quando quiser.');
+                alert('Payment canceled. You can try again whenever you want.');
                 // Limpar parÃ¢metros da URL
                 limparParametrosRetornoStripe();
             }
@@ -1050,7 +1050,7 @@
             }
         }
 
-        // Toggle Mensal/Anual: atualiza preÃ§os exibidos nos cartÃµes
+        // Toggle Monthly/Yearly: atualiza preÃ§os exibidos nos cartÃµes
         let billingYearly = false;
 
         function formatarPreco(val) {
@@ -1069,12 +1069,12 @@
                 if (!priceEl || !periodEl) return;
                 let valor = monthly;
                 if (billingYearly) {
-                    const precoAnual = planId ? getPrecoAnualPorPlanId(planId) : null;
-                    valor = (precoAnual != null && !isNaN(precoAnual)) ? precoAnual : monthly * 12;
+                    const precoYearly = planId ? getPrecoYearlyPorPlanId(planId) : null;
+                    valor = (precoYearly != null && !isNaN(precoYearly)) ? precoYearly : monthly * 12;
                 }
                 const { intPart, decPart } = formatarPreco(valor);
-                priceEl.innerHTML = 'â‚¬' + intPart + '<span class="currency">,' + decPart + '</span>';
-                periodEl.textContent = billingYearly ? 'por ano' : 'por mÃªs';
+                priceEl.innerHTML = '€' + intPart + '<span class="currency">,' + decPart + '</span>';
+                periodEl.textContent = billingYearly ? 'por ano' : 'per month';
             });
         }
 
@@ -1083,26 +1083,26 @@
             await sincronizarAssinaturaStripe({ silent: true });
             carregarDadosUsuario();
 
-            const btnMensal = document.getElementById('toggleMensal');
-            const btnAnual = document.getElementById('toggleAnual');
-            if (btnMensal && btnAnual) {
-                btnMensal.addEventListener('click', function () {
+            const btnMonthly = document.getElementById('toggleMonthly');
+            const btnYearly = document.getElementById('toggleYearly');
+            if (btnMonthly && btnYearly) {
+                btnMonthly.addEventListener('click', function () {
                     if (billingYearly) {
                         billingYearly = false;
-                        btnMensal.classList.add('active');
-                        btnMensal.setAttribute('aria-pressed', 'true');
-                        btnAnual.classList.remove('active');
-                        btnAnual.setAttribute('aria-pressed', 'false');
+                        btnMonthly.classList.add('active');
+                        btnMonthly.setAttribute('aria-pressed', 'true');
+                        btnYearly.classList.remove('active');
+                        btnYearly.setAttribute('aria-pressed', 'false');
                         atualizarPrecosExibicao();
                     }
                 });
-                btnAnual.addEventListener('click', function () {
+                btnYearly.addEventListener('click', function () {
                     if (!billingYearly) {
                         billingYearly = true;
-                        btnAnual.classList.add('active');
-                        btnAnual.setAttribute('aria-pressed', 'true');
-                        btnMensal.classList.remove('active');
-                        btnMensal.setAttribute('aria-pressed', 'false');
+                        btnYearly.classList.add('active');
+                        btnYearly.setAttribute('aria-pressed', 'true');
+                        btnMonthly.classList.remove('active');
+                        btnMonthly.setAttribute('aria-pressed', 'false');
                         atualizarPrecosExibicao();
                     }
                 });

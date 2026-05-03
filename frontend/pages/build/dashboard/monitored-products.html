@@ -870,7 +870,7 @@
           if (data.status === "ok" && data.profile) {
             const userNameEl = document.getElementById("userName");
             if (userNameEl) {
-              userNameEl.textContent = data.profile.nome || 'Utilizador';
+              userNameEl.textContent = data.profile.nome || 'User';
               console.log(" [PRODUTOS] Nome do usuÃ¡rio atualizado:", data.profile.nome);
             } else {
               console.error(" [PRODUTOS] Elemento userName nÃ£o encontrado");

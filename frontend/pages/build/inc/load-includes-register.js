@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Erro ao carregar header de registro:', error);
+                console.error('Error loading register header:', error);
                 // Fallback estático
                 const headerPlaceholder = document.getElementById('header-register-include') || document.getElementById('header-placeholder');
                 if (headerPlaceholder) {
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Fallback estático
                 const footerPlaceholder = document.getElementById('footer-placeholder');
                 if (footerPlaceholder) {
-                    footerPlaceholder.innerHTML = '<footer class="pp-footer"><div class="pp-container"><p>&copy; 2024 PromoPing. Todos os direitos reservados.</p></div></footer>';
+                    footerPlaceholder.innerHTML = '<footer class="pp-footer"><div class="pp-container"><p>&copy; 2024 PromoPing. All rights reserved.</p></div></footer>';
                 }
             });
     }
@@ -142,7 +142,7 @@ async function fetchGitHubVersion() {
     const version = data.tag_name || data.name || 'v2.3.3';
     return version.startsWith('v') ? version : `v${version}`;
   } catch (error) {
-    console.warn('Erro ao buscar versão do GitHub:', error);
+    console.warn('Error fetching GitHub version:', error);
     // Retorna versão padrão em caso de erro
     return 'v2.3.3';
   }

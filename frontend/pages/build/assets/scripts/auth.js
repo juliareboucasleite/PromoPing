@@ -13,7 +13,7 @@ export function removerToken() {
 export async function verificarSessao() {
   const token = obterToken();
   if (!token) {
-    alert("Precisa estar logado!");
+    alert("You need to be signed in!");
     window.location.href = "/login";
     return null;
   }
@@ -26,17 +26,17 @@ export async function verificarSessao() {
     const data = await res.json();
 
     if (data.status === "ok") {
-      console.log("Utilizador logado:", data.user);
+      console.log("Signed-in user:", data.user);
       return data.user;
     } else {
-      alert("Sessão inválida. Faça login novamente.");
+      alert("Invalid session. Please sign in again.");
       removerToken();
       window.location.href = "/login";
       return null;
     }
   } catch (err) {
-    console.error("Erro ao verificar sessão:", err);
-    alert("Erro de ligação com o servidor");
+    console.error("Error checking session:", err);
+    alert("Server connection error");
     return null;
   }
 }
@@ -59,11 +59,11 @@ export async function loginEmail(email, password) {
       }
       window.location.href = "/dashboard";
     } else {
-      alert(data.error || "Erro ao entrar.");
+      alert(data.error || "Sign-in error.");
     }
   } catch (err) {
-    console.error("Erro no login:", err);
-    alert("Erro interno no servidor.");
+    console.error("Sign-in error:", err);
+    alert("Internal server error.");
   }
 }
 
@@ -78,14 +78,14 @@ export async function register(nome, email, password) {
     const data = await res.json();
 
     if (data.status === "ok") {
-      alert("Conta criada com sucesso! Verifique seu email.");
+      alert("Account created successfully! Check your email.");
       window.location.href = "/login";
     } else {
-      alert(data.error || "Erro no registo.");
+      alert(data.error || "Registration error.");
     }
   } catch (err) {
-    console.error("Erro no registo:", err);
-    alert("Erro interno no servidor.");
+    console.error("Registration error:", err);
+    alert("Internal server error.");
   }
 }
 

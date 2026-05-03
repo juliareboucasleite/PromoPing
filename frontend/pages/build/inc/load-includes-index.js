@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="pp-header-title">PromoPing</span>
                             </div>
                             <nav class="pp-header-nav">
-                                <button onclick="window.openLoginModal && window.openLoginModal()" class="pp-header-nav-link" style="background: none; border: none; color: inherit; cursor: pointer;">Entrar</button>
-                                <button onclick="window.openRegisterModal && window.openRegisterModal()" class="pp-btn pp-btn-primary" style="border: none; cursor: pointer;">Registar</button>
+                                <button onclick="window.openLoginModal && window.openLoginModal()" class="pp-header-nav-link" style="background: none; border: none; color: inherit; cursor: pointer;">Sign in</button>
+                                <button onclick="window.openRegisterModal && window.openRegisterModal()" class="pp-btn pp-btn-primary" style="border: none; cursor: pointer;">Register</button>
                             </nav>
                         </div>
                     </header>
@@ -253,7 +253,7 @@ async function fetchGitHubVersion() {
     const version = data.tag_name || data.name || 'v2.3.3';
     return version.startsWith('v') ? version : `v${version}`;
   } catch (error) {
-    console.warn('Erro ao buscar versão do GitHub:', error);
+    console.warn('Error fetching GitHub version:', error);
     // Retorna versão padrão em caso de erro
     return 'v2.3.3';
   }

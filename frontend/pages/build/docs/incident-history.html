@@ -1,12 +1,12 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
   <base href="/">
 
 
   <meta charset="UTF-8">
-  <title>HistÃ³rico de Incidentes | PromoPing Docs</title>
+  <title>Incident History | PromoPing Docs</title>
   <link rel="stylesheet" href="assets/styles/documentation-pages-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
@@ -39,7 +39,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Pesquisar incidentes..." />
+            <input type="text" placeholder="Search incidents..." />
             <span class="shortcut">Ctrl K</span>
           </div>
         </div>
@@ -55,7 +55,7 @@
     <!-- CONTENT -->
     <main class="content">
       <div class="content-header">
-        <h1>HistÃ³rico de Incidentes</h1>
+        <h1>Incident History</h1>
         <div class="copy-button-wrapper">
           <button class="copy-button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -101,7 +101,7 @@
         </div>
       </div>
 
-      <h2>Registo de Incidentes e AtualizaÃ§Ãµes</h2>
+      <h2>Incident and Update Log</h2>
       <p>
         Esta pÃ¡gina mantÃ©m um registo completo de todos os incidentes, atualizaÃ§Ãµes e melhorias do PromoPing.
         Aqui pode acompanhar o estado dos nossos serviÃ§os e as Ãºltimas correÃ§Ãµes implementadas.
@@ -111,44 +111,44 @@
       <div class="incident-summary">
         <div class="status-overview-compact">
           <div class="status-overview-text">
-            <strong>Todos os sistemas operacionais</strong>
-            <span class="status-overview-meta">Ãšltima atualizaÃ§Ã£o: <span id="last-update">Carregando...</span></span>
+            <strong>All systems operational</strong>
+            <span class="status-overview-meta">Last update: <span id="last-update">Loading...</span></span>
           </div>
         </div>
       </div>
 
       <!-- Recent Incidents -->
-      <h3>Incidentes Recentes</h3>
+      <h3>Recent Incidents</h3>
       <div id="incidents-container">
         <!-- Incidents will be loaded dynamically -->
         <div class="incident-card">
           <div class="incident-date">12 Jan 2024</div>
           <div class="incident-content">
-            <h4>ManutenÃ§Ã£o Programada - API</h4>
+            <h4>Scheduled Maintenance - API</h4>
             <div class="incident-details">
-              <p><strong>DuraÃ§Ã£o:</strong> 15 minutos (14:00 - 14:15 UTC)</p>
-              <p><strong>Impacto:</strong> InterrupÃ§Ã£o temporÃ¡ria da API</p>
-              <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
+              <p><strong>Duration:</strong> 15 minutos (14:00 - 14:15 UTC)</p>
+              <p><strong>Impact:</strong> Temporary API interruption</p>
+              <p><strong>Status:</strong> <span class="status-resolved">Resolved</span></p>
             </div>
           </div>
-          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
+          <span class="card-status-dot resolved" aria-label="Resolved"></span>
         </div>
         <div class="incident-card">
           <div class="incident-date">8 Jan 2024</div>
           <div class="incident-content">
-            <h4>Problema de LatÃªncia - NotificaÃ§Ãµes</h4>
+            <h4>Latency Issue - Notifications</h4>
             <div class="incident-details">
-              <p><strong>DuraÃ§Ã£o:</strong> 2 horas (09:30 - 11:30 UTC)</p>
-              <p><strong>Impacto:</strong> Atraso nas notificaÃ§Ãµes por email</p>
-              <p><strong>Status:</strong> <span class="status-resolved">Resolvido</span></p>
+              <p><strong>Duration:</strong> 2 horas (09:30 - 11:30 UTC)</p>
+              <p><strong>Impact:</strong> Delay in email notifications</p>
+              <p><strong>Status:</strong> <span class="status-resolved">Resolved</span></p>
             </div>
           </div>
-          <span class="card-status-dot resolved" aria-label="Resolvido"></span>
+          <span class="card-status-dot resolved" aria-label="Resolved"></span>
         </div>
       </div>
 
       <!-- System Updates -->
-      <h3>AtualizaÃ§Ãµes do Sistema</h3>
+      <h3>System Updates</h3>
       <div id="updates-container" class="updates-container">
         <!-- Updates will be loaded dynamically -->
       </div>
@@ -156,8 +156,8 @@
       <!-- Navigation -->
       <div class="next-card" style="cursor: pointer;" onclick="window.location.href='/docs/service-status'">
         <div class="next-content">
-          <span class="next-label">Seguinte</span>
-          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Status do ServiÃ§o</span>
+          <span class="next-label">Next</span>
+          <span class="next-link" style="color: #ffc72d; text-decoration: underline;">Service Status</span>
         </div>
         <svg class="next-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2">
@@ -166,7 +166,7 @@
       </div>
 
       <footer>
-        <p>Ãšltima actualizaÃ§Ã£o: <span id="footer-update">15 de Janeiro, 2025 - 14:30 UTC</span></p>
+        <p>Last updated: <span id="footer-update">15 de Janeiro, 2025 - 14:30 UTC</span></p>
       </footer>
     </main>
 
@@ -202,14 +202,14 @@
           atualizarIncidentes(data.incidentes);
           console.log(" Incidentes carregados da base de dados:", data.incidentes);
         } else {
-          console.log(" Nenhum incidente encontrado na base de dados");
+          console.log(" No incidents found in the database");
         }
       } catch (error) {
         console.error(" Erro ao carregar incidentes:", error);
         // Mostrar mensagem ao usuÃ¡rio se houver erro
         const container = document.getElementById('incidents-container');
         if (container && container.children.length === 0) {
-          container.innerHTML = '<div class="incident-card"><div class="incident-content"><p class="text-secondary">Erro ao carregar incidentes. Verifique se o servidor estÃ¡ rodando.</p></div></div>';
+          container.innerHTML = '<div class="incident-card"><div class="incident-content"><p class="text-secondary">Error loading incidents. Check whether the server is running.</p></div></div>';
         }
       }
     }
@@ -238,18 +238,18 @@
 
       const duracao = dataInicio && dataFim
         ? calcularDuracao(dataInicio, dataFim)
-        : (dataInicio ? 'Em andamento' : 'â€”');
+        : (dataInicio ? 'In progress' : 'â€”');
 
-      const estado = ci(incidente, 'Estado') || ci(incidente, 'Status') || 'Desconhecido';
+      const estado = ci(incidente, 'Estado') || ci(incidente, 'Status') || 'Unknown';
       const e = estado.toLowerCase();
-      const isResolvido = e.includes('resolvido') || e === 'resolved';
+      const isResolved = e.includes('resolvido') || e === 'resolved';
       const isOutage = e.includes('indisponÃ­vel') || e.includes('outage');
-      const statusClass = isResolvido ? 'status-resolved' : 'status-investigating';
-      const statusText = isResolvido ? 'Resolvido' : 'Em Andamento';
-      const dotClass = isResolvido ? 'resolved' : (isOutage ? 'outage' : 'investigating');
+      const statusClass = isResolved ? 'status-resolved' : 'status-investigating';
+      const statusText = isResolved ? 'Resolved' : 'In Progress';
+      const dotClass = isResolved ? 'resolved' : (isOutage ? 'outage' : 'investigating');
 
       const titulo = ci(incidente, 'Titulo') || 'â€”';
-      const impacto = ci(incidente, 'Impacto') || 'NÃ£o especificado';
+      const impacto = ci(incidente, 'Impacto') || 'Not specified';
       const descricao = ci(incidente, 'Descricao');
       const componente = ci(incidente, 'ComponenteAfetado');
 
@@ -258,11 +258,11 @@
         <div class="incident-content">
           <h4>${titulo}</h4>
           <div class="incident-details">
-            <p><strong>DuraÃ§Ã£o:</strong> ${duracao}</p>
-            <p><strong>Impacto:</strong> ${impacto}</p>
+            <p><strong>Duration:</strong> ${duracao}</p>
+            <p><strong>Impact:</strong> ${impacto}</p>
             ${componente ? `<p><strong>Componente afetado:</strong> ${componente}</p>` : ''}
             <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
-            ${descricao ? `<p><strong>DescriÃ§Ã£o:</strong> ${descricao}</p>` : ''}
+            ${descricao ? `<p><strong>Description:</strong> ${descricao}</p>` : ''}
           </div>
         </div>
         <span class="card-status-dot ${dotClass}" aria-label="${statusText}"></span>
@@ -335,14 +335,14 @@
           console.log(" Nenhuma atualizaÃ§Ã£o encontrada na base de dados");
           const container = document.getElementById('updates-container');
           if (container && container.children.length === 0) {
-            container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">Nenhuma atualizaÃ§Ã£o encontrada.</p></div></div>';
+            container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">No updates found.</p></div></div>';
           }
         }
       } catch (error) {
         console.error(" Erro ao carregar atualizaÃ§Ãµes:", error);
         const container = document.getElementById('updates-container');
         if (container && container.children.length === 0) {
-          container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">Erro ao carregar atualizaÃ§Ãµes. Verifique se o servidor estÃ¡ rodando.</p></div></div>';
+          container.innerHTML = '<div class="update-card"><div class="update-content"><p class="text-secondary">Error loading updates. Check whether the server is running.</p></div></div>';
         }
       }
     }
@@ -366,7 +366,7 @@
       const dataRef = ci(atualizacao, 'DataCriacao') || ci(atualizacao, 'DataPublicacao');
       const dataPublicacao = dataRef ? new Date(dataRef) : new Date();
       const tipoRaw = ci(atualizacao, 'Tipo') || 'feature';
-      const tipoLabels = { feature: 'Funcionalidade', fix: 'CorreÃ§Ã£o', improvement: 'Melhoria', maintenance: 'ManutenÃ§Ã£o' };
+      const tipoLabels = { feature: 'Feature', fix: 'Fix', improvement: 'Improvement', maintenance: 'Maintenance' };
       const tipo = tipoLabels[tipoRaw] || tipoRaw;
       const status = ci(atualizacao, 'Status');
       const temStatus = status !== undefined && status !== null && status !== '';
@@ -379,7 +379,7 @@
           <h4>${titulo}</h4>
           <div class="update-details">
             <p><strong>Tipo:</strong> ${tipo}</p>
-            <p><strong>DescriÃ§Ã£o:</strong> ${descricao}</p>
+            <p><strong>Description:</strong> ${descricao}</p>
             ${temStatus ? `<p><strong>Status:</strong> <span class="status-completed">${status}</span></p>` : ''}
           </div>
         </div>
