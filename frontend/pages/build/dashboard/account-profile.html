@@ -1003,14 +1003,14 @@
                 if (data.twoFA && data.twoFA.enabled) {
                     window.twoFAEnabled = true;
                     window.twoFAMethod = data.twoFA.method || null;
-                    statusEl.textContent = "2FA ativo (" + (data.twoFA.method === "email" ? "email code" : "authenticator app") + ").";
+                    statusEl.textContent = "2FA enabled (" + (data.twoFA.method === "email" ? "email code" : "authenticator app") + ").";
                     statusEl.className = "twofa-status twofa-on";
                     btnEnable.style.display = "none";
                     btnDisable.style.display = "inline-block";
                 } else {
                     window.twoFAEnabled = false;
                     window.twoFAMethod = null;
-                    statusEl.textContent = "2FA desativado.";
+                    statusEl.textContent = "2FA disabled.";
                     statusEl.className = "twofa-status twofa-off";
                     btnEnable.style.display = "inline-block";
                     btnDisable.style.display = "none";

@@ -967,6 +967,45 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
+    // Compatibilidade para rotas de documentaÃ§Ã£o com nomes novos e extensÃ£o .html/.js
+    const docsCompatRoutes = {
+        "/docs/documentation-home": "docs/documentation-home.html",
+        "/docs/documentation-home.html": "docs/documentation-home.html",
+        "/docs/usage-guide.html": "docs/usage-guide.html",
+        "/docs/api-reference.html": "docs/api-reference.html",
+        "/docs/support.html": "docs/support.html",
+        "/docs/faq.html": "docs/faq.html",
+        "/docs/changelog.html": "docs/changelog.html",
+        "/docs/service-status.html": "docs/service-status.html",
+        "/docs/incident-history.html": "docs/incident-history.html",
+        "/docs/security-headers.html": "docs/security-headers.html",
+        "/docs/terms-of-service": "docs/terms-of-service.html",
+        "/docs/terms-of-service.html": "docs/terms-of-service.html",
+        "/docs/privacy-policy": "docs/privacy-policy.html",
+        "/docs/privacy-policy.html": "docs/privacy-policy.html",
+        "/docs/alternative-dispute-resolution": "docs/alternative-dispute-resolution.html",
+        "/docs/alternative-dispute-resolution.html": "docs/alternative-dispute-resolution.html",
+        "/docs/complaints-book": "docs/complaints-book.html",
+        "/docs/complaints-book.html": "docs/complaints-book.html",
+        "/docs/documentation-navigation.html": "docs/documentation-navigation.html",
+        "/docs/documentation-navigation.js": "docs/documentation-navigation.js",
+        "/docs/documentation-search.js": "docs/documentation-search.js"
+    };
+
+    Object.entries(docsCompatRoutes).forEach(([routePath, relativeFile]) => {
+        app.get(routePath, (req, res) => {
+            const filePath = buildExists ?
+                path.join(buildPath, relativeFile) :
+                path.join(__dirname, "../frontend/pages/build", relativeFile);
+
+            if (relativeFile.endsWith(".js")) {
+                res.type("application/javascript");
+            }
+
+            res.sendFile(filePath);
+        });
+    });
+
     // PÃ¡ginas About
     app.get("/about", (req, res) => {
         const filePath = buildExists ?

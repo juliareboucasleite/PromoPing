@@ -15,7 +15,7 @@ const NAVIGATION_HTML = `
         <li><a href="price-monitoring.html" class="sidebar-nav-link">Monitoramento</a></li>
         <li><a href="smart-alerts.html" class="sidebar-nav-link">Alertas</a></li>
         <li><a href="reports-and-analytics.html" class="sidebar-nav-link">RelatÃ³rios</a></li>
-        <li><a href="../docs/privacy-policy.html" class="sidebar-nav-link">PolÃ­tica de cookies</a></li>
+        <li><a href="../docs/privacy-policy" class="sidebar-nav-link">PolÃ­tica de cookies</a></li>
       </ul>
     </nav>
     <div class="powered"><p>Made by PromoPing</p></div>
