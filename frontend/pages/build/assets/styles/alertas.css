@@ -1,0 +1,95 @@
+/* Hide scrollbar of main content area (main.content) */
+    main.content {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    main.content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      background: transparent !important;
+    }
+
+    /* Keep scroll functionality */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    /* Alert Items */
+    .alert-item {
+      margin-bottom: 0.5rem;
+      padding: 1rem 1.5rem;
+      background: #18181a;
+      border-radius: 8px;
+      border: 1px solid #232326;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .alert-item:hover {
+      background: #1f1f21;
+      border-color: #2a2a2d;
+    }
+
+    .alert-item h2 {
+      color: #fff;
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .alert-item h2::before {
+      content: '>';
+      color: #999;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+    }
+
+    .alert-item.active h2::before {
+      transform: rotate(90deg);
+      color: #ffc72d;
+    }
+
+    .alert-content {
+      display: none;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #232326;
+    }
+
+    .alert-item.active .alert-content {
+      display: block;
+    }
+
+    .alert-content h3 {
+      color: #ffc72d;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .alert-content h3:first-child {
+      margin-top: 0;
+    }
+
+    .alert-content p {
+      color: #ccc;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .alert-content ul {
+      color: #ccc;
+      line-height: 1.6;
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-content li {
+      margin-bottom: 0.5rem;
+    }
+

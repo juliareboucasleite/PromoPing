@@ -1,0 +1,18 @@
+/* Hide scrollbar of main content area (main.content) */
+    main.content {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    main.content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      background: transparent !important;
+    }
+
+    /* Keep scroll functionality */
+    main.content {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
