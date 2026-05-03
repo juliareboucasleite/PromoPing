@@ -406,7 +406,7 @@ function checkPasswordStrength(password) {
 
   let strength = 0;
   let strengthClass = 'weak';
-  let statusText = 'Complica ainda mais';
+  let statusText = 'Make it stronger';
 
   // Conta pontos baseado no tamanho (quanto maior, melhor)
   if (password.length >= 8) strength += 1;
@@ -421,19 +421,19 @@ function checkPasswordStrength(password) {
   // Define o nível de força baseado na pontuação (quanto mais pontos, mais forte)
   if (strength <= 2) {
     strengthClass = 'weak'; // senha fraca pra caralho
-    statusText = 'Complica ainda mais';
+    statusText = 'Make it stronger';
   } else if (strength === 3) {
     strengthClass = 'fair'; // ainda tá fraco
-    statusText = 'Complica ainda mais';
+    statusText = 'Make it stronger';
   } else if (strength === 4) {
     strengthClass = 'good'; // tá começando a ficar bom
-    statusText = 'Está com bom aspeto';
+    statusText = 'Looking good';
   } else if (strength === 5) {
     strengthClass = 'strong'; // agora sim tá forte
-    statusText = 'Está com bom aspeto';
+    statusText = 'Looking good';
   } else if (strength >= 6) {
     strengthClass = 'perfect'; // perfeito, senha do caralho
-    statusText = 'Perfeito!';
+    statusText = 'Perfect!';
   }
 
   // Atualiza a UI com a classe e texto correspondentes
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (submitButton) {
           submitButton.disabled = true;
           if (submitButton.querySelector('.button-text')) {
-            submitButton.querySelector('.button-text').textContent = "A iniciar sessão...";
+            submitButton.querySelector('.button-text').textContent = "Signing in...";
           }
         }
 
