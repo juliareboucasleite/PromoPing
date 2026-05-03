@@ -863,45 +863,54 @@ if (!isProduction) {
 
     // PÃ¡ginas de documentaÃ§Ã£o
     app.get("/docs", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/documentation-home.html") :
-            path.join(__dirname, "../frontend/pages/build/docs/documentation-home.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/documentation-home.html");
     });
 
+    const docsBuildCandidates = [
+        buildPath,
+        path.join(__dirname, "../frontend/pages/build"),
+        path.join("/var/www/promoping/frontend/pages/build"),
+        path.join("/var/www")
+    ];
+
+    function sendDocsFile(res, relativeFile) {
+        const filePath = docsBuildCandidates
+            .map(basePath => path.join(basePath, relativeFile))
+            .find(candidate => fs.existsSync(candidate));
+
+        if (!filePath) {
+            return res.status(500).json({
+                status: "error",
+                message: `Documentation file not found: ${relativeFile}`,
+                checkedPaths: docsBuildCandidates.map(basePath => path.join(basePath, relativeFile))
+            });
+        }
+
+        if (relativeFile.endsWith(".js")) {
+            res.type("application/javascript");
+        }
+
+        return res.sendFile(filePath);
+    }
+
     app.get("/docs/support", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/support.html") :
-            path.join(__dirname, "../frontend/pages/docs/support.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/support.html");
     });
 
     app.get("/docs/service-status", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/service-status.html") :
-            path.join(__dirname, "../frontend/pages/docs/service-status.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/service-status.html");
     });
 
     app.get("/docs/terms", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/terms-of-service.html") :
-            path.join(__dirname, "../frontend/pages/build/docs/terms-of-service.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/terms-of-service.html");
     });
 
     app.get("/docs/usage-guide", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/usage-guide.html") :
-            path.join(__dirname, "../frontend/pages/docs/usage-guide.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/usage-guide.html");
     });
 
     app.get("/docs/api-reference", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/api-reference.html") :
-            path.join(__dirname, "../frontend/pages/docs/api-reference.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/api-reference.html");
     });
 
     app.get("/docs/FirstLaunch", (req, res) => {
@@ -912,38 +921,23 @@ if (!isProduction) {
     });
 
     app.get("/docs/faq", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/faq.html") :
-            path.join(__dirname, "../frontend/pages/docs/faq.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/faq.html");
     });
 
     app.get("/docs/changelog", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/changelog.html") :
-            path.join(__dirname, "../frontend/pages/docs/changelog.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/changelog.html");
     });
 
     app.get("/docs/privacy", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/privacy-policy.html") :
-            path.join(__dirname, "../frontend/pages/build/docs/privacy-policy.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/privacy-policy.html");
     });
 
     app.get("/docs/ral", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/alternative-dispute-resolution.html") :
-            path.join(__dirname, "../frontend/pages/build/docs/alternative-dispute-resolution.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/alternative-dispute-resolution.html");
     });
 
     app.get("/docs/livro-reclamacoes", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/complaints-book.html") :
-            path.join(__dirname, "../frontend/pages/build/docs/complaints-book.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/complaints-book.html");
     });
 
     app.get("/docs/installation", (req, res) => {
@@ -954,17 +948,11 @@ if (!isProduction) {
     });
 
     app.get("/docs/incident-history", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/incident-history.html") :
-            path.join(__dirname, "../frontend/pages/docs/incident-history.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/incident-history.html");
     });
 
     app.get("/docs/security-headers", (req, res) => {
-        const filePath = buildExists ?
-            path.join(buildPath, "docs/security-headers.html") :
-            path.join(__dirname, "../frontend/pages/docs/security-headers.html");
-        res.sendFile(filePath);
+        sendDocsFile(res, "docs/security-headers.html");
     });
 
     // Compatibilidade para rotas de documentaÃ§Ã£o com nomes novos e extensÃ£o .html/.js
@@ -994,15 +982,7 @@ if (!isProduction) {
 
     Object.entries(docsCompatRoutes).forEach(([routePath, relativeFile]) => {
         app.get(routePath, (req, res) => {
-            const filePath = buildExists ?
-                path.join(buildPath, relativeFile) :
-                path.join(__dirname, "../frontend/pages/build", relativeFile);
-
-            if (relativeFile.endsWith(".js")) {
-                res.type("application/javascript");
-            }
-
-            res.sendFile(filePath);
+            sendDocsFile(res, relativeFile);
         });
     });
 
