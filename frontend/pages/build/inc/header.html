@@ -5,7 +5,7 @@
   
   <div class="pp-header-container">
     <!-- Logo -->
-    <a href="index.html" class="pp-header-logo" aria-label="Voltar à página inicial">
+    <a href="index.html" class="pp-header-logo" aria-label="Back to home page">
       <img src="assets/images/PromoPing.png" alt="PromoPing Logo">
       <span>PromoPing</span>
     </a>
@@ -13,15 +13,15 @@
     <!-- Mobile Menu & CTA -->
     <div class="pp-header-burger" style="gap: 14px; display: flex; align-items: center;">
       <div class="pp-header-burger-lang" style="margin-right: 2px;">
-        <!-- Botão de idioma, volta a ser togglável -->
-        <button class="pp-header-lang-btn" type="button" aria-label="Idioma" onclick="toggleLanguage()"
+        <!-- Language toggle button -->
+        <button class="pp-header-lang-btn" type="button" aria-label="Language" onclick="toggleLanguage()"
           style="cursor: pointer;">
-          <span id="lang-text">PT</span>
+          <span id="lang-text">EN</span>
         </button>
       </div>
 
-      <button class="pp-header-burger-btn" type="button" role="button" title="Alternar Navegação"
-        aria-label="Alternar Navegação" onclick="toggleNavigation()" style="margin-right: 6px;">
+      <button class="pp-header-burger-btn" type="button" role="button" title="Toggle Navigation"
+        aria-label="Toggle Navigation" onclick="toggleNavigation()" style="margin-right: 6px;">
         <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
           <path class="line line1" d="M20 25H80" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
           <path class="line line2" d="M20 50H80" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
@@ -31,11 +31,11 @@
 
       <!-- CTA Buttons -->
       <div class="pp-header-cta-buttons">
-        <button class="pp-header-cta-button-secondary" aria-label="Inscreve-te" onclick="openRegisterModal()">
-          <span>Inscreve-te</span>
+        <button class="pp-header-cta-button-secondary" aria-label="Sign up" onclick="openRegisterModal()">
+          <span>Sign up</span>
         </button>
-        <button class="pp-header-cta-button" aria-label="Entrar" onclick="openLoginModal()">
-          <span>Entrar</span>
+        <button class="pp-header-cta-button" aria-label="Sign in" onclick="openLoginModal()">
+          <span>Sign in</span>
         </button>
       </div>
     </div>
