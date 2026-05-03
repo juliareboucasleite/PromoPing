@@ -1180,6 +1180,9 @@ router.get("/api/status/health", async (req, res) => {
         database: "connected",
         uptime: process.uptime(),
         memory: process.memoryUsage(),
+        nodeVersion: process.version,
+        platform: process.platform,
+        pid: process.pid,
         timestamp: new Date().toISOString(),
         tables: {
           total: tableNames.length,
@@ -1269,7 +1272,7 @@ router.get("/api/status/complete", async (req, res) => {
         NotificacoesEnviadas: notificacoesCount[0]?.total || 0
       },
       tempoReal: {
-        requisicoesPorMinuto: Math.floor(Math.random() * 50) + 1200,
+        requisicoesPorMinuto: null,
         utilizadoresOnline: utilizadoresCount[0]?.total || 0,
         notificacoesHoje: notificacoesCount[0]?.total || 0,
         produtosMonitorizados: produtosCount[0]?.total || 0
@@ -1277,7 +1280,7 @@ router.get("/api/status/complete", async (req, res) => {
       componentes: componentes.length > 0 ? componentes : [
         {
           Id: 1,
-          Nome: "API Principal",
+          Nome: "Core API",
           Status: "operational",
           Uptime: 99.9,
           Latencia: 45,
@@ -1285,71 +1288,73 @@ router.get("/api/status/complete", async (req, res) => {
         },
         {
           Id: 2,
-          Nome: "Monitoramento de Preços",
+          Nome: "Price Monitoring",
           Status: "operational",
           ProdutosMonitorizados: produtosCount[0]?.total || 0,
-          AtualizacoesPorHora: 15420,
-          Precisao: 99.7
+          AtualizacoesPorHora: null,
+          Precisao: null,
+          VerificacoesAtivas: null
         },
         {
           Id: 3,
-          Nome: "Sistema de Notificações",
+          Nome: "Notification System",
           Status: "operational",
           EmailsEnviados24h: notificacoesCount[0]?.total || 0,
-          WhatsApp24h: 2156,
-          Discord24h: 1234
+          WhatsApp24h: null,
+          Discord24h: null
         },
         {
           Id: 4,
-          Nome: "Banco de Dados",
+          Nome: "Database",
           Status: "operational",
-          Uptime: 99.95,
-          ConsultasPorSegundo: 1247,
-          EspacoUtilizado: "2.3TB / 5TB"
+          Uptime: null,
+          ConsultasPorSegundo: null,
+          EspacoUtilizado: null
         },
         {
           Id: 5,
-          Nome: "Autenticação",
+          Nome: "Authentication",
           Status: "operational",
-          Logins24h: 3421,
-          TempoResposta: 12,
-          TaxaSucesso: 99.8
+          UtilizadoresOnline: utilizadoresCount[0]?.total || 0,
+          Logins24h: null,
+          TempoResposta: null,
+          TaxaSucesso: null
         },
         {
           Id: 6,
-          Nome: "Sistema de Pagamentos",
+          Nome: "Payments System",
           Status: "operational",
-          Transacoes24h: 89,
-          TaxaSucesso: 99.1,
-          IntegracaoStripe: "Ativa"
+          Transacoes24h: null,
+          TaxaSucesso: null,
+          IntegracaoStripe: "Active"
         }
       ],
       incidentes: incidentes.length > 0 ? incidentes : [
         {
           Id: 1,
-          Titulo: "Manutenção Programada - API",
+          Titulo: "Scheduled Maintenance - API",
           DataInicio: "2024-01-12T14:00:00Z",
           DataFim: "2024-01-12T14:15:00Z",
-          Duracao: "15 minutos",
-          Impacto: "Interrupção temporária da API",
+          Duracao: "15 minutes",
+          Impacto: "Temporary API interruption",
           Status: "resolved"
         },
         {
           Id: 2,
-          Titulo: "Problema de Latência - Notificações",
+          Titulo: "Latency Issue - Notifications",
           DataInicio: "2024-01-08T09:30:00Z",
           DataFim: "2024-01-08T11:30:00Z",
-          Duracao: "2 horas",
-          Impacto: "Atraso nas notificações por email",
+          Duracao: "2 hours",
+          Impacto: "Delay in email notifications",
           Status: "resolved"
         },
         {
           Id: 3,
-          Titulo: "Atualização de Segurança",
+          Titulo: "Security Update",
           DataInicio: "2024-01-03T16:00:00Z",
           DataFim: "2024-01-03T16:30:00Z",
-          Duracao: "30 minutos",
-          Impacto: "Reinicialização dos serviços",
+          Duracao: "30 minutes",
+          Impacto: "Service restart",
           Status: "resolved"
         }
       ],

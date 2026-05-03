@@ -109,6 +109,34 @@
         </div>
       </div>
 
+      <h3>Server Snapshot</h3>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h4>Process Uptime</h4>
+          <div class="metric-value" id="server-uptime-value">--</div>
+          <div class="metric-trend" id="server-uptime-trend">Waiting for server data</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Memory Usage</h4>
+          <div class="metric-value" id="server-memory-value">--</div>
+          <div class="metric-trend" id="server-memory-trend">Waiting for server data</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Runtime</h4>
+          <div class="metric-value" id="server-runtime-value">--</div>
+          <div class="metric-trend" id="server-runtime-trend">Waiting for server data</div>
+        </div>
+
+        <div class="metric-card">
+          <h4>Database</h4>
+          <div class="metric-value" id="database-health-value">--</div>
+          <div class="metric-trend" id="database-health-trend">Waiting for server data</div>
+        </div>
+      </div>
+
       <h3>System Components</h3>
 
       <div class="service-components">
@@ -118,10 +146,10 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Uptime:</strong> <span data-detail="uptime">99.9%</span> (last 30 days)</p>
-            <p><strong>Average latency:</strong> <span data-detail="latencia">45ms</span></p>
-            <p><strong>Last check:</strong> <span data-detail="ultima-verificacao">2 minutes ago</span></p>
-            <p><strong>Requests per minute:</strong> <span data-detail="requisicoes">0</span></p>
+            <p><strong>Uptime:</strong> <span data-detail="uptime">--</span> (last 30 days)</p>
+            <p><strong>Average latency:</strong> <span data-detail="latencia">--</span></p>
+            <p><strong>Last check:</strong> <span data-detail="ultima-verificacao">--</span></p>
+            <p><strong>Requests per minute:</strong> <span data-detail="requisicoes">--</span></p>
           </div>
         </div>
 
@@ -131,10 +159,10 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Tracked products:</strong> <span data-detail="produtos">0</span></p>
-            <p><strong>Updates per hour:</strong> <span data-detail="atualizacoes-hora">15,420</span></p>
-            <p><strong>Accuracy:</strong> <span data-detail="precisao">99.7%</span></p>
-            <p><strong>Active checks:</strong> <span data-detail="verificacoes">1,247</span> per minute</p>
+            <p><strong>Tracked products:</strong> <span data-detail="produtos">--</span></p>
+            <p><strong>Updates per hour:</strong> <span data-detail="atualizacoes-hora">--</span></p>
+            <p><strong>Accuracy:</strong> <span data-detail="precisao">--</span></p>
+            <p><strong>Active checks:</strong> <span data-detail="verificacoes">--</span> per minute</p>
           </div>
         </div>
 
@@ -144,10 +172,10 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Emails sent (24h):</strong> <span data-detail="emails-24h">0</span></p>
-            <p><strong>WhatsApp (24h):</strong> 2,156</p>
-            <p><strong>Discord (24h):</strong> 1,234</p>
-            <p><strong>Total notifications today:</strong> <span data-detail="total-notificacoes">0</span></p>
+            <p><strong>Emails sent (24h):</strong> <span data-detail="emails-24h">--</span></p>
+            <p><strong>WhatsApp (24h):</strong> <span data-detail="whatsapp-24h">--</span></p>
+            <p><strong>Discord (24h):</strong> <span data-detail="discord-24h">--</span></p>
+            <p><strong>Total notifications today:</strong> <span data-detail="total-notificacoes">--</span></p>
           </div>
         </div>
 
@@ -157,9 +185,9 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Uptime:</strong> 99.95%</p>
-            <p><strong>Queries per second:</strong> 1,247</p>
-            <p><strong>Storage used:</strong> 2.3TB / 5TB</p>
+            <p><strong>Uptime:</strong> <span data-detail="database-uptime">--</span></p>
+            <p><strong>Queries per second:</strong> <span data-detail="queries-per-second">--</span></p>
+            <p><strong>Storage used:</strong> <span data-detail="storage-used">--</span></p>
           </div>
         </div>
 
@@ -169,10 +197,10 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Logins (24h):</strong> 3,421</p>
-            <p><strong>Response time:</strong> 12ms</p>
-            <p><strong>Success rate:</strong> 99.8%</p>
-            <p><strong>Users online:</strong> <span id="users-online-card">0</span></p>
+            <p><strong>Logins (24h):</strong> <span data-detail="logins-24h">--</span></p>
+            <p><strong>Response time:</strong> <span data-detail="auth-response-time">--</span></p>
+            <p><strong>Success rate:</strong> <span data-detail="auth-success-rate">--</span></p>
+            <p><strong>Users online:</strong> <span data-detail="users-online-card">--</span></p>
           </div>
         </div>
 
@@ -182,9 +210,9 @@
             <span class="status-badge operational">Operational</span>
           </div>
           <div class="component-details">
-            <p><strong>Transactions (24h):</strong> 89</p>
-            <p><strong>Success rate:</strong> 99.1%</p>
-            <p><strong>Stripe integration:</strong> Active</p>
+            <p><strong>Transactions (24h):</strong> <span data-detail="transactions-24h">--</span></p>
+            <p><strong>Success rate:</strong> <span data-detail="payments-success-rate">--</span></p>
+            <p><strong>Stripe integration:</strong> <span data-detail="stripe-status">--</span></p>
           </div>
         </div>
       </div>
@@ -213,32 +241,33 @@
           </div>
           <span class="card-status-dot resolved" aria-label="Resolved"></span>
         </div>
+      </div>
 
-        <h3>Performance Metrics</h3>
+        <h3 id="performance-metrics-heading">Performance Metrics</h3>
 
         <div class="metrics-grid">
           <div class="metric-card">
             <h4>Uptime (30 days)</h4>
-            <div class="metric-value" id="uptime-value">99.9%</div>
-            <div class="metric-trend positive" id="uptime-trend">+0.1% vs previous month</div>
+            <div class="metric-value" id="uptime-value">--</div>
+            <div class="metric-trend positive" id="uptime-trend">Waiting for server data</div>
           </div>
 
           <div class="metric-card">
             <h4>Response Time</h4>
-            <div class="metric-value" id="response-time-value">45ms</div>
-            <div class="metric-trend positive" id="response-time-trend">-5ms vs previous month</div>
+            <div class="metric-value" id="response-time-value">--</div>
+            <div class="metric-trend positive" id="response-time-trend">Waiting for server data</div>
           </div>
 
           <div class="metric-card">
             <h4>Active Users</h4>
-            <div class="metric-value" id="active-users-value">0</div>
-            <div class="metric-trend positive" id="active-users-trend">+8.2% vs previous month</div>
+            <div class="metric-value" id="active-users-value">--</div>
+            <div class="metric-trend positive" id="active-users-trend">Waiting for server data</div>
           </div>
 
           <div class="metric-card">
             <h4>Tracked Products</h4>
-            <div class="metric-value" id="monitored-products-value">0</div>
-            <div class="metric-trend positive" id="monitored-products-trend">+15.3% vs previous month</div>
+            <div class="metric-value" id="monitored-products-value">--</div>
+            <div class="metric-trend positive" id="monitored-products-trend">Waiting for server data</div>
           </div>
         </div>
 
@@ -251,15 +280,15 @@
         <div class="realtime-stats">
           <div class="stat-item">
             <span class="stat-label">Requests per minute:</span>
-            <span class="stat-value" id="requests-per-minute">0</span>
+            <span class="stat-value" id="requests-per-minute">--</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Users online:</span>
-            <span class="stat-value" id="users-online">0</span>
+            <span class="stat-value" id="users-online">--</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Notifications sent (today):</span>
-            <span class="stat-value" id="notifications-today">0</span>
+            <span class="stat-value" id="notifications-today">--</span>
           </div>
         </div>
 
@@ -317,7 +346,6 @@
     </main>
 
   </div>
-  <script src="docs/documentation-navigation.js"></script>
   <script>
     function ci(obj, key) {
       if (!obj) return undefined;
@@ -360,6 +388,18 @@
       }) + ' UTC';
     }
 
+    function formatShortUtcDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC'
+      });
+    }
+
     function formatRelativeTime(value) {
       if (!value) return 'Unavailable';
       const date = new Date(value);
@@ -391,6 +431,49 @@
       return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'}`;
     }
 
+    function formatIncidentWindow(startValue, endValue) {
+      if (!startValue || !endValue) return '';
+      const start = new Date(startValue);
+      const end = new Date(endValue);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '';
+      const options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC'
+      };
+      return ` (${start.toLocaleTimeString('en-GB', options)} - ${end.toLocaleTimeString('en-GB', options)} UTC)`;
+    }
+
+    function formatProcessUptime(seconds) {
+      if (seconds === null || seconds === undefined || Number.isNaN(Number(seconds))) return '--';
+      let remaining = Math.max(0, Math.floor(Number(seconds)));
+      const days = Math.floor(remaining / 86400);
+      remaining -= days * 86400;
+      const hours = Math.floor(remaining / 3600);
+      remaining -= hours * 3600;
+      const minutes = Math.floor(remaining / 60);
+      const parts = [];
+      if (days) parts.push(`${days}d`);
+      if (hours || days) parts.push(`${hours}h`);
+      parts.push(`${minutes}m`);
+      return parts.join(' ');
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes);
+      if (!Number.isFinite(value) || value < 0) return '--';
+      if (value >= 1024 ** 3) return `${(value / (1024 ** 3)).toFixed(2)} GB`;
+      if (value >= 1024 ** 2) return `${(value / (1024 ** 2)).toFixed(0)} MB`;
+      if (value >= 1024) return `${(value / 1024).toFixed(0)} KB`;
+      return `${value} B`;
+    }
+
+    function setTextContent(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
     function updateStatusBadge(card, status) {
       const badge = card.querySelector('.status-badge');
       if (!badge) return;
@@ -408,27 +491,66 @@
       });
     }
 
-    function renderComponents(metricas, componentes, lastUpdated) {
+    function getComponentBySlugs(componentes, slugs) {
       const bySlug = new Map();
       (componentes || []).forEach((component) => {
         bySlug.set(slugify(ci(component, 'Nome') || ci(component, 'nome')), component);
       });
+      for (const slug of slugs) {
+        if (bySlug.has(slug)) return bySlug.get(slug);
+      }
+      return null;
+    }
 
+    function renderServerSnapshot(healthPayload) {
+      const health = healthPayload?.health;
+      if (!health) {
+        setTextContent('server-uptime-value', '--');
+        setTextContent('server-uptime-trend', 'Health endpoint unavailable');
+        setTextContent('server-memory-value', '--');
+        setTextContent('server-memory-trend', 'Health endpoint unavailable');
+        setTextContent('server-runtime-value', '--');
+        setTextContent('server-runtime-trend', 'Health endpoint unavailable');
+        setTextContent('database-health-value', '--');
+        setTextContent('database-health-trend', 'Health endpoint unavailable');
+        return;
+      }
+
+      const memory = health.memory || {};
+      const dbConnected = String(health.database || '').toLowerCase() === 'connected';
+      const missingTables = health.tables?.missing || 0;
+      const tableText = missingTables > 0
+        ? `${missingTables} essential table${missingTables === 1 ? '' : 's'} missing`
+        : 'Essential tables available';
+
+      setTextContent('server-uptime-value', formatProcessUptime(health.uptime));
+      setTextContent('server-uptime-trend', `Checked ${formatUtcTimestamp(health.timestamp)}`);
+      setTextContent('server-memory-value', formatBytes(memory.rss));
+      setTextContent('server-memory-trend', `Heap used ${formatBytes(memory.heapUsed)}`);
+      setTextContent('server-runtime-value', health.nodeVersion ? `Node ${health.nodeVersion}` : '--');
+      setTextContent('server-runtime-trend', health.platform ? `Platform: ${health.platform}` : 'Platform unavailable');
+      setTextContent('database-health-value', dbConnected ? 'Connected' : 'Disconnected');
+      setTextContent('database-health-trend', tableText);
+    }
+
+    function renderComponents(metricas, componentes, lastUpdated, healthPayload) {
       const apiCard = document.querySelector('[data-component="api-principal"]');
       if (apiCard) {
-        const apiComponent = bySlug.get('core-api') || bySlug.get('api-principal');
+        const apiComponent = getComponentBySlugs(componentes, ['core-api', 'api-principal']);
+        const requestsPerMinute = ci(apiComponent, 'RequisicoesPorMinuto') ?? ci(apiComponent, 'RequestsPerMinute');
         updateStatusBadge(apiCard, ci(apiComponent, 'Status') || 'operational');
         updateCardDetails(apiCard, {
           uptime: formatMetric(ci(apiComponent, 'Uptime') ?? ci(metricas, 'UptimeGeral'), '%'),
           latencia: formatMetric(ci(apiComponent, 'Latencia') ?? ci(metricas, 'TempoRespostaMedia'), 'ms'),
           ultima-verificacao: formatRelativeTime(ci(apiComponent, 'UltimaVerificacao') || lastUpdated),
-          requisicoes: formatNumber(ci(apiComponent, 'RequisicoesPorMinuto') ?? ci(apiComponent, 'RequestsPerMinute'))
+          requisicoes: formatNumber(requestsPerMinute)
         });
+        setTextContent('requests-per-minute', formatNumber(requestsPerMinute));
       }
 
       const monitoringCard = document.querySelector('[data-component="price-monitoring"]');
       if (monitoringCard) {
-        const monitoring = bySlug.get('price-monitoring') || bySlug.get('monitoramento-de-precos') || bySlug.get('monitoramento-de-precos');
+        const monitoring = getComponentBySlugs(componentes, ['price-monitoring', 'monitoramento-de-precos']);
         updateStatusBadge(monitoringCard, ci(monitoring, 'Status') || 'operational');
         updateCardDetails(monitoringCard, {
           produtos: formatNumber(ci(monitoring, 'ProdutosMonitorizados') ?? ci(metricas, 'ProdutosMonitorizados')),
@@ -440,61 +562,56 @@
 
       const notificationsCard = document.querySelector('[data-component="notification-system"]');
       if (notificationsCard) {
-        const notifications = bySlug.get('notification-system') || bySlug.get('sistema-de-notificacoes');
+        const notifications = getComponentBySlugs(componentes, ['notification-system', 'sistema-de-notificacoes']);
         updateStatusBadge(notificationsCard, ci(notifications, 'Status') || 'operational');
-        const details = notificationsCard.querySelector('.component-details');
-        if (details) {
-          details.innerHTML = `
-            <p><strong>Emails sent (24h):</strong> <span data-detail="emails-24h">${formatNumber(ci(notifications, 'EmailsEnviados24h') ?? ci(metricas, 'NotificacoesEnviadas'))}</span></p>
-            <p><strong>WhatsApp (24h):</strong> <span data-detail="whatsapp-24h">${formatNumber(ci(notifications, 'WhatsApp24h'))}</span></p>
-            <p><strong>Discord (24h):</strong> <span data-detail="discord-24h">${formatNumber(ci(notifications, 'Discord24h'))}</span></p>
-            <p><strong>Total notifications today:</strong> <span data-detail="total-notificacoes">${formatNumber(ci(metricas, 'NotificacoesEnviadas'))}</span></p>
-          `;
-        }
+        updateCardDetails(notificationsCard, {
+          'emails-24h': formatNumber(ci(notifications, 'EmailsEnviados24h') ?? ci(metricas, 'NotificacoesEnviadas')),
+          'whatsapp-24h': formatNumber(ci(notifications, 'WhatsApp24h')),
+          'discord-24h': formatNumber(ci(notifications, 'Discord24h')),
+          'total-notificacoes': formatNumber(ci(metricas, 'NotificacoesEnviadas'))
+        });
       }
 
       const databaseCard = document.querySelector('[data-component="database"]');
       if (databaseCard) {
-        const database = bySlug.get('database') || bySlug.get('banco-de-dados');
-        updateStatusBadge(databaseCard, ci(database, 'Status') || 'operational');
-        const details = databaseCard.querySelector('.component-details');
-        if (details) {
-          details.innerHTML = `
-            <p><strong>Uptime:</strong> ${formatMetric(ci(database, 'Uptime'), '%')}</p>
-            <p><strong>Queries per second:</strong> ${formatNumber(ci(database, 'ConsultasPorSegundo'))}</p>
-            <p><strong>Storage used:</strong> ${ci(database, 'EspacoUtilizado') || '—'}</p>
-          `;
-        }
+        const database = getComponentBySlugs(componentes, ['database', 'banco-de-dados']);
+        const databaseConnected = String(healthPayload?.health?.database || '').toLowerCase();
+        const databaseStatus = databaseConnected && databaseConnected !== 'connected'
+          ? 'unavailable'
+          : (ci(database, 'Status') || 'operational');
+        updateStatusBadge(databaseCard, databaseStatus);
+        updateCardDetails(databaseCard, {
+          'database-uptime': formatMetric(ci(database, 'Uptime'), '%'),
+          'queries-per-second': formatNumber(ci(database, 'ConsultasPorSegundo')),
+          'storage-used': ci(database, 'EspacoUtilizado') || '--'
+        });
       }
 
       const authCard = document.querySelector('[data-component="authentication"]');
       if (authCard) {
-        const auth = bySlug.get('authentication') || bySlug.get('autenticacao');
+        const auth = getComponentBySlugs(componentes, ['authentication', 'autenticacao']);
         updateStatusBadge(authCard, ci(auth, 'Status') || 'operational');
-        const details = authCard.querySelector('.component-details');
-        if (details) {
-          details.innerHTML = `
-            <p><strong>Logins (24h):</strong> ${formatNumber(ci(auth, 'Logins24h'))}</p>
-            <p><strong>Response time:</strong> ${formatMetric(ci(auth, 'TempoResposta') ?? ci(metricas, 'TempoRespostaMedia'), 'ms')}</p>
-            <p><strong>Success rate:</strong> ${formatMetric(ci(auth, 'TaxaSucesso'), '%')}</p>
-            <p><strong>Users online:</strong> <span id="users-online-card">${formatNumber(ci(auth, 'UtilizadoresOnline') ?? ci(metricas, 'UtilizadoresAtivos'))}</span></p>
-          `;
-        }
+        updateCardDetails(authCard, {
+          'logins-24h': formatNumber(ci(auth, 'Logins24h')),
+          'auth-response-time': formatMetric(ci(auth, 'TempoResposta') ?? ci(metricas, 'TempoRespostaMedia'), 'ms'),
+          'auth-success-rate': formatMetric(ci(auth, 'TaxaSucesso'), '%'),
+          'users-online-card': formatNumber(ci(auth, 'UtilizadoresOnline') ?? ci(metricas, 'UtilizadoresAtivos'))
+        });
       }
 
       const paymentsCard = document.querySelector('[data-component="payments-system"]');
       if (paymentsCard) {
-        const payments = bySlug.get('payments-system') || bySlug.get('sistema-de-pagamentos');
+        const payments = getComponentBySlugs(componentes, ['payments-system', 'sistema-de-pagamentos']);
         updateStatusBadge(paymentsCard, ci(payments, 'Status') || 'operational');
-        const details = paymentsCard.querySelector('.component-details');
-        if (details) {
-          details.innerHTML = `
-            <p><strong>Transactions (24h):</strong> ${formatNumber(ci(payments, 'Transacoes24h'))}</p>
-            <p><strong>Success rate:</strong> ${formatMetric(ci(payments, 'TaxaSucesso'), '%')}</p>
-            <p><strong>Stripe integration:</strong> ${ci(payments, 'IntegracaoStripe') || '—'}</p>
-          `;
-        }
+        updateCardDetails(paymentsCard, {
+          'transactions-24h': formatNumber(ci(payments, 'Transacoes24h')),
+          'payments-success-rate': formatMetric(ci(payments, 'TaxaSucesso'), '%'),
+          'stripe-status': ci(payments, 'IntegracaoStripe') || '--'
+        });
       }
+
+      setTextContent('users-online', formatNumber(ci(metricas, 'UtilizadoresAtivos')));
+      setTextContent('notifications-today', formatNumber(ci(metricas, 'NotificacoesEnviadas')));
     }
 
     function renderPerformanceMetrics(metricas) {
@@ -502,31 +619,26 @@
       const responseTime = ci(metricas, 'TempoRespostaMedia');
       const activeUsers = ci(metricas, 'UtilizadoresAtivos');
       const trackedProducts = ci(metricas, 'ProdutosMonitorizados');
-      const notifications = ci(metricas, 'NotificacoesEnviadas');
 
-      document.getElementById('uptime-value').textContent = formatMetric(uptime, '%');
-      document.getElementById('response-time-value').textContent = formatMetric(responseTime, 'ms');
-      document.getElementById('active-users-value').textContent = formatNumber(activeUsers);
-      document.getElementById('monitored-products-value').textContent = formatNumber(trackedProducts);
+      setTextContent('uptime-value', formatMetric(uptime, '%'));
+      setTextContent('response-time-value', formatMetric(responseTime, 'ms'));
+      setTextContent('active-users-value', formatNumber(activeUsers));
+      setTextContent('monitored-products-value', formatNumber(trackedProducts));
 
-      document.getElementById('uptime-trend').textContent = 'Live server data';
-      document.getElementById('response-time-trend').textContent = 'Live server data';
-      document.getElementById('active-users-trend').textContent = 'Live server data';
-      document.getElementById('monitored-products-trend').textContent = 'Live server data';
-
-      document.getElementById('requests-per-minute').textContent = '--';
-      document.getElementById('users-online').textContent = formatNumber(activeUsers);
-      document.getElementById('notifications-today').textContent = formatNumber(notifications);
+      setTextContent('uptime-trend', 'Live status endpoint');
+      setTextContent('response-time-trend', 'Live status endpoint');
+      setTextContent('active-users-trend', 'Live status endpoint');
+      setTextContent('monitored-products-trend', 'Live status endpoint');
     }
 
     function renderIncidents(incidentes) {
       const timeline = document.querySelector('.incidents-timeline');
-      if (!timeline) return;
+      const insertionPoint = document.getElementById('performance-metrics-heading');
+      if (!timeline || !insertionPoint) return;
 
       timeline.querySelectorAll('.incident-item').forEach((item) => item.remove());
-      const insertionPoint = timeline.querySelector('.metrics-grid')?.previousElementSibling;
 
-      const items = (incidentes && incidentes.length > 0) ? incidentes : [];
+      const items = Array.isArray(incidentes) ? incidentes : [];
       if (items.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'incident-item resolved';
@@ -551,10 +663,10 @@
         const item = document.createElement('div');
         item.className = `incident-item ${statusClass}`;
         item.innerHTML = `
-          <div class="incident-date">${formatUtcTimestamp(ci(incident, 'DataInicio')).replace(/, \d{2}:\d{2} UTC$/, '')}</div>
+          <div class="incident-date">${formatShortUtcDate(ci(incident, 'DataInicio'))}</div>
           <div class="incident-content">
             <h4>${ci(incident, 'Titulo') || 'Untitled incident'}</h4>
-            <p><strong>Duration:</strong> ${formatDuration(ci(incident, 'DataInicio'), ci(incident, 'DataFim'), ci(incident, 'Duracao'))}</p>
+            <p><strong>Duration:</strong> ${formatDuration(ci(incident, 'DataInicio'), ci(incident, 'DataFim'), ci(incident, 'Duracao'))}${formatIncidentWindow(ci(incident, 'DataInicio'), ci(incident, 'DataFim'))}</p>
             <p><strong>Impact:</strong> ${ci(incident, 'Impacto') || 'Not specified'}</p>
             <p><strong>Status:</strong> ${statusText}</p>
           </div>
@@ -564,48 +676,79 @@
       });
     }
 
-    function renderOverview(componentes, lastUpdated) {
+    function renderOverview(componentes, lastUpdated, healthPayload) {
+      const databaseConnected = String(healthPayload?.health?.database || '').toLowerCase();
       const hasIssue = (componentes || []).some((component) => {
         const status = String(ci(component, 'Status') || '').toLowerCase();
         return status && status !== 'operational';
-      });
+      }) || (databaseConnected && databaseConnected !== 'connected');
+
       const overviewTitle = document.querySelector('.status-overview-text strong');
       if (overviewTitle) {
         overviewTitle.textContent = hasIssue ? 'Some systems are experiencing issues' : 'All systems operational';
       }
-      document.getElementById('last-update').textContent = formatUtcTimestamp(lastUpdated);
-      document.getElementById('footer-update').textContent = formatUtcTimestamp(lastUpdated);
+      setTextContent('last-update', formatUtcTimestamp(lastUpdated));
+      setTextContent('footer-update', formatUtcTimestamp(lastUpdated));
     }
 
     function showUnavailableState() {
       const overviewTitle = document.querySelector('.status-overview-text strong');
       if (overviewTitle) overviewTitle.textContent = 'Status data unavailable';
-      document.getElementById('last-update').textContent = 'Unavailable';
-      document.getElementById('footer-update').textContent = 'Unavailable';
-      ['uptime-value', 'response-time-value', 'active-users-value', 'monitored-products-value', 'requests-per-minute', 'users-online', 'notifications-today'].forEach((id) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = '--';
-      });
-      ['uptime-trend', 'response-time-trend', 'active-users-trend', 'monitored-products-trend'].forEach((id) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = 'Server data unavailable';
-      });
+      setTextContent('last-update', 'Unavailable');
+      setTextContent('footer-update', 'Unavailable');
+
+      [
+        'server-uptime-value',
+        'server-memory-value',
+        'server-runtime-value',
+        'database-health-value',
+        'uptime-value',
+        'response-time-value',
+        'active-users-value',
+        'monitored-products-value',
+        'requests-per-minute',
+        'users-online',
+        'notifications-today'
+      ].forEach((id) => setTextContent(id, '--'));
+
+      [
+        'server-uptime-trend',
+        'server-memory-trend',
+        'server-runtime-trend',
+        'database-health-trend',
+        'uptime-trend',
+        'response-time-trend',
+        'active-users-trend',
+        'monitored-products-trend'
+      ].forEach((id) => setTextContent(id, 'Server data unavailable'));
     }
 
     async function loadServerStatus() {
       try {
-        const response = await fetch('/api/status', { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
+        const [statusResponse, healthResponse] = await Promise.all([
+          fetch('/api/status', { cache: 'no-store' }),
+          fetch('/api/status/health', { cache: 'no-store' }).catch(() => null)
+        ]);
+
+        if (!statusResponse.ok) throw new Error(`HTTP error! status: ${statusResponse.status}`);
+
+        const data = await statusResponse.json();
         if (data.status !== 'ok') throw new Error(data.error || data.message || 'Unknown status error');
+
+        let healthData = null;
+        if (healthResponse && healthResponse.ok) {
+          const parsedHealth = await healthResponse.json();
+          if (parsedHealth.status === 'ok') healthData = parsedHealth;
+        }
 
         const metricas = data.metricas || {};
         const componentes = data.componentes || [];
         const incidentes = data.incidentes || [];
         const timestamp = data.ultimaAtualizacao || new Date().toISOString();
 
-        renderOverview(componentes, timestamp);
-        renderComponents(metricas, componentes, timestamp);
+        renderOverview(componentes, timestamp, healthData);
+        renderServerSnapshot(healthData);
+        renderComponents(metricas, componentes, timestamp, healthData);
         renderPerformanceMetrics(metricas);
         renderIncidents(incidentes);
       } catch (error) {
