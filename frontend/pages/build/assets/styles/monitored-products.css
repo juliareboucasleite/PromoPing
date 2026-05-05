@@ -49,9 +49,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  padding: 12px 8px 8px;
-  max-width: 650px;
-  margin: 0 auto;
+  padding: 12px 0 8px;
+  margin: 20px 0;
   animation: epFadeIn 0.4s ease;
 }
 
