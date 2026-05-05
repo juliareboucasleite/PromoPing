@@ -295,6 +295,38 @@
   border-bottom-color: rgba(255, 107, 53, 0.4);
 }
 
+/* ===== Paste-URL expander (manual add form) ===== */
+.ep-paste-form {
+  margin: 14px auto 0;
+  max-width: 520px;
+  padding: 14px;
+  border: 1px solid var(--ep-line);
+  border-radius: 12px;
+  background: #ffffff;
+  text-align: left;
+  animation: epFadeIn 0.22s ease;
+}
+
+.ep-paste-form[hidden] { display: none; }
+
+.ep-paste-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ep-paste-form-grid .form-group { margin: 0; }
+.ep-paste-form-grid .form-group.link { grid-column: 1 / -1; }
+.ep-paste-form-grid .add-product-btn {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  margin-top: 4px;
+}
+
+@media (max-width: 520px) {
+  .ep-paste-form-grid { grid-template-columns: 1fr; }
+}
+
 /* ===== Results ===== */
 .ep-results {
   background: #ffffff;
@@ -540,6 +572,9 @@
   justify-content: center;
   padding: 16px;
 }
+
+.ep-modal[hidden] { display: none !important; }
+.ep-toast[hidden] { display: none !important; }
 
 .ep-modal-backdrop {
   position: absolute;
