@@ -1265,8 +1265,11 @@
     function epLooksLikeAiQuery(query) {
       const q = String(query || '').trim();
       if (!q) return false;
+      if (/\b(under|below|ate|mais barato|barato|max|worten|fnac|pcdiga|amazon|mediamarkt|globaldata|ikea|continente|auchan)\b/i.test(q)) {
+        return true;
+      }
       if (q.split(/\s+/).length < 4) return false;
-      return /\b(quero|mostra|mostrar|encontra|procura|buscar|find|show|search|under|below|ate|mais barato|barato|max)\b/i.test(q);
+      return /\b(quero|mostra|mostrar|encontra|procura|buscar|find|show|search)\b/i.test(q);
     }
     function epDefaultIntent(query) {
       return {
