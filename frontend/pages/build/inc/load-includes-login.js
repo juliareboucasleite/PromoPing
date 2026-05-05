@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="pp-footer-links">
                                             <a href="#sobre" class="pp-footer-link">Sobre</a>
                                             <a href="#contato" class="pp-footer-link">Contato</a>
-                                            <a href="#privacidade" class="pp-footer-link">Privacidade</a>
+                                            <a href="/docs/privacy-policy" class="pp-footer-link" rel="privacy-policy">Privacidade</a>
                                         </div>
                                     </div>
                                     <div class="pp-footer-bottom">
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="pp-footer-links">
                                     <a href="#sobre" class="pp-footer-link">Sobre</a>
                                     <a href="#contato" class="pp-footer-link">Contato</a>
-                                    <a href="#privacidade" class="pp-footer-link">Privacidade</a>
+                                    <a href="/docs/privacy-policy" class="pp-footer-link" rel="privacy-policy">Privacidade</a>
                                 </div>
                             </div>
                             <div class="pp-footer-bottom">
