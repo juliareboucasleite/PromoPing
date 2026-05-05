@@ -432,10 +432,10 @@
         }
 
 
-        // VariÃ¡vel global para armazenar dados do plano selecionado (anual = conforme toggle Monthly/Yearly)
+        // Variavel global para armazenar dados do plano selecionado (anual = conforme toggle Monthly/Yearly)
         let selectedPlanData = null;
 
-        // FunÃ§Ã£o para abrir modal de compra (preco = preÃ§o mensal do plano)
+        // Função para abrir modal de compra (preco = preÃ§o mensal do plano)
         function abrirModalCompra(planoId, planoNome, preco) {
             const anual = !!billingYearly;
             const precoYearlyDb = getPrecoYearlyPorPlanId(planoId);
@@ -485,7 +485,7 @@
             if (e.key === 'Escape') fecharModalCompra();
         }
 
-        // FunÃ§Ã£o para fechar modal de compra
+        // Função para fechar modal de compra
         function fecharModalCompra() {
             document.removeEventListener('keydown', onEscapePurchaseModal);
             const modal = document.getElementById('purchaseModal');
@@ -496,14 +496,14 @@
             selectedPlanData = null;
         }
 
-        // FunÃ§Ã£o para habilitar/desabilitar botÃ£o de compra
+        // Função para habilitar/desabilitar botão de compra
         function togglePurchaseButton() {
             const checkbox = document.getElementById('acceptPurchaseTerms');
             const button = document.getElementById('confirmPurchaseBtn');
             button.disabled = !checkbox.checked;
         }
 
-        // FunÃ§Ã£o para atualizar estilo do checkbox customizado
+        // Função para atualizar estilo do checkbox customizado
         function updateCheckboxStyle(checkbox) {
             const customCheckbox = document.getElementById('customCheckbox');
             if (checkbox.checked) {
@@ -513,7 +513,7 @@
             }
         }
 
-        // FunÃ§Ã£o para confirmar compra e redirecionar para Stripe
+        // Função para confirmar compra e redirecionar para Stripe
         async function confirmarCompra() {
             if (!selectedPlanData) {
                 alert('Error: plan data not found');
@@ -620,21 +620,21 @@
             if (e.key === 'Escape') fecharModalCancelamento();
         }
 
-        // FunÃ§Ã£o para abrir modal para cancelar assinatura
+        // Função para abrir modal para cancelar assinatura
         function cancelarAssinatura() {
             const modal = document.getElementById('cancelModal');
             modal.classList.add('active');
             document.addEventListener('keydown', onEscapeCancelModal);
         }
 
-        // FunÃ§Ã£o para fechar o modal de cancelamento
+        // Função para fechar o modal de cancelamento
         function fecharModalCancelamento() {
             document.removeEventListener('keydown', onEscapeCancelModal);
             const modal = document.getElementById('cancelModal');
             if (modal) modal.classList.remove('active');
         }
 
-        // FunÃ§Ã£o para realmente cancelar a assinatura via backend
+        // Função para realmente cancelar a assinatura via backend
         async function confirmarCancelamento() {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -686,7 +686,7 @@
             }
         }
 
-        // FunÃ§Ã£o para carregar e mostrar dados do usuÃ¡rio na tela de planos
+        // Função para carregar e mostrar dados do usuário na tela de planos
         async function carregarDadosUsuario() {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -695,8 +695,8 @@
                 return;
             }
             try {
-                console.log("[PLANOS] Iniciando carregamento da pÃ¡gina...");
-                // Carregar perfil do usuÃ¡rio
+                console.log("[PLANOS] Iniciando carregamento da página...");
+                // Carregar perfil do usuário
                 const response = await makeRequest("/api/user/profile", {
                     headers: { Authorization: "Bearer " + token }
                 });
@@ -704,21 +704,21 @@
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(" [PLANOS] Dados do usuÃ¡rio carregados:", data);
+                console.log(" [PLANOS] Dados do usuário carregados:", data);
 
-                // Atualizar nome do usuÃ¡rio no header
+                // Atualizar nome do usuário no header
                 const userNameElement = document.getElementById('userName');
                 if (userNameElement && data.status === "ok" && data.profile) {
                     userNameElement.textContent = data.profile.nome || 'User';
-                    console.log(" [PLANOS] Nome do usuÃ¡rio atualizado:", data.profile.nome);
+                    console.log(" [PLANOS] Nome do usuário atualizado:", data.profile.nome);
                 } else {
-                    console.error(" [PLANOS] Estrutura de dados incorreta ou elemento nÃ£o encontrado:", data);
+                    console.error(" [PLANOS] Estrutura de dados incorreta ou elemento não encontrado:", data);
                 }
 
                 // Carregar planos do banco de dados
                 await carregarPlans();
 
-                // Mostrar seÃ§Ã£o do plano atual
+                // Mostrar seção do plano atual
                 const [meResponse, planoResponse] = await Promise.all([
                     makeRequest("/api/user/me", {
                         headers: { Authorization: "Bearer " + token }
@@ -768,7 +768,7 @@
                 destacarPlanAtual(data.userPlanId);
             } catch (error) {
                 console.error("Erro ao carregar plano atual:", error);
-                // Manter planos estÃ¡ticos em caso de erro
+                // Manter planos estaticos em caso de erro
             }
         }
 

@@ -109,9 +109,14 @@
 
 /* Desliga o shimmer/sweep herdado do dashboard-shared.css */
 .plan-card::after,
-.plan-card:hover::after {
-    content: none;
-    display: none;
+.plan-card:hover::after,
+.plan-card::before,
+.plan-card:hover::before {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .plan-card.featured {
@@ -239,7 +244,6 @@
 
 .plan-features li:hover {
     color: #2c3e50;
-    padding-left: 3px;
 }
 
 .feature-icon {
