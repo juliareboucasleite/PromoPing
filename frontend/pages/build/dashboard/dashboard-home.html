@@ -1248,6 +1248,23 @@
 
     function epEscape(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
     function epFmt(n) { return Number(n).toFixed(2).replace('.', ','); }
+    function epParsePrice(value) {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      const text = String(value ?? '').trim();
+      if (!text) return null;
+      const cleaned = text
+        .replace(/[^\d,.-]/g, '')
+        .replace(/\.(?=.*[.,]\d{2}\b)/g, '')
+        .replace(',', '.');
+      const parsed = Number.parseFloat(cleaned);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    function epHasPrice(value) {
+      return typeof value === 'number' && Number.isFinite(value) && value > 0;
+    }
+    function epPriceLabel(value) {
+      return epHasPrice(value) ? `€${epFmt(value)}` : 'Price unavailable';
+    }
     function epStoreSlug(store) {
       return String(store).toLowerCase()
         .replace(/&/g,'').replace(/[áàâã]/g,'a').replace(/[éê]/g,'e')
@@ -1494,7 +1511,8 @@
           id: `r${i}`,
           name: r.title || 'Product',
           store: r.store || 'Store',
-          price: typeof r.price === 'number' ? r.price : parseFloat(r.price) || null,
+          price: epParsePrice(r.price ?? r.currentPrice ?? r.current_price ?? r.preco ?? r.precoAtual),
+          was: epParsePrice(r.was ?? r.previousPrice ?? r.previous_price ?? r.oldPrice ?? r.old_price),
           url: r.url || '',
           hue: EP_STORE_HUES[epStoreSlug(r.store || '')] ?? 215
         })).filter(r => r.url);
@@ -1512,7 +1530,10 @@
 
         grid.innerHTML = filteredResults.map(p => {
           const initial = (p.name.match(/[A-Za-z0-9]/) || ['•'])[0].toUpperCase();
-          const priceLabel = p.price != null ? `€${epFmt(p.price)}` : '—';
+          const priceLabel = epPriceLabel(p.price);
+          const wasLabel = epHasPrice(p.was) && epHasPrice(p.price) && p.was > p.price
+            ? `<span class="ep-result-was">€${epFmt(p.was)}</span>`
+            : '';
           return `
             <article class="ep-result" data-id="${p.id}">
               <div class="ep-result-thumb" style="--ep-hue:${p.hue};">
@@ -1523,6 +1544,7 @@
                 <h4 class="ep-result-name">${epEscape(p.name)}</h4>
                 <div class="ep-result-prices">
                   <span class="ep-result-price">${priceLabel}</span>
+                  ${wasLabel}
                 </div>
                 <button type="button" class="ep-result-cta" data-track-id="${p.id}">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1557,27 +1579,34 @@
     function epOpenTrackModal(product) {
       epCurrentProduct = product;
       const modal = document.getElementById('epTrackModal');
+      const hasPrice = epHasPrice(product.price);
       document.getElementById('epModalStore').textContent = product.store;
       document.getElementById('epModalName').textContent = product.name;
-      document.getElementById('epModalPrice').textContent = `€${epFmt(product.price)}`;
+      document.getElementById('epModalPrice').textContent = epPriceLabel(product.price);
       const wasEl = document.getElementById('epModalWas');
-      if (product.was > product.price) { wasEl.textContent = `€${epFmt(product.was)}`; wasEl.hidden = false; }
+      if (epHasPrice(product.was) && hasPrice && product.was > product.price) { wasEl.textContent = `€${epFmt(product.was)}`; wasEl.hidden = false; }
       else { wasEl.hidden = true; }
       const initial = (product.name.match(/[A-Za-z0-9]/) || ['•'])[0].toUpperCase();
       const thumb = document.getElementById('epModalThumb');
       thumb.style.setProperty('--ep-hue', product.hue);
       thumb.innerHTML = `<span>${initial}</span>`;
       const suggestedFromIntent = typeof epCurrentSearchIntent?.maxPrice === 'number' &&
-        Number.isFinite(product.price) &&
+        hasPrice &&
         epCurrentSearchIntent.maxPrice <= product.price
         ? epCurrentSearchIntent.maxPrice
         : null;
       const suggestion = suggestedFromIntent != null
         ? suggestedFromIntent
-        : Math.max(0, +(product.price * 0.9).toFixed(2));
-      document.getElementById('epPriceInput').value = suggestion.toFixed(2);
-      document.getElementById('epHintCurrent').textContent = epFmt(product.price);
-      document.getElementById('epHintFromPrice').textContent = epFmt(product.was || product.price);
+        : (hasPrice ? Math.max(0, +(product.price * 0.9).toFixed(2)) : null);
+      document.getElementById('epPriceInput').value = suggestion != null ? suggestion.toFixed(2) : '';
+      document.getElementById('epHintCurrent').textContent = hasPrice ? epFmt(product.price) : 'unavailable';
+      document.getElementById('epHintFromPrice').textContent = epHasPrice(product.was || product.price) ? epFmt(product.was || product.price) : 'unavailable';
+      const discountTab = document.querySelector('#epTrackModal .ep-tab[data-tab="discount"]');
+      if (discountTab) {
+        discountTab.disabled = !hasPrice;
+        discountTab.classList.toggle('ep-tab-disabled', !hasPrice);
+        discountTab.setAttribute('aria-disabled', !hasPrice ? 'true' : 'false');
+      }
       epSwitchTab('price');
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
@@ -1591,6 +1620,9 @@
     }
 
     function epSwitchTab(name) {
+      if (name === 'discount' && !epHasPrice(epCurrentProduct?.price)) {
+        name = 'price';
+      }
       document.querySelectorAll('#epTrackModal .ep-tab').forEach(t => {
         const active = t.dataset.tab === name;
         t.classList.toggle('ep-tab-active', active);
@@ -1613,7 +1645,7 @@
     document.addEventListener('click', (e) => {
       if (e.target.closest('[data-ep-close]')) epCloseTrackModal();
       const tabBtn = e.target.closest('#epTrackModal .ep-tab');
-      if (tabBtn) epSwitchTab(tabBtn.dataset.tab);
+      if (tabBtn && !tabBtn.disabled) epSwitchTab(tabBtn.dataset.tab);
       const pctBtn = e.target.closest('#epTrackModal .ep-pct');
       if (pctBtn) {
         document.querySelectorAll('#epTrackModal .ep-pct').forEach(b => b.classList.remove('ep-pct-active'));

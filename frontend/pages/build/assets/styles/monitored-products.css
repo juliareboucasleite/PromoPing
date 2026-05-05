@@ -1,3 +1,13 @@
+:root {
+  --ep-orange: #ff6b35;
+  --ep-orange-2: #f7931e;
+  --ep-ink: #0f172a;
+  --ep-ink-2: #334155;
+  --ep-mute: #64748b;
+  --ep-line: rgba(15, 23, 42, 0.08);
+  --ep-soft: #f8fafc;
+}
+
 .date-fields-group {
       display: flex;
       gap: 8px;
@@ -795,6 +805,11 @@
   background: #ffffff;
   color: var(--ep-orange);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.ep-tab.ep-tab-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ep-tab-pane[hidden] { display: none; }
