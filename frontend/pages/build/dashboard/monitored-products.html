@@ -191,6 +191,93 @@
       </div>
     </div>
   </div>
+  <!-- Modal: track product (from discover empty state) -->
+  <div id="epTrackModal" class="ep-modal" hidden>
+    <div class="ep-modal-backdrop" data-ep-close></div>
+    <div class="ep-modal-card" role="dialog" aria-modal="true" aria-labelledby="epModalName">
+      <button class="ep-modal-close" data-ep-close aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="ep-modal-product">
+        <div class="ep-modal-thumb" id="epModalThumb"></div>
+        <div class="ep-modal-meta">
+          <div class="ep-modal-store" id="epModalStore">Store</div>
+          <div class="ep-modal-name" id="epModalName">Product</div>
+          <div class="ep-modal-price-row">
+            <span class="ep-modal-price" id="epModalPrice">€0,00</span>
+            <span class="ep-modal-was" id="epModalWas" hidden></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ep-modal-section">
+        <div class="ep-tabs" role="tablist">
+          <button class="ep-tab ep-tab-active" data-tab="price" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            Target price
+          </button>
+          <button class="ep-tab" data-tab="discount" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="5" x2="5" y2="19"></line>
+              <circle cx="6.5" cy="6.5" r="2.5"></circle>
+              <circle cx="17.5" cy="17.5" r="2.5"></circle>
+            </svg>
+            On discount
+          </button>
+        </div>
+
+        <div class="ep-tab-pane" data-pane="price">
+          <label class="ep-field-label">Notify me when price drops to</label>
+          <div class="ep-price-input">
+            <span class="ep-price-currency">€</span>
+            <input type="number" id="epPriceInput" step="0.01" min="0" placeholder="0,00" inputmode="decimal">
+          </div>
+          <div class="ep-hint" id="epPriceHint">Currently €<span id="epHintCurrent">0,00</span></div>
+        </div>
+
+        <div class="ep-tab-pane" data-pane="discount" hidden>
+          <label class="ep-field-label">Ping me on a discount of at least</label>
+          <div class="ep-discount-grid">
+            <button type="button" class="ep-pct" data-pct="10">−10%</button>
+            <button type="button" class="ep-pct ep-pct-active" data-pct="25">−25%</button>
+            <button type="button" class="ep-pct" data-pct="40">−40%</button>
+            <button type="button" class="ep-pct" data-pct="50">−50%</button>
+            <button type="button" class="ep-pct ep-pct-custom" data-pct="custom">
+              <input type="number" id="epPctCustom" min="1" max="99" placeholder="Custom" inputmode="numeric">
+              <span class="ep-pct-custom-suffix">%</span>
+            </button>
+          </div>
+          <div class="ep-hint">From €<span id="epHintFromPrice">0,00</span> baseline</div>
+        </div>
+      </div>
+
+      <div class="ep-modal-actions">
+        <button type="button" class="ep-btn-ghost" data-ep-close>Cancel</button>
+        <button type="button" class="ep-btn-primary" id="epModalSave">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+          Start tracking
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast: confirmation of saved tracking -->
+  <div id="epToast" class="ep-toast" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    <span id="epToastMsg">Tracking saved.</span>
+  </div>
+
   <script src="../../assets/scripts/support-widget.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -281,28 +368,8 @@
         productsList.style.display = "block";
 
         if (data.status !== "ok" || data.produtos.length === 0) {
-          productsList.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
-                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
-              </div>
-              <h3>No products found</h3>
-              <p>Start tracking products to follow prices and find the best deals.</p>
-              <div class="empty-state-actions">
-                <a href="/dashboard" class="pp-btn">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  Add first product
-                </a>
-                <a href="/dashboard" class="btn-ghost">View Dashboard</a>
-              </div>
-            </div>`;
+          productsList.innerHTML = renderDiscoverEmptyState();
+          initDiscoverEmptyState();
           document.getElementById("productCount").textContent = 0;
           document.getElementById("filterProductCount").textContent = 0;
           return;
