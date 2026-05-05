@@ -940,20 +940,7 @@
     }
 }
 
-.empty-state-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 24px;
-    background: linear-gradient(135deg, #f4af55, #ed9a6c, #dc7c35);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 25px rgba(220, 124, 53, 0.3);
-    animation: float 3s ease-in-out infinite;
-    position: relative;
-    overflow: hidden;
-}
+
 
 .empty-state-icon::before {
     content: '';

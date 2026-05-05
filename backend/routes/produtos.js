@@ -185,6 +185,97 @@ router.post("/", verifyToken, async (req, res) => {
     }
 });
 
+// Cache em memória para resultados de pesquisa (TTL 30 min)
+const searchCache = new Map();
+const SEARCH_CACHE_TTL_MS = 30 * 60 * 1000;
+const SEARCH_TIMEOUT_MS = 120000; // 2 min
+
+function normalizeSearchQuery(q) {
+    return String(q || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+// Pesquisa de produtos por texto livre (scraper + cache)
+router.get("/search", verifyToken, async (req, res) => {
+    const rawQuery = String(req.query.q || "").trim();
+    if (rawQuery.length < 2 || rawQuery.length > 80) {
+        return res.status(400).json({
+            status: "error",
+            message: "Query inválida (entre 2 e 80 caracteres).",
+            results: []
+        });
+    }
+    const cacheKey = normalizeSearchQuery(rawQuery);
+    const cached = searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < SEARCH_CACHE_TTL_MS) {
+        return res.json({
+            status: "ok",
+            cached: true,
+            query: rawQuery,
+            results: cached.results,
+            count: cached.results.length
+        });
+    }
+
+    const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
+    const escapedQuery = rawQuery.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+    const command = `${pythonExec} "${scraperPath}" --search "${escapedQuery}"`;
+
+    try {
+        const { stdout, stderr } = await execAsync(command, {
+            cwd: path.join(__dirname, '../../'),
+            timeout: SEARCH_TIMEOUT_MS,
+            maxBuffer: 10 * 1024 * 1024
+        });
+        if (stderr && !stderr.includes('INFO')) {
+            console.warn(`[SEARCH] Stderr: ${stderr.substring(0, 400)}`);
+        }
+        const jsonMatch = stdout.match(/\{[\s\S]*\}\s*$/);
+        if (!jsonMatch) {
+            console.error(`[SEARCH] JSON não encontrado. stdout: ${stdout.substring(0, 400)}`);
+            return res.status(500).json({
+                status: "error",
+                message: "Falha ao interpretar resultados do scraper.",
+                results: []
+            });
+        }
+        let parsed;
+        try {
+            parsed = JSON.parse(jsonMatch[0]);
+        } catch (parseErr) {
+            console.error(`[SEARCH] Erro parse JSON: ${parseErr.message}`);
+            return res.status(500).json({
+                status: "error",
+                message: "Resposta inválida do scraper.",
+                results: []
+            });
+        }
+        const results = Array.isArray(parsed.results) ? parsed.results : [];
+        // Cache somente sucessos não-vazios para não fixar resultado vazio
+        if (results.length > 0) {
+            searchCache.set(cacheKey, { at: Date.now(), results });
+        }
+        res.json({
+            status: "ok",
+            cached: false,
+            query: rawQuery,
+            results,
+            count: results.length
+        });
+    } catch (err) {
+        console.error(`[SEARCH] Erro de execução: ${err.message}`);
+        return res.status(500).json({
+            status: "error",
+            message: "Erro ao executar pesquisa.",
+            results: []
+        });
+    }
+});
+
 //  Listar produtos do utilizador
 router.get("/", verifyToken, async (req, res) => {
     try {

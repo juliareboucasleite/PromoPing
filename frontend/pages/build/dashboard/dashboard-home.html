@@ -1269,14 +1269,21 @@
       const back = document.getElementById('epResultsBack');
       if (!form || !input) return;
 
-      const onType = () => { clearBtn.hidden = !input.value; epRunSearch(input.value.trim()); };
+      let epDebounceTimer = null;
+      const onType = () => {
+        clearBtn.hidden = !input.value;
+        const q = input.value.trim();
+        clearTimeout(epDebounceTimer);
+        if (!q) { epRunSearch(''); return; }
+        epDebounceTimer = setTimeout(() => epRunSearch(q), 700);
+      };
       input.addEventListener('input', onType);
-      form.addEventListener('submit', (e) => { e.preventDefault(); epRunSearch(input.value.trim()); });
-      clearBtn.addEventListener('click', () => { input.value=''; clearBtn.hidden=true; epRunSearch(''); input.focus(); });
-      back.addEventListener('click', () => { input.value=''; clearBtn.hidden=true; epRunSearch(''); });
+      form.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(epDebounceTimer); epRunSearch(input.value.trim()); });
+      clearBtn.addEventListener('click', () => { input.value=''; clearBtn.hidden=true; clearTimeout(epDebounceTimer); epRunSearch(''); input.focus(); });
+      back.addEventListener('click', () => { input.value=''; clearBtn.hidden=true; clearTimeout(epDebounceTimer); epRunSearch(''); });
 
       document.querySelectorAll('.ep-chip').forEach(chip => {
-        chip.addEventListener('click', () => { input.value = chip.dataset.q; clearBtn.hidden=false; epRunSearch(chip.dataset.q); input.focus(); });
+        chip.addEventListener('click', () => { input.value = chip.dataset.q; clearBtn.hidden=false; clearTimeout(epDebounceTimer); epRunSearch(chip.dataset.q); input.focus(); });
       });
 
       // Paste-URL expander
@@ -1291,7 +1298,11 @@
       }
     })();
 
-    function epRunSearch(query) {
+    let epLastResults = [];
+    let epSearchSeq = 0;
+    const EP_STORE_HUES = { worten: 215, fnac: 340, pcdiga: 285, amazon: 25, mediamarkt: 0, 'amazon es': 25 };
+
+    async function epRunSearch(query) {
       const wrap = document.getElementById('epResults');
       const grid = document.getElementById('epResultsGrid');
       const count = document.getElementById('epResultsCount');
@@ -1299,54 +1310,91 @@
       const empty = document.getElementById('epResultsEmpty');
       if (!wrap || !grid) return;
 
-      const q = String(query || '').toLowerCase().trim();
-      if (!q) { wrap.hidden = true; grid.innerHTML = ''; return; }
+      const q = String(query || '').trim();
+      if (!q) { wrap.hidden = true; grid.innerHTML = ''; epLastResults = []; return; }
 
-      const tokens = q.split(/\s+/).filter(Boolean);
-      const matches = EP_CATALOG.filter(p => {
-        const hay = (p.name + ' ' + (p.kw || []).join(' ')).toLowerCase();
-        return tokens.every(t => hay.includes(t));
-      });
-
+      const seq = ++epSearchSeq;
       wrap.hidden = false;
-      empty.hidden = matches.length > 0;
-      count.textContent = `${matches.length} result${matches.length === 1 ? '' : 's'}`;
-      sub.textContent = matches.length > 0
-        ? `for "${query}" across ${EP_ACTIVE_STORES.length} stores`
-        : `for "${query}"`;
+      empty.hidden = true;
+      count.textContent = 'Searching…';
+      sub.textContent = `looking for "${q}" across stores`;
+      grid.innerHTML = `
+        <div class="ep-loading-card"></div>
+        <div class="ep-loading-card"></div>
+        <div class="ep-loading-card"></div>
+        <div class="ep-loading-card"></div>`;
 
-      grid.innerHTML = matches.map(p => {
-        const drop = p.was > p.price ? Math.round((1 - p.price / p.was) * 100) : 0;
-        const initial = (p.name.match(/[A-Za-z0-9]/) || ['•'])[0].toUpperCase();
-        return `
-          <article class="ep-result" data-id="${p.id}">
-            <div class="ep-result-thumb" style="--ep-hue:${p.hue};">
-              <span class="ep-result-monogram">${initial}</span>
-              ${drop > 0 ? `<span class="ep-result-drop">−${drop}%</span>` : ''}
-            </div>
-            <div class="ep-result-body">
-              <span class="ep-result-store ep-store-${epStoreSlug(p.store)}">${epEscape(p.store)}</span>
-              <h4 class="ep-result-name">${epEscape(p.name)}</h4>
-              <div class="ep-result-prices">
-                <span class="ep-result-price">€${epFmt(p.price)}</span>
-                ${p.was > p.price ? `<span class="ep-result-was">€${epFmt(p.was)}</span>` : ''}
-              </div>
-              <button type="button" class="ep-result-cta" data-track-id="${p.id}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 5v14M5 12h14"></path>
-                </svg>
-                Track this
-              </button>
-            </div>
-          </article>`;
-      }).join('');
-
-      grid.querySelectorAll('[data-track-id]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const product = EP_CATALOG.find(p => p.id === btn.dataset.trackId);
-          if (product) epOpenTrackModal(product);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/produtos/search?q=${encodeURIComponent(q)}`, {
+          headers: { Authorization: 'Bearer ' + token }
         });
-      });
+        if (seq !== epSearchSeq) return; // stale response
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.status !== 'ok') {
+          empty.hidden = false;
+          document.getElementById('epResultsEmptyHint').textContent = data.message || 'Search failed. Try again in a moment.';
+          count.textContent = '0 results';
+          sub.textContent = `for "${q}"`;
+          grid.innerHTML = '';
+          epLastResults = [];
+          return;
+        }
+        const results = (data.results || []).map((r, i) => ({
+          id: `r${i}`,
+          name: r.title || 'Product',
+          store: r.store || 'Store',
+          price: typeof r.price === 'number' ? r.price : parseFloat(r.price) || null,
+          url: r.url || '',
+          hue: EP_STORE_HUES[epStoreSlug(r.store || '')] ?? 215
+        })).filter(r => r.url);
+        epLastResults = results;
+
+        empty.hidden = results.length > 0;
+        document.getElementById('epResultsEmptyHint').textContent = 'Try a brand, model, or category. Keep typing.';
+        count.textContent = `${results.length} result${results.length === 1 ? '' : 's'}`;
+        sub.textContent = results.length > 0
+          ? `for "${q}"${data.cached ? ' (cached)' : ''}`
+          : `for "${q}"`;
+
+        grid.innerHTML = results.map(p => {
+          const initial = (p.name.match(/[A-Za-z0-9]/) || ['•'])[0].toUpperCase();
+          const priceLabel = p.price != null ? `€${epFmt(p.price)}` : '—';
+          return `
+            <article class="ep-result" data-id="${p.id}">
+              <div class="ep-result-thumb" style="--ep-hue:${p.hue};">
+                <span class="ep-result-monogram">${initial}</span>
+              </div>
+              <div class="ep-result-body">
+                <span class="ep-result-store ep-store-${epStoreSlug(p.store)}">${epEscape(p.store)}</span>
+                <h4 class="ep-result-name">${epEscape(p.name)}</h4>
+                <div class="ep-result-prices">
+                  <span class="ep-result-price">${priceLabel}</span>
+                </div>
+                <button type="button" class="ep-result-cta" data-track-id="${p.id}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                  Track this
+                </button>
+              </div>
+            </article>`;
+        }).join('');
+
+        grid.querySelectorAll('[data-track-id]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const product = epLastResults.find(p => p.id === btn.dataset.trackId);
+            if (product) epOpenTrackModal(product);
+          });
+        });
+      } catch (err) {
+        if (seq !== epSearchSeq) return;
+        console.error('[SEARCH] Erro:', err);
+        empty.hidden = false;
+        document.getElementById('epResultsEmptyHint').textContent = 'Network error. Try again.';
+        count.textContent = '0 results';
+        grid.innerHTML = '';
+      }
     }
 
     /* ===== Track modal ===== */
@@ -1419,34 +1467,64 @@
       }
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
       const save = e.target.closest('#epModalSave');
       if (!save || !epCurrentProduct) return;
+      if (!epCurrentProduct.url) {
+        epShowToast('Missing product URL — cannot track.');
+        return;
+      }
       const activeTab = document.querySelector('#epTrackModal .ep-tab.ep-tab-active')?.dataset.tab || 'price';
-      const payload = {
-        nome: epCurrentProduct.name,
-        loja: epCurrentProduct.store,
-        precoAtual: epCurrentProduct.price,
-        tipoAlerta: activeTab === 'discount' ? 'desconto_pct' : 'preco_alvo'
-      };
-      if (payload.tipoAlerta === 'preco_alvo') {
-        const v = parseFloat(document.getElementById('epPriceInput').value);
-        if (!Number.isFinite(v) || v <= 0) { document.getElementById('epPriceInput').focus(); return; }
-        payload.valor = v;
+      let precoAlvo;
+      if (activeTab === 'price') {
+        precoAlvo = parseFloat(document.getElementById('epPriceInput').value);
+        if (!Number.isFinite(precoAlvo) || precoAlvo <= 0) { document.getElementById('epPriceInput').focus(); return; }
       } else {
         const active = document.querySelector('#epTrackModal .ep-pct.ep-pct-active');
         let pct = active?.dataset.pct;
         if (pct === 'custom') pct = parseFloat(document.getElementById('epPctCustom').value);
         else pct = parseFloat(pct);
         if (!Number.isFinite(pct) || pct <= 0 || pct >= 100) { document.getElementById('epPctCustom')?.focus(); return; }
-        payload.valor = pct;
+        // Convert "discount %" into a target price using current price baseline.
+        const baseline = epCurrentProduct.price || 0;
+        precoAlvo = +(baseline * (1 - pct / 100)).toFixed(2);
+        if (!Number.isFinite(precoAlvo) || precoAlvo <= 0) {
+          epShowToast('Cannot compute target price (current price unknown).');
+          return;
+        }
       }
-      // Search-based tracking is UI-only for now (no real product URL).
-      // TODO: wire to backend search API to obtain the canonical product URL, then POST /api/produtos.
-      epShowToast(payload.tipoAlerta === 'desconto_pct'
-        ? `Tracking ${payload.nome} — pinging at −${payload.valor}% off (preview).`
-        : `Tracking ${payload.nome} — pinging at €${epFmt(payload.valor)} (preview).`);
-      epCloseTrackModal();
+
+      save.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            nome: epCurrentProduct.name,
+            link: epCurrentProduct.url,
+            data: null,
+            precoAlvo: precoAlvo
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 429) {
+          epShowToast('Rate limit — wait a few minutes.');
+          return;
+        }
+        if (!res.ok || data.status !== 'ok') {
+          epShowToast(data.message || data.error || 'Failed to add product.');
+          return;
+        }
+        epShowToast(`Tracking "${epCurrentProduct.name}" — pinging at €${epFmt(precoAlvo)}.`);
+        epCloseTrackModal();
+        if (typeof carregarProdutos === 'function') carregarProdutos();
+      } catch (err) {
+        console.error('[TRACK] Erro:', err);
+        epShowToast('Network error. Try again.');
+      } finally {
+        save.disabled = false;
+      }
     });
   </script>
 </body>

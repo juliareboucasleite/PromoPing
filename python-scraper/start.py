@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--single', help='Executa scraping imediato de um produto (URL)', type=str)
     parser.add_argument('--compare', help='Compara produto em múltiplas lojas (URL)', type=str)
     parser.add_argument('--compare-simple', help='Compara produto e retorna JSON simplificado (URL)', type=str)
+    parser.add_argument('--search', help='Pesquisa produtos por texto livre em lojas suportadas', type=str)
     parser.add_argument('--test', action='store_true', help='Testa sistema antes de iniciar')
     
     args = parser.parse_args()
@@ -69,6 +70,25 @@ def main():
             traceback.print_exc()
         return
     
+    # Modo search (pesquisa por texto livre — usado pelo endpoint /api/produtos/search)
+    if args.search:
+        from scraper import create_driver, safe_quit
+        from product_search import search_all_stores
+        driver = None
+        try:
+            driver = create_driver()
+            results = search_all_stores(driver, args.search) or []
+        except Exception as e:
+            print(json.dumps({"status": "error", "message": str(e), "results": []}, ensure_ascii=False))
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            return
+        finally:
+            if driver is not None:
+                safe_quit(driver)
+        print(json.dumps({"status": "ok", "results": results}, ensure_ascii=False))
+        return
+
     # Modo single product (verificação inicial)
     if args.single:
         print(f"Verificação inicial para: {args.single}")
