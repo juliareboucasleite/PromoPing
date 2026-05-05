@@ -173,7 +173,7 @@
               <path d="m21 21-4.35-4.35"></path>
             </svg>
             <input type="text" id="epSearchInput" class="ep-search-input"
-              placeholder="Try AirPods, RTX 4070, LEGO Star Wars…" aria-label="Search products">
+              placeholder='Try "AirPods under 200 on FNAC" or "cheapest RTX 4070"' aria-label="Search products">
             <button type="button" class="ep-search-clear" id="epSearchClear" hidden aria-label="Clear">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -182,6 +182,14 @@
             </button>
             <button type="submit" class="ep-search-go">Search</button>
           </form>
+
+          <div class="ep-ai-bar" id="epAiBar" hidden>
+            <div class="ep-ai-head">
+              <span class="ep-ai-badge" id="epAiBadge">AI search</span>
+              <span class="ep-ai-summary" id="epAiSummary"></span>
+            </div>
+            <div class="ep-ai-pills" id="epAiPills"></div>
+          </div>
 
           <div class="ep-trending" id="epTrendingWrap"></div>
 
@@ -1246,6 +1254,132 @@
         .replace(/[íï]/g,'i').replace(/[óôõ]/g,'o').replace(/[úü]/g,'u')
         .replace(/[ç]/g,'c').replace(/[^a-z0-9]+/g,'');
     }
+    function epNormalizeText(value) {
+      return String(value || '').toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    function epLooksLikeAiQuery(query) {
+      const q = String(query || '').trim();
+      if (!q) return false;
+      if (q.split(/\s+/).length < 4) return false;
+      return /\b(quero|mostra|mostrar|encontra|procura|buscar|find|show|search|under|below|ate|mais barato|barato|max)\b/i.test(q);
+    }
+    function epDefaultIntent(query) {
+      return {
+        rawQuery: String(query || '').trim(),
+        searchQuery: String(query || '').trim(),
+        store: null,
+        maxPrice: null,
+        sortBy: 'relevance',
+        confidence: 0.5,
+        source: 'plain'
+      };
+    }
+    function epBuildAiSummary(intent, rawQuery) {
+      if (!intent) return '';
+      const parts = [];
+      const searchQuery = intent.searchQuery && epNormalizeText(intent.searchQuery) !== epNormalizeText(rawQuery) ? intent.searchQuery : rawQuery;
+      if (searchQuery) parts.push(`searching for "${searchQuery}"`);
+      if (intent.store) parts.push(`in ${intent.store}`);
+      if (typeof intent.maxPrice === 'number') parts.push(`under EUR ${epFmt(intent.maxPrice)}`);
+      if (intent.sortBy === 'price_asc') parts.push('sorted by lowest price');
+      return parts.join(' ');
+    }
+    function epRenderAiAssist(intent, rawQuery, loading = false) {
+      const bar = document.getElementById('epAiBar');
+      const badge = document.getElementById('epAiBadge');
+      const summary = document.getElementById('epAiSummary');
+      const pills = document.getElementById('epAiPills');
+      if (!bar || !badge || !summary || !pills) return;
+
+      if (loading) {
+        bar.hidden = false;
+        badge.textContent = 'AI search';
+        summary.textContent = 'Understanding your request...';
+        pills.innerHTML = '';
+        return;
+      }
+
+      const hasAssist = intent && (intent.source === 'ai' || intent.source === 'heuristic') &&
+        (Boolean(intent.store) || typeof intent.maxPrice === 'number' || intent.sortBy === 'price_asc' || epNormalizeText(intent.searchQuery) !== epNormalizeText(rawQuery));
+      if (!hasAssist) {
+        bar.hidden = true;
+        pills.innerHTML = '';
+        summary.textContent = '';
+        return;
+      }
+
+      bar.hidden = false;
+      badge.textContent = intent.source === 'ai' ? 'AI search' : 'Smart search';
+      summary.textContent = epBuildAiSummary(intent, rawQuery);
+      const pillItems = [];
+      if (intent.store) pillItems.push(`<span class="ep-ai-pill">${epEscape(intent.store)}</span>`);
+      if (typeof intent.maxPrice === 'number') pillItems.push(`<span class="ep-ai-pill">Up to EUR ${epFmt(intent.maxPrice)}</span>`);
+      if (intent.sortBy === 'price_asc') pillItems.push('<span class="ep-ai-pill">Lowest price</span>');
+      if (intent.searchQuery && epNormalizeText(intent.searchQuery) !== epNormalizeText(rawQuery)) {
+        pillItems.push(`<span class="ep-ai-pill ep-ai-pill-soft">${epEscape(intent.searchQuery)}</span>`);
+      }
+      pills.innerHTML = pillItems.join('');
+    }
+    function epApplyIntent(results, intent) {
+      let filtered = Array.isArray(results) ? [...results] : [];
+      if (intent?.store) {
+        const wanted = epNormalizeText(intent.store);
+        filtered = filtered.filter((item) => epNormalizeText(item.store) === wanted);
+      }
+      if (typeof intent?.maxPrice === 'number') {
+        filtered = filtered.filter((item) => item.price == null || item.price <= intent.maxPrice);
+      }
+      if (intent?.sortBy === 'price_asc') {
+        filtered.sort((a, b) => {
+          const aPrice = Number.isFinite(a.price) ? a.price : Number.POSITIVE_INFINITY;
+          const bPrice = Number.isFinite(b.price) ? b.price : Number.POSITIVE_INFINITY;
+          return aPrice - bPrice;
+        });
+      }
+      return filtered;
+    }
+    const epIntentCache = new Map();
+    let epCurrentSearchIntent = null;
+    async function epResolveSearchIntent(query) {
+      const rawQuery = String(query || '').trim();
+      if (!rawQuery) return epDefaultIntent(rawQuery);
+      const cacheKey = epNormalizeText(rawQuery);
+      if (epIntentCache.has(cacheKey)) {
+        return epIntentCache.get(cacheKey);
+      }
+
+      if (!epLooksLikeAiQuery(rawQuery)) {
+        const fallbackIntent = epDefaultIntent(rawQuery);
+        epIntentCache.set(cacheKey, fallbackIntent);
+        return fallbackIntent;
+      }
+
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`/api/produtos/search-intent?q=${encodeURIComponent(rawQuery)}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await response.json().catch(() => ({}));
+        const intent = response.ok && data.status === 'ok' && data.intent
+          ? {
+              ...epDefaultIntent(rawQuery),
+              ...data.intent,
+              searchQuery: String(data.intent.searchQuery || rawQuery).trim() || rawQuery
+            }
+          : epDefaultIntent(rawQuery);
+        epIntentCache.set(cacheKey, intent);
+        return intent;
+      } catch (err) {
+        const fallbackIntent = epDefaultIntent(rawQuery);
+        epIntentCache.set(cacheKey, fallbackIntent);
+        return fallbackIntent;
+      }
+    }
 
     // Render chips and stores list
     (function epInitDiscover() {
@@ -1311,9 +1445,17 @@
       if (!wrap || !grid) return;
 
       const q = String(query || '').trim();
-      if (!q) { wrap.hidden = true; grid.innerHTML = ''; epLastResults = []; return; }
+      if (!q) {
+        wrap.hidden = true;
+        grid.innerHTML = '';
+        epLastResults = [];
+        epCurrentSearchIntent = null;
+        epRenderAiAssist(null, '');
+        return;
+      }
 
       const seq = ++epSearchSeq;
+      epRenderAiAssist(null, q, true);
       wrap.hidden = false;
       empty.hidden = true;
       count.textContent = 'Searching…';
@@ -1325,8 +1467,13 @@
         <div class="ep-loading-card"></div>`;
 
       try {
+        const intent = await epResolveSearchIntent(q);
+        if (seq !== epSearchSeq) return;
+        epCurrentSearchIntent = intent;
+        epRenderAiAssist(intent, q);
+        const searchQuery = String(intent.searchQuery || q).trim() || q;
         const token = localStorage.getItem('token');
-        const res = await fetch(`/api/produtos/search?q=${encodeURIComponent(q)}`, {
+        const res = await fetch(`/api/produtos/search?q=${encodeURIComponent(searchQuery)}`, {
           headers: { Authorization: 'Bearer ' + token }
         });
         if (seq !== epSearchSeq) return; // stale response
@@ -1348,16 +1495,19 @@
           url: r.url || '',
           hue: EP_STORE_HUES[epStoreSlug(r.store || '')] ?? 215
         })).filter(r => r.url);
-        epLastResults = results;
+        const filteredResults = epApplyIntent(results, intent);
+        epLastResults = filteredResults;
 
-        empty.hidden = results.length > 0;
-        document.getElementById('epResultsEmptyHint').textContent = 'Try a brand, model, or category. Keep typing.';
-        count.textContent = `${results.length} result${results.length === 1 ? '' : 's'}`;
-        sub.textContent = results.length > 0
-          ? `for "${q}"${data.cached ? ' (cached)' : ''}`
-          : `for "${q}"`;
+        empty.hidden = filteredResults.length > 0;
+        document.getElementById('epResultsEmptyHint').textContent = results.length > 0 && filteredResults.length === 0
+          ? 'AI filters removed these results. Try a higher budget or another store.'
+          : 'Try a brand, model, or category. Keep typing.';
+        count.textContent = `${filteredResults.length} result${filteredResults.length === 1 ? '' : 's'}`;
+        sub.textContent = filteredResults.length > 0
+          ? `${epBuildAiSummary(intent, q) || `for "${q}"`}${data.cached ? ' (cached)' : ''}`
+          : `${epBuildAiSummary(intent, q) || `for "${q}"`}`;
 
-        grid.innerHTML = results.map(p => {
+        grid.innerHTML = filteredResults.map(p => {
           const initial = (p.name.match(/[A-Za-z0-9]/) || ['•'])[0].toUpperCase();
           const priceLabel = p.price != null ? `€${epFmt(p.price)}` : '—';
           return `
@@ -1390,6 +1540,7 @@
       } catch (err) {
         if (seq !== epSearchSeq) return;
         console.error('[SEARCH] Erro:', err);
+        epRenderAiAssist(null, q);
         empty.hidden = false;
         document.getElementById('epResultsEmptyHint').textContent = 'Network error. Try again.';
         count.textContent = '0 results';
@@ -1413,7 +1564,14 @@
       const thumb = document.getElementById('epModalThumb');
       thumb.style.setProperty('--ep-hue', product.hue);
       thumb.innerHTML = `<span>${initial}</span>`;
-      const suggestion = Math.max(0, +(product.price * 0.9).toFixed(2));
+      const suggestedFromIntent = typeof epCurrentSearchIntent?.maxPrice === 'number' &&
+        Number.isFinite(product.price) &&
+        epCurrentSearchIntent.maxPrice <= product.price
+        ? epCurrentSearchIntent.maxPrice
+        : null;
+      const suggestion = suggestedFromIntent != null
+        ? suggestedFromIntent
+        : Math.max(0, +(product.price * 0.9).toFixed(2));
       document.getElementById('epPriceInput').value = suggestion.toFixed(2);
       document.getElementById('epHintCurrent').textContent = epFmt(product.price);
       document.getElementById('epHintFromPrice').textContent = epFmt(product.was || product.price);

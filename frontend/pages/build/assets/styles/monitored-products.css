@@ -217,6 +217,69 @@
 
 .ep-search-go:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
+.ep-ai-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin: 10px auto 0;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08), rgba(247, 147, 30, 0.06));
+  border: 1px solid rgba(255, 107, 53, 0.16);
+  border-radius: 10px;
+}
+
+.ep-ai-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ep-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 107, 53, 0.22);
+  color: var(--ep-orange);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ep-ai-summary {
+  color: var(--ep-ink-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.ep-ai-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ep-ai-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: var(--ep-ink-2);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.ep-ai-pill-soft {
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ep-mute);
+}
+
 /* ===== Trending chips ===== */
 .ep-trending {
   display: flex;

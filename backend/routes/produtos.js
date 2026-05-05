@@ -9,6 +9,7 @@ import { promisify } from "util";
 
 import { verifyToken } from "../middleware/auth.js";
 import { detectStore } from "../utils/storeDetector.js";
+import { resolveProductSearchIntent } from "../services/productSearchAssistant.service.js";
 
 const execAsync = promisify(exec);
 
@@ -187,6 +188,7 @@ router.post("/", verifyToken, async (req, res) => {
 
 // Cache em memória para resultados de pesquisa (TTL 30 min)
 const searchCache = new Map();
+const searchIntentCache = new Map();
 const SEARCH_CACHE_TTL_MS = 30 * 60 * 1000;
 const SEARCH_TIMEOUT_MS = 120000; // 2 min
 
@@ -198,6 +200,35 @@ function normalizeSearchQuery(q) {
         .replace(/\s+/g, " ")
         .trim();
 }
+
+router.get("/search-intent", verifyToken, async (req, res) => {
+    const rawQuery = String(req.query.q || "").trim();
+    if (rawQuery.length < 2 || rawQuery.length > 160) {
+        return res.status(400).json({
+            status: "error",
+            message: "Query invalida (entre 2 e 160 caracteres)."
+        });
+    }
+
+    const cacheKey = `intent:${normalizeSearchQuery(rawQuery)}`;
+    const cached = searchIntentCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < SEARCH_CACHE_TTL_MS) {
+        return res.json({
+            status: "ok",
+            cached: true,
+            intent: cached.intent
+        });
+    }
+
+    const intent = await resolveProductSearchIntent(rawQuery);
+    searchIntentCache.set(cacheKey, { at: Date.now(), intent });
+
+    return res.json({
+        status: "ok",
+        cached: false,
+        intent
+    });
+});
 
 // Pesquisa de produtos por texto livre (scraper + cache)
 router.get("/search", verifyToken, async (req, res) => {

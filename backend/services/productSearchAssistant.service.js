@@ -93,7 +93,13 @@ function normalizeText(value) {
 
 function parsePriceNumber(rawValue) {
     if (rawValue == null) return null;
-    const normalized = String(rawValue).replace(/\./g, "").replace(",", ".");
+    const rawText = String(rawValue).trim();
+    let normalized = rawText;
+    if (rawText.includes(",") && rawText.includes(".")) {
+        normalized = rawText.replace(/\./g, "").replace(",", ".");
+    } else if (rawText.includes(",")) {
+        normalized = rawText.replace(",", ".");
+    }
     const value = Number.parseFloat(normalized);
     if (!Number.isFinite(value) || value <= 0) return null;
     return Number(value.toFixed(2));
@@ -269,4 +275,3 @@ export async function resolveProductSearchIntent(rawQuery) {
         return heuristicIntent;
     }
 }
-
