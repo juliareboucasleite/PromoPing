@@ -321,11 +321,10 @@
     gap: 6px;
 }
 
-.plan-button.current::before {
-    content: '✓';
-    font-weight: 700;
-    font-size: 0.95rem;
-    line-height: 1;
+.plan-button.current::before,
+.plan-button.current::after {
+    content: none !important;
+    display: none !important;
 }
 
 .plan-button.current:hover,
