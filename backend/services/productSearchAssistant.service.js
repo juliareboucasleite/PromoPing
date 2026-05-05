@@ -1,10 +1,8 @@
-import OpenAI from "openai";
+import { createLlmClient, getLlmModel } from "./llmClient.service.js";
 
-const client = process.env.OPENAI_API_KEY
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-    : null;
+const client = createLlmClient();
 
-const MODEL = process.env.OPENAI_SEARCH_MODEL || process.env.OPENAI_SUPPORT_MODEL || "gpt-4o-mini";
+const MODEL = getLlmModel("OPENAI_SEARCH_MODEL", "SEARCH_LLM_MODEL", "OPENAI_SUPPORT_MODEL", "SUPPORT_LLM_MODEL");
 
 const STORE_CONFIG = [
     { name: "Worten", aliases: ["worten"] },

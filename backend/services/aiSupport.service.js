@@ -1,10 +1,8 @@
-import OpenAI from "openai";
+import { createLlmClient, getLlmModel } from "./llmClient.service.js";
 
-const client = process.env.OPENAI_API_KEY
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-    : null;
+const client = createLlmClient();
 
-const MODEL = process.env.OPENAI_SUPPORT_MODEL || "gpt-4o-mini";
+const MODEL = getLlmModel("OPENAI_SUPPORT_MODEL", "SUPPORT_LLM_MODEL");
 
 const SYSTEM_PROMPT = `You are a helpful support assistant for PromoPing, a price monitoring SaaS.
 Answer briefly and in Portuguese (pt-BR).
