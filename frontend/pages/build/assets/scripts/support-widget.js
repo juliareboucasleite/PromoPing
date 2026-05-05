@@ -843,8 +843,16 @@
     const btn = document.createElement('button');
     btn.id = 'pp-support-btn';
     btn.className = 'pp-support-btn';
-    btn.textContent = '?';
+    btn.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 13v-1a8 8 0 0 1 16 0v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 14a2 2 0 0 1 2-2h1a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2v-3z" fill="currentColor"/>
+        <path d="M20 14a2 2 0 0 0-2-2h-1a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1a2 2 0 0 0 2-2v-3z" fill="currentColor"/>
+        <path d="M20 17v1a3 3 0 0 1-3 3h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="13" cy="21" r="1.2" fill="currentColor"/>
+      </svg>`;
     btn.setAttribute('aria-label', 'Open support');
+    btn.setAttribute('title', 'Support');
     Object.assign(btn.style, {
       width: '48px',
       height: '48px',
@@ -856,8 +864,9 @@
       cursor: 'pointer',
       boxShadow: '0 4px 14px rgba(241, 118, 3, 0.4), 0 2px 6px rgba(0,0,0,0.15)',
       fontFamily: 'inherit',
-      fontSize: '20px',
-      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       transition: 'transform 0.2s ease, box-shadow 0.2s ease'
     });
     btn.addEventListener('mouseenter', function () {
