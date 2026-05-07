@@ -90,7 +90,7 @@ export function verificarPlanoPermitido(planosPermitidos = []) {
  * @returns {Function} Middleware function
  */
 export function verificarPlanoPremium() {
-    return verificarPlanoPermitido(["Premium"]);
+    return verificarPlanoPermitido(["Premium", "Corporate"]);
 }
 
 /**
@@ -98,7 +98,7 @@ export function verificarPlanoPremium() {
  * @returns {Function} Middleware function
  */
 export function verificarPlanoStandard() {
-    return verificarPlanoPermitido(["Standard", "Premium"]);
+    return verificarPlanoPermitido(["Standard", "Premium", "Corporate"]);
 }
 
 /**
@@ -106,7 +106,7 @@ export function verificarPlanoStandard() {
  * @returns {Function} Middleware function
  */
 export function verificarPlanoPago() {
-    return verificarPlanoPermitido(["Basic", "Standard", "Premium"]);
+    return verificarPlanoPermitido(["Basic", "Standard", "Premium", "Corporate"]);
 }
 
 /**
@@ -143,6 +143,11 @@ export function verificarLimiteUso(tipoRecurso) {
                     relatorios: 20
                 },
                 Premium: {
+                    incidentes: -1,
+                    exportacoes: -1,
+                    relatorios: -1
+                },
+                Corporate: {
                     incidentes: -1,
                     exportacoes: -1,
                     relatorios: -1
@@ -204,13 +209,19 @@ export function obterInfoPlano() {
                         incidentes: -1,
                         exportacoes: -1,
                         relatorios: -1
+                    },
+                    Corporate: {
+                        incidentes: -1,
+                        exportacoes: -1,
+                        relatorios: -1
                     }
                 } [userPlano],
                 recursos: {
                     Free: ["visualizacao_basica"],
                     Basic: ["visualizacao_basica", "exportacao_csv", "exportacao_pdf"],
                     Standard: ["visualizacao_basica", "exportacao_csv", "exportacao_pdf"],
-                    Premium: ["visualizacao_basica", "exportacao_csv", "exportacao_pdf", "relatorios_avancados", "api_personalizada"]
+                    Premium: ["visualizacao_basica", "exportacao_csv", "exportacao_pdf", "relatorios_avancados", "api_personalizada"],
+                    Corporate: ["visualizacao_basica", "exportacao_csv", "exportacao_pdf", "relatorios_avancados", "api_personalizada", "organizacoes", "equipa", "auditoria", "integracoes"]
                 } [userPlano] || []
             };
 

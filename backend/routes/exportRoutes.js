@@ -86,8 +86,8 @@ router.get("/status", verifyToken, obterInfoPlano, (req, res) => {
     status: "ok",
     plano: plano.nome,
     funcionalidades: {
-      exportar_pdf: ["Basic", "Standard", "Premium"].includes(plano.nome),
-      relatorio_completo: plano.nome === "Premium",
+      exportar_pdf: ["Basic", "Standard", "Premium", "Corporate"].includes(plano.nome),
+      relatorio_completo: ["Premium", "Corporate"].includes(plano.nome),
       limites: plano.limites,
       recursos: plano.recursos
     },
