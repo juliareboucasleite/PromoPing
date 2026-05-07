@@ -37,7 +37,7 @@
         <main class="business-auth-main">
             <section class="business-auth-card">
                 <h2>Entrar</h2>
-                <p>Se a conta business ja foi criada, entre aqui. Se o perfil tiver acesso corporativo interno, o login redireciona automaticamente para o painel correspondente.</p>
+                <p>Se a conta business ja foi criada, entre aqui. Esta area aceita apenas utilizadores com PerfilId 4.</p>
 
                 <div class="business-auth-error" id="loginError"></div>
                 <div class="business-auth-success" id="loginSuccess"></div>
@@ -58,7 +58,7 @@
                 </form>
 
                 <p class="business-auth-helper">
-                    Tambem pode entrar pela homepage com Google ou Discord. Este e apenas o ponto de entrada business em email/password.
+                    Tambem pode entrar pela homepage com Google ou Discord, mas o acesso continua bloqueado para qualquer conta que nao seja business.
                 </p>
             </section>
         </main>
@@ -83,6 +83,13 @@
                 errorBox.style.display = 'none';
             }
 
+            function getReasonMessage(reason) {
+                if (reason === 'invalid-session') {
+                    return 'Sessao invalida. Esta area aceita apenas contas business.';
+                }
+                return '';
+            }
+
             async function fetchProfileAfterLogin(token) {
                 const response = await fetch('/api/user/me', {
                     headers: {
@@ -104,6 +111,39 @@
                     localStorage.removeItem('PROMOPING_TOKEN');
                 } catch (_) { /* noop */ }
             }
+
+            async function validateExistingSession() {
+                const params = new URLSearchParams(window.location.search);
+                const reason = params.get('reason');
+                const existingToken = localStorage.getItem('token');
+
+                if (!existingToken) {
+                    const reasonMessage = getReasonMessage(reason);
+                    if (reasonMessage) {
+                        showError(reasonMessage);
+                    }
+                    return;
+                }
+
+                try {
+                    const user = await fetchProfileAfterLogin(existingToken);
+                    const perfilId = user.PerfilId !== undefined ? user.PerfilId : user.perfilId;
+
+                    if (perfilId !== BUSINESS_PROFILE_ID) {
+                        clearSession();
+                        showError('Sessao invalida. Esta area aceita apenas contas business.');
+                        return;
+                    }
+
+                    window.location.replace('/business/dashboard');
+                } catch (_) {
+                    clearSession();
+                    const reasonMessage = getReasonMessage(reason) || 'Sessao invalida. Inicie sessao novamente com uma conta business.';
+                    showError(reasonMessage);
+                }
+            }
+
+            validateExistingSession();
 
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
