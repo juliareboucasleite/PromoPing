@@ -47,8 +47,8 @@ function mapOrganizationRow(row) {
     logoUrl: row.logo_url,
     planoAtualId: row.plano_atual_id,
     ownerReferenciaID: row.owner_referenciaid,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
+    createdAt: row.org_created_at ?? row.created_at,
+    updatedAt: row.org_updated_at ?? row.updated_at
   };
 }
 
@@ -59,8 +59,8 @@ function mapMembershipRow(row) {
     referenciaID: row.referenciaid,
     role: row.role,
     status: row.status,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.member_created_at ?? row.created_at,
+    updatedAt: row.member_updated_at ?? row.updated_at,
     organization: mapOrganizationRow(row)
   };
 }
@@ -105,8 +105,8 @@ async function getMembershipsByUser(referenciaID) {
         m.referenciaid,
         m.role,
         m.status,
-        m.created_at,
-        m.updated_at,
+        m.created_at AS member_created_at,
+        m.updated_at AS member_updated_at,
         o.id,
         o.slug,
         o.nome_empresa,
@@ -126,8 +126,8 @@ async function getMembershipsByUser(referenciaID) {
         o.logo_url,
         o.plano_atual_id,
         o.owner_referenciaid,
-        o.created_at,
-        o.updated_at
+        o.created_at AS org_created_at,
+        o.updated_at AS org_updated_at
        FROM organization_members m
        JOIN organizations o ON o.id = m.organization_id
       WHERE m.referenciaid = ?
@@ -148,8 +148,8 @@ async function getCurrentMembership(referenciaID, organizationId = null) {
         m.referenciaid,
         m.role,
         m.status,
-        m.created_at,
-        m.updated_at,
+        m.created_at AS member_created_at,
+        m.updated_at AS member_updated_at,
         o.id,
         o.slug,
         o.nome_empresa,
@@ -169,8 +169,8 @@ async function getCurrentMembership(referenciaID, organizationId = null) {
         o.logo_url,
         o.plano_atual_id,
         o.owner_referenciaid,
-        o.created_at,
-        o.updated_at
+        o.created_at AS org_created_at,
+        o.updated_at AS org_updated_at
        FROM organization_members m
        JOIN organizations o ON o.id = m.organization_id
       WHERE m.referenciaid = ?

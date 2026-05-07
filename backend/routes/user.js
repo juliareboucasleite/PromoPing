@@ -111,13 +111,13 @@ router.get("/profile", verifyToken, async (req, res) => {
     let userRows;
     try {
       [userRows] = await pool.query(
-        'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", UltimaAlteracaoSenha AS "UltimaAlteracaoSenha", UltimaAlteracaoNome AS "UltimaAlteracaoNome", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
+        'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", PerfilId AS "PerfilId", UltimaAlteracaoSenha AS "UltimaAlteracaoSenha", UltimaAlteracaoNome AS "UltimaAlteracaoNome", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
         [referenciaID]
       );
     } catch (colErr) {
       if (colErr.code === 'ER_BAD_FIELD_ERROR') {
         [userRows] = await pool.query(
-          'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
+          'SELECT Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", FotoPerfil AS "FotoPerfil", PerfilId AS "PerfilId", DataNascimento AS "DataNascimento" FROM utilizadores WHERE ReferenciaID = ?',
           [referenciaID]
         );
     } else throw colErr;
@@ -208,6 +208,71 @@ router.get("/profile", verifyToken, async (req, res) => {
     const podeSenha = !nextSenha || now >= nextSenha;
     // Nome: utilizador pode alterar quando quiser (sem cooldown)
     const podeNome = true;
+    const perfilId = Number(u?.PerfilId ?? 0);
+    let business = null;
+
+    if (perfilId === 4) {
+      const [businessRows] = await pool.query(
+        `SELECT
+            m.organization_id,
+            m.role,
+            m.status,
+            o.nome_empresa,
+            o.nif,
+            o.vat_number,
+            o.website,
+            o.setor,
+            o.categoria,
+            o.pessoa_responsavel,
+            o.telefone_comercial,
+            o.billing_email,
+            o.morada_linha1,
+            o.morada_linha2,
+            o.cidade,
+            o.codigo_postal,
+            o.pais,
+            o.logo_url,
+            o.plano_atual_id
+           FROM organization_members m
+           JOIN organizations o ON o.id = m.organization_id
+          WHERE m.referenciaid = ?
+            AND m.status = 'active'
+          ORDER BY
+            CASE m.role WHEN 'owner' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END,
+            o.created_at ASC
+          LIMIT 1`,
+        [referenciaID]
+      );
+
+      if (businessRows.length > 0) {
+        const org = businessRows[0];
+        business = {
+          organizationId: org.organization_id,
+          role: org.role,
+          status: org.status,
+          company: {
+            nomeEmpresa: org.nome_empresa,
+            nif: org.nif,
+            vatNumber: org.vat_number,
+            website: org.website,
+            setor: org.setor,
+            categoria: org.categoria,
+            pessoaResponsavel: org.pessoa_responsavel,
+            telefoneComercial: org.telefone_comercial,
+            billingEmail: org.billing_email,
+            morada: {
+              linha1: org.morada_linha1,
+              linha2: org.morada_linha2,
+              cidade: org.cidade,
+              codigoPostal: org.codigo_postal,
+              pais: org.pais
+            },
+            logoUrl: org.logo_url,
+            planoAtualId: org.plano_atual_id
+          }
+        };
+      }
+    }
 
     const response = {
       status: "ok",
@@ -216,12 +281,14 @@ router.get("/profile", verifyToken, async (req, res) => {
         email: u?.Email,
         telefone: u?.Telefone,
         FotoPerfil: u?.FotoPerfil,
+        perfilId,
         contas_conectadas: contas,
         preferencias: prefs,
         proxima_alteracao_senha: nextSenha ? nextSenha.toISOString() : null,
         proxima_alteracao_nome: null,
         pode_alterar_senha: podeSenha,
-        pode_alterar_nome: podeNome
+        pode_alterar_nome: podeNome,
+        business
       }
     };
 
