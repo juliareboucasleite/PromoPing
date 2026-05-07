@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil da empresa | PromoPing Business</title>
-    <meta name="description" content="Perfil da organizacao business — atualize NIF, VAT, contactos e dados de faturacao.">
+    <meta name="description" content="Perfil da organizacao business, atualize NIF, VAT, contactos e dados de faturacao.">
     <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
     <link rel="stylesheet" href="/business/style/panel.css">
     <style>
@@ -83,7 +83,7 @@
                 <div class="bp-user-avatar" id="bpUserAvatar">B</div>
                 <div class="bp-user-meta">
                     <div class="bp-user-name" id="bpUserName">A carregar…</div>
-                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                    <div class="bp-user-org" id="bpUserOrg">-</div>
                 </div>
                 <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -112,7 +112,7 @@
             <div class="bp-alert bp-alert-warn is-hidden" id="readOnlyAlert">
                 <div>
                     <p class="bp-alert-title">Apenas leitura</p>
-                    <p class="bp-alert-body">A organização ainda não foi aprovada — os dados ficam visíveis mas só podem ser editados depois da aprovação manual.</p>
+                    <p class="bp-alert-body">A organização ainda não foi aprovada, os dados ficam visíveis mas só podem ser editados depois da aprovação manual.</p>
                 </div>
             </div>
 
@@ -121,14 +121,14 @@
                     <div class="bp-card-header">
                         <div>
                             <h2>Conta principal</h2>
-                            <p>Pessoa responsável pela conta business — não pode ser alterada aqui.</p>
+                            <p>Pessoa responsável pela conta business, não pode ser alterada aqui.</p>
                         </div>
                     </div>
                     <div class="bp-card-body">
                         <div class="bp-readonly-grid">
-                            <div class="bp-readonly-cell"><div class="k">Nome</div><div class="v" id="meName">—</div></div>
-                            <div class="bp-readonly-cell"><div class="k">Email</div><div class="v" id="meEmail">—</div></div>
-                            <div class="bp-readonly-cell"><div class="k">Telefone</div><div class="v" id="mePhone">—</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Nome</div><div class="v" id="meName">-</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Email</div><div class="v" id="meEmail">-</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Telefone</div><div class="v" id="mePhone">-</div></div>
                             <div class="bp-readonly-cell"><div class="k">Perfil</div><div class="v">Business</div></div>
                         </div>
                     </div>
@@ -255,9 +255,9 @@
             const org = membership && membership.organization ? membership.organization : null;
 
             // Read-only account info
-            document.getElementById('meName').textContent = user.Nome || user.nome || '—';
-            document.getElementById('meEmail').textContent = user.Email || user.email || '—';
-            document.getElementById('mePhone').textContent = user.Telefone || user.telefone || '—';
+            document.getElementById('meName').textContent = user.Nome || user.nome || '-';
+            document.getElementById('meEmail').textContent = user.Email || user.email || '-';
+            document.getElementById('mePhone').textContent = user.Telefone || user.telefone || '-';
 
             // Status
             if (org) {

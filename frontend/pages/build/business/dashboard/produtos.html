@@ -42,7 +42,7 @@
                 <div class="bp-user-avatar" id="bpUserAvatar">B</div>
                 <div class="bp-user-meta">
                     <div class="bp-user-name" id="bpUserName">A carregar…</div>
-                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                    <div class="bp-user-org" id="bpUserOrg">-</div>
                 </div>
                 <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -72,11 +72,11 @@
                 </div>
                 <div class="bp-stat">
                     <div class="bp-stat-label">Preço médio alvo</div>
-                    <div class="bp-stat-value" id="avgTargetPrice">—</div>
+                    <div class="bp-stat-value" id="avgTargetPrice">-</div>
                 </div>
                 <div class="bp-stat">
                     <div class="bp-stat-label">Último produto</div>
-                    <div class="bp-stat-value" id="latestProductName">—</div>
+                    <div class="bp-stat-value" id="latestProductName">-</div>
                 </div>
             </div>
 
@@ -191,7 +191,7 @@
             }
 
             function formatDate(value) {
-                return value ? BP.formatDate(value) : '—';
+                return value ? BP.formatDate(value) : '-';
             }
 
             function deriveRows(items) {
@@ -219,10 +219,10 @@
                     const avg = targetPrices.reduce(function (sum, value) { return sum + value; }, 0) / targetPrices.length;
                     document.getElementById('avgTargetPrice').textContent = BP.formatCurrency(avg);
                 } else {
-                    document.getElementById('avgTargetPrice').textContent = '—';
+                    document.getElementById('avgTargetPrice').textContent = '-';
                 }
 
-                document.getElementById('latestProductName').textContent = rows.length > 0 ? rows[0].nome : '—';
+                document.getElementById('latestProductName').textContent = rows.length > 0 ? rows[0].nome : '-';
             }
 
             function renderRows(rows) {
@@ -234,8 +234,8 @@
                 }
 
                 body.innerHTML = rows.map(function (row) {
-                    const targetPrice = row.precoAlvo ? BP.formatCurrency(row.precoAlvo) : '—';
-                    const currentPrice = row.precoAtual ? BP.formatCurrency(row.precoAtual) : '—';
+                    const targetPrice = row.precoAlvo ? BP.formatCurrency(row.precoAlvo) : '-';
+                    const currentPrice = row.precoAtual ? BP.formatCurrency(row.precoAtual) : '-';
                     const linkButton = row.link
                         ? '<a class="bp-btn bp-btn-ghost" href="' + BP.escapeHtml(row.link) + '" target="_blank" rel="noopener" title="Abrir link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>'
                         : '';

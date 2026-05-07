@@ -41,7 +41,7 @@
                 <div class="bp-user-avatar" id="bpUserAvatar">B</div>
                 <div class="bp-user-meta">
                     <div class="bp-user-name" id="bpUserName">A carregar…</div>
-                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                    <div class="bp-user-org" id="bpUserOrg">-</div>
                 </div>
                 <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -53,7 +53,7 @@
             <div class="bp-page-header">
                 <div>
                     <h1>Histórico de produtos</h1>
-                    <p>Todos os produtos monitorizados pela organização. Sem limites — a conta business tem acesso premium.</p>
+                    <p>Todos os produtos monitorizados pela organização. Sem limites, a conta business tem acesso premium.</p>
                 </div>
                 <div class="bp-page-actions">
                     <span class="bp-chip is-orange">Premium ilimitado</span>
@@ -76,7 +76,7 @@
                         <option value="up">Subiu</option>
                     </select>
                     <span class="grow"></span>
-                    <span class="bp-help" id="rowsCount">—</span>
+                    <span class="bp-help" id="rowsCount">-</span>
                 </div>
 
                 <div class="bp-card-body is-flush">
@@ -98,7 +98,7 @@
                 </div>
 
                 <div class="bp-table-pagination">
-                    <span id="pageInfo">—</span>
+                    <span id="pageInfo">-</span>
                     <div style="display:flex;gap:6px;">
                         <button class="bp-btn bp-btn-secondary" id="prevPage" type="button" disabled>Anterior</button>
                         <button class="bp-btn bp-btn-secondary" id="nextPage" type="button" disabled>Seguinte</button>
@@ -148,7 +148,7 @@
                 try {
                     const u = new URL(url);
                     return u.hostname.replace(/^www\./, '');
-                } catch (_) { return '—'; }
+                } catch (_) { return '-'; }
             }
 
             function rowDelta(initial, current) {
@@ -248,7 +248,7 @@
                         _current: current,
                         _initial: initial,
                         _delta: delta,
-                        _lastCheck: lastCheck ? BP.formatDateTime(lastCheck) : '—'
+                        _lastCheck: lastCheck ? BP.formatDateTime(lastCheck) : '-'
                     };
                 });
                 filtered = allItems.slice();

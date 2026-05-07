@@ -152,9 +152,9 @@
       clearSession,
       redirectToLogin,
       formatCurrency: function (amount, currency) {
-        if (amount === null || amount === undefined || amount === '') return '—';
+        if (amount === null || amount === undefined || amount === '') return '-';
         const n = Number(amount);
-        if (!Number.isFinite(n)) return '—';
+        if (!Number.isFinite(n)) return '-';
         try {
           return new Intl.NumberFormat('pt-PT', {
             style: 'currency',
@@ -167,9 +167,9 @@
         }
       },
       formatDate: function (value) {
-        if (!value) return '—';
+        if (!value) return '-';
         const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return '—';
+        if (Number.isNaN(d.getTime())) return '-';
         try {
           return new Intl.DateTimeFormat('pt-PT', {
             year: 'numeric', month: 'short', day: '2-digit'
@@ -179,9 +179,9 @@
         }
       },
       formatDateTime: function (value) {
-        if (!value) return '—';
+        if (!value) return '-';
         const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return '—';
+        if (Number.isNaN(d.getTime())) return '-';
         try {
           return new Intl.DateTimeFormat('pt-PT', {
             year: 'numeric', month: 'short', day: '2-digit',
