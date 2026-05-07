@@ -798,6 +798,18 @@ router.put("/organization/:organizationId", requireOrganizationRole, async (req,
     );
 
     const updated = result.rows?.[0];
+    if (updated && changedFields.length > 0) {
+      const organizationName = updated.nome_empresa || previousOrganization?.nome_empresa || "Organizacao business";
+      const actorName = req.user?.Nome || req.user?.nome || req.user?.Email || req.user?.email || req.user?.ReferenciaID || "Conta business";
+
+      await createCorporationNotification({
+        tipo: "business_profile_updated",
+        titulo: `Empresa business atualizou os dados: ${organizationName}`,
+        descricao: `${actorName} alterou os seguintes campos: ${changedFields.join(", ")}.`,
+        referenciaID: req.user?.ReferenciaID || null
+      });
+    }
+
     res.json({ status: "ok", organization: mapOrganizationRow(updated) });
   } catch (error) {
     console.error("[BUSINESS] Erro ao atualizar organização:", error);
