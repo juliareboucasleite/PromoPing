@@ -61,72 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-    // Carrega o footer de forma assíncrona e inicializa funcionalidades extras após inserir no DOM
-    function loadFooter() {
-        const baseTag = document.querySelector('base');
-        const baseHref = baseTag ? baseTag.getAttribute('href') : '/';
-        const footerPath = baseHref + 'inc/footer.html';
-        
-        makeRequest(footerPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.clone().text();
-            })
-            .then(data => {
-                const footerPlaceholder = document.getElementById('footer-placeholder');
-                if (footerPlaceholder) {
-                    // Corrige os caminhos das imagens e links ANTES de inserir o HTML
-                    let correctedData = data.replace(/src="assets\//g, `src="${baseHref}assets/`);
-                    correctedData = correctedData.replace(/href="pages\//g, `href="${baseHref}pages/`);
-                    correctedData = correctedData.replace(/href="#/g, `href="${baseHref}#`);
-                    footerPlaceholder.innerHTML = correctedData;
-                    // Chama funções adicionais depois do footer carregado
-                    if (typeof initializeFooterFunctionality === 'function') {
-                        initializeFooterFunctionality();
-                    }
-                }
-            })
-            .catch(error => {
-                console.warn('Footer não encontrado, usando conteúdo estático:', error);
-                const footerPlaceholder = document.getElementById('footer-placeholder');
-                if (footerPlaceholder) {
-                    footerPlaceholder.innerHTML = `
-                        <footer class="pp-footer">
-                            <div class="pp-container">
-                                <div class="pp-footer-content">
-                                    <div class="pp-footer-brand">
-                                        <img src="assets/images/PromoPing.png" alt="PromoPing" class="pp-footer-logo">
-                                        <span class="pp-footer-title">PromoPing</span>
-                                    </div>
-                                    <div class="pp-footer-links">
-                                        <a href="#sobre" class="pp-footer-link">Sobre</a>
-                                        <a href="#contato" class="pp-footer-link">Contato</a>
-                                        <a href="/docs/privacy-policy" class="pp-footer-link" rel="privacy-policy">Privacidade</a>
-                                    </div>
-                                </div>
-                                <div class="pp-footer-bottom">
-                                    <p>&copy; 2024 PromoPing. Todos os direitos reservados.</p>
-                                </div>
-                            </div>
-                        </footer>
-                    `;
-                }
-            });
-    }
-    
-    // Aguarda um pouco para garantir que o RequestManager está disponível
-    if (typeof makeRequest === 'function') {
-        loadFooter();
-    } else {
-        // Se makeRequest não estiver disponível, tenta novamente após um delay
+    // O footer da homepage é estático no próprio index.html para SEO/crawlers.
+    if (typeof initializeFooterFunctionality === 'function') {
         setTimeout(function() {
-            if (typeof makeRequest === 'function') {
-                loadFooter();
-            } else {
-                console.error('makeRequest não está disponível para carregar footer');
-            }
+            initializeFooterFunctionality();
         }, 100);
     }
 });

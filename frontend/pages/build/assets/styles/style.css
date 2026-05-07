@@ -169,6 +169,59 @@ body {
     text-shadow: 0 4px 8px var(--promoping-dark-transparent);
 }
 
+.pp-hero-title-rotator {
+    position: relative;
+    display: block;
+    min-height: 2.45em;
+    perspective: 1400px;
+    transform-style: preserve-3d;
+}
+
+.pp-hero-title-card {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0.14em 0.22em 0.2em;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(14, 15, 25, 0.2) 100%);
+    box-shadow: 0 24px 44px rgba(0, 0, 0, 0.16);
+    backface-visibility: hidden;
+    transform-origin: center center -44px;
+    will-change: transform, opacity, filter;
+}
+
+.pp-hero-title-card-current {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+}
+
+.pp-hero-title-card-next {
+    opacity: 0;
+    transform: translateY(34px) scale(1.05) rotateX(-68deg);
+    filter: blur(6px);
+}
+
+.pp-hero-title-rotator.is-animating .pp-hero-title-card-current {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.92) rotateX(64deg);
+    filter: blur(7px);
+    transition: transform 0.72s cubic-bezier(0.2, 0.75, 0.2, 1), opacity 0.72s ease, filter 0.72s ease;
+}
+
+.pp-hero-title-rotator.is-animating .pp-hero-title-card-next {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0);
+    transition: transform 0.72s cubic-bezier(0.2, 0.75, 0.2, 1), opacity 0.72s ease, filter 0.72s ease;
+}
+
+.pp-hero-title-text {
+    display: block;
+    width: 100%;
+}
+
 .pp-hero-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -225,38 +278,6 @@ body {
 
 .pp-hero-purpose-list li {
     line-height: 1.55;
-}
-
-.pp-hero-legal-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 0 0 20px;
-}
-
-.pp-hero-legal-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 42px;
-    padding: 10px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--text-light);
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(10px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.pp-hero-legal-link:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 
 .pp-hero-right {

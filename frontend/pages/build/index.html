@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="assets/styles/register.css">
   <link rel="stylesheet" href="assets/styles/login.css">
   <link rel="stylesheet" href="assets/styles/cookie-banner.css">
+  <link rel="stylesheet" href="assets/styles/footer.css">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
   <script src="assets/scripts/request-manager.js"></script>
   <script src="assets/scripts/notification-system.js"></script>
@@ -44,6 +45,10 @@
   <script src="assets/scripts/cookie-banner.js"></script>
   <script src="assets/scripts/partner-carousel.js"></script>
   <script src="assets/scripts/testimonials.js"></script>
+  <script src="assets/traducoes/ingles.js"></script>
+  <script src="assets/traducoes/portugues.js"></script>
+  <script src="assets/traducoes/espanhol.js"></script>
+  <script src="assets/traducoes/frances.js"></script>
   <script>
     // Verificar parâmetros de erro na URL e abrir modal de login se necessário
     document.addEventListener("DOMContentLoaded", function () {
@@ -277,12 +282,10 @@
       }
       
       const selectors = [
-        '.pp-hero-left h1',
         '.pp-hero-eyebrow',
         '.pp-hero-subtitle',
         '.pp-hero-purpose-title',
         '.pp-hero-purpose-list li',
-        '.pp-hero-legal-link',
         '.pp-btn.pp-btn-cta',
         '.centered-content h2 .highlight',
         '.text-content.justified p',
@@ -379,7 +382,7 @@
     }
 
     // Tradução para inglês britânico
-    const translationsGB = {
+    const translationsGBInline = {
       'Monitorização de preços para lojas online portuguesas': 'Price monitoring for Portuguese online stores',
       'Sempre ligado': 'Always on',
       'Poupa melhor.': 'Save smarter.',
@@ -508,9 +511,13 @@
       'Utilizador': 'User',
       'Utilizador do Bot': 'Bot user'
     };
+    const translationsGB = {
+      ...translationsGBInline,
+      ...(window.translationsGB || {})
+    };
 
     // Tradução para espanhol
-    const translationsES = {
+    const translationsESInline = {
       'Monitorização de preços para lojas online portuguesas': 'Monitorización de precios para tiendas online portuguesas',
       'Sempre ligado': 'Siempre activo',
       'Poupa melhor.': 'Ahorre mejor.',
@@ -639,9 +646,13 @@
       'Utilizador': 'Usuario',
       'Utilizador do Bot': 'Usuario del bot'
     };
+    const translationsES = {
+      ...translationsESInline,
+      ...(window.translationsES || {})
+    };
 
     // Tradução para francês
-    const translationsFR = {
+    const translationsFRInline = {
       'Monitorização de preços para lojas online portuguesas': 'Surveillance des prix pour les boutiques en ligne portugaises',
       'Sempre ligado': 'Toujours actif',
       'Poupa melhor.': 'Économisez mieux.',
@@ -770,6 +781,10 @@
       'Utilizador': 'Utilisateur',
       'Utilizador do Bot': 'Utilisateur du bot'
     };
+    const translationsFR = {
+      ...translationsFRInline,
+      ...(window.translationsFR || {})
+    };
 
     const LANG_ORDER = ['EN', 'PT', 'ES', 'FR'];
     function getNextLang(cur) {
@@ -796,6 +811,110 @@
       return { PT: translationsEnToPt, ES: translationsEnToEs, FR: translationsEnToFr }[code] || null;
     }
 
+    const heroTitleRotatorPhrases = {
+      EN: [
+        'Save smarter.',
+        'Track every drop.',
+        'Get alerts first.',
+        'Buy at the right time.'
+      ],
+      PT: [
+        'Poupar melhor.',
+        'Vigiar preços.',
+        'Receber alertas.',
+        'Comprar na hora certa.'
+      ],
+      ES: [
+        'Ahorre mejor.',
+        'Siga cada bajada.',
+        'Reciba alertas antes.',
+        'Compre en el momento justo.'
+      ],
+      FR: [
+        'Économisez mieux.',
+        'Suivez chaque baisse.',
+        'Recevez les alertes d’abord.',
+        'Achetez au bon moment.'
+      ]
+    };
+
+    let heroTitleRotator = null;
+
+    function getCurrentLanguageCode() {
+      const langDesktop = document.getElementById('lang-text-desktop');
+      const langMobile = document.getElementById('lang-text-mobile');
+      const langSingle = document.getElementById('lang-text');
+      const lang = langDesktop || langMobile || langSingle;
+      return lang ? lang.textContent.trim() : 'EN';
+    }
+
+    function getHeroTitlePhrases(langCode) {
+      return heroTitleRotatorPhrases[langCode] || heroTitleRotatorPhrases.EN;
+    }
+
+    function syncHeroTitleRotator(forceReset = false) {
+      if (!heroTitleRotator) return;
+
+      const langCode = getCurrentLanguageCode();
+      const phrases = getHeroTitlePhrases(langCode);
+      const shouldReset = forceReset || heroTitleRotator.langCode !== langCode;
+
+      heroTitleRotator.langCode = langCode;
+      heroTitleRotator.phrases = phrases;
+
+      if (shouldReset) {
+        heroTitleRotator.index = 0;
+        heroTitleRotator.current.textContent = phrases[0];
+        heroTitleRotator.next.textContent = phrases[1] || phrases[0];
+        heroTitleRotator.root.setAttribute('data-lang', langCode);
+        heroTitleRotator.root.classList.remove('is-animating');
+      }
+    }
+
+    function advanceHeroTitleRotator() {
+      if (!heroTitleRotator || heroTitleRotator.phrases.length < 2 || heroTitleRotator.root.classList.contains('is-animating')) {
+        return;
+      }
+
+      const { phrases, current, next, root } = heroTitleRotator;
+      const nextIndex = (heroTitleRotator.index + 1) % phrases.length;
+
+      next.textContent = phrases[nextIndex];
+      root.classList.add('is-animating');
+
+      window.setTimeout(() => {
+        heroTitleRotator.index = nextIndex;
+        current.textContent = phrases[nextIndex];
+        next.textContent = phrases[(nextIndex + 1) % phrases.length];
+        root.classList.remove('is-animating');
+      }, 720);
+    }
+
+    function startHeroTitleRotator() {
+      const root = document.querySelector('.pp-hero-title-rotator');
+      if (!root) return;
+
+      const current = root.querySelector('.pp-hero-title-card-current .pp-hero-title-text');
+      const next = root.querySelector('.pp-hero-title-card-next .pp-hero-title-text');
+      if (!current || !next) return;
+
+      heroTitleRotator = {
+        root,
+        current,
+        next,
+        index: 0,
+        langCode: null,
+        phrases: []
+      };
+
+      syncHeroTitleRotator(true);
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion) {
+        window.setInterval(advanceHeroTitleRotator, 2800);
+      }
+    }
+
     // Alterna idioma: EN → PT → ES → FR → EN (ciclo no botão)
     function toggleLanguage() {
       const langDesktop = document.getElementById('lang-text-desktop');
@@ -816,6 +935,7 @@
       if (next !== 'EN') {
         applyTranslations(getTranslationMap(next));
       }
+      syncHeroTitleRotator(true);
     }
 
     // Função auxiliar para traduzir texto preservando HTML interno (map = objeto PT -> idioma)
@@ -939,6 +1059,7 @@
     function translateToEnglish() {
       saveOriginalTexts();
       applyTranslations(translationsGB);
+      syncHeroTitleRotator(true);
     }
 
     // Restaura os textos originais em português
@@ -968,12 +1089,14 @@
           headerEntrar.textContent = originalTexts['header-entrar'].text;
         }
       }, 100);
+      syncHeroTitleRotator(true);
     }
 
     // Salva os textos originais quando a página carrega
     document.addEventListener('DOMContentLoaded', function() {
       // Salva textos iniciais
       setTimeout(saveOriginalTexts, 500);
+      setTimeout(startHeroTitleRotator, 120);
       
       // Salva novamente após o header ser carregado (pode ser carregado dinamicamente)
       setTimeout(saveOriginalTexts, 1500);
@@ -1021,20 +1144,23 @@
       <div class="pp-container pp-hero-grid">
         <div class="pp-hero-left">
           <p class="pp-hero-eyebrow">Price monitoring for Portuguese online stores</p>
-          <h1 style="opacity: 1 !important; filter: none !important; transform: none !important;">Save smarter.</h1>
-          <p class="pp-hero-subtitle">PromoPing is a price monitoring service for Portuguese online stores. Paste a product link, set the price you want to pay, and receive automatic alerts by email or Discord when it drops.</p>
+          <h1 class="pp-hero-title-rotator" style="opacity: 1 !important; filter: none !important; transform: none !important;" aria-live="polite">
+            <span class="pp-hero-title-card pp-hero-title-card-current">
+              <span class="pp-hero-title-text">Save smarter.</span>
+            </span>
+            <span class="pp-hero-title-card pp-hero-title-card-next" aria-hidden="true">
+              <span class="pp-hero-title-text">Track every drop.</span>
+            </span>
+          </h1>
+          <p class="pp-hero-subtitle">PromoPing is a price monitoring service for Portuguese online stores. Simply paste a product link, set the price you wish to pay, and we will notify you automatically by email or Discord as soon as the price drops.</p>
           <div class="pp-hero-purpose" aria-label="PromoPing purpose">
             <p class="pp-hero-purpose-title">What you can do with PromoPing</p>
             <ul class="pp-hero-purpose-list">
-              <li>Monitor products from Portuguese stores</li>
+              <li>Monitor products from Portuguese retailers</li>
               <li>Set alerts by price or discount</li>
-              <li>Receive automatic alerts by email or Discord</li>
+              <li>Receive automatic notifications by email or Discord</li>
             </ul>
           </div>
-          <nav class="pp-hero-legal-links" aria-label="Legal">
-            <a class="pp-hero-legal-link" href="/docs/privacy-policy" rel="privacy-policy" data-test-id="hero-privacy">Privacy Policy</a>
-            <a class="pp-hero-legal-link" href="/docs/terms-of-service" rel="terms-of-service" data-test-id="hero-tos">Terms of Service</a>
-          </nav>
         </div>
         <div class="pp-hero-right">
           <img src="assets/images/hero-phone.png" alt="PromoPing App" class="pp-hero-logo">
@@ -1239,29 +1365,180 @@
       </div>
     </section>
   </main>
-  <div id="footer-placeholder">
-    <!-- Footer estático: visível para crawlers sem JS (verificação OAuth do Google).
-         Será substituído pela versão completa quando inc/footer.html carregar via JS. -->
-    <footer class="modern-footer" role="contentinfo">
-      <div class="footer-container" style="max-width:1200px;margin:0 auto;padding:40px 16px;">
-        <p style="color:#a0a0a0;font-size:0.95rem;line-height:1.6;margin:0 0 20px;max-width:760px;">
-          PromoPing is a price monitoring service for Portuguese online stores.
-          Users add product links, set up alerts and receive notifications by email
-          or Discord when prices drop.
-        </p>
-        <nav aria-label="Legal links" style="display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;">
-          <a href="/docs/privacy-policy" rel="privacy-policy" data-test-id="privacy" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Privacy Policy</a>
-          <a href="/docs/terms-of-service" rel="terms-of-service" data-test-id="tos" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Terms of Service</a>
-          <a href="/About/cookie-policy.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Cookie Policy</a>
-          <a href="/About/about-promoping.html" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">About PromoPing</a>
-          <a href="/docs/support" style="color:#a0a0a0;text-decoration:underline;font-size:0.9rem;">Contact / Support</a>
-        </nav>
-        <p style="color:#a0a0a0;font-size:0.85rem;margin:20px 0 0;">
-          Copyright &copy; 2024-2026 PromoPing
-        </p>
+  <footer class="modern-footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-left-section">
+          <div class="system-info">
+            <div class="system-icon">
+              <img src="assets/images/windows_logo.png" alt="Windows Logo" class="windows-logo">
+            </div>
+            <div class="system-text">
+              <p class="system-label">Supported OS</p>
+              <p class="system-versions">Windows 10 / 11 / Server 2025</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-middle-section">
+          <p class="links-title">About Us</p>
+          <ul class="footer-links-list">
+            <li class="footer-link-item">
+              <a href="/About/about-promoping.html" class="footer-link">
+                <span>What is PromoPing?</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/smart-alerts.html" class="footer-link">
+                <span>Alerts</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/promoping-blog.html" class="footer-link">
+                <span>Blog</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/use-cases.html" class="footer-link">
+                <span>Use Cases</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/price-monitoring.html" class="footer-link">
+                <span>Monitoring</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/reports-and-analytics.html" class="footer-link">
+                <span>Reports</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-right-section">
+          <p class="links-title">Official Documentation</p>
+          <ul class="footer-links-list">
+            <li class="footer-link-item">
+              <a href="/docs" class="footer-link">
+                <span>Documentation</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/docs/usage-guide" class="footer-link">
+                <span>How do I use PromoPing?</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="https://discord.gg/PXBXKXmfph" class="footer-link" target="_blank" rel="noopener">
+                <span>Community Server</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="https://www.youtube.com/@PromoPing" class="footer-link" target="_blank" rel="noopener">
+                <span>Official PromoPing YouTube Channel</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/docs/support" class="footer-link">
+                <span>Help Center</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-right-section">
+          <p class="links-title">Legal</p>
+          <ul class="footer-links-list">
+            <li class="footer-link-item">
+              <a href="/docs/privacy-policy" class="footer-link" rel="privacy-policy">
+                <span>Privacy Policy</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/docs/terms-of-service" class="footer-link">
+                <span>Terms of Service</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+            <li class="footer-link-item">
+              <a href="/About/cookie-policy.html" class="footer-link">
+                <span>Cookie Policy</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="link-icon">
+                  <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
-    </footer>
-  </div>
+      <div class="footer-bottom">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="footer-logo">
+            <span class="brand-name">PromoPing</span>
+          </div>
+          <div class="version-badge">
+            <span>v2.4.0</span>
+          </div>
+        </div>
+
+        <div class="footer-copyright">
+          <span>Copyright © 2026 PromoPing</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <!-- Modal Overlay -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModals()">
