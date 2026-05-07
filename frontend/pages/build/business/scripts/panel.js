@@ -24,8 +24,12 @@
     } catch (_) { /* noop */ }
   }
 
-  function redirectToLogin() {
-    window.location.replace(LOGIN_URL);
+  function redirectToLogin(reason) {
+    const url = new URL(LOGIN_URL, window.location.origin);
+    if (reason) {
+      url.searchParams.set('reason', reason);
+    }
+    window.location.replace(url.toString());
   }
 
   function buildAuthHeaders() {
@@ -43,7 +47,7 @@
     try { data = await res.json(); } catch (_) { data = {}; }
     if (res.status === 401) {
       clearSession();
-      redirectToLogin();
+      redirectToLogin('invalid-session');
       throw new Error('Sessão expirada.');
     }
     if (!res.ok) {
@@ -98,7 +102,7 @@
   async function bootstrap() {
     const token = getToken();
     if (!token) {
-      redirectToLogin();
+      redirectToLogin('invalid-session');
       return;
     }
 
@@ -108,7 +112,8 @@
       user = meRes && meRes.user ? meRes.user : null;
     } catch (err) {
       // 401 already handled; for any other error, send to login as a safe default
-      redirectToLogin();
+      clearSession();
+      redirectToLogin('invalid-session');
       return;
     }
 
@@ -117,12 +122,8 @@
       : null;
 
     if (perfilId !== BUSINESS_PROFILE_ID) {
-      // Wrong profile type — push them to the right place.
-      if (perfilId === 1 || perfilId === 3) {
-        window.location.replace('/painel-suporte-corporacao/pages_corporation/dashboard.html');
-      } else {
-        redirectToLogin();
-      }
+      clearSession();
+      redirectToLogin('invalid-session');
       return;
     }
 

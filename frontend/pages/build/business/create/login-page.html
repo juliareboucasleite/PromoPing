@@ -96,6 +96,15 @@
                 return data.user || {};
             }
 
+            const BUSINESS_PROFILE_ID = 4;
+
+            function clearSession() {
+                try {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('PROMOPING_TOKEN');
+                } catch (_) { /* noop */ }
+            }
+
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 submitButton.disabled = true;
@@ -105,6 +114,8 @@
 
                 const email = document.getElementById('businessLoginEmail').value.trim();
                 const password = document.getElementById('businessLoginPassword').value;
+
+                let tempToken = null;
 
                 try {
                     const response = await fetch('/api/auth/login', {
@@ -117,36 +128,30 @@
 
                     const data = await response.json().catch(() => ({}));
                     if (!response.ok || data.status !== 'ok' || !data.token) {
-                        throw new Error(data.error || 'Nao foi possivel entrar.');
+                        throw new Error(data.error || 'Credenciais inválidas.');
                     }
 
-                    localStorage.setItem('token', data.token);
+                    tempToken = data.token;
+
+                    // Validar perfil ANTES de gravar a sessão. Só PerfilId 4 entra aqui.
+                    const user = await fetchProfileAfterLogin(tempToken);
+                    const perfilId = user.PerfilId !== undefined ? user.PerfilId : user.perfilId;
+
+                    if (perfilId !== BUSINESS_PROFILE_ID) {
+                        clearSession();
+                        throw new Error('Sessão inválida. Esta área é exclusiva para contas business. Por favor, utilize a sua conta business para iniciar sessão.');
+                    }
+
+                    // Só agora persistimos a sessão.
+                    localStorage.setItem('token', tempToken);
                     if (data.refreshToken) {
                         localStorage.setItem('PROMOPING_TOKEN', data.refreshToken);
                     }
 
-                    showSuccess('Sessao validada. A redirecionar...');
-
-                    const user = await fetchProfileAfterLogin(data.token);
-                    const perfilId = user.PerfilId !== undefined ? user.PerfilId : user.perfilId;
-
-                    if (perfilId === 4) {
-                        window.location.href = '/business/dashboard';
-                        return;
-                    }
-
-                    if (perfilId === 3) {
-                        window.location.href = '/painel-suporte-corporacao/pages_corporation/dashboard.html';
-                        return;
-                    }
-
-                    if (perfilId === 1) {
-                        window.location.href = '/painel-suporte-corporacao/pages_corporation/dashboard.html';
-                        return;
-                    }
-
-                    window.location.href = '/dashboard';
+                    showSuccess('Sessão validada. A redirecionar…');
+                    window.location.href = '/business/dashboard';
                 } catch (error) {
+                    clearSession();
                     showError(error.message || 'Erro interno.');
                     submitButton.disabled = false;
                     submitButton.textContent = 'Entrar';
