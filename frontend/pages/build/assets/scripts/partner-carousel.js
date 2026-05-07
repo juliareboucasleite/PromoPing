@@ -14,14 +14,12 @@
   };
 
   const PARTNERS = [
-    'Pingo Doce',
-    'Continente',
-    'Auchan',
+    'Amazon',
     'Worten',
     'FNAC',
-    'IKEA',
-    'Radio Popular',
-    'PcDiga'
+    'Continente',
+    'Leroy Merlin',
+    'MediaMarkt'
   ];
 
   const CONFIG = {
