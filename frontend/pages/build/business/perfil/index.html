@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil da empresa | PromoPing Business</title>
+    <meta name="description" content="Perfil da organizacao business — atualize NIF, VAT, contactos e dados de faturacao.">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <link rel="stylesheet" href="/business/style/panel.css">
+    <style>
+        .bp-section { margin-bottom: 24px; }
+        .bp-section + .bp-section { margin-top: 0; }
+        .bp-section-head {
+            margin-bottom: 12px;
+        }
+        .bp-section-head h2 {
+            margin: 0 0 2px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--pp-ink);
+        }
+        .bp-section-head p {
+            margin: 0;
+            color: var(--pp-muted);
+            font-size: 12.5px;
+        }
+        .bp-readonly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .bp-readonly-cell {
+            background: var(--pp-bg-soft);
+            border: 1px solid var(--pp-line);
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        .bp-readonly-cell .k {
+            font-size: 11.5px;
+            color: var(--pp-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
+        }
+        .bp-readonly-cell .v {
+            color: var(--pp-ink);
+            font-size: 13.5px;
+            font-weight: 500;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body class="bp-page">
+    <div class="bp-shell">
+        <aside class="bp-sidebar">
+            <a class="bp-brand" href="/">
+                <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                <span>PromoPing</span>
+                <span class="bp-brand-tag">Business</span>
+            </a>
+            <nav class="bp-nav">
+                <span class="bp-nav-section-label">Conta</span>
+                <a class="bp-nav-item" href="/business/dashboard" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a class="bp-nav-item" href="/business/history" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                    Histórico
+                </a>
+                <a class="bp-nav-item" href="/business/perfil" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Perfil da empresa
+                </a>
+            </nav>
+            <div class="bp-sidebar-footer">
+                <div class="bp-user-avatar" id="bpUserAvatar">B</div>
+                <div class="bp-user-meta">
+                    <div class="bp-user-name" id="bpUserName">A carregar…</div>
+                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                </div>
+                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main class="bp-main">
+            <div class="bp-page-header">
+                <div>
+                    <h1>Perfil da empresa</h1>
+                    <p>Mantenha os dados da organização atualizados. Estes campos são usados pela equipa PromoPing para faturação e contacto.</p>
+                </div>
+                <div class="bp-page-actions">
+                    <span class="bp-chip is-orange" id="profileStatusChip">Plano Business</span>
+                </div>
+            </div>
+
+            <div class="bp-alert bp-alert-success is-hidden" id="saveSuccess" role="status">
+                <div>
+                    <p class="bp-alert-title">Perfil atualizado</p>
+                    <p class="bp-alert-body">As alterações foram guardadas com sucesso.</p>
+                </div>
+            </div>
+            <div class="bp-alert bp-alert-error is-hidden" id="saveError" role="alert"></div>
+            <div class="bp-alert bp-alert-warn is-hidden" id="readOnlyAlert">
+                <div>
+                    <p class="bp-alert-title">Apenas leitura</p>
+                    <p class="bp-alert-body">A organização ainda não foi aprovada — os dados ficam visíveis mas só podem ser editados depois da aprovação manual.</p>
+                </div>
+            </div>
+
+            <form id="orgForm" autocomplete="off">
+                <section class="bp-card bp-section">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Conta principal</h2>
+                            <p>Pessoa responsável pela conta business — não pode ser alterada aqui.</p>
+                        </div>
+                    </div>
+                    <div class="bp-card-body">
+                        <div class="bp-readonly-grid">
+                            <div class="bp-readonly-cell"><div class="k">Nome</div><div class="v" id="meName">—</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Email</div><div class="v" id="meEmail">—</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Telefone</div><div class="v" id="mePhone">—</div></div>
+                            <div class="bp-readonly-cell"><div class="k">Perfil</div><div class="v">Business (PerfilId 4)</div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bp-card bp-section">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Empresa</h2>
+                            <p>Dados de identificação e contacto comercial.</p>
+                        </div>
+                    </div>
+                    <div class="bp-card-body">
+                        <div class="bp-form-grid">
+                            <div class="bp-field full-span">
+                                <label class="bp-label" for="nomeEmpresa">Nome da empresa<span class="required">*</span></label>
+                                <input class="bp-input" id="nomeEmpresa" required>
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="setor">Setor</label>
+                                <input class="bp-input" id="setor" placeholder="Retail, tecnologia, distribuição…">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="categoria">Categoria</label>
+                                <input class="bp-input" id="categoria" placeholder="Marketplace, marca, ecommerce…">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="nif">NIF</label>
+                                <input class="bp-input" id="nif">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="vatNumber">VAT</label>
+                                <input class="bp-input" id="vatNumber">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="website">Website</label>
+                                <input class="bp-input" id="website" type="url" placeholder="https://">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="telefoneComercial">Telefone comercial</label>
+                                <input class="bp-input" id="telefoneComercial">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="pessoaResponsavel">Pessoa responsável</label>
+                                <input class="bp-input" id="pessoaResponsavel">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="billingEmail">Email de faturação</label>
+                                <input class="bp-input" id="billingEmail" type="email">
+                            </div>
+                            <div class="bp-field full-span">
+                                <label class="bp-label" for="logoUrl">URL do logótipo</label>
+                                <input class="bp-input" id="logoUrl" type="url" placeholder="https://">
+                                <p class="bp-help">Imagem quadrada, idealmente acima de 256px.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bp-card bp-section">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Morada</h2>
+                            <p>Usada para contexto comercial e faturação.</p>
+                        </div>
+                    </div>
+                    <div class="bp-card-body">
+                        <div class="bp-form-grid">
+                            <div class="bp-field full-span">
+                                <label class="bp-label" for="moradaLinha1">Morada</label>
+                                <input class="bp-input" id="moradaLinha1">
+                            </div>
+                            <div class="bp-field full-span">
+                                <label class="bp-label" for="moradaLinha2">Morada (complemento)</label>
+                                <input class="bp-input" id="moradaLinha2">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="cidade">Cidade</label>
+                                <input class="bp-input" id="cidade">
+                            </div>
+                            <div class="bp-field">
+                                <label class="bp-label" for="codigoPostal">Código postal</label>
+                                <input class="bp-input" id="codigoPostal">
+                            </div>
+                            <div class="bp-field full-span">
+                                <label class="bp-label" for="pais">País</label>
+                                <input class="bp-input" id="pais" value="Portugal">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+                    <button class="bp-btn bp-btn-secondary" type="button" id="resetBtn">Repor</button>
+                    <button class="bp-btn bp-btn-primary" type="submit" id="saveBtn">Guardar alterações</button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="/business/scripts/panel.js"></script>
+    <script>
+        document.addEventListener('businesspanel:ready', function (event) {
+            const BP = event.detail || window.BusinessPanel;
+            if (!BP) return;
+
+            const form = document.getElementById('orgForm');
+            const saveBtn = document.getElementById('saveBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const successBox = document.getElementById('saveSuccess');
+            const errorBox = document.getElementById('saveError');
+            const readOnlyAlert = document.getElementById('readOnlyAlert');
+            const profileStatusChip = document.getElementById('profileStatusChip');
+
+            const fields = [
+                'nomeEmpresa','setor','categoria','nif','vatNumber','website',
+                'telefoneComercial','pessoaResponsavel','billingEmail','logoUrl',
+                'moradaLinha1','moradaLinha2','cidade','codigoPostal','pais'
+            ];
+
+            const user = BP.user || {};
+            const membership = BP.membership;
+            const application = BP.application;
+            const org = membership && membership.organization ? membership.organization : null;
+
+            // Read-only account info
+            document.getElementById('meName').textContent = user.Nome || user.nome || '—';
+            document.getElementById('meEmail').textContent = user.Email || user.email || '—';
+            document.getElementById('mePhone').textContent = user.Telefone || user.telefone || '—';
+
+            // Status
+            if (org) {
+                profileStatusChip.textContent = 'Organização ativa';
+                profileStatusChip.className = 'bp-chip is-success';
+            } else if (application) {
+                const status = (application.status || '').toLowerCase();
+                if (status === 'rejected' || status === 'recusado') {
+                    profileStatusChip.textContent = 'Candidatura recusada';
+                    profileStatusChip.className = 'bp-chip is-error';
+                } else {
+                    profileStatusChip.textContent = 'Em revisão';
+                    profileStatusChip.className = 'bp-chip is-warn';
+                }
+                readOnlyAlert.classList.remove('is-hidden');
+            }
+
+            // Pre-fill from active org first, fallback to application
+            const initial = {};
+            if (org) {
+                initial.nomeEmpresa = org.nomeEmpresa;
+                initial.nif = org.nif;
+                initial.vatNumber = org.vatNumber;
+                initial.website = org.website;
+                initial.setor = org.setor;
+                initial.categoria = org.categoria;
+                initial.pessoaResponsavel = org.pessoaResponsavel;
+                initial.telefoneComercial = org.telefoneComercial;
+                initial.billingEmail = org.billingEmail;
+                initial.logoUrl = org.logoUrl;
+                initial.moradaLinha1 = org.moradaLinha1;
+                initial.moradaLinha2 = org.moradaLinha2;
+                initial.cidade = org.cidade;
+                initial.codigoPostal = org.codigoPostal;
+                initial.pais = org.pais;
+            } else if (application) {
+                initial.nomeEmpresa = application.nomeEmpresa;
+                initial.nif = application.nif;
+                initial.vatNumber = application.vatNumber;
+                initial.website = application.website;
+                initial.setor = application.setor;
+                initial.categoria = application.categoria;
+                initial.pessoaResponsavel = application.pessoaResponsavel;
+                initial.telefoneComercial = application.telefoneComercial;
+                initial.billingEmail = application.billingEmail;
+                initial.logoUrl = application.logoUrl;
+                if (application.morada) {
+                    initial.moradaLinha1 = application.morada.linha1;
+                    initial.moradaLinha2 = application.morada.linha2;
+                    initial.cidade = application.morada.cidade;
+                    initial.codigoPostal = application.morada.codigoPostal;
+                    initial.pais = application.morada.pais;
+                }
+            }
+
+            function fillForm(values) {
+                fields.forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.value = values[id] != null ? String(values[id]) : (id === 'pais' && !values[id] ? 'Portugal' : '');
+                });
+            }
+            fillForm(initial);
+
+            // If no active org, lock the form (read-only)
+            if (!org) {
+                fields.forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.readOnly = true;
+                });
+                saveBtn.disabled = true;
+                resetBtn.disabled = true;
+            }
+
+            resetBtn.addEventListener('click', () => {
+                fillForm(initial);
+                successBox.classList.add('is-hidden');
+                errorBox.classList.add('is-hidden');
+            });
+
+            form.addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                if (!org) return;
+
+                successBox.classList.add('is-hidden');
+                errorBox.classList.add('is-hidden');
+
+                const get = (id) => {
+                    const el = document.getElementById(id);
+                    return el ? el.value.trim() : '';
+                };
+
+                const payload = {
+                    nomeEmpresa: get('nomeEmpresa'),
+                    setor: get('setor') || null,
+                    categoria: get('categoria') || null,
+                    nif: get('nif') || null,
+                    vatNumber: get('vatNumber') || null,
+                    website: get('website') || null,
+                    telefoneComercial: get('telefoneComercial') || null,
+                    pessoaResponsavel: get('pessoaResponsavel') || null,
+                    billingEmail: get('billingEmail') || null,
+                    logoUrl: get('logoUrl') || null,
+                    morada: {
+                        linha1: get('moradaLinha1') || null,
+                        linha2: get('moradaLinha2') || null,
+                        cidade: get('cidade') || null,
+                        codigoPostal: get('codigoPostal') || null,
+                        pais: get('pais') || null
+                    }
+                };
+
+                if (!payload.nomeEmpresa) {
+                    errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">O nome da empresa é obrigatório.</p></div>';
+                    errorBox.classList.remove('is-hidden');
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'A guardar…';
+
+                try {
+                    await BP.fetchJson('/api/business/organization/' + org.id, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                    successBox.classList.remove('is-hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (err) {
+                    errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">' + BP.escapeHtml(err.message || 'Falha ao guardar.') + '</p></div>';
+                    errorBox.classList.remove('is-hidden');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Guardar alterações';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico Business | PromoPing</title>
+    <meta name="description" content="Historico de produtos monitorizados pela conta business PromoPing.">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <link rel="stylesheet" href="/business/style/panel.css">
+    <style>
+        .bp-history-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--pp-line);
+            flex-wrap: wrap;
+        }
+        .bp-history-toolbar .bp-input {
+            max-width: 320px;
+        }
+        .bp-history-toolbar select.bp-select {
+            max-width: 200px;
+        }
+        .bp-history-toolbar .grow { flex: 1; }
+        .bp-product-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .bp-product-name {
+            font-weight: 500;
+            color: var(--pp-ink);
+            font-size: 13.5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 360px;
+        }
+        .bp-product-link {
+            color: var(--pp-muted);
+            font-size: 12px;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 360px;
+        }
+        .bp-product-link:hover { color: var(--pp-orange-strong); text-decoration: underline; }
+        .bp-price-current {
+            font-weight: 600;
+            color: var(--pp-ink);
+        }
+        .bp-price-initial {
+            font-size: 12px;
+            color: var(--pp-muted);
+            text-decoration: line-through;
+        }
+        .bp-delta {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .bp-delta.is-down { color: var(--pp-success); }
+        .bp-delta.is-up { color: var(--pp-error); }
+        .bp-delta.is-flat { color: var(--pp-muted); }
+        .bp-row-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        .bp-table-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-top: 1px solid var(--pp-line);
+            color: var(--pp-muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body class="bp-page">
+    <div class="bp-shell">
+        <aside class="bp-sidebar">
+            <a class="bp-brand" href="/">
+                <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                <span>PromoPing</span>
+                <span class="bp-brand-tag">Business</span>
+            </a>
+            <nav class="bp-nav">
+                <span class="bp-nav-section-label">Conta</span>
+                <a class="bp-nav-item" href="/business/dashboard" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a class="bp-nav-item" href="/business/history" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                    Histórico
+                </a>
+                <a class="bp-nav-item" href="/business/perfil" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Perfil da empresa
+                </a>
+            </nav>
+            <div class="bp-sidebar-footer">
+                <div class="bp-user-avatar" id="bpUserAvatar">B</div>
+                <div class="bp-user-meta">
+                    <div class="bp-user-name" id="bpUserName">A carregar…</div>
+                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                </div>
+                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main class="bp-main">
+            <div class="bp-page-header">
+                <div>
+                    <h1>Histórico de produtos</h1>
+                    <p>Todos os produtos monitorizados pela organização. Sem limites — a conta business tem acesso premium.</p>
+                </div>
+                <div class="bp-page-actions">
+                    <span class="bp-chip is-orange">Premium ilimitado</span>
+                    <a class="bp-btn bp-btn-primary" href="/dashboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Adicionar produto
+                    </a>
+                </div>
+            </div>
+
+            <div class="bp-alert bp-alert-error is-hidden" id="historyError" role="alert"></div>
+
+            <section class="bp-card">
+                <div class="bp-history-toolbar">
+                    <input class="bp-input" id="filterText" type="search" placeholder="Procurar por nome ou loja…" autocomplete="off">
+                    <select class="bp-select" id="filterStatus">
+                        <option value="all">Todos</option>
+                        <option value="drops">Com descida</option>
+                        <option value="flat">Sem variação</option>
+                        <option value="up">Subiu</option>
+                    </select>
+                    <span class="grow"></span>
+                    <span class="bp-help" id="rowsCount">—</span>
+                </div>
+
+                <div class="bp-card-body is-flush">
+                    <table class="bp-table" id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Loja</th>
+                                <th>Preço atual</th>
+                                <th>Variação</th>
+                                <th>Última verificação</th>
+                                <th aria-label="Ações"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr><td colspan="6" class="bp-table-empty">A carregar histórico…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bp-table-pagination">
+                    <span id="pageInfo">—</span>
+                    <div style="display:flex;gap:6px;">
+                        <button class="bp-btn bp-btn-secondary" id="prevPage" type="button" disabled>Anterior</button>
+                        <button class="bp-btn bp-btn-secondary" id="nextPage" type="button" disabled>Seguinte</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/business/scripts/panel.js"></script>
+    <script>
+        document.addEventListener('businesspanel:ready', async function (event) {
+            const BP = event.detail || window.BusinessPanel;
+            if (!BP) return;
+
+            const PAGE_SIZE = 20;
+            let allItems = [];
+            let filtered = [];
+            let page = 1;
+
+            const tbody = document.getElementById('historyBody');
+            const errorBox = document.getElementById('historyError');
+            const filterText = document.getElementById('filterText');
+            const filterStatus = document.getElementById('filterStatus');
+            const rowsCount = document.getElementById('rowsCount');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+
+            function showError(msg) {
+                errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">' + BP.escapeHtml(msg) + '</p></div>';
+                errorBox.classList.remove('is-hidden');
+            }
+
+            function pickPrice(p, keys) {
+                for (let i = 0; i < keys.length; i += 1) {
+                    const v = p[keys[i]];
+                    if (v !== undefined && v !== null && v !== '') return Number(v);
+                }
+                return null;
+            }
+
+            function deriveStore(p) {
+                const explicit = p.Loja || p.loja || p.store;
+                if (explicit) return explicit;
+                const url = p.URL || p.url || p.Link || p.link || '';
+                try {
+                    const u = new URL(url);
+                    return u.hostname.replace(/^www\./, '');
+                } catch (_) { return '—'; }
+            }
+
+            function rowDelta(initial, current) {
+                if (!initial || !current) return { value: 0, pct: 0, kind: 'flat' };
+                const delta = current - initial;
+                const pct = (delta / initial) * 100;
+                let kind = 'flat';
+                if (delta < -0.005) kind = 'down';
+                else if (delta > 0.005) kind = 'up';
+                return { value: delta, pct, kind };
+            }
+
+            function applyFilters() {
+                const q = filterText.value.trim().toLowerCase();
+                const status = filterStatus.value;
+                filtered = allItems.filter((row) => {
+                    if (q) {
+                        const hay = (row._name + ' ' + row._store).toLowerCase();
+                        if (!hay.includes(q)) return false;
+                    }
+                    if (status === 'drops' && row._delta.kind !== 'down') return false;
+                    if (status === 'up' && row._delta.kind !== 'up') return false;
+                    if (status === 'flat' && row._delta.kind !== 'flat') return false;
+                    return true;
+                });
+                page = 1;
+                render();
+            }
+
+            function render() {
+                const total = filtered.length;
+                rowsCount.textContent = total + (total === 1 ? ' produto' : ' produtos');
+                if (total === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="bp-table-empty">' +
+                        (allItems.length === 0
+                            ? 'Ainda não há produtos monitorizados. Adicione o primeiro pelo painel de utilizador.'
+                            : 'Nenhum produto corresponde aos filtros.') +
+                        '</td></tr>';
+                    pageInfo.textContent = '0 de 0';
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    return;
+                }
+
+                const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (page > totalPages) page = totalPages;
+                const start = (page - 1) * PAGE_SIZE;
+                const slice = filtered.slice(start, start + PAGE_SIZE);
+
+                tbody.innerHTML = slice.map((row) => {
+                    const url = row._url ? '<a class="bp-product-link" href="' + BP.escapeHtml(row._url) + '" target="_blank" rel="noopener">' + BP.escapeHtml(row._url) + '</a>' : '';
+                    const deltaClass = 'bp-delta is-' + row._delta.kind;
+                    const deltaLabel = row._delta.kind === 'flat'
+                        ? 'Sem variação'
+                        : (row._delta.kind === 'down' ? '−' : '+') + Math.abs(row._delta.pct).toFixed(1) + '%';
+                    const initialPriceTag = (row._initial && row._initial !== row._current)
+                        ? '<span class="bp-price-initial">' + BP.formatCurrency(row._initial) + '</span>'
+                        : '';
+                    return (
+                        '<tr>' +
+                            '<td><div class="bp-product-cell"><span class="bp-product-name" title="' + BP.escapeHtml(row._name) + '">' + BP.escapeHtml(row._name) + '</span>' + url + '</div></td>' +
+                            '<td>' + BP.escapeHtml(row._store) + '</td>' +
+                            '<td><div style="display:flex;flex-direction:column;gap:2px;"><span class="bp-price-current">' + BP.formatCurrency(row._current) + '</span>' + initialPriceTag + '</div></td>' +
+                            '<td><span class="' + deltaClass + '">' + deltaLabel + '</span></td>' +
+                            '<td>' + BP.escapeHtml(row._lastCheck) + '</td>' +
+                            '<td><div class="bp-row-actions">' +
+                                (row._url ? '<a class="bp-btn bp-btn-ghost" href="' + BP.escapeHtml(row._url) + '" target="_blank" rel="noopener" title="Abrir link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>' : '') +
+                            '</div></td>' +
+                        '</tr>'
+                    );
+                }).join('');
+
+                pageInfo.textContent = (start + 1) + '–' + Math.min(start + PAGE_SIZE, total) + ' de ' + total;
+                prevBtn.disabled = page <= 1;
+                nextBtn.disabled = page >= totalPages;
+            }
+
+            prevBtn.addEventListener('click', () => { if (page > 1) { page -= 1; render(); } });
+            nextBtn.addEventListener('click', () => { page += 1; render(); });
+            filterText.addEventListener('input', applyFilters);
+            filterStatus.addEventListener('change', applyFilters);
+
+            try {
+                const res = await BP.fetchJson('/api/produtos');
+                const items = Array.isArray(res) ? res : (res.produtos || res.items || res.data || []);
+                allItems = items.map((p) => {
+                    const current = pickPrice(p, ['PrecoAtual', 'precoAtual', 'preco_atual', 'preco', 'Preco']);
+                    const initial = pickPrice(p, ['PrecoInicial', 'precoInicial', 'preco_inicial']);
+                    const delta = rowDelta(initial, current);
+                    const lastCheck = p.UltimaVerificacao || p.ultimaVerificacao || p.ultima_verificacao
+                        || p.UltimaVerificacaoEm || p.updatedAt || p.UpdatedAt || p.updated_at
+                        || p.DataAlerta || p.data_alerta || null;
+                    return {
+                        _name: p.Nome || p.nome || p.title || p.Titulo || 'Produto',
+                        _store: deriveStore(p),
+                        _url: p.URL || p.url || p.Link || p.link || '',
+                        _current: current,
+                        _initial: initial,
+                        _delta: delta,
+                        _lastCheck: lastCheck ? BP.formatDateTime(lastCheck) : '—'
+                    };
+                });
+                filtered = allItems.slice();
+                render();
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="6" class="bp-table-empty">Não foi possível carregar o histórico.</td></tr>';
+                showError(err.message || 'Erro ao carregar produtos.');
+            }
+        });
+    </script>
+</body>
+</html>
