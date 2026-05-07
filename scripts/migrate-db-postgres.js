@@ -3,6 +3,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
@@ -53,6 +54,21 @@ async function dropColumnIfExists(table, column) {
     );
     console.log(` Coluna ${column} removida da tabela ${table}`);
   }
+}
+
+async function runSqlMigrationFile(relativePath) {
+  const fullPath = path.join(__dirname, "..", relativePath);
+  const sql = await fs.readFile(fullPath, "utf8");
+  const statements = sql
+    .split(/;\s*(?:\r?\n|$)/)
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+
+  for (const statement of statements) {
+    await pool.query(statement);
+  }
+
+  console.log(` Migração SQL aplicada: ${relativePath}`);
 }
 
 async function migrate() {
@@ -276,6 +292,8 @@ async function migrate() {
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_outbound_status ON discord_outbound_queue (status, created_at)`);
   console.log(" Tabelas Discord painel verificadas/criadas");
+
+  await runSqlMigrationFile("backend/database/migrations/create_business_organizations.sql");
 
   await pool.end();
   console.log(" Migração concluída!");
