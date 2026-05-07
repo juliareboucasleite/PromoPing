@@ -209,9 +209,11 @@ class NewsService {
             if (newsToNotify.length > 0) {
                 try {
                     const { notifySubscribersOfNewArticles } = await import("./newsletterNotifier.js");
-                    await notifySubscribersOfNewArticles(newsToNotify);
-                    for (const news of newsToNotify) {
-                        await this.markNewsAsSent(news);
+                    const delivery = await notifySubscribersOfNewArticles(newsToNotify);
+                    if (delivery.sent > 0 || delivery.recipients === 0) {
+                        for (const news of newsToNotify) {
+                            await this.markNewsAsSent(news);
+                        }
                     }
                 } catch (notifyErr) {
                     console.error("[NEWS] Erro ao notificar subscritores de novos artigos:", notifyErr.message);

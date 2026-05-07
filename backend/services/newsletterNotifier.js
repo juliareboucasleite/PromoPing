@@ -66,6 +66,16 @@ async function reserveDeliveryEvent(eventType, eventKey, payload = {}) {
   return (result?.affectedRows || result?.rowCount || 0) > 0;
 }
 
+async function releaseDeliveryEvent(eventType, eventKey) {
+  await pool.query(
+    `
+      DELETE FROM newsletter_delivery_events
+      WHERE event_type = ? AND event_key = ?
+    `,
+    [eventType, eventKey]
+  );
+}
+
 async function getSubscribersByPreference(preferenceColumn) {
   const allowedColumns = new Set(["newsletter", "promotions", "articles"]);
   if (!allowedColumns.has(preferenceColumn)) {
@@ -288,5 +298,11 @@ export async function notifySubscribersOfPromotion({ product, novoPreco, precoAn
     discountPercent,
   });
 
-  return await sendBatchEmails(recipients, subject, html, "promoções");
+  const result = await sendBatchEmails(recipients, subject, html, "promoções");
+
+  if (result.recipients > 0 && result.sent === 0) {
+    await releaseDeliveryEvent(DELIVERY_EVENT_TYPES.promotion, eventKey);
+  }
+
+  return result;
 }
