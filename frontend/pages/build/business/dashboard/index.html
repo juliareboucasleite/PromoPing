@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Business | PromoPing</title>
+    <meta name="description" content="Painel da conta business PromoPing — visao geral da organizacao e da monitorizacao de precos.">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <link rel="stylesheet" href="/assets/styles/business-panel.css">
+    <style>
+        .bp-welcome {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .bp-welcome h1 {
+            margin: 0 0 4px;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.005em;
+            color: var(--pp-ink);
+        }
+        .bp-welcome p {
+            margin: 0;
+            color: var(--pp-muted);
+            font-size: 13.5px;
+        }
+        .bp-welcome-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bp-grid-2 {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 20px;
+            margin-top: 8px;
+        }
+        @media (max-width: 880px) {
+            .bp-grid-2 { grid-template-columns: 1fr; }
+        }
+        .bp-list { list-style: none; margin: 0; padding: 0; }
+        .bp-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--pp-line);
+            font-size: 13.5px;
+        }
+        .bp-list li:last-child { border-bottom: 0; }
+        .bp-list .bp-list-key {
+            color: var(--pp-muted);
+            font-size: 12.5px;
+            font-weight: 500;
+        }
+        .bp-list .bp-list-val {
+            color: var(--pp-ink);
+            font-weight: 500;
+            text-align: right;
+            min-width: 0;
+            word-break: break-word;
+        }
+        .bp-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 20px;
+        }
+        .bp-action-tile {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 14px;
+            border: 1px solid var(--pp-line);
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--pp-ink);
+            background: #ffffff;
+            transition: border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+        .bp-action-tile:hover {
+            border-color: var(--pp-orange);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+        }
+        .bp-action-tile-title {
+            font-weight: 600;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .bp-action-tile-title svg { width: 14px; height: 14px; color: var(--pp-orange-strong); }
+        .bp-action-tile-desc {
+            color: var(--pp-muted);
+            font-size: 12.5px;
+            line-height: 1.45;
+        }
+    </style>
+</head>
+<body class="bp-page">
+    <div class="bp-shell">
+        <aside class="bp-sidebar">
+            <a class="bp-brand" href="/">
+                <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                <span>PromoPing</span>
+                <span class="bp-brand-tag">Business</span>
+            </a>
+            <nav class="bp-nav">
+                <span class="bp-nav-section-label">Conta</span>
+                <a class="bp-nav-item" href="/business/dashboard" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a class="bp-nav-item" href="/business/history" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                    Histórico
+                </a>
+                <a class="bp-nav-item" href="/business/perfil" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Perfil da empresa
+                </a>
+            </nav>
+            <div class="bp-sidebar-footer">
+                <div class="bp-user-avatar" id="bpUserAvatar">B</div>
+                <div class="bp-user-meta">
+                    <div class="bp-user-name" id="bpUserName">A carregar…</div>
+                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                </div>
+                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main class="bp-main">
+            <div class="bp-welcome">
+                <div>
+                    <h1 id="welcomeTitle">Visão geral</h1>
+                    <p id="welcomeSubtitle">A carregar dados da organização…</p>
+                </div>
+                <div class="bp-welcome-meta">
+                    <span class="bp-chip is-orange" id="welcomePlanChip">Plano Business · Premium</span>
+                    <span class="bp-chip is-neutral" id="welcomeStatusChip">A verificar…</span>
+                </div>
+            </div>
+
+            <div class="bp-alert bp-alert-warn is-hidden" id="pendingAlert">
+                <div>
+                    <p class="bp-alert-title">A candidatura está em revisão</p>
+                    <p class="bp-alert-body">A organização ainda não foi aprovada. Pode usar o painel, mas algumas funcionalidades só ficam ativas após aprovação manual da equipa PromoPing.</p>
+                </div>
+            </div>
+
+            <div class="bp-alert bp-alert-info is-hidden" id="noOrgAlert">
+                <div>
+                    <p class="bp-alert-title">Ainda não tem candidatura</p>
+                    <p class="bp-alert-body">Submeta os dados da empresa em <a href="/business/create/registar" style="color:inherit;font-weight:600;text-decoration:underline;">candidatura business</a> para começar.</p>
+                </div>
+            </div>
+
+            <div class="bp-stats">
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Produtos monitorizados</div>
+                    <div class="bp-stat-value" id="statProducts">—</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Descidas detectadas</div>
+                    <div class="bp-stat-value" id="statDrops">—</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Alertas ativos</div>
+                    <div class="bp-stat-value" id="statAlerts">—</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Membros da organização</div>
+                    <div class="bp-stat-value" id="statMembers">—</div>
+                </div>
+            </div>
+
+            <div class="bp-grid-2">
+                <section class="bp-card">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Acessos rápidos</h2>
+                            <p>Ações frequentes da conta business.</p>
+                        </div>
+                    </div>
+                    <div class="bp-actions-grid">
+                        <a class="bp-action-tile" href="/business/history">
+                            <span class="bp-action-tile-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                                Ver histórico de produtos
+                            </span>
+                            <span class="bp-action-tile-desc">Tabela completa de monitorizações, descidas e últimos preços observados.</span>
+                        </a>
+                        <a class="bp-action-tile" href="/business/perfil">
+                            <span class="bp-action-tile-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Editar perfil da empresa
+                            </span>
+                            <span class="bp-action-tile-desc">NIF, VAT, morada, contactos, logótipo e dados de faturação.</span>
+                        </a>
+                        <a class="bp-action-tile" href="/dashboard">
+                            <span class="bp-action-tile-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                Adicionar produto
+                            </span>
+                            <span class="bp-action-tile-desc">Cole o link de uma loja portuguesa suportada — a conta business tem limites premium.</span>
+                        </a>
+                        <a class="bp-action-tile" href="mailto:business@promoping.pt">
+                            <span class="bp-action-tile-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+                                Contactar suporte business
+                            </span>
+                            <span class="bp-action-tile-desc">Equipa dedicada para clientes corporativos: business@promoping.pt</span>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="bp-card">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Detalhes da organização</h2>
+                            <p>Snapshot rápido dos dados.</p>
+                        </div>
+                    </div>
+                    <ul class="bp-list" id="orgDetailsList">
+                        <li><span class="bp-list-key">Nome</span><span class="bp-list-val" id="orgNomeEmpresa">—</span></li>
+                        <li><span class="bp-list-key">NIF</span><span class="bp-list-val" id="orgNif">—</span></li>
+                        <li><span class="bp-list-key">VAT</span><span class="bp-list-val" id="orgVat">—</span></li>
+                        <li><span class="bp-list-key">Setor</span><span class="bp-list-val" id="orgSetor">—</span></li>
+                        <li><span class="bp-list-key">Website</span><span class="bp-list-val" id="orgWebsite">—</span></li>
+                        <li><span class="bp-list-key">Faturação</span><span class="bp-list-val" id="orgBilling">—</span></li>
+                        <li><span class="bp-list-key">Criada em</span><span class="bp-list-val" id="orgCreatedAt">—</span></li>
+                    </ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/assets/scripts/business-panel.js"></script>
+    <script>
+        document.addEventListener('businesspanel:ready', async function (event) {
+            const BP = event.detail || window.BusinessPanel;
+            if (!BP) return;
+
+            const titleEl = document.getElementById('welcomeTitle');
+            const subEl = document.getElementById('welcomeSubtitle');
+            const statusChip = document.getElementById('welcomeStatusChip');
+            const pendingAlert = document.getElementById('pendingAlert');
+            const noOrgAlert = document.getElementById('noOrgAlert');
+
+            const membership = BP.membership;
+            const application = BP.application;
+            const org = membership && membership.organization ? membership.organization : null;
+
+            const orgName = (org && org.nomeEmpresa) || (application && application.nomeEmpresa) || 'A sua empresa';
+            titleEl.textContent = 'Olá, ' + (BP.user && (BP.user.Nome || BP.user.nome) ? (BP.user.Nome || BP.user.nome) : 'equipa') + '.';
+            subEl.textContent = 'Visão geral da ' + orgName + '.';
+
+            // Status chip
+            if (org) {
+                statusChip.textContent = 'Organização ativa';
+                statusChip.className = 'bp-chip is-success';
+            } else if (application) {
+                const status = (application.status || '').toLowerCase();
+                if (status === 'approved' || status === 'aprovado') {
+                    statusChip.textContent = 'Aprovada';
+                    statusChip.className = 'bp-chip is-success';
+                } else if (status === 'rejected' || status === 'recusado') {
+                    statusChip.textContent = 'Candidatura recusada';
+                    statusChip.className = 'bp-chip is-error';
+                } else {
+                    statusChip.textContent = 'Em revisão';
+                    statusChip.className = 'bp-chip is-warn';
+                    pendingAlert.classList.remove('is-hidden');
+                }
+            } else {
+                statusChip.textContent = 'Sem candidatura';
+                statusChip.className = 'bp-chip is-neutral';
+                noOrgAlert.classList.remove('is-hidden');
+            }
+
+            // Org details list
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value || '—';
+            };
+            set('orgNomeEmpresa', org ? org.nomeEmpresa : (application ? application.nomeEmpresa : null));
+            set('orgNif', org ? org.nif : (application ? application.nif : null));
+            set('orgVat', org ? org.vatNumber : (application ? application.vatNumber : null));
+            set('orgSetor', org ? org.setor : (application ? application.setor : null));
+            set('orgWebsite', org ? org.website : (application ? application.website : null));
+            set('orgBilling', org ? org.billingEmail : (application ? application.billingEmail : null));
+            const created = (org && org.createdAt) || (application && application.createdAt) || null;
+            set('orgCreatedAt', created ? BP.formatDate(created) : null);
+
+            // Members count
+            const statMembers = document.getElementById('statMembers');
+            statMembers.textContent = String((BP.memberships || []).length || (org ? 1 : 0));
+
+            // Products / drops / alerts (best-effort: call /api/produtos)
+            try {
+                const res = await BP.fetchJson('/api/produtos');
+                const items = Array.isArray(res) ? res : (res.produtos || res.items || res.data || []);
+                document.getElementById('statProducts').textContent = String(items.length);
+
+                let drops = 0;
+                let alerts = 0;
+                items.forEach((p) => {
+                    const current = Number(p.PrecoAtual ?? p.precoAtual ?? p.preco_atual ?? 0);
+                    const initial = Number(p.PrecoInicial ?? p.precoInicial ?? p.preco_inicial ?? 0);
+                    if (initial > 0 && current > 0 && current < initial) drops += 1;
+                    if (p.AlertaAtivo || p.alertaAtivo || p.alerta_ativo) alerts += 1;
+                });
+                document.getElementById('statDrops').textContent = String(drops);
+                document.getElementById('statAlerts').textContent = String(alerts || items.length);
+            } catch (err) {
+                document.getElementById('statProducts').textContent = '0';
+                document.getElementById('statDrops').textContent = '0';
+                document.getElementById('statAlerts').textContent = '0';
+            }
+        });
+    </script>
+</body>
+</html>
