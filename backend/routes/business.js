@@ -146,6 +146,44 @@ async function ensureUserConfig(referenciaID, planId) {
   );
 }
 
+async function ensureCorporationNotificationsTable() {
+  try {
+    const [tables] = await pool.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'corporation_notifications'"
+    );
+
+    if (tables.length > 0) return;
+
+    await pool.query(`
+      CREATE TABLE corporation_notifications (
+        Id INT AUTO_INCREMENT PRIMARY KEY,
+        Tipo VARCHAR(50) NOT NULL,
+        Titulo VARCHAR(300) NOT NULL,
+        Descricao TEXT,
+        ReferenciaID VARCHAR(13) NULL,
+        DataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_tipo (Tipo),
+        INDEX idx_data (DataCriacao)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao garantir corporation_notifications:", error.message);
+  }
+}
+
+async function createCorporationNotification({ tipo, titulo, descricao, referenciaID = null }) {
+  try {
+    await ensureCorporationNotificationsTable();
+    await pool.query(
+      `INSERT INTO corporation_notifications (Tipo, Titulo, Descricao, ReferenciaID)
+       VALUES (?, ?, ?, ?)`,
+      [tipo, titulo, descricao, referenciaID]
+    );
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao criar notificacao corporativa:", error.message);
+  }
+}
+
 async function getLatestApplicationByUser(referenciaID) {
   const [rows] = await pool.query(
     `SELECT *
@@ -156,6 +194,73 @@ async function getLatestApplicationByUser(referenciaID) {
     [referenciaID]
   );
   return rows.length ? rows[0] : null;
+}
+
+async function getOrganizationById(organizationId) {
+  const [rows] = await pool.query(
+    `SELECT *
+       FROM organizations
+      WHERE id = ?
+      LIMIT 1`,
+    [organizationId]
+  );
+
+  return rows.length ? rows[0] : null;
+}
+
+function normalizeComparableValue(value) {
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+}
+
+function collectOrganizationChangedFields(previous, payload = {}) {
+  const changed = [];
+  const labels = {
+    nomeEmpresa: "nome da empresa",
+    nif: "NIF",
+    vatNumber: "VAT",
+    website: "website",
+    setor: "setor",
+    categoria: "categoria",
+    pessoaResponsavel: "pessoa responsavel",
+    telefoneComercial: "telefone comercial",
+    billingEmail: "email de faturacao",
+    logoUrl: "logotipo",
+    planoAtualId: "plano",
+    moradaLinha1: "morada",
+    moradaLinha2: "complemento de morada",
+    cidade: "cidade",
+    codigoPostal: "codigo postal",
+    pais: "pais"
+  };
+
+  const pairs = [
+    ["nomeEmpresa", previous?.nome_empresa, payload.nomeEmpresa],
+    ["nif", previous?.nif, payload.nif],
+    ["vatNumber", previous?.vat_number, payload.vatNumber],
+    ["website", previous?.website, payload.website],
+    ["setor", previous?.setor, payload.setor],
+    ["categoria", previous?.categoria, payload.categoria],
+    ["pessoaResponsavel", previous?.pessoa_responsavel, payload.pessoaResponsavel],
+    ["telefoneComercial", previous?.telefone_comercial, payload.telefoneComercial],
+    ["billingEmail", previous?.billing_email, payload.billingEmail],
+    ["logoUrl", previous?.logo_url, payload.logoUrl],
+    ["planoAtualId", previous?.plano_atual_id, payload.planoAtualId],
+    ["moradaLinha1", previous?.morada_linha1, payload.morada?.linha1],
+    ["moradaLinha2", previous?.morada_linha2, payload.morada?.linha2],
+    ["cidade", previous?.cidade, payload.morada?.cidade],
+    ["codigoPostal", previous?.codigo_postal, payload.morada?.codigoPostal],
+    ["pais", previous?.pais, payload.morada?.pais]
+  ];
+
+  pairs.forEach(([key, beforeValue, afterValue]) => {
+    if (afterValue === undefined) return;
+    if (normalizeComparableValue(beforeValue) !== normalizeComparableValue(afterValue)) {
+      changed.push(labels[key] || key);
+    }
+  });
+
+  return changed;
 }
 
 async function submitBusinessApplication(payload) {
@@ -680,6 +785,9 @@ router.put("/organization/:organizationId", requireOrganizationRole, async (req,
   }
 
   try {
+    const previousOrganization = await getOrganizationById(req.businessMembership.organizationId);
+    const changedFields = collectOrganizationChangedFields(previousOrganization, req.body || {});
+
     values.push(req.businessMembership.organizationId);
     const [result] = await pool.query(
       `UPDATE organizations
