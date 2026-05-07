@@ -141,6 +141,18 @@ async function migrate() {
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Basic'`, [49.9]);
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Standard'`, [129.9]);
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Premium'`, [153.6]);
+
+  const [corporatePlanRows] = await pool.query(
+    `SELECT Id FROM planos WHERE Nome = 'Corporate' LIMIT 1`
+  );
+  if (corporatePlanRows.length === 0) {
+    await pool.query(
+      `INSERT INTO planos (Id, Nome, Preco, LimiteProdutos, HistoricoDias, IntervaloVerificacao, PermiteSMS, Relatorios, LinksPlanos, LinksPlanosAnual, PrecoAnual)
+       VALUES (?, 'Corporate', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [5, 49.9, 500, 365, '0', 1, 'corporativo', null, null, 499.0]
+    );
+    console.log(" Plano Corporate criado");
+  }
   console.log(" Dados de planos atualizados");
 
   await pool.query(`
