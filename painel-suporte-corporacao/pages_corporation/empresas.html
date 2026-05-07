@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresas - PromoPing Corporacao</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
+    <style>
+        .business-review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.4rem;
+        }
+        .business-review-stat {
+            background: #18181b;
+            border: 1px solid #2a2a2c;
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+        }
+        .business-review-stat-label {
+            font-size: 0.78rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+        .business-review-stat-value {
+            color: #f9fafb;
+            font-size: 1.85rem;
+            font-weight: 800;
+        }
+        .business-review-filters {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .business-review-filter {
+            border: 1px solid #2a2a2c;
+            background: #18181b;
+            color: #d1d5db;
+            border-radius: 999px;
+            padding: 0.55rem 0.85rem;
+            cursor: pointer;
+        }
+        .business-review-filter.active {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+        }
+        .business-review-list {
+            display: grid;
+            gap: 1rem;
+        }
+        .business-review-card {
+            background: #18181b;
+            border: 1px solid #2a2a2c;
+            border-radius: 16px;
+            padding: 1.2rem;
+        }
+        .business-review-card-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .business-review-card h3 {
+            margin: 0;
+            color: #f9fafb;
+            font-size: 1.08rem;
+        }
+        .business-review-meta {
+            color: #9ca3af;
+            font-size: 0.88rem;
+            margin-top: 0.25rem;
+            display: grid;
+            gap: 0.18rem;
+        }
+        .business-review-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            align-self: flex-start;
+        }
+        .business-review-badge.pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+        }
+        .business-review-badge.approved {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+        }
+        .business-review-badge.rejected {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+        }
+        .business-review-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .business-review-box {
+            background: #111214;
+            border: 1px solid #232326;
+            border-radius: 14px;
+            padding: 0.95rem;
+        }
+        .business-review-box strong {
+            color: #fff7e5;
+            display: block;
+            margin-bottom: 0.45rem;
+        }
+        .business-review-box div {
+            color: #d1d5db;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .business-review-actions {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+        .business-review-button {
+            border: none;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 600;
+        }
+        .business-review-button.approve {
+            background: #4ade80;
+            color: #07210f;
+        }
+        .business-review-button.reject {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fecaca;
+            border: 1px solid rgba(239, 68, 68, 0.24);
+        }
+        .business-review-button.neutral {
+            background: #232326;
+            color: #f3f4f6;
+        }
+        .business-review-note {
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            border-radius: 12px;
+            background: #111214;
+            border: 1px solid #232326;
+            color: #d1d5db;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .business-review-empty {
+            background: #18181b;
+            border: 1px dashed #2a2a2c;
+            border-radius: 16px;
+            padding: 2rem 1rem;
+            text-align: center;
+            color: #6b7280;
+        }
+        .review-textarea {
+            width: 100%;
+            min-height: 140px;
+            resize: vertical;
+        }
+        @media (max-width: 860px) {
+            .business-review-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
+                    <h4>PromoPing Corporacao</h4>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visao Geral</span></a>
+                <a href="financeiro.html" class="nav-item"><span class="nav-icon"></span><span>Financeiro</span></a>
+                <a href="auditoria.html" class="nav-item"><span class="nav-icon"></span><span>Auditoria</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendario</span></a>
+                <a href="funcionarios.html" class="nav-item"><span class="nav-icon"></span><span>Funcionarios</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliacoes</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificacoes</span></a>
+                <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
+                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestoes</span></a>
+                <a href="incidentes.html" class="nav-item"><span class="nav-icon"></span><span>Incidentes</span></a>
+                <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
+                <a href="empresas.html" class="nav-item active"><span class="nav-icon"></span><span>Empresas</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="logout-button">Sair</button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Empresas</h1>
+                    <div class="header-actions">
+                        <button id="refreshApplicationsBtn" class="refresh-button">Atualizar</button>
+                    </div>
+                </div>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">
+                    Revise candidaturas business, aprove ou recuse, e envie automaticamente o email de decisao.
+                </p>
+
+                <div class="business-review-grid">
+                    <div class="business-review-stat">
+                        <div class="business-review-stat-label">Pendentes</div>
+                        <div class="business-review-stat-value" id="countPending">0</div>
+                    </div>
+                    <div class="business-review-stat">
+                        <div class="business-review-stat-label">Aprovadas</div>
+                        <div class="business-review-stat-value" id="countApproved">0</div>
+                    </div>
+                    <div class="business-review-stat">
+                        <div class="business-review-stat-label">Recusadas</div>
+                        <div class="business-review-stat-value" id="countRejected">0</div>
+                    </div>
+                    <div class="business-review-stat">
+                        <div class="business-review-stat-label">Total</div>
+                        <div class="business-review-stat-value" id="countTotal">0</div>
+                    </div>
+                </div>
+
+                <div class="business-review-filters">
+                    <button class="business-review-filter active" type="button" data-status="pending">Pendentes</button>
+                    <button class="business-review-filter" type="button" data-status="approved">Aprovadas</button>
+                    <button class="business-review-filter" type="button" data-status="rejected">Recusadas</button>
+                    <button class="business-review-filter" type="button" data-status="all">Todas</button>
+                </div>
+
+                <div id="businessApplicationsList" class="business-review-list">
+                    <div class="business-review-empty">A carregar candidaturas...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="rejectApplicationModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Recusar empresa</h2>
+                <button type="button" class="modal-close" id="closeRejectModal">&times;</button>
+            </div>
+            <div style="padding: 1rem;">
+                <p style="color: #9ca3af; margin-bottom: 0.75rem;">
+                    Pode deixar um motivo manual. Se ficar vazio, segue uma mensagem automatica ao email da empresa.
+                </p>
+                <textarea id="rejectReviewNote" class="form-input review-textarea" placeholder="Motivo da recusa (opcional)"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-delete-button" id="confirmRejectBtn">Recusar e enviar email</button>
+                <button type="button" class="modal-cancel-button" id="cancelRejectBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script/api-utils.js"></script>
+    <script src="../script/alert-modal.js"></script>
+    <script src="../script/corporation-base.js"></script>
+    <script src="../script/corporation-empresas.js"></script>
+</body>
+</html>

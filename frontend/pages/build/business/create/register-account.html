@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Registration | PromoPing</title>
+    <meta name="description" content="Submeta a sua empresa ao plano business do PromoPing com dados comerciais e de faturacao.">
+    <link rel="stylesheet" href="/assets/styles/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <style>
+        .business-register-page {
+            min-height: 100vh;
+            padding: 2rem;
+            background:
+                radial-gradient(circle at top left, rgba(255, 164, 85, 0.2), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(255, 121, 77, 0.14), transparent 25%),
+                #0f0f10;
+            color: #fff4de;
+        }
+        .business-register-shell {
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+            gap: 1.5rem;
+        }
+        .business-register-panel,
+        .business-register-card {
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(18,18,20,0.92);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.38);
+        }
+        .business-register-panel {
+            padding: 2rem;
+            position: sticky;
+            top: 2rem;
+            align-self: start;
+        }
+        .business-register-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            color: #fff8eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .business-register-brand img {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+        }
+        .business-register-kicker {
+            margin-top: 1.8rem;
+            display: inline-flex;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255, 190, 92, 0.12);
+            color: #ffc77e;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .business-register-panel h1 {
+            margin: 1rem 0 0.8rem;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+            color: #fff8eb;
+        }
+        .business-register-panel p {
+            color: rgba(255,255,255,0.7);
+            line-height: 1.7;
+        }
+        .business-register-list {
+            margin-top: 1.7rem;
+            display: grid;
+            gap: 0.9rem;
+        }
+        .business-register-list div {
+            padding: 0.95rem 1rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: #fff4de;
+        }
+        .business-register-list strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: #ffd39b;
+        }
+        .business-register-card {
+            padding: 2rem;
+        }
+        .business-register-head h2 {
+            margin: 0;
+            color: #fff8eb;
+            font-size: 1.85rem;
+        }
+        .business-register-head p {
+            margin: 0.45rem 0 0;
+            color: rgba(255,255,255,0.68);
+        }
+        .business-register-form {
+            margin-top: 1.8rem;
+            display: grid;
+            gap: 1.6rem;
+        }
+        .business-register-section {
+            padding: 1.25rem;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .business-register-section h3 {
+            margin: 0 0 0.2rem;
+            color: #fff7e5;
+            font-size: 1.05rem;
+        }
+        .business-register-section p {
+            margin: 0 0 1rem;
+            color: rgba(255,255,255,0.58);
+            font-size: 0.92rem;
+        }
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .business-grid .full-span {
+            grid-column: 1 / -1;
+        }
+        .business-register-form .form-input {
+            background: #0d0d0f;
+            border-color: rgba(255,255,255,0.12);
+        }
+        .business-register-status,
+        .business-register-success {
+            display: none;
+            padding: 0.95rem 1rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .business-register-status {
+            background: rgba(239,68,68,0.12);
+            color: #fecaca;
+            border: 1px solid rgba(239,68,68,0.22);
+        }
+        .business-register-success {
+            background: rgba(34,197,94,0.12);
+            color: #bbf7d0;
+            border: 1px solid rgba(34,197,94,0.22);
+        }
+        .business-register-actions {
+            display: flex;
+            gap: 0.9rem;
+            flex-wrap: wrap;
+        }
+        .business-register-submit,
+        .business-register-secondary {
+            border: none;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            font: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+        .business-register-submit {
+            background: linear-gradient(135deg, #ffb347, #ff7043);
+            color: #23160d;
+            font-weight: 700;
+            flex: 1 1 260px;
+        }
+        .business-register-secondary {
+            background: rgba(255,255,255,0.06);
+            color: #fff2de;
+            flex: 1 1 220px;
+        }
+        .business-register-submit:hover,
+        .business-register-secondary:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+        }
+        .business-register-footnote {
+            color: rgba(255,255,255,0.55);
+            font-size: 0.9rem;
+        }
+        @media (max-width: 980px) {
+            .business-register-shell {
+                grid-template-columns: 1fr;
+            }
+            .business-register-panel {
+                position: static;
+            }
+        }
+        @media (max-width: 720px) {
+            .business-register-page {
+                padding: 1rem;
+            }
+            .business-register-card,
+            .business-register-panel {
+                padding: 1.3rem;
+                border-radius: 22px;
+            }
+            .business-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="business-register-page">
+    <div class="business-register-shell">
+        <aside class="business-register-panel">
+            <a class="business-register-brand" href="/">
+                <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                <span>PromoPing Business</span>
+            </a>
+            <span class="business-register-kicker">Corporate onboarding</span>
+            <h1>Registe a sua empresa.</h1>
+            <p>Este registo cria a conta business base e envia a empresa para revisao manual. So depois da aprovacao e que a organizacao fica ativa com o plano Corporate.</p>
+
+            <div class="business-register-list">
+                <div>
+                    <strong>1. Conta e dados da empresa</strong>
+                    Preencha os dados da pessoa responsavel, faturacao, NIF/VAT e contacto comercial.
+                </div>
+                <div>
+                    <strong>2. Revisao no painel corporativo</strong>
+                    A equipa interna aprova ou recusa o pedido no painel corporativo.
+                </div>
+                <div>
+                    <strong>3. Email de decisao</strong>
+                    Se a empresa for aprovada, enviamos confirmacao. Se for recusada, enviamos o motivo por email.
+                </div>
+            </div>
+        </aside>
+
+        <main class="business-register-card">
+            <div class="business-register-head">
+                <h2>Candidatura business</h2>
+                <p>Os campos marcados ajudam a equipa a validar a empresa e a preparar o perfil Corporate.</p>
+            </div>
+
+            <div class="business-register-status" id="businessRegisterError"></div>
+            <div class="business-register-success" id="businessRegisterSuccess"></div>
+
+            <form id="businessRegisterForm" class="business-register-form">
+                <section class="business-register-section">
+                    <h3>Conta principal</h3>
+                    <p>Esta pessoa fica como contacto inicial e futura owner da organizacao, caso a empresa seja aprovada.</p>
+                    <div class="business-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="applicantName">Nome completo</label>
+                            <input class="form-input" id="applicantName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="applicantEmail">Email</label>
+                            <input class="form-input" id="applicantEmail" type="email" autocomplete="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="applicantPassword">Password</label>
+                            <input class="form-input" id="applicantPassword" type="password" autocomplete="new-password" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="applicantPhone">Telefone</label>
+                            <input class="form-input" id="applicantPhone" autocomplete="tel">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="business-register-section">
+                    <h3>Dados da empresa</h3>
+                    <p>Esta informacao e usada na revisao e na configuracao do perfil business.</p>
+                    <div class="business-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="companyName">Nome da empresa</label>
+                            <input class="form-input" id="companyName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companySector">Setor</label>
+                            <input class="form-input" id="companySector" placeholder="Retail, tecnologia, distribuicao...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyNif">NIF</label>
+                            <input class="form-input" id="companyNif">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyVat">VAT</label>
+                            <input class="form-input" id="companyVat">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyWebsite">Website</label>
+                            <input class="form-input" id="companyWebsite" type="url" placeholder="https://">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyCategory">Categoria</label>
+                            <input class="form-input" id="companyCategory" placeholder="Marketplace, marca, ecommerce...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyOwner">Pessoa responsavel</label>
+                            <input class="form-input" id="companyOwner">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="companyPhone">Telefone comercial</label>
+                            <input class="form-input" id="companyPhone">
+                        </div>
+                        <div class="form-group full-span">
+                            <label class="form-label" for="companyBillingEmail">Email de faturacao ou contacto principal</label>
+                            <input class="form-input" id="companyBillingEmail" type="email">
+                        </div>
+                        <div class="form-group full-span">
+                            <label class="form-label" for="companyLogoUrl">URL do logo</label>
+                            <input class="form-input" id="companyLogoUrl" type="url" placeholder="https://...">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="business-register-section">
+                    <h3>Morada</h3>
+                    <p>Dados usados para contexto comercial e faturacao.</p>
+                    <div class="business-grid">
+                        <div class="form-group full-span">
+                            <label class="form-label" for="addressLine1">Morada</label>
+                            <input class="form-input" id="addressLine1">
+                        </div>
+                        <div class="form-group full-span">
+                            <label class="form-label" for="addressLine2">Morada complemento</label>
+                            <input class="form-input" id="addressLine2">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addressCity">Cidade</label>
+                            <input class="form-input" id="addressCity">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addressPostalCode">Codigo postal</label>
+                            <input class="form-input" id="addressPostalCode">
+                        </div>
+                        <div class="form-group full-span">
+                            <label class="form-label" for="addressCountry">Pais</label>
+                            <input class="form-input" id="addressCountry" value="Portugal">
+                        </div>
+                    </div>
+                </section>
+
+                <div class="business-register-actions">
+                    <button class="business-register-submit" id="businessRegisterSubmit" type="submit">Submeter para revisao</button>
+                    <a class="business-register-secondary" href="/business/create/login">Ja tenho conta business</a>
+                </div>
+
+                <p class="business-register-footnote">
+                    Ao submeter, a conta fica criada com perfil business e a candidatura passa para revisao manual. A decisao e enviada por email para o contacto indicado.
+                </p>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            const form = document.getElementById('businessRegisterForm');
+            const submitButton = document.getElementById('businessRegisterSubmit');
+            const errorBox = document.getElementById('businessRegisterError');
+            const successBox = document.getElementById('businessRegisterSuccess');
+
+            function value(id) {
+                return document.getElementById(id).value.trim();
+            }
+
+            function showError(message) {
+                errorBox.textContent = message;
+                errorBox.style.display = 'block';
+                successBox.style.display = 'none';
+            }
+
+            function showSuccess(message) {
+                successBox.textContent = message;
+                successBox.style.display = 'block';
+                errorBox.style.display = 'none';
+            }
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                errorBox.style.display = 'none';
+                successBox.style.display = 'none';
+                submitButton.disabled = true;
+                submitButton.textContent = 'A submeter...';
+
+                const payload = {
+                    nome: value('applicantName'),
+                    email: value('applicantEmail'),
+                    password: document.getElementById('applicantPassword').value,
+                    telefone: value('applicantPhone') || null,
+                    nomeEmpresa: value('companyName'),
+                    nif: value('companyNif') || null,
+                    vatNumber: value('companyVat') || null,
+                    website: value('companyWebsite') || null,
+                    setor: value('companySector') || null,
+                    categoria: value('companyCategory') || null,
+                    pessoaResponsavel: value('companyOwner') || null,
+                    telefoneComercial: value('companyPhone') || null,
+                    billingEmail: value('companyBillingEmail') || null,
+                    logoUrl: value('companyLogoUrl') || null,
+                    morada: {
+                        linha1: value('addressLine1') || null,
+                        linha2: value('addressLine2') || null,
+                        cidade: value('addressCity') || null,
+                        codigoPostal: value('addressPostalCode') || null,
+                        pais: value('addressCountry') || null
+                    }
+                };
+
+                if (!payload.nome || !payload.email || !payload.password || !payload.nomeEmpresa) {
+                    showError('Nome, email, password e nome da empresa sao obrigatorios.');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submeter para revisao';
+                    return;
+                }
+
+                if (payload.password.length < 6) {
+                    showError('A password deve ter pelo menos 6 caracteres.');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submeter para revisao';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/business/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || data.status !== 'ok') {
+                        throw new Error(data.error || 'Nao foi possivel criar a candidatura business.');
+                    }
+
+                    form.reset();
+                    document.getElementById('addressCountry').value = 'Portugal';
+                    showSuccess('Candidatura enviada com sucesso. A empresa ficou em revisao e a decisao sera enviada por email. Ja pode entrar com a conta criada em /business/create/login.');
+                } catch (error) {
+                    showError(error.message || 'Erro interno.');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submeter para revisao';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Login | PromoPing</title>
+    <meta name="description" content="Entre com a sua conta business PromoPing e acompanhe o estado da candidatura e da organizacao.">
+    <link rel="stylesheet" href="/assets/styles/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <style>
+        .business-auth-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(320px, 520px) minmax(320px, 1fr);
+            background:
+                radial-gradient(circle at top left, rgba(255, 153, 0, 0.22), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(255, 110, 64, 0.18), transparent 28%),
+                #0f0f10;
+        }
+        .business-auth-aside {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .business-auth-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.9rem;
+            color: #fff4db;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+        }
+        .business-auth-brand img {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(255, 120, 0, 0.24);
+        }
+        .business-auth-eyebrow {
+            display: inline-flex;
+            margin-top: 2rem;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255, 190, 92, 0.12);
+            border: 1px solid rgba(255, 190, 92, 0.2);
+            color: #ffcb81;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .business-auth-copy h1 {
+            margin: 1rem 0 0.8rem;
+            color: #fff8eb;
+            font-size: clamp(2.2rem, 4vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+            max-width: 10ch;
+        }
+        .business-auth-copy p {
+            max-width: 46ch;
+            color: rgba(255,255,255,0.72);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        .business-auth-points {
+            margin-top: 2rem;
+            display: grid;
+            gap: 0.8rem;
+        }
+        .business-auth-points span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            color: #fff2de;
+        }
+        .business-auth-points span::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffb347, #ff7043);
+            box-shadow: 0 0 0 6px rgba(255, 158, 60, 0.12);
+        }
+        .business-auth-side-footer {
+            color: rgba(255,255,255,0.56);
+            font-size: 0.92rem;
+        }
+        .business-auth-side-footer a {
+            color: #ffd08f;
+        }
+        .business-auth-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .business-auth-card {
+            width: min(100%, 520px);
+            padding: 2rem;
+            border-radius: 26px;
+            background: rgba(18,18,20,0.92);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.42);
+        }
+        .business-auth-card h2 {
+            margin: 0 0 0.4rem;
+            color: #fff8eb;
+            font-size: 1.8rem;
+        }
+        .business-auth-card p {
+            margin: 0 0 1.5rem;
+            color: rgba(255,255,255,0.68);
+        }
+        .business-auth-form {
+            display: grid;
+            gap: 1rem;
+        }
+        .business-auth-form .form-input {
+            background: #0d0d0f;
+            border-color: rgba(255,255,255,0.12);
+        }
+        .business-auth-actions {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.25rem;
+        }
+        .business-auth-submit,
+        .business-auth-link {
+            border: none;
+            border-radius: 14px;
+            padding: 0.95rem 1.2rem;
+            font: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+        .business-auth-submit {
+            background: linear-gradient(135deg, #ffb347, #ff7043);
+            color: #20140b;
+            font-weight: 700;
+            flex: 1 1 220px;
+        }
+        .business-auth-link {
+            background: rgba(255,255,255,0.06);
+            color: #fff2de;
+            flex: 1 1 180px;
+        }
+        .business-auth-submit:hover,
+        .business-auth-link:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+        }
+        .business-auth-error,
+        .business-auth-success {
+            display: none;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            font-size: 0.95rem;
+        }
+        .business-auth-error {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fecaca;
+            border: 1px solid rgba(239, 68, 68, 0.22);
+        }
+        .business-auth-success {
+            background: rgba(34, 197, 94, 0.12);
+            color: #bbf7d0;
+            border: 1px solid rgba(34, 197, 94, 0.22);
+        }
+        .business-auth-helper {
+            margin-top: 1.4rem;
+            color: rgba(255,255,255,0.58);
+            font-size: 0.92rem;
+        }
+        .business-auth-helper a {
+            color: #ffd08f;
+        }
+        @media (max-width: 980px) {
+            .business-auth-shell {
+                grid-template-columns: 1fr;
+            }
+            .business-auth-aside {
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+                gap: 2rem;
+            }
+            .business-auth-copy h1 {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="business-auth-shell">
+        <aside class="business-auth-aside">
+            <div>
+                <a class="business-auth-brand" href="/">
+                    <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                    <span>PromoPing Business</span>
+                </a>
+                <span class="business-auth-eyebrow">Corporate access</span>
+                <div class="business-auth-copy">
+                    <h1>Entre na area business.</h1>
+                    <p>Use a mesma autenticacao do PromoPing. O acesso business continua ligado a email, password, Google ou Discord; o que muda e o perfil da conta e a organizacao associada.</p>
+                    <div class="business-auth-points">
+                        <span>Gestao de organizacao e membros</span>
+                        <span>Plano Corporate e limites alargados</span>
+                        <span>Estado da candidatura revisto pela equipa</span>
+                    </div>
+                </div>
+            </div>
+            <div class="business-auth-side-footer">
+                Ainda nao submeteu a empresa? <a href="/business/create/registar">Criar candidatura business</a>
+            </div>
+        </aside>
+
+        <main class="business-auth-main">
+            <section class="business-auth-card">
+                <h2>Entrar</h2>
+                <p>Se a conta business ja foi criada, entre aqui. Se o perfil tiver acesso corporativo interno, o login redireciona automaticamente para o painel correspondente.</p>
+
+                <div class="business-auth-error" id="loginError"></div>
+                <div class="business-auth-success" id="loginSuccess"></div>
+
+                <form id="businessLoginForm" class="business-auth-form">
+                    <div class="form-group">
+                        <label class="form-label" for="businessLoginEmail">Email</label>
+                        <input class="form-input" id="businessLoginEmail" type="email" autocomplete="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="businessLoginPassword">Password</label>
+                        <input class="form-input" id="businessLoginPassword" type="password" autocomplete="current-password" required>
+                    </div>
+                    <div class="business-auth-actions">
+                        <button class="business-auth-submit" id="businessLoginSubmit" type="submit">Entrar</button>
+                        <a class="business-auth-link" href="/business/create/registar">Criar conta business</a>
+                    </div>
+                </form>
+
+                <p class="business-auth-helper">
+                    Tambem pode entrar pela homepage com Google ou Discord. Este e apenas o ponto de entrada business em email/password.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            const form = document.getElementById('businessLoginForm');
+            const submitButton = document.getElementById('businessLoginSubmit');
+            const errorBox = document.getElementById('loginError');
+            const successBox = document.getElementById('loginSuccess');
+
+            function showError(message) {
+                errorBox.textContent = message;
+                errorBox.style.display = 'block';
+                successBox.style.display = 'none';
+            }
+
+            function showSuccess(message) {
+                successBox.textContent = message;
+                successBox.style.display = 'block';
+                errorBox.style.display = 'none';
+            }
+
+            async function fetchProfileAfterLogin(token) {
+                const response = await fetch('/api/user/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || data.status !== 'ok') {
+                    throw new Error(data.error || 'Nao foi possivel validar a sessao.');
+                }
+                return data.user || {};
+            }
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                submitButton.disabled = true;
+                submitButton.textContent = 'A entrar...';
+                errorBox.style.display = 'none';
+                successBox.style.display = 'none';
+
+                const email = document.getElementById('businessLoginEmail').value.trim();
+                const password = document.getElementById('businessLoginPassword').value;
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || data.status !== 'ok' || !data.token) {
+                        throw new Error(data.error || 'Nao foi possivel entrar.');
+                    }
+
+                    localStorage.setItem('token', data.token);
+                    if (data.refreshToken) {
+                        localStorage.setItem('PROMOPING_TOKEN', data.refreshToken);
+                    }
+
+                    showSuccess('Sessao validada. A redirecionar...');
+
+                    const user = await fetchProfileAfterLogin(data.token);
+                    const perfilId = user.PerfilId !== undefined ? user.PerfilId : user.perfilId;
+
+                    if (perfilId === 3) {
+                        window.location.href = '/painel-suporte-corporacao/pages_corporation/dashboard.html';
+                        return;
+                    }
+
+                    window.location.href = '/dashboard/perfil';
+                } catch (error) {
+                    showError(error.message || 'Erro interno.');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Entrar';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
