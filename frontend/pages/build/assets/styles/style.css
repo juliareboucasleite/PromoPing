@@ -160,9 +160,9 @@ body {
 
 .pp-hero-left h1 {
     color: var(--text-light);
-    font-size: 4.5rem;
+    font-size: 3.25rem;
     margin: 0 0 24px;
-    max-width: 12ch;
+    max-width: 16ch;
     line-height: 1.15;
     font-weight: 800;
     letter-spacing: 0.5px;
