@@ -83,7 +83,11 @@ window.translationsFR = {
   'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'En poursuivant, vous acceptez les Conditions d\'utilisation de PromoPing et confirmez avoir pris connaissance de notre Politique de confidentialité.',
   'Encontra novas ideias para experimentares': 'Découvrez de nouvelles idées à explorer',
   'Cria uma palavra-passe': 'Créez un mot de passe',
+  'Utiliza 8 ou mais letras, números e símbolos': 'Utilisez 8 caractères ou plus, avec des chiffres et des symboles',
+  'Nome completo': 'Nom complet',
+  'O seu nome completo': 'Votre nom complet',
   'Data de nascimento': 'Date de naissance',
+  'Esta informação é apenas para os desenvolvedores saberem o padrão de pessoas que está utilizando o PromoPing. Não vai afetar nada.': 'Ces informations servent uniquement aux développeurs pour mieux comprendre le profil des personnes qui utilisent PromoPing. Elles n’auront aucun effet.',
   'Continuar': 'Continuer',
   'Já és membro?': 'Déjà inscrit ?',
   'Criar uma conta de empresa grátis': 'Créer un compte entreprise gratuit',
@@ -115,6 +119,7 @@ window.translationsFR = {
   'Inicia sessão na app do PromoPing no teu telemóvel': 'Connectez-vous à l\'application PromoPing sur votre téléphone',
   'Deteta o código QR com a câmara do telemóvel': 'Scannez le code QR à l\'aide de l\'appareil photo de votre téléphone',
   'Confirma o início de sessão na app do PromoPing': 'Confirmez la connexion depuis l\'application PromoPing',
+  'QR Code em breve': 'Code QR bientôt',
   'O código QR estará disponível em breve': 'Le code QR sera disponible très prochainement',
   'Depoimentos': 'Témoignages',
   'Confiança de quem poupa todos os dias': 'La confiance de celles et ceux qui économisent au quotidien',
@@ -124,5 +129,9 @@ window.translationsFR = {
   'Erro ao carregar depoimentos.': 'Une erreur est survenue lors du chargement des témoignages.',
   'Anónimo': 'Anonyme',
   'Utilizador': 'Utilisateur',
-  'Utilizador do Bot': 'Utilisateur du bot'
+  'Utilizador do Bot': 'Utilisateur du bot',
+  'Insere o código de verificação da app ou do email.': 'Saisissez le code de vérification de l’application ou de l’email.',
+  'Código': 'Code',
+  'Código de 6 dígitos ou código de recuperação': '6 chiffres ou code de secours',
+  'Enviar código por email': 'Envoyer le code par email'
 };
