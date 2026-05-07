@@ -253,6 +253,7 @@
             const user = BP.user || {};
             const membership = BP.membership;
             const application = BP.application;
+            const applicationCompany = application && application.company ? application.company : application;
             const org = membership && membership.organization ? membership.organization : null;
 
             // Read-only account info
@@ -269,9 +270,11 @@
                 if (status === 'rejected' || status === 'recusado') {
                     profileStatusChip.textContent = 'Candidatura recusada';
                     profileStatusChip.className = 'bp-chip is-error';
+                    readOnlyAlert.innerHTML = '<div><p class="bp-alert-title">Candidatura recusada</p><p class="bp-alert-body">Pode corrigir os dados e submeter novamente a candidatura business.</p></div>';
                 } else {
                     profileStatusChip.textContent = 'Em revisão';
                     profileStatusChip.className = 'bp-chip is-warn';
+                    readOnlyAlert.innerHTML = '<div><p class="bp-alert-title">Em revisao</p><p class="bp-alert-body">Pode atualizar os dados enquanto a candidatura esta em revisao. A equipa recebe a nova versao automaticamente.</p></div>';
                 }
                 readOnlyAlert.classList.remove('is-hidden');
             }
@@ -294,23 +297,23 @@
                 initial.cidade = org.cidade;
                 initial.codigoPostal = org.codigoPostal;
                 initial.pais = org.pais;
-            } else if (application) {
-                initial.nomeEmpresa = application.nomeEmpresa;
-                initial.nif = application.nif;
-                initial.vatNumber = application.vatNumber;
-                initial.website = application.website;
-                initial.setor = application.setor;
-                initial.categoria = application.categoria;
-                initial.pessoaResponsavel = application.pessoaResponsavel;
-                initial.telefoneComercial = application.telefoneComercial;
-                initial.billingEmail = application.billingEmail;
-                initial.logoUrl = application.logoUrl;
-                if (application.morada) {
-                    initial.moradaLinha1 = application.morada.linha1;
-                    initial.moradaLinha2 = application.morada.linha2;
-                    initial.cidade = application.morada.cidade;
-                    initial.codigoPostal = application.morada.codigoPostal;
-                    initial.pais = application.morada.pais;
+            } else if (applicationCompany) {
+                initial.nomeEmpresa = applicationCompany.nomeEmpresa;
+                initial.nif = applicationCompany.nif;
+                initial.vatNumber = applicationCompany.vatNumber;
+                initial.website = applicationCompany.website;
+                initial.setor = applicationCompany.setor;
+                initial.categoria = applicationCompany.categoria;
+                initial.pessoaResponsavel = applicationCompany.pessoaResponsavel;
+                initial.telefoneComercial = applicationCompany.telefoneComercial;
+                initial.billingEmail = applicationCompany.billingEmail;
+                initial.logoUrl = applicationCompany.logoUrl;
+                if (applicationCompany.morada) {
+                    initial.moradaLinha1 = applicationCompany.morada.linha1;
+                    initial.moradaLinha2 = applicationCompany.morada.linha2;
+                    initial.cidade = applicationCompany.morada.cidade;
+                    initial.codigoPostal = applicationCompany.morada.codigoPostal;
+                    initial.pais = applicationCompany.morada.pais;
                 }
             }
 
@@ -323,16 +326,6 @@
             }
             fillForm(initial);
 
-            // If no active org, lock the form (read-only)
-            if (!org) {
-                fields.forEach((id) => {
-                    const el = document.getElementById(id);
-                    if (el) el.readOnly = true;
-                });
-                saveBtn.disabled = true;
-                resetBtn.disabled = true;
-            }
-
             resetBtn.addEventListener('click', () => {
                 fillForm(initial);
                 successBox.classList.add('is-hidden');
@@ -341,7 +334,6 @@
 
             form.addEventListener('submit', async (ev) => {
                 ev.preventDefault();
-                if (!org) return;
 
                 successBox.classList.add('is-hidden');
                 errorBox.classList.add('is-hidden');
@@ -381,8 +373,10 @@
                 saveBtn.textContent = 'A guardar…';
 
                 try {
-                    await BP.fetchJson('/api/business/organization/' + org.id, {
-                        method: 'PUT',
+                    const targetUrl = org ? ('/api/business/organization/' + org.id) : '/api/business/onboarding';
+                    const method = org ? 'PUT' : 'POST';
+                    await BP.fetchJson(targetUrl, {
+                        method: method,
                         body: JSON.stringify(payload)
                     });
                     successBox.classList.remove('is-hidden');
