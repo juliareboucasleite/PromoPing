@@ -423,12 +423,22 @@
                     const user = await fetchProfileAfterLogin(data.token);
                     const perfilId = user.PerfilId !== undefined ? user.PerfilId : user.perfilId;
 
+                    if (perfilId === 4) {
+                        window.location.href = '/business/dashboard';
+                        return;
+                    }
+
                     if (perfilId === 3) {
                         window.location.href = '/painel-suporte-corporacao/pages_corporation/dashboard.html';
                         return;
                     }
 
-                    window.location.href = '/dashboard/perfil';
+                    if (perfilId === 1) {
+                        window.location.href = '/painel-suporte-corporacao/pages_corporation/dashboard.html';
+                        return;
+                    }
+
+                    window.location.href = '/dashboard';
                 } catch (error) {
                     showError(error.message || 'Erro interno.');
                     submitButton.disabled = false;

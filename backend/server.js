@@ -1053,6 +1053,27 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
+    app.get("/business/dashboard", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "business/dashboard/index.html") :
+            path.join(__dirname, "../frontend/pages/build/business/dashboard/index.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/business/perfil", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "business/perfil/index.html") :
+            path.join(__dirname, "../frontend/pages/build/business/perfil/index.html");
+        res.sendFile(filePath);
+    });
+
+    app.get("/business/history", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "business/history/index.html") :
+            path.join(__dirname, "../frontend/pages/build/business/history/index.html");
+        res.sendFile(filePath);
+    });
+
     // Redirecionamento baseado no .env
     app.get("/redirect", (req, res) => {
         const redirectUrl = process.env.REDIRECT_URL || `http://localhost:${process.env.PORT || 3000}`;
