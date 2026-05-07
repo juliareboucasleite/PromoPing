@@ -1060,6 +1060,13 @@ if (!isProduction) {
         res.sendFile(filePath);
     });
 
+    app.get("/business/produtos", (req, res) => {
+        const filePath = buildExists ?
+            path.join(buildPath, "business/dashboard/produtos.html") :
+            path.join(__dirname, "../frontend/pages/build/business/dashboard/produtos.html");
+        res.sendFile(filePath);
+    });
+
     app.get("/business/perfil", (req, res) => {
         const filePath = buildExists ?
             path.join(buildPath, "business/perfil/index.html") :

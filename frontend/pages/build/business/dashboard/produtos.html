@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos | PromoPing Business</title>
+    <meta name="description" content="Adicione e gira produtos monitorizados na conta business PromoPing.">
+    <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
+    <link rel="stylesheet" href="/business/style/panel.css">
+    <link rel="stylesheet" href="/business/style/history.css">
+    <link rel="stylesheet" href="/business/style/products.css">
+</head>
+<body class="bp-page">
+    <div class="bp-shell">
+        <aside class="bp-sidebar">
+            <a class="bp-brand" href="/">
+                <img src="/assets/images/PromoPing.png" alt="PromoPing">
+                <span>PromoPing</span>
+                <span class="bp-brand-tag">Business</span>
+            </a>
+            <nav class="bp-nav">
+                <span class="bp-nav-section-label">Conta</span>
+                <a class="bp-nav-item" href="/business/dashboard" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a class="bp-nav-item" href="/business/produtos" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Produtos
+                </a>
+                <a class="bp-nav-item" href="/business/history" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                    Histórico
+                </a>
+                <a class="bp-nav-item" href="/business/perfil" data-bp-nav>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Perfil da empresa
+                </a>
+            </nav>
+            <div class="bp-sidebar-footer">
+                <div class="bp-user-avatar" id="bpUserAvatar">B</div>
+                <div class="bp-user-meta">
+                    <div class="bp-user-name" id="bpUserName">A carregar…</div>
+                    <div class="bp-user-org" id="bpUserOrg">—</div>
+                </div>
+                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main class="bp-main">
+            <div class="bp-page-header">
+                <div>
+                    <h1>Produtos</h1>
+                    <p>Adicione links monitorizados diretamente pela área business, sem sair para o painel de utilizador.</p>
+                </div>
+                <div class="bp-page-actions">
+                    <span class="bp-chip is-orange">Plano Business</span>
+                    <a class="bp-btn bp-btn-secondary" href="/business/history">Ver histórico completo</a>
+                </div>
+            </div>
+
+            <div class="bp-alert bp-alert-success is-hidden" id="productSuccess" role="status"></div>
+            <div class="bp-alert bp-alert-error is-hidden" id="productError" role="alert"></div>
+
+            <div class="bp-products-meta">
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Produtos ativos</div>
+                    <div class="bp-stat-value" id="productsCount">0</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Preço médio alvo</div>
+                    <div class="bp-stat-value" id="avgTargetPrice">—</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="bp-stat-label">Último produto</div>
+                    <div class="bp-stat-value" id="latestProductName">—</div>
+                </div>
+            </div>
+
+            <div class="bp-products-layout" style="margin-top: 24px;">
+                <section class="bp-products-stack">
+                    <section class="bp-card">
+                        <div class="bp-card-header">
+                            <div>
+                                <h2>Adicionar produto</h2>
+                                <p>Cole o link da loja portuguesa, defina o preço alvo e a monitorização começa já.</p>
+                            </div>
+                        </div>
+                        <div class="bp-card-body">
+                            <form id="businessProductForm">
+                                <div class="bp-form-grid">
+                                    <div class="bp-field">
+                                        <label class="bp-label" for="productName">Nome do produto<span class="required">*</span></label>
+                                        <input class="bp-input" id="productName" type="text" maxlength="160" placeholder="Ex.: PlayStation 5 Slim Digital" required>
+                                    </div>
+                                    <div class="bp-field">
+                                        <label class="bp-label" for="productTargetPrice">Preço alvo<span class="required">*</span></label>
+                                        <input class="bp-input" id="productTargetPrice" type="number" min="0.01" step="0.01" placeholder="399.99" required>
+                                    </div>
+                                    <div class="bp-field full-span">
+                                        <label class="bp-label" for="productUrl">Link do produto<span class="required">*</span></label>
+                                        <input class="bp-input" id="productUrl" type="url" placeholder="https://www.loja.pt/produto" required>
+                                    </div>
+                                    <div class="bp-field">
+                                        <label class="bp-label" for="productDeadline">Data limite</label>
+                                        <input class="bp-input" id="productDeadline" type="date">
+                                    </div>
+                                    <div class="bp-field">
+                                        <label class="bp-label" for="productNotes">Notas</label>
+                                        <input class="bp-input" id="productNotes" type="text" maxlength="180" placeholder="Opcional, só para referência interna">
+                                    </div>
+                                </div>
+
+                                <div class="bp-form-actions">
+                                    <button class="bp-btn bp-btn-primary" id="productSubmit" type="submit">Adicionar produto</button>
+                                    <span class="bp-help">A conta business usa o mesmo motor de monitorização, mas a gestão fica toda centralizada aqui.</span>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <section class="bp-card">
+                        <div class="bp-card-header">
+                            <div>
+                                <h2>Como isto funciona</h2>
+                                <p>Fluxo rápido para equipas.</p>
+                            </div>
+                        </div>
+                        <div class="bp-card-body">
+                            <p class="bp-products-intro">Depois de adicionar um produto, o PromoPing inicia a primeira verificação e passa a seguir quedas de preço nesse link. O histórico e os alertas continuam disponíveis na conta business.</p>
+                        </div>
+                    </section>
+                </section>
+
+                <section class="bp-card">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Produtos atuais</h2>
+                            <p>Lista rápida dos produtos já monitorizados nesta conta.</p>
+                        </div>
+                    </div>
+                    <div class="bp-table-note">Use esta tabela para confirmar o nome, o link, a loja e remover entradas antigas.</div>
+                    <div class="bp-card-body is-flush">
+                        <table class="bp-table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Loja</th>
+                                    <th>Preço alvo</th>
+                                    <th>Preço atual</th>
+                                    <th>Criado em</th>
+                                    <th aria-label="Ações"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsBody">
+                                <tr><td colspan="6" class="bp-table-empty">A carregar produtos…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/business/scripts/panel.js"></script>
+    <script>
+        document.addEventListener('businesspanel:ready', async function (event) {
+            const BP = event.detail || window.BusinessPanel;
+            if (!BP) return;
+
+            const form = document.getElementById('businessProductForm');
+            const submitButton = document.getElementById('productSubmit');
+            const successBox = document.getElementById('productSuccess');
+            const errorBox = document.getElementById('productError');
+            const body = document.getElementById('productsBody');
+
+            function showMessage(type, title, message) {
+                const target = type === 'success' ? successBox : errorBox;
+                const other = type === 'success' ? errorBox : successBox;
+                target.innerHTML = '<div><p class="bp-alert-title">' + BP.escapeHtml(title) + '</p><p class="bp-alert-body">' + BP.escapeHtml(message) + '</p></div>';
+                target.classList.remove('is-hidden');
+                other.classList.add('is-hidden');
+            }
+
+            function clearMessages() {
+                successBox.classList.add('is-hidden');
+                errorBox.classList.add('is-hidden');
+            }
+
+            function formatDate(value) {
+                return value ? BP.formatDate(value) : '—';
+            }
+
+            function deriveRows(items) {
+                return items.map(function (item) {
+                    return {
+                        id: item.Id,
+                        nome: item.Nome || 'Produto',
+                        loja: item.Loja || 'Loja',
+                        link: item.Link || '',
+                        precoAtual: Number(item.PrecoAtual || 0) || null,
+                        precoAlvo: Number(item.PrecoAlvo || 0) || null,
+                        createdAt: item.DataCriacao || null
+                    };
+                });
+            }
+
+            function updateMeta(rows) {
+                document.getElementById('productsCount').textContent = String(rows.length);
+
+                const targetPrices = rows
+                    .map(function (row) { return row.precoAlvo; })
+                    .filter(function (price) { return Number.isFinite(price) && price > 0; });
+
+                if (targetPrices.length > 0) {
+                    const avg = targetPrices.reduce(function (sum, value) { return sum + value; }, 0) / targetPrices.length;
+                    document.getElementById('avgTargetPrice').textContent = BP.formatCurrency(avg);
+                } else {
+                    document.getElementById('avgTargetPrice').textContent = '—';
+                }
+
+                document.getElementById('latestProductName').textContent = rows.length > 0 ? rows[0].nome : '—';
+            }
+
+            function renderRows(rows) {
+                updateMeta(rows);
+
+                if (rows.length === 0) {
+                    body.innerHTML = '<tr><td colspan="6" class="bp-empty-state"><strong>Ainda não existem produtos.</strong>Adicione o primeiro produto através do formulário ao lado.</td></tr>';
+                    return;
+                }
+
+                body.innerHTML = rows.map(function (row) {
+                    const targetPrice = row.precoAlvo ? BP.formatCurrency(row.precoAlvo) : '—';
+                    const currentPrice = row.precoAtual ? BP.formatCurrency(row.precoAtual) : '—';
+                    const linkButton = row.link
+                        ? '<a class="bp-btn bp-btn-ghost" href="' + BP.escapeHtml(row.link) + '" target="_blank" rel="noopener" title="Abrir link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>'
+                        : '';
+
+                    return (
+                        '<tr>' +
+                            '<td><div class="bp-product-cell"><span class="bp-product-name">' + BP.escapeHtml(row.nome) + '</span>' +
+                            (row.link ? '<a class="bp-product-link" href="' + BP.escapeHtml(row.link) + '" target="_blank" rel="noopener">' + BP.escapeHtml(row.link) + '</a>' : '') +
+                            '</div></td>' +
+                            '<td>' + BP.escapeHtml(row.loja) + '</td>' +
+                            '<td>' + targetPrice + '</td>' +
+                            '<td>' + currentPrice + '</td>' +
+                            '<td>' + formatDate(row.createdAt) + '</td>' +
+                            '<td><div class="bp-product-actions">' + linkButton + '<button class="bp-btn bp-btn-danger" type="button" data-delete-id="' + String(row.id) + '">Remover</button></div></td>' +
+                        '</tr>'
+                    );
+                }).join('');
+            }
+
+            async function loadProducts() {
+                body.innerHTML = '<tr><td colspan="6" class="bp-table-empty">A carregar produtos…</td></tr>';
+
+                try {
+                    const data = await BP.fetchJson('/api/produtos');
+                    const items = Array.isArray(data) ? data : (data.produtos || []);
+                    renderRows(deriveRows(items));
+                } catch (error) {
+                    updateMeta([]);
+                    body.innerHTML = '<tr><td colspan="6" class="bp-table-empty">Não foi possível carregar os produtos.</td></tr>';
+                    showMessage('error', 'Erro', error.message || 'Não foi possível carregar os produtos.');
+                }
+            }
+
+            form.addEventListener('submit', async function (eventSubmit) {
+                eventSubmit.preventDefault();
+                clearMessages();
+
+                const nome = document.getElementById('productName').value.trim();
+                const link = document.getElementById('productUrl').value.trim();
+                const precoAlvo = Number(document.getElementById('productTargetPrice').value);
+                const data = document.getElementById('productDeadline').value || null;
+
+                if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                    showMessage('error', 'Link inválido', 'O produto tem de usar um URL http:// ou https://.');
+                    return;
+                }
+
+                submitButton.disabled = true;
+                submitButton.textContent = 'A adicionar…';
+
+                try {
+                    await BP.fetchJson('/api/produtos', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            nome: nome,
+                            link: link,
+                            data: data,
+                            precoAlvo: precoAlvo
+                        })
+                    });
+
+                    form.reset();
+                    showMessage('success', 'Produto adicionado', 'O produto entrou em monitorização na conta business.');
+                    await loadProducts();
+                } catch (error) {
+                    showMessage('error', 'Erro ao adicionar', error.message || 'Não foi possível adicionar o produto.');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Adicionar produto';
+                }
+            });
+
+            body.addEventListener('click', async function (eventClick) {
+                const deleteButton = eventClick.target.closest('[data-delete-id]');
+                if (!deleteButton) return;
+
+                const productId = deleteButton.getAttribute('data-delete-id');
+                if (!productId) return;
+
+                clearMessages();
+                deleteButton.disabled = true;
+
+                try {
+                    await BP.fetchJson('/api/produtos/' + encodeURIComponent(productId), {
+                        method: 'DELETE'
+                    });
+                    showMessage('success', 'Produto removido', 'O produto foi removido da conta business.');
+                    await loadProducts();
+                } catch (error) {
+                    deleteButton.disabled = false;
+                    showMessage('error', 'Erro ao remover', error.message || 'Não foi possível remover o produto.');
+                }
+            });
+
+            loadProducts();
+        });
+    </script>
+</body>
+</html>
