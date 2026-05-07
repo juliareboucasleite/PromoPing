@@ -83,7 +83,11 @@ window.translationsES = {
   'Ao continuar, estás a concordar com os Termos de Serviço do PromoPing e a confirmar que leste a nossa Política de Privacidade.': 'Al continuar, acepta los Términos de Servicio de PromoPing y confirma haber leído nuestra Política de Privacidad.',
   'Encontra novas ideias para experimentares': 'Descubra nuevas ideas que merece la pena probar',
   'Cria uma palavra-passe': 'Cree una contraseña',
+  'Utiliza 8 ou mais letras, números e símbolos': 'Utiliza 8 o más caracteres, números y símbolos',
+  'Nome completo': 'Nombre completo',
+  'O seu nome completo': 'Tu nombre completo',
   'Data de nascimento': 'Fecha de nacimiento',
+  'Esta informação é apenas para os desenvolvedores saberem o padrão de pessoas que está utilizando o PromoPing. Não vai afetar nada.': 'Esta información solo sirve para que los desarrolladores entiendan el perfil de las personas que usan PromoPing. No afectará a nada.',
   'Continuar': 'Continuar',
   'Já és membro?': '¿Ya tiene cuenta?',
   'Criar uma conta de empresa grátis': 'Crear una cuenta de empresa gratuita',
@@ -115,6 +119,7 @@ window.translationsES = {
   'Inicia sessão na app do PromoPing no teu telemóvel': 'Inicie sesión en la app de PromoPing en su móvil',
   'Deteta o código QR com a câmara do telemóvel': 'Escanee el código QR con la cámara del móvil',
   'Confirma o início de sessão na app do PromoPing': 'Confirme el inicio de sesión en la app de PromoPing',
+  'QR Code em breve': 'Código QR próximamente',
   'O código QR estará disponível em breve': 'El código QR estará disponible próximamente',
   'Depoimentos': 'Testimonios',
   'Confiança de quem poupa todos os dias': 'La confianza de quienes ahorran cada día',
@@ -124,5 +129,9 @@ window.translationsES = {
   'Erro ao carregar depoimentos.': 'No hemos podido cargar los testimonios.',
   'Anónimo': 'Anónimo',
   'Utilizador': 'Usuario',
-  'Utilizador do Bot': 'Usuario del bot'
+  'Utilizador do Bot': 'Usuario del bot',
+  'Insere o código de verificação da app ou do email.': 'Introduce el código de verificación de la app o del email.',
+  'Código': 'Código',
+  'Código de 6 dígitos ou código de recuperação': '6 dígitos o código de recuperación',
+  'Enviar código por email': 'Enviar código por email'
 };
