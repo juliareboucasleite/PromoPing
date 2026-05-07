@@ -1,7 +1,10 @@
+import bcrypt from "bcrypt";
 import crypto from "crypto";
 import express from "express";
 import { pool } from "../database/db.js";
 import { verifyToken } from "../middleware/auth.js";
+import { sendEmail } from "../services/notify.js";
+import { gerarReferenciaID } from "../utils/referenciaId.js";
 
 const router = express.Router();
 
@@ -65,6 +68,46 @@ function mapMembershipRow(row) {
   };
 }
 
+function mapApplicationRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    referenciaID: row.referenciaid,
+    applicant: {
+      nome: row.applicant_name,
+      email: row.applicant_email,
+      telefone: row.applicant_phone
+    },
+    company: {
+      nomeEmpresa: row.nome_empresa,
+      nif: row.nif,
+      vatNumber: row.vat_number,
+      website: row.website,
+      setor: row.setor,
+      categoria: row.categoria,
+      pessoaResponsavel: row.pessoa_responsavel,
+      telefoneComercial: row.telefone_comercial,
+      billingEmail: row.billing_email,
+      morada: {
+        linha1: row.morada_linha1,
+        linha2: row.morada_linha2,
+        cidade: row.cidade,
+        codigoPostal: row.codigo_postal,
+        pais: row.pais
+      },
+      logoUrl: row.logo_url
+    },
+    requestedPlanName: row.requested_plan_name,
+    status: row.status,
+    reviewNote: row.review_note,
+    reviewedByReferenciaID: row.reviewed_by_referenciaid,
+    reviewedAt: row.reviewed_at,
+    approvedOrganizationId: row.approved_organization_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
 async function getPerfilId(referenciaID) {
   const [rows] = await pool.query(
     "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ? LIMIT 1",
@@ -72,6 +115,178 @@ async function getPerfilId(referenciaID) {
   );
   if (!rows.length) return null;
   return Number(rows[0].PerfilId ?? rows[0].perfilid ?? null);
+}
+
+async function getPlanIdByName(name, fallbackId = 1) {
+  const [rows] = await pool.query(
+    "SELECT Id FROM planos WHERE Nome = ? LIMIT 1",
+    [name]
+  );
+  if (!rows.length) return fallbackId;
+  return Number(rows[0].Id ?? rows[0].id ?? fallbackId);
+}
+
+async function ensureUserConfig(referenciaID, planId) {
+  const [existing] = await pool.query(
+    "SELECT Id FROM configutilizador WHERE ReferenciaID = ? LIMIT 1",
+    [referenciaID]
+  );
+
+  if (existing.length > 0) {
+    await pool.query(
+      "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE ReferenciaID = ?",
+      ["email", planId, referenciaID]
+    );
+    return;
+  }
+
+  await pool.query(
+    "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
+    [referenciaID, "email", planId]
+  );
+}
+
+async function getLatestApplicationByUser(referenciaID) {
+  const [rows] = await pool.query(
+    `SELECT *
+       FROM business_applications
+      WHERE referenciaid = ?
+      ORDER BY updated_at DESC, created_at DESC
+      LIMIT 1`,
+    [referenciaID]
+  );
+  return rows.length ? rows[0] : null;
+}
+
+async function submitBusinessApplication(payload) {
+  const {
+    referenciaID,
+    applicantName,
+    applicantEmail,
+    applicantPhone,
+    nomeEmpresa,
+    nif,
+    vatNumber,
+    website,
+    setor,
+    categoria,
+    pessoaResponsavel,
+    telefoneComercial,
+    billingEmail,
+    morada = {},
+    logoUrl,
+    requestedPlanName = "Corporate"
+  } = payload;
+
+  const existing = await getLatestApplicationByUser(referenciaID);
+  if (existing) {
+    const [result] = await pool.query(
+      `UPDATE business_applications
+          SET applicant_name = ?,
+              applicant_email = ?,
+              applicant_phone = ?,
+              nome_empresa = ?,
+              nif = ?,
+              vat_number = ?,
+              website = ?,
+              setor = ?,
+              categoria = ?,
+              pessoa_responsavel = ?,
+              telefone_comercial = ?,
+              billing_email = ?,
+              morada_linha1 = ?,
+              morada_linha2 = ?,
+              cidade = ?,
+              codigo_postal = ?,
+              pais = ?,
+              logo_url = ?,
+              requested_plan_name = ?,
+              status = 'pending',
+              review_note = NULL,
+              reviewed_by_referenciaid = NULL,
+              reviewed_at = NULL,
+              approved_organization_id = NULL,
+              updated_at = CURRENT_TIMESTAMP
+        WHERE referenciaid = ?
+      RETURNING *`,
+      [
+        applicantName,
+        applicantEmail,
+        applicantPhone || null,
+        nomeEmpresa,
+        nif || null,
+        vatNumber || null,
+        website || null,
+        setor || null,
+        categoria || null,
+        pessoaResponsavel || null,
+        telefoneComercial || null,
+        billingEmail || null,
+        morada.linha1 || null,
+        morada.linha2 || null,
+        morada.cidade || null,
+        morada.codigoPostal || null,
+        morada.pais || null,
+        logoUrl || null,
+        requestedPlanName,
+        referenciaID
+      ]
+    );
+    return result.rows?.[0] || null;
+  }
+
+  const [result] = await pool.query(
+    `INSERT INTO business_applications (
+        referenciaid, applicant_name, applicant_email, applicant_phone,
+        nome_empresa, nif, vat_number, website, setor, categoria,
+        pessoa_responsavel, telefone_comercial, billing_email,
+        morada_linha1, morada_linha2, cidade, codigo_postal, pais,
+        logo_url, requested_plan_name, status
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+     RETURNING *`,
+    [
+      referenciaID,
+      applicantName,
+      applicantEmail,
+      applicantPhone || null,
+      nomeEmpresa,
+      nif || null,
+      vatNumber || null,
+      website || null,
+      setor || null,
+      categoria || null,
+      pessoaResponsavel || null,
+      telefoneComercial || null,
+      billingEmail || null,
+      morada.linha1 || null,
+      morada.linha2 || null,
+      morada.cidade || null,
+      morada.codigoPostal || null,
+      morada.pais || null,
+      logoUrl || null,
+      requestedPlanName
+    ]
+  );
+
+  return result.rows?.[0] || null;
+}
+
+async function sendBusinessApplicationReceivedEmail(application) {
+  const to = application.billing_email || application.applicant_email;
+  if (!to) return;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; color: #111; line-height: 1.5;">
+      <h2>Pedido business recebido</h2>
+      <p>Olá ${application.applicant_name || "equipa"},</p>
+      <p>Recebemos o pedido business da empresa <strong>${application.nome_empresa}</strong>.</p>
+      <p>O pedido entrou em revisão. Vamos analisar os dados enviados e contactar-vos por email com a decisão.</p>
+      <p><strong>Plano pedido:</strong> ${application.requested_plan_name || "Corporate"}</p>
+      <p style="color: #666;">PromoPing</p>
+    </div>
+  `;
+
+  await sendEmail(to, "PromoPing - Pedido business recebido", html);
 }
 
 async function requireBusinessProfile(req, res, next) {
@@ -214,6 +429,109 @@ async function requireOrganizationRole(req, res, next) {
   }
 }
 
+router.post("/register", async (req, res) => {
+  const {
+    nome,
+    email,
+    password,
+    telefone,
+    nomeEmpresa,
+    nif,
+    vatNumber,
+    website,
+    setor,
+    categoria,
+    pessoaResponsavel,
+    telefoneComercial,
+    billingEmail,
+    morada = {},
+    logoUrl
+  } = req.body || {};
+
+  const nomeFinal = String(nome || "").trim();
+  const emailFinal = String(email || "").trim().toLowerCase();
+  const passwordFinal = String(password || "");
+  const nomeEmpresaFinal = String(nomeEmpresa || "").trim();
+
+  if (!nomeFinal || !emailFinal || !passwordFinal || !nomeEmpresaFinal) {
+    return res.status(400).json({
+      status: "error",
+      error: "Nome, email, password e nome da empresa são obrigatórios."
+    });
+  }
+
+  if (passwordFinal.length < 6) {
+    return res.status(400).json({
+      status: "error",
+      error: "A password deve ter pelo menos 6 caracteres."
+    });
+  }
+
+  try {
+    const [existing] = await pool.query(
+      "SELECT ReferenciaID FROM Utilizadores WHERE Email = ? LIMIT 1",
+      [emailFinal]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        error: "Já existe uma conta com este email."
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(passwordFinal, 10);
+    const referenciaID = gerarReferenciaID();
+
+    await pool.query(
+      `INSERT INTO Utilizadores
+        (ReferenciaID, Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, DataRegisto)
+       VALUES (?, ?, ?, ?, 1, ?, ?, 1, NOW())`,
+      [referenciaID, nomeFinal, emailFinal, hashedPassword, telefone || null, BUSINESS_PROFILE_ID]
+    );
+
+    const freePlanId = await getPlanIdByName("Free", 1);
+    await ensureUserConfig(referenciaID, freePlanId);
+
+    const application = await submitBusinessApplication({
+      referenciaID,
+      applicantName: nomeFinal,
+      applicantEmail: emailFinal,
+      applicantPhone: telefone,
+      nomeEmpresa: nomeEmpresaFinal,
+      nif,
+      vatNumber,
+      website,
+      setor,
+      categoria,
+      pessoaResponsavel,
+      telefoneComercial,
+      billingEmail,
+      morada,
+      logoUrl,
+      requestedPlanName: "Corporate"
+    });
+
+    try {
+      if (application) {
+        await sendBusinessApplicationReceivedEmail(application);
+      }
+    } catch (mailError) {
+      console.error("[BUSINESS] Erro ao enviar email de receção:", mailError.message);
+    }
+
+    res.status(201).json({
+      status: "ok",
+      message: "Pedido business criado com sucesso. A empresa ficará em revisão.",
+      referenciaID,
+      application: mapApplicationRow(application)
+    });
+  } catch (error) {
+    console.error("[BUSINESS] Erro no registo business:", error);
+    res.status(500).json({ status: "error", error: "Erro ao criar registo business." });
+  }
+});
+
 router.use(verifyToken);
 router.use(requireBusinessProfile);
 
@@ -221,13 +539,15 @@ router.get("/me", async (req, res) => {
   try {
     const memberships = await getMembershipsByUser(req.user.ReferenciaID);
     const activeMembership = memberships.find((item) => item.status === "active") || memberships[0] || null;
+    const application = await getLatestApplicationByUser(req.user.ReferenciaID);
 
     res.json({
       status: "ok",
       profileId: BUSINESS_PROFILE_ID,
       membershipCount: memberships.length,
       activeMembership,
-      memberships
+      memberships,
+      application: mapApplicationRow(application)
     });
   } catch (error) {
     console.error("[BUSINESS] Erro ao carregar contexto business:", error);
@@ -249,11 +569,11 @@ router.post("/onboarding", async (req, res) => {
     billingEmail,
     morada = {},
     logoUrl,
-    planoAtualId
+    requestedPlanName
   } = req.body || {};
 
-  const nomeFinal = String(nomeEmpresa || "").trim();
-  if (!nomeFinal) {
+  const nomeEmpresaFinal = String(nomeEmpresa || "").trim();
+  if (!nomeEmpresaFinal) {
     return res.status(400).json({ status: "error", error: "Nome da empresa é obrigatório." });
   }
 
@@ -262,89 +582,55 @@ router.post("/onboarding", async (req, res) => {
     if (existingMembership) {
       return res.status(409).json({
         status: "error",
-        error: "Este utilizador já pertence a uma organização business.",
+        error: "Esta conta já foi aprovada e pertence a uma organização business.",
         activeMembership: existingMembership
       });
     }
 
-    const baseSlug = slugifyOrganizationName(nomeFinal) || `business-${referenciaID.toLowerCase()}`;
-    const client = await pool.getConnection();
+    const [userRows] = await pool.query(
+      "SELECT Nome, Email, Telefone FROM utilizadores WHERE ReferenciaID = ? LIMIT 1",
+      [referenciaID]
+    );
+    if (!userRows.length) {
+      return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+    }
+
+    const user = userRows[0];
+    const application = await submitBusinessApplication({
+      referenciaID,
+      applicantName: user.Nome ?? user.nome ?? "",
+      applicantEmail: user.Email ?? user.email ?? "",
+      applicantPhone: user.Telefone ?? user.telefone ?? null,
+      nomeEmpresa: nomeEmpresaFinal,
+      nif,
+      vatNumber,
+      website,
+      setor,
+      categoria,
+      pessoaResponsavel,
+      telefoneComercial,
+      billingEmail,
+      morada,
+      logoUrl,
+      requestedPlanName: requestedPlanName || "Corporate"
+    });
 
     try {
-      await client.beginTransaction();
-
-      let slug = baseSlug;
-      let suffix = 1;
-      while (true) {
-        const [slugRows] = await client.query("SELECT id FROM organizations WHERE slug = ? LIMIT 1", [slug]);
-        if (!slugRows.length) break;
-        suffix += 1;
-        slug = `${baseSlug}-${suffix}`;
+      if (application) {
+        await sendBusinessApplicationReceivedEmail(application);
       }
-
-      const [insertResult] = await client.query(
-        `INSERT INTO organizations (
-          slug, nome_empresa, nif, vat_number, website, setor, categoria,
-          pessoa_responsavel, telefone_comercial, billing_email,
-          morada_linha1, morada_linha2, cidade, codigo_postal, pais,
-          logo_url, plano_atual_id, owner_referenciaid
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        RETURNING *`,
-        [
-          slug,
-          nomeFinal,
-          nif || null,
-          vatNumber || null,
-          website || null,
-          setor || null,
-          categoria || null,
-          pessoaResponsavel || null,
-          telefoneComercial || null,
-          billingEmail || null,
-          morada.linha1 || null,
-          morada.linha2 || null,
-          morada.cidade || null,
-          morada.codigoPostal || null,
-          morada.pais || null,
-          logoUrl || null,
-          planoAtualId || null,
-          referenciaID
-        ]
-      );
-
-      const organization = insertResult.rows?.[0];
-      if (!organization) {
-        throw new Error("Falha ao criar organização.");
-      }
-
-      await client.query(
-        `INSERT INTO organization_members (
-          organization_id, referenciaid, role, status, invited_by_referenciaid
-        ) VALUES (?, ?, 'owner', 'active', ?)`,
-        [organization.id, referenciaID, referenciaID]
-      );
-
-      await client.commit();
-
-      res.status(201).json({
-        status: "ok",
-        organization: mapOrganizationRow(organization),
-        membership: {
-          organizationId: organization.id,
-          referenciaID,
-          role: "owner",
-          status: "active"
-        }
-      });
-    } catch (error) {
-      await client.rollback();
-      throw error;
-    } finally {
-      client.release();
+    } catch (mailError) {
+      console.error("[BUSINESS] Erro ao enviar email de receção:", mailError.message);
     }
+
+    res.status(201).json({
+      status: "ok",
+      message: "Pedido business enviado para revisão.",
+      application: mapApplicationRow(application)
+    });
   } catch (error) {
     console.error("[BUSINESS] Erro no onboarding:", error);
-    res.status(500).json({ status: "error", error: "Erro ao criar organização business." });
+    res.status(500).json({ status: "error", error: "Erro ao submeter pedido business." });
   }
 });
 

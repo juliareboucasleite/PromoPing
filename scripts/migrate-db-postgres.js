@@ -306,6 +306,7 @@ async function migrate() {
   console.log(" Tabelas Discord painel verificadas/criadas");
 
   await runSqlMigrationFile("backend/database/migrations/create_business_organizations.sql");
+  await runSqlMigrationFile("backend/database/migrations/create_business_applications.sql");
 
   await pool.end();
   console.log(" Migração concluída!");
