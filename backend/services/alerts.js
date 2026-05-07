@@ -1,5 +1,6 @@
 import { pool } from "../database/db.js";
 import { formatPriceDisplay } from "../utils/format.js";
+import { notifySubscribersOfPromotion } from "./newsletterNotifier.js";
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
 
@@ -286,6 +287,11 @@ export async function processAlerts(product, novoPreco, precoAnterior) {
       if (isDecrease && percentualMudanca > 0.10) {
         console.log(`[ALERTS] Queda significativa detectada para produto ${product.Id}: ${percentualMudanca * 100}% de redução`);
         await sendPriceChangeAlert(product, novoPreco, precoAnterior);
+        try {
+          await notifySubscribersOfPromotion({ product, novoPreco, precoAnterior });
+        } catch (newsletterError) {
+          console.error("[ALERTS] Erro ao notificar subscritores de promoções:", newsletterError.message);
+        }
       }
       // Se mudança significativa (mais de 5%) em qualquer direção
       else if (percentualMudanca > 0.05) {

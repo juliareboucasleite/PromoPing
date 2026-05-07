@@ -1,6 +1,7 @@
 import express from "express";
 import { sendEmail } from "../services/notify.js";
 import { pool } from "../database/db.js";
+import { notifySubscribersOfPromotion } from "../services/newsletterNotifier.js";
 
 const router = express.Router();
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.BASE_URL || "https://promoping.pt";
@@ -226,6 +227,41 @@ router.post("/unsubscribe", async (req, res) => {
     });
   } finally {
     connection.release();
+  }
+});
+
+router.post("/internal/promotion", async (req, res) => {
+  const configuredSecret = process.env.INTERNAL_NEWSLETTER_SECRET || "";
+  const providedSecret = req.get("x-internal-secret") || "";
+
+  if (configuredSecret && providedSecret !== configuredSecret) {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden",
+    });
+  }
+
+  const { product, novoPreco, precoAnterior } = req.body || {};
+
+  if (!product?.Id || novoPreco == null || precoAnterior == null) {
+    return res.status(400).json({
+      success: false,
+      message: "Payload inválido para promoção.",
+    });
+  }
+
+  try {
+    const result = await notifySubscribersOfPromotion({ product, novoPreco, precoAnterior });
+    return res.json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.error("[NEWSLETTER] Erro ao enviar promoção interna:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao notificar promoção.",
+    });
   }
 });
 

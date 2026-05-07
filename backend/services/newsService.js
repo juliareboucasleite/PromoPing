@@ -198,11 +198,21 @@ class NewsService {
             // Salvar todas as notícias filtradas na tabela blog_articles
             await this.saveNewsToBlog(filteredNews);
 
+            const newsToNotify = [];
+            for (const news of filteredNews) {
+                if (!(await this.isNewsAlreadySent(news.url))) {
+                    newsToNotify.push(news);
+                }
+            }
+
             // Notificar subscritores da newsletter que ativaram "receber notificações de novos artigos"
-            if (filteredNews.length > 0) {
+            if (newsToNotify.length > 0) {
                 try {
                     const { notifySubscribersOfNewArticles } = await import("./newsletterNotifier.js");
-                    await notifySubscribersOfNewArticles(filteredNews);
+                    await notifySubscribersOfNewArticles(newsToNotify);
+                    for (const news of newsToNotify) {
+                        await this.markNewsAsSent(news);
+                    }
                 } catch (notifyErr) {
                     console.error("[NEWS] Erro ao notificar subscritores de novos artigos:", notifyErr.message);
                 }
