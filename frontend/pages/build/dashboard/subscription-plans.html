@@ -1191,6 +1191,122 @@
             }
         });
     </script>
+
+    <!-- Wizard step navigation (Stripe Sigma-style) -->
+    <script>
+    (function() {
+        const planLimits = {
+            1: 'Até 5 produtos monitorizados',
+            2: 'Até 25 produtos monitorizados',
+            3: 'Até 50 produtos monitorizados',
+            4: 'Até 100 produtos monitorizados'
+        };
+
+        let wizardSelected = null;
+
+        function fmtDate(d) {
+            const dd = d.getDate().toString().padStart(2, '0');
+            const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+            return `${dd}/${mm}/${d.getFullYear()}`;
+        }
+
+        function fmtPrice(value, anual) {
+            const n = (typeof value === 'number') ? value : parseFloat(value) || 0;
+            return `€${n.toFixed(2).replace('.', ',')}` + (anual ? '/ano' : '/mês');
+        }
+
+        function selectCard(card) {
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('is-selected'));
+            card.classList.add('is-selected');
+            const id = parseInt(card.dataset.planId, 10);
+            const monthly = parseFloat(card.dataset.monthly || '0');
+            const name = (card.querySelector('.plan-name') || {}).textContent || 'Plan';
+            wizardSelected = { id, name: name.trim(), price: monthly };
+            const nextBtn = document.getElementById('wizardNextBtn');
+            if (nextBtn) nextBtn.disabled = false;
+        }
+
+        window.wizardGoStep2 = function() {
+            if (!wizardSelected) return;
+            const anual = !!window.billingYearly;
+            const yearly = (typeof window.getPrecoYearlyPorPlanId === 'function')
+                ? window.getPrecoYearlyPorPlanId(wizardSelected.id) : null;
+            const display = anual
+                ? (yearly != null && !isNaN(yearly) ? yearly : wizardSelected.price * 12)
+                : wizardSelected.price;
+
+            window.selectedPlanData = {
+                id: wizardSelected.id,
+                name: wizardSelected.name,
+                price: wizardSelected.price,
+                priceYearly: yearly,
+                anual: anual
+            };
+
+            document.getElementById('confirmPlanName').textContent = wizardSelected.name;
+            document.getElementById('confirmPlanLimits').textContent = planLimits[wizardSelected.id] || '';
+
+            const today = new Date();
+            const next = new Date(today);
+            if (anual) next.setFullYear(next.getFullYear() + 1);
+            else next.setMonth(next.getMonth() + 1);
+            document.getElementById('confirmTodayDate').textContent = fmtDate(today);
+            document.getElementById('confirmNextDate').textContent = fmtDate(next);
+            document.getElementById('confirmTotal').textContent = fmtPrice(display, anual);
+
+            document.querySelector('[data-step-content="1"]').setAttribute('hidden', '');
+            document.querySelector('[data-step-content="2"]').removeAttribute('hidden');
+            document.querySelector('[data-wizard-step="1"]').classList.remove('is-active');
+            document.querySelector('[data-wizard-step="1"]').classList.add('is-done');
+            document.querySelector('[data-wizard-step="2"]').classList.add('is-active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.wizardGoStep1 = function() {
+            document.querySelector('[data-step-content="2"]').setAttribute('hidden', '');
+            document.querySelector('[data-step-content="1"]').removeAttribute('hidden');
+            document.querySelector('[data-wizard-step="2"]').classList.remove('is-active');
+            document.querySelector('[data-wizard-step="1"]').classList.remove('is-done');
+            document.querySelector('[data-wizard-step="1"]').classList.add('is-active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.wizardConfirmPlan = async function() {
+            const btn = document.getElementById('wizardConfirmBtn');
+            const orig = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'A processar...';
+            // garantir que o botão do modal legacy não bloqueia confirmarCompra
+            const modalBtn = document.getElementById('confirmPurchaseBtn');
+            if (modalBtn) modalBtn.disabled = false;
+            const terms = document.getElementById('acceptPurchaseTerms');
+            if (terms) terms.checked = true;
+            try {
+                if (typeof window.confirmarCompra === 'function') {
+                    await window.confirmarCompra();
+                }
+            } catch (e) {
+                console.error('[wizard] erro ao confirmar', e);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.plan-card[data-plan-id]');
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.plan-button')) return;
+                    selectCard(card);
+                });
+            });
+            // Pré-seleciona o "Most Popular" (Standard) por defeito
+            const featured = document.querySelector('.plan-card.featured');
+            if (featured) selectCard(featured);
+        });
+    })();
+    </script>
 </body>
 
 </html>
