@@ -329,8 +329,27 @@ body {
 }
 
 /* Hide the in-card "Choose X" buttons — selection is by clicking the card */
+.plans-grid .plan-card .plan-button,
 .plan-card .plan-button {
     display: none !important;
+}
+
+/* Kill legacy ::before/::after sweeps that may cover content */
+.plans-grid .plan-card::before,
+.plans-grid .plan-card::after,
+.plan-card::before,
+.plan-card::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    animation: none !important;
+}
+
+/* Container should not clip the button or hover ring */
+.plans-container,
+.wizard-content,
+.wizard-step-content {
+    overflow: visible !important;
 }
 
 /* ---------- Wizard primary button (Próximo / Confirmar) ---------- */
@@ -339,14 +358,21 @@ body {
     color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 12px 20px !important;
+    padding: 0 20px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
-    width: 100%;
+    font-family: inherit !important;
+    width: 100% !important;
+    max-width: 100% !important;
     cursor: pointer;
     box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08) !important;
-    height: 44px;
-    margin-top: 8px;
+    height: 44px !important;
+    line-height: 44px !important;
+    margin: 24px 0 0 0 !important;
+    display: block !important;
+    text-align: center !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
 }
 
 .wizard-primary:hover:not(:disabled) {
