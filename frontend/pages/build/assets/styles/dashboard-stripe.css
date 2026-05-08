@@ -162,22 +162,19 @@ body.dashboard-body {
 
 /* ---------- Profile layout (single flat column like Stripe) ---------- */
 .profile-layout {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 0 !important;
     margin-top: 0 !important;
     max-width: 920px;
 }
 
+/* Flatten the left/right wrappers so all profile-cards become direct
+   children of .profile-layout and flow in DOM order. */
 .profile-left,
 .profile-right {
-    gap: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
+    display: contents !important;
 }
-
-/* Render the right column (originally side panel) right after the left one */
-.profile-right { order: 2; }
-.profile-left { order: 1; }
 
 /* ---------- Sections (flat, no boxes — divider only) ---------- */
 .profile-card {
