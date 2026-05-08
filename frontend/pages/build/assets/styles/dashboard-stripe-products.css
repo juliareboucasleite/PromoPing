@@ -1,0 +1,621 @@
+/* =====================================================================
+   PRODUCTS PAGE — STRIPE-STYLE OVERRIDE
+   Apenas chrome (header, filtros, card outer, botões, modais).
+   NÃO mexe no conteúdo interno do card (.product-content-dashboard,
+   .price-section-dashboard, .history-section-dashboard) — esse
+   continua igual conforme pedido.
+   Carregar SEMPRE depois de dashboard-stripe.css.
+   ===================================================================== */
+
+body.dashboard-body,
+body {
+    background: var(--stripe-bg, #ffffff) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    color: var(--stripe-text, #1a1f36) !important;
+}
+
+.dashboard-main {
+    background: var(--stripe-bg, #ffffff) !important;
+}
+
+.dashboard-container {
+    max-width: 1100px !important;
+    padding: 32px 24px !important;
+    background: transparent !important;
+}
+
+/* ---------- Page header ---------- */
+.page-header,
+.page-header-produtos {
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 0 24px 0 !important;
+    margin-bottom: 24px !important;
+    text-align: left !important;
+}
+
+.page-header::before,
+.page-header-produtos::before,
+.page-header::after,
+.page-header-produtos::after {
+    display: none !important;
+    content: none !important;
+}
+
+.page-header-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    flex-wrap: wrap;
+}
+
+.page-title-section {
+    text-align: left !important;
+}
+
+.page-header .page-title,
+.page-header-produtos .page-title {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+    margin: 0 0 6px 0 !important;
+    text-align: left !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--stripe-text, #1a1f36) !important;
+}
+
+.page-header .page-subtitle,
+.page-header-produtos .page-subtitle {
+    font-size: 14px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+    line-height: 1.5 !important;
+}
+
+#productCount {
+    color: var(--stripe-text-muted, #697386) !important;
+    font-weight: 500 !important;
+}
+
+/* ---------- Filters bar (Stripe-style) ---------- */
+.filters-section {
+    background: transparent !important;
+    margin-bottom: 24px !important;
+    padding: 0 !important;
+}
+
+.filters-bar {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04), 0 0 0 1px rgba(60,66,87,0.08)) !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: wrap;
+}
+
+.filters-bar::before,
+.filters-bar::after {
+    content: none !important;
+    display: none !important;
+}
+
+.search-container {
+    flex: 1 1 280px !important;
+    position: relative !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.search-icon {
+    width: 14px !important;
+    height: 14px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+.search-input,
+.search-container .search-input {
+    background: transparent !important;
+    border: none !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    font-size: 14px !important;
+    height: 32px !important;
+    padding: 0 8px 0 28px !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+}
+
+.search-input::placeholder {
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+.search-input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.filter-group {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    padding: 0 28px 0 10px !important;
+    height: 32px !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23697386' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 10px 10px !important;
+    font-family: inherit !important;
+}
+
+.filter-select:focus {
+    outline: none !important;
+    border-color: var(--pp-orange, #dc7c35) !important;
+    box-shadow: 0 0 0 3px rgba(220, 124, 53, 0.18) !important;
+}
+
+.filter-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 6px !important;
+    padding: 0 10px !important;
+    height: 32px !important;
+    font-weight: 500 !important;
+}
+
+.filter-count .count-icon {
+    width: 12px !important;
+    height: 12px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+/* ---------- Products list ---------- */
+.products-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* ---------- Product card OUTER (chrome only) ---------- */
+.product-card-dashboard {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04), 0 0 0 1px rgba(60,66,87,0.08)) !important;
+    padding: 18px 20px !important;
+    margin: 0 !important;
+    transition: none !important;
+    transform: none !important;
+    overflow: hidden;
+}
+
+.product-card-dashboard::before,
+.product-card-dashboard::after {
+    content: none !important;
+    display: none !important;
+}
+
+.product-card-dashboard:hover {
+    transform: none !important;
+    box-shadow: 0 0 0 1px rgba(60, 66, 87, 0.12), 0 2px 5px rgba(60, 66, 87, 0.08) !important;
+    border-color: var(--stripe-border-strong, #c1c9d2) !important;
+}
+
+/* ---------- Product header (top of each card) ---------- */
+.product-header-dashboard {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    margin: 0 0 12px 0 !important;
+}
+
+.product-info-dashboard {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-name-dashboard {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.4 !important;
+    margin: 0 0 8px 0 !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--stripe-text, #1a1f36) !important;
+}
+
+.product-tags-dashboard {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap;
+}
+
+/* ---------- Tags (store + status) — Stripe-style pills ---------- */
+.store-tag,
+.status-tag-dashboard {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 8px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    line-height: 1.5 !important;
+    box-shadow: none !important;
+    height: 22px;
+}
+
+/* Status pills with semantic colors (Stripe-like) */
+.status-tag-dashboard.status-target-reached {
+    background: #d6ecff !important;
+    color: #0055bc !important;
+    border-color: rgba(0, 85, 188, 0.15) !important;
+}
+
+.status-tag-dashboard.status-price-up {
+    background: #fce7e7 !important;
+    color: #a41c4e !important;
+    border-color: rgba(164, 28, 78, 0.15) !important;
+}
+
+.status-tag-dashboard.status-monitoring {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    border-color: var(--stripe-border, #e3e8ee) !important;
+}
+
+/* Store tags fall back to the neutral pill above (overrides legacy gradients) */
+.store-tag[class*="store-"] {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    border-color: var(--stripe-border, #e3e8ee) !important;
+    background-image: none !important;
+}
+
+/* ---------- Action buttons (3 icons in top-right) ---------- */
+.product-actions-dashboard {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0;
+}
+
+.action-btn-dashboard {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    border-radius: 6px !important;
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+    transition: none !important;
+}
+
+.action-btn-dashboard:hover {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    border-color: var(--stripe-border-strong, #c1c9d2) !important;
+    transform: none !important;
+}
+
+.action-btn-dashboard.delete-btn-dashboard:hover {
+    color: var(--stripe-danger, #df1b41) !important;
+    border-color: rgba(223, 27, 65, 0.4) !important;
+    background: #fff5f6 !important;
+}
+
+.action-btn-dashboard svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* ---------- Modals (Stripe-style) ---------- */
+.modal-overlay {
+    background: rgba(20, 25, 50, 0.45) !important;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 15px 35px rgba(60, 66, 87, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    max-width: 460px !important;
+    padding: 0 !important;
+}
+
+.modal-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 18px 20px 12px !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.modal-header h3 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    margin: 0 !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--stripe-text, #1a1f36) !important;
+}
+
+.modal-close {
+    background: transparent !important;
+    border: none !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    cursor: pointer;
+    font-size: 18px !important;
+    padding: 4px !important;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: var(--stripe-text, #1a1f36) !important;
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+}
+
+.modal-body {
+    padding: 0 20px 16px 20px !important;
+    background: transparent !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    font-size: 14px !important;
+    line-height: 1.55;
+}
+
+.modal-body p {
+    color: var(--stripe-text, #1a1f36) !important;
+    font-size: 14px !important;
+    margin: 0 0 10px 0 !important;
+}
+
+.modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    padding: 12px 20px 18px 20px !important;
+    border-top: 1px solid var(--stripe-border, #e3e8ee) !important;
+    background: transparent !important;
+}
+
+/* Modal buttons */
+.btn,
+.btn.btn-secondary,
+.btn.btn-primary,
+.btn.btn-danger {
+    border-radius: 6px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    border: 1px solid transparent;
+    cursor: pointer;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+    font-family: inherit !important;
+    transform: none !important;
+}
+
+.btn.btn-secondary {
+    background: var(--stripe-bg, #ffffff) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    border-color: var(--stripe-border, #e3e8ee) !important;
+}
+
+.btn.btn-secondary:hover {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    border-color: var(--stripe-border-strong, #c1c9d2) !important;
+}
+
+.btn.btn-primary {
+    background: var(--pp-orange, #dc7c35) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+}
+
+.btn.btn-primary:hover {
+    background: var(--pp-orange-hover, #c46a25) !important;
+}
+
+.btn.btn-danger {
+    background: var(--stripe-danger, #df1b41) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+}
+
+.btn.btn-danger:hover {
+    background: #c11338 !important;
+}
+
+/* Date fields inside modals */
+.date-fields-group {
+    display: flex !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+}
+
+.date-field input {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 6px !important;
+    padding: 8px 10px !important;
+    font-size: 14px !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+    height: 36px;
+}
+
+.date-field input:focus {
+    outline: none !important;
+    border-color: var(--pp-orange, #dc7c35) !important;
+    box-shadow: 0 0 0 3px rgba(220, 124, 53, 0.18) !important;
+}
+
+.date-field label {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    margin-bottom: 4px !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+/* ---------- Upgrade modal & overlay (free plan) ---------- */
+.upgrade-modal {
+    background: transparent !important;
+}
+
+.upgrade-modal-backdrop {
+    background: rgba(20, 25, 50, 0.45) !important;
+}
+
+.upgrade-modal-content {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 15px 35px rgba(60, 66, 87, 0.2) !important;
+    max-width: 420px !important;
+}
+
+.upgrade-content h3 {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--stripe-text, #1a1f36) !important;
+}
+
+.upgrade-content p {
+    color: var(--stripe-text, #1a1f36) !important;
+    font-size: 14px !important;
+}
+
+.upgrade-content .benefit {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    box-shadow: none !important;
+}
+
+.upgrade-btn {
+    background: var(--pp-orange, #dc7c35) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    height: 40px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+    transform: none !important;
+}
+
+.upgrade-btn:hover {
+    background: var(--pp-orange-hover, #c46a25) !important;
+    transform: none !important;
+}
+
+.upgrade-close {
+    background: transparent !important;
+    border: none !important;
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+.upgrade-close:hover {
+    color: var(--stripe-text, #1a1f36) !important;
+}
+
+/* In-card upgrade overlay (blurred Free plan products) */
+.product-upgrade-overlay {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(4px);
+}
+
+.product-upgrade-overlay h4 {
+    color: var(--stripe-text, #1a1f36) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--stripe-text, #1a1f36) !important;
+}
+
+.product-upgrade-overlay p {
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+.upgrade-btn-small {
+    background: var(--pp-orange, #dc7c35) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: var(--stripe-shadow-sm, 0 1px 1px rgba(0,0,0,0.04)) !important;
+}
+
+.upgrade-btn-small:hover {
+    background: var(--pp-orange-hover, #c46a25) !important;
+}
+
+/* ---------- Loading spinner ---------- */
+.loading-state {
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+.spinner {
+    border-color: var(--stripe-border, #e3e8ee) !important;
+    border-top-color: var(--pp-orange, #dc7c35) !important;
+}
