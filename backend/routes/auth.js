@@ -53,6 +53,12 @@ import {
     verifyCode,
     sendEmailCode
 } from "../services/twoFactorService.js";
+import {
+    createUserSession,
+    generateSessionId,
+    rotateUserSession,
+    validateUserSessionRefreshToken
+} from "../services/userSessions.service.js";
 import QRCode from "qrcode";
 
 dotenv.config({
@@ -97,19 +103,26 @@ const JWT_REFRESH_EXPIRY = "60d";
  * @param {string} email
  * @returns {{ token: string, refreshToken: string }}
  */
-function gerarParesToken(ReferenciaID, email) {
+function gerarParesToken(ReferenciaID, email, sessionId = null) {
     const secret = process.env.JWT_SECRET;
     const token = jwt.sign(
-        { ReferenciaID, email },
+        { ReferenciaID, email, ...(sessionId ? { sid: sessionId } : {}) },
         secret,
         { expiresIn: JWT_ACCESS_EXPIRY }
     );
     const refreshToken = jwt.sign(
-        { ReferenciaID, email, type: "refresh" },
+        { ReferenciaID, email, type: "refresh", ...(sessionId ? { sid: sessionId } : {}) },
         secret,
         { expiresIn: JWT_REFRESH_EXPIRY }
     );
     return { token, refreshToken };
+}
+
+async function emitirTokensComSessao(req, ReferenciaID, email) {
+    const sessionId = generateSessionId();
+    const { token, refreshToken } = gerarParesToken(ReferenciaID, email, sessionId);
+    await createUserSession({ referenciaID: ReferenciaID, sessionId, refreshToken, req });
+    return { token, refreshToken, sessionId };
 }
 
 /** Token de curta duraÃ§Ã£o (5 min) usado apenas para completar 2FA no login. */
@@ -821,9 +834,11 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
+            const { token, refreshToken } = await emitirTokensComSessao(req, discordUser.ReferenciaID, discordUser.email);
 
             console.log(" Login direto via rota alternativa para usuÃ¡rio:", discordUser.ReferenciaID);
+
+            const { token, refreshToken } = await emitirTokensComSessao(req, discordUser.ReferenciaID, discordUser.email);
 
             const html = `
         <!DOCTYPE html>
@@ -1387,7 +1402,7 @@ router.post("/login", async (req, res) => {
             }
         }
 
-        const { token, refreshToken } = gerarParesToken(userReferenciaID, userEmail);
+        const { token, refreshToken } = await emitirTokensComSessao(req, userReferenciaID, userEmail);
 
         res.json({
             status: "ok",
@@ -1439,7 +1454,7 @@ router.post("/2fa/verify", async (req, res) => {
             return res.status(404).json({ status: "error", error: "Utilizador nao encontrado" });
         }
         const user = rows[0];
-        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
+        const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.Email);
         res.json({
             status: "ok",
             token,
@@ -1497,7 +1512,25 @@ router.post("/refresh", async (req, res) => {
         if (decoded.type !== "refresh" || !decoded.ReferenciaID || !decoded.email) {
             return res.status(403).json({ error: "Refresh token invÃ¡lido" });
         }
-        const { token, refreshToken: newRefreshToken } = gerarParesToken(decoded.ReferenciaID, decoded.email);
+        if (decoded.sid) {
+            const validSession = await validateUserSessionRefreshToken({
+                sessionId: decoded.sid,
+                referenciaID: decoded.ReferenciaID,
+                refreshToken: refToken
+            });
+            if (!validSession) {
+                return res.status(403).json({ error: "Refresh token invalido" });
+            }
+            const { token, refreshToken: newRefreshToken } = gerarParesToken(decoded.ReferenciaID, decoded.email, decoded.sid);
+            await rotateUserSession({
+                sessionId: decoded.sid,
+                referenciaID: decoded.ReferenciaID,
+                refreshToken: newRefreshToken,
+                req
+            });
+            return res.json({ status: "ok", token, refreshToken: newRefreshToken });
+        }
+        const { token, refreshToken: newRefreshToken } = await emitirTokensComSessao(req, decoded.ReferenciaID, decoded.email);
         return res.json({ status: "ok", token, refreshToken: newRefreshToken });
     } catch (err) {
         if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
@@ -1572,7 +1605,7 @@ router.post("/qr-confirm", verifyToken, async (req, res) => {
             return res.status(400).json({ error: "CÃ³digo Ã© obrigatÃ³rio" });
         }
         const user = { ReferenciaID: req.user.ReferenciaID, email: req.user.email };
-        const tokens = gerarParesToken(user.ReferenciaID, user.email);
+        const tokens = await emitirTokensComSessao(req, user.ReferenciaID, user.email);
         const result = await confirmSession(code.trim(), user, tokens);
         if (!result.ok) {
             if (result.code === "already_used") {
@@ -2077,7 +2110,7 @@ router.get("/google/callback", (req, res) => {
                     }
                 }
 
-                const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.email);
+                const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.email);
 
                 console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuÃ¡rio:", user.ReferenciaID);
 
@@ -2183,7 +2216,7 @@ router.get("/github/callback", (req, res) => {
             }
 
             try {
-                const { token, refreshToken } = gerarParesToken(req.user.ReferenciaID, req.user.email);
+                const { token, refreshToken } = await emitirTokensComSessao(req, req.user.ReferenciaID, req.user.email);
 
                 const panelUrl = process.env.AFTER_LOGIN_REDIRECT || "/dashboard";
                 const signUpUrl = process.env.AFTER_SIGNUP_REDIRECT || "/dashboard";
@@ -2429,12 +2462,14 @@ router.get("/discord/callback", async (req, res) => {
             localStorage.setItem('user', JSON.stringify({
               ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
-              token: '${discordUser.token}',
+              token: '${token}',
               loginMethod: 'discord'
             }));
             
             // Salvar token separadamente para compatibilidade com auth.js
-            localStorage.setItem('token', '${discordUser.token}');
+            localStorage.setItem('PROMOPING_TOKEN', '${token}');
+            localStorage.setItem('PROMOPING_REFRESH_TOKEN', '${refreshToken}');
+            localStorage.setItem('token', '${token}');
             
             // Redirecionar para o painel
             window.location.href = '/dashboard';
@@ -2857,7 +2892,7 @@ router.post("/verificar-codigo", async (req, res) => {
             [user.ReferenciaID]
         );
 
-        const { token, refreshToken } = gerarParesToken(user.ReferenciaID, user.Email);
+        const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.Email);
 
         console.log(` Email verificado com sucesso para usuÃ¡rio ${user.ReferenciaID}`);
 

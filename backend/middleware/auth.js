@@ -4,45 +4,46 @@ import {
   hasPortalAccess,
   resolveAccessContext
 } from "../services/accessControl.js";
+import { touchUserSession } from "../services/userSessions.service.js";
 
-// Essa função é o coração da segurança do sistema
-// Se você modificar, pode dar acesso a contas de outros usuários
-// NÃO ALTERE ESSA FUNÇÃO SEM ENTENDER O IMPACTO
-export function verifyToken(req, res, next) {
+// Essa funcao e o coracao da seguranca do sistema.
+// Se voce modificar, pode dar acesso a contas de outros utilizadores.
+export async function verifyToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: "Token não fornecido" });
+    return res.status(401).json({ error: "Token nao fornecido" });
   }
 
-  // ATENÇÃO: NÃO REMOVA ESSA VERIFICAÇÃO DO JWT_SECRET
-  // Se você remover, pode dar acesso a contas de outros usuários
-  // NÃO ALTERE ESSA PARTE SEM ENTENDER O IMPACTO
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    console.error("JWT_SECRET não encontrado no arquivo .env");
-    return res.status(500).json({ error: "Configuração de segurança inválida" });
+    console.error("JWT_SECRET nao encontrado no arquivo .env");
+    return res.status(500).json({ error: "Configuracao de seguranca invalida" });
   }
 
-  jwt.verify(token, secret, (err, user) => {
-    if (err) {
-      // Token expirado: 401 para o frontend redirecionar para login
-      if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
-        return res.status(401).json({ error: "Token expirado", code: "TOKEN_EXPIRED" });
-      }
-      console.error("Token JWT inválido:", err.message);
-      return res.status(403).json({ error: "Token inválido" });
+  try {
+    const user = jwt.verify(token, secret);
+
+    if (user?.sid) {
+      await touchUserSession(user.sid);
     }
+
     req.user = user;
     next();
-  });
+  } catch (err) {
+    if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
+      return res.status(401).json({ error: "Token expirado", code: "TOKEN_EXPIRED" });
+    }
+    console.error("Token JWT invalido:", err.message);
+    return res.status(403).json({ error: "Token invalido" });
+  }
 }
 
 export async function attachAccessContext(req, res, next) {
   try {
     if (!req.user?.ReferenciaID) {
-      return res.status(401).json({ status: "error", error: "Não autenticado" });
+      return res.status(401).json({ status: "error", error: "Nao autenticado" });
     }
 
     if (!req.accessContext) {
@@ -56,7 +57,7 @@ export async function attachAccessContext(req, res, next) {
     next();
   } catch (error) {
     console.error("[AUTH] Erro ao resolver contexto de acesso:", error);
-    res.status(500).json({ status: "error", error: "Erro ao validar permissões." });
+    res.status(500).json({ status: "error", error: "Erro ao validar permissoes." });
   }
 }
 
@@ -75,7 +76,7 @@ export function requirePortalAccess(portal, errorMessage = "Acesso negado a este
   };
 }
 
-export function requirePermission(permissionCode, errorMessage = "Permissão insuficiente.") {
+export function requirePermission(permissionCode, errorMessage = "Permissao insuficiente.") {
   return (req, res, next) => {
     ensurePermissionContext(req, res, next, (innerReq, innerRes, innerNext) => {
       if (!hasPermission(innerReq.accessContext, permissionCode)) {
@@ -86,10 +87,6 @@ export function requirePermission(permissionCode, errorMessage = "Permissão ins
   };
 }
 
-/**
- * Autenticação opcional: se houver token, valida e define req.user; senão req.user = null.
- * Usado em rotas que aceitam utilizador logado ou anónimo (ex.: suporte).
- */
 export function optionalToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

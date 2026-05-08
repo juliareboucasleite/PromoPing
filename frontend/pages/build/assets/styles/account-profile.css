@@ -1125,12 +1125,30 @@ input:checked + .toggle-slider:before {
 .twofa-send-email-link:disabled { opacity: 0.7; cursor: default; }
 
 /* ===== SETTINGS LAYOUT REFRESH ===== */
+:root {
+    --profile-settings-bg: #ffffff;
+    --profile-settings-container-width: 1320px;
+    --profile-settings-divider: #edf2f7;
+    --profile-settings-accent: #635bff;
+    --profile-settings-title: #1f2937;
+    --profile-settings-body: #374151;
+    --profile-settings-muted: #6b7280;
+    --profile-settings-icon: #9ca3af;
+    --profile-settings-input-border: #d1d9e6;
+    --profile-settings-button-border: #d7dce5;
+    --profile-settings-button-bg: #f4f4f6;
+    --profile-settings-button-bg-hover: #eceff4;
+    --profile-settings-button-alt-bg: #ffffff;
+    --profile-settings-button-connected-bg: #f9fafb;
+    --profile-settings-ring: rgba(99, 91, 255, 0.08);
+}
+
 .dashboard-main {
-    background: #ffffff;
+    background: var(--profile-settings-bg);
 }
 
 .dashboard-container {
-    max-width: 1320px;
+    max-width: var(--profile-settings-container-width);
 }
 
 .page-header-perfil {
@@ -1138,7 +1156,7 @@ input:checked + .toggle-slider:before {
     gap: 0.75rem;
     padding-bottom: 1.25rem;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--profile-settings-divider);
 }
 
 .page-eyebrow {
@@ -1151,7 +1169,7 @@ input:checked + .toggle-slider:before {
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
-    color: #635bff;
+    color: var(--profile-settings-accent);
     background: transparent;
 }
 
@@ -1159,14 +1177,14 @@ input:checked + .toggle-slider:before {
     font-size: clamp(2rem, 3vw, 2.6rem);
     line-height: 1.08;
     letter-spacing: -0.03em;
-    color: #1f2937;
+    color: var(--profile-settings-title);
 }
 
 .page-header-perfil .page-subtitle {
     max-width: 760px;
     font-size: 0.98rem;
     line-height: 1.55;
-    color: #6b7280;
+    color: var(--profile-settings-muted);
 }
 
 .page-header-perfil .page-greeting {
@@ -1175,7 +1193,7 @@ input:checked + .toggle-slider:before {
     border: none;
     border-radius: 0;
     background: transparent;
-    color: #374151;
+    color: var(--profile-settings-body);
     font-size: 0.98rem;
     font-weight: 600;
     margin-top: 0.35rem;
@@ -1199,7 +1217,7 @@ input:checked + .toggle-slider:before {
     border: none;
     border-radius: 0;
     box-shadow: none;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--profile-settings-divider);
 }
 
 .profile-card:hover {
@@ -1218,14 +1236,14 @@ input:checked + .toggle-slider:before {
 .card-icon {
     width: 16px;
     height: 16px;
-    color: #9ca3af;
+    color: var(--profile-settings-icon);
 }
 
 .card-title {
     font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: -0.01em;
-    color: #1f2937;
+    color: var(--profile-settings-title);
 }
 
 .card-content,
@@ -1247,7 +1265,7 @@ input:checked + .toggle-slider:before {
 .account-action-desc,
 .plan-description,
 .preference-desc {
-    color: #6b7280;
+    color: var(--profile-settings-muted);
 }
 
 .form-group {
@@ -1260,7 +1278,7 @@ input:checked + .toggle-slider:before {
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
-    color: #374151;
+    color: var(--profile-settings-body);
 }
 
 .form-input,
@@ -1269,9 +1287,9 @@ input:checked + .toggle-slider:before {
     min-width: 0;
     max-width: 600px;
     padding: 0.8rem 0.95rem;
-    border: 1px solid #d1d9e6;
+    border: 1px solid var(--profile-settings-input-border);
     border-radius: 10px;
-    background: #ffffff;
+    background: var(--profile-settings-bg);
     box-shadow: none;
     font-size: 0.95rem;
 }
@@ -1279,8 +1297,8 @@ input:checked + .toggle-slider:before {
 .form-input:focus,
 .twofa-code-input:focus,
 .delete-input:focus {
-    border-color: #c7d2e1;
-    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.08);
+    border-color: var(--profile-settings-input-border);
+    box-shadow: 0 0 0 3px var(--profile-settings-ring);
 }
 
 .save-btn,
@@ -1302,9 +1320,9 @@ input:checked + .toggle-slider:before {
 .history-btn-pdf,
 .modal-btn.confirm,
 .twofa-download-codes-btn {
-    background: #f4f4f6;
-    color: #1f2937;
-    border: 1px solid #d7dce5;
+    background: var(--profile-settings-button-bg);
+    color: var(--profile-settings-title);
+    border: 1px solid var(--profile-settings-button-border);
 }
 
 .save-btn:hover,
@@ -1312,16 +1330,16 @@ input:checked + .toggle-slider:before {
 .history-btn-pdf:hover,
 .modal-btn.confirm:hover,
 .twofa-download-codes-btn:hover {
-    background: #eceff4;
+    background: var(--profile-settings-button-bg-hover);
 }
 
 .history-btn-completo,
 .account-status,
 .account-action-btn.deactivate-btn,
 .modal-btn.cancel {
-    background: #fff;
-    color: #374151;
-    border: 1px solid #d7dce5;
+    background: var(--profile-settings-button-alt-bg);
+    color: var(--profile-settings-body);
+    border: 1px solid var(--profile-settings-button-border);
 }
 
 .notification-preferences,
@@ -1338,7 +1356,7 @@ input:checked + .toggle-slider:before {
     padding: 0.8rem 0;
     background: transparent;
     border: none;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--profile-settings-divider);
     border-radius: 0;
 }
 
@@ -1357,9 +1375,9 @@ input:checked + .toggle-slider:before {
 }
 
 .account-status.connected {
-    background: #f9fafb;
-    border-color: #d7dce5;
-    color: #111827;
+    background: var(--profile-settings-button-connected-bg);
+    border-color: var(--profile-settings-button-border);
+    color: var(--profile-settings-title);
 }
 
 .statistics {
@@ -1380,13 +1398,13 @@ input:checked + .toggle-slider:before {
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
-    color: #6b7280;
+    color: var(--profile-settings-muted);
 }
 
 .stat-value {
     font-size: 1.35rem;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--profile-settings-title);
 }
 
 .plan-info {
@@ -1396,13 +1414,13 @@ input:checked + .toggle-slider:before {
 
 .plan-name {
     font-size: 1.05rem;
-    color: #1f2937;
+    color: var(--profile-settings-title);
 }
 
 .feature-item {
     border-radius: 10px;
     background: #fff;
-    border: 1px solid #edf2f7;
+    border: 1px solid var(--profile-settings-divider);
 }
 
 @media (max-width: 900px) {
