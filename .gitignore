@@ -110,3 +110,4 @@ backend/discord-bot/lavalink/Lavalink.jar
 backend/discord-bot/lavalink/plugins/
 backend/discord-bot/lavalink/*.log
 backend/discord-bot/lavalink/*.pid
+*.png
