@@ -348,8 +348,12 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
             return res.status(409).json({ status: "error", error: "Já existe uma conta com este email." });
         }
 
-        const targetPerfil = [1, 3].includes(parseInt(perfilId)) ? parseInt(perfilId) : 1;
+        const targetPerfil = [1, 3].includes(parseInt(perfilId, 10)) ? parseInt(perfilId, 10) : 1;
         const referenciaID = gerarReferenciaID();
+        const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
+        if (![1, 3].includes(targetPerfil)) {
+            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser geridos aqui." });
+        }
         const tempPassword = generateTempPassword();
         const hash = await bcrypt.hash(tempPassword, 10);
 
@@ -461,6 +465,10 @@ router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff
         if (exists.length === 0) {
             return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
         }
+        const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
+        if (![1, 3].includes(targetPerfil)) {
+            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser suspensos aqui." });
+        }
         await pool.query(
             "UPDATE utilizadores SET Ativo = 0, DataDesativacao = NOW(), UpdatedAt = NOW() WHERE ReferenciaID = ?",
             [referenciaID]
@@ -481,6 +489,17 @@ router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff
 router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
+        const [exists] = await pool.query(
+            "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
+            [referenciaID]
+        );
+        if (exists.length === 0) {
+            return res.status(404).json({ status: "error", error: "Utilizador nÃ£o encontrado." });
+        }
+        const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
+        if (![1, 3].includes(targetPerfil)) {
+            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser reativados aqui." });
+        }
         const [r] = await pool.query(
             "UPDATE utilizadores SET Ativo = 1, DataDesativacao = NULL, UpdatedAt = NOW() WHERE ReferenciaID = ?",
             [referenciaID]

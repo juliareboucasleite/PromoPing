@@ -17,6 +17,7 @@ import { body, validationResult } from "express-validator";
 import { pool } from "../database/db.js";
 import { requirePermission, verifyToken, optionalToken } from "../middleware/auth.js";
 import { createTicket as createTicketController, VALID_CONTEXTS } from "../controllers/support.controller.js";
+import { hasPermission, resolveAccessContext } from "../services/accessControl.js";
 import { processMessage } from "../services/supportChatEngine.js";
 import { sendMessageToChannel } from "../services/supportDiscordNotifier.js";
 import { automateSupportThread, markThreadHumanReplied } from "../services/supportAutomation.service.js";
@@ -335,7 +336,7 @@ function emitSupportMessageEvent(threadId, messageId, senderType) {
  * - limit: Número máximo de threads (padrão: 20, máximo: 100)
  * - threadId: Se fornecido, retorna mensagens dessa thread específica
  */
-router.get("/messages/admin", verifyToken, requirePermission("support.admin", "Acesso negado. Apenas administradores."), async (req, res) => {
+router.get("/messages/admin", verifyToken, requirePermission("support.read", "Acesso negado. Apenas equipa de suporte."), async (req, res) => {
     try {
         await ensureTable();
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -700,6 +701,21 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
         }
         if (!['user', 'support'].includes(senderType)) {
             return res.status(400).json({ error: "senderType deve ser 'user' ou 'support'" });
+        }
+
+        if (senderType === "support") {
+            if (!req.user?.ReferenciaID) {
+                return res.status(401).json({ error: "AutenticaÃ§Ã£o obrigatÃ³ria para respostas de suporte" });
+            }
+
+            const accessContext = await resolveAccessContext(
+                req.user.ReferenciaID,
+                req.user?.perfilId ?? req.user?.PerfilId ?? null
+            );
+
+            if (!hasPermission(accessContext, "support.reply")) {
+                return res.status(403).json({ error: "PermissÃ£o insuficiente para responder como suporte" });
+            }
         }
 
         const [originalMessage] = await pool.query(
