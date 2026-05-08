@@ -50,6 +50,42 @@
             font-weight: 500;
             word-break: break-word;
         }
+        .bp-inline-table-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .bp-role-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            background: var(--pp-orange-soft);
+            color: var(--pp-orange-strong);
+            text-transform: uppercase;
+        }
+        .bp-role-badge.is-muted {
+            background: var(--pp-bg-soft);
+            color: var(--pp-muted);
+        }
+        .bp-stack {
+            display: grid;
+            gap: 10px;
+        }
+        .bp-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: var(--pp-ink-soft);
+            background: var(--pp-bg-soft);
+            border: 1px solid var(--pp-line);
+            border-radius: 6px;
+            padding: 7px 10px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body class="bp-page">
