@@ -160,31 +160,44 @@ body.dashboard-body {
     letter-spacing: -0.005em;
 }
 
-/* ---------- Profile layout ---------- */
+/* ---------- Profile layout (single flat column like Stripe) ---------- */
 .profile-layout {
     grid-template-columns: 1fr !important;
-    gap: 32px !important;
+    gap: 0 !important;
     margin-top: 0 !important;
-    max-width: 880px;
+    max-width: 920px;
 }
 
 .profile-left,
 .profile-right {
-    gap: 32px !important;
+    gap: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* ---------- Cards ---------- */
+/* Render the right column (originally side panel) right after the left one */
+.profile-right { order: 2; }
+.profile-left { order: 1; }
+
+/* ---------- Sections (flat, no boxes — divider only) ---------- */
 .profile-card {
-    background: var(--stripe-bg) !important;
-    border: 1px solid var(--stripe-border) !important;
-    border-radius: 8px !important;
-    padding: 0 !important;
-    box-shadow: var(--stripe-shadow-sm) !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 0 32px 0 !important;
+    margin: 0 0 32px 0 !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--stripe-border) !important;
 }
 
 .profile-card:hover {
     transform: none !important;
-    box-shadow: var(--stripe-shadow-sm) !important;
+    box-shadow: none !important;
+}
+
+.profile-card:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
 }
 
 .profile-card.profile-card--primary {
@@ -193,23 +206,27 @@ body.dashboard-body {
     background: transparent !important;
 }
 
-/* Card header */
+/* Card header — flat */
 .card-header {
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: space-between !important;
     gap: 16px !important;
     margin: 0 !important;
-    padding: 20px 24px !important;
+    padding: 0 0 12px 0 !important;
     background: transparent !important;
     border: none !important;
-    border-bottom: 1px solid var(--stripe-border) !important;
     border-radius: 0 !important;
+}
+
+/* Hide the small SVG icons inside card titles — Stripe titles are text-only */
+.card-header > .card-icon {
+    display: none !important;
 }
 
 .profile-card.profile-card--primary .card-header {
     border-bottom: none !important;
-    padding: 0 0 16px 0 !important;
+    padding: 0 0 12px 0 !important;
 }
 
 .card-header.card-header--settings {
@@ -256,7 +273,7 @@ body.dashboard-body {
 }
 
 .card-content {
-    padding: 24px !important;
+    padding: 0 !important;
 }
 
 /* Settings badge (e.g. "Configuração global") */
@@ -486,7 +503,7 @@ body.dashboard-body {
 
 /* ---------- Notification preferences (toggles) ---------- */
 .notification-preferences {
-    padding: 0 24px 16px 24px !important;
+    padding: 0 !important;
 }
 
 .preference-item,
@@ -510,7 +527,7 @@ body.dashboard-body {
 
 .account-management-section,
 .connected-accounts {
-    padding: 0 24px 16px 24px !important;
+    padding: 0 !important;
 }
 
 .preference-info,
@@ -559,7 +576,7 @@ body.dashboard-body {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 0 !important;
-    padding: 8px 24px 16px 24px !important;
+    padding: 0 !important;
 }
 
 .stat-item {
@@ -605,37 +622,35 @@ body.dashboard-body {
     color: var(--pp-orange) !important;
 }
 
-/* ---------- Plan info ---------- */
+/* ---------- Plan info (compact: name on left, button on right) ---------- */
 .plan-info {
-    padding: 20px 24px !important;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+}
+
+.plan-details {
+    flex: 1;
+    min-width: 0;
 }
 
 .plan-name {
-    font-size: 18px !important;
-    font-weight: 600 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
     color: var(--stripe-text) !important;
+    line-height: 1.4 !important;
 }
 
-.plan-description {
-    font-size: 13px !important;
-    color: var(--stripe-text-muted) !important;
+.plan-description,
+.plan-features {
+    display: none !important;
 }
 
-.feature-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--stripe-text);
-}
-
-.feature-icon {
-    width: 14px;
-    height: 14px;
-    color: var(--pp-orange);
+.plan-actions {
+    flex-shrink: 0;
 }
 
 /* ---------- History / 2FA section ---------- */
