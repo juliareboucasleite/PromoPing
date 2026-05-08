@@ -1,0 +1,440 @@
+/* =====================================================================
+   PLANS WIZARD — STRIPE SIGMA STYLE
+   Carregar SEMPRE depois de dashboard-stripe.css.
+   ===================================================================== */
+
+body {
+    background: var(--stripe-bg, #ffffff) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    color: var(--stripe-text, #1a1f36) !important;
+}
+
+/* ---------- Container ---------- */
+.plans-container {
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+    padding: 32px 24px !important;
+    background: transparent !important;
+}
+
+/* Hide the legacy header (we use the wizard layout instead) */
+.plans-header,
+.current-plan-section {
+    display: none !important;
+}
+
+/* ---------- Wizard layout ---------- */
+.plans-wizard {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 64px;
+    align-items: start;
+}
+
+@media (max-width: 880px) {
+    .plans-wizard {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+/* ---------- Sidebar (vertical stepper) ---------- */
+.wizard-sidebar {
+    position: sticky;
+    top: 32px;
+}
+
+.wizard-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--stripe-text, #1a1f36);
+    margin: 0 0 16px 0;
+    letter-spacing: -0.005em;
+}
+
+.wizard-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.wizard-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 13px;
+    color: var(--stripe-text-muted, #697386);
+}
+
+/* Vertical connector between steps */
+.wizard-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 30px;
+    width: 1px;
+    height: calc(100% - 14px);
+    background: var(--stripe-border, #e3e8ee);
+}
+
+.wizard-step-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--stripe-border-strong, #c1c9d2);
+    background: var(--stripe-bg, #ffffff);
+    flex-shrink: 0;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+.wizard-step.is-active {
+    color: var(--pp-orange, #dc7c35);
+    font-weight: 500;
+}
+
+.wizard-step.is-active .wizard-step-icon {
+    border-color: var(--pp-orange, #dc7c35);
+    box-shadow: inset 0 0 0 3px var(--stripe-bg, #ffffff), inset 0 0 0 5px var(--pp-orange, #dc7c35);
+}
+
+.wizard-step.is-done {
+    color: var(--stripe-text, #1a1f36);
+}
+
+.wizard-step.is-done .wizard-step-icon {
+    border-color: var(--pp-orange, #dc7c35);
+    background: var(--pp-orange, #dc7c35);
+}
+
+.wizard-step.is-done .wizard-step-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+    background-size: 10px 10px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* ---------- Content area ---------- */
+.wizard-content {
+    min-width: 0;
+}
+
+.wizard-step-content[hidden] {
+    display: none !important;
+}
+
+.wizard-content h1 {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 0 24px 0 !important;
+    line-height: 1.2 !important;
+}
+
+.wizard-content h2 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    margin: 0 0 4px 0 !important;
+}
+
+.wizard-lead {
+    font-size: 14px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    margin: 0 0 24px 0 !important;
+}
+
+/* ---------- Plan cards (Stripe-like, selectable) ---------- */
+.plans-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    margin: 0 0 24px 0 !important;
+}
+
+@media (max-width: 580px) {
+    .plans-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.plan-card {
+    background: var(--stripe-bg, #ffffff) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 200px;
+    transition: none !important;
+}
+
+.plan-card:hover {
+    border-color: var(--stripe-border-strong, #c1c9d2) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.plan-card.is-selected,
+.plan-card.featured.is-selected {
+    border: 2px solid var(--pp-orange, #dc7c35) !important;
+    padding: 19px !important;
+    box-shadow: 0 0 0 3px rgba(220, 124, 53, 0.12) !important;
+}
+
+/* Reset legacy "featured" styling so cards look uniform until selected */
+.plan-card.featured {
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    background: var(--stripe-bg, #ffffff) !important;
+    transform: none !important;
+}
+
+.plan-card.featured .popular-badge {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+    color: var(--stripe-text-muted, #697386) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.plan-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    margin: 0 !important;
+}
+
+.plan-name {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    text-transform: none !important;
+    letter-spacing: -0.01em !important;
+}
+
+.plan-price {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    line-height: 1.2 !important;
+}
+
+.plan-price .currency {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+
+.plan-period {
+    font-size: 12px !important;
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+.plan-features {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    line-height: 1.45;
+}
+
+.plan-features .feature-icon {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0;
+    margin-top: 2px;
+    stroke-width: 2.5 !important;
+}
+
+.plan-features .feature-icon.check {
+    color: var(--stripe-text, #1a1f36) !important;
+}
+
+.plan-features .feature-icon.cross {
+    color: var(--stripe-text-soft, #8792a2) !important;
+}
+
+.plan-features li:has(.cross) {
+    color: var(--stripe-text-muted, #697386) !important;
+}
+
+/* Hide the in-card "Choose X" buttons — selection is by clicking the card */
+.plan-card .plan-button {
+    display: none !important;
+}
+
+/* ---------- Wizard primary button (Próximo / Confirmar) ---------- */
+.wizard-primary {
+    background: var(--pp-orange, #dc7c35) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08) !important;
+    height: 44px;
+    margin-top: 8px;
+}
+
+.wizard-primary:hover:not(:disabled) {
+    background: var(--pp-orange-hover, #c46a25) !important;
+}
+
+.wizard-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wizard-secondary {
+    background: var(--stripe-bg, #ffffff) !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    border: 1px solid var(--stripe-border, #e3e8ee) !important;
+    border-radius: 6px !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.04) !important;
+    height: 44px;
+    margin-top: 8px;
+}
+
+.wizard-secondary:hover {
+    background: var(--stripe-bg-soft, #f7fafc) !important;
+}
+
+/* ---------- Step 2 — Confirme seu plano ---------- */
+.confirm-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--stripe-border, #e3e8ee);
+}
+
+.confirm-section:last-of-type {
+    border-bottom: none;
+}
+
+.confirm-section-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: var(--stripe-bg-soft, #f7fafc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--stripe-text-muted, #697386);
+}
+
+.confirm-section-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+.confirm-section-body {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--stripe-text, #1a1f36);
+    line-height: 1.55;
+}
+
+.confirm-section-body p {
+    margin: 0 0 4px 0;
+}
+
+.confirm-section-body strong {
+    font-weight: 600;
+    color: var(--stripe-text, #1a1f36);
+}
+
+.confirm-section-body .muted {
+    color: var(--stripe-text-muted, #697386);
+}
+
+.confirm-total-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--stripe-bg-soft, #f7fafc);
+    border: 1px solid var(--stripe-border, #e3e8ee);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0 20px 0;
+}
+
+.confirm-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--stripe-text, #1a1f36);
+}
+
+.confirm-total-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--stripe-text, #1a1f36);
+}
+
+.confirm-terms {
+    font-size: 12px;
+    color: var(--stripe-text-muted, #697386);
+    line-height: 1.55;
+    margin: 0 0 16px 0;
+}
+
+.confirm-terms a {
+    color: var(--pp-orange, #dc7c35);
+    text-decoration: none;
+}
+
+.confirm-terms a:hover {
+    text-decoration: underline;
+}
+
+.wizard-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* ---------- Hide legacy modal — wizard step 2 replaces it ---------- */
+#purchaseModal { display: none !important; }

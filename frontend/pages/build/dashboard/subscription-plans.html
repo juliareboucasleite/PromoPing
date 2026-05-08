@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="../../assets/styles/dashboard-shared.css">
     <link rel="stylesheet" href="../../assets/styles/style.css">
     <link rel="stylesheet" href="../../assets/styles/subscription-plans.css">
+    <link rel="stylesheet" href="../../assets/styles/dashboard-stripe.css">
+    <link rel="stylesheet" href="../../assets/styles/dashboard-stripe-plans.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../assets/images/PromoPing.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
@@ -124,6 +129,24 @@
                 </div>
             </div>
 
+            <div class="plans-wizard">
+                <aside class="wizard-sidebar">
+                    <h3 class="wizard-section-label">Preços</h3>
+                    <ol class="wizard-steps">
+                        <li class="wizard-step is-active" data-wizard-step="1">
+                            <span class="wizard-step-icon"></span>
+                            <span>Escolha seu plano</span>
+                        </li>
+                        <li class="wizard-step" data-wizard-step="2">
+                            <span class="wizard-step-icon"></span>
+                            <span>Revisar e confirmar</span>
+                        </li>
+                    </ol>
+                </aside>
+
+                <div class="wizard-content">
+                <div class="wizard-step-content" data-step-content="1">
+                <h1>Escolha seu plano</h1>
             <div class="plans-grid" id="plansGrid">
                 <!-- Free Plan -->
                 <div class="plan-card" data-plan-id="1" data-monthly="0">
