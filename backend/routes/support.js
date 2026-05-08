@@ -450,6 +450,7 @@ router.get("/messages", optionalToken, async (req, res) => {
            sm.replyto AS "replyTo",
            sm.threadid AS "threadId",
            sm.createdat AS "createdAt",
+           sm.supportstage AS "supportStage",
            COALESCE(sm.username, u.Nome) AS "userName",
            COALESCE(sm.useremail, u.Email) AS "userEmail"
          FROM supportmessages sm
@@ -480,6 +481,10 @@ router.get("/messages", optionalToken, async (req, res) => {
         m.ReferenciaID AS "referenciaId",
         m.sendertype AS "senderType",
         m.createdat AS "createdAt",
+        m.supportstage AS "supportStage",
+        m.aiconfidence AS "aiConfidence",
+        m.aiescalationreason AS "aiEscalationReason",
+        m.escalatedat AS "escalatedAt",
         COALESCE(m.username, u.Nome) AS "userName",
         COALESCE(m.useremail, u.Email) AS "userEmail",
         COUNT(DISTINCT r.id) as "replyCount",
@@ -488,7 +493,8 @@ router.get("/messages", optionalToken, async (req, res) => {
        LEFT JOIN supportmessages r ON (r.threadid = m.id OR r.replyto = m.id)
        LEFT JOIN utilizadores u ON u.ReferenciaID = m.ReferenciaID
        WHERE ${whereClause}
-       GROUP BY m.id, m.message, m.sendertype, m.createdat, m.username, m.useremail, u.Nome, u.Email
+       GROUP BY m.id, m.message, m.sendertype, m.createdat, m.supportstage, m.aiconfidence,
+                m.aiescalationreason, m.escalatedat, m.username, m.useremail, u.Nome, u.Email
        ORDER BY COALESCE(MAX(r.createdat), m.createdat) DESC
        LIMIT ? OFFSET ?`,
             [...whereParams, limit, offset]
