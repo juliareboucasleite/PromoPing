@@ -834,8 +834,6 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            const { token, refreshToken } = await emitirTokensComSessao(req, discordUser.ReferenciaID, discordUser.email);
-
             console.log(" Login direto via rota alternativa para usuÃ¡rio:", discordUser.ReferenciaID);
 
             const { token, refreshToken } = await emitirTokensComSessao(req, discordUser.ReferenciaID, discordUser.email);
@@ -2204,7 +2202,7 @@ router.get("/github/callback", (req, res) => {
         const loginUrl = process.env.LOGIN_URL || "/login";
         passport.authenticate("github", {
             failureRedirect: loginUrl
-        })(req, res, (err) => {
+        })(req, res, async(err) => {
             if (err) {
                 console.error("Erro na autenticaÃ§Ã£o GitHub:", err);
                 return res.redirect(`${loginUrl}?error=auth_failed`);
