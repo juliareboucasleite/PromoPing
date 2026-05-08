@@ -516,6 +516,15 @@
         // Variavel global para armazenar dados do plano selecionado (anual = conforme toggle Monthly/Yearly)
         let selectedPlanData = null;
 
+        function setSelectedPlanData(data) {
+            selectedPlanData = data || null;
+            window.selectedPlanData = selectedPlanData;
+        }
+
+        function getSelectedPlanData() {
+            return selectedPlanData || window.selectedPlanData || null;
+        }
+
         // Função para abrir modal de compra (preco = preÃ§o mensal do plano)
         function abrirModalCompra(planoId, planoNome, preco) {
             const anual = !!billingYearly;
@@ -523,7 +532,7 @@
             const precoExibir = anual
                 ? (precoYearlyDb != null && !isNaN(precoYearlyDb) ? precoYearlyDb : preco * 12)
                 : preco;
-            selectedPlanData = { id: planoId, name: planoNome, price: preco, priceYearly: precoYearlyDb, anual: anual };
+            setSelectedPlanData({ id: planoId, name: planoNome, price: preco, priceYearly: precoYearlyDb, anual: anual });
             
             const modal = document.getElementById('purchaseModal');
             const planNameEl = document.getElementById('purchasePlanName');
@@ -574,7 +583,7 @@
                 modal.style.display = 'none';
                 modal.classList.remove('active');
             }
-            selectedPlanData = null;
+            setSelectedPlanData(null);
         }
 
         // Função para habilitar/desabilitar botão de compra
@@ -595,12 +604,13 @@
         }
 
         async function iniciarCheckoutPlano(options = {}) {
-            if (!selectedPlanData) {
+            const planData = getSelectedPlanData();
+            if (!planData) {
                 alert('Error: plan data not found');
                 return false;
             }
 
-            const { id, name, price } = selectedPlanData;
+            const { id, name, price } = planData;
             const token = localStorage.getItem("token");
             const {
                 triggerButton = null,
@@ -661,7 +671,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ planoId: id, anual: !!selectedPlanData.anual })
+                    body: JSON.stringify({ planoId: id, anual: !!planData.anual })
                 });
 
                 if (!response.ok) {
@@ -1274,13 +1284,13 @@
                 ? (yearly != null && !isNaN(yearly) ? yearly : wizardSelected.price * 12)
                 : wizardSelected.price;
 
-            window.selectedPlanData = {
+            setSelectedPlanData({
                 id: wizardSelected.id,
                 name: wizardSelected.name,
                 price: wizardSelected.price,
                 priceYearly: yearly,
                 anual: anual
-            };
+            });
 
             document.getElementById('confirmPlanName').textContent = wizardSelected.name;
             document.getElementById('confirmPlanLimits').textContent = planLimits[wizardSelected.id] || '';
