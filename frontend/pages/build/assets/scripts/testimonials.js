@@ -194,7 +194,7 @@
     CONFIG.gap = metrics.gap;
     CONFIG.padding = metrics.padding;
     CONFIG.maxTextLines = metrics.maxTextLines;
-    const maxCanvasHeight = window.innerWidth <= 768 ? CONFIG.cardHeight + 8 : 240;
+    const maxCanvasHeight = window.innerWidth <= 768 ? CONFIG.cardHeight + 48 : CONFIG.cardHeight + 56;
     const h = Math.min(maxCanvasHeight, Math.max(CONFIG.cardHeight + 8, Math.floor(rect.height)));
 
     canvas.width = w * dpr;
