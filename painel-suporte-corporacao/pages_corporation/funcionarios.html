@@ -4,41 +4,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funcionários - PromoPing Corporação</title>
+    <title>Funcionarios - PromoPing Corporacao</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/images/PromoPing.png">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-810832454');
-  </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-810832454');
+    </script>
 </head>
+
 <body>
     <div class="dashboard-container">
         <aside class="dashboard-sidebar">
             <div class="sidebar-header">
                 <div class="header-content">
                     <img src="../assets/images/PromoPing.png" alt="PromoPing" class="logo-placeholder">
-                    <h4>PromoPing Corporação</h4>
+                    <h4>PromoPing Corporacao</h4>
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visão Geral</span></a>
+                <a href="dashboard.html" class="nav-item"><span class="nav-icon"></span><span>Visao Geral</span></a>
                 <a href="financeiro.html" class="nav-item"><span class="nav-icon"></span><span>Financeiro</span></a>
                 <a href="auditoria.html" class="nav-item"><span class="nav-icon"></span><span>Auditoria</span></a>
-                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendário</span></a>
-                <a href="funcionarios.html" class="nav-item active"><span class="nav-icon"></span><span>Funcionários</span></a>
-                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliações</span></a>
-                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificações</span></a>
+                <a href="calendar.html" class="nav-item"><span class="nav-icon"></span><span>Calendario</span></a>
+                <a href="funcionarios.html" class="nav-item active"><span class="nav-icon"></span><span>Funcionarios</span></a>
+                <a href="avaliacoes.html" class="nav-item"><span class="nav-icon"></span><span>Avaliacoes</span></a>
+                <a href="notificacoes.html" class="nav-item"><span class="nav-icon"></span><span>Notificacoes</span></a>
                 <a href="bugs.html" class="nav-item"><span class="nav-icon"></span><span>Bugs & Projetos</span></a>
-                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestões</span></a>
+                <a href="sugestoes.html" class="nav-item"><span class="nav-icon"></span><span>Sugestoes</span></a>
                 <a href="incidentes.html" class="nav-item"><span class="nav-icon"></span><span>Incidentes</span></a>
                 <a href="discord.html" class="nav-item"><span class="nav-icon"></span><span>Discord</span></a>
             </nav>
@@ -50,20 +49,20 @@
         <main class="dashboard-main">
             <section class="dashboard-section active">
                 <div class="section-header">
-                    <h1>Funcionários</h1>
+                    <h1>Funcionarios</h1>
                     <div class="header-actions">
-                        <button id="newStaffBtn" class="refresh-button">+ Novo funcionário</button>
+                        <button id="newStaffBtn" class="refresh-button">+ Novo funcionario</button>
                         <button id="refreshStaffBtn" class="refresh-button">Atualizar</button>
                     </div>
                 </div>
-                <p style="color: #9ca3af; margin-bottom: 1rem;">Gere a equipa: cria contas, edita, suspende ou redefine passwords.</p>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Gere a equipa interna, atribua roles sem depender do PerfilId e mantenha os acessos alinhados com o sistema enterprise.</p>
 
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <label style="display: flex; align-items: center; gap: 0.4rem; color: #9ca3af; font-size: 0.85rem;">
                         <input type="checkbox" id="includeInactiveCheck"> Mostrar suspensos
                     </label>
                     <label style="display: flex; align-items: center; gap: 0.4rem; color: #9ca3af; font-size: 0.85rem;">
-                        <input type="checkbox" id="includeCorpCheck"> Incluir corporação
+                        <input type="checkbox" id="includeCorpCheck"> Incluir corporacao
                     </label>
                 </div>
 
@@ -74,22 +73,20 @@
         </main>
     </div>
 
-    <!-- Modal detalhe funcionário -->
     <div id="staffModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="staffModalTitle">Detalhe do funcionário</h2>
+                <h2 id="staffModalTitle">Detalhe do funcionario</h2>
                 <button class="modal-close" id="closeStaffModal">&times;</button>
             </div>
             <div id="staffModalBody" style="padding: 1rem;"></div>
         </div>
     </div>
 
-    <!-- Modal Novo/Editar funcionário -->
     <div id="staffFormModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="staffFormTitle">Novo funcionário</h2>
+                <h2 id="staffFormTitle">Novo funcionario</h2>
                 <button type="button" class="modal-close" id="closeStaffFormModal">&times;</button>
             </div>
             <form id="staffForm">
@@ -107,11 +104,31 @@
                     <input type="text" id="staffFormTelefone" class="form-input" maxlength="20">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Perfil</label>
-                    <select id="staffFormPerfil" class="form-input">
-                        <option value="1">Suporte</option>
-                        <option value="3">Corporação</option>
-                    </select>
+                    <label class="form-label">Roles internas</label>
+                    <div class="role-check-grid" id="staffRoleGrid">
+                        <label class="role-check-card">
+                            <input type="checkbox" id="staffRoleSupportAgent" value="support_agent">
+                            <span>
+                                <strong>Support Agent</strong>
+                                <small>Responder tickets e operar o suporte.</small>
+                            </span>
+                        </label>
+                        <label class="role-check-card">
+                            <input type="checkbox" id="staffRoleSupportAdmin" value="support_admin">
+                            <span>
+                                <strong>Support Admin</strong>
+                                <small>Administracao do painel de suporte.</small>
+                            </span>
+                        </label>
+                        <label class="role-check-card">
+                            <input type="checkbox" id="staffRoleCorporationAdmin" value="corporation_admin">
+                            <span>
+                                <strong>Corporation Admin</strong>
+                                <small>Acesso ao painel corporativo e aprovacoes.</small>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="form-help-text">As permissoes passam a ser geridas por role. O PerfilId legado fica sincronizado automaticamente.</p>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="modal-submit-button" id="staffFormSubmit">Criar</button>
@@ -121,15 +138,14 @@
         </div>
     </div>
 
-    <!-- Modal mostrar password temporária -->
     <div id="tempPasswordModal" class="modal-overlay">
         <div class="modal" style="max-width: 480px;">
             <div class="modal-header">
-                <h2>Password temporária</h2>
+                <h2>Password temporaria</h2>
                 <button type="button" class="modal-close" id="closeTempPasswordModal">&times;</button>
             </div>
             <div style="padding: 1rem;">
-                <p style="color: #fbbf24; margin-bottom: 0.75rem;">⚠ Esta password só será mostrada agora. Copia e entrega-a ao funcionário.</p>
+                <p style="color: #fbbf24; margin-bottom: 0.75rem;">Esta password so sera mostrada agora. Copia e entrega-a ao funcionario.</p>
                 <div style="display: flex; gap: 0.5rem; align-items: stretch;">
                     <input type="text" id="tempPasswordValue" class="form-input" readonly style="font-family: monospace; font-size: 1.1rem; flex: 1;">
                     <button type="button" id="copyTempPasswordBtn" class="refresh-button">Copiar</button>
