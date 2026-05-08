@@ -579,7 +579,7 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
     try {
         await ensureTable();
         const messageId = parseInt(req.params.id);
-        const { message, senderType = 'user', anonymousId } = req.body || {};
+        const { message, senderType = 'user', anonymousId, context } = req.body || {};
         const referenciaID = req.user ? req.user.ReferenciaID : null;
         const isAnonymous = !req.user && anonymousId;
 
@@ -598,7 +598,7 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
         }
 
         const [originalMessage] = await pool.query(
-            "SELECT id, ReferenciaID, threadId, anonymousSessionId FROM supportmessages WHERE id = ?",
+            "SELECT id, ReferenciaID, threadId, anonymousSessionId, discordChannelId, supportStage FROM supportmessages WHERE id = ?",
             [messageId]
         );
         if (originalMessage.length === 0) {
@@ -631,6 +631,16 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
         );
         const newId = insertResult.insertId;
 
+        let automation = null;
+        if (senderType === 'user') {
+            automation = await automateSupportThread(threadId, {
+                latestUserMessage: message.trim(),
+                context: typeof context === "string" ? context : "support-widget",
+            });
+        } else {
+            await markThreadHumanReplied(threadId);
+        }
+
         res.status(201).json({
             id: newId,
             message: message.trim(),
@@ -638,17 +648,16 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
             replyTo: messageId,
             threadId,
             ReferenciaID: referenciaIDParaResposta,
-            SenderReferenciaID: senderReferenciaID
+            SenderReferenciaID: senderReferenciaID,
+            automation
         });
 
         setImmediate(async () => {
             try {
-                const [rows] = await pool.query(
-                    "SELECT discordChannelId, message AS rootMessage, userName, userEmail FROM supportmessages WHERE id = ? LIMIT 1",
-                    [threadId]
-                );
-                let channelId = rows.length > 0 ? rows[0].discordChannelId : null;
-                const root = rows[0];
+                const channelId = originalMessage[0].discordChannelId || (automation && automation.discordChannelId) || null;
+                const rootStage = String(originalMessage[0].supportStage || "").toLowerCase();
+                const humanOwned = ["escalated", "human_replied"].includes(rootStage)
+                    || (automation && ["escalated", "human_replied"].includes(String(automation.status || "").toLowerCase()));
 
                 // Se a thread ainda não tem canal no Discord (criada antes da integração ou falha na criação), criar agora
                 if (!channelId && root) {
