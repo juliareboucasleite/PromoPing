@@ -167,6 +167,7 @@ body {
     }
 }
 
+.plans-grid .plan-card,
 .plan-card {
     background: var(--stripe-bg, #ffffff) !important;
     border: 1px solid var(--stripe-border, #e3e8ee) !important;
@@ -175,19 +176,25 @@ body {
     box-shadow: none !important;
     cursor: pointer;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-height: 200px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
     transition: none !important;
+    transform: none !important;
 }
 
+.plans-grid .plan-card:hover,
 .plan-card:hover {
     border-color: var(--stripe-border-strong, #c1c9d2) !important;
     transform: none !important;
     box-shadow: none !important;
 }
 
+.plans-grid .plan-card.is-selected,
+.plans-grid .plan-card.featured.is-selected,
 .plan-card.is-selected,
 .plan-card.featured.is-selected {
     border: 2px solid var(--pp-orange, #dc7c35) !important;
@@ -196,10 +203,12 @@ body {
 }
 
 /* Reset legacy "featured" styling so cards look uniform until selected */
+.plans-grid .plan-card.featured,
 .plan-card.featured {
     border: 1px solid var(--stripe-border, #e3e8ee) !important;
     background: var(--stripe-bg, #ffffff) !important;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 .plan-card.featured .popular-badge {
@@ -218,55 +227,85 @@ body {
     letter-spacing: 0;
 }
 
-.plan-header {
+.plans-grid .plan-card .plan-header,
+.plan-card .plan-header {
     display: flex !important;
     flex-direction: column !important;
     gap: 2px !important;
     margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    text-align: left !important;
 }
 
-.plan-name {
+.plans-grid .plan-card .plan-name,
+.plan-card .plan-name {
     font-size: 16px !important;
     font-weight: 600 !important;
     color: var(--stripe-text, #1a1f36) !important;
     text-transform: none !important;
     letter-spacing: -0.01em !important;
+    margin: 0 !important;
+    text-align: left !important;
+    display: block !important;
 }
 
-.plan-price {
+.plans-grid .plan-card .plan-price,
+.plan-card .plan-price {
     font-size: 22px !important;
     font-weight: 700 !important;
     color: var(--stripe-text, #1a1f36) !important;
     line-height: 1.2 !important;
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: flex-start !important;
+    gap: 1px !important;
+    margin: 4px 0 0 0 !important;
 }
 
-.plan-price .currency {
+.plans-grid .plan-card .plan-price .currency,
+.plan-card .plan-price .currency {
     font-size: 16px !important;
     font-weight: 600 !important;
+    color: var(--stripe-text, #1a1f36) !important;
+    margin: 0 !important;
 }
 
-.plan-period {
+.plans-grid .plan-card .plan-period,
+.plan-card .plan-period {
     font-size: 12px !important;
     color: var(--stripe-text-muted, #697386) !important;
+    text-align: left !important;
+    margin: 0 !important;
 }
 
-.plan-features {
+.plans-grid .plan-card .plan-features,
+.plan-card .plan-features {
     list-style: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex: 1;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    flex: 1 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.plan-features li {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
+.plans-grid .plan-card .plan-features li,
+.plan-card .plan-features li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    border: none !important;
     font-size: 13px !important;
     color: var(--stripe-text, #1a1f36) !important;
-    line-height: 1.45;
+    line-height: 1.45 !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .plan-features .feature-icon {
