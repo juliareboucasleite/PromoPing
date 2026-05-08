@@ -10,69 +10,73 @@
     <link rel="stylesheet" href="/business/style/panel.css">
     <style>
         .bp-main {
-            background:
-                radial-gradient(circle at top left, rgba(244, 175, 85, 0.08), transparent 30%),
-                linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+            background: #ffffff;
         }
         .bp-settings-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            padding: 5px 10px;
-            margin-bottom: 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(220, 124, 53, 0.18);
-            background: rgba(244, 175, 85, 0.09);
-            color: #c56a1a;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            display: inline-block;
+            padding: 0;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: #635bff;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0;
+            text-transform: none;
         }
         .bp-page-header {
-            padding-bottom: 24px;
-            margin-bottom: 28px;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid #edf2f7;
         }
         .bp-page-header h1 {
-            font-size: clamp(30px, 4.5vw, 48px);
-            line-height: 1;
-            letter-spacing: -0.05em;
-            margin-bottom: 10px;
+            font-size: clamp(30px, 3.2vw, 42px);
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            color: #1f2937;
         }
         .bp-page-header p {
             max-width: 760px;
-            font-size: 15px;
-            line-height: 1.7;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #6b7280;
         }
         .bp-page-actions .bp-chip {
-            border-radius: 14px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border: 1px solid #d7dce5;
+            color: #374151;
         }
         .bp-card {
             background: transparent;
             border: none;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            border-bottom: 1px solid #edf2f7;
             border-radius: 0;
             box-shadow: none;
         }
         .bp-card-header {
-            padding: 0 0 14px;
+            padding: 0 0 10px;
             border-bottom: none;
         }
         .bp-card-header h2 {
-            font-size: 26px;
-            line-height: 1.1;
-            letter-spacing: -0.04em;
+            font-size: 19px;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            color: #1f2937;
         }
         .bp-card-header p {
-            font-size: 14px;
-            line-height: 1.65;
+            font-size: 13px;
+            line-height: 1.55;
             max-width: 760px;
+            color: #6b7280;
         }
         .bp-card-body {
-            padding: 0 0 28px;
+            padding: 0 0 20px;
         }
-        .bp-section { margin-bottom: 24px; }
+        .bp-section { margin-bottom: 18px; }
         .bp-section-head { margin-bottom: 12px; }
         .bp-section-head h2 {
             margin: 0 0 2px;
@@ -92,10 +96,10 @@
         }
         .bp-readonly-cell {
             background: #fff;
-            border: 1px solid rgba(15, 23, 42, 0.08);
-            border-radius: 14px;
-            padding: 14px 16px;
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+            border: 1px solid #d7dce5;
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: none;
         }
         .bp-readonly-cell .k {
             font-size: 11.5px;
@@ -125,13 +129,13 @@
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.02em;
-            background: var(--pp-orange-soft);
-            color: var(--pp-orange-strong);
-            text-transform: uppercase;
+            background: #f3f4f6;
+            color: #4b5563;
+            text-transform: none;
         }
         .bp-role-badge.is-muted {
-            background: var(--pp-bg-soft);
-            color: var(--pp-muted);
+            background: #f9fafb;
+            color: #6b7280;
         }
         .bp-stack { display: grid; gap: 10px; }
         .bp-code {
@@ -139,42 +143,43 @@
             font-size: 12px;
             color: var(--pp-ink-soft);
             background: #fff;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            border: 1px solid #d7dce5;
             border-radius: 10px;
-            padding: 10px 12px;
+            padding: 8px 10px;
             word-break: break-all;
         }
         .bp-form-grid .bp-input,
         .bp-form-grid .bp-select {
-            border-radius: 14px;
-            border-color: rgba(15, 23, 42, 0.12);
+            border-radius: 10px;
+            border-color: #d1d9e6;
             background: #fff;
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+            box-shadow: none;
         }
         .bp-form-grid .bp-input:focus,
         .bp-form-grid .bp-select:focus {
-            box-shadow: 0 0 0 4px rgba(244, 175, 85, 0.14);
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.08);
         }
         .bp-table {
-            border: 1px solid rgba(15, 23, 42, 0.08);
-            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
             overflow: hidden;
         }
         .bp-table thead th {
             background: #f8fafc;
             font-size: 11px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            letter-spacing: 0;
+            text-transform: none;
+            color: #6b7280;
         }
         .bp-table tbody td {
             background: #fff;
         }
         .bp-help {
-            color: #64748b;
+            color: #6b7280;
         }
         @media (max-width: 900px) {
             .bp-card-header h2 {
-                font-size: 22px;
+                font-size: 18px;
             }
         }
     </style>
