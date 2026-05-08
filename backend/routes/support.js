@@ -872,7 +872,7 @@ router.post("/review", verifyToken, async (req, res) => {
 router.post("/messages", optionalToken, async (req, res) => {
     try {
         await ensureTable();
-        const { message, anonymousId, userName, userEmail } = req.body || {};
+        const { message, anonymousId, userName, userEmail, context } = req.body || {};
         const isAnonymous = !req.user;
         const referenciaID = req.user ? req.user.ReferenciaID : ANON_REFERENCIA_ID;
 
@@ -921,28 +921,20 @@ router.post("/messages", optionalToken, async (req, res) => {
 
         console.log(" [SUPPORT] Nova thread criada:", newMessageId);
 
+        const automation = await automateSupportThread(newMessageId, {
+            latestUserMessage: message.trim(),
+            context: typeof context === "string" ? context : "support-widget",
+        });
+
         res.status(201).json({
             id: newMessageId,
             message: message.trim(),
             senderType: 'user',
             threadId: newMessageId,
-            ReferenciaID: referenciaID
+            ReferenciaID: referenciaID,
+            automation
         });
 
-        setImmediate(async () => {
-            try {
-                console.log(" [SUPPORT] A criar ticket no Discord para thread", newMessageId);
-                const channelId = await createTicketChannel(newMessageId, message.trim(), nameStr, emailStr);
-                if (channelId) {
-                    await pool.query("UPDATE supportmessages SET discordChannelId = ? WHERE id = ?", [channelId, newMessageId]);
-                    console.log(" [SUPPORT] Ticket Discord guardado, channelId:", channelId);
-                } else {
-                    console.warn(" [SUPPORT] Não foi possível criar ticket no Discord para thread", newMessageId, "(bot na porta 3001? DISCORD_GUILD_ID no .env?)");
-                }
-            } catch (e) {
-                console.error("Erro ao criar ticket Discord:", e.message);
-            }
-        });
     } catch (error) {
         console.error("Erro ao criar mensagem:", error);
         res.status(500).json({
