@@ -375,36 +375,37 @@
                     </div>
                     <div class="profile-card">
                         <div class="card-header">
-                            <h2 class="card-title">Reports and History</h2>
-                        </div>
-                        <div class="history-actions">
-                            <button type="button" id="btnRelatoriosPdf" class="history-action-btn history-btn-pdf">
-                                PDF Reports
-                            </button>
-                            <button type="button" id="btnHistoricoCompleto" class="history-action-btn history-btn-completo">
-                                Full history
-                            </button>
+                            <div class="card-header-copy">
+                                <h2 class="card-title">Reports and History</h2>
+                                <p class="card-subtitle">PDF report (30 days) and full history (100 days).</p>
+                            </div>
+                            <div class="card-header-actions">
+                                <button type="button" id="btnRelatoriosPdf" class="secondary-btn history-action-btn history-btn-pdf">
+                                    PDF Reports
+                                </button>
+                                <button type="button" id="btnHistoricoCompleto" class="secondary-btn history-action-btn history-btn-completo">
+                                    Full history
+                                </button>
+                            </div>
                         </div>
                         <p class="history-plan-hint" id="historyPlanHint" aria-live="polite"></p>
                         <ul id="notificacoesList" class="notification-list"></ul>
                     </div>
 
-                    <!-- AutenticaÃ§Ã£o em dois fatores (2FA) -->
+                    <!-- Autenticação em dois fatores (2FA) -->
                     <div class="profile-card" id="twoFA-card">
                         <div class="card-header">
-                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <h2 class="card-title">Two-factor authentication (2FA)</h2>
+                            <div class="card-header-copy">
+                                <h2 class="card-title">Two-factor authentication (2FA)</h2>
+                                <p class="card-subtitle">Protect your account with an email code or an authenticator app. Backup codes are generated when you enable it.</p>
+                            </div>
+                            <div class="card-header-actions">
+                                <button type="button" id="btn2FAEnable" class="secondary-btn" style="display: none;">Enable 2FA</button>
+                                <button type="button" id="btn2FADisable" class="secondary-btn deactivate-btn" style="display: none;">Deactivate 2FA</button>
+                            </div>
                         </div>
                         <div class="twofa-section">
-                            <p class="twofa-desc">Protect your account with an email code or an authenticator app. Backup codes are generated when you enable it.</p>
                             <div id="twoFAStatus" class="twofa-status"></div>
-                            <div class="twofa-actions">
-                                <button type="button" id="btn2FAEnable" class="history-action-btn history-btn-pdf" style="display: none;">Enable 2FA</button>
-                                <button type="button" id="btn2FADisable" class="account-action-btn deactivate-btn" style="display: none;">Deactivate 2FA</button>
-                            </div>
                         </div>
                     </div>
 
