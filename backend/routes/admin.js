@@ -11,6 +11,7 @@ import {
     pool
 } from "../database/db.js";
 import {
+    requirePermission,
     verifyToken
 } from "../middleware/auth.js";
 import { google } from "googleapis";
