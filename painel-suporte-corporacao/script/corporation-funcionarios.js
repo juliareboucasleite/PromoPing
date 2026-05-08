@@ -1,7 +1,67 @@
 (function() {
     'use strict';
+
     const API_BASE = window.APIUtils ? window.APIUtils.getSafeApiBase() : 'http://localhost:3000';
     const TOKEN = window.CorporationAuth && window.CorporationAuth.getToken();
+
+    const ROLE_META = {
+        support_agent: {
+            label: 'Support Agent',
+            description: 'Responde tickets e opera o suporte.',
+            tone: 'info'
+        },
+        support_admin: {
+            label: 'Support Admin',
+            description: 'Administra o painel de suporte.',
+            tone: 'warn'
+        },
+        corporation_admin: {
+            label: 'Corporation Admin',
+            description: 'Acede ao painel corporativo e aprova fluxos internos.',
+            tone: 'success'
+        }
+    };
+
+    function getRoleLabel(roleCode) {
+        return ROLE_META[roleCode] ? ROLE_META[roleCode].label : roleCode;
+    }
+
+    function getRoleTone(roleCode) {
+        return ROLE_META[roleCode] ? ROLE_META[roleCode].tone : 'neutral';
+    }
+
+    function buildRoleBadge(roleCode) {
+        return `<span class="role-badge role-badge-${getRoleTone(roleCode)}">${escapeHtml(getRoleLabel(roleCode))}</span>`;
+    }
+
+    function normalizeRoleCodes(roleCodes) {
+        const list = Array.isArray(roleCodes) ? roleCodes : [];
+        return Array.from(new Set(list.map((item) => String(item && item.code ? item.code : item).trim()).filter(Boolean)));
+    }
+
+    function deriveLegacyPerfilId(roleCodes) {
+        const normalized = normalizeRoleCodes(roleCodes);
+        return normalized.includes('corporation_admin') ? 3 : 1;
+    }
+
+    function getRoleCheckboxes() {
+        return [
+            document.getElementById('staffRoleSupportAgent'),
+            document.getElementById('staffRoleSupportAdmin'),
+            document.getElementById('staffRoleCorporationAdmin')
+        ].filter(Boolean);
+    }
+
+    function setSelectedRoleCodes(roleCodes) {
+        const selected = new Set(normalizeRoleCodes(roleCodes));
+        getRoleCheckboxes().forEach((checkbox) => {
+            checkbox.checked = selected.has(checkbox.value);
+        });
+    }
+
+    function getSelectedRoleCodes() {
+        return getRoleCheckboxes().filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
+    }
 
     async function fetchAuth(url, options = {}) {
         const safeUrl = window.APIUtils ? window.APIUtils.buildSafeUrl(url) : `${API_BASE}${url}`;
@@ -45,6 +105,12 @@
         else if (confirm(msg)) onYes();
     }
 
+    function renderRoles(roleCodes) {
+        const normalized = normalizeRoleCodes(roleCodes);
+        if (!normalized.length) return '<span style="color:#9ca3af;">Sem roles</span>';
+        return normalized.map(buildRoleBadge).join('');
+    }
+
     async function load() {
         const el = document.getElementById('staffList');
         if (!el) return;
@@ -53,18 +119,31 @@
             const includeCorp = document.getElementById('includeCorpCheck')?.checked ? '1' : '0';
             const data = await fetchAuth(`/api/corporation/staff?includeInactive=${includeInactive}&includeCorp=${includeCorp}`);
             const staff = data.staff || [];
-            if (staff.length === 0) {
-                el.innerHTML = '<div class="loading-state">Nenhum funcionário encontrado.</div>';
+            if (!staff.length) {
+                el.innerHTML = '<div class="loading-state">Nenhum funcionario encontrado.</div>';
                 return;
             }
+
             el.innerHTML = `
                 <table class="data-table">
-                    <thead><tr><th>ReferenciaID</th><th>Nome</th><th>Email</th><th>Telefone</th><th>Perfil</th><th>Estado</th><th>Último login</th><th>Acções</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>ReferenciaID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Roles</th>
+                            <th>Estado</th>
+                            <th>Ultimo login</th>
+                            <th>Acoes</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        ${staff.map(s => {
+                        ${staff.map((s) => {
                             const ativo = s.Ativo === 1 || s.Ativo === null;
+                            const roleCodes = normalizeRoleCodes(s.accessRoles || []);
                             const estadoPill = ativo
-                                ? '<span style="color:#4ade80; font-size: 0.8rem;">● Activo</span>'
+                                ? '<span style="color:#4ade80; font-size: 0.8rem;">● Ativo</span>'
                                 : '<span style="color:#fca5a5; font-size: 0.8rem;">● Suspenso</span>';
                             return `
                                 <tr ${!ativo ? 'style="opacity: 0.6;"' : ''}>
@@ -72,16 +151,16 @@
                                     <td>${escapeHtml(s.Nome)}</td>
                                     <td>${escapeHtml(s.Email)}</td>
                                     <td>${escapeHtml(s.Telefone || '-')}</td>
-                                    <td>${escapeHtml(s.PerfilNome || (s.PerfilId === 3 ? 'Corporação' : 'Suporte'))}</td>
+                                    <td><div class="role-badge-list">${renderRoles(roleCodes)}</div></td>
                                     <td>${estadoPill}</td>
                                     <td style="font-size: 0.85rem; color: #9ca3af;">${s.UltimoLogin ? formatDateTime(s.UltimoLogin) : '—'}</td>
                                     <td style="white-space: nowrap;">
                                         <button type="button" class="refresh-button" data-act="view" data-ref="${escapeHtml(s.ReferenciaID)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Ver</button>
-                                        <button type="button" class="refresh-button" data-act="edit" data-ref="${escapeHtml(s.ReferenciaID)}" data-nome="${escapeHtml(s.Nome)}" data-tel="${escapeHtml(s.Telefone || '')}" data-perfil="${s.PerfilId}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Editar</button>
+                                        <button type="button" class="refresh-button" data-act="edit" data-ref="${escapeHtml(s.ReferenciaID)}" data-nome="${escapeHtml(s.Nome)}" data-tel="${escapeHtml(s.Telefone || '')}" data-roles="${escapeHtml(roleCodes.join(','))}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Editar</button>
                                         <button type="button" class="refresh-button" data-act="reset" data-ref="${escapeHtml(s.ReferenciaID)}" data-nome="${escapeHtml(s.Nome)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Reset password</button>
                                         ${ativo
                                             ? `<button type="button" class="modal-delete-button" data-act="suspend" data-ref="${escapeHtml(s.ReferenciaID)}" data-nome="${escapeHtml(s.Nome)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Suspender</button>`
-                                            : `<button type="button" class="refresh-button" data-act="reactivate" data-ref="${escapeHtml(s.ReferenciaID)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #4ade80; color: #0f0f10;">Reactivar</button>`
+                                            : `<button type="button" class="refresh-button" data-act="reactivate" data-ref="${escapeHtml(s.ReferenciaID)}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #4ade80; color: #0f0f10;">Reativar</button>`
                                         }
                                     </td>
                                 </tr>
@@ -89,7 +168,8 @@
                         }).join('')}
                     </tbody>
                 </table>`;
-            el.querySelectorAll('button[data-act]').forEach(btn => {
+
+            el.querySelectorAll('button[data-act]').forEach((btn) => {
                 btn.addEventListener('click', () => handleAction(btn));
             });
         } catch (e) {
@@ -102,7 +182,7 @@
         const ref = btn.dataset.ref;
         const nome = btn.dataset.nome || '';
         if (act === 'view') return openDetail(ref);
-        if (act === 'edit') return openEditModal(ref, nome, btn.dataset.tel || '', btn.dataset.perfil);
+        if (act === 'edit') return openEditModal(ref, nome, btn.dataset.tel || '', (btn.dataset.roles || '').split(',').filter(Boolean));
         if (act === 'reset') return resetPassword(ref, nome);
         if (act === 'suspend') return suspendStaff(ref, nome);
         if (act === 'reactivate') return reactivateStaff(ref);
@@ -121,13 +201,13 @@
     async function reactivateStaff(ref) {
         try {
             await fetchAuth(`/api/corporation/staff/${encodeURIComponent(ref)}/reactivate`, { method: 'POST', body: JSON.stringify({}) });
-            alertOk('Conta reactivada.');
+            alertOk('Conta reativada.');
             load();
         } catch (e) { alertOk('Erro: ' + e.message); }
     }
 
     async function resetPassword(ref, nome) {
-        confirmAction(`Gerar nova password para ${nome}? A actual deixa de funcionar.`, async () => {
+        confirmAction(`Gerar nova password para ${nome}? A atual deixa de funcionar.`, async () => {
             try {
                 const data = await fetchAuth(`/api/corporation/staff/${encodeURIComponent(ref)}/reset-password`, { method: 'POST', body: JSON.stringify({}) });
                 showTempPassword(data.tempPassword, nome);
@@ -141,28 +221,27 @@
         document.getElementById('tempPasswordModal').classList.add('show');
     }
 
-    // --- Modal criar/editar ---
     function openCreateModal() {
         const form = document.getElementById('staffForm');
         form.reset();
         document.getElementById('staffFormRefId').value = '';
-        document.getElementById('staffFormTitle').textContent = 'Novo funcionário';
+        document.getElementById('staffFormTitle').textContent = 'Novo funcionario';
         document.getElementById('staffFormSubmit').textContent = 'Criar';
         document.getElementById('staffFormEmailGroup').style.display = '';
         document.getElementById('staffFormEmail').required = true;
-        document.getElementById('staffFormPerfil').value = '1';
+        setSelectedRoleCodes(['support_agent', 'support_admin']);
         document.getElementById('staffFormModal').classList.add('show');
     }
 
-    function openEditModal(ref, nome, telefone, perfilId) {
+    function openEditModal(ref, nome, telefone, roleCodes) {
         document.getElementById('staffFormRefId').value = ref;
-        document.getElementById('staffFormTitle').textContent = 'Editar funcionário';
+        document.getElementById('staffFormTitle').textContent = 'Editar funcionario';
         document.getElementById('staffFormSubmit').textContent = 'Guardar';
         document.getElementById('staffFormNome').value = nome || '';
         document.getElementById('staffFormTelefone').value = telefone || '';
-        document.getElementById('staffFormPerfil').value = String(perfilId || '1');
         document.getElementById('staffFormEmailGroup').style.display = 'none';
         document.getElementById('staffFormEmail').required = false;
+        setSelectedRoleCodes(roleCodes);
         document.getElementById('staffFormModal').classList.add('show');
     }
 
@@ -176,19 +255,31 @@
         const nome = document.getElementById('staffFormNome').value.trim();
         const email = document.getElementById('staffFormEmail').value.trim();
         const telefone = document.getElementById('staffFormTelefone').value.trim();
-        const perfilId = parseInt(document.getElementById('staffFormPerfil').value);
+        const accessRoleCodes = getSelectedRoleCodes();
+
+        if (!accessRoleCodes.length) {
+            alertOk('Seleciona pelo menos uma role interna.');
+            return;
+        }
+
+        const payload = {
+            nome,
+            telefone,
+            accessRoleCodes,
+            perfilId: deriveLegacyPerfilId(accessRoleCodes)
+        };
 
         try {
             if (ref) {
                 await fetchAuth(`/api/corporation/staff/${encodeURIComponent(ref)}`, {
                     method: 'PUT',
-                    body: JSON.stringify({ nome, telefone, perfilId })
+                    body: JSON.stringify(payload)
                 });
-                alertOk('Funcionário actualizado.');
+                alertOk('Funcionario atualizado.');
             } else {
                 const data = await fetchAuth('/api/corporation/staff', {
                     method: 'POST',
-                    body: JSON.stringify({ nome, email, telefone, perfilId })
+                    body: JSON.stringify({ ...payload, email })
                 });
                 closeStaffFormModal();
                 showTempPassword(data.tempPassword, nome);
@@ -202,7 +293,6 @@
         }
     }
 
-    // --- Detalhe (mantido do original) ---
     async function openDetail(referenciaID) {
         const modal = document.getElementById('staffModal');
         const title = document.getElementById('staffModalTitle');
@@ -221,13 +311,14 @@
             const bugs = act.bugsProjetos || [];
             const supportCount = act.supportThreadsCount || 0;
             const notifs = act.notifications || [];
+            const roleCodes = normalizeRoleCodes(s.accessRoles || []);
 
-            title.textContent = s.Nome || 'Funcionário';
+            title.textContent = s.Nome || 'Funcionario';
 
-            var tabStyle = 'padding: 0.5rem 0.75rem; margin-right: 0.25rem; border: 1px solid #232326; background: #18181b; color: #9ca3af; cursor: pointer; font-size: 0.85rem; border-radius: 4px;';
-            var tabActive = 'background: #3b82f6; color: #fff; border-color: #3b82f6;';
+            const tabStyle = 'padding: 0.5rem 0.75rem; margin-right: 0.25rem; border: 1px solid #232326; background: #18181b; color: #9ca3af; cursor: pointer; font-size: 0.85rem; border-radius: 4px;';
+            const tabActive = 'background: #3b82f6; color: #fff; border-color: #3b82f6;';
 
-            var html = '<div class="staff-modal-tabs" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 1px solid #232326; padding-bottom: 0.75rem;">';
+            let html = '<div class="staff-modal-tabs" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 1px solid #232326; padding-bottom: 0.75rem;">';
             html += '<button type="button" class="staff-tab active" data-tab="dados" style="' + tabStyle + tabActive + '">Dados</button>';
             html += '<button type="button" class="staff-tab" data-tab="eventos" style="' + tabStyle + '">Eventos (' + events.length + ')</button>';
             html += '<button type="button" class="staff-tab" data-tab="projetos" style="' + tabStyle + '">Bugs/Projetos (' + bugs.length + ')</button>';
@@ -241,46 +332,47 @@
             html += '<p><strong>Nome:</strong> ' + escapeHtml(s.Nome) + '</p>';
             html += '<p><strong>Email:</strong> ' + escapeHtml(s.Email) + '</p>';
             html += '<p><strong>Telefone:</strong> ' + escapeHtml(s.Telefone || '-') + '</p>';
-            html += '<p><strong>Cargo / Função:</strong> ' + escapeHtml(s.PerfilNome || 'Suporte') + '</p>';
+            html += '<p><strong>Perfil legado:</strong> ' + escapeHtml(s.PerfilNome || (s.PerfilId === 3 ? 'Corporacao' : 'Suporte')) + '</p>';
+            html += '<p><strong>Roles internas:</strong> <span class="role-badge-list">' + renderRoles(roleCodes) + '</span></p>';
             html += '<p><strong>Data de registo:</strong> ' + formatDate(s.DataRegisto) + '</p>';
             html += '</div></div>';
 
             html += '<div id="staffTabEventos" class="staff-tab-pane" style="display: none;">';
-            if (events.length === 0) {
-                html += '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum evento no calendário.</p>';
+            if (!events.length) {
+                html += '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum evento no calendario.</p>';
             } else {
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 events.forEach(function(ev) {
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(ev.Titulo)) || ev.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (ev.Tipo || '-') + ', ' + (ev.Status || '-') + ')</span> — ' + formatDateTime(ev.StartDate) + '</li>';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(ev.Titulo)) || ev.Titulo || 'Sem titulo') + ' <span style="color: #9ca3af;">(' + (ev.Tipo || '-') + ', ' + (ev.Status || '-') + ')</span> - ' + formatDateTime(ev.StartDate) + '</li>';
                 });
                 html += '</ul>';
             }
             html += '</div>';
 
             html += '<div id="staffTabProjetos" class="staff-tab-pane" style="display: none;">';
-            if (bugs.length === 0) {
+            if (!bugs.length) {
                 html += '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum bug ou projeto associado.</p>';
             } else {
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 bugs.forEach(function(b) {
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">#' + b.Id + ' ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(b.Titulo)) || b.Titulo || 'Sem título') + ' <span style="color: #9ca3af;">(' + (b.Tipo || '-') + ', ' + (b.Status || '-') + ')</span> — ' + formatDate(b.DataCriacao) + '</li>';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">#' + b.Id + ' ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(b.Titulo)) || b.Titulo || 'Sem titulo') + ' <span style="color: #9ca3af;">(' + (b.Tipo || '-') + ', ' + (b.Status || '-') + ')</span> - ' + formatDate(b.DataCriacao) + '</li>';
                 });
                 html += '</ul>';
             }
             html += '</div>';
 
             html += '<div id="staffTabSuporte" class="staff-tab-pane" style="display: none;">';
-            html += '<p style="font-size: 0.9rem;">Participou em <strong>' + supportCount + '</strong> conversa(s) de suporte (respostas dadas).</p>';
+            html += '<p style="font-size: 0.9rem;">Participou em <strong>' + supportCount + '</strong> conversa(s) de suporte.</p>';
             html += '</div>';
 
             html += '<div id="staffTabIncidentes" class="staff-tab-pane" style="display: none;">';
-            if (notifs.length === 0) {
-                html += '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum incidente ou atualização registado por este funcionário.</p>';
+            if (!notifs.length) {
+                html += '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum incidente ou atualizacao registado por este funcionario.</p>';
             } else {
                 html += '<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">';
                 notifs.forEach(function(n) {
-                    var tipoLabel = n.Tipo === 'incident_resolved' ? 'Incidente resolvido' : n.Tipo === 'incident_update' ? 'Atualização de incidente' : 'Atualização do sistema';
-                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml(tipoLabel) + ': ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(n.Titulo)) || n.Titulo || '') + ' — ' + formatDateTime(n.DataCriacao) + '</li>';
+                    const tipoLabel = n.Tipo === 'incident_resolved' ? 'Incidente resolvido' : n.Tipo === 'incident_update' ? 'Atualizacao de incidente' : 'Atualizacao do sistema';
+                    html += '<li style="padding: 0.5rem 0; border-bottom: 1px solid #232326;">' + escapeHtml(tipoLabel) + ': ' + escapeHtml((window.APIUtils && window.APIUtils.stripBracketPrefix(n.Titulo)) || n.Titulo || '') + ' - ' + formatDateTime(n.DataCriacao) + '</li>';
                 });
                 html += '</ul>';
             }
@@ -290,11 +382,13 @@
 
             body.querySelectorAll('.staff-tab').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    var tab = this.getAttribute('data-tab');
+                    const tab = this.getAttribute('data-tab');
                     body.querySelectorAll('.staff-tab').forEach(function(b) { b.style.background = ''; b.style.color = '#9ca3af'; b.style.borderColor = '#232326'; });
-                    this.style.background = '#3b82f6'; this.style.color = '#fff'; this.style.borderColor = '#3b82f6';
+                    this.style.background = '#3b82f6';
+                    this.style.color = '#fff';
+                    this.style.borderColor = '#3b82f6';
                     body.querySelectorAll('.staff-tab-pane').forEach(function(p) { p.style.display = 'none'; });
-                    var pane = document.getElementById('staffTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                    const pane = document.getElementById('staffTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
                     if (pane) pane.style.display = 'block';
                 });
             });
@@ -306,6 +400,7 @@
     function closeModal() {
         document.getElementById('staffModal')?.classList.remove('show');
     }
+
     function closeTempPasswordModal() {
         document.getElementById('tempPasswordModal').classList.remove('show');
     }
