@@ -257,6 +257,79 @@
                     </div>
                 </section>
 
+                <section class="bp-card bp-section">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Membros da organizacao</h2>
+                            <p>Gestao visual dos acessos business por role.</p>
+                        </div>
+                        <span class="bp-chip is-neutral" id="teamRoleChip">Leitura</span>
+                    </div>
+                    <div class="bp-card-body is-flush">
+                        <div id="teamMembersState" class="bp-table-empty">A carregar membros...</div>
+                        <div id="teamMembersWrap" class="is-hidden">
+                            <table class="bp-table">
+                                <thead>
+                                    <tr>
+                                        <th>Membro</th>
+                                        <th>Role</th>
+                                        <th>Estado</th>
+                                        <th>Acesso</th>
+                                        <th>Acoes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamMembersBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bp-card bp-section">
+                    <div class="bp-card-header">
+                        <div>
+                            <h2>Convites pendentes</h2>
+                            <p>Convide novos membros e acompanhe o estado dos acessos.</p>
+                        </div>
+                    </div>
+                    <div class="bp-card-body">
+                        <div id="inviteManagerState" class="bp-alert bp-alert-info is-hidden"></div>
+                        <div id="inviteManagerWrap" class="bp-stack is-hidden">
+                            <div class="bp-form-grid">
+                                <div class="bp-field">
+                                    <label class="bp-label" for="inviteEmail">Email do membro</label>
+                                    <input class="bp-input" id="inviteEmail" type="email" placeholder="nome@empresa.pt">
+                                </div>
+                                <div class="bp-field">
+                                    <label class="bp-label" for="inviteRole">Role</label>
+                                    <select class="bp-select" id="inviteRole">
+                                        <option value="analyst">Analyst</option>
+                                        <option value="manager">Manager</option>
+                                        <option value="owner">Owner</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bp-inline-table-actions">
+                                <button class="bp-btn bp-btn-primary" type="button" id="sendInviteBtn">Criar convite</button>
+                                <span class="bp-help">Os convites ficam registados no sistema e podem ser revogados daqui.</span>
+                            </div>
+                            <div id="teamInvitesWrap">
+                                <table class="bp-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Estado</th>
+                                            <th>Codigo</th>
+                                            <th>Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="teamInvitesBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
                     <p class="bp-help" style="margin:0;max-width:520px;">Ao guardar alteracoes, a equipa corporativa e notificada automaticamente no painel interno.</p>
                     <button class="bp-btn bp-btn-secondary" type="button" id="resetBtn">Repor</button>
