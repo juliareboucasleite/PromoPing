@@ -10,19 +10,34 @@
   const CONFIG = {
     speed: 0.4,
     pauseOnHover: false,
-    cardWidth: 320,
-    cardHeight: 200,
-    gap: 56,
+    cardWidth: 340,
+    cardHeight: 232,
+    gap: 28,
     padding: 28,
-    radius: 16,
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    starColor: '#fa5c00',
-    starEmptyColor: 'rgba(255,255,255,0.2)',
-    textColor: 'rgba(255,255,255,0.9)',
-    roleColor: 'rgba(255,255,255,0.6)',
-    cardBg: 'rgba(255,255,255,0.12)',
-    cardBorder: 'rgba(255,255,255,0.25)',
-    maxTextLines: 4
+    radius: 20,
+    fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif',
+    serifFontFamily: 'Georgia, "Times New Roman", serif',
+    // Card surface
+    cardBg: '#ffffff',
+    cardBorder: 'rgba(20, 10, 0, 0.06)',
+    cardShadowColor: 'rgba(40, 20, 0, 0.12)',
+    cardShadowBlur: 24,
+    cardShadowOffsetY: 8,
+    // Decorative
+    quoteGlyphColor: '#FFA54B',
+    dividerColor: 'rgba(20, 10, 0, 0.08)',
+    // Stars
+    starColor: '#FFA54B',
+    starEmptyColor: 'rgba(20, 10, 0, 0.14)',
+    // Text
+    quoteTextColor: '#1a1a1a',
+    nameColor: '#0a0a0a',
+    roleColor: '#6b6b6b',
+    // Avatar
+    avatarGradientStart: '#FFA54B',
+    avatarGradientEnd: '#e68200',
+    avatarTextColor: '#ffffff',
+    maxTextLines: 3
   };
 
   const translations = {
@@ -73,6 +88,15 @@
     return text.substring(0, maxLen || 180).trim() + '...';
   }
 
+  function getInitials(name) {
+    if (!name) return '?';
+    const trimmed = String(name).trim();
+    if (!trimmed) return '?';
+    const parts = trimmed.split(/\s+/);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   function wrapLines(ctx, text, maxWidth) {
     const words = text.split(/\s+/);
     const lines = [];
@@ -109,30 +133,30 @@
 
     if (isSmallMobile) {
       return {
-        width: Math.max(220, Math.min(252, wrapperWidth - 20)),
-        height: 190,
-        gap: 18,
-        padding: 18,
+        width: Math.max(240, Math.min(272, wrapperWidth - 20)),
+        height: 220,
+        gap: 16,
+        padding: 22,
         maxTextLines: 3
       };
     }
 
     if (isMobile) {
       return {
-        width: Math.max(240, Math.min(280, wrapperWidth - 28)),
-        height: 196,
-        gap: 22,
-        padding: 20,
+        width: Math.max(260, Math.min(300, wrapperWidth - 28)),
+        height: 224,
+        gap: 20,
+        padding: 24,
         maxTextLines: 3
       };
     }
 
     return {
-      width: 320,
-      height: 200,
-      gap: 56,
+      width: 340,
+      height: 232,
+      gap: 28,
       padding: 28,
-      maxTextLines: 4
+      maxTextLines: 3
     };
   }
 
@@ -201,48 +225,122 @@
 
   function drawCard(ctx, card, x, y, w, h) {
     const r = CONFIG.radius;
+    const pad = CONFIG.padding;
+    const innerW = w - pad * 2;
+
+    // Card surface with soft drop shadow
+    ctx.save();
+    ctx.shadowColor = CONFIG.cardShadowColor;
+    ctx.shadowBlur = CONFIG.cardShadowBlur;
+    ctx.shadowOffsetY = CONFIG.cardShadowOffsetY;
     ctx.fillStyle = CONFIG.cardBg;
-    ctx.strokeStyle = CONFIG.cardBorder;
-    ctx.lineWidth = 1.5;
     roundRect(ctx, x, y, w, h, r);
     ctx.fill();
+    ctx.restore();
+
+    // Hairline border for definition
+    ctx.strokeStyle = CONFIG.cardBorder;
+    ctx.lineWidth = 1;
+    roundRect(ctx, x, y, w, h, r);
     ctx.stroke();
 
-    let ty = y + CONFIG.padding;
+    // Reset baseline for the rest of the card
+    ctx.textBaseline = 'top';
 
-    ctx.font = '16px ' + CONFIG.fontFamily;
+    // Decorative quote glyph in brand orange (top-left, compact)
+    ctx.fillStyle = CONFIG.quoteGlyphColor;
+    ctx.font = 'bold 36px ' + CONFIG.serifFontFamily;
+    ctx.fillText('“', x + pad, y + pad - 12);
+
+    // Quote text — the hero of the card
+    const textTop = y + pad + 30;
+    ctx.font = '500 14.5px ' + CONFIG.fontFamily;
+    ctx.fillStyle = CONFIG.quoteTextColor;
+    const lines = wrapLines(ctx, card.text, innerW);
+    const lineHeight = 21;
+    const maxL = CONFIG.maxTextLines;
+    const visible = Math.min(lines.length, maxL);
+    for (let i = 0; i < visible; i++) {
+      let line = lines[i];
+      if (i === maxL - 1 && lines.length > maxL) {
+        // Append ellipsis fitting within innerW
+        while (line.length > 0 && ctx.measureText(line + '…').width > innerW) {
+          line = line.slice(0, -1);
+        }
+        line = line + '…';
+      }
+      ctx.fillText(line, x + pad, textTop + i * lineHeight);
+    }
+
+    // Bottom block: divider + avatar + name/role (+ stars)
+    const bottomBlockH = 56;
+    const bottomY = y + h - pad - bottomBlockH + 16;
+
+    // Divider hairline
+    ctx.strokeStyle = CONFIG.dividerColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + pad, bottomY - 14);
+    ctx.lineTo(x + w - pad, bottomY - 14);
+    ctx.stroke();
+
+    // Avatar circle with gradient + initials
+    const avSize = 36;
+    const avX = x + pad;
+    const avY = bottomY;
+    const grad = ctx.createLinearGradient(avX, avY, avX + avSize, avY + avSize);
+    grad.addColorStop(0, CONFIG.avatarGradientStart);
+    grad.addColorStop(1, CONFIG.avatarGradientEnd);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(avX + avSize / 2, avY + avSize / 2, avSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    const initials = getInitials(card.authorName);
+    ctx.fillStyle = CONFIG.avatarTextColor;
+    ctx.font = '700 13px ' + CONFIG.fontFamily;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.fillText(initials, avX + avSize / 2, avY + avSize / 2 + 1);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    // Name + role (right of avatar)
+    const textX = avX + avSize + 12;
+    ctx.font = '600 13.5px ' + CONFIG.fontFamily;
+    ctx.fillStyle = CONFIG.nameColor;
+    const nameMaxW = w - pad - textX;
+    let displayName = card.authorName || '';
+    while (displayName.length > 0 && ctx.measureText(displayName).width > nameMaxW) {
+      displayName = displayName.slice(0, -1);
+    }
+    if (displayName !== (card.authorName || '')) {
+      displayName = displayName.slice(0, -1) + '…';
+    }
+    ctx.fillText(displayName, textX, avY + 2);
+
+    // Role + stars on the same line, separated by a middle dot
     const stars = (card.rating != null && card.rating >= 1 && card.rating <= 5)
       ? Math.floor(card.rating) : 5;
-    const starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
-    ctx.fillStyle = CONFIG.starColor;
-    ctx.fillText(starStr.substring(0, stars), x + CONFIG.padding, ty + 10);
-    ctx.fillStyle = CONFIG.starEmptyColor;
-    ctx.fillText(starStr.substring(stars, 5), x + CONFIG.padding + ctx.measureText(starStr.substring(0, stars)).width, ty + 10);
-    ty += 28;
-
-    ctx.font = '600 14px ' + CONFIG.fontFamily;
-    ctx.fillStyle = CONFIG.textColor;
-    ctx.fillText(card.authorName, x + CONFIG.padding, ty + 10);
-    ty += 22;
-
     ctx.font = '12px ' + CONFIG.fontFamily;
     ctx.fillStyle = CONFIG.roleColor;
-    ctx.fillText(card.role, x + CONFIG.padding, ty + 8);
-    ty += 24;
+    const roleText = card.role + '  ·  ';
+    ctx.fillText(roleText, textX, avY + 22);
+    const roleW = ctx.measureText(roleText).width;
 
-    const textWidth = w - CONFIG.padding * 2;
-    ctx.font = '13px ' + CONFIG.fontFamily;
-    ctx.fillStyle = CONFIG.textColor;
-    const lines = wrapLines(ctx, card.text, textWidth);
-    const lineHeight = 18;
-    const maxL = CONFIG.maxTextLines;
-    for (let i = 0; i < Math.min(lines.length, maxL); i++) {
-      ctx.fillText(lines[i], x + CONFIG.padding, ty + 10);
-      ty += lineHeight;
+    // Stars: filled then empty, smaller than before
+    ctx.font = '11px ' + CONFIG.fontFamily;
+    let sx = textX + roleW;
+    const sy = avY + 23;
+    ctx.fillStyle = CONFIG.starColor;
+    for (let i = 0; i < stars; i++) {
+      ctx.fillText('★', sx, sy);
+      sx += 12;
     }
-    if (lines.length > maxL) {
-      ctx.fillStyle = CONFIG.roleColor;
-      ctx.fillText('...', x + CONFIG.padding, ty - lineHeight + 10);
+    ctx.fillStyle = CONFIG.starEmptyColor;
+    for (let i = stars; i < 5; i++) {
+      ctx.fillText('★', sx, sy);
+      sx += 12;
     }
   }
 
