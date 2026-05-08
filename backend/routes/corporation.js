@@ -5,7 +5,7 @@
 
 import express from "express";
 import { pool } from "../database/db.js";
-import { verifyToken } from "../middleware/auth.js";
+import { requirePortalAccess, verifyToken } from "../middleware/auth.js";
 import financialRouter from "./corporation-financial.js";
 import auditRouter from "./corporation-audit.js";
 import businessApplicationsRouter from "./corporation-business-applications.js";
@@ -75,7 +75,7 @@ async function verifyCorporation(req, res, next) {
 }
 
 router.use(verifyToken);
-router.use(verifyCorporation);
+router.use(requirePortalAccess("corporation", "Acesso negado. Apenas utilizadores corporativos."));
 
 // Sub-rotas financeiras (KPIs, transacções, payouts, export CSV)
 router.use("/financial", financialRouter);
