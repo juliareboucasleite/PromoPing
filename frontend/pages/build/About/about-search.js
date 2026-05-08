@@ -24,48 +24,48 @@ class AboutSearch {
                 title: "Sobre o PromoPing",
                 url: "About/about-promoping.html",
                 content: "O PromoPing Ã© uma plataforma especializada concebida para o ajudar a monitorizar e comparar preÃ§os de produtos num sÃ³ local. Funciona como uma ferramenta inteligente que recolhe dados de mÃºltiplas lojas online, oferecendo aos utilizadores a capacidade de rastrear preÃ§os, receber alertas quando aparecem descontos e tomar decisÃµes de compra mais inteligentes.",
-                keywords: ["sobre", "promoping", "plataforma", "monitorizar", "comparar", "preÃ§os", "produtos", "lojas", "online", "alertas", "descontos", "compras", "inteligentes", "configurar", "configuraÃ§Ã£o"]
+                keywords: ["sobre", "promoping", "plataforma", "monitorizar", "comparar", "preços", "produtos", "lojas", "online", "alertas", "descontos", "compras", "inteligentes", "configurar", "configuraÃ§Ã£o"]
             },
             {
                 title: "Alertas Inteligentes",
                 url: "About/smart-alerts.html",
-                content: "Receba alertas imediatos quando os preÃ§os dos produtos que monitora baixam ou quando hÃ¡ novas ofertas disponÃ­veis. Tipos de alertas incluem: alerta de preÃ§o, alerta de estoque, alerta de oferta e alerta de novo produto. Nunca perca uma oportunidade de compra e seja sempre o primeiro a saber sobre as melhores ofertas.",
-                keywords: ["alertas", "notificaÃ§Ãµes", "preÃ§os", "ofertas", "estoque", "produtos", "descontos", "promoÃ§Ãµes", "avisos", "tempo", "real", "instantÃ¢neos", "sms", "email"]
+                content: "Receba alertas imediatos quando os preços dos produtos que monitora baixam ou quando há novas ofertas disponiveis. Tipos de alertas incluem: alerta de preço, alerta de estoque, alerta de oferta e alerta de novo produto. Nunca perca uma oportunidade de compra e seja sempre o primeiro a saber sobre as melhores ofertas.",
+                keywords: ["alertas", "notificações", "preços", "ofertas", "estoque", "produtos", "descontos", "promoções", "avisos", "tempo", "real", "instantâneos", "sms", "email"]
             },
             {
                 title: "Blog PromoPing",
                 url: "About/promoping-blog.html",
-                content: "Dicas, truques e insights para maximizar as suas poupanÃ§as. Artigos sobre estratÃ©gias de poupanÃ§a, tecnologia, moda, casa e jardim, gaming e entretenimento, livros e educaÃ§Ã£o. AnÃ¡lises mensais de preÃ§os, top produtos com maior poupanÃ§a e previsÃµes para o prÃ³ximo mÃªs.",
-                keywords: ["blog", "dicas", "truques", "poupanÃ§as", "artigos", "estratÃ©gias", "tecnologia", "moda", "casa", "jardim", "gaming", "livros", "educaÃ§Ã£o", "anÃ¡lises", "tendÃªncias", "black", "friday", "promoÃ§Ãµes"]
+                content: "Dicas, truques e insights para maximizar as suas poupanças. Artigos sobre estratégias de poupança, tecnologia, moda, casa e jardim, gaming e entretenimento, livros e educação. Análises mensais de preços, top produtos com maior poupança e previsões para o próximo mês.",
+                keywords: ["blog", "dicas", "truques", "poupanças", "artigos", "estratégias", "tecnologia", "moda", "casa", "jardim", "gaming", "livros", "educação", "análises", "tendências", "black", "friday", "promoções"]
             },
             {
                 title: "Casos de Uso",
                 url: "About/use-cases.html",
-                content: "Descubra como o PromoPing pode transformar a sua experiÃªncia de compras. Casos de uso para profissionais de tecnologia, mÃ£es de famÃ­lia, estudantes universitÃ¡rios, entusiastas de moda, proprietÃ¡rios de casa e gamers. Cada caso mostra como o PromoPing ajuda a poupar dinheiro e a encontrar as melhores ofertas.",
-                keywords: ["casos", "uso", "exemplos", "profissionais", "tecnologia", "famÃ­lia", "estudantes", "moda", "casa", "gaming", "poupanÃ§as", "ofertas", "experiÃªncia", "compras", "cenÃ¡rios", "aplicaÃ§Ãµes"]
+                content: "Descubra como o PromoPing pode transformar a sua experiência de compras. Casos de uso para profissionais de tecnologia, mães de família, estudantes universitários, entusiastas de moda, proprietários de casa e gamers. Cada caso mostra como o PromoPing ajuda a poupar dinheiro e a encontrar as melhores ofertas.",
+                keywords: ["casos", "uso", "exemplos", "profissionais", "tecnologia", "família", "estudantes", "moda", "casa", "gaming", "poupanças", "ofertas", "experiência", "compras", "cenários", "aplicações"]
             },
             {
-                title: "Monitoramento de PreÃ§os",
+                title: "Monitoramento de Preços",
                 url: "About/price-monitoring.html",
-                content: "Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra. O PromoPing monitora constantemente milhares de produtos em dezenas de lojas online, verificando preÃ§os, disponibilidade e ofertas especiais. Suporta mais de 50 lojas portuguesas incluindo PCDiga, Worten, Globaldata, FNAC e muitas outras.",
-                keywords: ["monitoramento", "preÃ§os", "tempo", "real", "produtos", "lojas", "verificaÃ§Ã£o", "disponibilidade", "ofertas", "pcdiga", "worten", "globaldata", "fnac", "rastreamento", "acompanhamento", "histÃ³rico"]
+                content: "Acompanhe produtos em tempo real e nunca perca uma oportunidade de compra. O PromoPing monitora constantemente centenas de produtos em dezenas de lojas online, verificando preços, disponibilidade e ofertas especiais. Suporta mais de 50 lojas portuguesas incluindo PCDiga, Worten, Globaldata, FNAC e muitas outras.",
+                keywords: ["monitoramento", "preços", "tempo", "real", "produtos", "lojas", "verificação", "disponibilidade", "ofertas", "pcdiga", "worten", "globaldata", "fnac", "rastreamento", "acompanhamento", "histórico"]
             },
             {
-                title: "RelatÃ³rios e AnÃ¡lises",
+                title: "Relatórios e Análises",
                 url: "About/reports-and-analytics.html",
-                content: "Compreenda os seus padrÃµes de compra e maximize as suas poupanÃ§as. Visualize quanto dinheiro poupou com o PromoPing atravÃ©s de grÃ¡ficos detalhados e estatÃ­sticas precisas. Tipos de relatÃ³rios incluem: relatÃ³rio mensal, relatÃ³rio por categoria, relatÃ³rio por loja e relatÃ³rio de tendÃªncias.",
-                keywords: ["relatÃ³rios", "anÃ¡lises", "grÃ¡ficos", "estatÃ­sticas", "poupanÃ§as", "padrÃµes", "compras", "dashboard", "visualizaÃ§Ãµes", "insights", "recomendaÃ§Ãµes", "tendÃªncias", "mensal", "categoria", "loja"]
+                content: "Compreenda os seus padrões de compra e maximize as suas poupanças. Visualize quanto dinheiro poupou com o PromoPing através de gráficos detalhados e estatísticas precisas. Tipos de relatórios incluem: relatório mensal, relatório por categoria, relatório por loja e relatório de tendências.",
+                keywords: ["relatórios", "análises", "gráficos", "estatísticas", "poupanças", "padrões", "compras", "dashboard", "visualizações", "insights", "recomendações", "tendências", "mensal", "categoria", "loja"]
             },
             {
-                title: "PolÃ­tica de Cookies",
+                title: "Política de Cookies",
                 url: "About/cookie-policy.html",
-                content: "PolÃ­tica de cookies e privacidade do PromoPing. InformaÃ§Ãµes sobre como utilizamos cookies e tecnologias similares para melhorar a sua experiÃªncia, recolher dados de utilizaÃ§Ã£o e personalizar conteÃºdo. ConheÃ§a os seus direitos e como gerir as preferÃªncias de cookies.",
-                keywords: ["polÃ­tica", "cookies", "privacidade", "dados", "proteÃ§Ã£o", "rgpd", "preferÃªncias", "configuraÃ§Ãµes", "rastreamento", "anÃ¡lise", "personalizaÃ§Ã£o"]
+                content: "Política de cookies e privacidade do PromoPing. Informações sobre como utilizamos cookies e tecnologias similares para melhorar a sua experiência, recolher dados de utilização e personalizar conteúdo. Conheça os seus direitos e como gerir as preferências de cookies.",
+                keywords: ["política", "cookies", "privacidade", "dados", "proteção", "rgpd", "preferências", "configurações", "rastreamento", "análise", "personalização"]
             }
         ];
     }
 
-    /* ---------- UTILITÃRIOS DE SEGURANÃ‡A ---------- */
+    /* ---------- UTILITÁRIOS DE SEGURANÇA ---------- */
 
     // Escapa HTML de forma segura (usa textContent para evitar XSS)
     escapeHTML(str) {
@@ -89,7 +89,7 @@ class AboutSearch {
         return str.replace(/[<>'"&]/g, '');
     }
 
-    // Gera uma versÃ£o "highlighted" segura:
+    // Gera uma versao "highlighted" segura:
     highlightSafe(text, query) {
         if (!query) return this.escapeHTML(text);
         
@@ -205,7 +205,7 @@ class AboutSearch {
             .slice(0, 8);
     }
 
-    //RenderizaÃ§Ã£o segura
+    //renderizacao segura dos resultados
 
     removeExistingResults() {
         const existing = document.querySelector('.search-results');
@@ -246,12 +246,12 @@ class AboutSearch {
             item.className = 'search-result-item';
             if (result.url === this.currentPage || result.url.includes(this.currentPage)) item.classList.add('current-page');
 
-            // TÃ­tulo (highlight seguro)
+            // titulo (highlight seguro)
             const titleDiv = document.createElement('div');
             titleDiv.className = 'search-result-title';
             titleDiv.innerHTML = this.highlightSafe(result.title, query);
 
-            // ConteÃºdo (resumo) - limita e highlight
+            // Conteúdo (resumo) - limita e highlight
             const excerpt = result.content.length > 120 ? result.content.substring(0, 120) + '...' : result.content;
             const contentDiv = document.createElement('div');
             contentDiv.className = 'search-result-content';
@@ -262,7 +262,7 @@ class AboutSearch {
             urlDiv.className = 'search-result-url';
             urlDiv.textContent = result.url;
 
-            // Evento de clique (navegaÃ§Ã£o) â€” sem inline JS
+            // Evento de clique (navegação) — sem inline JS
             item.addEventListener('click', (ev) => {
                 // permite Ctrl/Cmd+click para abrir nova aba
                 if (ev.ctrlKey || ev.metaKey) {
@@ -272,7 +272,7 @@ class AboutSearch {
                 }
             });
 
-            // Accessibility: tornar clicÃ¡vel com Enter quando focado
+            // Accessibility: tornar clicavel com Enter quando focado
             item.tabIndex = 0;
             item.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Enter') {
