@@ -1273,7 +1273,12 @@ body.dashboard-body,
 }
 
 .profile-card--primary {
-    padding-bottom: 1.15rem;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--profile-settings-divider);
+    border-radius: 14px;
+    box-shadow: none;
+    background: #fff;
 }
 
 .profile-card--primary .card-title {
@@ -1281,12 +1286,35 @@ body.dashboard-body,
     letter-spacing: -0.025em;
 }
 
+.card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.settings-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--profile-settings-button-border);
+    background: var(--profile-settings-button-bg);
+    color: var(--profile-settings-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
 .card-header--settings {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 0.85rem;
+    margin: 0;
+    padding: 1.15rem 1.25rem 0.95rem;
+    border-bottom: 1px solid var(--profile-settings-divider);
 }
 
 .card-header-copy {
@@ -1301,10 +1329,13 @@ body.dashboard-body,
 }
 
 .settings-block-label {
-    margin: 0 0 0.7rem;
-    font-size: 0.96rem;
+    margin: 0;
+    padding: 0.9rem 1.25rem 0.35rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: var(--profile-settings-title);
+    color: var(--profile-settings-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .card-content,
@@ -1371,12 +1402,19 @@ body.dashboard-body,
 
 .profile-form--primary {
     max-width: 100%;
+    padding: 0 1.25rem 1rem;
 }
 
 .profile-form--primary .form-group {
     grid-template-columns: 170px minmax(0, 620px);
     align-items: center;
     padding: 0.95rem 0;
+    border-bottom: 1px solid var(--profile-settings-divider);
+}
+
+.profile-form--primary .form-group:last-child {
+    border-bottom: 0;
+    padding-bottom: 0.35rem;
 }
 
 .profile-form--primary .form-label {
@@ -1392,6 +1430,11 @@ body.dashboard-body,
     font-size: 0.95rem;
     border-radius: 8px;
     background: #fff;
+}
+
+.profile-form--primary .save-btn,
+.profile-form--primary .secondary-btn {
+    margin-top: 0;
 }
 
 .save-btn,
@@ -1595,11 +1638,21 @@ body.dashboard-body,
     .card-header--settings {
         flex-direction: column;
         align-items: stretch;
+        padding: 1rem 1rem 0.85rem;
     }
 
     .card-header-actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .profile-form--primary {
+        padding: 0 1rem 1rem;
+    }
+
+    .settings-block-label {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .profile-form--primary .form-group {
