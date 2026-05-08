@@ -1319,7 +1319,11 @@
       if (loading) {
         bar.hidden = false;
         badge.textContent = 'AI search';
-        summary.textContent = 'Understanding your request...';
+        const displayQuery = String(rawQuery || '').trim();
+        const truncated = displayQuery.length > 50 ? displayQuery.slice(0, 47) + '…' : displayQuery;
+        summary.textContent = truncated
+          ? `Hold on, we're searching for "${truncated}"...`
+          : 'Hold on, our AI is searching...';
         pills.innerHTML = '';
         return;
       }
