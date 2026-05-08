@@ -15,7 +15,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import { pool } from "../database/db.js";
-import { verifyToken, optionalToken } from "../middleware/auth.js";
+import { requirePermission, verifyToken, optionalToken } from "../middleware/auth.js";
 import { createTicket as createTicketController, VALID_CONTEXTS } from "../controllers/support.controller.js";
 import { processMessage } from "../services/supportChatEngine.js";
 import { sendMessageToChannel } from "../services/supportDiscordNotifier.js";
@@ -335,7 +335,7 @@ function emitSupportMessageEvent(threadId, messageId, senderType) {
  * - limit: Número máximo de threads (padrão: 20, máximo: 100)
  * - threadId: Se fornecido, retorna mensagens dessa thread específica
  */
-router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) => {
+router.get("/messages/admin", verifyToken, requirePermission("support.admin", "Acesso negado. Apenas administradores."), async (req, res) => {
     try {
         await ensureTable();
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -1089,7 +1089,7 @@ router.post("/messages", optionalToken, async (req, res) => {
  * 
  * Exclui uma thread (conversa) e todas as suas mensagens
  */
-router.delete("/messages/:id", verifyToken, async (req, res) => {
+router.delete("/messages/:id", verifyToken, requirePermission("support.admin", "Apenas administradores podem excluir conversas"), async (req, res) => {
     try {
         await ensureTable();
         const threadId = parseInt(req.params.id);

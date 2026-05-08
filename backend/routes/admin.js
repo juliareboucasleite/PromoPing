@@ -120,7 +120,7 @@ router.use((req, res, next) => {
         return next();
     }
     // verifyAdmin é async mas usa res.json() diretamente, então não precisa await
-    verifyAdmin(req, res, next);
+    requirePermission("admin.panel", "Acesso negado. Apenas administradores.")(req, res, next);
 });
 
 //  UTILIZADORES 

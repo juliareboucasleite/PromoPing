@@ -2,7 +2,7 @@
 import express from "express";
 import { pool } from "../database/db.js";
 // import { formatDate } from "../utils/format.js"; // Removido - função não existe
-import { verifyToken } from "../middleware/auth.js";
+import { requirePermission, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
 import { buildAccessProfile, extendUserWithAccess } from "../services/accessControl.js";
 import {
@@ -408,7 +408,7 @@ router.put("/me", verifyToken, async (req, res) => {
 
 // IMPORTANTE: Esta rota deve vir ANTES de rotas paramétricas genéricas
 // mas DEPOIS de rotas específicas como /admins, /profile, etc.
-router.put("/admin/:id", verifyToken, async (req, res) => {
+router.put("/admin/:id", verifyToken, requirePermission("admin.user.manage", "Apenas administradores podem atualizar outros utilizadores"), async (req, res) => {
   try {
     const targetReferenciaID = req.params.id;
     const currentReferenciaID = req.user.ReferenciaID;

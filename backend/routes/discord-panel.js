@@ -1,7 +1,8 @@
 import { Router } from "express";
 import crypto from "crypto";
-import { verifyToken } from "../middleware/auth.js";
+import { attachAccessContext, requirePermission, verifyToken } from "../middleware/auth.js";
 import { pool } from "../database/db.js";
+import { hasPermission } from "../services/accessControl.js";
 
 const router = Router();
 
@@ -490,12 +491,8 @@ async function userHasManageGuild(referenciaId, guildId) {
 }
 
 // POST /api/discord/panel/send — envio direto (apenas corp, perfilId=3)
-router.post("/send", verifyToken, async (req, res) => {
+router.post("/send", verifyToken, requirePermission("corporation.discord.approve", "Apenas utilizadores corporativos podem enviar diretamente. Use /request."), async (req, res) => {
     await ensureDiscordCouponTables();
-    const perfilId = await getRequestPerfilId(req);
-    if (perfilId !== 3) {
-        return res.status(403).json({ error: "Apenas utilizadores corporativos podem enviar diretamente. Use /request." });
-    }
     const { payload, errors } = sanitizeCouponPayload(req.body);
     if (errors.length) return res.status(400).json({ error: errors.join("; ") });
 
@@ -532,7 +529,7 @@ router.post("/send", verifyToken, async (req, res) => {
 });
 
 // POST /api/discord/panel/request — suporte cria solicitação
-router.post("/request", verifyToken, async (req, res) => {
+router.post("/request", verifyToken, requirePermission("support.discord.request", "Apenas suporte pode criar pedidos para aprovação corporativa."), async (req, res) => {
     await ensureDiscordCouponTables();
     const { payload, errors } = sanitizeCouponPayload(req.body);
     if (errors.length) return res.status(400).json({ error: errors.join("; ") });
@@ -552,9 +549,9 @@ router.post("/request", verifyToken, async (req, res) => {
 });
 
 // GET /api/discord/panel/requests — corp vê todas pendentes; suporte vê as suas
-router.get("/requests", verifyToken, async (req, res) => {
+router.get("/requests", verifyToken, attachAccessContext, async (req, res) => {
     await ensureDiscordCouponTables();
-    const isCorp = (await getRequestPerfilId(req)) === 3;
+    const isCorp = hasPermission(req.accessContext, "corporation.discord.approve");
     try {
         let rows;
         if (isCorp) {
@@ -588,12 +585,8 @@ router.get("/requests", verifyToken, async (req, res) => {
 });
 
 // POST /api/discord/panel/requests/:id/approve — corp aprova → enfileira envio
-router.post("/requests/:id/approve", verifyToken, async (req, res) => {
+router.post("/requests/:id/approve", verifyToken, requirePermission("corporation.discord.approve", "Apenas corp pode aprovar"), async (req, res) => {
     await ensureDiscordCouponTables();
-    const perfilId = await getRequestPerfilId(req);
-    if (perfilId !== 3) {
-        return res.status(403).json({ error: "Apenas corp pode aprovar" });
-    }
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).json({ error: "id inválido" });
     try {
@@ -647,12 +640,8 @@ router.post("/requests/:id/approve", verifyToken, async (req, res) => {
 });
 
 // POST /api/discord/panel/requests/:id/reject
-router.post("/requests/:id/reject", verifyToken, async (req, res) => {
+router.post("/requests/:id/reject", verifyToken, requirePermission("corporation.discord.approve", "Apenas corp pode rejeitar"), async (req, res) => {
     await ensureDiscordCouponTables();
-    const perfilId = await getRequestPerfilId(req);
-    if (perfilId !== 3) {
-        return res.status(403).json({ error: "Apenas corp pode rejeitar" });
-    }
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).json({ error: "id inválido" });
     try {
