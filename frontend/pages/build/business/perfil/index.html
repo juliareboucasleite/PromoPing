@@ -9,6 +9,69 @@
     <link rel="icon" type="image/png" href="/assets/images/PromoPing.png">
     <link rel="stylesheet" href="/business/style/panel.css">
     <style>
+        .bp-main {
+            background:
+                radial-gradient(circle at top left, rgba(244, 175, 85, 0.08), transparent 30%),
+                linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+        }
+        .bp-settings-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(220, 124, 53, 0.18);
+            background: rgba(244, 175, 85, 0.09);
+            color: #c56a1a;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .bp-page-header {
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        .bp-page-header h1 {
+            font-size: clamp(30px, 4.5vw, 48px);
+            line-height: 1;
+            letter-spacing: -0.05em;
+            margin-bottom: 10px;
+        }
+        .bp-page-header p {
+            max-width: 760px;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        .bp-page-actions .bp-chip {
+            border-radius: 14px;
+            padding: 10px 14px;
+        }
+        .bp-card {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .bp-card-header {
+            padding: 0 0 14px;
+            border-bottom: none;
+        }
+        .bp-card-header h2 {
+            font-size: 26px;
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+        }
+        .bp-card-header p {
+            font-size: 14px;
+            line-height: 1.65;
+            max-width: 760px;
+        }
+        .bp-card-body {
+            padding: 0 0 28px;
+        }
         .bp-section { margin-bottom: 24px; }
         .bp-section-head { margin-bottom: 12px; }
         .bp-section-head h2 {
@@ -28,10 +91,11 @@
             gap: 12px;
         }
         .bp-readonly-cell {
-            background: var(--pp-bg-soft);
-            border: 1px solid var(--pp-line);
-            border-radius: 6px;
-            padding: 10px 12px;
+            background: #fff;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
         }
         .bp-readonly-cell .k {
             font-size: 11.5px;
@@ -74,11 +138,44 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 12px;
             color: var(--pp-ink-soft);
-            background: var(--pp-bg-soft);
-            border: 1px solid var(--pp-line);
-            border-radius: 6px;
-            padding: 7px 10px;
+            background: #fff;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 10px;
+            padding: 10px 12px;
             word-break: break-all;
+        }
+        .bp-form-grid .bp-input,
+        .bp-form-grid .bp-select {
+            border-radius: 14px;
+            border-color: rgba(15, 23, 42, 0.12);
+            background: #fff;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+        .bp-form-grid .bp-input:focus,
+        .bp-form-grid .bp-select:focus {
+            box-shadow: 0 0 0 4px rgba(244, 175, 85, 0.14);
+        }
+        .bp-table {
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .bp-table thead th {
+            background: #f8fafc;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .bp-table tbody td {
+            background: #fff;
+        }
+        .bp-help {
+            color: #64748b;
+        }
+        @media (max-width: 900px) {
+            .bp-card-header h2 {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
@@ -124,6 +221,7 @@
         <main class="bp-main">
             <div class="bp-page-header">
                 <div>
+                    <span class="bp-settings-eyebrow">Settings</span>
                     <h1>Perfil da empresa</h1>
                     <p>Mantenha os dados da organizacao atualizados. Estes campos sao usados pela equipa PromoPing para faturacao e contacto.</p>
                 </div>

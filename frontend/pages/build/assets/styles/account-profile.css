@@ -1123,3 +1123,289 @@ input:checked + .toggle-slider:before {
 .twofa-send-email-link { background: none; border: none; color: var(--accent, #f39c12); cursor: pointer; font-size: 0.9rem; text-decoration: underline; padding: 0; }
 .twofa-send-email-link:hover { color: var(--accent-hover, #e08e0b); }
 .twofa-send-email-link:disabled { opacity: 0.7; cursor: default; }
+
+/* ===== SETTINGS LAYOUT REFRESH ===== */
+.dashboard-main {
+    background:
+        radial-gradient(circle at top left, rgba(244, 175, 85, 0.08), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+}
+
+.dashboard-container {
+    max-width: 1180px;
+}
+
+.page-header-perfil {
+    align-items: flex-end;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #ece7df;
+}
+
+.page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    margin-bottom: 0.9rem;
+    border: 1px solid #e7ded2;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a7682a;
+    background: #fff8f0;
+}
+
+.page-header-perfil .page-title {
+    font-size: clamp(2rem, 4vw, 3.15rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #1d2a3b;
+}
+
+.page-header-perfil .page-subtitle {
+    max-width: 700px;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #637086;
+}
+
+.page-header-perfil .page-greeting {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ece7df;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #334155;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.profile-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 0;
+}
+
+.profile-left,
+.profile-right {
+    gap: 0;
+}
+
+.profile-card {
+    padding: 0 0 2rem;
+    margin-bottom: 2rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #ece7df;
+}
+
+.profile-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.card-header {
+    margin: 0 0 1.2rem;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+}
+
+.card-icon {
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+}
+
+.card-title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #182232;
+}
+
+.card-content,
+.profile-form,
+.password-form,
+.notification-preferences,
+.account-management-section,
+.connected-accounts,
+.history-actions,
+.statistics,
+.plan-info,
+.twofa-section {
+    max-width: 880px;
+}
+
+.section-desc,
+.history-plan-hint,
+.twofa-desc,
+.account-action-desc,
+.plan-description,
+.preference-desc {
+    color: #64748b;
+}
+
+.form-group {
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.form-input,
+.twofa-code-input,
+.delete-input {
+    min-width: 0;
+    max-width: 720px;
+    padding: 0.95rem 1rem;
+    border: 1px solid #dbe3ef;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.form-input:focus,
+.twofa-code-input:focus,
+.delete-input:focus {
+    border-color: #f0a04b;
+    box-shadow: 0 0 0 4px rgba(240, 160, 75, 0.12);
+}
+
+.save-btn,
+.change-plan-btn,
+.history-action-btn,
+.account-status,
+.account-action-btn,
+.modal-btn,
+.twofa-download-codes-btn {
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.save-btn,
+.change-plan-btn,
+.history-btn-pdf,
+.modal-btn.confirm,
+.twofa-download-codes-btn {
+    background: #111827;
+    color: #fff;
+}
+
+.save-btn:hover,
+.change-plan-btn:hover,
+.history-btn-pdf:hover,
+.modal-btn.confirm:hover,
+.twofa-download-codes-btn:hover {
+    background: #1f2937;
+}
+
+.history-btn-completo,
+.account-status,
+.account-action-btn.deactivate-btn,
+.modal-btn.cancel {
+    background: #fff;
+    color: #334155;
+    border: 1px solid #dbe3ef;
+}
+
+.notification-preferences,
+.connected-accounts,
+.statistics,
+.account-management-section {
+    gap: 0;
+}
+
+.preference-item,
+.account-item,
+.account-action-item,
+.stat-item {
+    padding: 1rem 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #eef2f7;
+    border-radius: 0;
+}
+
+.preference-item:first-child,
+.account-item:first-child,
+.account-action-item:first-child,
+.stat-item:first-child {
+    padding-top: 0;
+}
+
+.preference-item:hover,
+.account-item:hover,
+.account-action-item:hover {
+    background: transparent;
+    transform: none;
+}
+
+.account-status.connected {
+    background: #ecfdf3;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 1rem 2rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #182232;
+}
+
+.plan-info {
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.plan-name {
+    font-size: 1.35rem;
+    color: #182232;
+}
+
+.feature-item {
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #e8edf5;
+}
+
+@media (max-width: 900px) {
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+}
