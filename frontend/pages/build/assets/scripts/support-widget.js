@@ -461,6 +461,9 @@
 
     // Estado da thread atual (null = nova conversa, number = thread existente)
     let currentThreadId = null;
+    let threadEventSource = null;
+    let subscribedThreadId = null;
+    let refreshTimeoutId = null;
     // Wizard automático: recolher nome, email e problema antes de abrir ticket
     let wizardStep = null; // 0 = nome, 1 = email, 2 = mensagem, null = fora do wizard
     let wizardUserName = '';
@@ -488,6 +491,71 @@
     const prevPageBtn = modal.querySelector('#pp-support-prev-page');
     const nextPageBtn = modal.querySelector('#pp-support-next-page');
     const pageInfo = modal.querySelector('#pp-support-page-info');
+
+    function closeThreadStream() {
+      if (threadEventSource) {
+        threadEventSource.close();
+        threadEventSource = null;
+      }
+      subscribedThreadId = null;
+      if (refreshTimeoutId) {
+        clearTimeout(refreshTimeoutId);
+        refreshTimeoutId = null;
+      }
+    }
+
+    function scheduleRealtimeRefresh() {
+      if (refreshTimeoutId) {
+        clearTimeout(refreshTimeoutId);
+      }
+      refreshTimeoutId = setTimeout(async () => {
+        refreshTimeoutId = null;
+        if (!currentThreadId || modal.style.display === 'none') return;
+        await refreshMessages(currentThreadId, messagesContainer);
+        await loadAllThreads(currentPage);
+      }, 120);
+    }
+
+    function ensureThreadStream(threadId) {
+      if (!threadId) {
+        closeThreadStream();
+        return;
+      }
+      if (subscribedThreadId === threadId && threadEventSource) {
+        return;
+      }
+
+      closeThreadStream();
+      const apiBase = getAPIBase().replace(/\/+$/, '');
+      const params = new URLSearchParams({ threadId: String(threadId) });
+      const token = getToken();
+      const anonymousId = getOrCreateAnonymousId();
+      if (token) params.set('token', token);
+      if (anonymousId) params.set('anonymousId', anonymousId);
+
+      threadEventSource = new EventSource(`${apiBase}/api/support/stream?${params.toString()}`);
+      subscribedThreadId = threadId;
+
+      threadEventSource.addEventListener('support-message', (event) => {
+        try {
+          const payload = JSON.parse(event.data || '{}');
+          if (Number(payload.threadId) === Number(currentThreadId)) {
+            scheduleRealtimeRefresh();
+          }
+        } catch (error) {
+          console.error(' [Support Widget] Invalid SSE payload:', error);
+        }
+      });
+
+      threadEventSource.onerror = () => {
+        closeThreadStream();
+        setTimeout(() => {
+          if (modal.style.display !== 'none' && currentThreadId === threadId) {
+            ensureThreadStream(threadId);
+          }
+        }, 2000);
+      };
+    }
     
     // Estado das threads e paginação
     let allThreads = [];
@@ -533,6 +601,7 @@
      */
     function startNewConversation() {
       currentThreadId = null;
+      closeThreadStream();
       wizardStep = 0;
       wizardUserName = '';
       wizardUserEmail = '';
@@ -626,6 +695,7 @@
       wizardStep = null;
       textEl.placeholder = 'Type your message...';
       await refreshMessages(threadId, messagesContainer);
+      ensureThreadStream(threadId);
       updateThreadInfo();
       renderThreadsList();
     }
@@ -645,9 +715,11 @@
           wizardStep = null;
           textEl.placeholder = 'Type your message...';
           await refreshMessages(currentThreadId, messagesContainer);
+          ensureThreadStream(currentThreadId);
           updateThreadInfo();
         } else {
           currentThreadId = null;
+          closeThreadStream();
           wizardStep = 0;
           wizardUserName = '';
           wizardUserEmail = '';
@@ -713,6 +785,7 @@
           wizardUserEmail = '';
           textEl.value = '';
           textEl.placeholder = 'Type your message...';
+          ensureThreadStream(currentThreadId);
           fb.textContent = result.automation?.status === 'ai_answered'
             ? 'Sent! PromoPing AI replied below.'
             : 'Sent! The team can reply here.';
@@ -741,6 +814,7 @@
             body: JSON.stringify({ message, context: window.location.pathname })
           });
           currentThreadId = result.threadId || result.id;
+          ensureThreadStream(currentThreadId);
           updateThreadInfo();
         }
 
@@ -766,12 +840,15 @@
       
       if (!isOpen) {
         await loadLatestThread();
+      } else {
+        closeThreadStream();
       }
     });
 
     // Fechar modal
     modal.querySelector('#pp-support-close').addEventListener('click', () => {
       modal.style.display = 'none';
+      closeThreadStream();
     });
 
     // Nova conversa

@@ -835,19 +835,25 @@ router.post("/internal/threads/:threadId/reply", async (req, res) => {
         }
 
         const anonSession = root[0].anonymousSessionId || null;
+        let insertedReplyId = null;
         if (anonSession) {
-            await pool.query(
+            const [insertResult] = await pool.query(
                 `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId, anonymousSessionId)
                  VALUES (?, ?, ?, 'support', ?, ?, ?)`,
                 [referenciaID, senderReferenciaID, message.trim(), rootId, threadId, anonSession]
             );
+            insertedReplyId = insertResult.insertId;
         } else {
-            await pool.query(
+            const [insertResult] = await pool.query(
                 `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, ?, 'support', ?, ?)`,
                 [referenciaID, senderReferenciaID, message.trim(), rootId, threadId]
             );
+            insertedReplyId = insertResult.insertId;
         }
         await markThreadHumanReplied(threadId);
+        if (insertedReplyId) {
+            emitSupportMessageEvent(threadId, insertedReplyId, "support");
+        }
         console.log(" [SUPPORT] Resposta do Discord guardada para thread", threadId);
         return res.status(201).json({ status: "ok", threadId });
     } catch (error) {
