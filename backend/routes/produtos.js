@@ -53,6 +53,8 @@ function fitProductNameToColumn(nome, maxLength = 150) {
 router.post("/", verifyToken, async (req, res) => {
     try {
         const { nome, link, data, precoAlvo } = req.body;
+        const safeNome = fitProductNameToColumn(nome);
+        const normalizedLink = typeof link === "string" ? link.trim() : "";
         
         console.log(" Dados recebidos:", { nome, link, data, precoAlvo });
         console.log(" Validação:", { 
@@ -70,7 +72,13 @@ router.post("/", verifyToken, async (req, res) => {
                 message: "Preencha os campos obrigatórios (nome, link e preço alvo válido)" 
             });
         }
-        if (!isAllowedProductUrl(link)) {
+        if (!safeNome) {
+            return res.status(400).json({
+                status: "error",
+                message: "O nome do produto é obrigatório."
+            });
+        }
+        if (!isAllowedProductUrl(normalizedLink)) {
             return res.status(400).json({
                 status: "error",
                 message: "O link do produto deve ser um URL válido (http ou https)."
