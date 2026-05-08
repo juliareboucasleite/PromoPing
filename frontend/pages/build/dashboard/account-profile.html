@@ -703,6 +703,8 @@
                     if (emailEl) emailEl.value = profile.email || "";
                     if (fullNameEl) fullNameEl.defaultValue = profile.nome || "";
                     if (emailEl) emailEl.defaultValue = profile.email || "";
+                    updateContactPhoneUI(profile.telefone || "");
+                    loadBackupEmail();
                     const greetingEl = document.getElementById("profileGreetingName");
                     if (greetingEl) greetingEl.textContent = profile.nome || "User";
 
@@ -803,6 +805,61 @@
                 else alert("Server connection error.");
             }
         });
+
+        document.getElementById("personalInfoForm").addEventListener("reset", () => {
+            setTimeout(() => {
+                loadBackupEmail();
+            }, 0);
+        });
+
+        const changePasswordShortcut = document.getElementById("changePasswordShortcut");
+        if (changePasswordShortcut) {
+            changePasswordShortcut.addEventListener("click", () => {
+                const target = document.getElementById("currentPassword");
+                if (!target) return;
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                setTimeout(() => target.focus(), 180);
+            });
+        }
+
+        function getBackupEmailStorageKey() {
+            return "promoping.profile.backupEmail";
+        }
+
+        function updateBackupEmailUI(value) {
+            const backupValueEl = document.getElementById("backupEmailValue");
+            const backupBtnEl = document.getElementById("backupEmailBtn");
+            const hasValue = !!(value && value.trim());
+            if (backupValueEl) {
+                backupValueEl.textContent = hasValue ? value.trim() : "Nenhum e-mail de backup configurado.";
+                backupValueEl.classList.toggle("is-placeholder", !hasValue);
+            }
+            if (backupBtnEl) {
+                backupBtnEl.textContent = hasValue ? "Alterar e-mail de backup" : "Adicionar e-mail de backup";
+            }
+        }
+
+        function loadBackupEmail() {
+            try {
+                const backupEmail = localStorage.getItem(getBackupEmailStorageKey()) || "";
+                updateBackupEmailUI(backupEmail);
+            } catch (_err) {
+                updateBackupEmailUI("");
+            }
+        }
+
+        function updateContactPhoneUI(value) {
+            const phoneValueEl = document.getElementById("contactPhoneValue");
+            const phoneBtnEl = document.getElementById("contactPhoneBtn");
+            const hasValue = !!(value && String(value).trim());
+            if (phoneValueEl) {
+                phoneValueEl.textContent = hasValue ? String(value).trim() : "Nenhum número configurado.";
+                phoneValueEl.classList.toggle("is-placeholder", !hasValue);
+            }
+            if (phoneBtnEl) {
+                phoneBtnEl.textContent = hasValue ? "Alterar número de contato" : "Incluir novo número de contato";
+            }
+        }
 
         // Evento de submit para alteraÃ§Ã£o da senha do usuÃ¡rio
         document.getElementById("passwordForm").addEventListener("submit", async (e) => {
