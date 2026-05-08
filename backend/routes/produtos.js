@@ -35,6 +35,19 @@ function isAllowedProductUrl(url) {
   return trimmed.startsWith("http://") || trimmed.startsWith("https://");
 }
 
+function normalizeProductName(nome) {
+  return String(nome || "").trim();
+}
+
+function fitProductNameToColumn(nome, maxLength = 150) {
+  const normalized = normalizeProductName(nome);
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return normalized.slice(0, maxLength).trim();
+}
+
 //! Não há mais atualização automática de preços
 //  Adicionar produto (com limite por plano)
 router.post("/", verifyToken, async (req, res) => {
