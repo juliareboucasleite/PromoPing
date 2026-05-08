@@ -713,7 +713,9 @@
           wizardUserEmail = '';
           textEl.value = '';
           textEl.placeholder = 'Type your message...';
-          fb.textContent = 'Sent! The team can reply here.';
+          fb.textContent = result.automation?.status === 'ai_answered'
+            ? 'Sent! PromoPing AI replied below.'
+            : 'Sent! The team can reply here.';
           fb.style.color = '#2e7d32';
           setTimeout(() => { fb.textContent = ''; }, 2500);
           await refreshMessages(currentThreadId, messagesContainer);
@@ -743,7 +745,9 @@
         }
 
         textEl.value = '';
-        fb.textContent = 'Sent successfully!';
+        fb.textContent = result.automation?.status === 'ai_answered'
+          ? 'Sent! PromoPing AI replied below.'
+          : 'Sent successfully!';
         fb.style.color = '#2e7d32';
         setTimeout(() => { fb.textContent = ''; }, 2000);
         await refreshMessages(currentThreadId, messagesContainer);

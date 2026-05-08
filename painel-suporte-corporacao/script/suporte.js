@@ -59,7 +59,7 @@
     }
 
     function getThreadStageMeta(thread) {
-        const stage = String(thread.supportStage || '').toLowerCase();
+        const stage = String(thread.supportStage || (thread.discordChannelId ? 'escalated' : '')).toLowerCase();
         if (stage === 'escalated') return { label: 'Escalada', className: 'thread-stage is-escalated' };
         if (stage === 'human_replied') return { label: 'Humano', className: 'thread-stage is-human' };
         if (stage === 'ai_answered') return { label: 'IA', className: 'thread-stage is-ai' };

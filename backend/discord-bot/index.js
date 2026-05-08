@@ -179,7 +179,7 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
             const prefix = '**Histórico da conversa**\n';
             const chunkSize = 1800;
             for (let i = 0; i < transcriptText.length; i += chunkSize) {
-                const chunk = transcriptText.slice(i, i + chunkSize);
+                const chunk = transcriptText.slice(i, i + chunkSize).replace(/```/g, '``` ');
                 await channel.send({ content: `${i === 0 ? prefix : ''}\`\`\`\n${chunk}\n\`\`\`` });
             }
         }

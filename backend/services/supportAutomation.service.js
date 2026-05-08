@@ -114,7 +114,9 @@ export async function automateSupportThread(threadId, options = {}) {
         return { status: "missing_thread" };
     }
 
-    const currentStage = normalizeStage(root.supportstage || root.supportStage);
+    const currentStage = normalizeStage(
+        root.supportstage || root.supportStage || ((root.discordchannelid || root.discordChannelId) ? "escalated" : "open")
+    );
     if (HUMAN_OWNED_STAGES.has(currentStage)) {
         return { status: currentStage, threadId };
     }

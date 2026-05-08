@@ -322,10 +322,10 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
                 threadId: msg.threadId || msg.id,
                 message: msg.message,
                 senderType: msg.senderType,
-                supportStage: msg.supportStage || null,
-                aiConfidence: msg.aiConfidence || null,
-                aiEscalationReason: msg.aiEscalationReason || null,
-                escalatedAt: msg.escalatedAt || null,
+                supportStage: msg.supportStage || msg.supportstage || null,
+                aiConfidence: msg.aiConfidence || msg.aiconfidence || null,
+                aiEscalationReason: msg.aiEscalationReason || msg.aiescalationreason || null,
+                escalatedAt: msg.escalatedAt || msg.escalatedat || null,
                 ReferenciaID: msg.ReferenciaID,
                 userName: msg.userName || "Usuário",
                 userEmail: msg.userEmail || "",
@@ -373,11 +373,11 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
             threadId: thread.threadId || thread.id,
             message: thread.message,
             senderType: thread.senderType,
-            supportStage: thread.supportStage || null,
-            aiConfidence: thread.aiConfidence || null,
-            aiEscalationReason: thread.aiEscalationReason || null,
-            escalatedAt: thread.escalatedAt || null,
-            discordChannelId: thread.discordChannelId || null,
+            supportStage: thread.supportStage || thread.supportstage || null,
+            aiConfidence: thread.aiConfidence || thread.aiconfidence || null,
+            aiEscalationReason: thread.aiEscalationReason || thread.aiescalationreason || null,
+            escalatedAt: thread.escalatedAt || thread.escalatedat || null,
+            discordChannelId: thread.discordChannelId || thread.discordchannelid || null,
             ReferenciaID: thread.ReferenciaID,
             userName: thread.userName || "Usuário",
             userEmail: thread.userEmail || "",
@@ -608,6 +608,11 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
         const threadId = originalMessage[0].threadId || originalMessage[0].id;
         const refOriginal = originalMessage[0].ReferenciaID;
         const anonSessionOriginal = originalMessage[0].anonymousSessionId;
+        const [rootThreadRows] = await pool.query(
+            "SELECT discordChannelId, supportStage FROM supportmessages WHERE id = ? LIMIT 1",
+            [threadId]
+        );
+        const rootThread = rootThreadRows[0] || {};
 
         if (senderType === 'user') {
             if (isAnonymous) {
@@ -654,8 +659,8 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
 
         setImmediate(async () => {
             try {
-                const channelId = originalMessage[0].discordChannelId || (automation && automation.discordChannelId) || null;
-                const rootStage = String(originalMessage[0].supportStage || "").toLowerCase();
+                const channelId = rootThread.discordChannelId || (automation && automation.discordChannelId) || null;
+                const rootStage = String(rootThread.supportStage || (rootThread.discordChannelId ? "escalated" : "")).toLowerCase();
                 const humanOwned = ["escalated", "human_replied"].includes(rootStage)
                     || (automation && ["escalated", "human_replied"].includes(String(automation.status || "").toLowerCase()));
 
