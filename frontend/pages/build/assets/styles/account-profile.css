@@ -1665,18 +1665,20 @@ body.dashboard-body,
         justify-content: flex-start;
     }
 
-    .profile-form--primary {
-        padding: 0 1rem 1rem;
+    .settings-rows {
+        padding: 0 1rem 0.8rem;
     }
 
-    .settings-block-label {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .profile-form--primary .form-group {
+    .settings-row {
         grid-template-columns: 1fr;
         gap: 6px;
+        align-items: flex-start;
+        min-height: auto;
+        padding: 0.8rem 0;
+    }
+
+    .settings-row-control--inline {
+        flex-direction: column;
         align-items: flex-start;
     }
 
