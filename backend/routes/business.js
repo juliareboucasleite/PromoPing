@@ -473,6 +473,14 @@ async function getMembershipsByUser(referenciaID) {
 }
 
 async function getCurrentMembership(referenciaID, organizationId = null) {
+  const params = [referenciaID];
+  let organizationFilter = "";
+
+  if (organizationId !== null && organizationId !== undefined) {
+    organizationFilter = " AND m.organization_id = ?";
+    params.push(organizationId);
+  }
+
   const [rows] = await pool.query(
     `SELECT
         m.id AS member_id,
@@ -505,14 +513,14 @@ async function getCurrentMembership(referenciaID, organizationId = null) {
         o.updated_at AS org_updated_at
        FROM organization_members m
        JOIN organizations o ON o.id = m.organization_id
-      WHERE m.referenciaid = ?
-        AND m.status = 'active'
-        AND (? IS NULL OR m.organization_id = ?)
-      ORDER BY
-        CASE m.role WHEN 'owner' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END,
-        o.created_at ASC
+       WHERE m.referenciaid = ?
+         AND m.status = 'active'
+         ${organizationFilter}
+       ORDER BY
+         CASE m.role WHEN 'owner' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END,
+         o.created_at ASC
       LIMIT 1`,
-    [referenciaID, organizationId, organizationId]
+    params
   );
 
   return rows.length ? mapMembershipRow(rows[0]) : null;
