@@ -629,11 +629,17 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
             ? referenciaID
             : (isAnonymous ? ANON_REFERENCIA_ID : referenciaID);
 
-        const [insertResult] = await pool.query(
-            `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [referenciaIDParaResposta, senderReferenciaID, message.trim(), senderType, messageId, threadId]
-        );
+        const [insertResult] = anonSessionOriginal
+            ? await pool.query(
+                `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId, anonymousSessionId)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [referenciaIDParaResposta, senderReferenciaID, message.trim(), senderType, messageId, threadId, anonSessionOriginal]
+            )
+            : await pool.query(
+                `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [referenciaIDParaResposta, senderReferenciaID, message.trim(), senderType, messageId, threadId]
+            );
         const newId = insertResult.insertId;
 
         let automation = null;
@@ -698,7 +704,7 @@ router.post("/internal/threads/:threadId/reply", async (req, res) => {
         }
 
         const [root] = await pool.query(
-            "SELECT id, ReferenciaID FROM supportmessages WHERE id = ? LIMIT 1",
+            "SELECT id, ReferenciaID, anonymousSessionId FROM supportmessages WHERE id = ? LIMIT 1",
             [threadId]
         );
         if (root.length === 0) {
@@ -719,10 +725,19 @@ router.post("/internal/threads/:threadId/reply", async (req, res) => {
             }
         }
 
-        await pool.query(
-            `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, ?, 'support', ?, ?)`,
-            [referenciaID, senderReferenciaID, message.trim(), rootId, threadId]
-        );
+        const anonSession = root[0].anonymousSessionId || null;
+        if (anonSession) {
+            await pool.query(
+                `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId, anonymousSessionId)
+                 VALUES (?, ?, ?, 'support', ?, ?, ?)`,
+                [referenciaID, senderReferenciaID, message.trim(), rootId, threadId, anonSession]
+            );
+        } else {
+            await pool.query(
+                `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, ?, 'support', ?, ?)`,
+                [referenciaID, senderReferenciaID, message.trim(), rootId, threadId]
+            );
+        }
         await markThreadHumanReplied(threadId);
         console.log(" [SUPPORT] Resposta do Discord guardada para thread", threadId);
         return res.status(201).json({ status: "ok", threadId });
