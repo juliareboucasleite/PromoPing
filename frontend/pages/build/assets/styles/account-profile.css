@@ -1255,12 +1255,55 @@ body.dashboard-body,
     width: 15px;
     height: 15px;
     color: var(--profile-settings-icon);
+    display: none;
 }
 
 .card-title {
     font-size: 0.98rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    color: var(--profile-settings-title);
+}
+
+.card-subtitle {
+    margin: 0.22rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--profile-settings-muted);
+}
+
+.profile-card--primary {
+    padding-bottom: 1.15rem;
+}
+
+.profile-card--primary .card-title {
+    font-size: 1.35rem;
+    letter-spacing: -0.025em;
+}
+
+.card-header--settings {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.card-header-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-block-label {
+    margin: 0 0 0.7rem;
+    font-size: 0.96rem;
+    font-weight: 700;
     color: var(--profile-settings-title);
 }
 
@@ -1326,6 +1369,31 @@ body.dashboard-body,
     box-shadow: 0 0 0 3px var(--profile-settings-ring);
 }
 
+.profile-form--primary {
+    max-width: 100%;
+}
+
+.profile-form--primary .form-group {
+    grid-template-columns: 170px minmax(0, 620px);
+    align-items: center;
+    padding: 0.95rem 0;
+}
+
+.profile-form--primary .form-label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--profile-settings-title);
+}
+
+.profile-form--primary .form-input {
+    max-width: 620px;
+    min-height: 38px;
+    padding: 0.58rem 0.78rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    background: #fff;
+}
+
 .save-btn,
 .change-plan-btn,
 .history-action-btn,
@@ -1355,6 +1423,22 @@ body.dashboard-body,
 .history-btn-pdf:hover,
 .modal-btn.confirm:hover,
 .twofa-download-codes-btn:hover {
+    background: var(--profile-settings-button-bg-hover);
+}
+
+.secondary-btn {
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.46rem 0.78rem;
+    background: #fff;
+    color: var(--profile-settings-body);
+    border: 1px solid var(--profile-settings-button-border);
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
     background: var(--profile-settings-button-bg-hover);
 }
 
@@ -1508,6 +1592,22 @@ body.dashboard-body,
 }
 
 @media (max-width: 900px) {
+    .card-header--settings {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .card-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .profile-form--primary .form-group {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        align-items: flex-start;
+    }
+
     .form-group {
         grid-template-columns: 1fr;
         gap: 6px;

@@ -78,38 +78,38 @@
 
             <header class="page-header page-header-perfil">
                 <div class="page-header-left">
-                    <span class="page-eyebrow">Settings</span>
                     <h1 class="page-title">Personal settings</h1>
                     <p class="page-subtitle">Manage your identity, security and connected services from one place.</p>
                 </div>
-                <p class="page-greeting">Signed in as <span id="profileGreetingName">User</span></p>
             </header>
 
             <div class="profile-layout">
 
                 <div class="profile-left">
 
-                    <div class="profile-card">
-                        <div class="card-header">
-                            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <h2 class="card-title">Personal information</h2>
+                    <div class="profile-card profile-card--primary">
+                        <div class="card-header card-header--settings">
+                            <div class="card-header-copy">
+                                <h2 class="card-title">Dados pessoais</h2>
+                                <p class="card-subtitle">Atualize o nome e o e-mail usados na sua conta.</p>
+                            </div>
+                            <div class="card-header-actions">
+                                <button type="reset" class="secondary-btn" form="personalInfoForm">Cancelar</button>
+                                <button type="submit" class="save-btn" form="personalInfoForm">Salvar</button>
+                            </div>
                         </div>
+                        <div class="settings-block-label">Usuário</div>
 
-                        <form class="profile-form" id="personalInfoForm">
+                        <form class="profile-form profile-form--primary" id="personalInfoForm">
                             <div class="form-group">
-                                <label class="form-label" for="fullName">Full name</label>
+                                <label class="form-label" for="fullName">Nome</label>
                                 <input type="text" class="form-input" id="fullName" value="" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="email">Email</label>
+                                <label class="form-label" for="email">E-mail</label>
                                 <input type="email" class="form-input" id="email" value="" required>
                             </div>
-
-                            <button type="submit" class="save-btn">Save changes</button>
                         </form>
                     </div>
 
@@ -664,6 +664,8 @@
 
                     if (fullNameEl) fullNameEl.value = profile.nome || "";
                     if (emailEl) emailEl.value = profile.email || "";
+                    if (fullNameEl) fullNameEl.defaultValue = profile.nome || "";
+                    if (emailEl) emailEl.defaultValue = profile.email || "";
                     const greetingEl = document.getElementById("profileGreetingName");
                     if (greetingEl) greetingEl.textContent = profile.nome || "User";
 
@@ -748,6 +750,10 @@
 
                 const data = await res.json();
                 if (data.status === "ok") {
+                    const fullNameEl = document.getElementById("fullName");
+                    const emailEl = document.getElementById("email");
+                    if (fullNameEl) fullNameEl.defaultValue = fullNameEl.value;
+                    if (emailEl) emailEl.defaultValue = emailEl.value;
                     if (window.notificationSystem) window.notificationSystem.success('Success', 'Information saved successfully!', 5000);
                     else alert("Information saved successfully!");
                 } else {
