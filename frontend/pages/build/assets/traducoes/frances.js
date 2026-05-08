@@ -122,7 +122,7 @@ window.translationsFR = {
   'O código QR estará disponível em breve': 'Le code QR sera disponible très prochainement',
   'Depoimentos': 'Témoignages',
   'Confiança de quem poupa todos os dias': 'La confiance de celles et ceux qui économisent au quotidien',
-  'Milhares de portugueses já economizam com o PromoPing': 'Des milliers d\'utilisateurs au Portugal économisent déjà avec PromoPing',
+  'O que dizem os nossos primeiros utilizadores': 'Ce que disent nos premiers utilisateurs',
   'A carregar depoimentos...': 'Chargement des témoignages…',
   'Ainda não há depoimentos disponíveis.': 'Aucun témoignage n\'est disponible pour le moment.',
   'Erro ao carregar depoimentos.': 'Une erreur est survenue lors du chargement des témoignages.',
