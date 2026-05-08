@@ -1226,9 +1226,14 @@
             if (nextBtn) nextBtn.disabled = false;
         }
 
+        function isYearlyMode() {
+            const btn = document.getElementById('toggleYearly');
+            return !!(btn && btn.classList.contains('active'));
+        }
+
         window.wizardGoStep2 = function() {
             if (!wizardSelected) return;
-            const anual = !!window.billingYearly;
+            const anual = isYearlyMode();
             const yearly = (typeof window.getPrecoYearlyPorPlanId === 'function')
                 ? window.getPrecoYearlyPorPlanId(wizardSelected.id) : null;
             const display = anual
@@ -1304,6 +1309,18 @@
             // Pré-seleciona o "Most Popular" (Standard) por defeito
             const featured = document.querySelector('.plan-card.featured');
             if (featured) selectCard(featured);
+
+            // Move o toggle Monthly/Yearly para um header ao lado do H1 do step 1
+            const toggle = document.querySelector('.plan-billing-toggle');
+            const h1 = document.querySelector('[data-step-content="1"] > h1');
+            if (toggle && h1 && !document.querySelector('.plans-step-header')) {
+                const header = document.createElement('div');
+                header.className = 'plans-step-header';
+                h1.parentNode.insertBefore(header, h1);
+                header.appendChild(h1);
+                header.appendChild(toggle);
+                toggle.style.display = ''; // garantir visível
+            }
         });
     })();
     </script>
