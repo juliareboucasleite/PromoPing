@@ -594,28 +594,35 @@
             }
         }
 
-        // Função para confirmar compra e redirecionar para Stripe
-        async function confirmarCompra() {
+        async function iniciarCheckoutPlano(options = {}) {
             if (!selectedPlanData) {
                 alert('Error: plan data not found');
-                return;
+                return false;
             }
 
             const { id, name, price } = selectedPlanData;
             const token = localStorage.getItem("token");
+            const {
+                triggerButton = null,
+                loadingText = 'Processando...',
+                onBeforeRedirect = null,
+                onFreePlanActivated = null
+            } = options;
             
             if (!token) {
                 alert('You must be signed in to purchase a plan.');
                 window.location.href = '/login';
-                return;
+                return false;
             }
 
-            const confirmBtn = document.getElementById('confirmPurchaseBtn');
-            const originalText = confirmBtn.textContent;
+            const activeButton = triggerButton || document.getElementById('confirmPurchaseBtn');
+            const originalText = activeButton ? activeButton.textContent : '';
             
             // Desabilitar botÃ£o e mostrar loading
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = 'Processando...';
+            if (activeButton) {
+                activeButton.disabled = true;
+                activeButton.textContent = loadingText;
+            }
 
             try {
                 // Se for plano Free, ativar diretamente
@@ -636,9 +643,13 @@
 
                     const data = await response.json();
                     alert('Plan Free ativado com sucesso!');
-                    fecharModalCompra();
-                    location.reload();
-                    return;
+                    if (typeof onFreePlanActivated === 'function') {
+                        onFreePlanActivated(data);
+                    } else {
+                        fecharModalCompra();
+                        location.reload();
+                    }
+                    return true;
                 }
 
                 // Para planos pagos, criar sessÃ£o de checkout no Stripe
@@ -666,22 +677,29 @@
                 if (data.checkout_url || data.url) {
                     const redirectUrl = data.checkout_url || data.url;
                     console.log("[COMPRA] Redirecionando para:", redirectUrl);
-                    
-                    // Fechar modal antes de redirecionar
-                    fecharModalCompra();
+                    if (typeof onBeforeRedirect === 'function') {
+                        onBeforeRedirect();
+                    } else {
+                        fecharModalCompra();
+                    }
                     
                     // Pequeno delay para garantir que o modal feche
                     setTimeout(() => {
                         // Usar replace para evitar que o usuÃ¡rio volte com o botÃ£o voltar
                         window.location.replace(redirectUrl);
                     }, 100);
-                    return; // Importante: sair da funÃ§Ã£o apÃ³s iniciar o redirecionamento
+                    return true; // Importante: sair da funÃ§Ã£o apÃ³s iniciar o redirecionamento
                 } else if (data.status === 'ok' && data.message) {
                     // Plan gratuito ativado
                     console.log("[COMPRA] Plan gratuito ativado");
                     alert(data.message);
-                    fecharModalCompra();
-                    location.reload();
+                    if (typeof onFreePlanActivated === 'function') {
+                        onFreePlanActivated(data);
+                    } else {
+                        fecharModalCompra();
+                        location.reload();
+                    }
+                    return true;
                 } else {
                     console.error("[COMPRA] URL de checkout nÃ£o encontrada na resposta:", data);
                     throw new Error("Checkout URL not received from the server");
@@ -692,9 +710,25 @@
                 alert(`Error processing payment: ${error.message || 'Please try again later.'}`);
                 
                 // Reabilitar botÃ£o
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = originalText;
+                if (activeButton) {
+                    activeButton.disabled = false;
+                    activeButton.textContent = originalText;
+                }
+                return false;
             }
+        }
+
+        // Função para confirmar compra e redirecionar para Stripe
+        async function confirmarCompra() {
+            return await iniciarCheckoutPlano({
+                triggerButton: document.getElementById('confirmPurchaseBtn'),
+                loadingText: 'Processando...',
+                onBeforeRedirect: () => fecharModalCompra(),
+                onFreePlanActivated: () => {
+                    fecharModalCompra();
+                    location.reload();
+                }
+            });
         }
 
         function onEscapeCancelModal(e) {
@@ -1281,14 +1315,14 @@
             const orig = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'A processar...';
-            // garantir que o botão do modal legacy não bloqueia confirmarCompra
-            const modalBtn = document.getElementById('confirmPurchaseBtn');
-            if (modalBtn) modalBtn.disabled = false;
-            const terms = document.getElementById('acceptPurchaseTerms');
-            if (terms) terms.checked = true;
             try {
-                if (typeof window.confirmarCompra === 'function') {
-                    await window.confirmarCompra();
+                if (typeof window.iniciarCheckoutPlano === 'function') {
+                    await window.iniciarCheckoutPlano({
+                        triggerButton: btn,
+                        loadingText: 'A processar...',
+                        onBeforeRedirect: () => {},
+                        onFreePlanActivated: () => location.reload()
+                    });
                 }
             } catch (e) {
                 console.error('[wizard] erro ao confirmar', e);
