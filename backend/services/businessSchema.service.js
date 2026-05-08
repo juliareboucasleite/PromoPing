@@ -89,10 +89,33 @@ async function createBusinessApplicationsTable(connection) {
   await connection.query(`CREATE INDEX IF NOT EXISTS idx_business_applications_status ON business_applications (status, created_at DESC)`);
 }
 
+async function createOrganizationInvitesTable(connection) {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS organization_invites (
+      id SERIAL PRIMARY KEY,
+      organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      email VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'analyst',
+      invite_token VARCHAR(128) NOT NULL UNIQUE,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      invited_by_referenciaid VARCHAR(13) NOT NULL,
+      accepted_by_referenciaid VARCHAR(13) NULL,
+      expires_at TIMESTAMP NOT NULL,
+      accepted_at TIMESTAMP NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await connection.query(`CREATE INDEX IF NOT EXISTS idx_org_invites_org_status ON organization_invites (organization_id, status)`);
+  await connection.query(`CREATE INDEX IF NOT EXISTS idx_org_invites_email_status ON organization_invites (email, status)`);
+}
+
 export async function ensureBusinessTables(connection = pool) {
   await createOrganizationsTable(connection);
   await createOrganizationMembersTable(connection);
   await createBusinessApplicationsTable(connection);
+  await createOrganizationInvitesTable(connection);
 }
 
 export async function ensureBusinessTablesReady() {

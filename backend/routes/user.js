@@ -4,7 +4,7 @@ import { pool } from "../database/db.js";
 // import { formatDate } from "../utils/format.js"; // Removido - função não existe
 import { requirePermission, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
-import { buildAccessProfile, extendUserWithAccess } from "../services/accessControl.js";
+import { extendUserWithAccess, resolveAccessContext } from "../services/accessControl.js";
 import {
   getStatus,
   is2FAEnabled,
@@ -299,7 +299,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         telefone: u?.Telefone,
         FotoPerfil: u?.FotoPerfil,
         perfilId,
-        access: buildAccessProfile(perfilId),
+        access: await resolveAccessContext(referenciaID, perfilId),
         contas_conectadas: contas,
         preferencias: prefs,
         proxima_alteracao_senha: nextSenha ? nextSenha.toISOString() : null,

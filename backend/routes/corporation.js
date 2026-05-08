@@ -12,6 +12,7 @@ import businessApplicationsRouter from "./corporation-business-applications.js";
 import { logAudit } from "../utils/audit.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
 import { isCorporationProfile } from "../services/accessControl.js";
+import { listUserAccessRoles, syncLegacyAccessAssignments } from "../services/accessAssignments.service.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 

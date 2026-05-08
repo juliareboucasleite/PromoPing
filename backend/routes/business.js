@@ -4,7 +4,8 @@ import express from "express";
 import { pool } from "../database/db.js";
 import { attachAccessContext, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
-import { buildAccessProfile, isBusinessProfile, PROFILE_IDS } from "../services/accessControl.js";
+import { isBusinessProfile, PROFILE_IDS, resolveAccessContext } from "../services/accessControl.js";
+import { listUserAccessRoles } from "../services/accessAssignments.service.js";
 import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
 
@@ -669,7 +670,7 @@ router.get("/me", async (req, res) => {
     res.json({
       status: "ok",
       profileId: BUSINESS_PROFILE_ID,
-      access: buildAccessProfile(BUSINESS_PROFILE_ID),
+      access: req.accessContext || await resolveAccessContext(req.user.ReferenciaID, BUSINESS_PROFILE_ID),
       membershipCount: memberships.length,
       activeMembership,
       memberships,
@@ -859,6 +860,7 @@ router.get("/organization/:organizationId/members", requireOrganizationRole, asy
           u.nome ASC`,
       [req.businessMembership.organizationId]
     );
+    const roleMap = await listUserAccessRoles(rows.map((row) => row.referenciaid));
 
     res.json({
       status: "ok",
@@ -872,12 +874,93 @@ router.get("/organization/:organizationId/members", requireOrganizationRole, asy
         telefone: row.telefone,
         role: row.role,
         status: row.status,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        accessRoles: roleMap.get(row.referenciaid) || []
       }))
     });
   } catch (error) {
     console.error("[BUSINESS] Erro ao listar membros:", error);
     res.status(500).json({ status: "error", error: "Erro ao listar membros da organização." });
+  }
+});
+
+router.put("/organization/:organizationId/members/:referenciaID", requireOrganizationRole, async (req, res) => {
+  const targetReferenciaID = String(req.params.referenciaID || "").trim();
+  const nextRole = req.body?.role !== undefined ? normalizeRole(req.body?.role, "analyst") : undefined;
+  const nextStatus = req.body?.status !== undefined ? String(req.body?.status || "").trim().toLowerCase() : undefined;
+
+  if (!targetReferenciaID) {
+    return res.status(400).json({ status: "error", error: "referenciaID invÃ¡lido." });
+  }
+
+  if (nextRole === undefined && nextStatus === undefined) {
+    return res.status(400).json({ status: "error", error: "Nada para atualizar." });
+  }
+
+  if (nextStatus !== undefined && !["active", "inactive"].includes(nextStatus)) {
+    return res.status(400).json({ status: "error", error: "status invÃ¡lido. Use active ou inactive." });
+  }
+
+  try {
+    const [memberRows] = await pool.query(
+      `SELECT id, referenciaid, role, status
+         FROM organization_members
+        WHERE organization_id = ?
+          AND referenciaid = ?
+        LIMIT 1`,
+      [req.businessMembership.organizationId, targetReferenciaID]
+    );
+
+    if (!memberRows.length) {
+      return res.status(404).json({ status: "error", error: "Membro nÃ£o encontrado nesta organizaÃ§Ã£o." });
+    }
+
+    const member = memberRows[0];
+    const finalRole = nextRole !== undefined ? nextRole : member.role;
+    const finalStatus = nextStatus !== undefined ? nextStatus : member.status;
+
+    if (targetReferenciaID === req.user.ReferenciaID && finalStatus !== "active") {
+      return res.status(400).json({ status: "error", error: "NÃ£o pode desativar o seu prÃ³prio acesso." });
+    }
+
+    if (member.role === "owner" && finalRole !== "owner") {
+      const [ownerRows] = await pool.query(
+        `SELECT COUNT(*)::int AS total
+           FROM organization_members
+          WHERE organization_id = ?
+            AND status = 'active'
+            AND role = 'owner'`,
+        [req.businessMembership.organizationId]
+      );
+      const ownerCount = Number(ownerRows[0]?.total || 0);
+      if (ownerCount <= 1) {
+        return res.status(400).json({ status: "error", error: "A organizaÃ§Ã£o deve manter pelo menos um owner ativo." });
+      }
+    }
+
+    const [result] = await pool.query(
+      `UPDATE organization_members
+          SET role = ?,
+              status = ?,
+              updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      RETURNING *`,
+      [finalRole, finalStatus, member.id]
+    );
+
+    res.json({
+      status: "ok",
+      member: {
+        id: result.rows?.[0]?.id || member.id,
+        organizationId: req.businessMembership.organizationId,
+        referenciaID: targetReferenciaID,
+        role: finalRole,
+        status: finalStatus
+      }
+    });
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao atualizar membro:", error);
+    res.status(500).json({ status: "error", error: "Erro ao atualizar membro da organizaÃ§Ã£o." });
   }
 });
 

@@ -36,9 +36,7 @@ import {
     setCachedDiscordUser
 } from "../utils/discord-cache.js";
 import {
-    buildAccessProfile,
     resolveAccessContext,
-    canAccessPortal
 } from "../services/accessControl.js";
 import {
     gerarReferenciaID,
@@ -1341,11 +1339,12 @@ router.post("/login", async (req, res) => {
             });
         }
 
+        const access = await resolveAccessContext(userReferenciaID, userPerfilId);
+
         // Se 2FA ativo, nÃ£o devolver token; devolver tempToken para completar verificaÃ§Ã£o
         const twoFA = await is2FAEnabled(userReferenciaID);
         if (twoFA) {
             const tempToken = gerarToken2FAPending(userReferenciaID, userEmail);
-            const access = await resolveAccessContext(userReferenciaID, userPerfilId);
             return res.json({
                 status: "ok",
                 requires2FA: true,
@@ -1378,9 +1377,8 @@ router.post("/login", async (req, res) => {
             adminPanelHeader === 'true';
 
         if (isAdminPanel) {
-            const perfilId = userPerfilId;
-            if (!canAccessPortal(perfilId, "support")) {
-                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: UsuÃ¡rio ${userEmail} (PerfilId=${perfilId})`);
+            if (!access.allowedPortals?.includes("support")) {
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: UsuÃ¡rio ${userEmail} (roles=${access.roles?.join(",") || "none"})`);
                 return res.status(403).json({
                     status: "error",
                     error: "Acesso negado. Apenas administradores e utilizadores corporativos podem acessar o painel.",
@@ -1390,7 +1388,6 @@ router.post("/login", async (req, res) => {
         }
 
         const { token, refreshToken } = gerarParesToken(userReferenciaID, userEmail);
-        const access = await resolveAccessContext(userReferenciaID, userPerfilId);
 
         res.json({
             status: "ok",
