@@ -58,6 +58,14 @@
         return ch.toUpperCase();
     }
 
+    function getThreadStageMeta(thread) {
+        const stage = String(thread.supportStage || '').toLowerCase();
+        if (stage === 'escalated') return { label: 'Escalada', className: 'thread-stage is-escalated' };
+        if (stage === 'human_replied') return { label: 'Humano', className: 'thread-stage is-human' };
+        if (stage === 'ai_answered') return { label: 'IA', className: 'thread-stage is-ai' };
+        return { label: 'Aberta', className: 'thread-stage is-open' };
+    }
+
     async function loadThreads() {
         const threadsList = document.getElementById('threadsList');
         const threadsCount = document.getElementById('threadsCount');
@@ -115,6 +123,7 @@
             const preview = truncate(stripTitle(thread.message), 42);
             const userName = thread.userName || 'Usuário';
             const isNew = !(thread.replyCount > 0);
+            const stage = getThreadStageMeta(thread);
             return `
             <div class="thread-item ${currentThreadId === thread.id ? 'active' : ''}" data-thread-id="${thread.id}">
                 <div class="thread-avatar">${escapeHtml(getInitial(userName))}</div>
@@ -126,6 +135,7 @@
                     ${preview ? `<div class="thread-preview">${escapeHtml(preview)}</div>` : ''}
                     <div class="thread-meta">
                         <span>${formatDate(thread.createdAt)}</span>
+                        <span class="${stage.className}">${stage.label}</span>
                         <span class="thread-replies ${isNew ? 'is-new' : ''}">${isNew ? 'Nova' : `${thread.replyCount} respostas`}</span>
                     </div>
                 </div>

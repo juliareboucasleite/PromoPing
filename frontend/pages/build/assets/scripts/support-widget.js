@@ -372,6 +372,7 @@
   function renderSupportMessage(msg) {
     const senderType = getMessageSenderType(msg);
     const isUser = senderType === 'user';
+    const isAi = senderType === 'ai';
     const createdAt = parseValidDate(getMessageCreatedAt(msg));
     const time = createdAt
       ? createdAt.toLocaleTimeString('en-US', {
@@ -388,8 +389,13 @@
     const supportAvatarUrl = getSupportAvatarUrl();
     const userAvatarUrl = getCurrentUserAvatarUrl(msg);
     const userDisplayName = getMessageUserName(msg).trim();
-    const senderLabel = isUser ? (userDisplayName || 'You') : 'Support';
+    const senderLabel = isUser ? (userDisplayName || 'You') : (isAi ? 'PromoPing AI' : 'Support');
     const dateLabel = date && time ? `${date} at ${time}` : '';
+    const bubbleBackground = isUser
+      ? 'linear-gradient(135deg, #f17603 0%, #ff9800 100%)'
+      : (isAi ? 'linear-gradient(135deg, #e8fff5 0%, #d4f7e7 100%)' : '#ffffff');
+    const bubbleColor = isUser ? '#fff' : (isAi ? '#174b33' : '#344767');
+    const bubbleBorder = isUser ? 'none' : (isAi ? '1px solid #b7ebcf' : '1px solid #e9ecef');
 
     return `
       <div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};margin-bottom:20px;align-items:flex-end;gap:12px;">
@@ -404,7 +410,7 @@
             ${dateLabel ? `<span style="font-size:10px;color:#adb5bd;">${dateLabel}</span>` : ''}
           </div>
           <div style="display:flex;align-items:flex-end;gap:8px;justify-content:${isUser ? 'flex-end' : 'flex-start'};">
-            <div style="padding:12px 16px;border-radius:18px;background:${isUser ? 'linear-gradient(135deg, #f17603 0%, #ff9800 100%)' : '#ffffff'};color:${isUser ? '#fff' : '#344767'};word-wrap:break-word;box-shadow:0 2px 12px rgba(0,0,0,0.1);${isUser ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'};max-width:100%;border:${isUser ? 'none' : '1px solid #e9ecef'};">
+            <div style="padding:12px 16px;border-radius:18px;background:${bubbleBackground};color:${bubbleColor};word-wrap:break-word;box-shadow:0 2px 12px rgba(0,0,0,0.1);${isUser ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'};max-width:100%;border:${bubbleBorder};">
               <div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(msg.message)}</div>
             </div>
             ${isUser ? `
@@ -697,7 +703,8 @@
             body: JSON.stringify({
               message,
               userName: wizardUserName,
-              userEmail: wizardUserEmail
+              userEmail: wizardUserEmail,
+              context: window.location.pathname
             })
           });
           currentThreadId = result.threadId || result.id;
@@ -724,12 +731,12 @@
             : { id: currentThreadId };
           result = await fetchJSON(`/api/support/messages/${lastMsg.id}/reply`, {
             method: 'POST',
-            body: JSON.stringify({ message, senderType: 'user' })
+            body: JSON.stringify({ message, senderType: 'user', context: window.location.pathname })
           });
         } else {
           result = await fetchJSON('/api/support/messages', {
             method: 'POST',
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, context: window.location.pathname })
           });
           currentThreadId = result.threadId || result.id;
           updateThreadInfo();

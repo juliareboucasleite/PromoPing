@@ -84,7 +84,7 @@ internalApp.post('/internal/send-message', async (req, res) => {
 internalApp.post('/internal/create-support-ticket', async (req, res) => {
     try {
         const { ChannelType, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-        const { threadId, message, userName, userEmail } = req.body || {};
+        const { threadId, message, userName, userEmail, transcript, escalationReason } = req.body || {};
         console.log('[DISCORD] create-support-ticket recebido, threadId:', threadId);
         if (!threadId || !message) {
             return res.status(400).json({ error: 'threadId e message são obrigatórios' });
@@ -149,14 +149,17 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
         if (userEmail && String(userEmail).trim()) {
             fields.push({ name: 'Email', value: String(userEmail).trim().substring(0, 256), inline: true });
         }
+        if (escalationReason && String(escalationReason).trim()) {
+            fields.push({ name: 'Motivo da escalada', value: String(escalationReason).trim().substring(0, 256), inline: false });
+        }
         fields.push({ name: 'Mensagem', value: (message || '').substring(0, 1024) || '(vazio)', inline: false });
         const embed = new EmbedBuilder()
             .setTitle('Ticket #' + threadId)
-            .setDescription('Pedido de suporte (widget, anónimo).')
+            .setDescription('Pedido de suporte escalado automaticamente para atendimento humano.')
             .setColor(0xe67e22)
             .setTimestamp()
             .addFields(fields)
-            .setFooter({ text: 'PromoPing Suporte • Anónimo' });
+            .setFooter({ text: 'PromoPing Suporte • Escalado pela IA' });
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -171,6 +174,15 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
                 .setEmoji('📢')
         );
         await channel.send({ embeds: [embed], components: [row] });
+        const transcriptText = typeof transcript === 'string' ? transcript.trim() : '';
+        if (transcriptText) {
+            const prefix = '**Histórico da conversa**\n';
+            const chunkSize = 1800;
+            for (let i = 0; i < transcriptText.length; i += chunkSize) {
+                const chunk = transcriptText.slice(i, i + chunkSize);
+                await channel.send({ content: `${i === 0 ? prefix : ''}\`\`\`\n${chunk}\n\`\`\`` });
+            }
+        }
         console.log('[DISCORD] Ticket #' + threadId + ' enviado para o canal', channel.name);
 
         res.json({ channelId: channel.id });

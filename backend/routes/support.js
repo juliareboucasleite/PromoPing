@@ -17,7 +17,7 @@ import { pool } from "../database/db.js";
 import { verifyToken, optionalToken } from "../middleware/auth.js";
 import { createTicket as createTicketController, VALID_CONTEXTS } from "../controllers/support.controller.js";
 import { processMessage } from "../services/supportChatEngine.js";
-import { createTicketChannel, sendMessageToChannel } from "../services/supportDiscordNotifier.js";
+import { sendMessageToChannel } from "../services/supportDiscordNotifier.js";
 import { automateSupportThread, markThreadHumanReplied } from "../services/supportAutomation.service.js";
 
 const router = express.Router();
@@ -718,6 +718,7 @@ router.post("/internal/threads/:threadId/reply", async (req, res) => {
             `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId) VALUES (?, ?, ?, 'support', ?, ?)`,
             [referenciaID, senderReferenciaID, message.trim(), rootId, threadId]
         );
+        await markThreadHumanReplied(threadId);
         console.log(" [SUPPORT] Resposta do Discord guardada para thread", threadId);
         return res.status(201).json({ status: "ok", threadId });
     } catch (error) {

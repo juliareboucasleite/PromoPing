@@ -48,7 +48,7 @@ function buildTranscript(messages) {
 
 async function getThreadRoot(threadId) {
     const [rows] = await pool.query(
-        `SELECT id, threadId, message, userName, userEmail, discordChannelId, supportStage,
+        `SELECT id, ReferenciaID, threadId, message, userName, userEmail, discordChannelId, supportStage,
                 aiConfidence, aiEscalationReason, escalatedAt
          FROM supportmessages
          WHERE id = ? OR threadId = ?
@@ -76,7 +76,7 @@ async function insertAiReply(threadId, root, reply) {
     const [result] = await pool.query(
         `INSERT INTO supportmessages (ReferenciaID, SenderReferenciaID, message, senderType, replyTo, threadId)
          VALUES (?, NULL, ?, 'ai', ?, ?)`,
-        [root.referenciaid || root.ReferenciaID || null, reply, threadId, threadId]
+        [root.ReferenciaID || root.referenciaid || null, reply, threadId, threadId]
     );
     return result.insertId;
 }
