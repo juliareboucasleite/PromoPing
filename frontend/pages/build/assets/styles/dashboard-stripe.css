@@ -394,7 +394,6 @@ body.dashboard-body {
 
 /* ---------- Buttons ---------- */
 .save-btn,
-.change-plan-btn,
 .history-action-btn {
     background: var(--pp-orange) !important;
     color: #ffffff !important;
@@ -413,10 +412,39 @@ body.dashboard-body {
 }
 
 .save-btn:hover,
-.change-plan-btn:hover,
 .history-action-btn:hover {
     background: var(--pp-orange-hover) !important;
     transform: none !important;
+}
+
+/* Change plan button — outline (Stripe-style "Editar") */
+.change-plan-btn {
+    background: var(--stripe-bg) !important;
+    color: var(--stripe-text) !important;
+    border: 1px solid var(--stripe-border) !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: var(--stripe-shadow-sm) !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    line-height: 1;
+}
+
+.change-plan-btn:hover {
+    background: var(--stripe-bg-soft) !important;
+    border-color: var(--stripe-border-strong) !important;
+    transform: none !important;
+}
+
+.change-plan-btn svg {
+    width: 14px;
+    height: 14px;
+    color: var(--stripe-text-muted);
 }
 
 .save-btn:disabled {
