@@ -308,12 +308,163 @@ body {
     border-color: var(--stripe-border, #e3e8ee) !important;
 }
 
-/* Store tags fall back to the neutral pill above (overrides legacy gradients) */
+/* Default fallback (any store without specific colours) */
 .store-tag[class*="store-"] {
     background: var(--stripe-bg-soft, #f7fafc) !important;
     color: var(--stripe-text, #1a1f36) !important;
     border-color: var(--stripe-border, #e3e8ee) !important;
     background-image: none !important;
+}
+
+/* Brand-coloured store pills — translucent background + brand text colour */
+.store-tag.store-worten {
+    background: rgba(237, 28, 36, 0.10) !important;
+    color: #c41218 !important;
+    border-color: rgba(237, 28, 36, 0.22) !important;
+}
+
+.store-tag.store-ikea {
+    background: rgba(0, 88, 163, 0.10) !important;
+    color: #0058a3 !important;
+    border-color: rgba(0, 88, 163, 0.22) !important;
+}
+
+.store-tag.store-fnac {
+    background: rgba(225, 168, 45, 0.14) !important;
+    color: #8a6212 !important;
+    border-color: rgba(225, 168, 45, 0.30) !important;
+}
+
+.store-tag.store-pcdiga {
+    background: rgba(0, 48, 110, 0.10) !important;
+    color: #00306e !important;
+    border-color: rgba(0, 48, 110, 0.22) !important;
+}
+
+.store-tag.store-globaldata {
+    background: rgba(0, 168, 89, 0.10) !important;
+    color: #007a3f !important;
+    border-color: rgba(0, 168, 89, 0.22) !important;
+}
+
+.store-tag.store-radiopopular {
+    background: rgba(227, 6, 19, 0.10) !important;
+    color: #b80511 !important;
+    border-color: rgba(227, 6, 19, 0.22) !important;
+}
+
+.store-tag.store-mediamarkt {
+    background: rgba(223, 0, 0, 0.10) !important;
+    color: #b40000 !important;
+    border-color: rgba(223, 0, 0, 0.22) !important;
+}
+
+.store-tag.store-leroymerlin {
+    background: rgba(120, 190, 32, 0.14) !important;
+    color: #5a9417 !important;
+    border-color: rgba(120, 190, 32, 0.30) !important;
+}
+
+.store-tag.store-zara {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.store-tag.store-hm {
+    background: rgba(229, 0, 16, 0.10) !important;
+    color: #cc000e !important;
+    border-color: rgba(229, 0, 16, 0.22) !important;
+}
+
+.store-tag.store-amazon {
+    background: rgba(255, 153, 0, 0.14) !important;
+    color: #b86b00 !important;
+    border-color: rgba(255, 153, 0, 0.30) !important;
+}
+
+.store-tag.store-pingodoce {
+    background: rgba(0, 102, 51, 0.10) !important;
+    color: #006633 !important;
+    border-color: rgba(0, 102, 51, 0.22) !important;
+}
+
+.store-tag.store-continente {
+    background: rgba(212, 0, 0, 0.10) !important;
+    color: #b00000 !important;
+    border-color: rgba(212, 0, 0, 0.22) !important;
+}
+
+.store-tag.store-auchan {
+    background: rgba(226, 6, 19, 0.10) !important;
+    color: #b80511 !important;
+    border-color: rgba(226, 6, 19, 0.22) !important;
+}
+
+.store-tag.store-elcorteingles {
+    background: rgba(0, 122, 51, 0.10) !important;
+    color: #007a33 !important;
+    border-color: rgba(0, 122, 51, 0.22) !important;
+}
+
+.store-tag.store-primark {
+    background: rgba(0, 61, 165, 0.10) !important;
+    color: #003da5 !important;
+    border-color: rgba(0, 61, 165, 0.22) !important;
+}
+
+.store-tag.store-decathlon {
+    background: rgba(0, 130, 195, 0.12) !important;
+    color: #006fa6 !important;
+    border-color: rgba(0, 130, 195, 0.24) !important;
+}
+
+.store-tag.store-sportzone {
+    background: rgba(200, 16, 46, 0.10) !important;
+    color: #a40d25 !important;
+    border-color: rgba(200, 16, 46, 0.22) !important;
+}
+
+.store-tag.store-footlocker {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.store-tag.store-bershka {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.store-tag.store-pullandbear {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.store-tag.store-stradivarius {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+.store-tag.store-massimodutti {
+    background: rgba(75, 46, 42, 0.10) !important;
+    color: #4b2e2a !important;
+    border-color: rgba(75, 46, 42, 0.22) !important;
+}
+
+.store-tag.store-oysho {
+    background: rgba(212, 20, 90, 0.10) !important;
+    color: #b21050 !important;
+    border-color: rgba(212, 20, 90, 0.22) !important;
+}
+
+.store-tag.store-lefties {
+    background: rgba(200, 16, 46, 0.10) !important;
+    color: #a40d25 !important;
+    border-color: rgba(200, 16, 46, 0.22) !important;
 }
 
 /* ---------- Action buttons (3 icons in top-right) ---------- */
