@@ -104,32 +104,6 @@ async function getUserAccessToken(referenciaId) {
     return rows[0].access_token;
 }
 
-async function getUserPerfilId(referenciaId) {
-    if (!referenciaId) return null;
-
-    const [rows] = await pool.query(
-        `SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ? LIMIT 1`,
-        [referenciaId]
-    );
-
-    if (!rows || rows.length === 0) return null;
-    return rows[0].PerfilId ?? rows[0].perfilid ?? null;
-}
-
-async function getRequestPerfilId(req) {
-    const dbPerfilId = await getUserPerfilId(req.user?.ReferenciaID);
-    if (dbPerfilId !== undefined && dbPerfilId !== null) {
-        return Number(dbPerfilId);
-    }
-
-    const tokenPerfilId = req.user?.perfilId ?? req.user?.PerfilId;
-    if (tokenPerfilId !== undefined && tokenPerfilId !== null) {
-        return Number(tokenPerfilId);
-    }
-
-    return null;
-}
-
 async function ensureDiscordCouponTables() {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS discord_coupon_requests (

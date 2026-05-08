@@ -10,10 +10,7 @@
     <link rel="stylesheet" href="/business/style/panel.css">
     <style>
         .bp-section { margin-bottom: 24px; }
-        .bp-section + .bp-section { margin-top: 0; }
-        .bp-section-head {
-            margin-bottom: 12px;
-        }
+        .bp-section-head { margin-bottom: 12px; }
         .bp-section-head h2 {
             margin: 0 0 2px;
             font-size: 14px;
@@ -72,10 +69,7 @@
             background: var(--pp-bg-soft);
             color: var(--pp-muted);
         }
-        .bp-stack {
-            display: grid;
-            gap: 10px;
-        }
+        .bp-stack { display: grid; gap: 10px; }
         .bp-code {
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 12px;
@@ -108,7 +102,7 @@
                 </a>
                 <a class="bp-nav-item" href="/business/history" data-bp-nav>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
-                    Histórico
+                    Historico
                 </a>
                 <a class="bp-nav-item" href="/business/perfil" data-bp-nav>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -118,10 +112,10 @@
             <div class="bp-sidebar-footer">
                 <div class="bp-user-avatar" id="bpUserAvatar">B</div>
                 <div class="bp-user-meta">
-                    <div class="bp-user-name" id="bpUserName">A carregar…</div>
+                    <div class="bp-user-name" id="bpUserName">A carregar...</div>
                     <div class="bp-user-org" id="bpUserOrg">-</div>
                 </div>
-                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessão" aria-label="Terminar sessão">
+                <button class="bp-logout" id="bpLogout" type="button" title="Terminar sessao" aria-label="Terminar sessao">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
             </div>
@@ -131,7 +125,7 @@
             <div class="bp-page-header">
                 <div>
                     <h1>Perfil da empresa</h1>
-                    <p>Mantenha os dados da organização atualizados. Estes campos são usados pela equipa PromoPing para faturação e contacto.</p>
+                    <p>Mantenha os dados da organizacao atualizados. Estes campos sao usados pela equipa PromoPing para faturacao e contacto.</p>
                 </div>
                 <div class="bp-page-actions">
                     <span class="bp-chip is-orange" id="profileStatusChip">Plano Business</span>
@@ -141,14 +135,14 @@
             <div class="bp-alert bp-alert-success is-hidden" id="saveSuccess" role="status">
                 <div>
                     <p class="bp-alert-title">Perfil atualizado</p>
-                    <p class="bp-alert-body">As alterações foram guardadas com sucesso.</p>
+                    <p class="bp-alert-body">As alteracoes foram guardadas com sucesso.</p>
                 </div>
             </div>
             <div class="bp-alert bp-alert-error is-hidden" id="saveError" role="alert"></div>
             <div class="bp-alert bp-alert-warn is-hidden" id="readOnlyAlert">
                 <div>
                     <p class="bp-alert-title">Apenas leitura</p>
-                    <p class="bp-alert-body">A organização ainda não foi aprovada, os dados ficam visíveis mas só podem ser editados depois da aprovação manual.</p>
+                    <p class="bp-alert-body">A organizacao ainda nao foi aprovada, os dados ficam visiveis mas so podem ser editados depois da aprovacao manual.</p>
                 </div>
             </div>
 
@@ -157,7 +151,7 @@
                     <div class="bp-card-header">
                         <div>
                             <h2>Conta principal</h2>
-                            <p>Pessoa responsável pela conta business, não pode ser alterada aqui.</p>
+                            <p>Pessoa responsavel pela conta business, nao pode ser alterada aqui.</p>
                         </div>
                     </div>
                     <div class="bp-card-body">
@@ -174,7 +168,7 @@
                     <div class="bp-card-header">
                         <div>
                             <h2>Empresa</h2>
-                            <p>Dados de identificação e contacto comercial.</p>
+                            <p>Dados de identificacao e contacto comercial.</p>
                         </div>
                     </div>
                     <div class="bp-card-body">
@@ -185,11 +179,11 @@
                             </div>
                             <div class="bp-field">
                                 <label class="bp-label" for="setor">Setor</label>
-                                <input class="bp-input" id="setor" placeholder="Retail, tecnologia, distribuição…">
+                                <input class="bp-input" id="setor" placeholder="Retail, tecnologia, distribuicao...">
                             </div>
                             <div class="bp-field">
                                 <label class="bp-label" for="categoria">Categoria</label>
-                                <input class="bp-input" id="categoria" placeholder="Marketplace, marca, ecommerce…">
+                                <input class="bp-input" id="categoria" placeholder="Marketplace, marca, ecommerce...">
                             </div>
                             <div class="bp-field">
                                 <label class="bp-label" for="nif">NIF</label>
@@ -208,15 +202,15 @@
                                 <input class="bp-input" id="telefoneComercial">
                             </div>
                             <div class="bp-field">
-                                <label class="bp-label" for="pessoaResponsavel">Pessoa responsável</label>
+                                <label class="bp-label" for="pessoaResponsavel">Pessoa responsavel</label>
                                 <input class="bp-input" id="pessoaResponsavel">
                             </div>
                             <div class="bp-field">
-                                <label class="bp-label" for="billingEmail">Email de faturação</label>
+                                <label class="bp-label" for="billingEmail">Email de faturacao</label>
                                 <input class="bp-input" id="billingEmail" type="email">
                             </div>
                             <div class="bp-field full-span">
-                                <label class="bp-label" for="logoUrl">URL do logótipo</label>
+                                <label class="bp-label" for="logoUrl">URL do logotipo</label>
                                 <input class="bp-input" id="logoUrl" type="url" placeholder="https://">
                                 <p class="bp-help">Imagem quadrada, idealmente acima de 256px.</p>
                             </div>
@@ -228,7 +222,7 @@
                     <div class="bp-card-header">
                         <div>
                             <h2>Morada</h2>
-                            <p>Usada para contexto comercial e faturação.</p>
+                            <p>Usada para contexto comercial e faturacao.</p>
                         </div>
                     </div>
                     <div class="bp-card-body">
@@ -246,11 +240,11 @@
                                 <input class="bp-input" id="cidade">
                             </div>
                             <div class="bp-field">
-                                <label class="bp-label" for="codigoPostal">Código postal</label>
+                                <label class="bp-label" for="codigoPostal">Codigo postal</label>
                                 <input class="bp-input" id="codigoPostal">
                             </div>
                             <div class="bp-field full-span">
-                                <label class="bp-label" for="pais">País</label>
+                                <label class="bp-label" for="pais">Pais</label>
                                 <input class="bp-input" id="pais" value="Portugal">
                             </div>
                         </div>
@@ -312,20 +306,18 @@
                                 <button class="bp-btn bp-btn-primary" type="button" id="sendInviteBtn">Criar convite</button>
                                 <span class="bp-help">Os convites ficam registados no sistema e podem ser revogados daqui.</span>
                             </div>
-                            <div id="teamInvitesWrap">
-                                <table class="bp-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Email</th>
-                                            <th>Role</th>
-                                            <th>Estado</th>
-                                            <th>Codigo</th>
-                                            <th>Acoes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="teamInvitesBody"></tbody>
-                                </table>
-                            </div>
+                            <table class="bp-table">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Estado</th>
+                                        <th>Codigo</th>
+                                        <th>Acoes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamInvitesBody"></tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -333,7 +325,7 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
                     <p class="bp-help" style="margin:0;max-width:520px;">Ao guardar alteracoes, a equipa corporativa e notificada automaticamente no painel interno.</p>
                     <button class="bp-btn bp-btn-secondary" type="button" id="resetBtn">Repor</button>
-                    <button class="bp-btn bp-btn-primary" type="submit" id="saveBtn">Guardar alterações</button>
+                    <button class="bp-btn bp-btn-primary" type="submit" id="saveBtn">Guardar alteracoes</button>
                 </div>
             </form>
         </main>
@@ -352,27 +344,38 @@
             const errorBox = document.getElementById('saveError');
             const readOnlyAlert = document.getElementById('readOnlyAlert');
             const profileStatusChip = document.getElementById('profileStatusChip');
+            const membersState = document.getElementById('teamMembersState');
+            const membersWrap = document.getElementById('teamMembersWrap');
+            const membersBody = document.getElementById('teamMembersBody');
+            const teamRoleChip = document.getElementById('teamRoleChip');
+            const inviteManagerState = document.getElementById('inviteManagerState');
+            const inviteManagerWrap = document.getElementById('inviteManagerWrap');
+            const invitesBody = document.getElementById('teamInvitesBody');
+            const sendInviteBtn = document.getElementById('sendInviteBtn');
+            const inviteEmail = document.getElementById('inviteEmail');
+            const inviteRole = document.getElementById('inviteRole');
 
             const fields = [
                 'nomeEmpresa','setor','categoria','nif','vatNumber','website',
                 'telefoneComercial','pessoaResponsavel','billingEmail','logoUrl',
                 'moradaLinha1','moradaLinha2','cidade','codigoPostal','pais'
             ];
-
+            const roleLabels = { owner: 'Owner', manager: 'Manager', analyst: 'Analyst' };
             const user = BP.user || {};
             const membership = BP.membership;
             const application = BP.application;
             const applicationCompany = application && application.company ? application.company : application;
             const org = membership && membership.organization ? membership.organization : null;
+            const canManageTeam = Boolean(org && membership && ['owner', 'manager'].includes(String(membership.role || '').toLowerCase()));
 
-            // Read-only account info
             document.getElementById('meName').textContent = user.Nome || user.nome || '-';
             document.getElementById('meEmail').textContent = user.Email || user.email || '-';
             document.getElementById('mePhone').textContent = user.Telefone || user.telefone || '-';
+            teamRoleChip.textContent = membership && membership.role ? (roleLabels[membership.role] || membership.role) : 'Leitura';
+            teamRoleChip.className = 'bp-chip ' + (canManageTeam ? 'is-orange' : 'is-neutral');
 
-            // Status
             if (org) {
-                profileStatusChip.textContent = 'Organização ativa';
+                profileStatusChip.textContent = 'Organizacao ativa';
                 profileStatusChip.className = 'bp-chip is-success';
             } else if (application) {
                 const status = (application.status || '').toLowerCase();
@@ -381,14 +384,13 @@
                     profileStatusChip.className = 'bp-chip is-error';
                     readOnlyAlert.innerHTML = '<div><p class="bp-alert-title">Candidatura recusada</p><p class="bp-alert-body">Pode corrigir os dados e submeter novamente a candidatura business.</p></div>';
                 } else {
-                    profileStatusChip.textContent = 'Em revisão';
+                    profileStatusChip.textContent = 'Em revisao';
                     profileStatusChip.className = 'bp-chip is-warn';
                     readOnlyAlert.innerHTML = '<div><p class="bp-alert-title">Em revisao</p><p class="bp-alert-body">Pode atualizar os dados enquanto a candidatura esta em revisao. A equipa recebe a nova versao automaticamente.</p></div>';
                 }
                 readOnlyAlert.classList.remove('is-hidden');
             }
 
-            // Pre-fill from active org first, fallback to application
             const initial = {};
             if (org) {
                 initial.nomeEmpresa = org.nomeEmpresa;
@@ -401,11 +403,11 @@
                 initial.telefoneComercial = org.telefoneComercial;
                 initial.billingEmail = org.billingEmail;
                 initial.logoUrl = org.logoUrl;
-                initial.moradaLinha1 = org.moradaLinha1;
-                initial.moradaLinha2 = org.moradaLinha2;
-                initial.cidade = org.cidade;
-                initial.codigoPostal = org.codigoPostal;
-                initial.pais = org.pais;
+                initial.moradaLinha1 = org.morada && org.morada.linha1;
+                initial.moradaLinha2 = org.morada && org.morada.linha2;
+                initial.cidade = org.morada && org.morada.cidade;
+                initial.codigoPostal = org.morada && org.morada.codigoPostal;
+                initial.pais = org.morada && org.morada.pais;
             } else if (applicationCompany) {
                 initial.nomeEmpresa = applicationCompany.nomeEmpresa;
                 initial.nif = applicationCompany.nif;
@@ -427,27 +429,192 @@
             }
 
             function fillForm(values) {
-                fields.forEach((id) => {
+                fields.forEach(function (id) {
                     const el = document.getElementById(id);
                     if (!el) return;
                     el.value = values[id] != null ? String(values[id]) : (id === 'pais' && !values[id] ? 'Portugal' : '');
                 });
             }
+
+            function setError(message) {
+                errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">' + BP.escapeHtml(message || 'Falha.') + '</p></div>';
+                errorBox.classList.remove('is-hidden');
+            }
+
+            function getStatusBadge(status) {
+                const normalized = String(status || '').toLowerCase();
+                if (normalized === 'active') return '<span class="bp-role-badge">Ativo</span>';
+                if (normalized === 'inactive') return '<span class="bp-role-badge is-muted">Inativo</span>';
+                if (normalized === 'cancelled') return '<span class="bp-role-badge is-muted">Cancelado</span>';
+                return '<span class="bp-role-badge is-muted">' + BP.escapeHtml(status || 'Pendente') + '</span>';
+            }
+
+            async function loadMembers() {
+                if (!org) {
+                    membersState.textContent = 'A organizacao ainda nao foi aprovada.';
+                    membersState.classList.remove('is-hidden');
+                    membersWrap.classList.add('is-hidden');
+                    return;
+                }
+
+                membersState.textContent = 'A carregar membros...';
+                membersState.classList.remove('is-hidden');
+                membersWrap.classList.add('is-hidden');
+
+                try {
+                    const data = await BP.fetchJson('/api/business/organization/' + org.id + '/members');
+                    const members = data.members || [];
+                    if (!members.length) {
+                        membersState.textContent = 'Ainda nao existem membros nesta organizacao.';
+                        return;
+                    }
+
+                    membersBody.innerHTML = members.map(function (member) {
+                        const roleValue = String(member.role || 'analyst').toLowerCase();
+                        const statusValue = String(member.status || 'active').toLowerCase();
+                        const isSelf = member.referenciaID === (user.ReferenciaID || user.referenciaID);
+                        const accessBadges = Array.isArray(member.accessRoles) && member.accessRoles.length
+                            ? member.accessRoles.map(function (role) {
+                                return '<span class="bp-role-badge is-muted">' + BP.escapeHtml(role.code) + '</span>';
+                            }).join(' ')
+                            : '<span class="bp-help">Sem roles extra</span>';
+
+                        return `
+                            <tr data-member-ref="${BP.escapeHtml(member.referenciaID)}">
+                                <td><strong>${BP.escapeHtml(member.nome || '-')}</strong><br><span class="bp-help">${BP.escapeHtml(member.email || '-')}</span></td>
+                                <td>${canManageTeam
+                                    ? `<select class="bp-select" data-member-role>
+                                            <option value="owner" ${roleValue === 'owner' ? 'selected' : ''}>Owner</option>
+                                            <option value="manager" ${roleValue === 'manager' ? 'selected' : ''}>Manager</option>
+                                            <option value="analyst" ${roleValue === 'analyst' ? 'selected' : ''}>Analyst</option>
+                                       </select>`
+                                    : `<span class="bp-role-badge">${BP.escapeHtml(roleLabels[roleValue] || roleValue)}</span>`}</td>
+                                <td>${canManageTeam
+                                    ? `<select class="bp-select" data-member-status ${isSelf ? 'disabled' : ''}>
+                                            <option value="active" ${statusValue === 'active' ? 'selected' : ''}>Ativo</option>
+                                            <option value="inactive" ${statusValue === 'inactive' ? 'selected' : ''}>Inativo</option>
+                                       </select>`
+                                    : getStatusBadge(statusValue)}</td>
+                                <td>${accessBadges}</td>
+                                <td>${canManageTeam ? `<button class="bp-btn bp-btn-secondary" type="button" data-member-save ${isSelf ? 'disabled' : ''}>Guardar</button>` : '<span class="bp-help">So leitura</span>'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    membersState.classList.add('is-hidden');
+                    membersWrap.classList.remove('is-hidden');
+
+                    membersBody.querySelectorAll('[data-member-save]').forEach(function (button) {
+                        button.addEventListener('click', async function () {
+                            const row = button.closest('tr');
+                            const referenciaID = row.getAttribute('data-member-ref');
+                            const role = row.querySelector('[data-member-role]').value;
+                            const status = row.querySelector('[data-member-status]').value;
+                            button.disabled = true;
+                            button.textContent = 'A guardar...';
+                            try {
+                                await BP.fetchJson('/api/business/organization/' + org.id + '/members/' + encodeURIComponent(referenciaID), {
+                                    method: 'PUT',
+                                    body: JSON.stringify({ role: role, status: status })
+                                });
+                                await loadMembers();
+                            } catch (err) {
+                                setError(err.message || 'Falha ao atualizar membro.');
+                                button.disabled = false;
+                                button.textContent = 'Guardar';
+                            }
+                        });
+                    });
+                } catch (err) {
+                    membersState.textContent = err.message || 'Falha ao carregar membros.';
+                }
+            }
+
+            async function loadInvites() {
+                if (!canManageTeam || !org) {
+                    inviteManagerWrap.classList.add('is-hidden');
+                    inviteManagerState.className = 'bp-alert bp-alert-info';
+                    inviteManagerState.innerHTML = '<div><p class="bp-alert-title">Gestao de convites indisponivel</p><p class="bp-alert-body">So owners e managers podem criar e revogar convites.</p></div>';
+                    return;
+                }
+
+                inviteManagerState.classList.add('is-hidden');
+                inviteManagerWrap.classList.remove('is-hidden');
+                invitesBody.innerHTML = '<tr><td colspan="5" class="bp-table-empty">A carregar convites...</td></tr>';
+
+                try {
+                    const data = await BP.fetchJson('/api/business/organization/' + org.id + '/invites');
+                    const invites = data.invites || [];
+                    if (!invites.length) {
+                        invitesBody.innerHTML = '<tr><td colspan="5" class="bp-table-empty">Sem convites pendentes.</td></tr>';
+                        return;
+                    }
+
+                    invitesBody.innerHTML = invites.map(function (invite) {
+                        const canCancel = ['pending', 'sent'].includes(String(invite.status || '').toLowerCase());
+                        return `
+                            <tr data-invite-id="${invite.id}">
+                                <td>${BP.escapeHtml(invite.email)}</td>
+                                <td><span class="bp-role-badge">${BP.escapeHtml(roleLabels[invite.role] || invite.role)}</span></td>
+                                <td>${getStatusBadge(invite.status)}</td>
+                                <td><div class="bp-code">${BP.escapeHtml(invite.inviteToken || '-')}</div></td>
+                                <td>
+                                    <div class="bp-inline-table-actions">
+                                        <button class="bp-btn bp-btn-secondary" type="button" data-invite-copy="${BP.escapeHtml(invite.inviteToken || '')}">Copiar codigo</button>
+                                        ${canCancel ? '<button class="bp-btn bp-btn-danger" type="button" data-invite-cancel>Revogar</button>' : ''}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    invitesBody.querySelectorAll('[data-invite-copy]').forEach(function (button) {
+                        button.addEventListener('click', async function () {
+                            const code = button.getAttribute('data-invite-copy') || '';
+                            if (!code) return;
+                            try {
+                                await navigator.clipboard.writeText(code);
+                                button.textContent = 'Copiado';
+                                setTimeout(function () { button.textContent = 'Copiar codigo'; }, 1500);
+                            } catch (_) {}
+                        });
+                    });
+
+                    invitesBody.querySelectorAll('[data-invite-cancel]').forEach(function (button) {
+                        button.addEventListener('click', async function () {
+                            const row = button.closest('tr');
+                            const inviteId = row.getAttribute('data-invite-id');
+                            button.disabled = true;
+                            try {
+                                await BP.fetchJson('/api/business/organization/' + org.id + '/invites/' + inviteId, {
+                                    method: 'DELETE'
+                                });
+                                await loadInvites();
+                            } catch (err) {
+                                setError(err.message || 'Falha ao revogar convite.');
+                                button.disabled = false;
+                            }
+                        });
+                    });
+                } catch (err) {
+                    invitesBody.innerHTML = '<tr><td colspan="5" class="bp-table-empty">' + BP.escapeHtml(err.message || 'Falha ao carregar convites.') + '</td></tr>';
+                }
+            }
+
             fillForm(initial);
 
-            resetBtn.addEventListener('click', () => {
+            resetBtn.addEventListener('click', function () {
                 fillForm(initial);
                 successBox.classList.add('is-hidden');
                 errorBox.classList.add('is-hidden');
             });
 
-            form.addEventListener('submit', async (ev) => {
+            form.addEventListener('submit', async function (ev) {
                 ev.preventDefault();
-
                 successBox.classList.add('is-hidden');
                 errorBox.classList.add('is-hidden');
 
-                const get = (id) => {
+                const get = function (id) {
                     const el = document.getElementById(id);
                     return el ? el.value.trim() : '';
                 };
@@ -473,14 +640,12 @@
                 };
 
                 if (!payload.nomeEmpresa) {
-                    errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">O nome da empresa é obrigatório.</p></div>';
-                    errorBox.classList.remove('is-hidden');
+                    setError('O nome da empresa e obrigatorio.');
                     return;
                 }
 
                 saveBtn.disabled = true;
-                saveBtn.textContent = 'A guardar…';
-
+                saveBtn.textContent = 'A guardar...';
                 try {
                     const targetUrl = org ? ('/api/business/organization/' + org.id) : '/api/business/onboarding';
                     const method = org ? 'PUT' : 'POST';
@@ -491,13 +656,41 @@
                     successBox.classList.remove('is-hidden');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } catch (err) {
-                    errorBox.innerHTML = '<div><p class="bp-alert-title">Erro</p><p class="bp-alert-body">' + BP.escapeHtml(err.message || 'Falha ao guardar.') + '</p></div>';
-                    errorBox.classList.remove('is-hidden');
+                    setError(err.message || 'Falha ao guardar.');
                 } finally {
                     saveBtn.disabled = false;
-                    saveBtn.textContent = 'Guardar alterações';
+                    saveBtn.textContent = 'Guardar alteracoes';
                 }
             });
+
+            sendInviteBtn.addEventListener('click', async function () {
+                const email = inviteEmail.value.trim();
+                const role = inviteRole.value;
+                if (!email) {
+                    setError('Indique o email do membro.');
+                    return;
+                }
+
+                sendInviteBtn.disabled = true;
+                sendInviteBtn.textContent = 'A criar...';
+                try {
+                    await BP.fetchJson('/api/business/organization/' + org.id + '/invites', {
+                        method: 'POST',
+                        body: JSON.stringify({ email: email, role: role })
+                    });
+                    inviteEmail.value = '';
+                    inviteRole.value = 'analyst';
+                    await loadInvites();
+                } catch (err) {
+                    setError(err.message || 'Falha ao criar convite.');
+                } finally {
+                    sendInviteBtn.disabled = false;
+                    sendInviteBtn.textContent = 'Criar convite';
+                }
+            });
+
+            loadMembers();
+            loadInvites();
         });
     </script>
 </body>

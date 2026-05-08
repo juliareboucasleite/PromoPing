@@ -12,7 +12,6 @@ import businessApplicationsRouter from "./corporation-business-applications.js";
 import { logAudit } from "../utils/audit.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
 import {
-    INTERNAL_MANAGED_ROLES,
     listUserAccessRoles,
     normalizeInternalRoleCodes,
     setInternalAccessRoles,
