@@ -43,7 +43,6 @@
   <script src="assets/scripts/header-modals.js"></script>
   <script src="inc/load-includes-index.js"></script>
   <script src="assets/scripts/cookie-banner.js"></script>
-  <script src="assets/scripts/partner-carousel.js"></script>
   <script src="assets/scripts/testimonials.js"></script>
   <script src="assets/traducoes/ingles.js"></script>
   <script src="assets/traducoes/portugues.js"></script>
@@ -795,23 +794,35 @@
         <p class="pp-connect-slogan">PromoPing. The right price, at the right time.</p>
       </div>
     </section>
-    <section id="parceiros" class="pp-partners relative py-16 md:py-20 px-4 sm:px-5 overflow-hidden"
-      style="background: linear-gradient(115deg, #ffffff00 85%, #ffa54b00 100%);">
-      <div class="max-w-6xl mx-auto text-center relative z-20 px-6">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-10 md:mb-12 tracking-tight drop-shadow-lg"
-          style="background: linear-gradient(90deg, #fff 60%, #FFA54B 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
-          <span class="inline-block align-middle">
-
-            Some brands<span class="text-[#FFA54B] drop-shadow font-black"> that are</span> being monitored on PromoPing.
-          </span>
-        </h2>
-        <div class="partner-carousel-wrapper">
-          <div class="partner-carousel">
-            <canvas id="partner-carousel-canvas" class="partner-carousel-canvas" aria-hidden="true"></canvas>
-            <!-- Lista oculta para acessibilidade / SEO -->
-            <div class="sr-only" aria-hidden="false">
-              Brands: Pingo Doce, Continente, Auchan, Worten, FNAC, IKEA, Radio Popular, PcDiga.
-            </div>
+    <section id="parceiros" class="pp-partners">
+      <div class="pp-partners-inner">
+        <p class="pp-partners-eyebrow">Live coverage</p>
+        <h2 class="pp-partners-title">Tracking prices at</h2>
+        <div class="pp-marquee" aria-label="Stores monitored by PromoPing">
+          <div class="pp-marquee-track">
+            <span class="pp-marquee-pill">Worten</span>
+            <span class="pp-marquee-pill">FNAC</span>
+            <span class="pp-marquee-pill">Continente</span>
+            <span class="pp-marquee-pill">Pingo Doce</span>
+            <span class="pp-marquee-pill">Amazon</span>
+            <span class="pp-marquee-pill">IKEA</span>
+            <span class="pp-marquee-pill">MediaMarkt</span>
+            <span class="pp-marquee-pill">Leroy Merlin</span>
+            <span class="pp-marquee-pill">Auchan</span>
+            <span class="pp-marquee-pill">Radio Popular</span>
+            <span class="pp-marquee-pill">PCDiga</span>
+            <!-- Duplicate set for seamless infinite scroll -->
+            <span class="pp-marquee-pill" aria-hidden="true">Worten</span>
+            <span class="pp-marquee-pill" aria-hidden="true">FNAC</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Continente</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Pingo Doce</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Amazon</span>
+            <span class="pp-marquee-pill" aria-hidden="true">IKEA</span>
+            <span class="pp-marquee-pill" aria-hidden="true">MediaMarkt</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Leroy Merlin</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Auchan</span>
+            <span class="pp-marquee-pill" aria-hidden="true">Radio Popular</span>
+            <span class="pp-marquee-pill" aria-hidden="true">PCDiga</span>
           </div>
         </div>
       </div>
