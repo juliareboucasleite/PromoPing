@@ -916,6 +916,103 @@ body.dashboard-body {
     margin-top: 6px;
 }
 
+/* ---------- Sessions table (Stripe-style) ---------- */
+.sessions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 13px;
+}
+
+.sessions-table thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--stripe-text-muted);
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid var(--stripe-border);
+    white-space: nowrap;
+}
+
+.sessions-table tbody td {
+    padding: 14px 12px 14px 0;
+    color: var(--stripe-text);
+    border-bottom: 1px solid var(--stripe-border);
+    vertical-align: middle;
+}
+
+.sessions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.sessions-table .session-current {
+    color: var(--stripe-text-muted);
+    font-size: 13px;
+}
+
+.sessions-table .session-leave {
+    color: var(--pp-orange);
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+}
+
+.sessions-table .session-leave:hover {
+    text-decoration: underline;
+}
+
+.sessions-table .session-ip {
+    color: var(--pp-orange);
+    font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 12px;
+}
+
+.sessions-leave-all {
+    margin-bottom: 16px;
+}
+
+/* ---------- Connected accounts (avatar + name + email) ---------- */
+.connected-accounts .account-item {
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.account-item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--stripe-bg-soft);
+    border: 1px solid var(--stripe-border);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.account-item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.account-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--stripe-text);
+    line-height: 1.3;
+}
+
+.account-item-email {
+    font-size: 13px;
+    color: var(--stripe-text-muted);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
     .settings-row {
