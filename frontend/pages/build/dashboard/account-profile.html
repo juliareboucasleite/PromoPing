@@ -1754,35 +1754,48 @@
 
         async function conectarEmail() {
             try {
-                console.log(" Configurando email...");
-
-                // Mostrar modal ou redirecionar para configuraÃ§Ã£o de email
-                const email = prompt("Enter your email for setup:");
+                console.log(" Configurando email de backup...");
+                const currentValue = localStorage.getItem(getBackupEmailStorageKey()) || "";
+                const email = prompt("Indique o e-mail de backup:", currentValue);
                 if (email && email.includes("@")) {
-                    // Aqui vocÃª pode implementar a lÃ³gica de configuraÃ§Ã£o de email
-                    alert("Email setup is still in development!");
+                    localStorage.setItem(getBackupEmailStorageKey(), email.trim());
+                    updateBackupEmailUI(email.trim());
+                    if (window.notificationSystem) window.notificationSystem.success("Sucesso", "E-mail de backup atualizado.", 4000);
                 }
 
             } catch (error) {
                 console.error(" Error ao configurar email:", error);
-                alert("Error configuring email. Please try again.");
+                alert("Erro ao configurar o e-mail de backup. Tente novamente.");
             }
         }
 
         async function conectarSMS() {
             try {
-                console.log(" Configurando SMS...");
-
-                // Mostrar modal ou redirecionar para configuraÃ§Ã£o de SMS
-                const telefone = prompt("Enter your phone number (including country code):");
+                console.log(" Configurando telefone...");
+                const currentPhone = document.getElementById("contactPhoneValue")?.textContent;
+                const telefone = prompt("Indique o número de contacto (com indicativo):", currentPhone && !currentPhone.includes("Nenhum") ? currentPhone : "");
                 if (telefone && telefone.length >= 10) {
-                    // Aqui vocÃª pode implementar a lÃ³gica de configuraÃ§Ã£o de SMS
-                    alert("SMS setup is still in development!");
+                    const res = await makeRequest("/api/user/profile", {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + localStorage.getItem("token")
+                        },
+                        body: JSON.stringify({ telefone: telefone.trim() })
+                    });
+
+                    const data = await res.json();
+                    if (data.status === "ok") {
+                        updateContactPhoneUI(telefone.trim());
+                        if (window.notificationSystem) window.notificationSystem.success("Sucesso", "Número de contacto atualizado.", 4000);
+                    } else {
+                        throw new Error(data.message || data.error || "Falha ao atualizar telefone.");
+                    }
                 }
 
             } catch (error) {
                 console.error(" Error ao configurar SMS:", error);
-                alert("Error configuring SMS. Please try again.");
+                alert("Erro ao configurar o número de contacto. Tente novamente.");
             }
         }
     </script>
