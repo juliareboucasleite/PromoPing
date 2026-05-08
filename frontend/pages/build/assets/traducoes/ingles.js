@@ -121,6 +121,7 @@ window.translationsGB = {
   'Depoimentos': 'Testimonials',
   'Confiança de quem poupa todos os dias': 'Trusted by those who save every day',
   'O que dizem os nossos primeiros utilizadores': 'What our early users are saying',
+  'Disponível em': 'Available on',
   'A carregar depoimentos...': 'Loading testimonials…',
   'Ainda não há depoimentos disponíveis.': 'There are no testimonials available just yet.',
   'Erro ao carregar depoimentos.': 'We were unable to load the testimonials.',

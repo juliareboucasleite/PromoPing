@@ -121,6 +121,7 @@ window.translationsES = {
   'Depoimentos': 'Testimonios',
   'Confiança de quem poupa todos os dias': 'La confianza de quienes ahorran cada día',
   'O que dizem os nossos primeiros utilizadores': 'Lo que dicen nuestros primeros usuarios',
+  'Disponível em': 'Disponible en',
   'A carregar depoimentos...': 'Cargando testimonios…',
   'Ainda não há depoimentos disponíveis.': 'Todavía no hay testimonios disponibles.',
   'Erro ao carregar depoimentos.': 'No hemos podido cargar los testimonios.',
