@@ -78,8 +78,8 @@
 
             <header class="page-header page-header-perfil">
                 <div class="page-header-left">
-                    <h1 class="page-title">Personal settings</h1>
-                    <p class="page-subtitle">Manage your identity, security and connected services from one place.</p>
+                    <h1 class="page-title">Dados pessoais</h1>
+                    <p class="page-subtitle">Faça a gestão da sua identidade, segurança e formas de contacto num único lugar.</p>
                 </div>
             </header>
 
@@ -94,24 +94,58 @@
                                     <h2 class="card-title">Dados pessoais</h2>
                                     <span class="settings-badge">Configuração global</span>
                                 </div>
-                                <p class="card-subtitle">Atualize o nome e o e-mail usados na sua conta.</p>
+                                <p class="card-subtitle">Atualize os dados principais da conta e configure contactos de recuperação.</p>
                             </div>
                             <div class="card-header-actions">
                                 <button type="reset" class="secondary-btn" form="personalInfoForm">Cancelar</button>
                                 <button type="submit" class="save-btn" form="personalInfoForm">Salvar</button>
                             </div>
                         </div>
-                        <div class="settings-block-label">Usuário</div>
-
                         <form class="profile-form profile-form--primary" id="personalInfoForm">
-                            <div class="form-group">
-                                <label class="form-label" for="fullName">Nome</label>
-                                <input type="text" class="form-input" id="fullName" value="" required>
-                            </div>
+                            <div class="settings-rows">
+                                <div class="settings-row">
+                                    <label class="settings-row-label" for="fullName">Nome</label>
+                                    <div class="settings-row-control">
+                                        <input type="text" class="form-input settings-input" id="fullName" value="" required>
+                                    </div>
+                                </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="email">E-mail</label>
-                                <input type="email" class="form-input" id="email" value="" required>
+                                <div class="settings-row">
+                                    <div class="settings-row-label">Senha</div>
+                                    <div class="settings-row-control settings-row-control--inline">
+                                        <div class="settings-row-meta">
+                                            <span class="settings-row-value is-placeholder">Atualize a sua palavra-passe sempre que precisar.</span>
+                                        </div>
+                                        <button type="button" class="secondary-btn" id="changePasswordShortcut">Atualizar sua senha</button>
+                                    </div>
+                                </div>
+
+                                <div class="settings-row">
+                                    <label class="settings-row-label" for="email">E-mail</label>
+                                    <div class="settings-row-control">
+                                        <input type="email" class="form-input settings-input" id="email" value="" required>
+                                    </div>
+                                </div>
+
+                                <div class="settings-row">
+                                    <div class="settings-row-label">E-mail de backup</div>
+                                    <div class="settings-row-control settings-row-control--inline">
+                                        <div class="settings-row-meta">
+                                            <span class="settings-row-value" id="backupEmailValue">Nenhum e-mail de backup configurado.</span>
+                                        </div>
+                                        <button type="button" class="secondary-btn" id="backupEmailBtn" onclick="conectarEmail()">Adicionar e-mail de backup</button>
+                                    </div>
+                                </div>
+
+                                <div class="settings-row">
+                                    <div class="settings-row-label">Telefone para contato</div>
+                                    <div class="settings-row-control settings-row-control--inline">
+                                        <div class="settings-row-meta">
+                                            <span class="settings-row-value" id="contactPhoneValue">Nenhum número configurado.</span>
+                                        </div>
+                                        <button type="button" class="secondary-btn" id="contactPhoneBtn" onclick="conectarSMS()">Incluir novo número de contato</button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -1697,4 +1731,3 @@
     </script>
 </body>
 </html>
-
