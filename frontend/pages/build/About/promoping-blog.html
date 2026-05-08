@@ -290,11 +290,14 @@
           <h2>PromoPing Newsletter</h2>
           <p>Stay up to date. Get the best saving tips and exclusive promotion alerts every week.</p>
           <p class="newsletter-subscribers">Join over <strong id="newsletter-subscribers-count">...</strong> users who already save with our tips!</p>
-          <button class="newsletter-button" id="newsletter-btn">Subscribe to Newsletter</button>
+          <div class="newsletter-button-row">
+            <button class="newsletter-button" id="newsletter-btn" type="button">Subscribe to Newsletter</button>
+          </div>
 
-          <div class="newsletter-form-container" id="newsletter-form-container">
-            <form class="newsletter-form" id="newsletter-form">
-              <h3>Email Preferences</h3>
+          <div class="newsletter-form-container" id="newsletter-form-container" hidden>
+            <form class="newsletter-form" id="newsletter-form" role="dialog" aria-modal="true" aria-labelledby="newsletter-modal-title">
+              <button type="button" class="newsletter-modal-close" id="newsletter-close" aria-label="Close newsletter form">&times;</button>
+              <h3 id="newsletter-modal-title">Email Preferences</h3>
               <p class="newsletter-form-description">Configure how you'd like to receive our news and tips.</p>
 
               <div class="form-group">
@@ -720,17 +723,51 @@
       const newsletterBtn = document.getElementById('newsletter-btn');
       const newsletterFormContainer = document.getElementById('newsletter-form-container');
       const newsletterCancelBtn = document.getElementById('newsletter-cancel');
+      const newsletterCloseBtn = document.getElementById('newsletter-close');
       const newsletterForm = document.getElementById('newsletter-form');
 
-      newsletterBtn.addEventListener('click', function() {
-        newsletterFormContainer.classList.add('active');
-        newsletterBtn.style.display = 'none';
-      });
+      function openNewsletterModal() {
+        newsletterFormContainer.hidden = false;
+        document.body.classList.add('newsletter-modal-open');
+        requestAnimationFrame(() => {
+          newsletterFormContainer.classList.add('active');
+        });
+      }
+
+      function closeNewsletterModal(resetForm = false) {
+        newsletterFormContainer.classList.remove('active');
+        document.body.classList.remove('newsletter-modal-open');
+        window.setTimeout(() => {
+          if (!newsletterFormContainer.classList.contains('active')) {
+            newsletterFormContainer.hidden = true;
+          }
+        }, 220);
+
+        if (resetForm) {
+          newsletterForm.reset();
+        }
+      }
+
+      newsletterBtn.addEventListener('click', openNewsletterModal);
 
       newsletterCancelBtn.addEventListener('click', function() {
-        newsletterFormContainer.classList.remove('active');
-        newsletterBtn.style.display = 'block';
-        newsletterForm.reset();
+        closeNewsletterModal(true);
+      });
+
+      newsletterCloseBtn.addEventListener('click', function() {
+        closeNewsletterModal(false);
+      });
+
+      newsletterFormContainer.addEventListener('click', function(e) {
+        if (e.target === newsletterFormContainer) {
+          closeNewsletterModal(false);
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && newsletterFormContainer.classList.contains('active')) {
+          closeNewsletterModal(false);
+        }
       });
 
       newsletterForm.addEventListener('submit', async function(e) {
@@ -765,9 +802,7 @@
           if (data.success) {
             alert(data.message || 'Subscription successful! Check your email to confirm.');
 
-            newsletterFormContainer.classList.remove('active');
-            newsletterBtn.style.display = 'block';
-            newsletterForm.reset();
+            closeNewsletterModal(true);
           } else {
             alert(data.message || 'Failed to process subscription. Please try again.');
           }

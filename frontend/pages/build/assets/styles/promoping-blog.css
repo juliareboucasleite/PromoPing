@@ -415,6 +415,11 @@
       margin-bottom: 2rem;
     }
 
+    .newsletter-button-row {
+      display: flex;
+      justify-content: center;
+    }
+
     .newsletter-button {
       background: #fff;
       color: #0f0f10;
@@ -434,16 +439,25 @@
 
     /* Newsletter Form */
     .newsletter-form-container {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease, opacity 0.3s ease;
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(8, 8, 10, 0.76);
+      backdrop-filter: blur(8px);
       opacity: 0;
-      margin-top: 2rem;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+      z-index: 1000;
     }
 
     .newsletter-form-container.active {
-      max-height: 800px;
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .newsletter-form {
@@ -452,6 +466,11 @@
       border-radius: 12px;
       padding: 2rem;
       text-align: left;
+      position: relative;
+      width: min(100%, 720px);
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
     }
 
     .newsletter-form h3 {
@@ -467,6 +486,28 @@
       color: #999;
       margin-bottom: 1.5rem;
       text-align: center;
+    }
+
+    .newsletter-modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #2f2f34;
+      border-radius: 999px;
+      background: transparent;
+      color: #bbb;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .newsletter-modal-close:hover {
+      background: #232326;
+      color: #fff;
+      border-color: #3a3a3d;
     }
 
     .form-group {
@@ -564,6 +605,10 @@
     .newsletter-submit-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    }
+
+    body.newsletter-modal-open {
+      overflow: hidden;
     }
 
     /* Filtros e Busca */
