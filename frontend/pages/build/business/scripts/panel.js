@@ -2,12 +2,11 @@
  * PromoPing Business Panel — shared chrome (auth gate, sidebar, common helpers).
  * Runs on every /business/{dashboard,perfil,history} page.
  *
- * Hard rule: only PerfilId 4 may stay on the page. Anything else is bounced to
- * /business/create/login. PerfilId 1/3 are admin/corporate, not business.
+ * Access gate: any account with business portal access may stay on the page.
+ * This supports the central access system instead of hardcoding only PerfilId 4.
  */
 (function () {
   const LOGIN_URL = '/business/create/login';
-  const BUSINESS_PROFILE_ID = 4;
 
   function getToken() {
     try {
@@ -117,11 +116,12 @@
       return;
     }
 
-    const perfilId = user
-      ? (user.PerfilId !== undefined ? user.PerfilId : user.perfilId)
-      : null;
+    const access = user && user.access ? user.access : null;
+    const hasBusinessAccess = Array.isArray(access && access.allowedPortals)
+      ? access.allowedPortals.includes('business')
+      : false;
 
-    if (perfilId !== BUSINESS_PROFILE_ID) {
+    if (!hasBusinessAccess) {
       clearSession();
       redirectToLogin('invalid-session');
       return;
@@ -143,6 +143,7 @@
     // Expose minimal API for page scripts.
     window.BusinessPanel = {
       user,
+      access,
       membership,
       application: businessContext ? businessContext.application : null,
       memberships: businessContext ? (businessContext.memberships || []) : [],

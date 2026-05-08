@@ -1,6 +1,7 @@
 /**
- * Base para paginas do painel corporativo (PerfilId = 3).
- * Valida o token real no backend e sincroniza o utilizador guardado no browser.
+ * Base para paginas do painel corporativo.
+ * Valida o token real no backend e sincroniza o utilizador guardado no browser
+ * com o contexto de acesso central.
  */
 (function() {
     'use strict';
@@ -58,15 +59,16 @@
             }
 
             const serverUser = data.user;
-            const perfilId = serverUser.perfilId !== undefined ? serverUser.perfilId : serverUser.PerfilId;
-            if (perfilId === 3) {
-                user = { ...serverUser, perfilId: 3, PerfilId: 3 };
+            const access = serverUser.access || {};
+            const allowedPortals = Array.isArray(access.allowedPortals) ? access.allowedPortals : [];
+            if (allowedPortals.includes('corporation')) {
+                user = { ...serverUser, access };
                 localStorage.setItem('PROMOPING_USER', JSON.stringify(user));
                 return;
             }
 
-            if (perfilId === 1) {
-                user = { ...serverUser, perfilId: 1, PerfilId: 1 };
+            if (allowedPortals.includes('support')) {
+                user = { ...serverUser, access };
                 localStorage.setItem('PROMOPING_USER', JSON.stringify(user));
                 window.location.replace(supportDashboardPath);
                 return;

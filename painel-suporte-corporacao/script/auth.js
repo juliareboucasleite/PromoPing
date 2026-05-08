@@ -148,9 +148,13 @@
                 throw new Error(errorMsg);
             }
 
-            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation
             const perfilId = data.user && (data.user.perfilId !== undefined ? data.user.perfilId : data.user.PerfilId);
-            if (perfilId !== 1 && perfilId !== 3) {
+            const access = data.access || {};
+            const allowedPortals = Array.isArray(access.allowedPortals) ? access.allowedPortals : [];
+            const canUseSupport = allowedPortals.includes('support');
+            const canUseCorporation = allowedPortals.includes('corporation');
+
+            if (!canUseSupport && !canUseCorporation) {
                 throw new Error('Acesso negado. Apenas administradores ou utilizadores corporativos podem acessar o painel.');
             }
 
@@ -164,7 +168,7 @@
                 if (data.refreshToken) {
                     localStorage.setItem('PROMOPING_REFRESH_TOKEN', data.refreshToken);
                 }
-                const userToStore = { ...data.user, perfilId: perfilId };
+                const userToStore = { ...data.user, perfilId: perfilId, access };
                 localStorage.setItem('PROMOPING_USER', JSON.stringify(userToStore));
                 localStorage.setItem('PROMOPING_API', API_BASE);
                 console.log('[AUTH] Dados salvos no localStorage');
@@ -174,7 +178,7 @@
             }
 
             // Redirecionar: id 1 -> painel suporte (pages), id 3 -> painel corporação (pages_corporation)
-            const isCorporation = perfilId === 3;
+            const isCorporation = canUseCorporation;
             const dashboardPath = isCorporation ? '../pages_corporation/dashboard.html' : 'dashboard.html';
             console.log('[AUTH] Redirecionando para', dashboardPath);
 

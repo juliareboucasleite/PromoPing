@@ -1,5 +1,5 @@
 /**
- * Redireciona utilizadores corporativos (PerfilId 3) para o painel corporativo
+ * Redireciona utilizadores com acesso ao portal corporativo para o painel corporativo
  * quando tentam aceder às páginas do suporte (pages/).
  */
 (function() {
@@ -11,8 +11,8 @@
         var raw = localStorage.getItem('PROMOPING_USER');
         if (!raw) return;
         var user = JSON.parse(raw);
-        var perfilId = user.perfilId !== undefined ? user.perfilId : user.PerfilId;
-        if (perfilId === 3) {
+        var allowedPortals = user.access && Array.isArray(user.access.allowedPortals) ? user.access.allowedPortals : [];
+        if (allowedPortals.indexOf('corporation') !== -1) {
             window.location.replace('../pages_corporation/dashboard.html');
         }
     } catch (_) {}

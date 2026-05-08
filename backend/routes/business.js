@@ -1010,4 +1010,80 @@ router.post("/organization/:organizationId/invites", requireOrganizationRole, as
   }
 });
 
+router.get("/organization/:organizationId/invites", requireOrganizationRole, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id,
+              organization_id,
+              email,
+              role,
+              invite_token,
+              status,
+              invited_by_referenciaid,
+              expires_at,
+              created_at
+         FROM organization_invites
+        WHERE organization_id = ?
+        ORDER BY created_at DESC`,
+      [req.businessMembership.organizationId]
+    );
+
+    res.json({
+      status: "ok",
+      organizationId: req.businessMembership.organizationId,
+      invites: rows.map((row) => ({
+        id: row.id,
+        organizationId: row.organization_id,
+        email: row.email,
+        role: row.role,
+        inviteToken: row.invite_token,
+        status: row.status,
+        invitedByReferenciaID: row.invited_by_referenciaid,
+        expiresAt: row.expires_at,
+        createdAt: row.created_at
+      }))
+    });
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao listar convites:", error);
+    res.status(500).json({ status: "error", error: "Erro ao listar convites business." });
+  }
+});
+
+router.delete("/organization/:organizationId/invites/:inviteId", requireOrganizationRole, async (req, res) => {
+  const inviteId = Number.parseInt(req.params.inviteId || "", 10);
+  if (!inviteId) {
+    return res.status(400).json({ status: "error", error: "inviteId invalido." });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE organization_invites
+          SET status = 'cancelled'
+        WHERE id = ?
+          AND organization_id = ?
+          AND status IN ('pending', 'sent')
+      RETURNING id, organization_id, email, role, status`,
+      [inviteId, req.businessMembership.organizationId]
+    );
+
+    if (!result.rows?.length) {
+      return res.status(404).json({ status: "error", error: "Convite nao encontrado ou ja fechado." });
+    }
+
+    res.json({
+      status: "ok",
+      invite: {
+        id: result.rows[0].id,
+        organizationId: result.rows[0].organization_id,
+        email: result.rows[0].email,
+        role: result.rows[0].role,
+        status: result.rows[0].status
+      }
+    });
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao cancelar convite:", error);
+    res.status(500).json({ status: "error", error: "Erro ao cancelar convite business." });
+  }
+});
+
 export default router;
