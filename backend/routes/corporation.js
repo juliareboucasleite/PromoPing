@@ -525,7 +525,7 @@ router.post("/staff/:referenciaID/reset-password", requirePermission("corporatio
         }
         const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
         if (![1, 3].includes(targetPerfil)) {
-            return res.status(400).json({ status: "error", error: "S?? funcion??rios internos podem ser geridos aqui." });
+            return res.status(400).json({ status: "error", error: "So funcionarios internos podem ser geridos aqui." });
         }
         const tempPassword = generateTempPassword();
         const hash = await bcrypt.hash(tempPassword, 10);
