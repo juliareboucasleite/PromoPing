@@ -12,6 +12,7 @@
  */
 
 import express from "express";
+import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import { pool } from "../database/db.js";
 import { verifyToken, optionalToken } from "../middleware/auth.js";
@@ -19,6 +20,7 @@ import { createTicket as createTicketController, VALID_CONTEXTS } from "../contr
 import { processMessage } from "../services/supportChatEngine.js";
 import { sendMessageToChannel } from "../services/supportDiscordNotifier.js";
 import { automateSupportThread, markThreadHumanReplied } from "../services/supportAutomation.service.js";
+import { publishSupportThreadEvent, subscribeToSupportThread, unsubscribeFromSupportThread } from "../services/supportEvents.service.js";
 
 const router = express.Router();
 
@@ -92,6 +94,30 @@ router.post("/chat", async (req, res) => {
 
 /** ReferenciaID usado para utilizadores anónimos (não logados) no suporte */
 const ANON_REFERENCIA_ID = "ANON";
+
+function getTokenFromRequest(req) {
+    const authHeader = req.headers["authorization"];
+    const headerToken = authHeader && authHeader.split(" ")[1];
+    if (headerToken) return headerToken;
+    if (typeof req.query?.token === "string" && req.query.token.trim()) {
+        return req.query.token.trim();
+    }
+    return "";
+}
+
+function resolveUserFromRequest(req) {
+    const token = getTokenFromRequest(req);
+    if (!token) return null;
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return null;
+
+    try {
+        return jwt.verify(token, secret);
+    } catch (_) {
+        return null;
+    }
+}
 
 async function tableExists(tableName) {
     const [rows] = await pool.query(
@@ -272,6 +298,33 @@ async function verifyAdminSupport(req, res, next) {
     }
 }
 
+async function canAccessSupportThread(threadId, user, anonymousId) {
+    const [rows] = await pool.query(
+        "SELECT id, ReferenciaID, anonymousSessionId FROM supportmessages WHERE id = ? LIMIT 1",
+        [threadId]
+    );
+    if (rows.length === 0) return false;
+
+    const thread = rows[0];
+    if (user && thread.ReferenciaID === user.ReferenciaID) {
+        return true;
+    }
+    if (!user && anonymousId && thread.ReferenciaID === ANON_REFERENCIA_ID && thread.anonymousSessionId === anonymousId) {
+        return true;
+    }
+    return false;
+}
+
+function emitSupportMessageEvent(threadId, messageId, senderType) {
+    publishSupportThreadEvent(threadId, {
+        type: "message_created",
+        threadId,
+        messageId,
+        senderType,
+        createdAt: new Date().toISOString(),
+    });
+}
+
 /**
  * GET /api/support/messages/admin
  * 
@@ -401,6 +454,58 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
             error: "Erro ao listar mensagens",
             details: error.message
         });
+    }
+});
+
+router.get("/stream", async (req, res) => {
+    try {
+        await ensureTable();
+        const threadId = parseInt(req.query.threadId, 10);
+        const anonymousId = typeof req.query.anonymousId === "string" ? req.query.anonymousId : "";
+        const user = resolveUserFromRequest(req);
+
+        if (!threadId || Number.isNaN(threadId)) {
+            return res.status(400).json({ error: "threadId é obrigatório" });
+        }
+        if (!user && !anonymousId) {
+            return res.status(401).json({ error: "Token ou anonymousId é obrigatório" });
+        }
+
+        const allowed = await canAccessSupportThread(threadId, user, anonymousId);
+        if (!allowed) {
+            return res.status(403).json({ error: "Sem permissão para esta thread" });
+        }
+
+        res.status(200);
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache, no-transform");
+        res.setHeader("Connection", "keep-alive");
+        res.setHeader("X-Accel-Buffering", "no");
+        res.flushHeaders?.();
+
+        res.write(`event: ready\ndata: ${JSON.stringify({ threadId })}\n\n`);
+        subscribeToSupportThread(threadId, res);
+
+        const heartbeat = setInterval(() => {
+            try {
+                res.write("event: ping\ndata: {}\n\n");
+            } catch (_) {
+                clearInterval(heartbeat);
+            }
+        }, 25000);
+
+        req.on("close", () => {
+            clearInterval(heartbeat);
+            unsubscribeFromSupportThread(threadId, res);
+            res.end();
+        });
+    } catch (error) {
+        console.error(" [SUPPORT] Erro no stream SSE:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Erro ao iniciar stream" });
+        } else {
+            res.end();
+        }
     }
 });
 
@@ -641,6 +746,7 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
                 [referenciaIDParaResposta, senderReferenciaID, message.trim(), senderType, messageId, threadId]
             );
         const newId = insertResult.insertId;
+        emitSupportMessageEvent(threadId, newId, senderType);
 
         let automation = null;
         if (senderType === 'user') {
@@ -648,6 +754,9 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
                 latestUserMessage: message.trim(),
                 context: typeof context === "string" ? context : "support-widget",
             });
+            if (automation?.status === "ai_answered" && automation.aiMessageId) {
+                emitSupportMessageEvent(threadId, automation.aiMessageId, "ai");
+            }
         } else {
             await markThreadHumanReplied(threadId);
         }
@@ -939,6 +1048,7 @@ router.post("/messages", optionalToken, async (req, res) => {
             "UPDATE supportmessages SET threadId = ? WHERE id = ?",
             [newMessageId, newMessageId]
         );
+        emitSupportMessageEvent(newMessageId, newMessageId, "user");
 
         console.log(" [SUPPORT] Nova thread criada:", newMessageId);
 
@@ -946,6 +1056,9 @@ router.post("/messages", optionalToken, async (req, res) => {
             latestUserMessage: message.trim(),
             context: typeof context === "string" ? context : "support-widget",
         });
+        if (automation?.status === "ai_answered" && automation.aiMessageId) {
+            emitSupportMessageEvent(newMessageId, automation.aiMessageId, "ai");
+        }
 
         res.status(201).json({
             id: newMessageId,
