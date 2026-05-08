@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import express from "express";
 import { pool } from "../database/db.js";
-import { verifyToken } from "../middleware/auth.js";
+import { attachAccessContext, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
 import { buildAccessProfile, isBusinessProfile, PROFILE_IDS } from "../services/accessControl.js";
 import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";

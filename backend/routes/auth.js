@@ -37,6 +37,7 @@ import {
 } from "../utils/discord-cache.js";
 import {
     buildAccessProfile,
+    resolveAccessContext,
     canAccessPortal
 } from "../services/accessControl.js";
 import {
@@ -1344,6 +1345,7 @@ router.post("/login", async (req, res) => {
         const twoFA = await is2FAEnabled(userReferenciaID);
         if (twoFA) {
             const tempToken = gerarToken2FAPending(userReferenciaID, userEmail);
+            const access = await resolveAccessContext(userReferenciaID, userPerfilId);
             return res.json({
                 status: "ok",
                 requires2FA: true,
@@ -1354,7 +1356,7 @@ router.post("/login", async (req, res) => {
                     nome: userNome,
                     perfilId: userPerfilId
                 },
-                access: buildAccessProfile(userPerfilId)
+                access
             });
         }
 
@@ -1388,6 +1390,7 @@ router.post("/login", async (req, res) => {
         }
 
         const { token, refreshToken } = gerarParesToken(userReferenciaID, userEmail);
+        const access = await resolveAccessContext(userReferenciaID, userPerfilId);
 
         res.json({
             status: "ok",
@@ -1399,7 +1402,7 @@ router.post("/login", async (req, res) => {
                 nome: userNome,
                 perfilId: userPerfilId
             },
-            access: buildAccessProfile(userPerfilId),
+            access,
             accountReactivated: user.accountReactivated || false
         });
     } catch (err) {

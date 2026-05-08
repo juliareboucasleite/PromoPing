@@ -91,7 +91,7 @@ router.get("/me", verifyToken, async (req, res) => {
 
     res.json({
       status: "ok",
-      user: extendUserWithAccess({
+      user: await extendUserWithAccess({
         ...user,
         DataCriacao: user.DataRegisto ? new Date(user.DataRegisto).toLocaleDateString('pt-BR') : 'N/A' //  Data formatada
       }),
