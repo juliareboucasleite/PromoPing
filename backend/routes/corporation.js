@@ -11,7 +11,13 @@ import auditRouter from "./corporation-audit.js";
 import businessApplicationsRouter from "./corporation-business-applications.js";
 import { logAudit } from "../utils/audit.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
-import { listUserAccessRoles, syncLegacyAccessAssignments } from "../services/accessAssignments.service.js";
+import {
+    INTERNAL_MANAGED_ROLES,
+    listUserAccessRoles,
+    normalizeInternalRoleCodes,
+    setInternalAccessRoles,
+    syncLegacyAccessAssignments
+} from "../services/accessAssignments.service.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
@@ -76,6 +82,23 @@ async function verifyCorporation(req, res, next) {
 
 router.use(verifyToken);
 router.use(requirePortalAccess("corporation", "Acesso negado. Apenas utilizadores corporativos."));
+
+function getLegacyPerfilIdFromInternalRoles(roleCodes = [], fallbackPerfilId = 1) {
+    const normalizedRoles = normalizeInternalRoleCodes(roleCodes);
+    if (normalizedRoles.includes("corporation_admin")) {
+        return 3;
+    }
+    if (normalizedRoles.includes("support_admin") || normalizedRoles.includes("support_agent")) {
+        return 1;
+    }
+    return [1, 3].includes(Number(fallbackPerfilId)) ? Number(fallbackPerfilId) : 1;
+}
+
+function buildDefaultInternalRoles(perfilId) {
+    return Number(perfilId) === 3
+        ? ["corporation_admin"]
+        : ["support_admin", "support_agent"];
+}
 
 // Sub-rotas financeiras (KPIs, transacções, payouts, export CSV)
 router.use("/financial", financialRouter);
@@ -331,7 +354,7 @@ function generateTempPassword() {
 /** POST /staff — criar nova conta de funcionário (suporte) */
 router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
-        const { nome, email, telefone, perfilId } = req.body;
+        const { nome, email, telefone, perfilId, accessRoleCodes = [] } = req.body;
         if (!nome || !email) {
             return res.status(400).json({ status: "error", error: "Nome e email são obrigatórios." });
         }
@@ -348,7 +371,11 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
             return res.status(409).json({ status: "error", error: "Já existe uma conta com este email." });
         }
 
-        const targetPerfil = [1, 3].includes(parseInt(perfilId, 10)) ? parseInt(perfilId, 10) : 1;
+        const normalizedRoleCodes = normalizeInternalRoleCodes(accessRoleCodes);
+        const targetPerfil = getLegacyPerfilIdFromInternalRoles(
+            normalizedRoleCodes.length ? normalizedRoleCodes : buildDefaultInternalRoles(perfilId),
+            perfilId
+        );
         const referenciaID = gerarReferenciaID();
         const tempPassword = generateTempPassword();
         const hash = await bcrypt.hash(tempPassword, 10);
@@ -360,9 +387,9 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
             [referenciaID, String(nome).trim().slice(0, 100), cleanEmail, hash, telefone ? String(telefone).slice(0, 20) : null, targetPerfil]
         );
 
-        await syncLegacyAccessAssignments({
+        await setInternalAccessRoles({
             referenciaID,
-            perfilId: targetPerfil,
+            roleCodes: normalizedRoleCodes.length ? normalizedRoleCodes : buildDefaultInternalRoles(targetPerfil),
             assignedByReferenciaID: req.user?.ReferenciaID || null
         });
 
