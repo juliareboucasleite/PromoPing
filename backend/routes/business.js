@@ -4,12 +4,24 @@ import express from "express";
 import { pool } from "../database/db.js";
 import { verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
+import { buildAccessProfile, isBusinessProfile, PROFILE_IDS } from "../services/accessControl.js";
+import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
 
 const router = express.Router();
 
-const BUSINESS_PROFILE_ID = 4;
+const BUSINESS_PROFILE_ID = PROFILE_IDS.business;
 const MEMBER_ROLES = new Set(["owner", "manager", "analyst"]);
+
+router.use(async (req, res, next) => {
+  try {
+    await ensureBusinessTablesReady();
+    next();
+  } catch (error) {
+    console.error("[BUSINESS] Erro ao garantir schema business:", error);
+    res.status(500).json({ status: "error", error: "Erro ao preparar schema business." });
+  }
+});
 
 function normalizeRole(role, fallback = "analyst") {
   const normalized = String(role || fallback).trim().toLowerCase();
@@ -402,7 +414,7 @@ async function requireBusinessProfile(req, res, next) {
     }
 
     const perfilId = await getPerfilId(referenciaID);
-    if (perfilId !== BUSINESS_PROFILE_ID) {
+    if (!isBusinessProfile(perfilId)) {
       return res.status(403).json({
         status: "error",
         error: "Acesso restrito a contas business."
@@ -649,6 +661,7 @@ router.get("/me", async (req, res) => {
     res.json({
       status: "ok",
       profileId: BUSINESS_PROFILE_ID,
+      access: buildAccessProfile(BUSINESS_PROFILE_ID),
       membershipCount: memberships.length,
       activeMembership,
       memberships,

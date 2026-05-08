@@ -1,12 +1,36 @@
 import express from "express";
 import { pool } from "../database/db.js";
+import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";
 import { sendEmail } from "../services/notify.js";
 import { logAudit } from "../utils/audit.js";
 
 const router = express.Router();
 
+router.use(async (req, res, next) => {
+  try {
+    await ensureBusinessTablesReady();
+    next();
+  } catch (error) {
+    console.error("[CORPORATION] Erro ao garantir schema business:", error);
+    res.status(500).json({ status: "error", error: "Erro ao preparar schema business." });
+  }
+});
+
 const DEFAULT_REJECTION_NOTE =
   "O pedido business foi recusado apos revisao interna. Pode responder a este email com mais detalhes ou corrigir os dados e submeter um novo pedido.";
+
+function getPublicBaseUrl() {
+  return (process.env.PUBLIC_BASE_URL || process.env.FRONTEND_URL || process.env.BASE_URL || "https://promoping.pt").replace(/\/$/, "");
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 function slugifyOrganizationName(name) {
   return String(name || "")
@@ -132,31 +156,49 @@ async function generateUniqueSlug(nomeEmpresa, connection) {
 }
 
 async function sendDecisionEmail(application, decision, reviewNote) {
-  const to = application.billing_email || application.applicant_email;
-  if (!to) return;
+  const recipients = Array.from(
+    new Set(
+      [application.applicant_email, application.billing_email]
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+    )
+  );
+  if (!recipients.length) return;
 
   const companyName = application.nome_empresa || "a sua empresa";
   const applicantName = application.applicant_name || "equipa";
   const planName = application.requested_plan_name || "Corporate";
+  const applicantEmail = String(application.applicant_email || application.billing_email || "").trim();
+  const baseUrl = getPublicBaseUrl();
+  const businessLoginUrl = `${baseUrl}/business/create/login?approved=1&email=${encodeURIComponent(applicantEmail)}`;
+  const businessDashboardUrl = `${baseUrl}/business/dashboard`;
+  const forgotPasswordUrl = `${baseUrl}/inc/forgot-password.html`;
 
   if (decision === "approved") {
     const html = `
       <div style="font-family: Arial, sans-serif; color: #111; line-height: 1.6;">
-        <h2>Pedido business aprovado</h2>
+        <h2>Bem-vindo ao painel business da PromoPing</h2>
         <p>Ola ${applicantName},</p>
         <p>O pedido business da empresa <strong>${companyName}</strong> foi aprovado.</p>
         <p>O plano atribuido ficou definido como <strong>${planName}</strong>.</p>
         <p>Ja pode entrar com a conta registada e continuar a configuracao da area business.</p>
+        <div style="margin: 24px 0; padding: 20px; border: 1px solid #ececec; border-radius: 12px; background: #fafafa;">
+          <p style="margin: 0 0 8px;"><strong>Email de acesso:</strong> ${escapeHtml(applicantEmail)}</p>
+          <p style="margin: 0 0 8px;"><strong>Pagina de login:</strong> <a href="${businessLoginUrl}">${businessLoginUrl}</a></p>
+          <p style="margin: 0;"><strong>Painel business:</strong> <a href="${businessDashboardUrl}">${businessDashboardUrl}</a></p>
+        </div>
+        <p>Por seguranca, a password nao e enviada por email. Use a password definida no registo da conta business.</p>
+        <p>Se nao se lembrar da password, pode redefini-la aqui: <a href="${forgotPasswordUrl}">${forgotPasswordUrl}</a></p>
         ${
           reviewNote
-            ? `<p><strong>Nota da revisao:</strong><br>${String(reviewNote).replace(/\n/g, "<br>")}</p>`
+            ? `<p><strong>Nota da revisao:</strong><br>${escapeHtml(reviewNote).replace(/\n/g, "<br>")}</p>`
             : ""
         }
         <p style="color: #666;">PromoPing</p>
       </div>
     `;
 
-    await sendEmail(to, "PromoPing - Pedido business aprovado", html);
+    await sendEmail(recipients.join(", "), "PromoPing Business - acesso aprovado", html);
     return;
   }
 
@@ -166,13 +208,13 @@ async function sendDecisionEmail(application, decision, reviewNote) {
       <h2>Pedido business recusado</h2>
       <p>Ola ${applicantName},</p>
       <p>O pedido business da empresa <strong>${companyName}</strong> nao foi aprovado nesta revisao.</p>
-      <p><strong>Motivo:</strong><br>${String(finalNote).replace(/\n/g, "<br>")}</p>
+      <p><strong>Motivo:</strong><br>${escapeHtml(finalNote).replace(/\n/g, "<br>")}</p>
       <p>Pode responder a este email com contexto adicional ou submeter um novo pedido apos corrigir os dados.</p>
       <p style="color: #666;">PromoPing</p>
     </div>
   `;
 
-  await sendEmail(to, "PromoPing - Pedido business recusado", html);
+  await sendEmail(recipients.join(", "), "PromoPing - Pedido business recusado", html);
 }
 
 router.get("/", async (req, res) => {

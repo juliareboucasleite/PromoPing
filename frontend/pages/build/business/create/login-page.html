@@ -58,6 +58,9 @@
                 </form>
 
                 <p class="business-auth-helper">
+                    Esqueceu-se da password? <a href="/inc/forgot-password.html">Recuperar acesso</a>
+                </p>
+                <p class="business-auth-helper">
                     Tambem pode entrar pela homepage com Google ou Discord, mas o acesso continua bloqueado para qualquer conta que nao seja business.
                 </p>
             </section>
@@ -88,6 +91,20 @@
                     return 'Sessao invalida. Esta area aceita apenas contas business.';
                 }
                 return '';
+            }
+
+            function prefillAccessFromQuery() {
+                const params = new URLSearchParams(window.location.search);
+                const approved = params.get('approved');
+                const email = params.get('email');
+
+                if (email) {
+                    document.getElementById('businessLoginEmail').value = email.trim();
+                }
+
+                if (approved === '1') {
+                    showSuccess('A conta business foi aprovada. Entre com o email indicado no pedido e a password definida no registo.');
+                }
             }
 
             async function fetchProfileAfterLogin(token) {
@@ -144,6 +161,7 @@
             }
 
             validateExistingSession();
+            prefillAccessFromQuery();
 
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();

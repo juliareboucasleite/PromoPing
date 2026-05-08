@@ -95,7 +95,6 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setTitle('Configuração de Announcements')
                     .setDescription('Notificações de releases do GitHub')
-                    .setColor(0xf4af55)
                     .setTimestamp();
 
                 if (configs.length === 0) {
@@ -107,8 +106,8 @@ module.exports = {
                 } else {
                     const config = configs[0];
                     embed.addFields(
-                        { name: 'Status', value: '✅ Webhook configurado', inline: true },
-                        { name: 'Ativo', value: config.IsActive ? '✅ Sim' : '❌ Não', inline: true },
+                        { name: 'Status', value: 'Webhook configurado', inline: true },
+                        { name: 'Ativo', value: config.IsActive ? 'Sim' : 'Não', inline: true },
                         { name: 'Canal', value: `<#${ANNOUNCEMENTS_CHANNEL_ID}>`, inline: true }
                     );
                     embed.addFields({
@@ -157,14 +156,13 @@ module.exports = {
                 }
 
                 const embed = new EmbedBuilder()
-                    .setTitle('✅ Webhook Configurado')
+                    .setTitle('Webhook Configurado')
                     .setDescription('A configuração do webhook foi salva.')
                     .addFields({
                         name: 'Informações',
                         value: `• Tipo: GitHub Releases\n• Canal: <#${ANNOUNCEMENTS_CHANNEL_ID}>\n• Status: Ativo`,
                         inline: false
                     })
-                    .setColor(0x00ff00)
                     .setTimestamp();
 
                 await connection.end();
@@ -173,7 +171,7 @@ module.exports = {
             } else if (action === 'testar' || action === 'test') {
                 // Testar notificação de release
                 const embed = new EmbedBuilder()
-                    .setTitle('🚀 Nova Release - TESTE')
+                    .setTitle('Nova Release - TESTE')
                     .setDescription('**v2.4.0** foi lançada!')
                     .addFields(
                         { name: 'Repositório', value: '[PromoPing](https://github.com/seu-usuario/PromoPing)', inline: true },
@@ -181,7 +179,6 @@ module.exports = {
                         { name: 'Autor', value: 'Teste', inline: true },
                         { name: 'Notas da Release', value: 'Esta é uma notificação de teste para verificar o sistema de announcements.', inline: false }
                     )
-                    .setColor(0xf4af55)
                     .setThumbnail('https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png')
                     .setTimestamp()
                     .setFooter({ text: 'PromoPing - GitHub Releases' });
@@ -217,7 +214,6 @@ module.exports = {
                                 { name: 'Enviadas', value: result.sent.toString(), inline: true },
                                 { name: 'Já Processadas', value: result.skipped.toString(), inline: true }
                             )
-                            .setColor(0x00ff00)
                             .setTimestamp();
                         
                         await connection.end();

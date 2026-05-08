@@ -36,6 +36,10 @@ import {
     setCachedDiscordUser
 } from "../utils/discord-cache.js";
 import {
+    buildAccessProfile,
+    canAccessPortal
+} from "../services/accessControl.js";
+import {
     gerarReferenciaID,
     validarReferenciaID
 } from "../utils/referenciaId.js";
@@ -1349,7 +1353,8 @@ router.post("/login", async (req, res) => {
                     email: userEmail,
                     nome: userNome,
                     perfilId: userPerfilId
-                }
+                },
+                access: buildAccessProfile(userPerfilId)
             });
         }
 
@@ -1372,8 +1377,7 @@ router.post("/login", async (req, res) => {
 
         if (isAdminPanel) {
             const perfilId = userPerfilId;
-            // PerfilId 1 = Admin (suporte), PerfilId 3 = Corporation (gestÃ£o dos funcionÃ¡rios)
-            if (perfilId !== 1 && perfilId !== 3) {
+            if (!canAccessPortal(perfilId, "support")) {
                 console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: UsuÃ¡rio ${userEmail} (PerfilId=${perfilId})`);
                 return res.status(403).json({
                     status: "error",
@@ -1395,6 +1399,7 @@ router.post("/login", async (req, res) => {
                 nome: userNome,
                 perfilId: userPerfilId
             },
+            access: buildAccessProfile(userPerfilId),
             accountReactivated: user.accountReactivated || false
         });
     } catch (err) {

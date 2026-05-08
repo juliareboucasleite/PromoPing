@@ -149,10 +149,9 @@ async function syncAllReleases() {
 
             // Criar embed de notificação
             const embedData = {
-                title: '🚀 Release',
+                title: 'Release',
                 description: `**${release.tag_name}**${release.name && release.name !== release.tag_name ? ` - ${release.name}` : ''}`,
                 url: release.html_url,
-                color: 0x24292e,
                 timestamp: new Date(release.published_at || release.created_at).toISOString(),
                 footer: {
                     text: 'PromoPing - GitHub Releases'
@@ -169,7 +168,7 @@ async function syncAllReleases() {
                     },
                     {
                         name: 'Autor',
-                        value: (release.author == null) ? login : 'Desconhecido',
+                        value: release.author?.login || 'Desconhecido',
                         inline: true
                     }
                 ]
@@ -650,10 +649,9 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
 
         // Criar embed de notificação (formato JSON para envio via HTTP)
         const embedData = {
-            title: '🚀 Nova Release',
+            title: 'Nova Release',
             description: `**${release.tag_name}** foi lançada!`,
             url: release.html_url,
-            color: 0x24292e,
             timestamp: new Date(release.published_at).toISOString(),
             footer: {
                 text: 'PromoPing - GitHub Releases'
@@ -670,7 +668,7 @@ router.post("/api/webhooks/github", rawBodyMiddleware, async (req, res) => {
                 },
                 {
                     name: 'Autor',
-                    value: (release.author == null) ? login : 'Desconhecido',
+                    value: release.author?.login || 'Desconhecido',
                     inline: true
                 }
             ]

@@ -4,6 +4,7 @@ import { pool } from "../database/db.js";
 // import { formatDate } from "../utils/format.js"; // Removido - função não existe
 import { verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
+import { buildAccessProfile, extendUserWithAccess } from "../services/accessControl.js";
 import {
   getStatus,
   is2FAEnabled,
@@ -47,6 +48,14 @@ const CONFIG_SELECT_FIELDS = `
   historicodias
 `;
 
+function isMissingRelationError(err) {
+  if (!err) return false;
+  const message = String(err.message || "").toLowerCase();
+  return err.code === "42P01"
+    || (message.includes("relation") && message.includes("does not exist"))
+    || (message.includes('tabela "') && message.includes("inexistente"));
+}
+
 // Rota /profile (alias para /me) - REMOVIDA (duplicada)
 // A rota principal está na linha 162
 
@@ -56,7 +65,7 @@ router.get("/me", verifyToken, async (req, res) => {
 
     // Info do utilizador
     const [users] = await pool.query(
-      'SELECT ReferenciaID AS "ReferenciaID", Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", DataRegisto AS "DataRegisto", FotoPerfil AS "FotoPerfil" FROM utilizadores WHERE ReferenciaID = ?',
+      'SELECT ReferenciaID AS "ReferenciaID", Nome AS "Nome", Email AS "Email", Telefone AS "Telefone", DataRegisto AS "DataRegisto", FotoPerfil AS "FotoPerfil", PerfilId AS "PerfilId" FROM utilizadores WHERE ReferenciaID = ?',
       [referenciaID]
     );
     const user = users[0];
@@ -82,10 +91,10 @@ router.get("/me", verifyToken, async (req, res) => {
 
     res.json({
       status: "ok",
-      user: {
+      user: extendUserWithAccess({
         ...user,
         DataCriacao: user.DataRegisto ? new Date(user.DataRegisto).toLocaleDateString('pt-BR') : 'N/A' //  Data formatada
-      },
+      }),
       stats: {
         ...statsRows[0],
         dinheiro_poupado: Number(statsRows[0].dinheiro_poupado) || 0
@@ -212,65 +221,73 @@ router.get("/profile", verifyToken, async (req, res) => {
     let business = null;
 
     if (perfilId === 4) {
-      const [businessRows] = await pool.query(
-        `SELECT
-            m.organization_id,
-            m.role,
-            m.status,
-            o.nome_empresa,
-            o.nif,
-            o.vat_number,
-            o.website,
-            o.setor,
-            o.categoria,
-            o.pessoa_responsavel,
-            o.telefone_comercial,
-            o.billing_email,
-            o.morada_linha1,
-            o.morada_linha2,
-            o.cidade,
-            o.codigo_postal,
-            o.pais,
-            o.logo_url,
-            o.plano_atual_id
-           FROM organization_members m
-           JOIN organizations o ON o.id = m.organization_id
-          WHERE m.referenciaid = ?
-            AND m.status = 'active'
-          ORDER BY
-            CASE m.role WHEN 'owner' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END,
-            o.created_at ASC
-          LIMIT 1`,
-        [referenciaID]
-      );
+      try {
+        const [businessRows] = await pool.query(
+          `SELECT
+              m.organization_id,
+              m.role,
+              m.status,
+              o.nome_empresa,
+              o.nif,
+              o.vat_number,
+              o.website,
+              o.setor,
+              o.categoria,
+              o.pessoa_responsavel,
+              o.telefone_comercial,
+              o.billing_email,
+              o.morada_linha1,
+              o.morada_linha2,
+              o.cidade,
+              o.codigo_postal,
+              o.pais,
+              o.logo_url,
+              o.plano_atual_id
+             FROM organization_members m
+             JOIN organizations o ON o.id = m.organization_id
+            WHERE m.referenciaid = ?
+              AND m.status = 'active'
+            ORDER BY
+              CASE m.role WHEN 'owner' THEN 0 WHEN 'manager' THEN 1 ELSE 2 END,
+              o.created_at ASC
+            LIMIT 1`,
+          [referenciaID]
+        );
 
-      if (businessRows.length > 0) {
-        const org = businessRows[0];
-        business = {
-          organizationId: org.organization_id,
-          role: org.role,
-          status: org.status,
-          company: {
-            nomeEmpresa: org.nome_empresa,
-            nif: org.nif,
-            vatNumber: org.vat_number,
-            website: org.website,
-            setor: org.setor,
-            categoria: org.categoria,
-            pessoaResponsavel: org.pessoa_responsavel,
-            telefoneComercial: org.telefone_comercial,
-            billingEmail: org.billing_email,
-            morada: {
-              linha1: org.morada_linha1,
-              linha2: org.morada_linha2,
-              cidade: org.cidade,
-              codigoPostal: org.codigo_postal,
-              pais: org.pais
-            },
-            logoUrl: org.logo_url,
-            planoAtualId: org.plano_atual_id
-          }
-        };
+        if (businessRows.length > 0) {
+          const org = businessRows[0];
+          business = {
+            organizationId: org.organization_id,
+            role: org.role,
+            status: org.status,
+            company: {
+              nomeEmpresa: org.nome_empresa,
+              nif: org.nif,
+              vatNumber: org.vat_number,
+              website: org.website,
+              setor: org.setor,
+              categoria: org.categoria,
+              pessoaResponsavel: org.pessoa_responsavel,
+              telefoneComercial: org.telefone_comercial,
+              billingEmail: org.billing_email,
+              morada: {
+                linha1: org.morada_linha1,
+                linha2: org.morada_linha2,
+                cidade: org.cidade,
+                codigoPostal: org.codigo_postal,
+                pais: org.pais
+              },
+              logoUrl: org.logo_url,
+              planoAtualId: org.plano_atual_id
+            }
+          };
+        }
+      } catch (businessErr) {
+        if (!isMissingRelationError(businessErr)) {
+          throw businessErr;
+        }
+
+        console.warn("[BACKEND] Tabelas business não disponíveis para /api/user/profile:", businessErr.message);
       }
     }
 
@@ -282,6 +299,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         telefone: u?.Telefone,
         FotoPerfil: u?.FotoPerfil,
         perfilId,
+        access: buildAccessProfile(perfilId),
         contas_conectadas: contas,
         preferencias: prefs,
         proxima_alteracao_senha: nextSenha ? nextSenha.toISOString() : null,

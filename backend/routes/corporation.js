@@ -11,6 +11,7 @@ import auditRouter from "./corporation-audit.js";
 import businessApplicationsRouter from "./corporation-business-applications.js";
 import { logAudit } from "../utils/audit.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
+import { isCorporationProfile } from "../services/accessControl.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
@@ -60,7 +61,7 @@ async function verifyCorporation(req, res, next) {
             "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
             [referenciaID]
         );
-        if (rows.length === 0 || rows[0].PerfilId !== 3) {
+        if (rows.length === 0 || !isCorporationProfile(rows[0].PerfilId)) {
             return res.status(403).json({
                 status: "error",
                 error: "Acesso negado. Apenas utilizadores corporativos."
