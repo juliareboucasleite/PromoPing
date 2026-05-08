@@ -1,5 +1,6 @@
 import express from "express";
 import { pool } from "../database/db.js";
+import { syncOrganizationAccessAssignment } from "../services/accessAssignments.service.js";
 import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";
 import { sendEmail } from "../services/notify.js";
 import { logAudit } from "../utils/audit.js";
@@ -391,6 +392,15 @@ router.post("/:id/approve", async (req, res) => {
        VALUES (?, ?, 'owner', 'active')`,
       [organization.id, application.referenciaid]
     );
+
+    await syncOrganizationAccessAssignment({
+      referenciaID: application.referenciaid,
+      organizationId: organization.id,
+      organizationRole: "owner",
+      membershipStatus: "active",
+      assignedByReferenciaID: req.user?.ReferenciaID || null,
+      connection
+    });
 
     await connection.query(
       `UPDATE utilizadores

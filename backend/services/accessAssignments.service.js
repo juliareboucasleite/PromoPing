@@ -8,6 +8,12 @@ const INTERNAL_MANAGED_ROLES = [
   ROLE_CODES.corporationAdmin
 ];
 
+const BUSINESS_MANAGED_ROLES = [
+  ROLE_CODES.businessOwner,
+  ROLE_CODES.businessManager,
+  ROLE_CODES.businessAnalyst
+];
+
 function normalizePerfilId(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -24,6 +30,17 @@ function getManagedRoleCodesForPerfil(perfilId) {
   }
 
   return [];
+}
+
+function mapOrganizationRoleToAccessRole(role) {
+  switch (String(role || "").trim().toLowerCase()) {
+    case "owner":
+      return ROLE_CODES.businessOwner;
+    case "manager":
+      return ROLE_CODES.businessManager;
+    default:
+      return ROLE_CODES.businessAnalyst;
+  }
 }
 
 export async function syncLegacyAccessAssignments({
@@ -117,4 +134,71 @@ export async function listUserAccessRoles(referenciaIDs = [], connection = pool)
   }
 
   return result;
+}
+
+export async function syncOrganizationAccessAssignment({
+  referenciaID,
+  organizationId,
+  organizationRole,
+  membershipStatus = "active",
+  assignedByReferenciaID = null,
+  connection = pool
+}) {
+  if (!referenciaID || !organizationId) return;
+
+  await ensureAccessControlTablesReady();
+
+  const desiredRoleCode = String(membershipStatus || "active").toLowerCase() === "active"
+    ? mapOrganizationRoleToAccessRole(organizationRole)
+    : null;
+
+  const [existingRows] = await connection.query(
+    `SELECT ur.id, ur.status, r.code
+       FROM access_user_roles ur
+       JOIN access_roles r ON r.id = ur.role_id
+      WHERE ur.referenciaid = ?
+        AND ur.organization_id = ?`,
+    [referenciaID, organizationId]
+  );
+
+  for (const row of existingRows || []) {
+    if (!BUSINESS_MANAGED_ROLES.includes(row.code)) continue;
+
+    const nextStatus = row.code === desiredRoleCode ? "active" : "inactive";
+    if (row.status === nextStatus) continue;
+
+    await connection.query(
+      `UPDATE access_user_roles
+          SET status = ?,
+              updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?`,
+      [nextStatus, row.id]
+    );
+  }
+
+  if (!desiredRoleCode) {
+    return;
+  }
+
+  const desiredRow = (existingRows || []).find((row) => row.code === desiredRoleCode);
+  if (desiredRow) {
+    if (desiredRow.status !== "active") {
+      await connection.query(
+        `UPDATE access_user_roles
+            SET status = 'active',
+                updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?`,
+        [desiredRow.id]
+      );
+    }
+    return;
+  }
+
+  await connection.query(
+    `INSERT INTO access_user_roles (referenciaid, role_id, organization_id, assigned_by_referenciaid, status)
+     SELECT ?, r.id, ?, ?, 'active'
+       FROM access_roles r
+      WHERE r.code = ?`,
+    [referenciaID, organizationId, assignedByReferenciaID, desiredRoleCode]
+  );
 }

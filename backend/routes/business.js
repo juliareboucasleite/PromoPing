@@ -4,8 +4,8 @@ import express from "express";
 import { pool } from "../database/db.js";
 import { attachAccessContext, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../services/notify.js";
-import { isBusinessProfile, PROFILE_IDS, resolveAccessContext } from "../services/accessControl.js";
-import { listUserAccessRoles } from "../services/accessAssignments.service.js";
+import { PROFILE_IDS, resolveAccessContext } from "../services/accessControl.js";
+import { listUserAccessRoles, syncOrganizationAccessAssignment } from "../services/accessAssignments.service.js";
 import { ensureBusinessTablesReady } from "../services/businessSchema.service.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
 
@@ -119,15 +119,6 @@ function mapApplicationRow(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
-}
-
-async function getPerfilId(referenciaID) {
-  const [rows] = await pool.query(
-    "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ? LIMIT 1",
-    [referenciaID]
-  );
-  if (!rows.length) return null;
-  return Number(rows[0].PerfilId ?? rows[0].perfilid ?? null);
 }
 
 async function getPlanIdByName(name, fallbackId = 1) {
@@ -414,15 +405,14 @@ async function requireBusinessProfile(req, res, next) {
       return res.status(401).json({ status: "error", error: "Não autenticado" });
     }
 
-    const perfilId = await getPerfilId(referenciaID);
-    if (!isBusinessProfile(perfilId)) {
+    if (!req.accessContext?.allowedPortals?.includes("business")) {
       return res.status(403).json({
         status: "error",
         error: "Acesso restrito a contas business."
       });
     }
 
-    req.businessPerfilId = perfilId;
+    req.businessPerfilId = req.accessContext?.profileId ?? BUSINESS_PROFILE_ID;
     next();
   } catch (error) {
     console.error("[BUSINESS] Erro ao validar perfil:", error);
@@ -659,6 +649,7 @@ router.post("/register", async (req, res) => {
 });
 
 router.use(verifyToken);
+router.use(attachAccessContext);
 router.use(requireBusinessProfile);
 
 router.get("/me", async (req, res) => {
@@ -947,6 +938,14 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
       RETURNING *`,
       [finalRole, finalStatus, member.id]
     );
+
+    await syncOrganizationAccessAssignment({
+      referenciaID: targetReferenciaID,
+      organizationId: req.businessMembership.organizationId,
+      organizationRole: finalRole,
+      membershipStatus: finalStatus,
+      assignedByReferenciaID: req.user?.ReferenciaID || null
+    });
 
     res.json({
       status: "ok",

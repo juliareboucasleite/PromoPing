@@ -37,11 +37,15 @@ export function isBusinessProfile(perfilId) {
 }
 
 function getAccountType(perfilId, organizations = []) {
+  const activeOrganizations = (organizations || []).filter(
+    (organization) => String(organization?.status || "active").toLowerCase() === "active"
+  );
+
   if (isSupportProfile(perfilId) || isCorporationProfile(perfilId)) {
     return "internal_staff";
   }
 
-  if (isBusinessProfile(perfilId) || organizations.length > 0) {
+  if (isBusinessProfile(perfilId) || activeOrganizations.length > 0) {
     return "organization_member";
   }
 
@@ -59,7 +63,7 @@ function mapOrganizationRoleToAccessRole(role) {
   }
 }
 
-function getDefaultRolesForProfileId(perfilId) {
+function getDefaultRolesForProfileId(perfilId, { hasActiveOrganizationMembership = false } = {}) {
   if (isSupportProfile(perfilId)) {
     return [ROLE_CODES.supportAdmin, ROLE_CODES.supportAgent];
   }
@@ -69,7 +73,7 @@ function getDefaultRolesForProfileId(perfilId) {
   }
 
   if (isBusinessProfile(perfilId)) {
-    return [ROLE_CODES.businessPending];
+    return hasActiveOrganizationMembership ? [] : [ROLE_CODES.businessPending];
   }
 
   return [ROLE_CODES.consumer];
@@ -109,9 +113,14 @@ function pickPrimaryRole(roleCodes = []) {
 }
 
 function buildBasicAccessContext(perfilId, organizations = [], extraRoleCodes = [], extraPermissionCodes = []) {
+  const activeOrganizations = (organizations || []).filter(
+    (organization) => String(organization?.status || "active").toLowerCase() === "active"
+  );
   const roles = unique([
-    ...getDefaultRolesForProfileId(perfilId),
-    ...organizations.map((org) => mapOrganizationRoleToAccessRole(org.role)),
+    ...getDefaultRolesForProfileId(perfilId, {
+      hasActiveOrganizationMembership: activeOrganizations.length > 0
+    }),
+    ...activeOrganizations.map((org) => mapOrganizationRoleToAccessRole(org.role)),
     ...extraRoleCodes
   ]);
 
@@ -123,7 +132,7 @@ function buildBasicAccessContext(perfilId, organizations = [], extraRoleCodes = 
 
   return {
     profileId: normalizePerfilId(perfilId),
-    accountType: getAccountType(perfilId, organizations),
+    accountType: getAccountType(perfilId, activeOrganizations),
     primaryRole: pickPrimaryRole(roles),
     roles,
     permissions,

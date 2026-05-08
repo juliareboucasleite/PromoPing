@@ -5,13 +5,12 @@
 
 import express from "express";
 import { pool } from "../database/db.js";
-import { requirePortalAccess, verifyToken } from "../middleware/auth.js";
+import { requirePermission, requirePortalAccess, verifyToken } from "../middleware/auth.js";
 import financialRouter from "./corporation-financial.js";
 import auditRouter from "./corporation-audit.js";
 import businessApplicationsRouter from "./corporation-business-applications.js";
 import { logAudit } from "../utils/audit.js";
 import { gerarReferenciaID } from "../utils/referenciaId.js";
-import { isCorporationProfile } from "../services/accessControl.js";
 import { listUserAccessRoles, syncLegacyAccessAssignments } from "../services/accessAssignments.service.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -174,7 +173,7 @@ async function ensureCorporationDiscordGuildsTable() {
 }
 
 /** Lista funcionários (suporte - PerfilId = 1) com detalhes */
-router.get("/staff", async (req, res) => {
+router.get("/staff", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const includeInactive = req.query.includeInactive === '1' || req.query.includeInactive === 'true';
         const profiles = req.query.includeCorp === '1' ? '(1, 3)' : '(1)';
@@ -197,7 +196,14 @@ router.get("/staff", async (req, res) => {
             WHERE u.PerfilId IN ${profiles} ${activeFilter}
             ORDER BY u.Ativo DESC, u.Nome`
         );
-        res.json({ status: "ok", staff: staff.map(mapStaffRow) });
+        const roleMap = await listUserAccessRoles(staff.map((row) => row.ReferenciaID || row.referenciaid));
+        res.json({
+            status: "ok",
+            staff: staff.map((row) => ({
+                ...mapStaffRow(row),
+                accessRoles: roleMap.get(row.ReferenciaID || row.referenciaid) || []
+            }))
+        });
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar staff:", err);
         return handleDatabaseError(err, res, "Erro ao buscar funcionários");
@@ -205,7 +211,7 @@ router.get("/staff", async (req, res) => {
 });
 
 /** Detalhe de um funcionário */
-router.get("/staff/:referenciaID", async (req, res) => {
+router.get("/staff/:referenciaID", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [rows] = await pool.query(
@@ -219,13 +225,20 @@ router.get("/staff/:referenciaID", async (req, res) => {
                 p.Nome AS PerfilNome
             FROM utilizadores u
             LEFT JOIN perfis p ON p.Id = u.PerfilId
-            WHERE u.ReferenciaID = ? AND u.PerfilId = 1`,
+            WHERE u.ReferenciaID = ? AND u.PerfilId IN (1, 3)`,
             [referenciaID]
         );
         if (rows.length === 0) {
             return res.status(404).json({ status: "error", error: "Funcionário não encontrado" });
         }
-        res.json({ status: "ok", staff: mapStaffRow(rows[0]) });
+        const roleMap = await listUserAccessRoles([referenciaID]);
+        res.json({
+            status: "ok",
+            staff: {
+                ...mapStaffRow(rows[0]),
+                accessRoles: roleMap.get(referenciaID) || []
+            }
+        });
     } catch (err) {
         console.error("[CORPORATION] Erro ao buscar funcionário:", err);
         return handleDatabaseError(err, res, "Erro ao buscar funcionário");
@@ -233,12 +246,12 @@ router.get("/staff/:referenciaID", async (req, res) => {
 });
 
 /** Atividade / projetos do funcionário: eventos, bugs/projetos, conversas de suporte, notificações que fez */
-router.get("/staff/:referenciaID/activity", async (req, res) => {
+router.get("/staff/:referenciaID/activity", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
 
         const [user] = await pool.query(
-            "SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ? AND PerfilId = 1",
+            "SELECT ReferenciaID FROM utilizadores WHERE ReferenciaID = ? AND PerfilId IN (1, 3)",
             [referenciaID]
         );
         if (user.length === 0) {
@@ -316,7 +329,7 @@ function generateTempPassword() {
 }
 
 /** POST /staff — criar nova conta de funcionário (suporte) */
-router.post("/staff", async (req, res) => {
+router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { nome, email, telefone, perfilId } = req.body;
         if (!nome || !email) {
@@ -366,7 +379,7 @@ router.post("/staff", async (req, res) => {
 });
 
 /** PUT /staff/:referenciaID — atualizar dados básicos (nome, telefone, perfil) */
-router.put("/staff/:referenciaID", async (req, res) => {
+router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const { nome, telefone, perfilId } = req.body;
@@ -414,7 +427,7 @@ router.put("/staff/:referenciaID", async (req, res) => {
 });
 
 /** POST /staff/:referenciaID/suspend — desactivar conta */
-router.post("/staff/:referenciaID/suspend", async (req, res) => {
+router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         if (referenciaID === req.user?.ReferenciaID) {
@@ -444,7 +457,7 @@ router.post("/staff/:referenciaID/suspend", async (req, res) => {
 });
 
 /** POST /staff/:referenciaID/reactivate — reactivar conta */
-router.post("/staff/:referenciaID/reactivate", async (req, res) => {
+router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [r] = await pool.query(
@@ -464,7 +477,7 @@ router.post("/staff/:referenciaID/reactivate", async (req, res) => {
 });
 
 /** POST /staff/:referenciaID/reset-password — gerar nova password temporária */
-router.post("/staff/:referenciaID/reset-password", async (req, res) => {
+router.post("/staff/:referenciaID/reset-password", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [exists] = await pool.query(
