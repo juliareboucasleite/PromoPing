@@ -1328,6 +1328,23 @@ body.dashboard-body,
     gap: 0.5rem;
 }
 
+.card-header-actions .secondary-btn,
+.card-header-actions .save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    height: 40px;
+    margin-top: 0;
+    padding: 0 1rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.card-header-actions .save-btn {
+    align-self: auto;
+}
+
 .card-content,
 .profile-form,
 .password-form,
