@@ -238,12 +238,13 @@
                     messageText = messageText.trim();
                 }
 
-                if (msg.senderType === 'support') {
+                if (msg.senderType === 'support' || msg.senderType === 'ai') {
+                    const isAi = msg.senderType === 'ai';
                     return `
-                        <div class="message-wrapper support-message">
+                        <div class="message-wrapper ${isAi ? 'ai-message' : 'support-message'}">
                             ${supportPhoto ? `<img src="${escapeHtml(supportPhoto)}" alt="Suporte" class="message-avatar">` : '<div class="message-avatar placeholder">PP</div>'}
                             <div class="message-bubble ${msg.senderType}">
-                                <div class="message-sender">Suporte</div>
+                                <div class="message-sender">${isAi ? 'PromoPing IA' : 'Suporte'}</div>
                                 ${messageText ? `<div class="message-text">${escapeHtml(messageText)}</div>` : ''}
                                 ${imagesHtml}
                                 <div class="message-time">${formatDate(msg.createdAt)}</div>
