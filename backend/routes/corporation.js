@@ -350,10 +350,6 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
 
         const targetPerfil = [1, 3].includes(parseInt(perfilId, 10)) ? parseInt(perfilId, 10) : 1;
         const referenciaID = gerarReferenciaID();
-        const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
-        if (![1, 3].includes(targetPerfil)) {
-            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser geridos aqui." });
-        }
         const tempPassword = generateTempPassword();
         const hash = await bcrypt.hash(tempPassword, 10);
 
@@ -526,6 +522,10 @@ router.post("/staff/:referenciaID/reset-password", requirePermission("corporatio
         );
         if (exists.length === 0) {
             return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
+        }
+        const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
+        if (![1, 3].includes(targetPerfil)) {
+            return res.status(400).json({ status: "error", error: "S?? funcion??rios internos podem ser geridos aqui." });
         }
         const tempPassword = generateTempPassword();
         const hash = await bcrypt.hash(tempPassword, 10);
