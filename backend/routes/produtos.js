@@ -166,10 +166,10 @@ router.post("/", verifyToken, async (req, res) => {
         const scraperPath = path.join(__dirname, '../../python-scraper/start.py');
         
         // Escapar a URL para segurança (Windows e Linux)
-        const escapedLink = link.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+        const escapedLink = normalizedLink.replace(/"/g, '\\"').replace(/\$/g, '\\$');
         const command = `${pythonExec} "${scraperPath}" --single "${escapedLink}"`;
         
-        console.log(" [SCRAPER] Iniciando verificação inicial para:", link);
+        console.log(" [SCRAPER] Iniciando verificação inicial para:", normalizedLink);
         exec(command, { cwd: path.join(__dirname, '../../') }, (error, stdout, stderr) => {
             if (error) {
                 console.error(" [SCRAPER] Erro na verificação inicial:", error.message);
@@ -188,7 +188,7 @@ router.post("/", verifyToken, async (req, res) => {
             message: "Produto adicionado. Verificação inicial iniciada!", 
             produto: {
                 Id: productId,
-                Nome: nome,
+                Nome: safeNome,
                 PrecoAtual: null,
                 Loja: store.name
             },
