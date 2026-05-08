@@ -406,7 +406,13 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
                 ReferenciaID: referenciaID,
                 Nome: nome,
                 Email: cleanEmail,
-                PerfilId: targetPerfil
+                PerfilId: targetPerfil,
+                accessRoles: (normalizedRoleCodes.length ? normalizedRoleCodes : buildDefaultInternalRoles(targetPerfil)).map((code) => ({
+                    code,
+                    scope: "global",
+                    status: "active",
+                    organizationId: null
+                }))
             },
             tempPassword
         });
@@ -420,7 +426,7 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
 router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
-        const { nome, telefone, perfilId } = req.body;
+        const { nome, telefone, perfilId, accessRoleCodes } = req.body;
 
         const [exists] = await pool.query(
             "SELECT PerfilId FROM utilizadores WHERE ReferenciaID = ?",
@@ -434,9 +440,14 @@ router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage",
             return res.status(400).json({ status: "error", error: "Só funcionários (suporte/corporação) podem ser editados aqui." });
         }
 
-        const finalPerfil = (perfilId !== undefined && [1, 3].includes(parseInt(perfilId, 10)))
-            ? parseInt(perfilId, 10)
-            : Number(currentPerfil);
+        const normalizedRoleCodes = Array.isArray(accessRoleCodes)
+            ? normalizeInternalRoleCodes(accessRoleCodes)
+            : [];
+        const finalPerfil = normalizedRoleCodes.length
+            ? getLegacyPerfilIdFromInternalRoles(normalizedRoleCodes, currentPerfil)
+            : ((perfilId !== undefined && [1, 3].includes(parseInt(perfilId, 10)))
+                ? parseInt(perfilId, 10)
+                : Number(currentPerfil));
 
         const updates = [];
         const values = [];
@@ -455,11 +466,19 @@ router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage",
             values
         );
 
-        await syncLegacyAccessAssignments({
-            referenciaID,
-            perfilId: finalPerfil,
-            assignedByReferenciaID: req.user?.ReferenciaID || null
-        });
+        if (Array.isArray(accessRoleCodes)) {
+            await setInternalAccessRoles({
+                referenciaID,
+                roleCodes: normalizedRoleCodes,
+                assignedByReferenciaID: req.user?.ReferenciaID || null
+            });
+        } else {
+            await syncLegacyAccessAssignments({
+                referenciaID,
+                perfilId: finalPerfil,
+                assignedByReferenciaID: req.user?.ReferenciaID || null
+            });
+        }
 
         logAudit(req, 'staff.update', {
             targetType: 'user',
