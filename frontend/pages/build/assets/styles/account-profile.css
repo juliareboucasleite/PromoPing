@@ -1127,7 +1127,7 @@ input:checked + .toggle-slider:before {
 /* ===== SETTINGS LAYOUT REFRESH ===== */
 :root {
     --profile-settings-bg: #ffffff;
-    --profile-settings-container-width: 1320px;
+    --profile-settings-container-width: 1240px;
     --profile-settings-divider: #edf2f7;
     --profile-settings-accent: #635bff;
     --profile-settings-title: #1f2937;
@@ -1141,10 +1141,27 @@ input:checked + .toggle-slider:before {
     --profile-settings-button-alt-bg: #ffffff;
     --profile-settings-button-connected-bg: #f9fafb;
     --profile-settings-ring: rgba(99, 91, 255, 0.08);
+    --profile-settings-label-width: 168px;
+    --profile-settings-input-height: 36px;
+    --profile-settings-row-gap: 8px;
+    --profile-settings-section-gap: 14px;
+    --profile-settings-body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 .dashboard-main {
     background: var(--profile-settings-bg);
+}
+
+body.dashboard-body,
+.dashboard-main,
+.dashboard-container,
+.profile-card,
+.form-input,
+.save-btn,
+.account-status,
+.history-action-btn,
+.account-action-btn {
+    font-family: var(--profile-settings-body-font);
 }
 
 .dashboard-container {
@@ -1153,19 +1170,19 @@ input:checked + .toggle-slider:before {
 
 .page-header-perfil {
     align-items: flex-start;
-    gap: 0.75rem;
-    padding-bottom: 1.25rem;
-    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.9rem;
     border-bottom: 1px solid var(--profile-settings-divider);
 }
 
 .page-eyebrow {
     display: inline-block;
     padding: 0;
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.35rem;
     border: none;
     border-radius: 0;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
@@ -1174,16 +1191,17 @@ input:checked + .toggle-slider:before {
 }
 
 .page-header-perfil .page-title {
-    font-size: clamp(2rem, 3vw, 2.6rem);
+    font-size: clamp(1.55rem, 2.25vw, 1.95rem);
     line-height: 1.08;
     letter-spacing: -0.03em;
     color: var(--profile-settings-title);
+    margin-bottom: 3px;
 }
 
 .page-header-perfil .page-subtitle {
     max-width: 760px;
-    font-size: 0.98rem;
-    line-height: 1.55;
+    font-size: 0.84rem;
+    line-height: 1.4;
     color: var(--profile-settings-muted);
 }
 
@@ -1194,9 +1212,9 @@ input:checked + .toggle-slider:before {
     border-radius: 0;
     background: transparent;
     color: var(--profile-settings-body);
-    font-size: 0.98rem;
+    font-size: 0.84rem;
     font-weight: 600;
-    margin-top: 0.35rem;
+    margin-top: 0.15rem;
 }
 
 .profile-layout {
@@ -1211,8 +1229,8 @@ input:checked + .toggle-slider:before {
 }
 
 .profile-card {
-    padding: 0 0 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 0 0 0.95rem;
+    margin-bottom: 0.95rem;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -1226,7 +1244,7 @@ input:checked + .toggle-slider:before {
 }
 
 .card-header {
-    margin: 0 0 1rem;
+    margin: 0 0 0.55rem;
     padding: 0;
     background: none;
     border: none;
@@ -1234,13 +1252,13 @@ input:checked + .toggle-slider:before {
 }
 
 .card-icon {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     color: var(--profile-settings-icon);
 }
 
 .card-title {
-    font-size: 1.15rem;
+    font-size: 0.98rem;
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--profile-settings-title);
@@ -1256,7 +1274,7 @@ input:checked + .toggle-slider:before {
 .statistics,
 .plan-info,
 .twofa-section {
-    max-width: 880px;
+    max-width: 940px;
 }
 
 .section-desc,
@@ -1269,29 +1287,36 @@ input:checked + .toggle-slider:before {
 }
 
 .form-group {
-    gap: 0.45rem;
-    margin-bottom: 0.85rem;
+    display: grid;
+    grid-template-columns: var(--profile-settings-label-width) minmax(0, 1fr);
+    gap: 0 12px;
+    align-items: center;
+    margin-bottom: 0;
+    padding: var(--profile-settings-row-gap) 0;
+    border-bottom: 1px solid var(--profile-settings-divider);
 }
 
 .form-label {
-    font-size: 0.86rem;
+    font-size: 0.79rem;
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
     color: var(--profile-settings-body);
+    margin: 0;
 }
 
 .form-input,
 .twofa-code-input,
 .delete-input {
     min-width: 0;
-    max-width: 600px;
-    padding: 0.8rem 0.95rem;
+    max-width: 560px;
+    min-height: var(--profile-settings-input-height);
+    padding: 0.52rem 0.72rem;
     border: 1px solid var(--profile-settings-input-border);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--profile-settings-bg);
     box-shadow: none;
-    font-size: 0.95rem;
+    font-size: 0.86rem;
 }
 
 .form-input:focus,
@@ -1308,11 +1333,11 @@ input:checked + .toggle-slider:before {
 .account-action-btn,
 .modal-btn,
 .twofa-download-codes-btn {
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: none;
-    font-size: 0.88rem;
+    font-size: 0.76rem;
     font-weight: 600;
-    padding: 0.68rem 1rem;
+    padding: 0.46rem 0.78rem;
 }
 
 .save-btn,
@@ -1353,11 +1378,36 @@ input:checked + .toggle-slider:before {
 .account-item,
 .account-action-item,
 .stat-item {
-    padding: 0.8rem 0;
+    padding: 0.5rem 0;
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--profile-settings-divider);
     border-radius: 0;
+}
+
+.preference-item,
+.account-item,
+.account-action-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+}
+
+.preference-info,
+.account-info,
+.account-action-info,
+.connected-account-info,
+.preference-details,
+.account-details {
+    gap: 0.45rem;
+}
+
+.account-item .account-icon,
+.preference-item .preference-icon,
+.account-action-item .account-action-icon {
+    width: 16px;
+    height: 16px;
 }
 
 .preference-item:first-child,
@@ -1382,19 +1432,19 @@ input:checked + .toggle-slider:before {
 
 .statistics {
     display: grid;
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-    gap: 0.8rem 1.5rem;
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    gap: 0.25rem 0.85rem;
 }
 
 .stat-item {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.35rem;
+    gap: 0.2rem;
 }
 
 .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
@@ -1402,25 +1452,73 @@ input:checked + .toggle-slider:before {
 }
 
 .stat-value {
-    font-size: 1.35rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--profile-settings-title);
 }
 
 .plan-info {
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.55rem;
 }
 
 .plan-name {
-    font-size: 1.05rem;
+    font-size: 0.92rem;
     color: var(--profile-settings-title);
 }
 
 .feature-item {
-    border-radius: 10px;
+    border-radius: 8px;
     background: #fff;
     border: 1px solid var(--profile-settings-divider);
+    padding: 0.5rem 0.68rem;
+}
+
+.profile-form .save-btn,
+.password-form .save-btn {
+    margin-top: 10px;
+}
+
+.preference-name,
+.account-name,
+.account-action-name {
+    font-size: 0.84rem;
+}
+
+.section-desc,
+.history-plan-hint,
+.twofa-desc,
+.account-action-desc,
+.plan-description,
+.preference-desc {
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.profile-form .input-wrapper,
+.password-form .input-wrapper,
+.twofa-input-group,
+.delete-confirmation {
+    max-width: 560px;
+}
+
+.toggle-switch {
+    transform: scale(0.92);
+    transform-origin: right center;
+}
+
+@media (max-width: 900px) {
+    .form-group {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        align-items: flex-start;
+    }
+
+    .form-input,
+    .twofa-code-input,
+    .delete-input {
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 900px) {
