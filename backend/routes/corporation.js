@@ -360,6 +360,12 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
             [referenciaID, String(nome).trim().slice(0, 100), cleanEmail, hash, telefone ? String(telefone).slice(0, 20) : null, targetPerfil]
         );
 
+        await syncLegacyAccessAssignments({
+            referenciaID,
+            perfilId: targetPerfil,
+            assignedByReferenciaID: req.user?.ReferenciaID || null
+        });
+
         logAudit(req, 'staff.create', {
             targetType: 'user',
             targetId: referenciaID,
@@ -369,7 +375,12 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
         res.status(201).json({
             status: "ok",
             message: "Funcionário criado.",
-            staff: { ReferenciaID: referenciaID, Nome: nome, Email: cleanEmail, PerfilId: targetPerfil },
+            staff: {
+                ReferenciaID: referenciaID,
+                Nome: nome,
+                Email: cleanEmail,
+                PerfilId: targetPerfil
+            },
             tempPassword
         });
     } catch (err) {
@@ -396,13 +407,17 @@ router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage",
             return res.status(400).json({ status: "error", error: "Só funcionários (suporte/corporação) podem ser editados aqui." });
         }
 
+        const finalPerfil = (perfilId !== undefined && [1, 3].includes(parseInt(perfilId, 10)))
+            ? parseInt(perfilId, 10)
+            : Number(currentPerfil);
+
         const updates = [];
         const values = [];
         if (nome !== undefined) { updates.push("Nome = ?"); values.push(String(nome).trim().slice(0, 100)); }
         if (telefone !== undefined) { updates.push("Telefone = ?"); values.push(telefone ? String(telefone).slice(0, 20) : null); }
-        if (perfilId !== undefined && [1, 3].includes(parseInt(perfilId))) {
+        if (perfilId !== undefined && [1, 3].includes(parseInt(perfilId, 10))) {
             updates.push("PerfilId = ?");
-            values.push(parseInt(perfilId));
+            values.push(finalPerfil);
         }
         if (updates.length === 0) {
             return res.json({ status: "ok", message: "Nada a actualizar." });
@@ -412,6 +427,12 @@ router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage",
             `UPDATE utilizadores SET ${updates.join(", ")}, UpdatedAt = NOW() WHERE ReferenciaID = ?`,
             values
         );
+
+        await syncLegacyAccessAssignments({
+            referenciaID,
+            perfilId: finalPerfil,
+            assignedByReferenciaID: req.user?.ReferenciaID || null
+        });
 
         logAudit(req, 'staff.update', {
             targetType: 'user',
