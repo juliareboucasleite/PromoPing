@@ -258,6 +258,19 @@ function generateAutoResponse(message, category) {
     return null;
 }
 
+export function getDeterministicSupportReply(message) {
+    if (!message || typeof message !== 'string') return null;
+    const category = categorizeMessage(message);
+    if (!['login', 'produtos', 'notificacoes'].includes(category)) {
+        return null;
+    }
+
+    const reply = generateAutoResponse(message, category);
+    if (!reply) return null;
+
+    return { category, reply };
+}
+
 /**
  * Verifica se a thread precisa de resposta automática
  * Retorna true se é a primeira mensagem do usuário na thread

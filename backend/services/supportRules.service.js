@@ -6,7 +6,6 @@ const FORBIDDEN_KEYWORDS = [
     "plan", "plano", "planos", "mudar plano", "alterar plano", "upgrade", "downgrade",
     "reembolso", "refund", "chargeback", "estorno",
     "erro", "error", "falha", "bug", "nao funciona", "quebrou",
-    "senha", "password", "login", "autentica", "2fa", "token",
     "dados inconsistentes", "informacao errada", "preco errado",
     "minha conta", "minha assinatura", "meu pagamento", "meu plano", "meu cartao",
 ];

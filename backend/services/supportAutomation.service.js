@@ -2,6 +2,7 @@ import { pool } from "../database/db.js";
 import { analyzeSupportConversation } from "./aiSupport.service.js";
 import { canAiAnswer } from "./supportRules.service.js";
 import { createTicketChannel } from "./supportDiscordNotifier.js";
+import { getDeterministicSupportReply } from "./autoSupport.js";
 
 const HUMAN_OWNED_STAGES = new Set(["escalated", "human_replied"]);
 
@@ -136,6 +137,7 @@ export async function automateSupportThread(threadId, options = {}) {
     });
 
     const rule = canAiAnswer(confidence, latestUserMessage, context, { aiReason });
+    const deterministic = getDeterministicSupportReply(latestUserMessage || messages[messages.length - 1]?.message || "");
 
     if (rule.allowed && reply) {
         const aiMessageId = await insertAiReply(threadId, root, reply);
@@ -150,6 +152,23 @@ export async function automateSupportThread(threadId, options = {}) {
             aiMessageId,
             reply,
             confidence,
+        };
+    }
+
+    if (deterministic && deterministic.reply) {
+        const aiMessageId = await insertAiReply(threadId, root, deterministic.reply);
+        await markRootStage(threadId, "ai_answered", {
+            aiConfidence: confidence,
+            aiEscalationReason: null,
+            touchAiResponseAt: true,
+        });
+        return {
+            status: "ai_answered",
+            threadId,
+            aiMessageId,
+            reply: deterministic.reply,
+            confidence,
+            source: "deterministic_faq",
         };
     }
 
