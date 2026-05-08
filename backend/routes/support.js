@@ -18,6 +18,7 @@ import { verifyToken, optionalToken } from "../middleware/auth.js";
 import { createTicket as createTicketController, VALID_CONTEXTS } from "../controllers/support.controller.js";
 import { processMessage } from "../services/supportChatEngine.js";
 import { createTicketChannel, sendMessageToChannel } from "../services/supportDiscordNotifier.js";
+import { automateSupportThread, markThreadHumanReplied } from "../services/supportAutomation.service.js";
 
 const router = express.Router();
 
@@ -182,6 +183,11 @@ async function ensureTable() {
     await addColumnIfMissing("supportmessages", "userName", "VARCHAR(255) NULL");
     await addColumnIfMissing("supportmessages", "userEmail", "VARCHAR(255) NULL");
     await addColumnIfMissing("supportmessages", "discordChannelId", "VARCHAR(20) NULL");
+    await addColumnIfMissing("supportmessages", "supportStage", "VARCHAR(30) DEFAULT 'open'");
+    await addColumnIfMissing("supportmessages", "aiConfidence", "DECIMAL(3,2) NULL");
+    await addColumnIfMissing("supportmessages", "aiEscalationReason", "VARCHAR(100) NULL");
+    await addColumnIfMissing("supportmessages", "lastAiResponseAt", "TIMESTAMP NULL");
+    await addColumnIfMissing("supportmessages", "escalatedAt", "TIMESTAMP NULL");
 
     await pool.query("UPDATE supportmessages SET SenderReferenciaID = ReferenciaID WHERE SenderReferenciaID IS NULL");
     await createIndexIfMissing("idx_supportmessages_referenciaid", "supportmessages", "ReferenciaID");
@@ -296,6 +302,10 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
           sm.replyTo, 
           sm.threadId, 
           sm.createdAt,
+          sm.supportStage,
+          sm.aiConfidence,
+          sm.aiEscalationReason,
+          sm.escalatedAt,
           sm.ReferenciaID,
           u.Nome as userName,
           u.Email as userEmail,
@@ -312,6 +322,10 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
                 threadId: msg.threadId || msg.id,
                 message: msg.message,
                 senderType: msg.senderType,
+                supportStage: msg.supportStage || null,
+                aiConfidence: msg.aiConfidence || null,
+                aiEscalationReason: msg.aiEscalationReason || null,
+                escalatedAt: msg.escalatedAt || null,
                 ReferenciaID: msg.ReferenciaID,
                 userName: msg.userName || "Usuário",
                 userEmail: msg.userEmail || "",
@@ -332,6 +346,11 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
         m.message, 
         m.senderType,
         m.createdAt,
+        m.supportStage,
+        m.aiConfidence,
+        m.aiEscalationReason,
+        m.escalatedAt,
+        m.discordChannelId,
         m.ReferenciaID,
         u.Nome as userName,
         u.Email as userEmail,
@@ -342,7 +361,8 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
        LEFT JOIN supportmessages r ON (r.threadId = m.id OR r.replyTo = m.id)
     LEFT JOIN utilizadores u ON m.ReferenciaID = u.ReferenciaID
        WHERE m.threadId IS NULL OR m.id = m.threadId
-       GROUP BY m.id, m.threadId, m.message, m.senderType, m.createdAt, m.ReferenciaID, u.Nome, u.Email, u.PerfilId
+       GROUP BY m.id, m.threadId, m.message, m.senderType, m.createdAt, m.supportStage, m.aiConfidence,
+                m.aiEscalationReason, m.escalatedAt, m.discordChannelId, m.ReferenciaID, u.Nome, u.Email, u.PerfilId
        ORDER BY COALESCE(MAX(r.createdAt), m.createdAt) DESC
        LIMIT ?`,
             [limit]
@@ -353,6 +373,11 @@ router.get("/messages/admin", verifyToken, verifyAdminSupport, async (req, res) 
             threadId: thread.threadId || thread.id,
             message: thread.message,
             senderType: thread.senderType,
+            supportStage: thread.supportStage || null,
+            aiConfidence: thread.aiConfidence || null,
+            aiEscalationReason: thread.aiEscalationReason || null,
+            escalatedAt: thread.escalatedAt || null,
+            discordChannelId: thread.discordChannelId || null,
             ReferenciaID: thread.ReferenciaID,
             userName: thread.userName || "Usuário",
             userEmail: thread.userEmail || "",

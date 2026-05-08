@@ -9,7 +9,7 @@ const INTERNAL_BOT_URL = process.env.INTERNAL_BOT_URL || "http://127.0.0.1:3001"
  * Cria a categoria "Tickets" (se não existir) e um canal por ticket no Discord.
  * Faz retry se o bot ainda não estiver pronto (503) ou conexão recusada.
  */
-export async function createTicketChannel(threadId, message, userName, userEmail) {
+export async function createTicketChannel(threadId, message, userName, userEmail, options = {}) {
     const maxRetries = 5;
     const retryDelayMs = 2000;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -22,6 +22,8 @@ export async function createTicketChannel(threadId, message, userName, userEmail
                     message: (message || "").trim(),
                     userName: (userName || "").trim() || undefined,
                     userEmail: (userEmail || "").trim() || undefined,
+                    transcript: typeof options.transcript === "string" ? options.transcript : undefined,
+                    escalationReason: typeof options.escalationReason === "string" ? options.escalationReason : undefined,
                 }),
             });
             const text = await res.text();

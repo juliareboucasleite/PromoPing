@@ -1,29 +1,37 @@
 const CONFIDENCE_THRESHOLD = parseFloat(process.env.SUPPORT_AI_CONFIDENCE_THRESHOLD || "0.8") || 0.8;
 
 const FORBIDDEN_KEYWORDS = [
-    "billing", "cobrança", "cobranca", "fatura", "faturas",
-    "payment", "pagamento", "pagamentos", "cartão", "cartao", "stripe",
+    "billing", "cobranca", "fatura", "faturas",
+    "payment", "pagamento", "pagamentos", "cartao", "stripe",
     "plan", "plano", "planos", "mudar plano", "alterar plano", "upgrade", "downgrade",
-    "erro", "error", "falha", "bug", "não funciona", "nao funciona", "quebrou",
-    "notificação", "notificacao", "notificações", "não recebi", "nao recebi", "alerta",
-    "dados inconsistentes", "informação errada", "informacao errada", "preço errado", "preco errado",
+    "reembolso", "refund", "chargeback", "estorno",
+    "erro", "error", "falha", "bug", "nao funciona", "quebrou",
+    "senha", "password", "login", "autentica", "2fa", "token",
+    "dados inconsistentes", "informacao errada", "preco errado",
+    "minha conta", "minha assinatura", "meu pagamento", "meu plano", "meu cartao",
 ];
 
 /**
  * @param {number} confidence
  * @param {string} message
  * @param {string} _context
+ * @param {{ aiReason?: string }} [options]
  * @returns {{ allowed: boolean, reason?: string }}
  */
-export function canAiAnswer(confidence, message, _context) {
+export function canAiAnswer(confidence, message, _context, options = {}) {
+    if (options.aiReason === "no_ai_client" || options.aiReason === "llm_error") {
+        return { allowed: false, reason: options.aiReason };
+    }
     if (confidence < CONFIDENCE_THRESHOLD) {
         return { allowed: false, reason: "confidence_below_threshold" };
     }
+
     const lower = (message || "").toLowerCase();
     for (const kw of FORBIDDEN_KEYWORDS) {
-        if (lower.includes(kw.toLowerCase())) {
+        if (lower.includes(kw)) {
             return { allowed: false, reason: "sensitive_topic" };
         }
     }
+
     return { allowed: true };
 }
