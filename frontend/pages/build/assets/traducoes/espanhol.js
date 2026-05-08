@@ -36,6 +36,7 @@ window.translationsES = {
   'Verificação diária': 'Comprobación diaria de precios',
   'Até 25 produtos': 'Hasta 25 productos',
   'Até 50 produtos': 'Hasta 50 productos',
+  'Notificações por email ou Discord': 'Notificaciones por email o Discord',
   'Email + Discord': 'Email y Discord',
   'Alertas personalizados': 'Alertas personalizadas',
   'Verificação de 4h/4h': 'Comprobación cada 4 horas',
