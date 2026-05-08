@@ -659,27 +659,10 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
                 const humanOwned = ["escalated", "human_replied"].includes(rootStage)
                     || (automation && ["escalated", "human_replied"].includes(String(automation.status || "").toLowerCase()));
 
-                // Se a thread ainda não tem canal no Discord (criada antes da integração ou falha na criação), criar agora
-                if (!channelId && root) {
-                    console.log(" [SUPPORT] Thread", threadId, "sem canal Discord; a criar canal agora (fallback).");
-                    channelId = await createTicketChannel(
-                        threadId,
-                        root.rootMessage || "(sem mensagem)",
-                        root.userName || "",
-                        root.userEmail || ""
-                    );
-                    if (channelId) {
-                        await pool.query("UPDATE supportmessages SET discordChannelId = ? WHERE id = ?", [channelId, threadId]);
-                        console.log(" [SUPPORT] Canal Discord criado para thread", threadId, ", channelId:", channelId);
-                    } else {
-                        console.warn(" [SUPPORT] Não foi possível criar canal Discord para thread", threadId, "(bot a correr na porta 3001?)");
-                    }
-                }
-
-                if (channelId) {
+                if (senderType === "support" && channelId) {
                     await sendMessageToChannel(channelId, message.trim(), senderType);
-                } else {
-                    console.warn(" [SUPPORT] Resposta não enviada para Discord: thread", threadId, "sem canal (verifique o bot na porta 3001).");
+                } else if (senderType === "user" && channelId && humanOwned) {
+                    await sendMessageToChannel(channelId, message.trim(), senderType);
                 }
             } catch (e) {
                 console.error(" [SUPPORT] Erro ao notificar Discord (resposta):", e.message);
