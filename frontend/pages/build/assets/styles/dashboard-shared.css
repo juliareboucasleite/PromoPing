@@ -1,6 +1,8 @@
 /* ===== DASHBOARD STYLES ===== */
-/* Sem animações no Painel e Produtos (conforme preferência do projeto) */
-* {
+/* Sem animações no Painel e Produtos (conforme preferência do projeto)
+   Limitado ao dashboard para não desligar animações da landing/restantes páginas
+   que também carregam este ficheiro. */
+body.dashboard-body * {
     transform: none !important;
     transition: none !important;
     animation: none !important;
