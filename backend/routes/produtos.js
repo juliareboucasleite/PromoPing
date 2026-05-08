@@ -86,6 +86,9 @@ router.post("/", verifyToken, async (req, res) => {
         }
         
         console.log(" Validação passou");
+        if (safeNome !== nome) {
+            console.log(` Nome do produto truncado de ${String(nome).length} para ${safeNome.length} caracteres`);
+        }
 
         // pegar plano e limite do utilizador
         const [configRows] = await pool.query(
@@ -113,8 +116,8 @@ router.post("/", verifyToken, async (req, res) => {
         }
 
         // detectar loja pelo link
-        console.log(" Detectando loja para:", link);
-        const store = detectStore(link);
+        console.log(" Detectando loja para:", normalizedLink);
+        const store = detectStore(normalizedLink);
         console.log(" Loja detectada:", store);
 
         // Buscar ou criar loja na tabela lojas para obter LojaId
@@ -154,7 +157,7 @@ router.post("/", verifyToken, async (req, res) => {
         console.log(" Inserindo produto no banco...");
         const [result] = await pool.query(
             "INSERT INTO produtos (ReferenciaID, Nome, Link, DataLimite, LojaId, PrecoAlvo, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-            [req.user.ReferenciaID, nome, link, data || null, lojaId, Number(precoAlvo)]
+            [req.user.ReferenciaID, safeNome, normalizedLink, data || null, lojaId, Number(precoAlvo)]
         );
         const productId = result.insertId;
         console.log(" Produto inserido com ID:", productId);
