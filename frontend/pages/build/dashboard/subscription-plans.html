@@ -342,6 +342,64 @@
                     </button>
                 </div>
             </div>
+            <button class="wizard-primary" id="wizardNextBtn" disabled onclick="wizardGoStep2()">Próximo</button>
+                </div><!-- /step-content 1 -->
+
+                <div class="wizard-step-content" data-step-content="2" hidden>
+                    <h1>Confirme seu plano</h1>
+                    <p class="wizard-lead">Aqui está um resumo do seu novo plano:</p>
+
+                    <div class="confirm-section">
+                        <div class="confirm-section-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <div class="confirm-section-body">
+                            <h2 id="confirmPlanName">—</h2>
+                            <p class="muted">Assinatura mensal, cancele quando quiser</p>
+                            <p class="muted" id="confirmPlanLimits"></p>
+                        </div>
+                    </div>
+
+                    <div class="confirm-section">
+                        <div class="confirm-section-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="confirm-section-body">
+                            <h2>Cronograma do plano</h2>
+                            <p>Seu plano <strong>começa hoje, <span id="confirmTodayDate">—</span></strong></p>
+                            <p class="muted">O faturamento começa em <span id="confirmNextDate">—</span></p>
+                        </div>
+                    </div>
+
+                    <div class="confirm-section">
+                        <div class="confirm-section-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        </div>
+                        <div class="confirm-section-body">
+                            <h2>Pagamento</h2>
+                            <p>Pague todo mês com <strong>Cartão de crédito (Stripe)</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="confirm-total-banner">
+                        <span class="confirm-total-label">Total a pagar mensalmente</span>
+                        <span class="confirm-total-value" id="confirmTotal">€ 0</span>
+                    </div>
+
+                    <p class="confirm-terms">
+                        Ao clicar em "Confirmar e assinar" concordas com os
+                        <a href="https://promoping.gitbook.io/promoping-docs/termos-do-usuario" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
+                        e a
+                        <a href="https://promoping.gitbook.io/promoping-docs/privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>.
+                    </p>
+
+                    <div class="wizard-actions">
+                        <button class="wizard-primary" id="wizardConfirmBtn" onclick="wizardConfirmPlan()">Confirmar e assinar</button>
+                        <button class="wizard-secondary" onclick="wizardGoStep1()">Voltar</button>
+                    </div>
+                </div><!-- /step-content 2 -->
+                </div><!-- /wizard-content -->
+            </div><!-- /plans-wizard -->
         </div>
     </main>
     <script src="../../assets/scripts/support-widget.js"></script>
