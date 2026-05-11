@@ -297,7 +297,6 @@ body.login-page {
   fill: currentColor;
   stroke: currentColor;
   display: block;
-  position: relative;
   top: -11px; /* sobe mais um pouco */
 }
 
