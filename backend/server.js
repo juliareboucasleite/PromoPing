@@ -20,6 +20,7 @@ console.log = (...args) => {
     originalConsoleLog(...args);
 };
 
+import "./bootstrap-env.js";
 import express from "express";
 import {
     fileURLToPath
@@ -28,7 +29,6 @@ import {
     dirname,
     join
 } from "path";
-import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import fs from "fs";
@@ -38,16 +38,6 @@ import rateLimit from "express-rate-limit";
 const __filename = fileURLToPath(
     import.meta.url);
 const __dirname = dirname(__filename);
-
-// Carrega variÃ¡veis de ambiente do .env
-dotenv.config({
-    path: join(__dirname, "../.env"),
-    silent: true,
-    debug: false,
-    override: false,
-    quiet: true
-});
-
 
 import authRoutes from "./routes/auth.js"; // Login/Registro + Google OAuth
 import produtosRoutes from "./routes/produtos.js"; // Produtos
@@ -73,7 +63,7 @@ import heraldRoutes from "./routes/herald.js"; // Herald API
 import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
 import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
 import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupÃµes corporativos
-import { handleDiscordInteractionsAfterVerify, handleDiscordVerifyUser, discordVerifyMiddleware } from "./routes/discord-endpoints.js";
+import { handleDiscordInteractionsAfterVerify, handleDiscordVerifyUser, getDiscordVerifyMiddleware } from "./routes/discord-endpoints.js";
 import { verifyToken } from "./middleware/auth.js"; // JWT
 
 import { pool } from "./database/db.js"; // Pool de conexÃ£o
@@ -93,11 +83,29 @@ app.use(cookieParser()); // Cookies
 app.post("/api/payment/webhook", express.raw({ type: "application/json" }), stripeWebhookHandler);
 // Discord exige corpo raw para verificação Ed25519 da assinatura
 const discordRawBody = express.raw({ type: "application/json" });
-app.post("/api/interactions", discordRawBody, discordVerifyMiddleware, handleDiscordInteractionsAfterVerify);
-app.post("/verify-user", discordRawBody, discordVerifyMiddleware, handleDiscordVerifyUser);
+const discordRequestLog = (req, res, next) => {
+    if (req.headers["x-signature-ed25519"]) {
+        console.log("[DISCORD-HTTP] Pedido assinado recebido:", req.method, req.path);
+    }
+    next();
+};
+app.post("/api/interactions", discordRawBody, discordRequestLog, getDiscordVerifyMiddleware(), handleDiscordInteractionsAfterVerify);
+app.get("/api/interactions", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        message: "Discord Interactions Endpoint — apenas POST (validação automática pelo Discord)",
+    });
+});
+app.get("/verify-user", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        message: "Discord Linked Roles Verification — apenas POST",
+    });
+});
+app.post("/verify-user", discordRawBody, discordRequestLog, getDiscordVerifyMiddleware(), handleDiscordVerifyUser);
 // aliases legados
-app.post("/api/discord/interactions", discordRawBody, discordVerifyMiddleware, handleDiscordInteractionsAfterVerify);
-app.post("/api/discord/verify-user", discordRawBody, discordVerifyMiddleware, handleDiscordVerifyUser);
+app.post("/api/discord/interactions", discordRawBody, discordRequestLog, getDiscordVerifyMiddleware(), handleDiscordInteractionsAfterVerify);
+app.post("/api/discord/verify-user", discordRawBody, discordRequestLog, getDiscordVerifyMiddleware(), handleDiscordVerifyUser);
 app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
 // Rate limiting geral para todas as rotas

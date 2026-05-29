@@ -5,15 +5,23 @@ import { getLinkedRoleConnectionForDiscordUser } from "../services/discordLinked
 function createDiscordVerifyMiddleware() {
     const publicKey = getDiscordPublicKey();
     if (!publicKey) {
+        console.error("[DISCORD-HTTP] PUBLIC_KEY ausente ao iniciar middleware");
         return (req, res) => {
-            console.error("[DISCORD-HTTP] PUBLIC_KEY / DISCORD_PUBLIC_KEY não configurada");
             res.status(500).json({ error: "Discord public key not configured" });
         };
     }
+    console.log("[DISCORD-HTTP] Middleware ativo, public key:", publicKey.slice(0, 8) + "...");
     return verifyKeyMiddleware(publicKey);
 }
 
-const discordVerifyMiddleware = createDiscordVerifyMiddleware();
+let discordVerifyMiddleware = null;
+
+export function getDiscordVerifyMiddleware() {
+    if (!discordVerifyMiddleware) {
+        discordVerifyMiddleware = createDiscordVerifyMiddleware();
+    }
+    return discordVerifyMiddleware;
+}
 
 /**
  * Após verifyKeyMiddleware: PING já foi respondido; outros tipos vão para o Gateway.
@@ -43,4 +51,4 @@ export async function handleDiscordVerifyUser(req, res) {
     }
 }
 
-export { discordVerifyMiddleware, InteractionType, InteractionResponseType };
+export { getDiscordVerifyMiddleware as discordVerifyMiddleware, InteractionType, InteractionResponseType };
