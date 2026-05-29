@@ -2093,8 +2093,13 @@ class PromoPingBot {
 
     async handleAceitarRegras(interaction) {
         try {
-            // ID do cargo a ser adicionado: 1443627596565712978
-            const roleId = '1443627596565712978';
+            const roleId = process.env.DISCORD_VERIFICATION_ROLE_ID;
+            if (!roleId) {
+                return await interaction.reply({
+                    content: '❌ Cargo de verificação não configurado.',
+                    ephemeral: true,
+                });
+            }
 
             // Checar se está em um guild e o membro ainda existe
             const guild = interaction.guild;

@@ -73,6 +73,7 @@ import heraldRoutes from "./routes/herald.js"; // Herald API
 import relatoriosRoutes from "./routes/relatorios.js"; // Relatorios PDF
 import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem graficos)
 import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupÃµes corporativos
+import { handleDiscordInteractionsAfterVerify, handleDiscordVerifyUser, discordVerifyMiddleware } from "./routes/discord-endpoints.js";
 import { verifyToken } from "./middleware/auth.js"; // JWT
 
 import { pool } from "./database/db.js"; // Pool de conexÃ£o
@@ -90,6 +91,13 @@ if (process.env.NODE_ENV === 'production') {
 }
 app.use(cookieParser()); // Cookies
 app.post("/api/payment/webhook", express.raw({ type: "application/json" }), stripeWebhookHandler);
+// Discord exige corpo raw para verificação Ed25519 da assinatura
+const discordRawBody = express.raw({ type: "application/json" });
+app.post("/api/interactions", discordRawBody, discordVerifyMiddleware, handleDiscordInteractionsAfterVerify);
+app.post("/verify-user", discordRawBody, discordVerifyMiddleware, handleDiscordVerifyUser);
+// aliases legados
+app.post("/api/discord/interactions", discordRawBody, discordVerifyMiddleware, handleDiscordInteractionsAfterVerify);
+app.post("/api/discord/verify-user", discordRawBody, discordVerifyMiddleware, handleDiscordVerifyUser);
 app.use(express.json({ limit: '10mb' })); // JSON parsing com limite aumentado para upload de imagens
 
 // Rate limiting geral para todas as rotas
