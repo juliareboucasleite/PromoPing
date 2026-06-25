@@ -106,7 +106,7 @@ module.exports = {
                             new ButtonBuilder()
                                 .setCustomId(`review_anonimo_nao_${tipo}_${userId}`)
                                 .setLabel('Não, Mostrar Nome')
-                                .setStyle(ButtonStyle.Primary)
+                                .setStyle(ButtonStyle.Secondary)
                         );
 
                     await interaction.update({
@@ -228,11 +228,11 @@ module.exports = {
                                             new ButtonBuilder()
                                                 .setCustomId(`review_rating_1_${tipo}_${userId}`)
                                                 .setLabel('1 ⭐')
-                                                .setStyle(ButtonStyle.Danger),
+                                                .setStyle(ButtonStyle.Secondary),
                                             new ButtonBuilder()
                                                 .setCustomId(`review_rating_2_${tipo}_${userId}`)
                                                 .setLabel('2 ⭐⭐')
-                                                .setStyle(ButtonStyle.Danger),
+                                                .setStyle(ButtonStyle.Secondary),
                                             new ButtonBuilder()
                                                 .setCustomId(`review_rating_3_${tipo}_${userId}`)
                                                 .setLabel('3 ⭐⭐⭐')
@@ -240,11 +240,11 @@ module.exports = {
                                             new ButtonBuilder()
                                                 .setCustomId(`review_rating_4_${tipo}_${userId}`)
                                                 .setLabel('4 ⭐⭐⭐⭐')
-                                                .setStyle(ButtonStyle.Success),
+                                                .setStyle(ButtonStyle.Secondary),
                                             new ButtonBuilder()
                                                 .setCustomId(`review_rating_5_${tipo}_${userId}`)
                                                 .setLabel('5 ⭐⭐⭐⭐⭐')
-                                                .setStyle(ButtonStyle.Success)
+                                                .setStyle(ButtonStyle.Secondary)
                                         );
 
                                     // Enviar mensagem pedindo rating

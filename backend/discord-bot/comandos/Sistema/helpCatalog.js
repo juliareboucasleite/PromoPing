@@ -105,11 +105,12 @@ function buildModules(prefix) {
             title: "Paineis",
             status: "ativo",
             aliases: ["painel", "panel", "paineis"],
-            summary: "Paineis prontos para comunidade, convites, reviews, tickets e formularios.",
+            summary: "Paineis prontos para comunidade, convites, sponsor, reviews, tickets e formularios.",
             commands: [
                 `${prefix}painel`,
                 `${prefix}community-panel #canal`,
                 `${prefix}invite-panel #canal`,
+                `${prefix}sponsor-panel #canal`,
                 `${prefix}review-panel #canal`,
                 `${prefix}ticket`,
             ],

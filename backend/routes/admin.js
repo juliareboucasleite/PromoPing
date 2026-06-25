@@ -1010,17 +1010,17 @@ router.get("/incidents", async (req, res) => {
 
         const [incidents] = await pool.query(
             `SELECT 
-                Id,
-                Titulo,
-                Descricao,
-                ComponenteAfetado,
-                Status,
-                DataInicio,
-                DataFim,
-                Duracao,
-                Impacto,
-                DataCriacao,
-                DataAtualizacao
+                Id AS "Id",
+                Titulo AS "Titulo",
+                Descricao AS "Descricao",
+                ComponenteAfetado AS "ComponenteAfetado",
+                Status AS "Status",
+                DataInicio AS "DataInicio",
+                DataFim AS "DataFim",
+                Duracao AS "Duracao",
+                Impacto AS "Impacto",
+                DataCriacao AS "DataCriacao",
+                DataAtualizacao AS "DataAtualizacao"
              FROM incidentes 
             ORDER BY DataInicio DESC 
             LIMIT 100`

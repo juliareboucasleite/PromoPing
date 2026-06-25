@@ -2,13 +2,13 @@ const { successEmbed } = require("../_helpers");
 
 function normalizeVerificationText(value) {
     const text = String(value || "").trim();
-    if (!text) return "Clica no botão abaixo para receber acesso ao servidor.";
+    if (!text) return "Click the button below to get access to the server.";
     return text.slice(0, 700);
 }
 
 function normalizeButtonLabel(value) {
     const text = String(value || "").trim();
-    if (!text) return "Verificar";
+    if (!text) return "Verify";
     return text.slice(0, 80);
 }
 

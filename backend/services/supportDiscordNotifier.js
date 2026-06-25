@@ -64,14 +64,14 @@ export async function createTicketChannel(threadId, message, userName, userEmail
 export async function sendMessageToChannel(channelId, messageText, senderType) {
     if (!channelId) return;
     try {
-        const who = senderType === "support" ? "Suporte" : "Utilizador";
+        const who = senderType === "support" ? "Support" : "User";
         const short = (messageText || "").trim().substring(0, 500);
         const embed = {
             title: who,
-            description: short || "(sem texto)",
+            description: short || "(no text)",
             color: senderType === "support" ? 0x3498db : 0x95a5a6,
             timestamp: new Date().toISOString(),
-            footer: { text: "PromoPing Suporte • Ao vivo" },
+            footer: { text: "PromoPing Support • Live" },
         };
         const res = await fetch(`${INTERNAL_BOT_URL}/internal/send-message`, {
             method: "POST",

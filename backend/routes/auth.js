@@ -1271,17 +1271,12 @@ router.post("/login", async (req, res) => {
         if (!userSenhaHash) {
             return res.status(400).json({
                 status: "error",
-                error: "Conta nÃ£o tem senha configurada. Use Google ou configure uma senha no perfil.",
+                error: "Conta não tem senha configurada. Use Google ou configure uma senha no perfil.",
             });
         }
 
-        // Verifica senha usando bcrypt
-        // ESSA PARTE AQUI Ã‰ CRÃTICA: valida se a senha estÃ¡ correta
-        // Se tu mudar a lÃ³gica, pode deixar qualquer um fazer login
-        // Ou bloquear quem tem a senha certa
-        // NÃƒO MEXA NESSA MERDA
         const validPassword = await bcrypt.compare(password, userSenhaHash);
-        console.log(" Senha vÃ¡lida?:", validPassword);
+        console.log(" Senha válida?:", validPassword);
 
         if (!validPassword) {
             return res.status(400).json({
@@ -1290,15 +1285,14 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // Verificar se conta estÃ¡ desativada e permitir reativaÃ§Ã£o se ainda nÃ£o expirou
         const isInactive = userAtivo === 0 || userAtivo === false || String(userAtivo).toLowerCase() === "0" || String(userAtivo).toLowerCase() === "false" || String(userAtivo).toLowerCase() === "f";
         if (isInactive) {
-            // Verificar se ainda estÃ¡ dentro do perÃ­odo de 20 dias
+            // Verificar se ainda está dentro do período de 20 dias
             let canReactivate = false;
             let expirationDate = null;
 
             try {
-                // Verificar se DataDesativacao existe e nÃ£o expirou
+                // Verificar se DataDesativacao existe e não expirou
                 const [deactivatedInfo] = await pool.query(
                     "SELECT DataDesativacao FROM Utilizadores WHERE ReferenciaID = ?",
                     [userReferenciaID]
@@ -1309,7 +1303,7 @@ router.post("/login", async (req, res) => {
                     const now = new Date();
                     canReactivate = expirationDate > now;
                 } else {
-                    // Se nÃ£o tem DataDesativacao, usar DataRegisto como fallback (20 dias)
+                    // Se não tem DataDesativacao, usar DataRegisto como fallback (20 dias)
                     const registerDate = new Date(user.DataRegisto);
                     const expirationDateFallback = new Date(registerDate);
                     expirationDateFallback.setDate(expirationDateFallback.getDate() + 20);
@@ -1317,7 +1311,7 @@ router.post("/login", async (req, res) => {
                     expirationDate = expirationDateFallback;
                 }
             } catch (error) {
-                console.error("[AUTH] Erro ao verificar data de desativaÃ§Ã£o:", error);
+                console.error("[AUTH] Erro ao verificar data de desativação:", error);
                 // Em caso de erro, permitir tentativa de reativaÃ§Ã£o
                 canReactivate = true;
             }
@@ -1335,18 +1329,18 @@ router.post("/login", async (req, res) => {
             } else {
                 return res.status(403).json({
                     status: "error",
-                    error: "Sua conta foi desativada hÃ¡ mais de 20 dias e foi permanentemente excluÃ­da. Entre em contato com o suporte.",
+                    error: "Sua conta foi desativada há mais de 20 dias e foi permanentemente excluída. Entre em contato com o suporte.",
                     accountExpired: true
                 });
             }
         }
 
-        // Verificar se email estÃ¡ verificado
+        // Verificar se email está verificado
         const isEmailVerified = userEmailVerificado === 1 || userEmailVerificado === true || String(userEmailVerificado).toLowerCase() === "1" || String(userEmailVerificado).toLowerCase() === "true" || String(userEmailVerificado).toLowerCase() === "t";
         if (!isEmailVerified) {
             return res.status(403).json({
                 status: "error",
-                error: "Email nÃ£o verificado. Verifique seu email antes de fazer login.",
+                error: "Email não verificado. Verifique seu email antes de fazer login.",
                 needsVerification: true,
                 email: userEmail
             });
@@ -1354,7 +1348,7 @@ router.post("/login", async (req, res) => {
 
         const access = await resolveAccessContext(userReferenciaID, userPerfilId);
 
-        // Se 2FA ativo, nÃ£o devolver token; devolver tempToken para completar verificaÃ§Ã£o
+        // Se 2FA ativo, não devolver token; devolver tempToken para completar verificação
         const twoFA = await is2FAEnabled(userReferenciaID);
         if (twoFA) {
             const tempToken = gerarToken2FAPending(userReferenciaID, userEmail);
@@ -1372,13 +1366,6 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // IMPORTANTE: Verificar se o usuÃ¡rio Ã© admin (PerfilId = 1) para acesso ao Painel Administrativo
-        // Se a requisiÃ§Ã£o vier do Painel Administrativo ou Admin PromoPing, apenas administradores podem fazer login
-        // CARALHO, NÃƒO MEXA NESSA PARTE
-        // Se tu fuder isso, qualquer zÃ© ruela pode acessar o painel admin
-        // E aÃ­ pode foder tudo: deletar usuÃ¡rios, mudar planos, ver dados sensÃ­veis
-        // PerfilId = 1 Ã© ADMIN, qualquer outro nÃºmero NÃƒO Ã‰ ADMIN
-        // NÃƒO MUDE ESSA LÃ“GICA SEM ENTENDER AS CONSEQUÃŠNCIAS
         const referer = req.headers['referer'] || '';
         const origin = req.headers['origin'] || '';
         const adminPanelHeader = req.headers['x-admin-panel'] || req.headers['X-Admin-Panel'] || '';
@@ -1391,7 +1378,7 @@ router.post("/login", async (req, res) => {
 
         if (isAdminPanel) {
             if (!access.allowedPortals?.includes("support")) {
-                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: UsuÃ¡rio ${userEmail} (roles=${access.roles?.join(",") || "none"})`);
+                console.log(`[AUTH] Tentativa de login no Painel Administrativo negada: Usuário ${userEmail} (roles=${access.roles?.join(",") || "none"})`);
                 return res.status(403).json({
                     status: "error",
                     error: "Acesso negado. Apenas administradores e utilizadores corporativos podem acessar o painel.",
@@ -1424,7 +1411,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Completar login com cÃ³digo 2FA (apÃ³s resposta requires2FA do login)
+// Completar login com código 2FA (após resposta requires2FA do login)
 router.post("/2fa/verify", async (req, res) => {
     try {
         const { tempToken, code } = req.body;
@@ -1436,10 +1423,10 @@ router.post("/2fa/verify", async (req, res) => {
         try {
             decoded = jwt.verify(tempToken, secret);
         } catch (e) {
-            return res.status(401).json({ status: "error", error: "Sessao expirada. Faca login novamente." });
+            return res.status(401).json({ status: "error", error: "Sessão expirada. Faça login novamente." });
         }
         if (decoded.type !== "2fa_pending") {
-            return res.status(403).json({ status: "error", error: "Token invalido" });
+            return res.status(403).json({ status: "error", error: "Token inválido" });
         }
         const referenciaID = decoded.ReferenciaID;
         const email = decoded.email;
@@ -1449,7 +1436,7 @@ router.post("/2fa/verify", async (req, res) => {
             [referenciaID]
         );
         if (rows.length === 0) {
-            return res.status(404).json({ status: "error", error: "Utilizador nao encontrado" });
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado" });
         }
         const user = rows[0];
         const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.Email);
@@ -1466,31 +1453,31 @@ router.post("/2fa/verify", async (req, res) => {
         });
     } catch (err) {
         console.error("[AUTH] Erro 2FA verify:", err);
-        res.status(400).json({ status: "error", error: err.message || "Codigo invalido" });
+        res.status(400).json({ status: "error", error: err.message || "Código inválido" });
     }
 });
 
-// Enviar cÃ³digo 2FA por email (durante login, quando utilizador escolhe "enviar por email")
+// Enviar código 2FA por email (durante login, quando utilizador escolhe "enviar por email")
 router.post("/2fa/send-email-code", async (req, res) => {
     try {
         const { tempToken } = req.body;
         if (!tempToken) {
-            return res.status(400).json({ status: "error", error: "tempToken obrigatorio" });
+            return res.status(400).json({ status: "error", error: "tempToken obrigatório" });
         }
         const secret = process.env.JWT_SECRET;
         let decoded;
         try {
             decoded = jwt.verify(tempToken, secret);
         } catch (e) {
-            return res.status(401).json({ status: "error", error: "Sessao expirada. Faca login novamente." });
+            return res.status(401).json({ status: "error", error: "Sessão expirada. Faça login novamente." });
         }
         if (decoded.type !== "2fa_pending") {
-            return res.status(403).json({ status: "error", error: "Token invalido" });
+            return res.status(403).json({ status: "error", error: "Token inválido" });
         }
         await sendEmailCode(decoded.ReferenciaID);
         res.json({ status: "ok", sent: true });
     } catch (err) {
-        console.error("[AUTH] Erro ao enviar codigo 2FA:", err);
+        console.error("[AUTH] Erro ao enviar código 2FA:", err);
         res.status(500).json({ status: "error", error: err.message });
     }
 });
@@ -1500,15 +1487,15 @@ router.post("/refresh", async (req, res) => {
     try {
         const { refreshToken: refToken } = req.body;
         if (!refToken) {
-            return res.status(401).json({ error: "Refresh token nÃ£o fornecido" });
+                    return res.status(401).json({ error: "Refresh token não fornecido" });
         }
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            return res.status(500).json({ error: "ConfiguraÃ§Ã£o invÃ¡lida" });
+            return res.status(500).json({ error: "Configuração inválida" });
         }
         const decoded = jwt.verify(refToken, secret);
         if (decoded.type !== "refresh" || !decoded.ReferenciaID || !decoded.email) {
-            return res.status(403).json({ error: "Refresh token invÃ¡lido" });
+            return res.status(403).json({ error: "Refresh token inválido" });
         }
         if (decoded.sid) {
             const validSession = await validateUserSessionRefreshToken({
@@ -1517,7 +1504,7 @@ router.post("/refresh", async (req, res) => {
                 refreshToken: refToken
             });
             if (!validSession) {
-                return res.status(403).json({ error: "Refresh token invalido" });
+                return res.status(403).json({ error: "Refresh token inválido" });
             }
             const { token, refreshToken: newRefreshToken } = gerarParesToken(decoded.ReferenciaID, decoded.email, decoded.sid);
             await rotateUserSession({
@@ -1534,13 +1521,13 @@ router.post("/refresh", async (req, res) => {
         if (err.name === "TokenExpiredError" || err.message === "jwt expired") {
             return res.status(401).json({ error: "Refresh token expirado", code: "REFRESH_EXPIRED" });
         }
-        return res.status(403).json({ error: "Refresh token invÃ¡lido" });
+        return res.status(403).json({ error: "Refresh token inválido" });
     }
 });
 
-// CÃ³digo no QR muda a cada 30s; o telemÃ³vel escaneia e confirma com o token do utilizador.
+// Código no QR muda a cada 30s; o telemóvel escaneia e confirma com o token do utilizador.
 
-// POST /api/auth/qr-init â€” gera cÃ³digo QR (alternativa ao GET qr-session; devolve code + expiresAt)
+// POST /api/auth/qr-init — gera código QR (alternativa ao GET qr-session; devolve code + expiresAt)
 router.post("/qr-init", async (req, res) => {
     try {
         const sessionId = req.body?.sessionId || null;
@@ -1556,11 +1543,11 @@ router.post("/qr-init", async (req, res) => {
         });
     } catch (err) {
         console.error("[QR-INIT] Erro:", err);
-        return res.status(500).json({ error: "Erro ao gerar sessÃ£o QR" });
+        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
     }
 });
 
-// GET /api/auth/qr-session â€” obtÃ©m sessionId + cÃ³digo atual (e imagem QR em data URL)
+// GET /api/auth/qr-session — obtém sessionId + código atual (e imagem QR em data URL)
 router.get("/qr-session", async (req, res) => {
     try {
         const sessionId = req.query.sessionId || null;
@@ -1581,26 +1568,26 @@ router.get("/qr-session", async (req, res) => {
         });
     } catch (err) {
         console.error("[QR-SESSION] Erro:", err);
-        return res.status(500).json({ error: "Erro ao gerar sessÃ£o QR" });
+        return res.status(500).json({ error: "Erro ao gerar sessão QR" });
     }
 });
 
-// GET /api/auth/qr-session/poll â€” polling para ver se o telemÃ³vel confirmou
+// GET /api/auth/qr-session/poll — polling para ver se o telemóvel confirmou
 router.get("/qr-session/poll", async (req, res) => {
     const sessionId = req.query.sessionId;
     if (!sessionId) {
-        return res.status(400).json({ error: "sessionId obrigatÃ³rio" });
+        return res.status(400).json({ error: "sessionId obrigatório" });
     }
     const status = await getSessionStatus(sessionId);
     return res.json(status);
 });
 
-// POST /api/auth/qr-confirm â€” telemÃ³vel envia o cÃ³digo escaneado + Bearer token do utilizador
+            // POST /api/auth/qr-confirm — telemóvel envia o código escaneado + Bearer token do utilizador
 router.post("/qr-confirm", verifyToken, async (req, res) => {
     try {
         const { code } = req.body;
         if (!code || typeof code !== "string") {
-            return res.status(400).json({ error: "CÃ³digo Ã© obrigatÃ³rio" });
+            return res.status(400).json({ error: "Código é obrigatório" });
         }
         const user = { ReferenciaID: req.user.ReferenciaID, email: req.user.email };
         const tokens = await emitirTokensComSessao(req, user.ReferenciaID, user.email);
@@ -1613,13 +1600,13 @@ router.post("/qr-confirm", verifyToken, async (req, res) => {
         }
         return res.json({
             status: "ok",
-            message: "Login no browser serÃ¡ concluÃ­do em instantes.",
+            message: "Login no browser será concluído em instantes.",
             token: tokens.token,
             refreshToken: tokens.refreshToken,
         });
     } catch (err) {
         console.error("[QR-CONFIRM] Erro:", err);
-        return res.status(500).json({ error: "Erro ao confirmar cÃ³digo" });
+        return res.status(500).json({ error: "Erro ao confirmar código" });
     }
 });
 
@@ -1639,15 +1626,15 @@ router.post("/register", async (req, res) => {
         console.log("[REGISTRO] Tentativa de registro:", {
             nome,
             email,
-            telefone: telefone ? "fornecido" : "nÃ£o fornecido",
-            data_nascimento: data_nascimento ? "fornecido" : "nÃ£o fornecido"
+            telefone: telefone ? "fornecido" : "não fornecido",
+            data_nascimento: data_nascimento ? "fornecido" : "não fornecido"
         });
 
         if (!nome || !email || !password || !data_nascimento) {
-            console.log("[REGISTRO] Campos obrigatÃ³rios faltando");
+            console.log("[REGISTRO] Campos obrigatórios faltando");
             return res.status(400).json({
                 status: "error",
-                error: "Nome, email, senha e data de nascimento sÃ£o obrigatÃ³rios",
+                error: "Nome, email, senha e data de nascimento são obrigatórios",
             });
         }
 
@@ -1659,25 +1646,25 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Validar idade mÃ­nima (13 anos) - obrigatÃ³rio
+        // Validar idade mínima (13 anos) - obrigatório
         const birthDate = new Date(data_nascimento);
 
-        // Verificar se a data Ã© vÃ¡lida
+        // Verificar se a data é válida
         if (isNaN(birthDate.getTime())) {
-            console.log("[REGISTRO] Data de nascimento invÃ¡lida");
+            console.log("[REGISTRO] Data de nascimento inválida");
             return res.status(400).json({
                 status: "error",
-                error: "Data de nascimento invÃ¡lida",
+                error: "Data de nascimento inválida",
             });
         }
 
-        // Verificar se a data nÃ£o Ã© no futuro
+            // Verificar se a data não é no futuro
         const today = new Date();
         if (birthDate > today) {
             console.log("[REGISTRO] Data de nascimento no futuro");
             return res.status(400).json({
                 status: "error",
-                error: "Data de nascimento nÃ£o pode ser no futuro",
+                error: "Data de nascimento não pode ser no futuro",
             });
         }
 
@@ -1688,28 +1675,28 @@ router.post("/register", async (req, res) => {
             age--;
         }
 
-        // Validar idade mÃ­nima de 13 anos
+        // Validar idade mínima de 13 anos
         if (age < 13) {
-            console.log(`[REGISTRO] UsuÃ¡rio menor de 13 anos tentou se registrar (idade: ${age})`);
+            console.log(`[REGISTRO] Usuário menor de 13 anos tentou se registrar (idade: ${age})`);
             return res.status(403).json({
                 status: "error",
-                error: "Ã‰ necessÃ¡rio ter pelo menos 13 anos para criar uma conta no PromoPing",
+                error: "É necessário ter pelo menos 13 anos para criar uma conta no PromoPing",
             });
         }
 
         console.log(`[REGISTRO] Idade validada: ${age} anos`);
 
-        console.log("[REGISTRO] Verificando se email jÃ¡ existe...");
+        console.log("[REGISTRO] Verificando se email já existe...");
         const [existing] = await pool.query(
             "SELECT ReferenciaID FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
         if (existing.length > 0) {
-            console.log("[REGISTRO] Email jÃ¡ em uso");
+            console.log("[REGISTRO] Email já em uso");
             return res.status(400).json({
                 status: "error",
-                error: "Email jÃ¡ estÃ¡ em uso",
+                error: "Email já está em uso",
             });
         }
 
@@ -1717,7 +1704,7 @@ router.post("/register", async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Determinar PerfilId: se nÃ£o existe admin (PerfilId=1), o primeiro registro vira admin; caso contrÃ¡rio, padrÃ£o user (2)
+        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
         console.log("[REGISTRO] Verificando perfil do usuÃ¡rio...");
         const [adminCountRows] = await pool.query(
             "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
@@ -1729,12 +1716,12 @@ router.post("/register", async (req, res) => {
         const referenciaID = gerarReferenciaID();
         console.log(`[REGISTRO] ReferenciaID gerado: ${referenciaID}`);
 
-        console.log("[REGISTRO] Inserindo usuÃ¡rio na tabela Utilizadores...");
+        console.log("[REGISTRO] Inserindo usuário na tabela Utilizadores...");
 
         // Tentar inserir com data_nascimento e/ou google_id se fornecidos
         let result;
         try {
-            // Construir query dinamicamente baseado nos campos disponÃ­veis
+            // Construir query dinamicamente baseado nos campos disponíveis
             const fields = ['ReferenciaID', 'Nome', 'Email', 'SenhaHash', 'EmailVerificado', 'Telefone', 'PerfilId', 'Ativo', 'DataRegisto'];
             const values = [referenciaID, nome, email, hashedPassword, 0, telefone || null, perfilId, 1];
             const placeholders = ['?', '?', '?', '?', '?', '?', '?', '?', 'NOW()'];
@@ -1762,12 +1749,12 @@ router.post("/register", async (req, res) => {
             const query = `INSERT INTO Utilizadores (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`;
             const [insertResult] = await pool.query(query, values);
             result = insertResult;
-            console.log(`[REGISTRO] UsuÃ¡rio criado com campos: ${fields.join(', ')}`);
+                console.log(`[REGISTRO] Usuário criado com campos: ${fields.join(', ')}`);
         } catch (insertError) {
-            // Se algum campo nÃ£o existir, tentar inserir sem ele
+            // Se algum campo não existir, tentar inserir sem ele
             console.log("[REGISTRO] Erro ao inserir, tentando sem campos opcionais:", insertError.message);
             
-            // Tentar inserir apenas com campos bÃ¡sicos
+            // Tentar inserir apenas com campos básicos
             try {
                 const [insertResult] = await pool.query(
                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, SenhaHash, EmailVerificado, Telefone, PerfilId, Ativo, DataRegisto) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW())",
@@ -1775,29 +1762,29 @@ router.post("/register", async (req, res) => {
                 );
                 result = insertResult;
                 
-                // Tentar atualizar google_id separadamente se disponÃ­vel
+                // Tentar atualizar google_id separadamente se disponível
                 if (oauthProvider === 'google' && oauthId) {
                     try {
                         await pool.query(
                             "UPDATE Utilizadores SET google_id = ? WHERE ReferenciaID = ?",
                             [oauthId, referenciaID]
                         );
-                        console.log("[REGISTRO] google_id atualizado apÃ³s criaÃ§Ã£o:", oauthId);
+                        console.log("[REGISTRO] google_id atualizado após criação:", oauthId);
                     } catch (googleIdErr) {
-                        console.log("[REGISTRO] Campo google_id nÃ£o existe, ignorando");
+                        console.log("[REGISTRO] Campo google_id não existe, ignorando");
                     }
                 }
                 
-                // Tentar atualizar FotoPerfil separadamente se disponÃ­vel
+                // Tentar atualizar FotoPerfil separadamente se disponível
                 if (fotoPerfil) {
                     try {
                         await pool.query(
                             "UPDATE Utilizadores SET FotoPerfil = ? WHERE ReferenciaID = ?",
                             [fotoPerfil, referenciaID]
                         );
-                        console.log("[REGISTRO] FotoPerfil atualizado apÃ³s criaÃ§Ã£o");
+                                                                    console.log("[REGISTRO] FotoPerfil atualizado após criação");
                     } catch (fotoErr) {
-                        console.log("[REGISTRO] Campo FotoPerfil nÃ£o existe, ignorando");
+                        console.log("[REGISTRO] Campo FotoPerfil não existe, ignorando");
                     }
                 }
             } catch (retryError) {
@@ -1805,7 +1792,7 @@ router.post("/register", async (req, res) => {
             }
         }
 
-        console.log(`[REGISTRO] UsuÃ¡rio criado com ReferenciaID: ${referenciaID}`);
+        console.log(`[REGISTRO] Usuário criado com ReferenciaID: ${referenciaID}`);
 
         // Buscar ID do plano FREE
         console.log("[REGISTRO] Buscando plano FREE...");
@@ -1816,105 +1803,105 @@ router.post("/register", async (req, res) => {
         const planoFreeId = planoFree.length > 0 ? planoFree[0].Id : 1; // Fallback para ID 1
         console.log(`[REGISTRO] Plano FREE ID: ${planoFreeId}`);
 
-        // Criar configuraÃ§Ã£o do usuÃ¡rio
+        // Criar configuração do usuário
         console.log("[REGISTRO] Criando configuraÃ§Ã£o do usuÃ¡rio...");
         try {
-            // Verificar se jÃ¡ existe configuraÃ§Ã£o para este usuÃ¡rio
+            // Verificar se já existe configuração para este usuário
             const [existingConfig] = await pool.query(
                 "SELECT Id FROM configutilizador WHERE ReferenciaID = ?",
                 [referenciaID]
             );
 
             if (existingConfig.length > 0) {
-                // Atualizar configuraÃ§Ã£o existente
+                // Atualizar configuração existente
                 console.log("[REGISTRO] ConfiguraÃ§Ã£o jÃ¡ existe, atualizando...");
                 await pool.query(
                     "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE ReferenciaID = ?",
                     ["email", planoFreeId, referenciaID]
                 );
-                console.log("[REGISTRO] ConfiguraÃ§Ã£o do usuÃ¡rio atualizada");
+                console.log("[REGISTRO] Configuração do usuário atualizada");
             } else {
                 // Inserir nova configuraÃ§Ã£o
-                console.log("[REGISTRO] Inserindo nova configuraÃ§Ã£o...");
+                console.log("[REGISTRO] Inserindo nova configuração...");
                 await pool.query(
                     "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
                     [referenciaID, "email", planoFreeId]
                 );
-                console.log("[REGISTRO] ConfiguraÃ§Ã£o do usuÃ¡rio criada");
+                console.log("[REGISTRO] Configuração do usuário criada");
             }
         } catch (configError) {
-            console.error("[REGISTRO] Erro ao criar configuraÃ§Ã£o do usuÃ¡rio:", configError.message);
-            console.error("[REGISTRO] CÃ³digo SQL:", configError.code);
+            console.error("[REGISTRO] Erro ao criar configuração do usuário:", configError.message);
+            console.error("[REGISTRO] Código SQL:", configError.code);
             console.error("[REGISTRO] SQL State:", configError.sqlState);
             console.error("[REGISTRO] Stack trace:", configError.stack);
-            // NÃ£o falhar o registro se a configuraÃ§Ã£o falhar - pode ser criada depois
+                // Não falhar o registro se a configuração falhar - pode ser criada depois
         }
 
-        console.log(`[REGISTRO] UsuÃ¡rio ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
+        console.log(`[REGISTRO] Usuário ${nome} registrado com plano FREE (ID: ${planoFreeId})`);
 
-        console.log("[REGISTRO] Gerando cÃ³digo de verificaÃ§Ã£o...");
+        console.log("[REGISTRO] Gerando código de verificação...");
         const codigo = gerarCodigo();
-        console.log(`[REGISTRO] CÃ³digo gerado: ${codigo}`);
+        console.log(`[REGISTRO] Código gerado: ${codigo}`);
 
-        console.log("[REGISTRO] Salvando cÃ³digo no banco de dados...");
+        console.log("[REGISTRO] Salvando código no banco de dados...");
         await pool.query("UPDATE Utilizadores SET CodigoEmail=? WHERE ReferenciaID=?", [
             codigo,
             referenciaID,
         ]);
-        console.log("[REGISTRO] CÃ³digo salvo no banco de dados");
+        console.log("[REGISTRO] Código salvo no banco de dados");
 
         // Responder IMEDIATAMENTE ao cliente (antes de enviar email)
         console.log("[REGISTRO] Enviando resposta ao cliente IMEDIATAMENTE...");
         res.json({
             status: "ok",
             message: "Conta criada com sucesso! Verifique seu email para ativar a conta.",
-            codigo: codigo // Para desenvolvimento - remover em produÃ§Ã£o
+            codigo: codigo // Para desenvolvimento - remover em produção
         });
         console.log(" [REGISTRO] Resposta enviada ao cliente");
 
-        // Enviar cÃ³digo por email EM BACKGROUND (nÃ£o bloqueia a resposta)
+        // Enviar código por email EM BACKGROUND (não bloqueia a resposta)
         console.log("[REGISTRO] Agendando envio de email em background...");
         (async () => {
             try {
-                console.log(`[REGISTRO] DestinatÃ¡rio: ${email}`);
+                console.log(`[REGISTRO] Destinatário: ${email}`);
                 console.log(`[REGISTRO] EMAIL_USER configurado: ${process.env.EMAIL_USER ? `Sim (${process.env.EMAIL_USER})` : 'NAO'}`);
                 console.log(`[REGISTRO] EMAIL_PASS configurado: ${process.env.EMAIL_PASS ? 'Sim (***)' : 'NAO'}`);
-                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'NÃ£o configurado'}`);
-                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'NÃ£o configurado'}`);
+                console.log(`[REGISTRO] EMAIL_HOST configurado: ${process.env.EMAIL_HOST || 'Não configurado'}`);
+                console.log(`[REGISTRO] EMAIL_PORT configurado: ${process.env.EMAIL_PORT || 'Não configurado'}`);
 
                 const {
                     sendEmail
                 } = await import("../services/notify.js");
-                console.log("[REGISTRO] FunÃ§Ã£o sendEmail importada com sucesso");
+                console.log("[REGISTRO] Função sendEmail importada com sucesso");
 
                 const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
-          <h2 style="color: #ff6b35; text-align: center;">VerificaÃ§Ã£o de Conta</h2>
+          <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
           <p>OlÃ¡ <b>${nome}</b>,</p>
           <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
-          <p>Use o cÃ³digo abaixo para verificar sua conta:</p>
+          <p>Use o código abaixo para verificar sua conta:</p>
           <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px solid #ff6b35;">
             <h1 style="color: #ff6b35; font-size: 2.5em; margin: 0; letter-spacing: 5px;">${codigo}</h1>
           </div>
-          <p style="color: #666; font-size: 14px;">Este cÃ³digo expira em 10 minutos.</p>
-          <p style="color: #666; font-size: 14px;">Se nÃ£o foi vocÃª, ignore este e-mail.</p>
+            <p style="color: #666; font-size: 14px;">Este código expira em 10 minutos.</p>
+          <p style="color: #666; font-size: 14px;">Se não foi você, ignore este e-mail.</p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           <p style="color: #999; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} PromoPing - Todos os direitos reservados</p>
         </div>
       `;
 
                 console.log(`[REGISTRO] Tentando enviar email para: ${email}`);
-                console.log(`[REGISTRO] CÃ³digo a ser enviado: ${codigo}`);
+                console.log(`[REGISTRO] Código a ser enviado: ${codigo}`);
 
-                await sendEmail(email, "PromoPing - VerificaÃ§Ã£o de conta", messageHtml);
+                await sendEmail(email, "PromoPing - Verificação de conta", messageHtml);
 
                 console.log(`[REGISTRO] Email enviado com SUCESSO para ${email}`);
-                console.log(`[REGISTRO] CÃ³digo de verificaÃ§Ã£o: ${codigo}`);
+                console.log(`[REGISTRO] Código de verificação: ${codigo}`);
             } catch (emailError) {
                 console.error("[REGISTRO] ========== ERRO AO ENVIAR EMAIL ==========");
                 console.error("[REGISTRO] Tipo do erro:", emailError.name);
                 console.error("[REGISTRO] Mensagem:", emailError.message);
-                console.error("[REGISTRO] CÃ³digo:", emailError.code);
+                console.error("[REGISTRO] Código:", emailError.code);
                 if (emailError.response) {
                     console.error("[REGISTRO] Resposta do servidor:", emailError.response);
                 }
@@ -1925,23 +1912,23 @@ router.post("/register", async (req, res) => {
                 console.error(emailError.stack);
                 console.error("[REGISTRO] ==========================================");
 
-                // NÃ£o falhar o registro se o email falhar, mas logar o erro detalhadamente
-                console.log("[REGISTRO] Conta criada com sucesso, mas email nÃ£o foi enviado.");
-                console.log("[REGISTRO] Para desenvolvimento, use o cÃ³digo exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
-                console.log(`[REGISTRO] CÃ³digo de verificaÃ§Ã£o para ${email}: ${codigo}`);
+                // Não falhar o registro se o email falhar, mas logar o erro detalhadamente
+                console.log("[REGISTRO] Conta criada com sucesso, mas email não foi enviado.");
+                console.log("[REGISTRO] Para desenvolvimento, use o código exibido no console ou configure EMAIL_USER e EMAIL_PASS no .env");
+                console.log(`[REGISTRO] Código de verificação para ${email}: ${codigo}`);
             }
         })();
 
-        // Atualizar mÃ©tricas em background
-        console.log("[REGISTRO] Agendando atualizaÃ§Ã£o de mÃ©tricas em background...");
+        // Atualizar métricas em background
+        console.log("[REGISTRO] Agendando atualização de métricas em background...");
         atualizarMetricasAutomaticamente().catch(metricError => {
-            console.error("[REGISTRO] Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError.message);
-            console.error("[REGISTRO] Stack trace das mÃ©tricas:", metricError.stack);
+            console.error("[REGISTRO] Erro ao atualizar métricas após criação de utilizador:", metricError.message);
+            console.error("[REGISTRO] Stack trace das métricas:", metricError.stack);
         });
 
-        console.log("[REGISTRO] Registro concluÃ­do com sucesso!");
+        console.log("[REGISTRO] Registro concluído com sucesso!");
     } catch (err) {
-        console.error(" [REGISTRO] ERRO CRÃTICO no registro:", err);
+        console.error(" [REGISTRO] ERRO CRÍTICO no registro:", err);
         console.error(" [REGISTRO] Mensagem de erro:", err.message);
         console.error(" [REGISTRO] Stack trace completo:", err.stack);
 
@@ -1973,11 +1960,11 @@ router.get("/google", (req, res) => {
             scope: ["profile", "email", "https://www.googleapis.com/auth/calendar.readonly"]
         })(req, res);
     } else {
-        console.error(" Google OAuth nÃ£o configurado:");
+        console.error(" Google OAuth não configurado:");
         console.log("   GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Presente" : "Ausente");
         console.log("   GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "Presente" : "Ausente");
         res.status(400).json({
-            error: "Google OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -1989,14 +1976,14 @@ router.get("/google/callback", (req, res) => {
         console.log("[GOOGLE CALLBACK] Query params:", JSON.stringify(req.query));
         
         passport.authenticate("google", {
-            session: false, // NÃ£o usar sessÃµes para OAuth
+                    session: false, // Não usar sessões para OAuth
             failureRedirect: loginUrl
         })(req, res, async (err, googleUser) => {
-            // FunÃ§Ã£o auxiliar para salvar dados OAuth em cookie quando houver erro
+            // Função auxiliar para salvar dados OAuth em cookie quando houver erro
             const saveOAuthData = (oauthData) => {
                 const dataString = JSON.stringify(oauthData);
                 res.cookie('oauth_temp_data', dataString, {
-                    httpOnly: false, // Precisa ser acessÃ­vel via JavaScript
+                    httpOnly: false, // Precisa ser acessível via JavaScript
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     maxAge: 15 * 60 * 1000 // 15 minutos
@@ -2005,35 +1992,35 @@ router.get("/google/callback", (req, res) => {
             };
 
             if (err) {
-                console.error("[GOOGLE CALLBACK] Erro na autenticaÃ§Ã£o Google:", err);
+                console.error("[GOOGLE CALLBACK] Erro na autenticação Google:", err);
                 console.error("[GOOGLE CALLBACK] Stack trace:", err.stack);
                 const errorDetails = err.message || 'Erro desconhecido';
                 
-                // Tentar obter dados do profile mesmo com erro (se disponÃ­vel)
-                // Isso pode nÃ£o funcionar se o erro ocorrer antes do profile ser retornado
+                // Tentar obter dados do profile mesmo com erro (se disponível)
+                // Isso pode não funcionar se o erro ocorrer antes do profile ser retornado
                 return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent(errorDetails)}`);
             }
 
-            // Tentar obter o usuÃ¡rio de vÃ¡rias fontes (sem sessÃµes)
+            // Tentar obter o usuário de várias fontes (sem sessões)
             let user = googleUser || req.user;
             
             console.log("[GOOGLE CALLBACK] googleUser:", googleUser ? JSON.stringify(googleUser, null, 2) : "undefined");
             console.log("[GOOGLE CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "undefined");
             
             if (!user) {
-                console.error("[GOOGLE CALLBACK] UsuÃ¡rio estÃ¡ undefined apÃ³s autenticaÃ§Ã£o");
+                console.error("[GOOGLE CALLBACK] Usuário está undefined após autenticação");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
-            // Verificar se user tem os campos necessÃ¡rios
+                        // Verificar se user tem os campos necessários
             if (!user.ReferenciaID || !user.email) {
-                console.error("[GOOGLE CALLBACK] user nÃ£o tem campos necessÃ¡rios:", {
+                console.error("[GOOGLE CALLBACK] user não tem campos necessários:", {
                     hasReferenciaID: !!user.ReferenciaID,
                     hasEmail: !!user.email,
                     user: user
                 });
                 
-                // Salvar dados OAuth disponÃ­veis para permitir completar registro/login
+                // Salvar dados OAuth disponíveis para permitir completar registro/login
                 const oauthData = {
                     provider: 'google',
                     email: user.email || null,
@@ -2048,11 +2035,11 @@ router.get("/google/callback", (req, res) => {
                     return res.redirect(`/index.html?oauth_data=google&action=complete`);
                 }
                 
-                return res.redirect(`${loginUrl}?error=user_incomplete&details=${encodeURIComponent('Dados do usuÃ¡rio incompletos')}`);
+                return res.redirect(`${loginUrl}?error=user_incomplete&details=${encodeURIComponent('Dados do usuário incompletos')}`);
             }
 
             try {
-                // Garantir que google_id estÃ¡ salvo no banco
+                // Garantir que google_id está salvo no banco
                 if (user.googleId) {
                     try {
                         await pool.query(
@@ -2061,12 +2048,12 @@ router.get("/google/callback", (req, res) => {
                         );
                         console.log("[GOOGLE CALLBACK] google_id salvo no banco:", user.googleId);
                     } catch (dbError) {
-                        console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode nÃ£o existir):", dbError.message);
-                        // Continuar mesmo se falhar - nÃ£o Ã© crÃ­tico
+                            console.log("[GOOGLE CALLBACK] Erro ao salvar google_id (coluna pode não existir):", dbError.message);
+                        // Continuar mesmo se falhar - não é crítico
                     }
                 }
 
-                // Salvar tokens OAuth se disponÃ­veis
+                // Salvar tokens OAuth se disponíveis
                 if (user.accessToken) {
                     try {
                         await pool.query(`
@@ -2101,16 +2088,16 @@ router.get("/google/callback", (req, res) => {
                                  updated_at = NOW()`,
                             [user.ReferenciaID, user.accessToken, user.refreshToken || null, expiresAt, 'calendar.readonly']
                         );
-                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronizaÃ§Ã£o");
+                        console.log("[GOOGLE CALLBACK] Tokens OAuth salvos para sincronização");
                     } catch (tokenErr) {
                         console.error("[GOOGLE CALLBACK] Erro ao salvar tokens OAuth:", tokenErr);
-                        // NÃ£o falhar o login se nÃ£o conseguir salvar tokens
+                        // Não falhar o login se não conseguir salvar tokens
                     }
                 }
 
                 const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.email);
 
-                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuÃ¡rio:", user.ReferenciaID);
+                console.log("[GOOGLE CALLBACK] Token JWT gerado com sucesso para usuário:", user.ReferenciaID);
 
                 const returnTo = req.cookies?.oauth_return_to;
                 const redirectPath = (returnTo && typeof returnTo === "string" && returnTo.startsWith("/")) ? returnTo : "/dashboard";
@@ -2171,14 +2158,14 @@ router.get("/google/callback", (req, res) => {
             }
         });
     } else {
-        console.error("Google OAuth nÃ£o configurado");
+        console.error("Google OAuth não configurado");
         res.status(400).json({
-            error: "Google OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "Google OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
-//rotas onde Ã© usado o github
+//rotas onde é usado o github
 router.get("/github", (req, res) => {
     if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         console.log(" GitHub OAuth configurado:");
@@ -2188,11 +2175,11 @@ router.get("/github", (req, res) => {
             scope: ["user:email"]
         })(req, res);
     } else {
-        console.error(" GitHub OAuth nÃ£o configurado:");
+        console.error(" GitHub OAuth não configurado:");
         console.log("   GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID ? "Presente" : "Ausente");
         console.log("   GITHUB_CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "Presente" : "Ausente");
         res.status(400).json({
-            error: "GitHub OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2204,12 +2191,12 @@ router.get("/github/callback", (req, res) => {
             failureRedirect: loginUrl
         })(req, res, async(err) => {
             if (err) {
-                console.error("Erro na autenticaÃ§Ã£o GitHub:", err);
+                console.error("Erro na autenticação GitHub:", err);
                 return res.redirect(`${loginUrl}?error=auth_failed`);
             }
 
             if (!req.user) {
-                console.error("req.user estÃ¡ undefined");
+                    console.error("req.user está undefined");
                 return res.redirect(`${loginUrl}?error=user_undefined`);
             }
 
@@ -2229,7 +2216,7 @@ router.get("/github/callback", (req, res) => {
         });
     } else {
         res.status(400).json({
-            error: "GitHub OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "GitHub OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2237,7 +2224,7 @@ router.get("/github/callback", (req, res) => {
 
 router.get("/discord", (req, res) => {
     if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
-        // Armazenar parÃ¢metros na sessÃ£o (se disponÃ­vel) ou usar cookies como fallback
+        // Armazenar parâmetros na sessão (se disponível) ou usar cookies como fallback
         if (req.query.from === 'profile' && req.query.token) {
             // Armazenar token temporariamente em cookie seguro
             res.cookie('discord_connect_token', req.query.token, {
@@ -2260,7 +2247,7 @@ router.get("/discord", (req, res) => {
         })(req, res);
     } else {
         res.status(400).json({
-            error: "Discord OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
@@ -2268,10 +2255,10 @@ router.get("/discord", (req, res) => {
 router.get("/discord/callback", async (req, res) => {
     console.log(" Discord callback recebido:", JSON.stringify(req.query));
     
-    // Verificar se hÃ¡ erro do Discord
+    // Verificar se há erro do Discord
     if (req.query.error) {
         console.error(" Erro retornado pelo Discord:", req.query.error);
-        console.error(" DescriÃ§Ã£o do erro:", req.query.error_description);
+        console.error(" Descrição do erro:", req.query.error_description);
         const fromProfile = req.query.state && req.query.state.includes('from=profile');
         const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_connection_failed' : `/login?error=discord_${req.query.error}&description=${encodeURIComponent(req.query.error_description || '')}`;
         return res.redirect(redirectUrl);
@@ -2282,19 +2269,19 @@ router.get("/discord/callback", async (req, res) => {
         passport.authenticate("discord", {
             session: false
         })(req, res, async (err, discordUser) => {
-            console.log(" [DISCORD CALLBACK] ========== INÃCIO DO CALLBACK ==========");
+            console.log(" [DISCORD CALLBACK] ========== INÍCIO DO CALLBACK ==========");
             console.log(" [DISCORD CALLBACK] Erro recebido:", err ? err.message : "Nenhum erro");
             console.log(" [DISCORD CALLBACK] DiscordUser recebido do passport:", discordUser ? JSON.stringify(discordUser, null, 2) : "null/undefined");
             console.log(" [DISCORD CALLBACK] Query params:", JSON.stringify(req.query));
             console.log(" [DISCORD CALLBACK] State:", req.query.state);
             console.log(" [DISCORD CALLBACK] req.user:", req.user ? JSON.stringify(req.user, null, 2) : "null/undefined");
-            console.log(" [DISCORD CALLBACK] req.isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "mÃ©todo nÃ£o disponÃ­vel");
+            console.log(" [DISCORD CALLBACK] req.isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "método não disponível");
             
             if (err) {
-                console.error(" [DISCORD CALLBACK] ERRO na autenticaÃ§Ã£o Discord:", err);
+                console.error(" [DISCORD CALLBACK] ERRO na autenticação Discord:", err);
                 console.error(" [DISCORD CALLBACK] Stack trace:", err.stack);
                 
-                // Determinar tipo de erro especÃ­fico
+                // Determinar tipo de erro específico
                 let errorType = "discord_auth_failed";
                 if (err.message && err.message.includes("email")) {
                     errorType = "discord_email_required";
@@ -2307,31 +2294,31 @@ router.get("/discord/callback", async (req, res) => {
                 return res.redirect(redirectUrl);
             }
 
-            // Tentar obter o usuÃ¡rio de vÃ¡rias fontes
+            // Tentar obter o usuário de várias fontes
             if (!discordUser) {
-                console.log(" [DISCORD CALLBACK] discordUser Ã© null, tentando req.user...");
+                console.log(" [DISCORD CALLBACK] discordUser é null, tentando req.user...");
                 discordUser = req.user;
             }
             
             if (!discordUser) {
-                console.error(" [DISCORD CALLBACK] ERRO CRÃTICO: discordUser Ã© null/undefined apÃ³s todas as tentativas");
+                    console.error(" [DISCORD CALLBACK] ERRO CRÍTICO: discordUser é null/undefined após todas as tentativas");
                 console.error(" [DISCORD CALLBACK] Query params completos:", JSON.stringify(req.query));
                 console.error(" [DISCORD CALLBACK] req.user:", req.user);
                 console.error(" [DISCORD CALLBACK] req.session:", req.session);
-                console.error(" [DISCORD CALLBACK] Verificando se a estratÃ©gia foi executada...");
+                console.error(" [DISCORD CALLBACK] Verificando se a estratégia foi executada...");
                 
-                // Se chegou aqui, a estratÃ©gia pode nÃ£o ter sido executada ou nÃ£o chamou done()
+                // Se chegou aqui, a estratégia pode não ter sido executada ou não chamou done()
                 const fromProfile = req.query.state && req.query.state.includes('from=profile');
                 const redirectUrl = fromProfile ? '/dashboard/perfil?error=discord_user_not_found' : '/login?error=discord_user_not_found';
                 return res.redirect(redirectUrl);
             }
 
-            console.log(" [DISCORD CALLBACK] UsuÃ¡rio Discord autenticado com sucesso!");
+            console.log(" [DISCORD CALLBACK] Usuário Discord autenticado com sucesso!");
             console.log(" [DISCORD CALLBACK] Email:", discordUser.email);
             console.log(" [DISCORD CALLBACK] ReferenciaID:", discordUser.ReferenciaID);
             console.log(" [DISCORD CALLBACK] DiscordId:", discordUser.discordId);
 
-            // Verificar se veio do perfil (usuÃ¡rio jÃ¡ logado querendo conectar)
+            // Verificar se veio do perfil (usuário já logado querendo conectar)
             // Tentar obter dos cookies primeiro, depois do state
             const tokenFromCookie = req.cookies?.discord_connect_token;
             const fromProfileCookie = req.cookies?.discord_connect_from === 'profile';
@@ -2348,29 +2335,29 @@ router.get("/discord/callback", async (req, res) => {
 
             if (fromProfile && tokenFromProfile) {
                 try {
-                    // Limpar cookies apÃ³s uso
+                    // Limpar cookies após uso
                     res.clearCookie('discord_connect_token');
                     res.clearCookie('discord_connect_from');
                     
-                    // Verificar token JWT do usuÃ¡rio logado
+                    // Verificar token JWT do usuário logado
                     const decoded = jwt.verify(tokenFromProfile, process.env.JWT_SECRET);
                     const loggedInReferenciaID = decoded.ReferenciaID;
                     
-                    console.log(` Associando Discord ao usuÃ¡rio logado: ${loggedInReferenciaID}`);
+                    console.log(` Associando Discord ao usuário logado: ${loggedInReferenciaID}`);
 
-                    // Obter discordId do objeto retornado pela estratÃ©gia (agora incluÃ­do)
+                    // Obter discordId do objeto retornado pela estratégia (agora incluído)
                     const discordIdToLink = discordUser.discordId;
                     
                     if (!discordIdToLink) {
-                        console.error(" Discord ID nÃ£o encontrado no objeto de autenticaÃ§Ã£o");
-                        throw new Error("NÃ£o foi possÃ­vel obter o ID do Discord");
+                        console.error(" Discord ID não encontrado no objeto de autenticação");
+                        throw new Error("Não foi possível obter o ID do Discord");
                     }
 
-                    // Verificar se o Discord jÃ¡ estÃ¡ associado a outro usuÃ¡rio
+                    // Verificar se o Discord já está associado a outro usuário
                     const existingDiscordUser = findDiscordUser(discordIdToLink);
                     
                     if (existingDiscordUser && existingDiscordUser.ReferenciaID && existingDiscordUser.ReferenciaID !== loggedInReferenciaID) {
-                        // Discord jÃ¡ estÃ¡ associado a outro usuÃ¡rio
+                            // Discord já está associado a outro usuário
                         const html = `
                             <!DOCTYPE html>
                             <html>
@@ -2379,7 +2366,7 @@ router.get("/discord/callback", async (req, res) => {
                             </head>
                             <body>
                               <script>
-                                alert('Esta conta Discord jÃ¡ estÃ¡ associada a outra conta.');
+                                alert('Esta conta Discord já está associada a outra conta.');
                                 window.location.href = '/dashboard/perfil';
                               </script>
                               <p>Redirecionando...</p>
@@ -2389,7 +2376,7 @@ router.get("/discord/callback", async (req, res) => {
                         return res.send(html);
                     }
 
-                    // Associar Discord ao usuÃ¡rio logado
+                    // Associar Discord ao usuário logado
                     linkDiscordUser(discordIdToLink, loggedInReferenciaID);
                     
                     // Atualizar discord_id no banco: desvincular de outras contas (trocar conta) e vincular a esta
@@ -2403,8 +2390,8 @@ router.get("/discord/callback", async (req, res) => {
                             [discordIdToLink, loggedInReferenciaID]
                         );
                     } catch (dbError) {
-                        console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode nÃ£o existir):", dbError.message);
-                        // Continuar mesmo se falhar - o linkDiscordUser jÃ¡ foi feito
+                        console.error(" [DISCORD CALLBACK] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
+                        // Continuar mesmo se falhar - o linkDiscordUser já foi feito
                     }
 
                     // Inserir ou atualizar na tabela contasconectadas
@@ -2419,7 +2406,7 @@ router.get("/discord/callback", async (req, res) => {
                         // Continuar mesmo se falhar
                     }
 
-                    console.log(` Discord ${discordIdToLink} associado ao usuÃ¡rio ${loggedInReferenciaID}`);
+                    console.log(` Discord ${discordIdToLink} associado ao usuário ${loggedInReferenciaID}`);
 
                     // Redirecionar de volta ao perfil
                     const html = `
@@ -2447,7 +2434,7 @@ router.get("/discord/callback", async (req, res) => {
                 }
             }
 
-            // Login normal (nÃ£o veio do perfil ou token invÃ¡lido)
+            // Login normal (não veio do perfil ou token inválido)
             const html = `
         <!DOCTYPE html>
         <html>
@@ -2456,7 +2443,7 @@ router.get("/discord/callback", async (req, res) => {
         </head>
         <body>
           <script>
-            // Salvar dados do usuÃ¡rio no localStorage
+            // Salvar dados do usuário no localStorage
             localStorage.setItem('user', JSON.stringify({
               ReferenciaID: '${discordUser.ReferenciaID}',
               email: '${discordUser.email}',
@@ -2480,24 +2467,24 @@ router.get("/discord/callback", async (req, res) => {
             res.send(html);
         });
     } else {
-        console.error(" Discord OAuth nÃ£o configurado");
+        console.error(" Discord OAuth não configurado");
         res.status(400).json({
-            error: "Discord OAuth nÃ£o configurado. Configure as credenciais no ficheiro .env",
+            error: "Discord OAuth não configurado. Configure as credenciais no ficheiro .env",
         });
     }
 });
 
 
-// WhatsApp foi removido do sistema - apenas Email e Discord disponÃ­veis
-// Se precisar verificar telefone, use a rota de verificaÃ§Ã£o de email
+// WhatsApp foi removido do sistema - apenas Email e Discord disponíveis
+// Se precisar verificar telefone, use a rota de verificação de email
 
-// Verificar email - enviar cÃ³digo por email
+// Verificar email - enviar código por email
 router.post("/verificar/email", verifyToken, async (req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
         const codigo = gerarCodigo();
 
-        // Buscar email do usuÃ¡rio
+        // Buscar email do usuário
         const [userRows] = await pool.query(
             "SELECT Email, Nome FROM Utilizadores WHERE ReferenciaID = ?",
             [referenciaID]
@@ -2506,13 +2493,13 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "UsuÃ¡rio nÃ£o encontrado",
+                error: "Usuário não encontrado",
             });
         }
 
         const user = userRows[0];
 
-        // Salvar cÃ³digo no banco
+            // Salvar código no banco
         await pool.query(
             "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
             [codigo, referenciaID]
@@ -2524,60 +2511,60 @@ router.post("/verificar/email", verifyToken, async (req, res) => {
                 sendEmail
             } = await import("../services/notify.js");
             const messageHtml = `
-        <h2> VerificaÃ§Ã£o de Conta</h2>
-        <p>OlÃ¡ <b>${user.Nome}</b> ,</p>
-        <p>Use o cÃ³digo abaixo para verificar sua conta:</p>
+            <h2> Verificação de Conta</h2>
+        <p>Olá <b>${user.Nome}</b> ,</p>
+        <p>Use o código abaixo para verificar sua conta:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
-        <p>Este cÃ³digo expira em 10 minutos.</p>
-        <p>Se nÃ£o foi vocÃª, ignore este e-mail.</p>
+        <p>Este código expira em 10 minutos.</p>
+        <p>Se não foi você, ignore este e-mail.</p>
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
 
-            await sendEmail(user.Email, "PromoPing - VerificaÃ§Ã£o de conta", messageHtml);
-            console.log(` CÃ³digo de verificaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
+            await sendEmail(user.Email, "PromoPing - Verificação de conta", messageHtml);
+            console.log(` Código de verificação enviado para ${user.Email}: ${codigo}`);
         } catch (emailError) {
-            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
+            console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
         res.json({
             status: "ok",
-            message: "CÃ³digo enviado por email!",
+            message: "Código enviado por email!",
         });
     } catch (err) {
-        console.error(" Erro ao enviar cÃ³digo por email:", err);
+        console.error(" Erro ao enviar código por email:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao enviar cÃ³digo de verificaÃ§Ã£o",
+            error: "Erro ao enviar código de verificação",
         });
     }
 });
 
-// Validar cÃ³digo de verificaÃ§Ã£o
+// Validar código de verificação
 router.post("/verificar/validar", verifyToken, async (req, res) => {
     try {
         const {
             codigo,
             tipo
-        } = req.body; // tipo: 'email' ou 'telefone'
+        } = req.body; // tipo: 'email' ou 'discord'
         const referenciaID = req.user.ReferenciaID;
 
         if (!codigo || !tipo) {
             return res.status(400).json({
                 status: "error",
-                error: "CÃ³digo e tipo sÃ£o obrigatÃ³rios",
+                error: "Código e tipo são obrigatórios",
             });
         }
 
-        if (!['email', 'telefone'].includes(tipo)) {
+            if (!['email', 'discord'].includes(tipo)) {
             return res.status(400).json({
                 status: "error",
-                error: "Tipo deve ser 'email' ou 'telefone'",
+                error: "Tipo deve ser 'email' ou 'discord'",
             });
         }
 
-        // Buscar usuÃ¡rio e verificar cÃ³digo
-        const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoTelefone';
+            // Buscar usuário e verificar código
+        const campoCodigo = tipo === 'email' ? 'CodigoEmail' : 'CodigoDiscord';
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2588,7 +2575,7 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "CÃ³digo invÃ¡lido ou expirado",
+                error: "Código inválido ou expirado",
             });
         }
 
@@ -2599,48 +2586,48 @@ router.post("/verificar/validar", verifyToken, async (req, res) => {
                 [referenciaID]
             );
         } else {
-            // Para telefone, podemos adicionar um campo TelefoneVerificado se necessÃ¡rio
+            // Para discord, podemos adicionar um campo DiscordVerificado se necessário
             await pool.query(
-                "UPDATE Utilizadores SET CodigoTelefone = NULL WHERE ReferenciaID = ?",
+                "UPDATE Utilizadores SET CodigoDiscord = NULL WHERE ReferenciaID = ?",
                 [referenciaID]
             );
         }
 
-        console.log(` ${tipo} verificado com sucesso para usuÃ¡rio ${referenciaID}`);
+        console.log(` ${tipo} verificado com sucesso para usuário ${referenciaID}`);
 
         res.json({
             status: "ok",
-            message: `${tipo === 'email' ? 'Email' : 'Telefone'} verificado com sucesso!`,
+            message: `${tipo === 'email' ? 'Email' : 'Discord'} verificado com sucesso!`,
         });
     } catch (err) {
-        console.error(" Erro ao validar cÃ³digo:", err);
+        console.error(" Erro ao validar código:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao validar cÃ³digo",
+            error: "Erro ao validar código",
         });
     }
 });
 
-// Esqueci a senha - enviar cÃ³digo
+// Esqueci a senha - enviar código
 router.post("/esqueci-senha", async (req, res) => {
     try {
         const {
-            emailOuTelefone
+            emailOuDiscord
         } = req.body;
 
-        if (!emailOuTelefone) {
+        if (!emailOuDiscord) {
             return res.status(400).json({
                 status: "error",
-                error: "Email ou telefone Ã© obrigatÃ³rio",
+                    error: "Email ou discord é obrigatório",
             });
         }
 
-        // WhatsApp foi removido - apenas email disponÃ­vel para recuperaÃ§Ã£o de senha
-        // Verificar se Ã© email vÃ¡lido
-        if (!emailOuTelefone.includes('@')) {
+        // WhatsApp foi removido - apenas email disponível para recuperação de senha
+        // Verificar se é email válido
+        if (!emailOuDiscord.includes('@')) {
             return res.status(400).json({
                 status: "error",
-                error: "Apenas email Ã© suportado para recuperaÃ§Ã£o de senha. WhatsApp foi removido.",
+                error: "Apenas email é suportado para recuperação de senha. WhatsApp foi removido.",
             });
         }
 
@@ -2649,65 +2636,65 @@ router.post("/esqueci-senha", async (req, res) => {
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
              WHERE Email = ?`,
-            [emailOuTelefone]
+            [emailOuDiscord]
         );
 
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "UsuÃ¡rio nÃ£o encontrado",
+                error: "Usuário não encontrado",
             });
         }
 
         const user = userRows[0];
         const codigo = gerarCodigo();
 
-        // Salvar cÃ³digo no banco
+        // Salvar código no banco
         await pool.query(
-            "UPDATE Utilizadores SET CodigoEmail = ? WHERE ReferenciaID = ?",
+            "UPDATE Utilizadores SET CodigoDiscord = ? WHERE ReferenciaID = ?",
             [codigo, user.ReferenciaID]
         );
 
         // Enviar por email
         const emailResult = await enviarEmail(
             user.Email,
-            "PromoPing - RecuperaÃ§Ã£o de senha",
-            `OlÃ¡ ${user.Nome}!\n\nVocÃª solicitou a recuperaÃ§Ã£o de senha.\n\nSeu cÃ³digo Ã©: ${codigo}\n\nEste cÃ³digo expira em 10 minutos.\n\nSe nÃ£o foi vocÃª, ignore este e-mail.\n\nPromoPing`
+            "PromoPing - Recuperação de senha",
+            `Olá ${user.Nome}!\n\nVocê solicitou a recuperação de senha.\n\nSeu código é: ${codigo}\n\nEste código expira em 10 minutos.\n\nSe não foi você, ignore este e-mail.\n\nPromoPing`
         );
 
         if (emailResult.success) {
-            console.log(` CÃ³digo de recuperaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
+            console.log(` Código de recuperação enviado para ${user.Email}: ${codigo}`);
         } else {
-            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
+            console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
         res.json({
             status: "ok",
-            message: "CÃ³digo enviado por email!",
+                    message: "Código enviado por email!",
             canal: 'email'
         });
     } catch (err) {
-        console.error(" Erro na recuperaÃ§Ã£o de senha:", err);
+        console.error(" Erro na recuperação de senha:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao processar recuperaÃ§Ã£o de senha",
+            error: "Erro ao processar recuperação de senha",
         });
     }
 });
 
-// Resetar senha com cÃ³digo
+// Resetar senha com código
 router.post("/resetar-senha", async (req, res) => {
     try {
         const {
-            emailOuTelefone,
+            emailOuDiscord,
             codigo,
             novaSenha
         } = req.body;
 
-        if (!emailOuTelefone || !codigo || !novaSenha) {
+        if (!emailOuDiscord || !codigo || !novaSenha) {
             return res.status(400).json({
                 status: "error",
-                error: "Email/telefone, cÃ³digo e nova senha sÃ£o obrigatÃ³rios",
+                error: "Email/discord, código e nova senha são obrigatórios",
             });
         }
 
@@ -2718,27 +2705,27 @@ router.post("/resetar-senha", async (req, res) => {
             });
         }
 
-        // WhatsApp foi removido - apenas email disponÃ­vel para reset de senha
-        // Verificar se Ã© email vÃ¡lido
-        if (!emailOuTelefone.includes('@')) {
+        // WhatsApp foi removido - apenas email disponível para reset de senha
+        // Verificar se é email válido
+        if (!emailOuDiscord.includes('@')) {
             return res.status(400).json({
                 status: "error",
-                error: "Apenas email Ã© suportado para reset de senha. WhatsApp foi removido.",
+                error: "Apenas email é suportado para reset de senha. WhatsApp foi removido.",
             });
         }
 
-        // Buscar por email e verificar cÃ³digo de email
+        // Buscar por email e verificar código de email
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
              WHERE Email = ? AND CodigoEmail = ?`,
-            [emailOuTelefone, codigo]
+            [emailOuDiscord, codigo]
         );
 
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "CÃ³digo invÃ¡lido ou expirado",
+                                error: "Código inválido ou expirado",
             });
         }
 
@@ -2748,13 +2735,13 @@ router.post("/resetar-senha", async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(novaSenha, saltRounds);
 
-        // Atualizar senha e limpar cÃ³digos
+        // Atualizar senha e limpar códigos
         await pool.query(
-            "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoTelefone = NULL WHERE ReferenciaID = ?",
+            "UPDATE Utilizadores SET SenhaHash = ?, CodigoEmail = NULL, CodigoDiscord = NULL WHERE ReferenciaID = ?",
             [hashedPassword, user.ReferenciaID]
         );
 
-        console.log(` Senha redefinida com sucesso para usuÃ¡rio ${user.ReferenciaID} via email`);
+        console.log(` Senha redefinida com sucesso para usuário ${user.ReferenciaID} via email`);
 
         res.json({
             status: "ok",
@@ -2770,7 +2757,7 @@ router.post("/resetar-senha", async (req, res) => {
 });
 
 
-// Reenviar cÃ³digo de verificaÃ§Ã£o (para usuÃ¡rios nÃ£o logados)
+// Reenviar código de verificação (para usuários não logados)
 router.post("/reenviar-codigo", async (req, res) => {
     try {
         const {
@@ -2780,11 +2767,11 @@ router.post("/reenviar-codigo", async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 status: "error",
-                error: "Email Ã© obrigatÃ³rio",
+                error: "Email é obrigatório",
             });
         }
 
-        // Buscar usuÃ¡rio
+        // Buscar usuário
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2795,17 +2782,17 @@ router.post("/reenviar-codigo", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "UsuÃ¡rio nÃ£o encontrado",
+                error: "Usuário não encontrado",
             });
         }
 
         const user = userRows[0];
 
-        // Se jÃ¡ estÃ¡ verificado, nÃ£o precisa reenviar
+        // Se já está verificado, não precisa reenviar
         if (user.EmailVerificado) {
             return res.status(400).json({
                 status: "error",
-                error: "Email jÃ¡ estÃ¡ verificado",
+                error: "Email já está verificado",
             });
         }
 
@@ -2821,38 +2808,38 @@ router.post("/reenviar-codigo", async (req, res) => {
                 sendEmail
             } = await import("../services/notify.js");
             const messageHtml = `
-        <h2> CÃ³digo de VerificaÃ§Ã£o</h2>
-        <p>OlÃ¡ <b>${user.Nome}</b> ,</p>
-        <p>VocÃª solicitou um novo cÃ³digo de verificaÃ§Ã£o:</p>
+            <h2> Código de Verificação</h2>
+        <p>Olá <b>${user.Nome}</b> ,</p>
+        <p>Você solicitou um novo código de verificação:</p>
         <h1 style="color: #ff6b35; font-size: 2em; text-align: center; margin: 20px 0;">${codigo}</h1>
-        <p>Este cÃ³digo expira em 10 minutos.</p>
-        <p>Se nÃ£o foi vocÃª, ignore este e-mail.</p>
+        <p>Este código expira em 10 minutos.</p>
+        <p>Se não foi você, ignore este e-mail.</p>
         <hr>
         <p style="color: #666; font-size: 0.9em;">&copy; ${new Date().getFullYear()} PromoPing</p>
       `;
 
-            await sendEmail(user.Email, "PromoPing - Novo cÃ³digo de verificaÃ§Ã£o", messageHtml);
-            console.log(` Novo cÃ³digo de verificaÃ§Ã£o enviado para ${user.Email}: ${codigo}`);
+            await sendEmail(user.Email, "PromoPing - Novo código de verificação", messageHtml);
+            console.log(` Novo código de verificação enviado para ${user.Email}: ${codigo}`);
         } catch (emailError) {
-            console.log(" Email nÃ£o configurado, mas cÃ³digo salvo:", codigo);
+            console.log(" Email não configurado, mas código salvo:", codigo);
         }
 
-        // WhatsApp foi removido do sistema - apenas email disponÃ­vel
+        // WhatsApp foi removido do sistema - apenas email disponível
 
         res.json({
             status: "ok",
-            message: "CÃ³digo reenviado com sucesso!",
+            message: "Código reenviado com sucesso!",
         });
     } catch (err) {
-        console.error(" Erro ao reenviar cÃ³digo:", err);
+        console.error(" Erro ao reenviar código:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao reenviar cÃ³digo",
+            error: "Erro ao reenviar código",
         });
     }
 });
 
-// Verificar cÃ³digo sem login (para usuÃ¡rios nÃ£o logados)
+// Verificar código sem login (para usuários não logados)
 router.post("/verificar-codigo", async (req, res) => {
     try {
         const {
@@ -2863,11 +2850,11 @@ router.post("/verificar-codigo", async (req, res) => {
         if (!email || !codigo) {
             return res.status(400).json({
                 status: "error",
-                error: "Email e cÃ³digo sÃ£o obrigatÃ³rios",
+                error: "Email e código são obrigatórios",
             });
         }
 
-        // Buscar usuÃ¡rio e verificar cÃ³digo
+                // Buscar usuário e verificar código
         const [userRows] = await pool.query(
             `SELECT ${USER_SELECT_FIELDS}
              FROM Utilizadores
@@ -2878,7 +2865,7 @@ router.post("/verificar-codigo", async (req, res) => {
         if (userRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "CÃ³digo invÃ¡lido ou expirado",
+                error: "Código inválido ou expirado",
             });
         }
 
@@ -2892,7 +2879,7 @@ router.post("/verificar-codigo", async (req, res) => {
 
         const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.Email);
 
-        console.log(` Email verificado com sucesso para usuÃ¡rio ${user.ReferenciaID}`);
+        console.log(` Email verificado com sucesso para usuário ${user.ReferenciaID}`);
 
         res.json({
             status: "ok",
@@ -2906,16 +2893,16 @@ router.post("/verificar-codigo", async (req, res) => {
             },
         });
     } catch (err) {
-        console.error(" Erro ao verificar cÃ³digo:", err);
+        console.error(" Erro ao verificar código:", err);
         res.status(500).json({
             status: "error",
-            error: "Erro ao verificar cÃ³digo",
+            error: "Erro ao verificar código",
         });
     }
 });
 
 
-// Atualizar telefone do usuÃ¡rio
+// Atualizar telefone do usuário
 router.put("/telefone", verifyToken, async (req, res) => {
     try {
         const {
@@ -2926,16 +2913,16 @@ router.put("/telefone", verifyToken, async (req, res) => {
         if (!telefone) {
             return res.status(400).json({
                 status: "error",
-                error: "Telefone Ã© obrigatÃ³rio",
+                error: "Telefone é obrigatório",
             });
         }
 
-        // Validar formato do telefone (bÃ¡sico)
+        // Validar formato do telefone (básico)
         const telefoneRegex = /^[0-9+\-\s()]{9,15}$/;
         if (!telefoneRegex.test(telefone)) {
             return res.status(400).json({
                 status: "error",
-                error: "Formato de telefone invÃ¡lido",
+                error: "Formato de telefone inválido",
             });
         }
 
@@ -2957,7 +2944,7 @@ router.put("/telefone", verifyToken, async (req, res) => {
     }
 });
 
-// Buscar dados do usuÃ¡rio
+// Buscar dados do usuário
 router.get("/profile", verifyToken, async (req, res) => {
     try {
         const referenciaID = req.user.ReferenciaID;
@@ -2970,7 +2957,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 status: "error",
-                error: "UsuÃ¡rio nÃ£o encontrado",
+                error: "Usuário não encontrado",
             });
         }
 
@@ -3010,7 +2997,7 @@ router.get("/oauth-temp-data", (req, res) => {
         try {
             const oauthData = JSON.parse(oauthDataCookie);
             
-            // Verificar se os dados nÃ£o expiraram (15 minutos)
+            // Verificar se os dados não expiraram (15 minutos)
             const dataAge = Date.now() - (oauthData.timestamp || 0);
             const maxAge = 15 * 60 * 1000; // 15 minutos
             
@@ -3048,12 +3035,12 @@ router.get("/oauth-temp-data", (req, res) => {
     }
 });
 
-// Rota para limpar dados OAuth temporÃ¡rios
+    // Rota para limpar dados OAuth temporários
 router.post("/oauth-temp-data/clear", (req, res) => {
     res.clearCookie('oauth_temp_data');
     res.json({
         status: "ok",
-        message: "Dados OAuth temporÃ¡rios limpos"
+        message: "Dados OAuth temporários limpos"
     });
 });
 

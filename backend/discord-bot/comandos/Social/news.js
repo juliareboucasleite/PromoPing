@@ -51,11 +51,12 @@ module.exports = {
                     });
                 } else {
                     const config = configs[0];
-                    const channel = await client.channels.fetch(config.ChannelId).catch(() => null);
+                    const channelId = config.ChannelId || config.channelid || process.env.DISCORD_NEWS_CHANNEL_ID;
+                    const channel = channelId ? await client.channels.fetch(channelId).catch(() => null) : null;
                     
                     embed.addFields(
                         { name: 'Status', value: '✅ Sistema ativo', inline: true },
-                        { name: 'Canal', value: channel ? `<#${config.ChannelId}>` : 'Canal não encontrado', inline: true },
+                        { name: 'Canal', value: channel ? `<#${channelId}>` : `Canal não encontrado (${channelId || 'n/d'})`, inline: true },
                         { name: 'Frequência', value: `${config.CheckInterval || 60} minutos`, inline: true }
                     );
                     embed.addFields({
@@ -70,15 +71,8 @@ module.exports = {
 
             } else if (action === 'configurar' || action === 'config') {
                 // Configurar canal de notícias
-                const channelId = args[1];
-                
-                if (!channelId) {
-                    await connection.end();
-                    return await message.channel.send(
-                        '❌ Por favor, forneça o ID do canal.\n**Uso:** `!news configurar <canal-id>`\n**Exemplo:** `!news configurar 123456789012345678`'
-                    );
-                }
-
+                const defaultChannelId = process.env.DISCORD_NEWS_CHANNEL_ID || '1442932093184245821';
+                let channelId = (args[1] || defaultChannelId).replace(/[<#>]/g, '').trim();
                 // Verificar se o canal existe
                 const channel = await client.channels.fetch(channelId).catch(() => null);
                 if (!channel) {
@@ -150,7 +144,8 @@ module.exports = {
                 }
 
                 const config = configs[0];
-                const channel = await client.channels.fetch(config.ChannelId).catch(() => null);
+                const channelId = config.ChannelId || config.channelid || process.env.DISCORD_NEWS_CHANNEL_ID;
+                const channel = channelId ? await client.channels.fetch(channelId).catch(() => null) : null;
                 
                 if (!channel) {
                     await connection.end();

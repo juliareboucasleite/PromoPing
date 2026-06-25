@@ -20,6 +20,41 @@ function trimDescription(text, maxLength = 200) {
   return `${content.slice(0, maxLength).trim()}...`;
 }
 
+async function ensureNewsletterArticlesSentTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS newsletter_articles_sent (
+      id SERIAL PRIMARY KEY,
+      url VARCHAR(500) NOT NULL UNIQUE,
+      title VARCHAR(500) NULL,
+      sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+}
+
+export async function isNewsletterArticleSent(url) {
+  if (!url) return false;
+  await ensureNewsletterArticlesSentTable();
+  const [rows] = await pool.query(
+    "SELECT id FROM newsletter_articles_sent WHERE url = ? LIMIT 1",
+    [url]
+  );
+  return rows.length > 0;
+}
+
+export async function markNewsletterArticlesSent(articles) {
+  if (!Array.isArray(articles) || articles.length === 0) return;
+  await ensureNewsletterArticlesSentTable();
+  for (const article of articles) {
+    if (!article?.url) continue;
+    await pool.query(
+      `INSERT INTO newsletter_articles_sent (url, title)
+       VALUES (?, ?)
+       ON CONFLICT (url) DO NOTHING`,
+      [article.url, article.title || null]
+    );
+  }
+}
+
 async function ensureNewsletterDeliveryEventsTable() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS newsletter_delivery_events (
@@ -268,6 +303,14 @@ export async function notifySubscribersOfPromotion({ product, novoPreco, precoAn
 
   if (!Number.isFinite(currentPrice) || !Number.isFinite(previousPrice) || previousPrice <= currentPrice) {
     return { recipients: 0, sent: 0, skipped: true };
+  }
+
+  const { isPlausiblePrice, describePriceRejection } = await import("../utils/priceValidation.js");
+  if (!isPlausiblePrice(currentPrice, previousPrice)) {
+    console.warn(
+      `[NEWSLETTER] Promoção ignorada para produto ${product?.Id || product?.id}: ${describePriceRejection(currentPrice, previousPrice)}`
+    );
+    return { recipients: 0, sent: 0, skipped: true, reason: "implausible_price" };
   }
 
   const productId = product?.Id || product?.id;

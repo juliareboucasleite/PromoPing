@@ -24,10 +24,15 @@ export function getDiscordVerifyMiddleware() {
 }
 
 /**
- * Após verifyKeyMiddleware: PING já foi respondido; outros tipos vão para o Gateway.
+ * Responde ao PING do Discord quando este URL estiver configurado no portal.
+ * Não defina Interactions Endpoint URL se o bot discord.js tratar slash commands via Gateway.
  */
 export function handleDiscordInteractionsAfterVerify(req, res) {
-    return res.status(404).send("Handled via Gateway");
+    console.warn(
+        "[DISCORD-HTTP] Interação recebida em /api/interactions fora do PING. " +
+        "Remova Interactions Endpoint URL no Developer Portal para usar o bot via Gateway."
+    );
+    return res.status(404).send("Interactions must be handled via Gateway bot");
 }
 
 /**

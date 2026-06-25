@@ -6,6 +6,11 @@ const mysql = require('./mysql2-compat');
 const setupDatabase = require('./setup-db');
 const comandos = require('./comandos');
 const YoutubeFeed = require('./comandos/Youtube/youtube-feed');
+const ticketConfig = require('./config/ticketConfig');
+const ticketHelpers = require('./utils/ticketHelpers');
+const productConfig = require('./config/productConfig');
+const suggestionPublic = require('./utils/suggestionPublic');
+const memeHelpers = require('./utils/memeHelpers');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 class PromoPingBot {
@@ -56,6 +61,7 @@ class PromoPingBot {
         
         // Anti-spam para chamar moderador: armazena timestamp por canal
         this.lastModeratorCall = new Map(); // channelId -> timestamp
+        this.ticketMeta = new Map(); // channelId -> { ownerId, openedAt, claimedBy, panelName, category, welcomeMessageId }
 
         // Monitoramento de Twitch
         this.twitchCheckInterval = null;
@@ -68,6 +74,12 @@ class PromoPingBot {
         this.newsCheckInterval = null;
         this.lastNewsCheck = new Date();
         this.newsService = null; // Será carregado dinamicamente
+
+        // Monitoramento de Memes
+        this.memeCheckInterval = null;
+        this.lastMemeCheck = new Date();
+        this.memeService = null;
+        this.memeButtonCooldown = new Map();
         this.youtubeCheckInterval = null;
         this.lastYoutubeCheck = new Date();
         this.youtubeFeedService = new YoutubeFeed(this.client, this.dbConfig);
@@ -257,17 +269,17 @@ class PromoPingBot {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle('Verificação do Servidor')
-            .setDescription(settings.MessageText || 'Clica no botão abaixo para receber acesso ao servidor.')
+            .setTitle('Server Verification')
+            .setDescription(settings.MessageText || 'Click the button below to get access to the server.')
             .setColor(0x5865F2)
             .setTimestamp()
-            .setFooter({ text: `${guild.name} • Verificação` });
+            .setFooter({ text: `${guild.name} • Verification` });
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`verify_accept_${guild.id}`)
-                .setLabel(settings.ButtonLabel || 'Verificar')
-                .setStyle(ButtonStyle.Success)
+                .setLabel(settings.ButtonLabel || 'Verify')
+                .setStyle(ButtonStyle.Secondary)
         );
 
         const sent = await channel.send({
@@ -607,6 +619,7 @@ class PromoPingBot {
             this.startMonitoring();
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
+            this.startMemeMonitoring();
             this.startYoutubeFeedMonitoring();
             await this.syncCorporationGuilds();
             this.startCouponQueueWorker();
@@ -841,8 +854,9 @@ class PromoPingBot {
                         };
                         await this.handleTicketCategory(interaction, categoriaNomes[categoriaCode] || categoriaCode, categoriaCode);
                     } else if (interaction.customId.startsWith('review_tipo_')) {
-                        // Handler para menu de seleção de review
                         await this.handleReviewTypeSelection(interaction);
+                    } else if (interaction.customId === 'product_buy_select') {
+                        await this.handleProductBuySelect(interaction);
                     }
                 }
                 // Lidar com botões
@@ -881,8 +895,11 @@ class PromoPingBot {
                             components: [] 
                         });
                     } else if (interaction.customId.startsWith('ticket_fechar_')) {
-                        // Verificar ticket_fechar_ depois das verificações específicas
                         await this.handleFecharTicketButton(interaction);
+                    } else if (interaction.customId.startsWith('ticket_claim_')) {
+                        await this.handleTicketClaim(interaction);
+                    } else if (interaction.customId.startsWith('ticket_release_')) {
+                        await this.handleTicketRelease(interaction);
                     } else if (interaction.customId.startsWith('ticket_chamar_mod_')) {
                         await this.handleChamarModerador(interaction);
                     } else if (interaction.customId.startsWith('support_ticket_fechar_')) {
@@ -897,6 +914,16 @@ class PromoPingBot {
                         await this.handleReportarBugButton(interaction);
                     } else if (interaction.customId === 'abrir_formulario_sugestao') {
                         await this.handleSugerirButton(interaction);
+                    } else if (interaction.customId === 'product_review_start') {
+                        await this.handleProductReviewStart(interaction);
+                    } else if (interaction.customId.startsWith('suggestion_vote_up_')) {
+                        await this.handleSuggestionVote(interaction, 'up');
+                    } else if (interaction.customId.startsWith('suggestion_vote_down_')) {
+                        await this.handleSuggestionVote(interaction, 'down');
+                    } else if (interaction.customId.startsWith('suggestion_discuss_')) {
+                        await this.handleSuggestionDiscuss(interaction);
+                    } else if (interaction.customId === memeHelpers.MEME_NEW_BUTTON_ID) {
+                        await this.handleMemeNewButton(interaction);
                     }
                 }
                 // Lidar com modais
@@ -905,6 +932,10 @@ class PromoPingBot {
                         await this.handleReportarBugModal(interaction);
                     } else if (interaction.customId === 'formulario_sugerir') {
                         await this.handleSugerirModal(interaction);
+                    } else if (interaction.customId.startsWith('ticket_close_modal_')) {
+                        await this.handleTicketCloseModal(interaction);
+                    } else if (interaction.customId === 'product_review_modal') {
+                        await this.handleProductReviewModal(interaction);
                     }
                 }
             } catch (error) {
@@ -924,89 +955,318 @@ class PromoPingBot {
         });
     }
 
+    async openSupportTicket(guild, user, options = {}) {
+        const {
+            category = 'General Support',
+            panelName = ticketHelpers.TICKET_PANEL_NAME,
+            initialMessage = null,
+            categoryLabel = null,
+            channelPrefix = 'ticket',
+            extraDescription = null,
+            paymentLink = null,
+        } = options;
+
+        const channelName = ticketHelpers.getTicketChannelName(user, channelPrefix);
+        const existingChannel = guild.channels.cache.find(
+            (channel) => channel.name === channelName && channel.type === ChannelType.GuildText
+        );
+        if (existingChannel) {
+            return { channel: existingChannel, created: false };
+        }
+
+        const ticketChannel = await ticketHelpers.createTicketChannel(
+            guild,
+            this.client.user.id,
+            user.id,
+            channelName
+        );
+
+        const welcomeEmbed = ticketHelpers.buildTicketWelcomeEmbed({
+            user,
+            panelName,
+            category: categoryLabel || category,
+            extraDescription: extraDescription || undefined,
+        });
+
+        if (initialMessage) {
+            welcomeEmbed.addFields({
+                name: 'Initial message',
+                value: initialMessage.substring(0, 1024),
+                inline: false,
+            });
+        }
+
+        const ticketButtonsRow = ticketHelpers.buildTicketActionRow(ticketChannel.id, user.id);
+        const mentionText = `${user} ${ticketHelpers.buildStaffMention()}`;
+
+        const components = [ticketButtonsRow];
+        if (paymentLink && paymentLink.startsWith('http')) {
+            components.push(
+                new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel('Pay with Revolut')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(paymentLink)
+                        .setEmoji('💳')
+                )
+            );
+        }
+
+        const welcomeMsg = await ticketChannel.send({
+            content: mentionText,
+            embeds: [welcomeEmbed],
+            components,
+        });
+
+        await welcomeMsg.pin().catch(() => {});
+
+        this.ticketMeta.set(ticketChannel.id, {
+            ownerId: user.id,
+            openedAt: new Date(),
+            claimedBy: null,
+            panelName,
+            category: categoryLabel || category,
+            welcomeMessageId: welcomeMsg.id,
+        });
+
+        return { channel: ticketChannel, created: true };
+    }
+
+    async handleProductBuySelect(interaction) {
+        try {
+            const guild = interaction.guild;
+            const user = interaction.user;
+            const option = interaction.values[0];
+
+            if (!guild) {
+                return await interaction.reply({ content: 'This can only be used in a server.', ephemeral: true });
+            }
+
+            const channelName = productConfig.getProductChannelName(user);
+            const existingChannel = guild.channels.cache.find(
+                (ch) => ch.name === channelName && ch.type === ChannelType.GuildText
+            );
+
+            if (existingChannel) {
+                return await interaction.reply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('Ticket already open')
+                            .setDescription(`You already have an open ticket: ${existingChannel}`)
+                            .setColor(0xffa500)
+                            .setTimestamp(),
+                    ],
+                    ephemeral: true,
+                });
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            const isPurchase = option === 'purchase';
+            const { channel: ticketChannel } = await this.openSupportTicket(guild, user, {
+                channelPrefix: productConfig.PRODUCT.slug,
+                panelName: isPurchase ? 'Ticket Created' : 'Support & Help',
+                category: option,
+                categoryLabel: isPurchase ? 'Purchase' : 'Help',
+                extraDescription: isPurchase
+                    ? productConfig.buildPurchaseWelcome(user)
+                    : productConfig.buildHelpWelcome(),
+                paymentLink: isPurchase ? productConfig.PRODUCT.paymentUrl : null,
+            });
+
+            await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Ticket created')
+                        .setDescription(
+                            `Your ticket is ready: ${ticketChannel}\n\n` +
+                            (isPurchase
+                                ? 'Follow the payment instructions in the ticket channel and send proof when done.'
+                                : 'Describe your issue in the ticket channel — staff will assist you shortly.')
+                        )
+                        .setColor(0x57f287)
+                        .setTimestamp(),
+                ],
+            });
+        } catch (error) {
+            console.error('[DISCORD] product buy select error:', error);
+            const msg = { content: 'An error occurred while creating your ticket.', ephemeral: true };
+            if (interaction.deferred) await interaction.editReply(msg).catch(() => {});
+            else await interaction.reply(msg).catch(() => {});
+        }
+    }
+
+    async handleProductReviewStart(interaction) {
+        try {
+            if (!productConfig.memberCanReview(interaction.member)) {
+                const roles = productConfig.PRODUCT.reviewerRoleIds.map((id) => `<@&${id}>`).join(', ');
+                return await interaction.reply({
+                    content: `Only customers with access to **${productConfig.PRODUCT.name}** can leave a review.\nRequired role(s): ${roles}`,
+                    ephemeral: true,
+                });
+            }
+
+            const modal = new ModalBuilder()
+                .setCustomId('product_review_modal')
+                .setTitle(`${productConfig.PRODUCT.name} Review`);
+
+            const ratingInput = new TextInputBuilder()
+                .setCustomId('product_review_rating')
+                .setLabel('Rating (1-5)')
+                .setPlaceholder('e.g. 5')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMinLength(1)
+                .setMaxLength(1);
+
+            const textInput = new TextInputBuilder()
+                .setCustomId('product_review_text')
+                .setLabel('Your review')
+                .setPlaceholder('Tell us about your experience with the product...')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setMinLength(10)
+                .setMaxLength(1500);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(ratingInput),
+                new ActionRowBuilder().addComponents(textInput)
+            );
+
+            await interaction.showModal(modal);
+        } catch (error) {
+            console.error('[DISCORD] product review start error:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'Could not open the review form.', ephemeral: true }).catch(() => {});
+            }
+        }
+    }
+
+    async handleProductReviewModal(interaction) {
+        try {
+            if (!productConfig.memberCanReview(interaction.member)) {
+                return await interaction.reply({
+                    content: 'You no longer have permission to submit a product review.',
+                    ephemeral: true,
+                });
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            const ratingRaw = interaction.fields.getTextInputValue('product_review_rating').trim();
+            const reviewText = interaction.fields.getTextInputValue('product_review_text').trim();
+            let rating = parseInt(ratingRaw, 10);
+            if (Number.isNaN(rating) || rating < 1 || rating > 5) {
+                return await interaction.editReply({ content: 'Rating must be a number from 1 to 5.' });
+            }
+
+            const productName = productConfig.PRODUCT.name;
+            const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+            const reviewEmbed = new EmbedBuilder()
+                .setTitle(`${productName} Review`)
+                .setDescription(reviewText)
+                .setColor(rating >= 4 ? 0x57f287 : rating >= 3 ? 0xfee75c : 0xed4245)
+                .addFields({ name: 'Rating', value: `${stars} (${rating}/5)`, inline: false })
+                .setAuthor({
+                    name: interaction.user.displayName || interaction.user.username,
+                    iconURL: interaction.user.displayAvatarURL(),
+                })
+                .setTimestamp()
+                .setFooter({ text: `${productName} • Customer Review` });
+
+            const reviewChannel = interaction.channel;
+            await reviewChannel.send({ embeds: [reviewEmbed] });
+
+            try {
+                const connection = await mysql.createConnection(this.dbConfig);
+                const [users] = await connection.execute(
+                    'SELECT ReferenciaID FROM utilizadores WHERE discord_id = ?',
+                    [interaction.user.id]
+                );
+                const referenciaID = users[0]?.ReferenciaID || null;
+                await connection.execute(
+                    `INSERT INTO reviews (ReferenciaID, discord_user_id, discord_username, discord_avatar_url, Tipo, Texto, Rating, discord_channel_id)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        referenciaID,
+                        interaction.user.id,
+                        interaction.user.username,
+                        interaction.user.displayAvatarURL(),
+                        productConfig.PRODUCT.slug,
+                        reviewText,
+                        rating,
+                        reviewChannel.id,
+                    ]
+                );
+                await connection.end();
+            } catch (dbErr) {
+                console.warn('[DISCORD] product review DB save skipped:', dbErr.message);
+            }
+
+            await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Review submitted')
+                        .setDescription(`Thank you for reviewing **${productName}**!`)
+                        .setColor(0x57f287)
+                        .setTimestamp(),
+                ],
+            });
+        } catch (error) {
+            console.error('[DISCORD] product review modal error:', error);
+            await interaction.editReply({ content: 'An error occurred while submitting your review.' }).catch(() => {});
+        }
+    }
+
     async handleTicketButton(interaction) {
         try {
             const guild = interaction.guild;
             const userId = interaction.user.id;
 
             if (!guild) {
-                return await interaction.reply({ 
-                    content: 'Este botão só pode ser usado em um servidor!', 
-                    ephemeral: true 
+                return await interaction.reply({
+                    content: 'This button can only be used inside a server.',
+                    ephemeral: true,
                 });
             }
 
-            // Verificar se o usuário já tem um ticket aberto
-            const ticketChannelName = `ticket-${interaction.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-            
+            const channelName = ticketHelpers.getTicketChannelName(interaction.user);
             const existingChannel = guild.channels.cache.find(
-                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+                (channel) => channel.name === channelName && channel.type === ChannelType.GuildText
             );
 
             if (existingChannel) {
                 const embed = new EmbedBuilder()
-                    .setTitle('Ticket Já Existe')
-                    .setDescription(`Você já tem um ticket aberto: ${existingChannel}`)
+                    .setTitle('Ticket already open')
+                    .setDescription(`You already have an open ticket: ${existingChannel}`)
                     .setColor(0xffa500)
                     .setTimestamp();
-                
+
                 return await interaction.reply({ embeds: [embed], ephemeral: true });
             }
 
-            // Mostrar opções de categoria com menu de seleção
-            const categoriaEmbed = new EmbedBuilder()
-                .setTitle('Escolha a Categoria do Ticket')
-                .setDescription('Selecione a categoria que melhor descreve seu problema:')
-                .setColor(0x5865F2)
-                .setTimestamp();
+            await interaction.deferReply({ ephemeral: true });
 
-            const categoriaSelectMenu = new StringSelectMenuBuilder()
-                .setCustomId(`ticket_categoria_${userId}`)
-                .setPlaceholder('Selecione uma categoria...')
-                .addOptions(
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel('Notificações')
-                        .setDescription('Problema com notificações')
-                        .setValue(`notificacoes_${userId}`),
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel('Dúvida')
-                        .setDescription('Dúvida sobre o bot')
-                        .setValue(`duvida_${userId}`),
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel('Login')
-                        .setDescription('Erro ao fazer login')
-                        .setValue(`login_${userId}`),
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel('Produtos')
-                        .setDescription('Problema com produtos')
-                        .setValue(`produtos_${userId}`),
-                    new StringSelectMenuOptionBuilder()
-                        .setLabel('Outros')
-                        .setDescription('Outro tipo de problema')
-                        .setValue(`outros_${userId}`)
-                );
-
-            const categoriaRow = new ActionRowBuilder()
-                .addComponents(categoriaSelectMenu);
-
-            await interaction.reply({ 
-                embeds: [categoriaEmbed], 
-                components: [categoriaRow],
-                ephemeral: true 
+            const { channel: ticketChannel } = await this.openSupportTicket(guild, interaction.user, {
+                category: 'General Support',
             });
 
+            const successEmbed = new EmbedBuilder()
+                .setTitle('Ticket created')
+                .setDescription(`Your ticket is ready: ${ticketChannel}\n\nA staff member will assist you shortly.`)
+                .setColor(0x00ff00)
+                .setTimestamp();
+
+            await interaction.editReply({ embeds: [successEmbed] });
+
         } catch (error) {
-            console.error('[DISCORD] Erro ao processar botão de ticket:', error);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ 
-                    content: 'Ocorreu um erro ao processar sua solicitação.', 
-                    ephemeral: true 
-                });
-            } else {
-                await interaction.reply({ 
-                    content: 'Ocorreu um erro ao processar sua solicitação.', 
-                    ephemeral: true 
-                });
+            console.error('[DISCORD] Error processing ticket button:', error);
+            const payload = { content: 'An error occurred while creating your ticket. Please try again.', ephemeral: true };
+            if (interaction.deferred) {
+                await interaction.editReply(payload).catch(() => {});
+            } else if (!interaction.replied) {
+                await interaction.reply(payload).catch(() => {});
             }
         }
     }
@@ -1108,7 +1368,7 @@ class PromoPingBot {
                     new ButtonBuilder()
                         .setCustomId(`review_anonimo_nao_${tipo}_${userId}`)
                         .setLabel('Não, Mostrar Nome')
-                        .setStyle(ButtonStyle.Primary)
+                        .setStyle(ButtonStyle.Secondary)
                 );
 
             // Responder à interação primeiro para evitar expiração
@@ -1508,11 +1768,11 @@ class PromoPingBot {
                     new ButtonBuilder()
                         .setCustomId(`ticket_confirmar_${userId}_${categoriaCode}`)
                         .setLabel('Confirmar')
-                        .setStyle(ButtonStyle.Success),
+                        .setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder()
                         .setCustomId(`ticket_cancelar_${userId}`)
                         .setLabel('Cancelar')
-                        .setStyle(ButtonStyle.Danger)
+                        .setStyle(ButtonStyle.Secondary)
                 );
 
             await interaction.update({ 
@@ -1550,164 +1810,44 @@ class PromoPingBot {
                 'produtos': 'Problema com Produtos',
                 'outros': 'Outros'
             };
-            const categoriaNome = categoriaNomes[categoriaCode] || 'Outros';
+            const categoriaNome = categoriaNomes[categoriaCode] || 'Other';
 
-            // Verificar se o usuário já tem um ticket aberto
-            const ticketChannelName = `ticket-${interaction.user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-            
+            await interaction.deferUpdate().catch(() => {});
+
+            const channelName = ticketHelpers.getTicketChannelName(interaction.user);
             const existingChannel = guild.channels.cache.find(
-                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+                (channel) => channel.name === channelName && channel.type === ChannelType.GuildText
             );
 
             if (existingChannel) {
                 const embed = new EmbedBuilder()
-                    .setTitle('Ticket Já Existe')
-                    .setDescription(`Você já tem um ticket aberto: ${existingChannel}`)
+                    .setTitle('Ticket already open')
+                    .setDescription(`You already have an open ticket: ${existingChannel}`)
                     .setColor(0xffa500)
                     .setTimestamp();
-                
-                return await interaction.update({ 
-                    embeds: [embed], 
-                    components: [] 
-                });
+
+                return await interaction.editReply({ embeds: [embed], components: [] }).catch(() => {});
             }
 
-            // Criar categoria de tickets se não existir
-            let ticketCategory = guild.channels.cache.find(
-                cat => cat.name === '🎫 Tickets' && cat.type === ChannelType.GuildCategory
-            );
-
-            if (!ticketCategory) {
-                ticketCategory = await guild.channels.create({
-                    name: '🎫 Tickets',
-                    type: ChannelType.GuildCategory,
-                    permissionOverwrites: [
-                        {
-                            id: guild.id,
-                            deny: [PermissionFlagsBits.ViewChannel]
-                        }
-                    ]
-                });
-            }
-
-            // Criar canal de ticket com permissões explícitas
-            const ticketChannel = await guild.channels.create({
-                name: ticketChannelName,
-                type: ChannelType.GuildText,
-                parent: ticketCategory.id,
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: [PermissionFlagsBits.ViewChannel]
-                    },
-                    {
-                        id: userId,
-                        allow: [
-                            PermissionFlagsBits.ViewChannel,
-                            PermissionFlagsBits.SendMessages,
-                            PermissionFlagsBits.ReadMessageHistory,
-                            PermissionFlagsBits.AttachFiles,
-                            PermissionFlagsBits.EmbedLinks
-                        ],
-                        deny: []
-                    },
-                    {
-                        id: this.client.user.id,
-                        allow: [
-                            PermissionFlagsBits.ViewChannel,
-                            PermissionFlagsBits.SendMessages,
-                            PermissionFlagsBits.ReadMessageHistory,
-                            PermissionFlagsBits.ManageMessages
-                        ]
-                    }
-                ]
+            const { channel: ticketChannel } = await this.openSupportTicket(guild, interaction.user, {
+                category: categoriaCode,
+                categoryLabel: categoriaNome,
             });
 
-            // Garantir que o usuário tenha acesso ao canal (atualizar permissões se necessário)
-            try {
-                await ticketChannel.permissionOverwrites.edit(userId, {
-                    ViewChannel: true,
-                    SendMessages: true,
-                    ReadMessageHistory: true,
-                    AttachFiles: true,
-                    EmbedLinks: true
-                });
-            } catch (error) {
-                console.error('[DISCORD] Erro ao atualizar permissões do usuário:', error);
-            }
-
-            // Adicionar permissões para roles de suporte (se configuradas)
-            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
-            if (supportRoleId) {
-                await ticketChannel.permissionOverwrites.edit(supportRoleId, {
-                    ViewChannel: true,
-                    SendMessages: true,
-                    ReadMessageHistory: true,
-                    AttachFiles: true,
-                    EmbedLinks: true
-                });
-            }
-
-            // Criar embed de boas-vindas no canal do ticket
-            const welcomeEmbed = new EmbedBuilder()
-                .setTitle('🎫 Ticket de Suporte Criado')
-                .setDescription(`**Ticket criado por:** ${interaction.user}\n**Categoria:** ${categoriaNome}`)
-                .addFields({
-                    name: 'Informações',
-                    value: '• Um membro da equipe de suporte responderá em breve\n• Descreva seu problema com detalhes\n• Use os botões abaixo para gerenciar o ticket',
-                    inline: false
-                })
-                .setColor(0x00ff00)
-                .setTimestamp()
-                .setFooter({ text: 'PromoPing - Suporte' });
-
-            // Criar botões para o ticket
-            const ticketButtonsRow = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_fechar_${ticketChannel.id}_${userId}`)
-                        .setLabel('Fechar Ticket')
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_chamar_mod_${ticketChannel.id}_${userId}`)
-                        .setLabel('Chamar Suporte')
-                        .setStyle(ButtonStyle.Primary)
-                );
-
-            const mentionText = supportRoleId 
-                ? `${interaction.user} | <@&${supportRoleId}>`
-                : `${interaction.user}`;
-            
-            await ticketChannel.send({ 
-                content: mentionText,
-                embeds: [welcomeEmbed],
-                components: [ticketButtonsRow]
-            });
-
-            // Confirmar criação do ticket
             const successEmbed = new EmbedBuilder()
-                .setTitle('🎫 Ticket Criado com Sucesso!')
-                .setDescription(`Seu ticket foi criado: ${ticketChannel}\n\n**Categoria:** ${categoriaNome}\n\nClique no canal acima para acessá-lo.`)
+                .setTitle('Ticket created')
+                .setDescription(`Your ticket is ready: ${ticketChannel}\n\n**Category:** ${categoriaNome}`)
                 .setColor(0x00ff00)
                 .setTimestamp();
 
-            await interaction.update({ 
-                embeds: [successEmbed], 
-                components: [] 
-            });
-
-            // Enviar mensagem adicional com link
-            await interaction.followUp({ 
-                content: `🎫 Seu ticket foi criado! Acesse: ${ticketChannel}`,
-                ephemeral: true 
-            });
+            await interaction.editReply({ embeds: [successEmbed], components: [] }).catch(() => {});
 
         } catch (error) {
-            console.error('[DISCORD] Erro ao criar ticket:', error);
-            await interaction.update({ 
-                content: ' **Erro ao criar o ticket!** Tente novamente em alguns minutos.',
-                components: []
-            });
+            console.error('[DISCORD] Error creating ticket:', error);
+            await interaction.editReply({
+                content: '**Error creating ticket.** Please try again in a few minutes.',
+                components: [],
+            }).catch(() => {});
         }
     }
 
@@ -1734,8 +1874,8 @@ class PromoPingBot {
             // Ignorar mensagens vazias ou muito curtas
             if (!userMessage || userMessage.length < 3) {
                 const embed = new EmbedBuilder()
-                    .setTitle('❌ Mensagem Muito Curta')
-                    .setDescription('Por favor, forneça uma descrição mais detalhada sobre seu problema ou dúvida.\n\n**Exemplo:** `!suporte Preciso de ajuda com notificações`')
+                    .setTitle('Message too short')
+                    .setDescription('Please provide more detail about your issue.\n\n**Example:** `!support I need help with notifications`')
                     .setColor(0xff0000)
                     .setTimestamp();
                 return await safeReply({ embeds: [embed] });
@@ -1754,8 +1894,8 @@ class PromoPingBot {
 
             if (!guild) {
                 const embed = new EmbedBuilder()
-                    .setTitle('❌ Servidor Não Encontrado')
-                    .setDescription('Não foi possível encontrar o servidor para criar o ticket. Por favor, contate um administrador.')
+                    .setTitle('Server not found')
+                    .setDescription('Could not find the server to create your ticket. Please contact an administrator.')
                     .setColor(0xff0000)
                     .setTimestamp();
                 return await safeReply({ embeds: [embed] });
@@ -1767,35 +1907,31 @@ class PromoPingBot {
                 member = await guild.members.fetch(userId);
             } catch (error) {
                 const embed = new EmbedBuilder()
-                    .setTitle('❌ Você Não Está no Servidor')
-                    .setDescription('Para criar um ticket, você precisa estar no servidor do PromoPing. Por favor, entre no servidor primeiro.')
+                    .setTitle('Not in server')
+                    .setDescription('You must be in the PromoPing Discord server to open a ticket. Please join the server first.')
                     .setColor(0xff0000)
                     .setTimestamp();
                 return await safeReply({ embeds: [embed] });
             }
 
-            // Verificar se o usuário já tem um ticket aberto
-            const username = message.author.username || message.author.displayName || message.author.tag.split('#')[0] || 'user';
-            const ticketChannelName = `ticket-${username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-            
+            const channelName = ticketHelpers.getTicketChannelName(message.author);
             const existingChannel = guild.channels.cache.find(
-                channel => channel.name === ticketChannelName && channel.type === ChannelType.GuildText
+                (channel) => channel.name === channelName && channel.type === ChannelType.GuildText
             );
 
             if (existingChannel) {
                 const embed = new EmbedBuilder()
-                    .setTitle('🎫 Ticket Já Existe')
-                    .setDescription(`Você já tem um ticket aberto no servidor.\n\nAcesse: ${existingChannel}\n\nSua mensagem foi encaminhada para o ticket existente.`)
+                    .setTitle('Ticket already open')
+                    .setDescription(`You already have an open ticket.\n\nGo to: ${existingChannel}\n\nYour message was forwarded to the existing ticket.`)
                     .setColor(0xffa500)
                     .setTimestamp();
 
-                // Enviar mensagem para o ticket existente
                 const ticketMessageEmbed = new EmbedBuilder()
-                    .setTitle('📩 Nova Mensagem do Usuário (via DM)')
+                    .setTitle('New message from user (DM)')
                     .setDescription(userMessage)
-                    .setAuthor({ 
-                        name: message.author.tag, 
-                        iconURL: message.author.displayAvatarURL() 
+                    .setAuthor({
+                        name: message.author.tag,
+                        iconURL: message.author.displayAvatarURL(),
                     })
                     .setColor(0x5865F2)
                     .setTimestamp();
@@ -1804,144 +1940,31 @@ class PromoPingBot {
                 return await safeReply({ embeds: [embed] });
             }
 
-            // Criar categoria de tickets se não existir
-            let ticketCategory = guild.channels.cache.find(
-                cat => cat.name === '🎫 Tickets' && cat.type === ChannelType.GuildCategory
-            );
-
-            if (!ticketCategory) {
-                ticketCategory = await guild.channels.create({
-                    name: '🎫 Tickets',
-                    type: ChannelType.GuildCategory,
-                    permissionOverwrites: [
-                        {
-                            id: guild.id,
-                            deny: [PermissionFlagsBits.ViewChannel]
-                        }
-                    ]
-                });
-            }
-
-            // Criar canal de ticket com permissões explícitas
-            const ticketChannel = await guild.channels.create({
-                name: ticketChannelName,
-                type: ChannelType.GuildText,
-                parent: ticketCategory.id,
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: [PermissionFlagsBits.ViewChannel]
-                    },
-                    {
-                        id: userId,
-                        allow: [
-                            PermissionFlagsBits.ViewChannel,
-                            PermissionFlagsBits.SendMessages,
-                            PermissionFlagsBits.ReadMessageHistory,
-                            PermissionFlagsBits.AttachFiles,
-                            PermissionFlagsBits.EmbedLinks
-                        ],
-                        deny: []
-                    },
-                    {
-                        id: this.client.user.id,
-                        allow: [
-                            PermissionFlagsBits.ViewChannel,
-                            PermissionFlagsBits.SendMessages,
-                            PermissionFlagsBits.ReadMessageHistory,
-                            PermissionFlagsBits.ManageMessages
-                        ]
-                    }
-                ]
+            const { channel: ticketChannel } = await this.openSupportTicket(guild, message.author, {
+                category: 'dm',
+                categoryLabel: 'Direct Message',
+                initialMessage: userMessage,
             });
 
-            // Garantir que o usuário tenha acesso ao canal
-            try {
-                await ticketChannel.permissionOverwrites.edit(userId, {
-                    ViewChannel: true,
-                    SendMessages: true,
-                    ReadMessageHistory: true,
-                    AttachFiles: true,
-                    EmbedLinks: true
-                });
-            } catch (error) {
-                console.error('[DISCORD] Erro ao atualizar permissões do usuário:', error);
-            }
-
-            // Adicionar permissões para roles de suporte (se configuradas)
-            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
-            if (supportRoleId) {
-                await ticketChannel.permissionOverwrites.edit(supportRoleId, {
-                    ViewChannel: true,
-                    SendMessages: true,
-                    ReadMessageHistory: true,
-                    AttachFiles: true,
-                    EmbedLinks: true
-                });
-            }
-
-            // Criar embed de boas-vindas no canal do ticket
-            const welcomeEmbed = new EmbedBuilder()
-                .setTitle('🎫 Ticket de Suporte Criado via DM')
-                .setDescription(`**Ticket criado por:** ${message.author}\n**Categoria:** Criado via Mensagem Privada`)
-                .addFields({
-                    name: 'Mensagem Inicial',
-                    value: userMessage,
-                    inline: false
-                })
-                .addFields({
-                    name: 'Informações',
-                    value: '• Um membro da equipe de suporte responderá em breve\n• Descreva seu problema com detalhes\n• Use os botões abaixo para gerenciar o ticket',
-                    inline: false
-                })
-                .setColor(0x00ff00)
-                .setTimestamp()
-                .setFooter({ text: 'PromoPing - Suporte' });
-
-            // Criar botões para o ticket
-            const ticketButtonsRow = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_fechar_${ticketChannel.id}_${userId}`)
-                        .setLabel('Fechar Ticket')
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_chamar_mod_${ticketChannel.id}_${userId}`)
-                        .setLabel('Chamar Suporte')
-                        .setStyle(ButtonStyle.Primary)
-                );
-
-            const mentionText = supportRoleId 
-                ? `${message.author} | <@&${supportRoleId}>`
-                : `${message.author}`;
-            
-            await ticketChannel.send({ 
-                content: mentionText,
-                embeds: [welcomeEmbed],
-                components: [ticketButtonsRow]
-            });
-
-            // Confirmar criação do ticket na DM
             const successEmbed = new EmbedBuilder()
-                .setTitle('🎫 Ticket Criado com Sucesso!')
-                .setDescription(`Seu ticket foi criado no servidor!\n\n**Canal:** ${ticketChannel}\n\nA equipe de suporte foi notificada e responderá em breve.`)
+                .setTitle('Ticket created')
+                .setDescription(`Your ticket was created on the server.\n\n**Channel:** ${ticketChannel}\n\nOur support team has been notified and will respond shortly.`)
                 .addFields({
-                    name: 'Sua Mensagem',
+                    name: 'Your message',
                     value: userMessage,
-                    inline: false
+                    inline: false,
                 })
                 .setColor(0x00ff00)
                 .setTimestamp()
-                .setFooter({ text: 'PromoPing - Suporte' });
+                .setFooter({ text: 'PromoPing Support' });
 
-            // Usar safeReply para responder (trata interações deferidas automaticamente)
             await safeReply({ embeds: [successEmbed] });
 
         } catch (error) {
-            console.error('[DISCORD] Erro ao criar ticket via DM:', error);
+            console.error('[DISCORD] Error creating ticket via DM:', error);
             const errorEmbed = new EmbedBuilder()
-                .setTitle('❌ Erro ao Criar Ticket')
-                .setDescription('Ocorreu um erro ao criar seu ticket. Por favor, tente novamente em alguns minutos ou contate um administrador.')
+                .setTitle('Error creating ticket')
+                .setDescription('Something went wrong while creating your ticket. Please try again in a few minutes or contact an administrator.')
                 .setColor(0xff0000)
                 .setTimestamp();
             
@@ -1998,96 +2021,275 @@ class PromoPingBot {
             const userId = interaction.user.id;
 
             if (!guild) {
-                return await interaction.reply({ 
-                    content: 'Este comando só pode ser usado em um servidor!', 
-                    ephemeral: true 
+                return await interaction.reply({
+                    content: 'This can only be used inside a server.',
+                    ephemeral: true,
                 });
             }
 
-            // Usar o canal da interação diretamente (mais confiável)
             const channel = interaction.channel;
-            
-            if (!channel) {
-                // Se não tiver canal na interação, tentar buscar pelo ID do customId
-                const parts = interaction.customId.split('_');
-                const channelId = parts[2];
-                const channelFromId = guild.channels.cache.get(channelId);
-                
-                if (!channelFromId) {
-                    return await interaction.reply({ 
-                        content: '❌ Canal não encontrado!', 
-                        ephemeral: true 
-                    });
-                }
-                
-                // Verificar se é um ticket
-                if (!channelFromId.name.startsWith('ticket-')) {
-                    return await interaction.reply({ 
-                        content: '❌ Este comando só pode ser usado em um canal de ticket!', 
-                        ephemeral: true 
-                    });
-                }
-            } else {
-                // Verificar se é um ticket
-                if (!channel.name.startsWith('ticket-')) {
-                    return await interaction.reply({ 
-                        content: '❌ Este comando só pode ser usado em um canal de ticket!', 
-                        ephemeral: true 
-                    });
-                }
+            if (!channel || !ticketHelpers.isTicketChannel(channel)) {
+                return await interaction.reply({
+                    content: 'This action can only be used in a ticket channel.',
+                    ephemeral: true,
+                });
             }
 
-            const finalChannel = channel || guild.channels.cache.get(interaction.customId.split('_')[2]);
-            const channelId = finalChannel.id;
-
-            // Extrair informações do customId: ticket_fechar_channelId_userId
             const parts = interaction.customId.split('_');
+            const channelId = parts[2];
             const ticketOwnerId = parts[3];
 
-            // Verificar permissões
             const isTicketOwner = userId === ticketOwnerId;
             const isAdmin = this.isAdmin(interaction.member);
-            const supportRoleId = '1442655668904398980';
-            const hasSupportRole = interaction.member.roles.cache.has(supportRoleId);
+            const hasSupportRole = ticketConfig.memberHasStaffRole(interaction.member);
 
             if (!isTicketOwner && !isAdmin && !hasSupportRole) {
-                return await interaction.reply({ 
-                    content: '❌ Apenas o criador do ticket, administradores ou membros da equipe de suporte podem fechar tickets!', 
-                    ephemeral: true 
+                return await interaction.reply({
+                    content: 'Only the ticket owner, administrators, or support staff can close tickets.',
+                    ephemeral: true,
                 });
             }
 
-            // Confirmar fechamento
-            const confirmEmbed = new EmbedBuilder()
-                .setTitle('Confirmar Fechamento')
-                .setDescription('Tem certeza que deseja fechar este ticket?')
-                .setColor(0xffa500)
-                .setTimestamp();
+            const modal = new ModalBuilder()
+                .setCustomId(`ticket_close_modal_${channelId}_${ticketOwnerId}`)
+                .setTitle('Close ticket');
 
-            const confirmRow = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_fechar_confirmar_${channelId}_${userId}`)
-                        .setLabel('Sim, Fechar')
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setCustomId(`ticket_fechar_cancelar_${userId}`)
-                        .setLabel('Cancelar')
-                        .setStyle(ButtonStyle.Secondary)
-                );
+            const reasonInput = new TextInputBuilder()
+                .setCustomId('close_reason')
+                .setLabel('Reason for closing')
+                .setPlaceholder('e.g. Issue resolved.')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(500);
 
-            await interaction.reply({ 
-                embeds: [confirmEmbed], 
-                components: [confirmRow],
-                ephemeral: true 
-            });
-
+            modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
+            await interaction.showModal(modal);
         } catch (error) {
-            console.error('[DISCORD] Erro ao processar fechar ticket:', error);
-            await interaction.reply({ 
-                content: 'Ocorreu um erro ao processar sua solicitação.', 
-                ephemeral: true 
-            });
+            console.error('[DISCORD] Error opening close ticket modal:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: 'An error occurred while processing your request.',
+                    ephemeral: true,
+                }).catch(() => {});
+            }
+        }
+    }
+
+    async handleTicketCloseModal(interaction) {
+        try {
+            await interaction.deferReply({ ephemeral: true });
+
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+            const parts = interaction.customId.split('_');
+            const channelId = parts[3];
+            const ticketOwnerId = parts[4];
+            const reason = interaction.fields.getTextInputValue('close_reason').trim();
+
+            const channel = guild.channels.cache.get(channelId)
+                || await guild.channels.fetch(channelId).catch(() => null);
+
+            if (!channel || !ticketHelpers.isTicketChannel(channel)) {
+                return await interaction.editReply({ content: 'Ticket channel not found.' });
+            }
+
+            const isTicketOwner = userId === ticketOwnerId;
+            const isAdmin = this.isAdmin(interaction.member);
+            const hasSupportRole = ticketConfig.memberHasStaffRole(interaction.member);
+
+            if (!isTicketOwner && !isAdmin && !hasSupportRole) {
+                return await interaction.editReply({ content: 'You do not have permission to close this ticket.' });
+            }
+
+            await this.finalizeTicketClose(channel, interaction.user, reason);
+            await interaction.editReply({ content: 'Ticket closed. The channel will be deleted shortly.' });
+        } catch (error) {
+            console.error('[DISCORD] Error closing ticket via modal:', error);
+            await interaction.editReply({ content: 'An error occurred while closing the ticket.' }).catch(() => {});
+        }
+    }
+
+    async finalizeTicketClose(channel, closedByUser, reason) {
+        const guild = channel.guild;
+        const meta = this.ticketMeta.get(channel.id) || {
+            ownerId: channel.topic?.replace('promoping-ticket:', '') || null,
+            openedAt: channel.createdAt || new Date(),
+            panelName: ticketHelpers.TICKET_PANEL_NAME,
+            category: 'General Support',
+        };
+
+        const ticketCategory = channel.parent;
+        const closedAt = new Date();
+
+        const closeEmbed = new EmbedBuilder()
+            .setTitle('Ticket closed')
+            .setDescription(`This ticket was closed by ${closedByUser}`)
+            .addFields(
+                { name: 'Reason', value: reason || 'No reason provided', inline: false },
+                { name: 'Notice', value: 'This channel will be deleted in **10 seconds**.', inline: false }
+            )
+            .setColor(0xff0000)
+            .setTimestamp()
+            .setFooter({ text: 'PromoPing Support' });
+
+        await channel.send({ embeds: [closeEmbed] }).catch(() => {});
+
+        if (meta.ownerId) {
+            try {
+                const owner = await this.client.users.fetch(meta.ownerId);
+                const dmEmbed = ticketHelpers.buildTicketClosedDmEmbed({
+                    guildName: guild.name,
+                    openedAt: meta.openedAt,
+                    panelName: meta.panelName,
+                    channelName: channel.name,
+                    closedBy: `${closedByUser}`,
+                    closedAt,
+                    reason,
+                });
+                await owner.send({ embeds: [dmEmbed] }).catch(() => {});
+            } catch (error) {
+                console.warn('[DISCORD] Could not DM ticket owner on close:', error.message);
+            }
+        }
+
+        this.ticketMeta.delete(channel.id);
+
+        setTimeout(async () => {
+            try {
+                await channel.delete();
+
+                if (ticketCategory && ticketCategory.type === ChannelType.GuildCategory) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                    const category = guild.channels.cache.get(ticketCategory.id);
+                    if (category) {
+                        const channelsInCategory = category.children.cache.filter(
+                            (ch) => ch.type !== ChannelType.GuildCategory
+                        );
+                        if (channelsInCategory.size === 0) {
+                            await category.delete().catch(() => {});
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('[DISCORD] Error deleting ticket channel:', error);
+            }
+        }, 10000);
+    }
+
+    async handleTicketClaim(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+            const parts = interaction.customId.split('_');
+            const channelId = parts[2];
+            const ticketOwnerId = parts[3];
+
+            if (!ticketConfig.memberHasStaffRole(interaction.member) && !this.isAdmin(interaction.member)) {
+                return await interaction.reply({
+                    content: 'Only support staff can claim tickets.',
+                    ephemeral: true,
+                });
+            }
+
+            const channel = guild.channels.cache.get(channelId)
+                || await guild.channels.fetch(channelId).catch(() => null);
+            if (!channel) {
+                return await interaction.reply({ content: 'Ticket channel not found.', ephemeral: true });
+            }
+
+            const meta = this.ticketMeta.get(channel.id) || {
+                ownerId: ticketOwnerId,
+                openedAt: channel.createdAt || new Date(),
+                claimedBy: null,
+                panelName: ticketHelpers.TICKET_PANEL_NAME,
+                category: 'General Support',
+                welcomeMessageId: null,
+            };
+
+            if (meta.claimedBy && meta.claimedBy !== userId) {
+                return await interaction.reply({
+                    content: 'This ticket is already claimed by another staff member.',
+                    ephemeral: true,
+                });
+            }
+
+            meta.claimedBy = userId;
+            this.ticketMeta.set(channel.id, meta);
+
+            if (meta.welcomeMessageId) {
+                const welcomeMsg = await channel.messages.fetch(meta.welcomeMessageId).catch(() => null);
+                if (welcomeMsg) {
+                    const row = ticketHelpers.buildTicketActionRow(channel.id, meta.ownerId, userId);
+                    await welcomeMsg.edit({ components: [row] }).catch(() => {});
+                }
+            }
+
+            await channel.send(`${interaction.user} claimed this ticket.`);
+
+            const claimedEmbed = new EmbedBuilder()
+                .setTitle('Claimed')
+                .setDescription('You have successfully claimed this ticket.')
+                .setColor(0x57f287)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing Support' });
+
+            await interaction.reply({ embeds: [claimedEmbed], ephemeral: true });
+        } catch (error) {
+            console.error('[DISCORD] Error claiming ticket:', error);
+            await interaction.reply({ content: 'An error occurred while claiming the ticket.', ephemeral: true }).catch(() => {});
+        }
+    }
+
+    async handleTicketRelease(interaction) {
+        try {
+            const guild = interaction.guild;
+            const userId = interaction.user.id;
+            const parts = interaction.customId.split('_');
+            const channelId = parts[2];
+            const claimerId = parts[3];
+
+            if (userId !== claimerId && !this.isAdmin(interaction.member)) {
+                return await interaction.reply({
+                    content: 'Only the staff member who claimed this ticket can release it.',
+                    ephemeral: true,
+                });
+            }
+
+            const channel = guild.channels.cache.get(channelId)
+                || await guild.channels.fetch(channelId).catch(() => null);
+            if (!channel) {
+                return await interaction.reply({ content: 'Ticket channel not found.', ephemeral: true });
+            }
+
+            const meta = this.ticketMeta.get(channel.id);
+            if (!meta) {
+                return await interaction.reply({ content: 'Ticket metadata not found.', ephemeral: true });
+            }
+
+            meta.claimedBy = null;
+            this.ticketMeta.set(channel.id, meta);
+
+            if (meta.welcomeMessageId) {
+                const welcomeMsg = await channel.messages.fetch(meta.welcomeMessageId).catch(() => null);
+                if (welcomeMsg) {
+                    const row = ticketHelpers.buildTicketActionRow(channel.id, meta.ownerId, null);
+                    await welcomeMsg.edit({ components: [row] }).catch(() => {});
+                }
+            }
+
+            await channel.send(`${interaction.user} released this ticket.`);
+
+            const releasedEmbed = new EmbedBuilder()
+                .setTitle('Released')
+                .setDescription('You have released this ticket. It is available for other staff members.')
+                .setColor(0x5865f2)
+                .setTimestamp()
+                .setFooter({ text: 'PromoPing Support' });
+
+            await interaction.reply({ embeds: [releasedEmbed], ephemeral: true });
+        } catch (error) {
+            console.error('[DISCORD] Error releasing ticket:', error);
+            await interaction.reply({ content: 'An error occurred while releasing the ticket.', ephemeral: true }).catch(() => {});
         }
     }
 
@@ -2096,7 +2298,7 @@ class PromoPingBot {
             const roleId = process.env.DISCORD_VERIFICATION_ROLE_ID;
             if (!roleId) {
                 return await interaction.reply({
-                    content: '❌ Cargo de verificação não configurado.',
+                    content: 'Verification role is not configured.',
                     ephemeral: true,
                 });
             }
@@ -2114,12 +2316,11 @@ class PromoPingBot {
 
             // Verifica se o usuário já tem o cargo
             if (member.roles.cache.has(roleId)) {
-                return await interaction.reply({ content: '✅ Você já possui o cargo de verificação!', ephemeral: true });
+                return await interaction.reply({ content: 'You already have the verification role.', ephemeral: true });
             }
 
-            // Adiciona o cargo
-            await member.roles.add(roleId, 'Aceite das regras do PromoPing');
-            await interaction.reply({ content: '✅ Você foi verificado e recebeu acesso ao servidor!', ephemeral: true });
+            await member.roles.add(roleId, 'Accepted PromoPing community rules');
+            await interaction.reply({ content: 'You have been verified and granted access to the server.', ephemeral: true });
 
         } catch (error) {
             console.error('[DISCORD] Erro ao adicionar cargo de verificação:', error);
@@ -2322,12 +2523,12 @@ class PromoPingBot {
             if (!guild) {
                 return await interaction.reply({ content: 'Este botão só pode ser usado em um servidor.', ephemeral: true });
             }
-            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID || '1442655668904398980';
-            const isSupport = interaction.member.roles.cache.has(supportRoleId);
+            const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID || ticketConfig.PRIMARY_SUPPORT_ROLE_ID;
+            const isSupport = ticketConfig.memberHasStaffRole(interaction.member);
             const isAdmin = this.isAdmin(interaction.member);
             if (!isSupport && !isAdmin) {
                 return await interaction.reply({
-                    content: 'Apenas a equipa de suporte ou administradores podem fechar o ticket.',
+                    content: 'Only support staff or administrators can close this ticket.',
                     ephemeral: true
                 });
             }
@@ -2415,124 +2616,26 @@ class PromoPingBot {
     async handleFecharTicketConfirm(interaction) {
         try {
             const guild = interaction.guild;
-            const userId = interaction.user.id;
-
             if (!guild) {
-                return await interaction.reply({ 
-                    content: 'Este comando só pode ser usado em um servidor!', 
-                    ephemeral: true 
-                });
+                return await interaction.reply({ content: 'This can only be used inside a server.', ephemeral: true });
             }
 
-            // Usar o canal da interação diretamente (mais confiável)
             let channel = interaction.channel;
-            
-            // Se não tiver canal na interação, tentar buscar pelo ID do customId
             if (!channel) {
                 const parts = interaction.customId.split('_');
                 const channelId = parts[3];
-                channel = guild.channels.cache.get(channelId);
-                
-                // Tentar buscar via fetch se não estiver no cache
-                if (!channel) {
-                    try {
-                        channel = await guild.channels.fetch(channelId);
-                    } catch (error) {
-                        console.error('[DISCORD] Erro ao buscar canal:', error);
-                        return await interaction.update({ 
-                            content: '❌ Canal não encontrado!', 
-                            embeds: [], 
-                            components: [] 
-                        });
-                    }
-                }
+                channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
             }
 
-            if (!channel) {
-                return await interaction.update({ 
-                    content: '❌ Canal não encontrado!', 
-                    embeds: [], 
-                    components: [] 
-                });
+            if (!channel || !ticketHelpers.isTicketChannel(channel)) {
+                return await interaction.update({ content: 'Ticket channel not found.', embeds: [], components: [] });
             }
 
-            // Verificar se o canal é um ticket
-            if (!channel.name.startsWith('ticket-')) {
-                return await interaction.update({ 
-                    content: '❌ Este não é um canal de ticket!', 
-                    embeds: [], 
-                    components: [] 
-                });
-            }
-
-            // Salvar referência da categoria antes de deletar
-            const ticketCategory = channel.parent;
-
-            // Criar embed de fechamento
-            const closeEmbed = new EmbedBuilder()
-                .setTitle('Ticket Fechado')
-                .setDescription(`Este ticket foi fechado por ${interaction.user}`)
-                .addFields({
-                    name: 'Informação',
-                    value: 'O canal será deletado em **10 segundos**.',
-                    inline: false
-                })
-                .setColor(0xff0000)
-                .setTimestamp()
-                .setFooter({ text: 'PromoPing - Suporte' });
-
-            await channel.send({ embeds: [closeEmbed] });
-
-            // Atualizar a interação
-            await interaction.update({ 
-                content: '✅ Ticket será fechado em 10 segundos...', 
-                embeds: [], 
-                components: [] 
-            });
-
-            // Deletar o canal após 10 segundos
-            setTimeout(async () => {
-                try {
-                    // Deletar o canal
-                    await channel.delete();
-
-                    // Verificar se a categoria existe e está vazia
-                    if (ticketCategory && ticketCategory.type === ChannelType.GuildCategory) {
-                        // Aguardar um pouco para garantir que o canal foi deletado
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-
-                        // Buscar a categoria novamente para verificar se ainda existe
-                        const category = guild.channels.cache.get(ticketCategory.id);
-                        
-                        if (category) {
-                            // Contar quantos canais restam na categoria (excluindo a própria categoria)
-                            const channelsInCategory = category.children.cache.filter(
-                                ch => ch.type !== ChannelType.GuildCategory
-                            );
-
-                            // Se não houver mais canais na categoria, deletar a categoria
-                            if (channelsInCategory.size === 0) {
-                                try {
-                                    await category.delete();
-                                    console.log(`[DISCORD] Categoria de tickets vazia deletada: ${category.name}`);
-                                } catch (error) {
-                                    console.error('[DISCORD] Erro ao deletar categoria de tickets:', error);
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('[DISCORD] Erro ao deletar canal de ticket:', error);
-                }
-            }, 10000);
-
+            await this.finalizeTicketClose(channel, interaction.user, 'Closed via confirmation button');
+            await interaction.update({ content: 'Ticket closed. The channel will be deleted in 10 seconds.', embeds: [], components: [] });
         } catch (error) {
-            console.error('[DISCORD] Erro ao confirmar fechamento do ticket:', error);
-            await interaction.update({ 
-                content: '❌ Erro ao fechar o ticket!', 
-                embeds: [], 
-                components: [] 
-            });
+            console.error('[DISCORD] Error confirming ticket close:', error);
+            await interaction.update({ content: 'An error occurred while closing the ticket.', embeds: [], components: [] }).catch(() => {});
         }
     }
 
@@ -2777,10 +2880,16 @@ class PromoPingBot {
             }
 
             const config = configs[0];
-            const channel = await this.client.channels.fetch(config.ChannelId).catch(() => null);
+            const channelId = config.ChannelId || config.channelid || process.env.DISCORD_NEWS_CHANNEL_ID;
+            if (!channelId) {
+                console.error('[DISCORD] Canal de notícias não configurado (news_config ou DISCORD_NEWS_CHANNEL_ID)');
+                await connection.end();
+                return;
+            }
+            const channel = await this.client.channels.fetch(channelId).catch(() => null);
             
             if (!channel) {
-                console.error('[DISCORD] Canal de notícias não encontrado!');
+                console.error(`[DISCORD] Canal de notícias não encontrado! (${channelId})`);
                 await connection.end();
                 return;
             }
@@ -2858,6 +2967,205 @@ class PromoPingBot {
         } catch (error) {
             console.error('[DISCORD] Erro ao enviar notificação de notícia:', error);
         }
+    }
+
+    async startMemeMonitoring() {
+        try {
+            const memeServiceModule = await import('../services/memeService.js');
+            this.memeService = memeServiceModule.default;
+
+            this.memeCheckInterval = setInterval(async () => {
+                try {
+                    await this.checkMemes();
+                } catch (error) {
+                    console.error('[DISCORD] Erro ao verificar memes:', error);
+                }
+            }, 15 * 60 * 1000);
+
+            setTimeout(async () => {
+                await this.checkMemes();
+            }, 5 * 60 * 1000);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao carregar memeService:', error);
+        }
+    }
+
+    async ensureMemeConfigFromEnv(connection) {
+        const [configs] = await connection.execute(
+            'SELECT * FROM meme_config WHERE IsActive = 1 LIMIT 1'
+        );
+        if (configs.length) return configs[0];
+
+        const envChannel = process.env.DISCORD_MEMES_CHANNEL_ID;
+        if (!envChannel) return null;
+
+        const interval = parseInt(process.env.MEME_CHECK_INTERVAL_MINUTES || '180', 10);
+        const maxAge = parseInt(process.env.MEME_MAX_AGE_DAYS || '30', 10);
+        await connection.execute(
+            'INSERT INTO meme_config (ChannelId, CheckInterval, MaxAgeDays, IsActive) VALUES (?, ?, ?, 1)',
+            [envChannel, interval, maxAge]
+        );
+        const [created] = await connection.execute(
+            'SELECT * FROM meme_config WHERE IsActive = 1 LIMIT 1'
+        );
+        return created[0] || null;
+    }
+
+    async ensureMemeService() {
+        if (this.memeService) return this.memeService;
+        const memeServiceModule = await import('../services/memeService.js');
+        this.memeService = memeServiceModule.default;
+        return this.memeService;
+    }
+
+    async fetchUniqueMeme(options = {}) {
+        const service = await this.ensureMemeService();
+        if (!service?.hasApiKey?.()) return null;
+
+        let maxAgeDays = options.maxAgeDays ?? 30;
+        if (!options.maxAgeDays && !options.force) {
+            try {
+                const connection = await mysql.createConnection(this.dbConfig);
+                const config = await this.ensureMemeConfigFromEnv(connection);
+                maxAgeDays = config?.MaxAgeDays || config?.maxagedays || 30;
+                await connection.end();
+            } catch {
+                maxAgeDays = parseInt(process.env.MEME_MAX_AGE_DAYS || '30', 10);
+            }
+        }
+
+        const skipDedup = Boolean(options.skipDedup || options.force);
+        let fallback = null;
+
+        for (let attempt = 0; attempt < 8; attempt++) {
+            const candidate = await service.fetchRandomMeme({ maxAgeDays });
+            if (!candidate?.url) break;
+
+            if (skipDedup) {
+                fallback = candidate;
+                const seen = await service.isMemeAlreadySent(candidate.url);
+                if (!seen) return candidate;
+                continue;
+            }
+
+            if (!(await service.isMemeAlreadySent(candidate.url))) {
+                return candidate;
+            }
+        }
+
+        return skipDedup ? fallback : null;
+    }
+
+    async postRandomMeme(channelId, options = {}) {
+        const channel = await this.client.channels.fetch(channelId).catch(() => null);
+        if (!channel?.isTextBased?.()) {
+            return false;
+        }
+
+        const meme = await this.fetchUniqueMeme(options);
+        if (!meme?.url) return false;
+
+        await this.sendMemeNotification(channel, meme);
+        const service = await this.ensureMemeService();
+        await service.markMemeAsSent(meme);
+        return true;
+    }
+
+    async checkMemes() {
+        if (!this.memeService) return;
+
+        try {
+            const connection = await mysql.createConnection(this.dbConfig);
+            const config = await this.ensureMemeConfigFromEnv(connection);
+
+            if (!config) {
+                await connection.end();
+                return;
+            }
+
+            const channelId = config.ChannelId || config.channelid || process.env.DISCORD_MEMES_CHANNEL_ID;
+            const intervalMinutes = config.CheckInterval || config.checkinterval || 180;
+            const lastCheck = config.LastCheck || config.lastcheck;
+
+            if (lastCheck && !Number.isNaN(new Date(lastCheck).getTime())) {
+                const elapsedMs = Date.now() - new Date(lastCheck).getTime();
+                if (elapsedMs < intervalMinutes * 60 * 1000) {
+                    await connection.end();
+                    return;
+                }
+            }
+
+            const posted = await this.postRandomMeme(channelId, {
+                maxAgeDays: config.MaxAgeDays || config.maxagedays || 30,
+            });
+
+            if (posted) {
+                const configId = config.Id || config.id;
+                await connection.execute(
+                    'UPDATE meme_config SET LastCheck = NOW(), UpdatedAt = NOW() WHERE Id = ?',
+                    [configId]
+                );
+                this.lastMemeCheck = new Date();
+                console.log('[DISCORD] Meme aleatório publicado no canal de memes');
+            }
+
+            await connection.end();
+        } catch (error) {
+            console.error('[DISCORD] Erro ao verificar memes:', error);
+        }
+    }
+
+    async sendMemeNotification(discordChannel, meme) {
+        try {
+            if (!meme?.url) return null;
+            const payload = memeHelpers.buildMemeMessage(meme);
+            return await discordChannel.send(payload);
+        } catch (error) {
+            console.error('[DISCORD] Erro ao enviar meme:', error);
+            return null;
+        }
+    }
+
+    async handleMemeNewButton(interaction) {
+        const lastClick = this.memeButtonCooldown.get(interaction.user.id) || 0;
+        if (Date.now() - lastClick < 12000) {
+            return interaction.reply({
+                content: 'Wait a few seconds before requesting another meme.',
+                ephemeral: true,
+            });
+        }
+        this.memeButtonCooldown.set(interaction.user.id, Date.now());
+
+        await interaction.deferUpdate();
+
+        const meme = await this.fetchUniqueMeme({ skipDedup: true });
+        if (!meme?.url) {
+            return interaction.followUp({
+                content: 'Could not load a meme right now. Check `API_LEAGUE_API_KEY` in .env.',
+                ephemeral: true,
+            });
+        }
+
+        const service = await this.ensureMemeService();
+        await service.markMemeAsSent(meme);
+        await interaction.message.edit(memeHelpers.buildMemeMessage(meme));
+    }
+
+    async handleMemeSlashCommand(interaction) {
+        await interaction.deferReply();
+
+        const meme = await this.fetchUniqueMeme({ skipDedup: true });
+        if (!meme?.url) {
+            return interaction.editReply({
+                content: 'Could not load a meme. Make sure `API_LEAGUE_API_KEY` is set.',
+                embeds: [],
+                components: [],
+            });
+        }
+
+        const service = await this.ensureMemeService();
+        await service.markMemeAsSent(meme);
+        await interaction.editReply(memeHelpers.buildMemeMessage(meme));
     }
 
     async checkTwitchLives() {
@@ -3086,15 +3394,23 @@ class PromoPingBot {
 
     async sendPriceNotification(product) {
         try {
+            const precoAnterior = parseFloat(product.PrecoAnterior) || 0;
+            const precoAtual = parseFloat(product.PrecoAtual) || 0;
+
+            const { isPlausiblePrice, describePriceRejection } = require('../utils/priceValidation.js');
+            if (!isPlausiblePrice(precoAtual, precoAnterior || null)) {
+                console.warn(
+                    `[DISCORD] Notificação de preço ignorada para produto ${product.Id}: ${describePriceRejection(precoAtual, precoAnterior || null)}`
+                );
+                return;
+            }
+
             const user = await this.client.users.fetch(product.DiscordId);
             if (!user) {
                 // Usuário não encontrado - log silencioso
                 return;
             }
 
-            // Converter valores para números (podem vir como string ou Decimal do MySQL)
-            const precoAnterior = parseFloat(product.PrecoAnterior) || 0;
-            const precoAtual = parseFloat(product.PrecoAtual) || 0;
             const precoAlvo = parseFloat(product.PrecoAlvo) || 0;
 
             const priceChange = precoAtual - precoAnterior;
@@ -3142,11 +3458,11 @@ class PromoPingBot {
                     new ButtonBuilder()
                         .setCustomId(`parar_notificacoes_${product.Id}`)
                         .setLabel('Parar Notificações')
-                        .setStyle(ButtonStyle.Danger),
+                        .setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder()
                         .setCustomId(`ver_produto_${product.Id}`)
                         .setLabel('Ver Produto')
-                        .setStyle(ButtonStyle.Primary),
+                        .setStyle(ButtonStyle.Secondary),
                     new ButtonBuilder()
                         .setCustomId(`configurar_${product.Id}`)
                         .setLabel('Configurar')
@@ -3206,12 +3522,12 @@ class PromoPingBot {
                     new ButtonBuilder()
                         .setCustomId(`parar_notificacoes_${product.Id}_disabled`)
                         .setLabel('Parar Notificações')
-                        .setStyle(ButtonStyle.Danger)
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`ver_produto_${product.Id}_disabled`)
                         .setLabel('Ver Produto')
-                        .setStyle(ButtonStyle.Primary)
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`configurar_${product.Id}_disabled`)
@@ -3466,7 +3782,10 @@ class PromoPingBot {
                             .setRequired(false)),
                 new SlashCommandBuilder()
                     .setName('review')
-                    .setDescription('Deixa uma avaliação sobre o site, bot ou suporte')
+                    .setDescription('Deixa uma avaliação sobre o site, bot ou suporte'),
+                new SlashCommandBuilder()
+                    .setName('meme')
+                    .setDescription('Get a random meme with a button for another one')
             ].map(command => command.toJSON());
 
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
@@ -3495,6 +3814,11 @@ class PromoPingBot {
     async handleSlashCommand(interaction) {
         try {
             const commandName = interaction.commandName;
+
+            if (commandName === 'meme') {
+                await this.handleMemeSlashCommand(interaction);
+                return;
+            }
             
             // Tratamento especial para comando suporte em DMs
             if (commandName === 'suporte' && !interaction.guild) {
@@ -3994,39 +4318,330 @@ class PromoPingBot {
         }
     }
 
+    async publishPublicSuggestion(interaction, suggestionData) {
+        const { id, titulo, descricao, plataforma, publicId } = suggestionData;
+        const guild = interaction.guild;
+        if (!guild) return null;
+
+        const channel = await suggestionPublic.resolveSuggestionsChannel(guild, this.client);
+        if (!channel) {
+            console.warn('[SUGGESTION] Public suggestions channel not found. Set DISCORD_SUGGESTIONS_PUBLIC_CHANNEL_ID.');
+            return null;
+        }
+
+        const embed = suggestionPublic.buildPublicSuggestionEmbed({
+            submitterName: interaction.user.displayName || interaction.user.username,
+            submitterAvatar: interaction.user.displayAvatarURL(),
+            titulo,
+            descricao,
+            plataforma,
+            upvotes: 0,
+            downvotes: 0,
+            submitterId: interaction.user.id,
+            publicId,
+        });
+
+        const row = suggestionPublic.buildVoteRow(id, { guildId: guild.id });
+        const message = await channel.send({ embeds: [embed], components: [row] });
+
+        try {
+            await this.dbPool.execute(
+                `UPDATE sugestoes SET
+                    PublicId = ?,
+                    DiscordUserId = ?,
+                    DiscordUsername = ?,
+                    DiscordPublicMessageId = ?,
+                    DiscordPublicChannelId = ?,
+                    DiscordThreadId = NULL,
+                    Upvotes = 0,
+                    Downvotes = 0
+                 WHERE Id = ?`,
+                [
+                    publicId,
+                    interaction.user.id,
+                    interaction.user.username,
+                    message.id,
+                    channel.id,
+                    id,
+                ]
+            );
+        } catch (dbErr) {
+            console.error('[SUGGESTION] Failed to save public suggestion metadata:', dbErr.message);
+        }
+
+        return { channel, message, thread: null, publicId };
+    }
+
+    async handleSuggestionDiscuss(interaction) {
+        try {
+            const suggestionId = parseInt(interaction.customId.replace('suggestion_discuss_', ''), 10);
+            if (!suggestionId) {
+                return await interaction.reply({ content: 'Invalid suggestion.', ephemeral: true });
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            const [rows] = await this.dbPool.execute(
+                `SELECT Id, Titulo, Descricao, Plataforma, Upvotes, Downvotes, PublicId,
+                        DiscordUserId, DiscordUsername, DiscordPublicMessageId, DiscordPublicChannelId,
+                        DiscordThreadId
+                 FROM sugestoes WHERE Id = ? LIMIT 1`,
+                [suggestionId]
+            );
+
+            if (!rows.length) {
+                return await interaction.editReply({ content: 'Suggestion not found.' });
+            }
+
+            const suggestion = rows[0];
+            const getField = (obj, ...keys) => {
+                for (const k of keys) {
+                    if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+                    const lower = k.toLowerCase();
+                    if (obj[lower] !== undefined && obj[lower] !== null) return obj[lower];
+                }
+                return null;
+            };
+
+            const guild = interaction.guild;
+            const messageId = getField(suggestion, 'DiscordPublicMessageId', 'discordpublicmessageid');
+            const channelId = getField(suggestion, 'DiscordPublicChannelId', 'discordpublicchannelid');
+            let threadId = getField(suggestion, 'DiscordThreadId', 'discordthreadid');
+            const publicId = getField(suggestion, 'PublicId', 'publicid');
+            const submitterId = getField(suggestion, 'DiscordUserId', 'discorduserid');
+
+            if (threadId) {
+                const existing = await this.client.channels.fetch(threadId).catch(() => null);
+                if (existing) {
+                    return await interaction.editReply({ content: `Join the discussion: ${existing}` });
+                }
+            }
+
+            const channel = await this.client.channels.fetch(channelId).catch(() => null);
+            if (!channel?.isTextBased?.()) {
+                return await interaction.editReply({ content: 'Could not open discussion for this suggestion.' });
+            }
+
+            const parentMessage = await channel.messages.fetch(messageId).catch(() => null);
+            if (!parentMessage) {
+                return await interaction.editReply({ content: 'Suggestion message not found.' });
+            }
+
+            const thread = await parentMessage.startThread({
+                name: `Discussion · ${publicId}`,
+                autoArchiveDuration: 10080,
+                reason: 'Community discussion opened on demand',
+            });
+
+            const submitter = submitterId
+                ? await this.client.users.fetch(submitterId).catch(() => null)
+                : null;
+
+            await thread.send(
+                `Hey ${submitter || interaction.user}, use this thread to discuss this suggestion.`
+            );
+
+            threadId = thread.id;
+            await this.dbPool.execute(
+                'UPDATE sugestoes SET DiscordThreadId = ? WHERE Id = ?',
+                [threadId, suggestionId]
+            );
+
+            const titulo = getField(suggestion, 'Titulo', 'titulo');
+            const descricao = getField(suggestion, 'Descricao', 'descricao');
+            const plataforma = getField(suggestion, 'Plataforma', 'plataforma') || 'ambos';
+            const upvotes = parseInt(getField(suggestion, 'Upvotes', 'upvotes') || 0, 10);
+            const downvotes = parseInt(getField(suggestion, 'Downvotes', 'downvotes') || 0, 10);
+            const submitterName = getField(suggestion, 'DiscordUsername', 'discordusername') || 'User';
+
+            const embed = suggestionPublic.buildPublicSuggestionEmbed({
+                submitterName: submitter?.displayName || submitterName,
+                submitterAvatar: submitter?.displayAvatarURL() || null,
+                titulo,
+                descricao,
+                plataforma,
+                upvotes,
+                downvotes,
+                submitterId: submitterId || interaction.user.id,
+                publicId,
+            });
+
+            await parentMessage.edit({
+                embeds: [embed],
+                components: [
+                    suggestionPublic.buildVoteRow(suggestionId, {
+                        guildId: guild.id,
+                        threadId,
+                    }),
+                ],
+            });
+
+            await interaction.editReply({ content: `Discussion opened: ${thread}` });
+        } catch (error) {
+            console.error('[SUGGESTION] Discuss error:', error);
+            await interaction.editReply({ content: 'Could not open discussion. Please try again.' }).catch(() => {});
+        }
+    }
+
+    async handleSuggestionVote(interaction, voteType) {
+        try {
+            const parts = interaction.customId.split('_');
+            const suggestionId = parseInt(parts[3], 10);
+            if (!suggestionId) {
+                return await interaction.reply({ content: 'Invalid suggestion.', ephemeral: true });
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            const [rows] = await this.dbPool.execute(
+                `SELECT Id, Titulo, Descricao, Plataforma, Upvotes, Downvotes, PublicId,
+                        DiscordUserId, DiscordUsername, DiscordPublicMessageId, DiscordPublicChannelId,
+                        DiscordThreadId
+                 FROM sugestoes WHERE Id = ? LIMIT 1`,
+                [suggestionId]
+            );
+
+            if (!rows.length) {
+                return await interaction.editReply({ content: 'Suggestion not found.' });
+            }
+
+            const suggestion = rows[0];
+            const getField = (obj, ...keys) => {
+                for (const k of keys) {
+                    if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+                    const lower = k.toLowerCase();
+                    if (obj[lower] !== undefined && obj[lower] !== null) return obj[lower];
+                }
+                return null;
+            };
+
+            const messageId = getField(suggestion, 'DiscordPublicMessageId', 'discordpublicmessageid');
+            const channelId = getField(suggestion, 'DiscordPublicChannelId', 'discordpublicchannelid');
+            if (!messageId || !channelId) {
+                return await interaction.editReply({ content: 'This suggestion is no longer available for voting.' });
+            }
+            const publicId = getField(suggestion, 'PublicId', 'publicid');
+            const titulo = getField(suggestion, 'Titulo', 'titulo');
+            const descricao = getField(suggestion, 'Descricao', 'descricao');
+            const plataforma = getField(suggestion, 'Plataforma', 'plataforma') || 'ambos';
+            let upvotes = parseInt(getField(suggestion, 'Upvotes', 'upvotes') || 0, 10);
+            let downvotes = parseInt(getField(suggestion, 'Downvotes', 'downvotes') || 0, 10);
+            const submitterId = getField(suggestion, 'DiscordUserId', 'discorduserid');
+            const submitterName = getField(suggestion, 'DiscordUsername', 'discordusername') || 'User';
+            const threadId = getField(suggestion, 'DiscordThreadId', 'discordthreadid');
+
+            const userId = interaction.user.id;
+
+            const [existingVotes] = await this.dbPool.execute(
+                'SELECT VoteType FROM suggestion_votes WHERE SuggestionId = ? AND DiscordUserId = ? LIMIT 1',
+                [suggestionId, userId]
+            );
+
+            let feedback;
+            const previousVote = existingVotes[0]?.votetype || existingVotes[0]?.VoteType;
+
+            if (previousVote === voteType) {
+                feedback = `You have already ${voteType === 'up' ? 'upvoted' : 'downvoted'} this suggestion.`;
+                return await interaction.editReply({ content: feedback });
+            }
+
+            if (previousVote === 'up') upvotes = Math.max(0, upvotes - 1);
+            if (previousVote === 'down') downvotes = Math.max(0, downvotes - 1);
+
+            if (voteType === 'up') upvotes += 1;
+            else downvotes += 1;
+
+            if (previousVote) {
+                await this.dbPool.execute(
+                    'UPDATE suggestion_votes SET VoteType = ? WHERE SuggestionId = ? AND DiscordUserId = ?',
+                    [voteType, suggestionId, userId]
+                );
+                const fromLabel = previousVote === 'up' ? 'up vote' : 'down vote';
+                const toLabel = voteType === 'up' ? 'up vote' : 'down vote';
+                const articleFrom = previousVote === 'up' ? 'an' : 'a';
+                const articleTo = voteType === 'up' ? 'an' : 'a';
+                feedback = `I have changed your vote from ${articleFrom} ${fromLabel} to ${articleTo} ${toLabel} for this suggestion. The suggestion will be updated shortly.`;
+            } else {
+                await this.dbPool.execute(
+                    'INSERT INTO suggestion_votes (SuggestionId, DiscordUserId, VoteType) VALUES (?, ?, ?)',
+                    [suggestionId, userId, voteType]
+                );
+                feedback = `Thanks! I have registered your ${voteType === 'up' ? 'up' : 'down'} vote.`;
+            }
+
+            await this.dbPool.execute(
+                'UPDATE sugestoes SET Upvotes = ?, Downvotes = ?, Votos = ? WHERE Id = ?',
+                [upvotes, downvotes, upvotes - downvotes, suggestionId]
+            );
+
+            const channel = await this.client.channels.fetch(channelId).catch(() => null);
+            if (channel?.isTextBased?.()) {
+                const msg = await channel.messages.fetch(messageId).catch(() => null);
+                if (msg) {
+                    const submitter = submitterId
+                        ? await this.client.users.fetch(submitterId).catch(() => null)
+                        : null;
+
+                    const embed = suggestionPublic.buildPublicSuggestionEmbed({
+                        submitterName: submitter?.displayName || submitterName,
+                        submitterAvatar: submitter?.displayAvatarURL() || null,
+                        titulo,
+                        descricao,
+                        plataforma,
+                        upvotes,
+                        downvotes,
+                        submitterId: submitterId || userId,
+                        publicId,
+                    });
+
+                    await msg.edit({
+                        embeds: [embed],
+                        components: [
+                            suggestionPublic.buildVoteRow(suggestionId, {
+                                guildId: interaction.guild?.id || channel.guildId,
+                                threadId,
+                            }),
+                        ],
+                    });
+                }
+            }
+
+            await interaction.editReply({ content: feedback });
+        } catch (error) {
+            console.error('[SUGGESTION] Vote error:', error);
+            await interaction.editReply({ content: 'An error occurred while registering your vote.' }).catch(() => {});
+        }
+    }
+
     async handleSugerirButton(interaction) {
         try {
-            // Criar modal para sugerir funcionalidade
             const modal = new ModalBuilder()
                 .setCustomId('formulario_sugerir')
-                .setTitle('Sugerir Funcionalidade');
+                .setTitle('Suggest a Feature');
 
-            // Campo de título
             const tituloInput = new TextInputBuilder()
                 .setCustomId('sugestao_titulo')
-                .setLabel('Título da Sugestão')
+                .setLabel('Suggestion title')
                 .setStyle(TextInputStyle.Short)
-                .setPlaceholder('Ex: Adicionar notificações por email')
+                .setPlaceholder('e.g. Add email notifications')
                 .setRequired(true)
                 .setMaxLength(200)
                 .setMinLength(3);
 
-            // Campo de descrição
             const descricaoInput = new TextInputBuilder()
                 .setCustomId('sugestao_descricao')
-                .setLabel('Descrição Detalhada')
+                .setLabel('Detailed description')
                 .setStyle(TextInputStyle.Paragraph)
-                .setPlaceholder('Descreva sua sugestão em detalhes: o que você gostaria de ver, como funcionaria, etc.')
+                .setPlaceholder('Describe your idea: what you want, how it would work, etc.')
                 .setRequired(true)
                 .setMaxLength(2000)
                 .setMinLength(10);
 
-            // Campo de plataforma
             const plataformaInput = new TextInputBuilder()
                 .setCustomId('sugestao_plataforma')
-                .setLabel('Plataforma (site/bot/ambos)')
+                .setLabel('Platform (website/bot/both)')
                 .setStyle(TextInputStyle.Short)
-                .setPlaceholder('site, bot ou ambos')
+                .setPlaceholder('website, bot, or both')
                 .setRequired(true)
                 .setMaxLength(10)
                 .setMinLength(3);
@@ -4058,29 +4673,27 @@ class PromoPingBot {
             const descricao = interaction.fields.getTextInputValue('sugestao_descricao');
             let plataforma = interaction.fields.getTextInputValue('sugestao_plataforma').toLowerCase().trim();
 
-            // Validar
             if (!titulo || titulo.length < 3) {
-                return await interaction.followUp({ 
-                    content: '❌ **Erro:** O título deve ter pelo menos 3 caracteres.', 
-                    ephemeral: true 
+                return await interaction.editReply({
+                    content: '**Error:** Title must be at least 3 characters.',
                 });
             }
 
             if (!descricao || descricao.length < 10) {
-                return await interaction.followUp({ 
-                    content: '❌ **Erro:** A descrição deve ter pelo menos 10 caracteres.', 
-                    ephemeral: true 
+                return await interaction.editReply({
+                    content: '**Error:** Description must be at least 10 characters.',
                 });
             }
 
-            // Normalizar plataforma
-            if (plataforma === 'site' || plataforma === 'web' || plataforma === 'sítio') {
+            if (plataforma === 'site' || plataforma === 'web' || plataforma === 'website') {
                 plataforma = 'site';
             } else if (plataforma === 'bot' || plataforma === 'discord') {
                 plataforma = 'bot';
             } else {
                 plataforma = 'ambos';
             }
+
+            const publicId = suggestionPublic.generatePublicId();
 
             const connection = await mysql.createConnection(this.dbConfig);
 
@@ -4138,57 +4751,66 @@ class PromoPingBot {
                     ]
                 );
 
+                const suggestionDbId = result.insertId;
+
                 await connection.end();
 
-                // Criar embed de confirmação
+                const publicPost = await this.publishPublicSuggestion(interaction, {
+                    id: suggestionDbId,
+                    titulo,
+                    descricao,
+                    plataforma,
+                    publicId,
+                });
+
+                const platformLabel = suggestionPublic.formatPlatform(plataforma);
                 const embed = new EmbedBuilder()
-                    .setTitle('✅ Sugestão Enviada com Sucesso!')
+                    .setTitle('Suggestion submitted')
                     .setDescription(
-                        `Sua sugestão foi enviada e será analisada pela equipe.\n\n` +
-                        `**Título:** ${titulo}\n` +
-                        `**Plataforma:** ${plataforma === 'site' ? 'Site' : plataforma === 'bot' ? 'Bot Discord' : 'Ambos'}\n` +
-                        `**ID da Sugestão:** #${result.insertId}\n\n` +
-                        `A sugestão aparecerá no painel administrativo e será avaliada o mais breve possível.`
+                        'Your suggestion was sent to the admin panel and posted publicly for community voting.\n\n' +
+                        `**Title:** ${titulo}\n` +
+                        `**Platform:** ${platformLabel}\n` +
+                        `**Suggestion ID:** #${suggestionDbId}\n` +
+                        `**Public ID:** \`${publicId}\`\n\n` +
+                        (publicPost?.channel
+                            ? `Community discussion: ${publicPost.channel}${publicPost.thread ? ` → ${publicPost.thread}` : ''}`
+                            : 'Public channel not configured — only the admin panel received this suggestion.')
                     )
                     .setColor(0x3B82F6)
                     .setTimestamp()
-                    .setFooter({ 
-                        text: `©PromoPing • Sugestão #${result.insertId}`,
-                        iconURL: interaction.user.displayAvatarURL()
+                    .setFooter({
+                        text: `PromoPing • Suggestion #${suggestionDbId}`,
+                        iconURL: interaction.user.displayAvatarURL(),
                     });
 
-                await interaction.followUp({ embeds: [embed], ephemeral: true });
+                await interaction.editReply({ embeds: [embed] });
 
-                // Log para console
-                console.log(`[SUGERIR] Sugestão enviada por ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${result.insertId})`);
+                console.log(`[SUGGESTION] Submitted by ${interaction.user.tag} (${interaction.user.id}): ${titulo} (ID: ${suggestionDbId}, sID: ${publicId})`);
 
             } catch (dbError) {
                 await connection.end();
                 console.error('[SUGERIR] Erro ao inserir sugestão na base de dados:', dbError);
                 
                 const errorEmbed = new EmbedBuilder()
-                    .setTitle('❌ Erro ao Enviar Sugestão')
-                    .setDescription(
-                        'Ocorreu um erro ao enviar a sugestão. Por favor, tente novamente mais tarde ou entre em contato com o suporte.'
-                    )
+                    .setTitle('Error submitting suggestion')
+                    .setDescription('Something went wrong. Please try again later or contact support.')
                     .setColor(0xFF0000)
                     .setTimestamp();
 
-                return await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                return await interaction.editReply({ embeds: [errorEmbed] });
             }
 
         } catch (error) {
             console.error('[DISCORD] Erro ao processar modal de sugestão:', error);
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ 
-                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
-                    ephemeral: true 
+                await interaction.reply({
+                    content: 'An error occurred while processing your suggestion.',
+                    ephemeral: true,
                 });
             } else {
-                await interaction.followUp({ 
-                    content: 'Ocorreu um erro ao processar sua sugestão. Tente novamente.', 
-                    ephemeral: true 
-                });
+                await interaction.editReply({
+                    content: 'An error occurred while processing your suggestion.',
+                }).catch(() => {});
             }
         }
     }

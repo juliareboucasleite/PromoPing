@@ -69,6 +69,8 @@ module.exports = {
                     value: [
                         `\`${prefix}painel\``,
                         `\`${prefix}community-panel #canal\``,
+                        `\`${prefix}invite-panel #canal\``,
+                        `\`${prefix}sponsor-panel #canal\``,
                         `\`${prefix}review-panel #canal\``,
                         `\`${prefix}ticket\``,
                     ].join("\n"),

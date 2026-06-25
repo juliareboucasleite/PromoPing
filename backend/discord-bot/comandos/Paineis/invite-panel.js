@@ -1,121 +1,83 @@
-const { EmbedBuilder, PermissionFlagsBits, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../.env') });
 
 module.exports = {
     name: 'invite-panel',
     aliases: ['painel-convite', 'setup-invite', 'convite-panel'],
-    description: 'Configura o painel de convite do servidor. Escolha o canal onde o painel aparecerá. (Apenas administradores)',
+    description: 'Set up the server invite panel. (Administrators only)',
     execute: async (client, message, args, botInstance) => {
         try {
-            // Verificar se o comando foi usado em um servidor
             if (!message.guild) {
-                return message.reply('Este comando só pode ser usado em um servidor!');
+                return message.reply('This command can only be used in a server.');
             }
 
-            // Verificar se o usuário é administrador
             if (!botInstance.isAdmin(message.member)) {
                 const embed = new EmbedBuilder()
-                    .setTitle('Sem Permissão')
-                    .setDescription('Apenas administradores podem configurar o painel de convite!')
+                    .setTitle('Permission denied')
+                    .setDescription('Only administrators can configure the invite panel.')
                     .setColor(0xff0000)
                     .setTimestamp();
-                
+
                 return message.reply({ embeds: [embed] });
             }
 
-            // Verificar se foi mencionado um canal
-            let targetChannel = message.channel; // Canal padrão é o atual
+            let targetChannel = message.channel;
 
             if (args.length > 0) {
-                // Tentar encontrar o canal mencionado
-                const channelMention = args[0];
-                const channelId = channelMention.replace(/[<#>]/g, '');
-                
+                const channelId = String(args[0]).replace(/[<#>]/g, '');
                 const mentionedChannel = message.guild.channels.cache.get(channelId);
                 if (mentionedChannel && mentionedChannel.type === ChannelType.GuildText) {
                     targetChannel = mentionedChannel;
                 } else {
-                    return message.reply('Canal inválido! Mencione um canal de texto válido ou use o comando no canal desejado.\n**Exemplo:** `!invite-panel #bem-vindo`');
+                    return message.reply('Invalid channel. Mention a text channel or run the command in the desired channel.\n**Example:** `!invite-panel #welcome`');
                 }
             }
 
-            // URL do convite do servidor
             const inviteUrl = 'https://discord.gg/VbukwrCqYU';
             const siteUrl = process.env.SITE_URL || process.env.FRONTEND_URL || process.env.BASE_URL || 'https://promoping.pt';
             const botInviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
 
-            // Criar embed do painel de convite
             const invitePanelEmbed = new EmbedBuilder()
-                .setTitle('PromoPing - Junte-se à Nossa Comunidade!')
+                .setTitle('Join PromoPing')
                 .setDescription(
-                    '**Bem-vindo ao PromoPing!** 🎉\n\n' +
-                    'Somos uma plataforma completa para monitorização de preços de produtos em tempo real.\n\n' +
-                    '**O que oferecemos:**\n' +
-                    '• **Site** - Interface web completa para gestão de produtos\n' +
-                    '• **Bot Discord** - Notificações automáticas de mudanças de preço\n' +
-                    '• **Suporte** - Equipa dedicada para ajudar\n' +
-                    '• **Comunidade** - Partilha experiências e avaliações\n\n' +
-                    '**Junte-se ao nosso servidor Discord e comece a monitorizar os melhores preços!**'
+                    '**Welcome to PromoPing** — real-time price tracking for your favorite products.\n\n' +
+                    '**What we offer:**\n' +
+                    '• **Website** — full product management dashboard\n' +
+                    '• **Discord Bot** — automatic price drop alerts\n' +
+                    '• **Support** — dedicated help team\n' +
+                    '• **Community** — share deals and reviews\n\n' +
+                    '**Join our Discord and never miss a deal again.**'
                 )
                 .setColor(0xffa500)
                 .addFields(
-                    {
-                        name: 'Site',
-                        value: `[Acessar Site](${siteUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: 'Bot',
-                        value: `[Adicionar Bot](${botInviteUrl})`,
-                        inline: true
-                    },
-                    {
-                        name: 'Suporte',
-                        value: 'Use `!suporte` para criar um ticket',
-                        inline: true
-                    }
+                    { name: 'Website', value: `[Visit site](${siteUrl})`, inline: true },
+                    { name: 'Bot', value: `[Add to server](${botInviteUrl})`, inline: true },
+                    { name: 'Support', value: 'Use `!support` to open a ticket', inline: true }
                 )
                 .setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
                 .setTimestamp()
-                .setFooter({ text: '©PromoPing • Todos os direitos reservados' });
+                .setFooter({ text: 'PromoPing • Join us' });
 
-            // Criar botões
             const row = new ActionRowBuilder()
                 .addComponents(
-                    new ButtonBuilder()
-                        .setLabel('Entrar no Servidor')
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(inviteUrl),
-                    new ButtonBuilder()
-                        .setLabel('Acessar Site')
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(siteUrl),
-                    new ButtonBuilder()
-                        .setLabel('Adicionar Bot')
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(botInviteUrl)
+                    new ButtonBuilder().setLabel('Join Server').setStyle(ButtonStyle.Link).setURL(inviteUrl),
+                    new ButtonBuilder().setLabel('Website').setStyle(ButtonStyle.Link).setURL(siteUrl),
+                    new ButtonBuilder().setLabel('Add Bot').setStyle(ButtonStyle.Link).setURL(botInviteUrl)
                 );
 
-            // Enviar mensagem no canal escolhido
-            await targetChannel.send({
-                embeds: [invitePanelEmbed],
-                components: [row]
-            });
+            await targetChannel.send({ embeds: [invitePanelEmbed], components: [row] });
 
-            // Confirmar configuração
             const confirmEmbed = new EmbedBuilder()
-                .setTitle('Painel de Convite Configurado!')
-                .setDescription(`O painel de convite foi enviado para ${targetChannel}`)
+                .setTitle('Invite panel configured')
+                .setDescription(`The invite panel was sent to ${targetChannel}`)
                 .setColor(0x00ff00)
                 .setTimestamp();
 
             await message.reply({ embeds: [confirmEmbed] });
-
         } catch (error) {
-            console.error('[DISCORD] Erro no comando invite-panel:', error);
-            await message.reply('Erro interno! Tente novamente em alguns minutos.');
+            console.error('[DISCORD] Error in invite-panel command:', error);
+            await message.reply('Internal error. Please try again in a few minutes.');
         }
-    }
+    },
 };
-

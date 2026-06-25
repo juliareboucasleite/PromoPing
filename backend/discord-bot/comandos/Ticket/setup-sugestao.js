@@ -1,90 +1,92 @@
-const { EmbedBuilder, PermissionFlagsBits, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const path = require('path');
+const { resolveSuggestionsPanelChannel } = require('../../utils/suggestionPublic');
+
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
 module.exports = {
     name: 'setup-sugestao',
     aliases: ['config-sugestao', 'setup-sugerir', 'config-sugerir'],
-    description: 'Configura o painel de sugestões. Escolha o canal onde o botão de sugerir aparecerá. (Apenas administradores)',
+    description: 'Set up the feature suggestion panel. (Administrators only)',
     execute: async (client, message, args, botInstance) => {
         try {
-            // Verificar se o comando foi usado em um servidor
             if (!message.guild) {
-                return message.reply(' **Este comando só pode ser usado em um servidor!**');
+                return message.reply('**This command can only be used in a server.**');
             }
 
-            // Verificar se o usuário é administrador
             if (!botInstance.isAdmin(message.member)) {
                 const embed = new EmbedBuilder()
-                    .setTitle('Sem Permissão')
-                    .setDescription('Apenas administradores podem configurar o painel de sugestões!')
+                    .setTitle('Permission denied')
+                    .setDescription('Only administrators can configure the suggestions panel.')
                     .setColor(0xff0000)
                     .setTimestamp();
-                
                 return message.reply({ embeds: [embed] });
             }
 
-            // Verificar se foi mencionado um canal
-            let targetChannel = message.channel; // Canal padrão é o atual
+            let targetChannel = await resolveSuggestionsPanelChannel(message.guild, client);
 
-            if (args.length > 0) {
-                // Tentar encontrar o canal mencionado
-                const channelMention = args[0];
-                const channelId = channelMention.replace(/[<#>]/g, '');
-                
+            if (!targetChannel && args.length > 0) {
+                const channelId = String(args[0]).replace(/[<#>]/g, '');
                 const mentionedChannel = message.guild.channels.cache.get(channelId);
-                if (mentionedChannel && mentionedChannel.type === ChannelType.GuildText) {
+                if (mentionedChannel?.type === ChannelType.GuildText) {
                     targetChannel = mentionedChannel;
-                } else {
-                    return message.reply(' **Canal inválido!** Mencione um canal de texto válido ou use o comando no canal desejado.\n**Exemplo:** `!setup-sugestao #sugestoes`');
                 }
             }
 
-            // Criar embed do painel de sugestões
+            if (!targetChannel) {
+                targetChannel = message.channel;
+            }
+
+            const publicChannelId = process.env.DISCORD_SUGGESTIONS_PUBLIC_CHANNEL_ID;
+            const publicNote = publicChannelId
+                ? `\n\nPublic votes are posted in <#${publicChannelId}> — keep this channel for the panel only.`
+                : '\n\nTip: set `DISCORD_SUGGESTIONS_PANEL_CHANNEL_ID` (panel) and `DISCORD_SUGGESTIONS_PUBLIC_CHANNEL_ID` (votes) to separate channels.';
+
             const sugestaoPanelEmbed = new EmbedBuilder()
-                .setTitle('Sugerir Funcionalidade')
+                .setTitle('Suggest a Feature')
                 .setDescription(
-                    '**Tem uma ideia para melhorar o PromoPing?**\n\n' +
-                    'Clique no botão abaixo para abrir o formulário de sugestão.\n\n' +
-                    '**O que você pode sugerir:**\n' +
-                    '• Novas funcionalidades para o site\n' +
-                    '• Melhorias no bot Discord\n' +
-                    '• Recursos adicionais\n' +
-                    '• Melhorias de interface\n\n' +
-                    '**Sua sugestão será enviada diretamente para o painel administrativo!**'
+                    '**Have an idea to improve PromoPing?**\n\n' +
+                    'Click the button below to open the suggestion form.\n\n' +
+                    '**What you can suggest:**\n' +
+                    '• New website features\n' +
+                    '• Discord bot improvements\n' +
+                    '• Additional tools and integrations\n' +
+                    '• UI/UX enhancements\n\n' +
+                    '**Your suggestion goes to the admin panel and is posted for community voting.**' +
+                    publicNote
                 )
                 .setColor(0x3B82F6)
                 .setTimestamp()
-                .setFooter({ text: '©PromoPing • Todos os direitos reservados' });
+                .setFooter({ text: 'PromoPing • Suggestions • Pinned panel' });
 
-            // Criar botão para abrir o modal
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('abrir_formulario_sugestao')
-                        .setLabel('Sugerir Funcionalidade')
-                        .setStyle(ButtonStyle.Primary)
-                        .setEmoji('💡')
-                );
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('abrir_formulario_sugestao')
+                    .setLabel('Suggest Feature')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('💡')
+            );
 
-            // Enviar mensagem no canal escolhido
-            await targetChannel.send({
+            const panelMessage = await targetChannel.send({
                 embeds: [sugestaoPanelEmbed],
-                components: [row]
+                components: [row],
             });
 
-            // Confirmar configuração
+            await panelMessage.pin().catch(() => {});
+
             const confirmEmbed = new EmbedBuilder()
-                .setTitle('Painel de Sugestões Configurado!')
-                .setDescription(`O painel de sugestões foi enviado para ${targetChannel}`)
+                .setTitle('Suggestions panel configured')
+                .setDescription(
+                    `Panel sent and **pinned** in ${targetChannel}.\n` +
+                    'Community suggestions will appear in the public suggestions channel (not here).'
+                )
                 .setColor(0x00ff00)
                 .setTimestamp();
 
             await message.reply({ embeds: [confirmEmbed] });
-
         } catch (error) {
-            console.error('[DISCORD] Erro no comando setup-sugestao:', error);
-            await message.reply(' **Erro interno!** Tente novamente em alguns minutos.');
+            console.error('[DISCORD] Error in setup-sugestao command:', error);
+            await message.reply('**Internal error.** Please try again in a few minutes.');
         }
-    }
+    },
 };

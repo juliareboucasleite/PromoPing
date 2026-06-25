@@ -31,7 +31,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setCustomId('abrir_formulario_bug')
                         .setLabel('Reportar Bug')
-                        .setStyle(ButtonStyle.Danger)
+                        .setStyle(ButtonStyle.Secondary)
                         .setEmoji('🐛')
                 );
 

@@ -230,6 +230,48 @@ router.post("/unsubscribe", async (req, res) => {
   }
 });
 
+router.post("/internal/record-price", async (req, res) => {
+  const configuredSecret = process.env.INTERNAL_NEWSLETTER_SECRET || "";
+  const providedSecret = req.get("x-internal-secret") || "";
+
+  if (configuredSecret && providedSecret !== configuredSecret) {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden",
+    });
+  }
+
+  const { productId, price } = req.body || {};
+  const parsedProductId = parseInt(productId, 10);
+  const parsedPrice = Number(price);
+
+  if (!Number.isFinite(parsedProductId) || !Number.isFinite(parsedPrice)) {
+    return res.status(400).json({
+      success: false,
+      message: "Payload inválido para atualização de preço.",
+    });
+  }
+
+  try {
+    const { salvarPreco } = await import("../database/models/historico.js");
+    const result = await salvarPreco(parsedProductId, parsedPrice);
+    if (result?.skipped) {
+      return res.status(422).json({
+        success: false,
+        skipped: true,
+        reason: result.reason || "implausible_price",
+      });
+    }
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("[NEWSLETTER] Erro ao registar preço interno:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao registar preço.",
+    });
+  }
+});
+
 router.post("/internal/promotion", async (req, res) => {
   const configuredSecret = process.env.INTERNAL_NEWSLETTER_SECRET || "";
   const providedSecret = req.get("x-internal-secret") || "";

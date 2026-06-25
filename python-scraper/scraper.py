@@ -47,6 +47,74 @@ logger = logging.getLogger(__name__)
 BACKEND_INTERNAL_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:3000").rstrip("/")
 INTERNAL_NEWSLETTER_SECRET = os.getenv("INTERNAL_NEWSLETTER_SECRET", "").strip()
 PROMOTION_NEWSLETTER_THRESHOLD = float(os.getenv("PROMOTION_NEWSLETTER_THRESHOLD", "0.10"))
+MAX_PRICE_DROP_RATIO = float(os.getenv("MAX_PRICE_DROP_RATIO", "0.85"))
+MIN_PLAUSIBLE_PRICE = float(os.getenv("MIN_PLAUSIBLE_PRICE", "0.5"))
+
+
+def is_plausible_price(current_price, previous_price=None):
+    try:
+        current = float(current_price)
+    except (TypeError, ValueError):
+        return False
+
+    if current <= 0 or current < MIN_PLAUSIBLE_PRICE or current > 50000:
+        return False
+
+    if previous_price is None:
+        return True
+
+    try:
+        previous = float(previous_price)
+    except (TypeError, ValueError):
+        return True
+
+    if previous <= 0:
+        return True
+
+    if current == previous:
+        return True
+
+    drop_ratio = (previous - current) / previous
+    increase_ratio = (current - previous) / previous
+
+    if drop_ratio > MAX_PRICE_DROP_RATIO:
+        return False
+    if increase_ratio > 2.5:
+        return False
+    if previous >= 50 and current < previous * 0.2:
+        return False
+    if previous >= 100 and current < 10:
+        return False
+
+    return True
+
+
+def record_price_update(product_id, price):
+    headers = {}
+    if INTERNAL_NEWSLETTER_SECRET:
+        headers["X-Internal-Secret"] = INTERNAL_NEWSLETTER_SECRET
+
+    response = requests.post(
+        f"{BACKEND_INTERNAL_URL}/api/newsletter/internal/record-price",
+        json={"productId": product_id, "price": price},
+        headers=headers,
+        timeout=15,
+    )
+
+    if response.status_code == 422:
+        logger.warning(
+            f"[SCRAPER] Preço ignorado para produto {product_id}: resposta 422 ({response.text[:200]})"
+        )
+        return False
+
+    if not response.ok:
+        logger.warning(
+            f"[SCRAPER] Falha ao registar preço do produto {product_id}: "
+            f"{response.status_code} {response.text[:200]}"
+        )
+        return False
+
+    return True
 
 # Avisar se Google OAuth estiver ausente — relevante se algum site usa login Google
 missing_google_id = not os.getenv('GOOGLE_CLIENT_ID')
@@ -93,9 +161,38 @@ def update_price(product_id, price):
     cur.close()
     conn.close()
 
+def apply_price_update(product, price, store=None):
+    product_id = product["Id"]
+    previous_price = product.get("PrecoAtual")
+
+    if not is_plausible_price(price, previous_price):
+        logger.warning(
+            f"[SCRAPER] Preço suspeito ignorado para {product.get('Nome')}: "
+            f"{previous_price} -> {price}"
+        )
+        return False
+
+    if record_price_update(product_id, price):
+        product["PrecoAtual"] = price
+        maybe_notify_promotion_subscribers(product, previous_price, price, store)
+        return True
+
+    logger.warning(
+        f"[SCRAPER] API interna indisponível para produto {product_id}; "
+        "a usar fallback local sem alertas automáticos."
+    )
+    update_price(product_id, price)
+    save_price_history(product_id, price)
+    maybe_notify_promotion_subscribers(product, previous_price, price, store)
+    return True
+
+
 def maybe_notify_promotion_subscribers(product, previous_price, current_price, store=None):
     try:
         if previous_price is None:
+            return
+
+        if not is_plausible_price(current_price, previous_price):
             return
 
         previous_value = float(previous_price)
@@ -1192,24 +1289,19 @@ def scrape_single_product(url, is_initial=False):
             if produto:
                 produto_id = produto["Id"]
                 preco_anterior = produto.get("PrecoAtual")
-                
-                # Atualizar preço atual
-                update_price(produto_id, preco)
-                
-                # Salvar no histórico
-                save_price_history(produto_id, preco)
-                maybe_notify_promotion_subscribers(
+
+                apply_price_update(
                     {
                         "Id": produto_id,
                         "Nome": produto.get("Nome"),
                         "Link": url,
                         "Loja": loja,
+                        "PrecoAtual": preco_anterior,
                     },
-                    preco_anterior,
                     preco,
                     loja,
                 )
-                
+
                 logger.info(f"[SINGLE] Produto {produto['Nome']} atualizado: €{preco_anterior} → €{preco}")
             else:
                 logger.warning(f"[SINGLE] Produto não encontrado na base de dados para URL: {url}")
@@ -1269,9 +1361,7 @@ def monitor_loop():
                         preco_anterior = p.get("PrecoAtual")
                         light_hits += 1
                         logger.info(f"[OK] {p['Nome']} ({loja}) €{preco} [leve]")
-                        update_price(p["Id"], preco)
-                        save_price_history(p["Id"], preco)
-                        maybe_notify_promotion_subscribers(p, preco_anterior, preco, loja)
+                        apply_price_update(p, preco, loja)
                         sleep(1)
                         continue
 
@@ -1298,11 +1388,8 @@ def monitor_loop():
 
                     heavy_hits += 1
                     if preco:
-                        preco_anterior = p.get("PrecoAtual")
                         logger.info(f"[OK] {p['Nome']} ({loja}) €{preco}")
-                        update_price(p["Id"], preco)
-                        save_price_history(p["Id"], preco)
-                        maybe_notify_promotion_subscribers(p, preco_anterior, preco, loja)
+                        apply_price_update(p, preco, loja)
                     else:
                         logger.warning(f"[FAIL] {p['Nome']} sem preço ({loja})")
 

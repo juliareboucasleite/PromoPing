@@ -1,93 +1,166 @@
-const { EmbedBuilder, PermissionFlagsBits, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
 const path = require('path');
+
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
+
+
 module.exports = {
+
     name: 'ticket',
+
     aliases: ['setup-ticket', 'config-ticket'],
-    description: 'Configura o sistema de tickets. Escolha o canal onde o botão de abrir ticket aparecerá. (Apenas administradores)',
+
+    description: 'Set up the support ticket panel in a channel. (Administrators only)',
+
     execute: async (client, message, args, botInstance) => {
+
         try {
-            // Verificar se o comando foi usado em um servidor
+
             if (!message.guild) {
-                return message.reply(' **Este comando só pode ser usado em um servidor!**');
+
+                return message.reply('**This command can only be used in a server.**');
+
             }
 
-            // Verificar se o usuário é administrador
+
+
             if (!botInstance.isAdmin(message.member)) {
+
                 const embed = new EmbedBuilder()
-                    .setTitle('❌ Sem Permissão')
-                    .setDescription('Apenas administradores podem configurar o sistema de tickets!')
+
+                    .setTitle('Permission denied')
+
+                    .setDescription('Only administrators can configure the ticket system.')
+
                     .setColor(0xff0000)
+
                     .setTimestamp();
-                
+
+
+
                 return message.reply({ embeds: [embed] });
+
             }
 
-            // Verificar se foi mencionado um canal
-            let targetChannel = message.channel; // Canal padrão é o atual
+
+
+            let targetChannel = message.channel;
+
+
 
             if (args.length > 0) {
-                // Tentar encontrar o canal mencionado
-                const channelMention = args[0];
-                const channelId = channelMention.replace(/[<#>]/g, '');
-                
+
+                const channelId = String(args[0]).replace(/[<#>]/g, '');
+
                 const mentionedChannel = message.guild.channels.cache.get(channelId);
+
                 if (mentionedChannel && mentionedChannel.type === ChannelType.GuildText) {
+
                     targetChannel = mentionedChannel;
+
                 } else {
-                    return message.reply(' **Canal inválido!** Mencione um canal de texto válido ou use o comando no canal desejado.\n**Exemplo:** `!ticket #suporte`');
+
+                    return message.reply('**Invalid channel.** Mention a valid text channel or run this command in the desired channel.\n**Example:** `!ticket #support`');
+
                 }
+
             }
 
-            // Criar embed de suporte
-            const supportEmbed = new EmbedBuilder()
-                .setTitle('🎫 Suporte - PromoPing')
-                .setDescription('**Precisa de ajuda ou suporte?** Clique no botão abaixo para abrir um ticket. Nossa equipe irá auxiliá-lo o mais breve possível!')
-                .setColor(0x5865F2)
-                .setTimestamp()
-                .setFooter({ text: '©PromoPing • Todos os direitos reservados' });
 
-            // Criar botão
+
+            const supportEmbed = new EmbedBuilder()
+
+                .setTitle('Support & Help')
+
+                .setDescription(
+
+                    '**Need assistance?** Click the button below to open a private support ticket.\n\n' +
+
+                    'Our team will respond as quickly as possible.'
+
+                )
+
+                .setColor(0xed4245)
+
+                .setTimestamp()
+
+                .setFooter({ text: 'PromoPing • Support' });
+
+
+
             const row = new ActionRowBuilder()
+
                 .addComponents(
+
                     new ButtonBuilder()
+
                         .setCustomId('abrir_ticket_promoping')
-                        .setLabel('Abrir Ticket')
-                        .setStyle(ButtonStyle.Primary)
+
+                        .setLabel('Open Ticket')
+
+                        .setStyle(ButtonStyle.Secondary)
+
                         .setEmoji('🎫')
+
                 );
 
-            // Enviar mensagem no canal escolhido
+
+
             await targetChannel.send({
+
                 embeds: [supportEmbed],
-                components: [row]
+
+                components: [row],
+
             });
 
-            // Confirmar configuração (reply pode falhar when original message is an interaction or deleted)
+
+
             const confirmEmbed = new EmbedBuilder()
-                .setTitle('✅ Sistema de Tickets Configurado!')
-                .setDescription(`O botão de abrir ticket foi enviado para ${targetChannel}`)
+
+                .setTitle('Ticket panel configured')
+
+                .setDescription(`The support panel was sent to ${targetChannel}`)
+
                 .setColor(0x00ff00)
+
                 .setTimestamp();
 
+
+
             try {
+
                 await message.reply({ embeds: [confirmEmbed] });
+
             } catch (err) {
-                // Fallback: se reply falhar (por exemplo, message_reference inválido em slash->fakeMessage flows),
-                // enviar diretamente no canal ou ignorar silenciosamente.
+
                 try {
-                    if (message.channel && message.channel.send) {
+
+                    if (message.channel?.send) {
+
                         await message.channel.send({ embeds: [confirmEmbed] }).catch(() => {});
+
                     }
+
                 } catch (e) {
-                    console.warn('[DISCORD] Falha ao confirmar setup do ticket (fallback):', e.message || e);
+
+                    console.warn('[DISCORD] Failed to confirm ticket setup:', e.message || e);
+
                 }
+
             }
 
         } catch (error) {
-            console.error('[DISCORD] Erro no comando ticket:', error);
-            await message.reply(' **Erro interno!** Tente novamente em alguns minutos.');
+
+            console.error('[DISCORD] Error in ticket command:', error);
+
+            await message.reply('**Internal error.** Please try again in a few minutes.');
+
         }
-    }
+
+    },
+
 };
+

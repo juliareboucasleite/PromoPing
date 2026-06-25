@@ -3,20 +3,23 @@ const { successEmbed } = require("../_helpers");
 module.exports = {
     name: "painel",
     aliases: ["panel", "paineis"],
-    description: "Resume os painéis e setups prontos do bot.",
+    description: "Lists available PromoPing panels and setup commands.",
     category: "Paineis",
-    usage: "!painel",
+    usage: "!panel",
     execute: async (client, message, args, botInstance) => {
         const prefix = message.guild ? await botInstance.getGuildPrefix(message.guild.id) : "!";
         return message.reply({
-            embeds: [successEmbed("Painéis Disponíveis", [
-                `\`${prefix}community-panel #canal\` - painel com links da comunidade`,
-                `\`${prefix}invite-panel #canal\` - painel de convites`,
-                `\`${prefix}review-panel #canal\` - painel para avaliações`,
-                `\`${prefix}ticket\` - painel de tickets no canal atual`,
-                `\`${prefix}setup-bug\` - botão para reportar bugs`,
-                `\`${prefix}setup-sugestao\` - botão para sugestões`,
-                `\`${prefix}verify setup #canal @cargo\` - painel de verificação`,
+            embeds: [successEmbed("Available Panels", [
+                `\`${prefix}community-panel #channel\` — community resources panel`,
+                `\`${prefix}invite-panel #channel\` — server invite panel`,
+                `\`${prefix}sponsor-panel #channel\` — sponsorship / support panel`,
+                `\`${prefix}review-panel #channel\` — PromoPing reviews panel`,
+                `\`${prefix}product-buy #channel\` — product buy / help panel`,
+                `\`${prefix}product-review #channel\` — product reviews (customers only)`,
+                `\`${prefix}ticket #channel\` — general support ticket panel`,
+                `\`${prefix}setup-bug #channel\` — bug report button`,
+                `\`${prefix}setup-sugestao #channel\` — feature suggestion button`,
+                `\`${prefix}verify setup #channel @role\` — verification panel`,
             ])],
         });
     },

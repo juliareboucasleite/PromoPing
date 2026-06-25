@@ -185,7 +185,7 @@ module.exports = {
             new ButtonBuilder()
                 .setCustomId(`help_close_${message.author.id}`)
                 .setLabel("Fechar")
-                .setStyle(ButtonStyle.Danger),
+                .setStyle(ButtonStyle.Secondary),
         );
 
         const reply = await message.reply({

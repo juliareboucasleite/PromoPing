@@ -1,6 +1,7 @@
 // backend/database/models/historico.js
 import { pool } from "../db.js";
 import { processAlerts } from "../../services/alerts.js";
+import { isPlausiblePrice, describePriceRejection } from "../../utils/priceValidation.js";
 
 // Essa função aqui salva o preço no histórico E processa alertas
 // pode perder histórico de preços ou não enviar notificações
@@ -18,6 +19,13 @@ export async function salvarPreco(produtoId, preco) {
 
   const produto = produtoRows[0];
   const precoAnterior = produto?.PrecoAnterior || produto?.PrecoAtual || null;
+
+  if (!isPlausiblePrice(preco, precoAnterior)) {
+    console.warn(
+      `[HISTORICO] Preço ignorado para produto ${produtoId}: ${describePriceRejection(preco, precoAnterior)}`
+    );
+    return { skipped: true, reason: "implausible_price" };
+  }
 
   // Inserir novo preço no histórico
   // ESSA QUERY AQUI SALVA O PREÇO NO HISTÓRICO
@@ -51,6 +59,8 @@ export async function salvarPreco(produtoId, preco) {
       // Porque é melhor ter preço salvo sem notificação do que perder o preço
     }
   }
+
+  return { skipped: false };
 }
 
 export async function ultimoPreco(produtoId) {

@@ -31,7 +31,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setCustomId('abrir_formulario_sugestao')
                         .setLabel('Sugerir Funcionalidade')
-                        .setStyle(ButtonStyle.Primary)
+                        .setStyle(ButtonStyle.Secondary)
                         .setEmoji('💡')
                 );
 

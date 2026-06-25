@@ -268,6 +268,45 @@ async function ensureNewsConfig(connection) {
     await ensureIndex(connection, "idx_news_config_isactive", "news_config", "IsActive");
 }
 
+async function ensureMemeConfig(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS meme_config (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            ChannelId VARCHAR(50) NOT NULL,
+            CheckInterval INT DEFAULT 180,
+            MaxAgeDays INT DEFAULT 30,
+            IsActive INT DEFAULT 1,
+            LastCheck TIMESTAMP NULL,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    await ensureIdentity(connection, "meme_config");
+    await ensureColumn(connection, "meme_config", "CheckInterval", "INTEGER DEFAULT 180");
+    await ensureColumn(connection, "meme_config", "MaxAgeDays", "INTEGER DEFAULT 30");
+    await ensureColumn(connection, "meme_config", "IsActive", "INTEGER DEFAULT 1");
+    await ensureColumn(connection, "meme_config", "LastCheck", "TIMESTAMP NULL");
+    await ensureColumn(connection, "meme_config", "CreatedAt", "TIMESTAMP");
+    await ensureColumn(connection, "meme_config", "UpdatedAt", "TIMESTAMP");
+    await ensureIntegerDefault(connection, "meme_config", "CheckInterval", 180);
+    await ensureIntegerDefault(connection, "meme_config", "MaxAgeDays", 30);
+    await ensureIntegerDefault(connection, "meme_config", "IsActive", 1);
+    await ensureTimestampDefault(connection, "meme_config", "CreatedAt");
+    await ensureTimestampDefault(connection, "meme_config", "UpdatedAt");
+    await ensureIndex(connection, "idx_meme_config_isactive", "meme_config", "IsActive");
+
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS memes_sent (
+            Id INT AUTO_INCREMENT PRIMARY KEY,
+            Url TEXT NOT NULL,
+            Description TEXT,
+            SentAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    await ensureIndex(connection, "idx_memes_sent_url", "memes_sent", "Url");
+}
+
 async function ensureReviews(connection) {
     await connection.execute(`
         CREATE TABLE IF NOT EXISTS reviews (
@@ -360,6 +399,14 @@ async function ensureSugestoes(connection) {
 
     await ensureIdentity(connection, "sugestoes");
     await ensureColumn(connection, "sugestoes", "Votos", "INTEGER DEFAULT 0");
+    await ensureColumn(connection, "sugestoes", "Upvotes", "INTEGER DEFAULT 0");
+    await ensureColumn(connection, "sugestoes", "Downvotes", "INTEGER DEFAULT 0");
+    await ensureColumn(connection, "sugestoes", "PublicId", "VARCHAR(16)");
+    await ensureColumn(connection, "sugestoes", "DiscordUserId", "VARCHAR(20)");
+    await ensureColumn(connection, "sugestoes", "DiscordUsername", "VARCHAR(100)");
+    await ensureColumn(connection, "sugestoes", "DiscordPublicMessageId", "VARCHAR(20)");
+    await ensureColumn(connection, "sugestoes", "DiscordPublicChannelId", "VARCHAR(20)");
+    await ensureColumn(connection, "sugestoes", "DiscordThreadId", "VARCHAR(20)");
     await ensureColumn(connection, "sugestoes", "DataCriacao", "TIMESTAMP");
     await ensureColumn(connection, "sugestoes", "DataAtualizacao", "TIMESTAMP");
     await ensureIntegerDefault(connection, "sugestoes", "Votos", 0);
@@ -368,6 +415,19 @@ async function ensureSugestoes(connection) {
     await ensureIndex(connection, "idx_sugestoes_status", "sugestoes", "Status");
     await ensureIndex(connection, "idx_sugestoes_plataforma", "sugestoes", "Plataforma");
     await ensureIndex(connection, "idx_sugestoes_datacriacao", "sugestoes", "DataCriacao");
+    await ensureIndex(connection, "idx_sugestoes_publicid", "sugestoes", "PublicId");
+
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS suggestion_votes (
+            Id SERIAL PRIMARY KEY,
+            SuggestionId INTEGER NOT NULL,
+            DiscordUserId VARCHAR(20) NOT NULL,
+            VoteType VARCHAR(10) NOT NULL,
+            CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (SuggestionId, DiscordUserId)
+        )
+    `);
+    await ensureIndex(connection, "idx_suggestion_votes_suggestion", "suggestion_votes", "SuggestionId");
 }
 
 async function ensureDiscordErrors(connection) {
@@ -634,6 +694,9 @@ async function setupDatabase() {
 
         await ensureNewsConfig(connection);
         console.log("Tabela news_config criada/ajustada");
+
+        await ensureMemeConfig(connection);
+        console.log("Tabela meme_config criada/ajustada");
 
         await ensureReviews(connection);
         console.log("Tabela reviews criada/ajustada");

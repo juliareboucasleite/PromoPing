@@ -17,7 +17,7 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId(`delete_celebrate_${mensagemEnviada.id}`)
                     .setLabel('Festejar')
-                    .setStyle(ButtonStyle.Success)
+                    .setStyle(ButtonStyle.Secondary)
             );
 
             // Edita a mensagem para incluir o botão

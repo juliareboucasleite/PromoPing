@@ -84,6 +84,8 @@ internalApp.post('/internal/send-message', async (req, res) => {
 internalApp.post('/internal/create-support-ticket', async (req, res) => {
     try {
         const { ChannelType, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+        const ticketHelpers = require('./utils/ticketHelpers');
+        const ticketConfig = require('./config/ticketConfig');
         const { threadId, message, userName, userEmail, transcript, escalationReason } = req.body || {};
         console.log('[DISCORD] create-support-ticket recebido, threadId:', threadId);
         if (!threadId || !message) {
@@ -124,13 +126,12 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
         const channelName = 'ticket-' + String(threadId).replace(/\s/g, '-').substring(0, 80);
         const overwrites = [
             { id: guild.id, deny: [PermissionFlagsBits.ViewChannel] },
-            { id: bot.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] }
+            { id: bot.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.ManageMessages] }
         ];
-        const supportRoleId = process.env.DISCORD_SUPPORT_ROLE_ID;
-        if (supportRoleId) {
+        for (const roleId of ticketConfig.getStaffRoleIds()) {
             overwrites.push({
-                id: supportRoleId,
-                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory]
+                id: roleId,
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.ManageMessages]
             });
         }
         console.log('[DISCORD] A criar canal', channelName, 'na categoria Tickets...');
@@ -144,39 +145,42 @@ internalApp.post('/internal/create-support-ticket', async (req, res) => {
 
         const fields = [];
         if (userName && String(userName).trim()) {
-            fields.push({ name: 'Nome', value: String(userName).trim().substring(0, 256), inline: true });
+            fields.push({ name: 'Name', value: String(userName).trim().substring(0, 256), inline: true });
         }
         if (userEmail && String(userEmail).trim()) {
             fields.push({ name: 'Email', value: String(userEmail).trim().substring(0, 256), inline: true });
         }
         if (escalationReason && String(escalationReason).trim()) {
-            fields.push({ name: 'Motivo da escalada', value: String(escalationReason).trim().substring(0, 256), inline: false });
+            fields.push({ name: 'Escalation reason', value: String(escalationReason).trim().substring(0, 256), inline: false });
         }
-        fields.push({ name: 'Mensagem', value: (message || '').substring(0, 1024) || '(vazio)', inline: false });
+        fields.push({ name: 'Message', value: (message || '').substring(0, 1024) || '(empty)', inline: false });
+
         const embed = new EmbedBuilder()
-            .setTitle('Ticket #' + threadId)
-            .setDescription('Pedido de suporte escalado automaticamente para atendimento humano.')
-            .setColor(0xe67e22)
+            .setTitle('Support & Help')
+            .setDescription('Support request escalated from the website. A staff member will assist shortly.')
+            .setColor(0xed4245)
             .setTimestamp()
             .addFields(fields)
-            .setFooter({ text: 'PromoPing Suporte • Escalado pela IA' });
+            .setFooter({ text: `PromoPing | Ticket #${threadId}` });
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('support_ticket_fechar_' + threadId)
-                .setLabel('Fechar ticket')
-                .setStyle(ButtonStyle.Danger)
-                .setEmoji('🔒'),
-            new ButtonBuilder()
-                .setCustomId('support_ticket_chamar_' + threadId)
-                .setLabel('Chamar supporter')
-                .setStyle(ButtonStyle.Primary)
-                .setEmoji('📢')
-        );
-        await channel.send({ embeds: [embed], components: [row] });
+        const row = ticketHelpers.buildTicketActionRow(channel.id, `widget-${threadId}`);
+        const mentionText = ticketHelpers.buildStaffMention();
+        const welcomeMsg = await channel.send({ content: mentionText, embeds: [embed], components: [row] });
+        await welcomeMsg.pin().catch(() => {});
+
+        if (bot.ticketMeta) {
+            bot.ticketMeta.set(channel.id, {
+                ownerId: `widget-${threadId}`,
+                openedAt: new Date(),
+                claimedBy: null,
+                panelName: 'Support & Help',
+                category: 'Website escalation',
+                welcomeMessageId: welcomeMsg.id,
+            });
+        }
         const transcriptText = typeof transcript === 'string' ? transcript.trim() : '';
         if (transcriptText) {
-            const prefix = '**Histórico da conversa**\n';
+            const prefix = '**Conversation history**\n';
             const chunkSize = 1800;
             for (let i = 0; i < transcriptText.length; i += chunkSize) {
                 const chunk = transcriptText.slice(i, i + chunkSize).replace(/```/g, '``` ');

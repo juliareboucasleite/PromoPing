@@ -41,7 +41,7 @@ if (!res.ok) {
 console.log("Linked Roles metadata registada com sucesso.");
 console.log("");
 console.log("URLs para o Discord Developer Portal:");
-console.log(`  Interactions Endpoint URL:     ${baseUrl}/api/interactions`);
+console.log("  Interactions Endpoint URL:     (deixar VAZIO — os slash commands usam o bot via Gateway)");
 console.log(`  Linked Roles Verification URL: ${baseUrl}/verify-user`);
 console.log(`  Terms of Service URL:          ${baseUrl}/docs/terms-of-service`);
 console.log(`  Privacy Policy URL:            ${baseUrl}/docs/privacy-policy`);

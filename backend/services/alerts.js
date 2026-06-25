@@ -1,6 +1,7 @@
 import { pool } from "../database/db.js";
 import { formatPriceDisplay } from "../utils/format.js";
 import { notifySubscribersOfPromotion } from "./newsletterNotifier.js";
+import { isPlausiblePrice, describePriceRejection } from "../utils/priceValidation.js";
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
 
@@ -272,6 +273,13 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
  */
 export async function processAlerts(product, novoPreco, precoAnterior) {
   try {
+    if (!isPlausiblePrice(novoPreco, precoAnterior)) {
+      console.warn(
+        `[ALERTS] Alerta ignorado para produto ${product?.Id}: ${describePriceRejection(novoPreco, precoAnterior)}`
+      );
+      return;
+    }
+
     // Verificar se atingiu preço alvo
     if (product.PrecoAlvo && novoPreco <= product.PrecoAlvo) {
       console.log(`[ALERTS] Preço alvo atingido para produto ${product.Id}: ${novoPreco} <= ${product.PrecoAlvo}`);

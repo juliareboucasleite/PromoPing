@@ -199,21 +199,20 @@ class NewsService {
             await this.saveNewsToBlog(filteredNews);
 
             const newsToNotify = [];
+            const { isNewsletterArticleSent, markNewsletterArticlesSent } = await import("./newsletterNotifier.js");
             for (const news of filteredNews) {
-                if (!(await this.isNewsAlreadySent(news.url))) {
+                if (!(await isNewsletterArticleSent(news.url))) {
                     newsToNotify.push(news);
                 }
             }
 
-            // Notificar subscritores da newsletter que ativaram "receber notificações de novos artigos"
+            // Newsletter — tracking separado do Discord (news_sent)
             if (newsToNotify.length > 0) {
                 try {
                     const { notifySubscribersOfNewArticles } = await import("./newsletterNotifier.js");
                     const delivery = await notifySubscribersOfNewArticles(newsToNotify);
-                    if (delivery.sent > 0 || delivery.recipients === 0) {
-                        for (const news of newsToNotify) {
-                            await this.markNewsAsSent(news);
-                        }
+                    if (delivery.sent > 0) {
+                        await markNewsletterArticlesSent(newsToNotify);
                     }
                 } catch (notifyErr) {
                     console.error("[NEWS] Erro ao notificar subscritores de novos artigos:", notifyErr.message);

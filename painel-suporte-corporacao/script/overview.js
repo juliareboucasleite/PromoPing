@@ -146,7 +146,8 @@
         }
 
         list.innerHTML = incidents.map(i => {
-            const titulo = (window.APIUtils?.stripBracketPrefix?.(i.Titulo)) || i.Titulo || i.title || 'Sem título';
+            const tituloRaw = i.Titulo || i.titulo || i.title || '';
+            const titulo = (window.APIUtils?.stripBracketPrefix?.(tituloRaw)) || tituloRaw || 'Sem título';
             const status = (i.Status || i.status || '—');
             const statusLower = status.toLowerCase();
             const statusColor = statusLower === 'resolved' || statusLower === 'resolvido' ? '#4ade80'
@@ -158,7 +159,7 @@
                     <div style="font-size:0.78rem;margin-top:0.25rem">
                         <span style="color:${statusColor};font-weight:500">${escapeHtml(status)}</span>
                     </div>
-                    <div style="font-size:0.78rem;color:#6b7280;margin-top:0.2rem">${formatDateTime(i.DataCriacao || i.created_at || i.startDate)}</div>
+                    <div style="font-size:0.78rem;color:#6b7280;margin-top:0.2rem">${formatDateTime(i.DataInicio || i.datainicio || i.DataCriacao || i.datacriacao || i.created_at || i.startDate)}</div>
                 </div>
             `;
         }).join('');
