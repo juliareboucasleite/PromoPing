@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import traceback
 from datetime import datetime
 from time import sleep
@@ -810,6 +811,10 @@ def is_amazon_unavailable(driver):
 LIGHTWEIGHT_SUPPORTED = ("continente.pt", "worten", "fnac")
 LIGHTWEIGHT_BLOCKED = ("amazon.", "leroymerlin", "leroy-merlin")
 ANTIBOT_SITES = ("worten", "fnac")
+# Sites behind Cloudflare "Just a moment..." challenge — routed through FlareSolverr
+CLOUDFLARE_SITES = ("worten",)
+FLARESOLVERR_URL = os.getenv("FLARESOLVERR_URL", "http://localhost:8191/v1")
+FLARESOLVERR_TIMEOUT_MS = int(os.getenv("FLARESOLVERR_TIMEOUT_MS", "80000"))
 
 def _fetch_plain(url, timeout=10):
     headers = {
@@ -843,8 +848,107 @@ def _fetch_impersonated(url, timeout=20):
         logger.debug(f"[LIGHT] curl_cffi falhou para {url}: {e}")
     return None
 
+def _fetch_flaresolverr(url, timeout_ms=None):
+    """Obtém HTML resolvendo o desafio Cloudflare via FlareSolverr."""
+    timeout_ms = timeout_ms or FLARESOLVERR_TIMEOUT_MS
+    try:
+        resp = requests.post(
+            FLARESOLVERR_URL,
+            json={"cmd": "request.get", "url": url, "maxTimeout": timeout_ms},
+            timeout=(timeout_ms / 1000) + 15,
+        )
+        data = resp.json()
+        if data.get("status") == "ok":
+            html = (data.get("solution") or {}).get("response")
+            if html:
+                return html
+            logger.warning(f"[FLARESOLVERR] sem response para {url}")
+        else:
+            logger.warning(f"[FLARESOLVERR] status={data.get('status')} msg={data.get('message')}")
+    except Exception as e:
+        logger.warning(f"[FLARESOLVERR] erro para {url}: {e}")
+    return None
+
+
+def parse_worten_price(html):
+    """Extrai o preço de uma página Worten (HTML já resolvido).
+    Prioridade: JSON-LD (primeiro Product/Offer) -> meta itemprop=price -> regex JSON."""
+    if not html:
+        return None
+
+    # 1) JSON-LD structured data (mais fiável; produto principal aparece primeiro)
+    for block in re.findall(
+        r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    ):
+        try:
+            parsed = json.loads(block.strip())
+        except Exception:
+            continue
+        price = _find_jsonld_price(parsed)
+        if price:
+            cleaned = clean_price_text(str(price))
+            if cleaned:
+                return cleaned
+
+    # 2) meta itemprop=price content="..."
+    meta = re.search(
+        r'itemprop=["\']price["\'][^>]*content=["\']([0-9.,]+)["\']', html, re.IGNORECASE
+    ) or re.search(
+        r'content=["\']([0-9.,]+)["\'][^>]*itemprop=["\']price["\']', html, re.IGNORECASE
+    ) or re.search(
+        r'property=["\']product:price:amount["\'][^>]*content=["\']([0-9.,]+)["\']',
+        html,
+        re.IGNORECASE,
+    )
+    if meta:
+        cleaned = clean_price_text(meta.group(1))
+        if cleaned:
+            return cleaned
+
+    # 3) primeiro "price":"NNN.NN" no JSON embebido
+    j = re.search(r'"price"\s*:\s*"?([0-9]+(?:\.[0-9]{1,2})?)"?', html)
+    if j:
+        cleaned = clean_price_text(j.group(1))
+        if cleaned:
+            return cleaned
+
+    return None
+
+
+def _find_jsonld_price(obj):
+    """Procura recursivamente o primeiro price em estruturas JSON-LD (Product/Offer)."""
+    if isinstance(obj, dict):
+        offers = obj.get("offers")
+        if isinstance(offers, dict) and offers.get("price"):
+            return offers.get("price")
+        if isinstance(offers, list):
+            for off in offers:
+                if isinstance(off, dict) and off.get("price"):
+                    return off.get("price")
+        if obj.get("price"):
+            return obj.get("price")
+        for value in obj.values():
+            found = _find_jsonld_price(value)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for item in obj:
+            found = _find_jsonld_price(item)
+            if found:
+                return found
+    return None
+
+
 def fetch_html(url, timeout=10):
     u = url.lower()
+    if any(d in u for d in CLOUDFLARE_SITES):
+        html = _fetch_flaresolverr(url)
+        if html:
+            return html
+        logger.info(f"[FLARESOLVERR] indisponível; a tentar curl_cffi para {url}")
+        return _fetch_impersonated(url, timeout=max(timeout, 20))
     if any(d in u for d in ANTIBOT_SITES):
         return _fetch_impersonated(url, timeout=max(timeout, 20))
     return _fetch_plain(url, timeout=timeout)
@@ -869,23 +973,11 @@ def extract_price_lightweight(url):
     soup = BeautifulSoup(html, "html.parser")
 
     if "worten" in u:
-        meta = soup.find("meta", {"itemprop": "price"})
-        if meta and meta.get("content"):
-            price = clean_price_text(meta["content"])
-            if price:
-                return ("Worten", price)
-        meta_og = soup.find("meta", {"property": "product:price:amount"})
-        if meta_og and meta_og.get("content"):
-            price = clean_price_text(meta_og["content"])
-            if price:
-                return ("Worten", price)
-        el = soup.select_one("span.value")
-        if el:
-            content = el.get("content")
-            if content:
-                price = clean_price_text(content)
-                if price:
-                    return ("Worten", price)
+        # HTML obtido via FlareSolverr (Cloudflare resolvido). Usa parser dedicado.
+        price = parse_worten_price(html)
+        if price:
+            logger.info(f"[WORTEN] Preço via FlareSolverr/JSON-LD: €{price}")
+            return ("Worten", price)
         return ("Worten", None)
 
     if "fnac" in u:
