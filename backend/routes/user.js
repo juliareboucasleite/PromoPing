@@ -56,6 +56,13 @@ function isMissingRelationError(err) {
     || (message.includes('tabela "') && message.includes("inexistente"));
 }
 
+function formatDate(value) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
 // Rota /profile (alias para /me) - REMOVIDA (duplicada)
 // A rota principal está na linha 162
 
