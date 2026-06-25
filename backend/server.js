@@ -65,6 +65,7 @@ import historicoRoutes from "./routes/historico.js"; // Historico PDF (sem grafi
 import discordPanelRoutes from "./routes/discord-panel.js"; // Discord OAuth + cupÃµes corporativos
 import { handleDiscordInteractionsAfterVerify, handleDiscordVerifyUser, getDiscordVerifyMiddleware } from "./routes/discord-endpoints.js";
 import { verifyToken } from "./middleware/auth.js"; // JWT
+import { resolveAccessContext } from "./services/accessControl.js";
 
 import { pool } from "./database/db.js"; // Pool de conexÃ£o
 import { sendNotification } from "./services/notify.js"; // NotificaÃ§Ãµes
@@ -335,6 +336,8 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
 
             if (rows.length > 0) {
                 const user = rows[0];
+                const perfilId = user.PerfilId || user.perfilId || null;
+                const access = await resolveAccessContext(user.ReferenciaID, perfilId);
                 return res.json({
                     status: "ok",
                     user: {
@@ -347,8 +350,9 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
                         fotoPerfil: user.FotoPerfil || user.fotoPerfil,
                         cidade: user.cidade || user.location,
                         location: user.cidade || user.location,
-                        perfilId: user.PerfilId || user.perfilId || null,
-                        PerfilId: user.PerfilId || user.perfilId || null
+                        perfilId,
+                        PerfilId: perfilId,
+                        access
                     }
                 });
             }
