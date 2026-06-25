@@ -365,6 +365,8 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
 
                 if (rows.length > 0) {
                     const user = rows[0];
+                    const perfilId = user.PerfilId || user.perfilId || null;
+                    const access = await resolveAccessContext(user.ReferenciaID, perfilId);
                     return res.json({
                         status: "ok",
                         user: {
@@ -374,8 +376,9 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
                             email: user.Email || user.email,
                             telefone: user.Telefone || user.phone,
                             phone: user.Telefone || user.phone,
-                            perfilId: user.PerfilId || user.perfilId || null,
-                            PerfilId: user.PerfilId || user.perfilId || null
+                            perfilId,
+                            PerfilId: perfilId,
+                            access
                         }
                     });
                 }
@@ -387,7 +390,13 @@ app.get("/api/user/me", verifyToken, async(req, res) => {
         // Fallback para dados do token
         res.json({
             status: "ok",
-            user: req.user
+            user: {
+                ...req.user,
+                access: await resolveAccessContext(
+                    req.user.ReferenciaID,
+                    req.user.perfilId || req.user.PerfilId || null
+                )
+            }
         });
     } catch (err) {
         console.error("Erro ao buscar dados do usuÃ¡rio:", err);
