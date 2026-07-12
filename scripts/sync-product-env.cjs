@@ -5,7 +5,7 @@ const vars = {
   PRODUCT_NAME: 'SpotiCat',
   PRODUCT_SLUG: 'spotcat',
   PRODUCT_PRICE: '$5 USD',
-  PRODUCT_PAYMENT_URL: 'https://checkout.revolut.com/pay/c5c358ec-9ee9-4b01-b9d3-514e82ce70f7',
+  PRODUCT_PAYMENT_URL: 'https://checkout.revolut.com/pay/9b60e0bf-18bd-486a-9b88-74cb30b68c8a',
   PRODUCT_REVIEWER_ROLE_IDS: '1514462155167105114,1514436077979566131',
 };
 for (const [key, value] of Object.entries(vars)) {

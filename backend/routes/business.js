@@ -881,7 +881,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
   const nextStatus = req.body?.status !== undefined ? String(req.body?.status || "").trim().toLowerCase() : undefined;
 
   if (!targetReferenciaID) {
-    return res.status(400).json({ status: "error", error: "referenciaID invÃ¡lido." });
+    return res.status(400).json({ status: "error", error: "referenciaID inválido." });
   }
 
   if (nextRole === undefined && nextStatus === undefined) {
@@ -889,7 +889,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
   }
 
   if (nextStatus !== undefined && !["active", "inactive"].includes(nextStatus)) {
-    return res.status(400).json({ status: "error", error: "status invÃ¡lido. Use active ou inactive." });
+    return res.status(400).json({ status: "error", error: "status inválido. Use active ou inactive." });
   }
 
   try {
@@ -903,7 +903,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
     );
 
     if (!memberRows.length) {
-      return res.status(404).json({ status: "error", error: "Membro nÃ£o encontrado nesta organizaÃ§Ã£o." });
+      return res.status(404).json({ status: "error", error: "Membro não encontrado nesta organização." });
     }
 
     const member = memberRows[0];
@@ -911,7 +911,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
     const finalStatus = nextStatus !== undefined ? nextStatus : member.status;
 
     if (targetReferenciaID === req.user.ReferenciaID && finalStatus !== "active") {
-      return res.status(400).json({ status: "error", error: "NÃ£o pode desativar o seu prÃ³prio acesso." });
+      return res.status(400).json({ status: "error", error: "Não pode desativar o seu próprio acesso." });
     }
 
     if (member.role === "owner" && finalRole !== "owner") {
@@ -925,7 +925,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
       );
       const ownerCount = Number(ownerRows[0]?.total || 0);
       if (ownerCount <= 1) {
-        return res.status(400).json({ status: "error", error: "A organizaÃ§Ã£o deve manter pelo menos um owner ativo." });
+        return res.status(400).json({ status: "error", error: "A organização deve manter pelo menos um owner ativo." });
       }
     }
 
@@ -959,7 +959,7 @@ router.put("/organization/:organizationId/members/:referenciaID", requireOrganiz
     });
   } catch (error) {
     console.error("[BUSINESS] Erro ao atualizar membro:", error);
-    res.status(500).json({ status: "error", error: "Erro ao atualizar membro da organizaÃ§Ã£o." });
+    res.status(500).json({ status: "error", error: "Erro ao atualizar membro da organização." });
   }
 });
 

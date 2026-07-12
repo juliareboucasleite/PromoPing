@@ -195,7 +195,7 @@ async function ensureCorporationDiscordGuildsTable() {
 }
 
 /** Lista funcionários (suporte - PerfilId = 1) com detalhes */
-router.get("/staff", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
+router.get("/staff", requirePermission("corporation.staff.read", "Permissão insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const includeInactive = req.query.includeInactive === '1' || req.query.includeInactive === 'true';
         const profiles = req.query.includeCorp === '1' ? '(1, 3)' : '(1)';
@@ -233,7 +233,7 @@ router.get("/staff", requirePermission("corporation.staff.read", "PermissÃ£o i
 });
 
 /** Detalhe de um funcionário */
-router.get("/staff/:referenciaID", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
+router.get("/staff/:referenciaID", requirePermission("corporation.staff.read", "Permissão insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [rows] = await pool.query(
@@ -268,7 +268,7 @@ router.get("/staff/:referenciaID", requirePermission("corporation.staff.read", "
 });
 
 /** Atividade / projetos do funcionário: eventos, bugs/projetos, conversas de suporte, notificações que fez */
-router.get("/staff/:referenciaID/activity", requirePermission("corporation.staff.read", "PermissÃ£o insuficiente para ver colaboradores."), async (req, res) => {
+router.get("/staff/:referenciaID/activity", requirePermission("corporation.staff.read", "Permissão insuficiente para ver colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
 
@@ -351,7 +351,7 @@ function generateTempPassword() {
 }
 
 /** POST /staff — criar nova conta de funcionário (suporte) */
-router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
+router.post("/staff", requirePermission("corporation.staff.manage", "Permissão insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { nome, email, telefone, perfilId, accessRoleCodes = [] } = req.body;
         if (!nome || !email) {
@@ -422,7 +422,7 @@ router.post("/staff", requirePermission("corporation.staff.manage", "PermissÃ£
 });
 
 /** PUT /staff/:referenciaID — atualizar dados básicos (nome, telefone, perfil) */
-router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
+router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage", "Permissão insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const { nome, telefone, perfilId, accessRoleCodes } = req.body;
@@ -493,7 +493,7 @@ router.put("/staff/:referenciaID", requirePermission("corporation.staff.manage",
 });
 
 /** POST /staff/:referenciaID/suspend — desactivar conta */
-router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
+router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff.manage", "Permissão insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         if (referenciaID === req.user?.ReferenciaID) {
@@ -508,7 +508,7 @@ router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff
         }
         const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
         if (![1, 3].includes(targetPerfil)) {
-            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser suspensos aqui." });
+            return res.status(400).json({ status: "error", error: "Só funcionários internos podem ser suspensos aqui." });
         }
         await pool.query(
             "UPDATE utilizadores SET Ativo = 0, DataDesativacao = NOW(), UpdatedAt = NOW() WHERE ReferenciaID = ?",
@@ -527,7 +527,7 @@ router.post("/staff/:referenciaID/suspend", requirePermission("corporation.staff
 });
 
 /** POST /staff/:referenciaID/reactivate — reactivar conta */
-router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
+router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.staff.manage", "Permissão insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [exists] = await pool.query(
@@ -535,11 +535,11 @@ router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.st
             [referenciaID]
         );
         if (exists.length === 0) {
-            return res.status(404).json({ status: "error", error: "Utilizador nÃ£o encontrado." });
+            return res.status(404).json({ status: "error", error: "Utilizador não encontrado." });
         }
         const targetPerfil = Number(exists[0].PerfilId ?? exists[0].perfilid ?? 0);
         if (![1, 3].includes(targetPerfil)) {
-            return res.status(400).json({ status: "error", error: "SÃ³ funcionÃ¡rios internos podem ser reativados aqui." });
+            return res.status(400).json({ status: "error", error: "Só funcionários internos podem ser reativados aqui." });
         }
         const [r] = await pool.query(
             "UPDATE utilizadores SET Ativo = 1, DataDesativacao = NULL, UpdatedAt = NOW() WHERE ReferenciaID = ?",
@@ -558,7 +558,7 @@ router.post("/staff/:referenciaID/reactivate", requirePermission("corporation.st
 });
 
 /** POST /staff/:referenciaID/reset-password — gerar nova password temporária */
-router.post("/staff/:referenciaID/reset-password", requirePermission("corporation.staff.manage", "PermissÃ£o insuficiente para gerir colaboradores."), async (req, res) => {
+router.post("/staff/:referenciaID/reset-password", requirePermission("corporation.staff.manage", "Permissão insuficiente para gerir colaboradores."), async (req, res) => {
     try {
         const { referenciaID } = req.params;
         const [exists] = await pool.query(

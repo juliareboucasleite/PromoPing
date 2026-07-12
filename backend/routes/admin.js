@@ -16,6 +16,7 @@ import {
 } from "../middleware/auth.js";
 import { google } from "googleapis";
 import { sendResolvedBugToDiscord, sendCorporationAlertToDiscord } from "../utils/discord-notifications.js";
+import { notifyAdminProductPriceUpdate } from "../services/alerts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
@@ -105,7 +106,7 @@ async function verifyAdmin(req, res, next) {
 
 // Aplicar verificação de admin em todas as rotas
 // IMPORTANTE: verifyToken deve ser aplicado primeiro
-// EXCEÇÃO: /calendar/google-callback não precisa de autenticação (é callback do Google)
+// EXCEção: /calendar/google-callback não precisa de autenticação (é callback do Google)
 router.use((req, res, next) => {
     // Excluir callback do Google da verificação de token
     if (req.path === '/calendar/google-callback') {
@@ -314,7 +315,7 @@ router.patch("/users/:referenciaID", verifyToken, async (req, res) => {
 router.get("/products", async (req, res) => {
     console.log("[ADMIN] GET /api/admin/products chamado");
     try {
-        const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+        const limit = Math.min(parseInt(req.query.limit) || 50, 500);
         const offset = parseInt(req.query.offset) || 0;
 
         const [products] = await pool.query(
@@ -350,6 +351,175 @@ router.get("/products", async (req, res) => {
     } catch (err) {
         console.error("[ADMIN] Erro ao buscar produtos:", err);
         return handleDatabaseError(err, res, "Erro ao buscar produtos");
+    }
+});
+
+function isAllowedProductUrl(url) {
+    if (typeof url !== "string") return false;
+    const trimmed = url.trim();
+    return trimmed.startsWith("http://") || trimmed.startsWith("https://");
+}
+
+router.patch("/products/:id", async (req, res) => {
+    console.log("[ADMIN] PATCH /api/admin/products/:id chamado");
+    try {
+        const { id } = req.params;
+        const productId = parseInt(id, 10);
+        if (!Number.isFinite(productId) || productId <= 0) {
+            return res.status(400).json({ status: "error", error: "ID de produto inválido" });
+        }
+
+        const { Link, PrecoAtual, PrecoAlvo } = req.body || {};
+        const updates = [];
+        const values = [];
+
+        if (Link !== undefined) {
+            const normalizedLink = typeof Link === "string" ? Link.trim() : "";
+            if (!normalizedLink || !isAllowedProductUrl(normalizedLink)) {
+                return res.status(400).json({
+                    status: "error",
+                    error: "O link deve ser um URL válido (http ou https)."
+                });
+            }
+            updates.push("Link = ?");
+            values.push(normalizedLink);
+        }
+
+        if (PrecoAtual !== undefined) {
+            const precoAtual = Number(PrecoAtual);
+            if (!Number.isFinite(precoAtual) || precoAtual < 0) {
+                return res.status(400).json({
+                    status: "error",
+                    error: "Preço atual inválido."
+                });
+            }
+            updates.push("PrecoAtual = ?");
+            values.push(precoAtual);
+        }
+
+        if (PrecoAlvo !== undefined) {
+            const precoAlvo = Number(PrecoAlvo);
+            if (!Number.isFinite(precoAlvo) || precoAlvo <= 0) {
+                return res.status(400).json({
+                    status: "error",
+                    error: "Preço alvo inválido."
+                });
+            }
+            updates.push("PrecoAlvo = ?");
+            values.push(precoAlvo);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                error: "Nenhum campo para atualizar."
+            });
+        }
+
+        const [existingRows] = await pool.query(
+            `SELECT
+                p.Id,
+                p.Nome,
+                p.Link,
+                p.PrecoAtual,
+                p.PrecoAlvo,
+                p.ReferenciaID,
+                l.Nome AS Loja
+            FROM produtos p
+            LEFT JOIN lojas l ON l.Id = p.LojaId
+            WHERE p.Id = ? AND p.DeletedAt IS NULL`,
+            [productId]
+        );
+
+        if (existingRows.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Produto não encontrado."
+            });
+        }
+
+        const existing = existingRows[0];
+        const previousPrice = Number(existing.PrecoAtual) || 0;
+
+        updates.push("UpdatedAt = NOW()");
+        values.push(productId);
+
+        const [result] = await pool.query(
+            `UPDATE produtos SET ${updates.join(", ")} WHERE Id = ? AND DeletedAt IS NULL`,
+            values
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Produto não encontrado."
+            });
+        }
+
+        let emailNotification = { sent: false, reason: "price_unchanged" };
+
+        if (PrecoAtual !== undefined) {
+            const newPrice = Number(PrecoAtual);
+            if (Number.isFinite(newPrice) && newPrice !== previousPrice) {
+                await pool.query(
+                    "INSERT INTO historicoprecos (ProdutoId, Preco, DataRegisto) VALUES (?, ?, NOW())",
+                    [productId, newPrice]
+                );
+
+                emailNotification = await notifyAdminProductPriceUpdate(
+                    {
+                        Id: existing.Id,
+                        Nome: existing.Nome,
+                        Link: Link !== undefined ? Link.trim() : existing.Link,
+                        PrecoAlvo: PrecoAlvo !== undefined ? Number(PrecoAlvo) : existing.PrecoAlvo,
+                        ReferenciaID: existing.ReferenciaID,
+                        Loja: existing.Loja,
+                    },
+                    newPrice,
+                    previousPrice
+                );
+            }
+        }
+
+        res.json({
+            status: "ok",
+            message: "Produto atualizado com sucesso.",
+            emailNotification,
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao atualizar produto:", err);
+        return handleDatabaseError(err, res, "Erro ao atualizar produto");
+    }
+});
+
+router.delete("/products/:id", async (req, res) => {
+    console.log("[ADMIN] DELETE /api/admin/products/:id chamado");
+    try {
+        const { id } = req.params;
+        const productId = parseInt(id, 10);
+        if (!Number.isFinite(productId) || productId <= 0) {
+            return res.status(400).json({ status: "error", error: "ID de produto inválido" });
+        }
+
+        const [result] = await pool.query(
+            "UPDATE produtos SET DeletedAt = NOW(), UpdatedAt = NOW() WHERE Id = ? AND DeletedAt IS NULL",
+            [productId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                status: "error",
+                error: "Produto não encontrado."
+            });
+        }
+
+        res.json({
+            status: "ok",
+            message: "Produto removido com sucesso."
+        });
+    } catch (err) {
+        console.error("[ADMIN] Erro ao remover produto:", err);
+        return handleDatabaseError(err, res, "Erro ao remover produto");
     }
 });
 

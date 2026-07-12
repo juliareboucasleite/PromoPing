@@ -36,7 +36,7 @@ class RequestManager {
       cooldownDuration: 2 * 60 * 1000 // 2 minutos de pausa forçada quando tá perto do limite
     };
     
-    // Estado da tela de carregamento forçada (quando precisa fazer pausa preventiva)
+    // Estado da pausa preventiva de rate limit (sem recarregar a página)
     this.cooldownScreen = {
       isActive: false, // se a tela tá ativa
       endTime: 0 // quando a pausa termina
@@ -53,7 +53,7 @@ class RequestManager {
       return this.pendingRequests.get(requestId);
     }
 
-    // Se tá em cooldown forçado (tela de carregamento apareceu), espera terminar
+    // Se está em pausa preventiva de rate limit, espera terminar
     if (this.isInCooldown()) {
       await this.waitForCooldown();
     }
@@ -240,7 +240,7 @@ class RequestManager {
     console.log(`[RequestManager] Requisição ${this.requestCounter.count}/${this.requestCounter.maxRequests} na janela atual`);
   }
 
-  // Verifica se tá em cooldown ativo (tela de carregamento apareceu)
+  // Verifica se está em pausa preventiva de rate limit
   isInCooldown() {
     return this.cooldownScreen.isActive && Date.now() < this.cooldownScreen.endTime;
   }
@@ -265,133 +265,28 @@ class RequestManager {
     return this.isNearRateLimit() && !this.requestCounter.isShowingWarning && !this.isInCooldown();
   }
 
-  // Força uma pausa preventiva pra evitar rate limit (a parte mais importante do sistema)
+    // Força uma pausa preventiva pra evitar rate limit (sem recarregar a página)
   async forceCooldown() {
-    // Se já tá em cooldown, vaza (não faz 2x)
     if (this.requestCounter.isShowingWarning || this.isInCooldown()) {
       return;
     }
 
-    // Marca como ativo e calcula quando termina
     this.requestCounter.isShowingWarning = true;
     this.cooldownScreen.isActive = true;
     this.cooldownScreen.endTime = Date.now() + this.config.cooldownDuration;
-    
+
     const threshold = Math.floor(this.requestCounter.maxRequests * this.requestCounter.warningThreshold);
-    console.warn(`[RequestManager] Próximo do rate limit (${this.requestCounter.count}/${this.requestCounter.maxRequests}, threshold: ${threshold}). Forçando pausa preventiva de ${this.config.cooldownDuration / 1000}s.`);
+    console.warn(`[RequestManager] Próximo do rate limit (${this.requestCounter.count}/${this.requestCounter.maxRequests}, threshold: ${threshold}). Pausa preventiva de ${this.config.cooldownDuration / 1000}s.`);
 
-    // Mostra a tela de carregamento (user não pode fazer nada, é forçado a esperar)
-    this.showCooldownScreen();
-
-    // Espera o tempo de cooldown (2 minutos) - user fica preso na tela
     await this.delay(this.config.cooldownDuration);
 
-    // AQUI É A MÁGICA: reseta o contador e a janela (isso "limpa" o rate limit)
-    // Como reseta a janela, o backend vai contar como nova janela e não vai bloquear
     this.requestCounter.count = 0;
     this.requestCounter.windowStart = Date.now();
     this.requestCounter.isShowingWarning = false;
     this.cooldownScreen.isActive = false;
     this.cooldownScreen.endTime = 0;
 
-    // Esconde a tela de carregamento
-    this.hideCooldownScreen();
-
-    console.log('[RequestManager] Cooldown concluído. Contador resetado. Rate limit "limpo".');
-  }
-
-  // Mostra a tela de carregamento forçada (user não pode fechar, tem que esperar)
-  showCooldownScreen() {
-    // Cria o overlay se não existir (tela preta que cobre tudo)
-    let overlay = document.getElementById('rate-limit-cooldown-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'rate-limit-cooldown-overlay';
-      overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      `;
-      
-      overlay.innerHTML = `
-        <div style="text-align: center; max-width: 500px; padding: 40px;">
-          <div style="margin-bottom: 30px;">
-            <img src="assets/images/PromoPing.png" alt="PromoPing" style="max-width: 150px; animation: pulse 2s ease-in-out infinite;">
-          </div>
-          <h2 style="font-size: 24px; margin-bottom: 20px; color: #fff;">Optimizing the connection...</h2>
-          <p style="font-size: 16px; color: rgba(255,255,255,0.8); margin-bottom: 30px; line-height: 1.6;">
-            We are taking a short pause to ensure the best performance and avoid overloading the server.
-          </p>
-          <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 10px;">Time remaining:</div>
-            <div id="cooldown-timer" style="font-size: 32px; font-weight: bold; color: #FFA54B;">${Math.floor(this.config.cooldownDuration / 60000)}:${((this.config.cooldownDuration % 60000) / 1000).toString().padStart(2, '0')}</div>
-          </div>
-          <p style="font-size: 14px; color: rgba(255,255,255,0.6);">
-            Please wait while we optimize the connection...
-          </p>
-        </div>
-        <style>
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-          }
-        </style>
-      `;
-      
-      document.body.appendChild(overlay);
-    } else {
-      // Se já existe, só mostra de novo
-      overlay.style.display = 'flex';
-    }
-
-    // Atualiza o timer (mostra quanto tempo falta)
-    this.updateCooldownTimer();
-  }
-
-  // Atualiza o timer na tela (mostra countdown em tempo real)
-  updateCooldownTimer() {
-    const timerElement = document.getElementById('cooldown-timer');
-    if (!timerElement) return; // se não tem elemento, vaza
-
-    const startTime = Date.now();
-    const duration = this.config.cooldownDuration;
-    
-    // Função recursiva que atualiza o timer a cada segundo
-    const updateTimer = () => {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, duration - elapsed);
-      const minutes = Math.floor(remaining / 60000);
-      const seconds = Math.floor((remaining % 60000) / 1000);
-      
-      if (timerElement) {
-        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }
-      
-      // Se ainda tem tempo, atualiza de novo em 1 segundo
-      if (remaining > 0) {
-        setTimeout(updateTimer, 1000);
-      }
-    };
-    
-    updateTimer(); // começa a atualizar
-  }
-
-  // Esconde a tela de carregamento (quando o cooldown termina)
-  hideCooldownScreen() {
-    const overlay = document.getElementById('rate-limit-cooldown-overlay');
-    if (overlay) {
-      overlay.style.display = 'none'; // esconde o overlay
-    }
+    console.log('[RequestManager] Cooldown concluído. Contador resetado.');
   }
 }
 

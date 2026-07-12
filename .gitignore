@@ -111,3 +111,7 @@ backend/discord-bot/lavalink/plugins/
 backend/discord-bot/lavalink/*.log
 backend/discord-bot/lavalink/*.pid
 *.png
+
+# Python virtual environments
+**/.venv/
+python-scraper/.venv/

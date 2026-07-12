@@ -1,94 +1,82 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading - PromoPing</title>
+    <title>A optimizar - PromoPing</title>
     <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
-    
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-810832454');
-  </script>
-  <link rel="stylesheet" href="assets/styles/loading-screen.css">
+    <link rel="stylesheet" href="assets/styles/loading-screen.css">
 </head>
 <body>
     <div class="loading-container">
         <div class="logo-wrapper">
             <img src="assets/images/PromoPing.png" alt="PromoPing Logo" class="logo" id="logo">
         </div>
-        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-text" id="loadingText">A libertar memória e a optimizar o site...</div>
+        <div class="loading-subtext" id="loadingSubtext">Isto só acontece quando o browser fica sobrecarregado.</div>
     </div>
 
     <script>
-        (function() {
-            'use strict';
+        (function () {
+            "use strict";
 
-            // Settings
+            const params = new URLSearchParams(window.location.search);
+            const returnTo = params.get("returnTo");
+            const safeReturnTo =
+                returnTo &&
+                returnTo.startsWith("/") &&
+                !returnTo.includes("loading-screen.html")
+                    ? returnTo
+                    : "/index.html";
+
             const CONFIG = {
-                minLoadingTime: 1500, // Minimum loading time (ms) - helps with rate limit
-                redirectDelay: 500,  // Additional delay before redirecting
-                targetUrl: window.location.origin + '/index.html', // Full destination URL
-                enableCacheClear: true, // Clear browser cache
-                enableServiceWorkerClear: true // Clear service workers
+                minLoadingTime: 1200,
+                redirectDelay: 300,
+                targetUrl: window.location.origin + safeReturnTo,
             };
 
-            // Clear browser cache
             function clearCache() {
-                if (!CONFIG.enableCacheClear) return;
-
                 try {
-                    if ('caches' in window) {
-                        caches.keys().then(function(names) {
-                            names.forEach(function(name) {
-                                caches.delete(name);
-                            });
+                    if ("caches" in window) {
+                        caches.keys().then((names) => {
+                            names.forEach((name) => caches.delete(name));
                         });
                     }
-
-                    console.log('Cache cleared successfully');
                 } catch (error) {
-                    console.warn('Error clearing cache:', error);
+                    console.warn("Erro ao limpar cache:", error);
                 }
             }
 
-            // Clear service workers
             function clearServiceWorkers() {
-                if (!CONFIG.enableServiceWorkerClear) return;
-
                 try {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                            registrations.forEach(function(registration) {
-                                registration.unregister();
-                            });
+                    if ("serviceWorker" in navigator) {
+                        navigator.serviceWorker.getRegistrations().then((registrations) => {
+                            registrations.forEach((registration) => registration.unregister());
                         });
                     }
-                    console.log('Service workers cleared successfully');
                 } catch (error) {
-                    console.warn('Error clearing service workers:', error);
+                    console.warn("Erro ao limpar service workers:", error);
                 }
             }
 
-            // Add a timestamp to the URL to bypass cache
-            function addCacheBuster(url) {
-                const separator = url.includes('?') ? '&' : '?';
-                return url + separator + '_t=' + Date.now();
+            function clearHeavySessionData() {
+                try {
+                    sessionStorage.removeItem("pp_memory_reload_reason");
+                } catch (_) {}
             }
 
-            // Main initialisation
+            function addCacheBuster(url) {
+                const separator = url.includes("?") ? "&" : "?";
+                return url + separator + "_mem=" + Date.now();
+            }
+
             function init() {
                 const startTime = Date.now();
-
                 clearCache();
                 clearServiceWorkers();
+                clearHeavySessionData();
 
-                const logo = document.getElementById('logo');
+                const logo = document.getElementById("logo");
                 if (logo) {
                     logo.src = addCacheBuster(logo.src);
                 }
@@ -97,29 +85,26 @@
                     const elapsed = Date.now() - startTime;
                     const remaining = Math.max(0, CONFIG.minLoadingTime - elapsed);
 
-                    setTimeout(function() {
-                        const targetUrl = addCacheBuster(CONFIG.targetUrl);
-                        window.location.href = targetUrl;
+                    setTimeout(function () {
+                        window.location.replace(addCacheBuster(CONFIG.targetUrl));
                     }, remaining + CONFIG.redirectDelay);
                 }
 
-                if (document.readyState === 'complete') {
+                if (document.readyState === "complete") {
                     proceed();
                 } else {
-                    window.addEventListener('load', proceed);
+                    window.addEventListener("load", proceed);
                 }
 
-                // Fallback: if after 5s we haven't redirected, force the redirect
-                setTimeout(function() {
-                    if (window.location.href.includes('loading-screen.html')) {
-                        window.location.href = addCacheBuster(CONFIG.targetUrl);
+                setTimeout(function () {
+                    if (window.location.pathname.includes("loading-screen.html")) {
+                        window.location.replace(addCacheBuster(CONFIG.targetUrl));
                     }
                 }, 5000);
             }
 
-            // Initialise when the DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", init);
             } else {
                 init();
             }
@@ -127,5 +112,3 @@
     </script>
 </body>
 </html>
-
-

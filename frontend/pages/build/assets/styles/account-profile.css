@@ -190,7 +190,7 @@ fieldset#passwordFormFieldset:disabled {
     box-shadow: 0 0 0 3px rgba(244, 175, 85, 0.1);
 }
 
-/* ===== BOTÃO SALVAR ===== */
+/* ===== BOTão SALVAR ===== */
 .save-btn {
     background: linear-gradient(135deg, #f4af55, #ed9a6c, #dc7c35);
     color: #fff;
@@ -224,7 +224,7 @@ fieldset#passwordFormFieldset:disabled {
     transform: rotate(180deg);
 }
 
-/* ===== CONFIGURAÇÃO DE SENHA ===== */
+/* ===== CONFIGURAção DE SENHA ===== */
 .password-form {
     display: flex;
     flex-direction: column;
@@ -286,7 +286,7 @@ fieldset#passwordFormFieldset:disabled {
     margin-bottom: 16px;
 }
 
-/* ===== PREFERÊNCIAS DE NOTIFICAÇÃO ===== */
+/* ===== PREFERÊNCIAS DE NOTIFICAção ===== */
 .notification-preferences {
     display: flex;
     flex-direction: column;
@@ -629,7 +629,7 @@ input:checked + .toggle-slider:before {
     color: #495057;
 }
 
-/* ===== BOTÃO DE RESET ICON ===== */
+/* ===== BOTão DE RESET ICON ===== */
 .reset-icon-btn {
     background: none;
     border: none;
@@ -692,7 +692,7 @@ input:checked + .toggle-slider:before {
     color: #28a745;
 }
 
-/* ===== SEÇÃO DE PLANO ===== */
+/* ===== SEção DE PLANO ===== */
 .plan-info {
     display: flex;
     flex-direction: column;

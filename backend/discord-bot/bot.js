@@ -2848,7 +2848,7 @@ class PromoPingBot {
                 await this.youtubeFeedService.checkyt();
                 this.lastYoutubeCheck = new Date();
             } catch (error) {
-                console.error('[DISCORD] Erro na primeira verificaÃ§Ã£o do YouTube:', error.message);
+                console.error('[DISCORD] Erro na primeira verificação do YouTube:', error.message);
             }
         }, 15000);
     }
@@ -3688,26 +3688,10 @@ class PromoPingBot {
                     .setDescription('Lista seus produtos monitorados'),
                 new SlashCommandBuilder()
                     .setName('login')
-                    .setDescription('Faz login na sua conta PromoPing')
-                    .addStringOption(option =>
-                        option.setName('email')
-                            .setDescription('Seu email')
-                            .setRequired(true))
-                    .addStringOption(option =>
-                        option.setName('senha')
-                            .setDescription('Sua senha')
-                            .setRequired(true)),
+                    .setDescription('Liga a tua conta PromoPing através do site'),
                 new SlashCommandBuilder()
                     .setName('registar')
-                    .setDescription('Cria uma nova conta PromoPing')
-                    .addStringOption(option =>
-                        option.setName('email')
-                            .setDescription('Seu email')
-                            .setRequired(true))
-                    .addStringOption(option =>
-                        option.setName('senha')
-                            .setDescription('Sua senha (mínimo 6 caracteres)')
-                            .setRequired(true)),
+                    .setDescription('Abre o site PromoPing para criar conta'),
                 new SlashCommandBuilder()
                     .setName('social-feed')
                     .setDescription('Gerencia notificações de live da Twitch')

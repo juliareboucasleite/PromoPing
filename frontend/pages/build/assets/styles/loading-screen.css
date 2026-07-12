@@ -49,11 +49,21 @@
         }
 
         .loading-text {
-            color: #666;
-            font-size: 14px;
-            font-weight: 400;
-            opacity: 0.8;
+            color: #444;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0.9;
+            text-align: center;
+            max-width: 320px;
             animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        .loading-subtext {
+            color: #888;
+            font-size: 12px;
+            text-align: center;
+            max-width: 280px;
+            line-height: 1.4;
         }
 
         @keyframes fadeInOut {

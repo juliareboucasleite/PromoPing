@@ -55,7 +55,7 @@ export async function salvarPreco(produtoId, preco) {
     } catch (error) {
       console.error(`[HISTORICO] Erro ao processar alertas para produto ${produtoId}:`, error);
       // Não falhar a inserção se os alertas falharem
-      // ESSA DECISÃO AQUI É IMPORTANTE: prefere salvar o preço mesmo se alerta falhar
+      // ESSA DECISão AQUI É IMPORTANTE: prefere salvar o preço mesmo se alerta falhar
       // Porque é melhor ter preço salvo sem notificação do que perder o preço
     }
   }

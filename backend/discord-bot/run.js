@@ -105,7 +105,7 @@ function checkFile(file) {
 function runSetup() {
     log('Executando setup automático...', 'blue');
     try {
-        execSync('node scripts/setup.js', {
+        execSync('node scripts/setup-postgres.js', {
             stdio: 'inherit',
             cwd: rootDir
         });

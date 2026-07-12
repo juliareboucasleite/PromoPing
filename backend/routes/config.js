@@ -42,7 +42,7 @@ router.put("/profile", verifyToken, async (req, res) => {
 
 /**
  * ===============================
- * PREFERÊNCIAS DE NOTIFICAÇÃO
+ * PREFERÊNCIAS DE NOTIFICAção
  * ===============================
  */
 

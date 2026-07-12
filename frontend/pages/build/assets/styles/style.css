@@ -1162,19 +1162,45 @@ body.theme-promoping {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   background-attachment: fixed;
   min-height: 100vh;
+  position: relative;
 }
 
 body.theme-promoping::before {
-  content: '';
+  content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.2;
-  z-index: -1;
+  inset: 0;
   pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 245, 213, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 245, 213, 0.22) 1px, transparent 1px);
+  background-size: 52px 52px;
+  background-position: center center;
+  mask-image: radial-gradient(ellipse 130% 110% at 50% 42%, #000 22%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 130% 110% at 50% 42%, #000 22%, transparent 90%);
+}
+
+body.theme-promoping::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(220, 124, 53, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220, 124, 53, 0.12) 1px, transparent 1px);
+  background-size: 156px 156px;
+  background-position: center center;
+  mask-image: radial-gradient(ellipse 140% 120% at 50% 45%, #000 18%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse 140% 120% at 50% 45%, #000 18%, transparent 92%);
+}
+
+body.theme-promoping #header-placeholder,
+body.theme-promoping main,
+body.theme-promoping #footer-placeholder,
+body.theme-promoping .modern-footer {
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== COMO FUNCIONA ===== */
@@ -1338,7 +1364,7 @@ body.theme-promoping::before {
   letter-spacing: 2px;
 }
 
-/* ===== SEÇÃO DE PARCEIROS/LOJAS ===== */
+/* ===== SEção DE PARCEIROS/LOJAS ===== */
 .pp-partners {
   padding: 80px 20px;
   padding-top: 5rem;
@@ -3063,14 +3089,17 @@ iframe {
   display: inline-block;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #FFA54B;
+  color: #fff5d5;
   margin: 0 0 14px;
-  padding: 5px 12px;
-  background: rgba(255, 165, 75, 0.12);
-  border: 1px solid rgba(255, 165, 75, 0.32);
+  padding: 6px 14px;
+  background: rgba(14, 15, 25, 0.28);
+  border: 1px solid rgba(255, 245, 213, 0.35);
   border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(14, 15, 25, 0.12);
 }
 
 .pp-partners-title {
@@ -3078,27 +3107,29 @@ iframe {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #ffffff;
-  margin: 0 0 36px;
+  margin: 0 0 40px;
   line-height: 1.1;
-  text-shadow: none;
+  text-shadow: 0 2px 16px rgba(14, 15, 25, 0.18);
 }
 
 .pp-marquee {
   position: relative;
+  z-index: 1;
   width: 100%;
   overflow: hidden;
+  padding: 8px 0 4px;
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 9%,
-    #000 91%,
+    #000 6%,
+    #000 94%,
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 9%,
-    #000 91%,
+    #000 6%,
+    #000 94%,
     transparent 100%
   );
 }
@@ -3106,9 +3137,10 @@ iframe {
 .pp-marquee-track {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   width: max-content;
-  animation: pp-marquee-scroll 44s linear infinite;
+  padding: 4px 0;
+  animation: pp-marquee-scroll 52s linear infinite;
   will-change: transform;
 }
 
@@ -3129,6 +3161,8 @@ iframe {
   letter-spacing: -0.005em;
   white-space: nowrap;
   user-select: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition:
     background 220ms ease,
     border-color 220ms ease,
@@ -3166,11 +3200,11 @@ iframe {
     padding: 64px 0 72px;
   }
   .pp-partners-title {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
   .pp-marquee-track {
-    gap: 10px;
-    animation-duration: 34s;
+    gap: 12px;
+    animation-duration: 40s;
   }
   .pp-marquee-pill {
     padding: 10px 16px;

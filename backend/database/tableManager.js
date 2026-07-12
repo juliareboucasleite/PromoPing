@@ -5,7 +5,7 @@
  * quando uma query bate com tabela inexistente.
  *
  * Regras:
- * - NÃO cria tabelas novas por inferência
+ * - Não cria tabelas novas por inferência
  * - Usa apenas definições existentes em TABLE_DEFINITIONS
  */
 

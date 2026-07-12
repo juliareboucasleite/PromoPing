@@ -705,7 +705,7 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
 
         if (senderType === "support") {
             if (!req.user?.ReferenciaID) {
-                return res.status(401).json({ error: "AutenticaÃ§Ã£o obrigatÃ³ria para respostas de suporte" });
+                return res.status(401).json({ error: "Autenticação obrigatória para respostas de suporte" });
             }
 
             const accessContext = await resolveAccessContext(
@@ -714,7 +714,7 @@ router.post("/messages/:id/reply", optionalToken, async (req, res) => {
             );
 
             if (!hasPermission(accessContext, "support.reply")) {
-                return res.status(403).json({ error: "PermissÃ£o insuficiente para responder como suporte" });
+                return res.status(403).json({ error: "Permissão insuficiente para responder como suporte" });
             }
         }
 

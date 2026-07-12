@@ -69,6 +69,12 @@
         return null;
     }
 
+    function truncateLink(link, max = 42) {
+        if (!link) return 'N/A';
+        if (link.length <= max) return link;
+        return `${link.slice(0, max)}...`;
+    }
+
     let cachedProducts = [];
 
     function getDistinctLojas(products) {
@@ -133,23 +139,65 @@
                         <th>Preco Atual</th>
                         <th>Preco Alvo</th>
                         <th>Loja</th>
+                        <th>Link</th>
                         <th>Criado</th>
+                        <th>Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${products.map((product) => `
+                    ${products.map((product) => {
+                        const id = pick(product, 'Id', 'id');
+                        const link = pick(product, 'Link', 'link') || '';
+                        return `
                         <tr>
                             <td>${escapeHtml(pick(product, 'Nome', 'nome') || 'N/A')}</td>
                             <td>${escapeHtml(pick(product, 'UserName', 'username') || 'N/A')}</td>
                             <td>EUR ${parseFloat(pick(product, 'PrecoAtual', 'precoatual') || 0).toFixed(2)}</td>
                             <td>EUR ${parseFloat(pick(product, 'PrecoAlvo', 'precoalvo') || 0).toFixed(2)}</td>
                             <td>${escapeHtml(pick(product, 'Loja', 'loja') || 'N/A')}</td>
+                            <td>
+                                ${link
+                                    ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(link)}" style="color: #93c5fd; text-decoration: none;">${escapeHtml(truncateLink(link))}</a>`
+                                    : 'N/A'}
+                            </td>
                             <td>${formatDate(pick(product, 'DataCriacao', 'datacriacao'))}</td>
+                            <td>
+                                <div class="product-actions">
+                                    <button type="button" class="edit-product-btn" data-id="${escapeHtml(String(id))}" title="Editar produto">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="delete-product-btn" data-id="${escapeHtml(String(id))}" title="Remover produto antigo">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                            <path d="M10 11v6"></path>
+                                            <path d="M14 11v6"></path>
+                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </tbody>
             </table>
         `;
+
+        document.querySelectorAll('.edit-product-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                openEditModal(btn.dataset.id, cachedProducts);
+            });
+        });
+
+        document.querySelectorAll('.delete-product-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                deleteProduct(btn.dataset.id, cachedProducts);
+            });
+        });
     }
 
     function applyFilter(filterKey) {
@@ -162,6 +210,104 @@
                 btn.classList.toggle('active', btn.dataset.filter === filterKey);
             });
         }
+    }
+
+    function openEditModal(productId, products) {
+        const product = (products || []).find((item) => String(pick(item, 'Id', 'id')) === String(productId));
+        if (!product) {
+            showAlert('Produto nao encontrado.');
+            return;
+        }
+
+        document.getElementById('editProductId').value = pick(product, 'Id', 'id') || '';
+        document.getElementById('editProductNome').value = pick(product, 'Nome', 'nome') || '';
+        document.getElementById('editProductUser').value = pick(product, 'UserName', 'username') || 'N/A';
+        document.getElementById('editProductLoja').value = pick(product, 'Loja', 'loja') || 'N/A';
+        document.getElementById('editProductLink').value = pick(product, 'Link', 'link') || '';
+        document.getElementById('editProductPrecoAtual').value = parseFloat(pick(product, 'PrecoAtual', 'precoatual') || 0).toFixed(2);
+        document.getElementById('editProductPrecoAlvo').value = parseFloat(pick(product, 'PrecoAlvo', 'precoalvo') || 0).toFixed(2);
+
+        const modal = document.getElementById('editProductModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editProductModal');
+        const form = document.getElementById('editProductForm');
+        if (modal) modal.classList.remove('show');
+        if (form) form.reset();
+    }
+
+    async function updateProduct(event) {
+        event.preventDefault();
+
+        const productId = document.getElementById('editProductId').value;
+        const link = document.getElementById('editProductLink').value.trim();
+        const precoAtual = parseFloat(document.getElementById('editProductPrecoAtual').value);
+        const precoAlvo = parseFloat(document.getElementById('editProductPrecoAlvo').value);
+
+        if (!link || !link.startsWith('http')) {
+            showAlert('Introduza um link valido (http ou https).');
+            return;
+        }
+
+        if (!Number.isFinite(precoAtual) || precoAtual < 0) {
+            showAlert('Preço atual invalido.');
+            return;
+        }
+
+        if (!Number.isFinite(precoAlvo) || precoAlvo <= 0) {
+            showAlert('Preço alvo invalido.');
+            return;
+        }
+
+        try {
+            const response = await fetchAuth(`/api/admin/products/${productId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    Link: link,
+                    PrecoAtual: precoAtual,
+                    PrecoAlvo: precoAlvo
+                })
+            });
+
+            const result = await response.json();
+            const emailSent = result?.emailNotification?.sent;
+            showAlert(
+                emailSent
+                    ? 'Produto atualizado com sucesso! O utilizador foi notificado por email sobre o novo preço.'
+                    : 'Produto atualizado com sucesso!'
+            );
+            closeEditModal();
+            await loadProducts();
+        } catch (error) {
+            console.error('[PRODUTOS] Erro ao atualizar produto:', error);
+            showAlert(`Erro ao atualizar produto: ${error.message}`);
+        }
+    }
+
+    function deleteProduct(productId, products) {
+        const product = (products || []).find((item) => String(pick(item, 'Id', 'id')) === String(productId));
+        const nome = pick(product, 'Nome', 'nome') || 'este produto';
+        const user = pick(product, 'UserName', 'username') || 'N/A';
+
+        showConfirm(
+            `Remover "${nome}" do utilizador ${user}? Esta acao marca o produto como eliminado e nao pode ser desfeita facilmente.`,
+            'Remover produto',
+            async () => {
+                try {
+                    const response = await fetchAuth(`/api/admin/products/${productId}`, {
+                        method: 'DELETE'
+                    });
+                    await response.json();
+                    showAlert('Produto removido com sucesso!');
+                    await loadProducts();
+                } catch (error) {
+                    console.error('[PRODUTOS] Erro ao remover produto:', error);
+                    showAlert(`Erro ao remover produto: ${error.message}`);
+                }
+            }
+        );
     }
 
     async function loadProducts() {
@@ -196,8 +342,20 @@
 
         const refreshBtn = document.getElementById('refreshProductsBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const editForm = document.getElementById('editProductForm');
+        const closeModalBtn = document.getElementById('closeEditProductModal');
+        const cancelBtn = document.getElementById('cancelEditProductBtn');
+        const modal = document.getElementById('editProductModal');
 
         if (refreshBtn) refreshBtn.addEventListener('click', loadProducts);
+        if (editForm) editForm.addEventListener('submit', updateProduct);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeEditModal);
+        if (modal) {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeEditModal();
+            });
+        }
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 showConfirm('Tem certeza que deseja sair?', 'Sair', () => {

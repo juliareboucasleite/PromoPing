@@ -448,11 +448,32 @@
   let testimonialsInited = false;
 
   function init() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadTestimonials);
-    } else {
-      setTimeout(loadTestimonials, 50);
+    const section = document.getElementById('testimonials') || document.getElementById('testimonials-canvas')?.closest('section');
+    const canvas = document.getElementById('testimonials-canvas');
+    if (!canvas) return;
+
+    const start = function () {
+      if (testimonialsInited) return;
+      testimonialsInited = true;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadTestimonials);
+      } else {
+        loadTestimonials();
+      }
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(function (entries) {
+        if (entries.some(function (entry) { return entry.isIntersecting; })) {
+          observer.disconnect();
+          start();
+        }
+      }, { rootMargin: '200px 0px' });
+      observer.observe(section || canvas);
+      return;
     }
+
+    start();
   }
 
   init();

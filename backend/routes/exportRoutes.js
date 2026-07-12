@@ -12,13 +12,13 @@ import {
   verificarPlanoPremium,
   obterInfoPlano
 } from "../middleware/verificarPlano.js";
-import { verifyToken } from "../middleware/auth.js"; // Middleware de autenticaÃ§Ã£o existente
+import { verifyToken } from "../middleware/auth.js"; // Middleware de autenticação existente
 
 const router = express.Router();
 
 /**
  * GET /api/user/plano
- * Obter informaÃ§Ãµes do plano do usuÃ¡rio
+ * Obter informações do plano do usuário
  */
 router.get("/user/plano", verifyToken, obterPlanoUsuario);
 
@@ -36,7 +36,7 @@ router.get("/produtos/pdf",
 
 /**
  * GET /api/exportar/relatorio/completo
- * Exportar relatÃ³rio completo (Premium apenas)
+ * Exportar relatório completo (Premium apenas)
  */
 router.get("/relatorio/completo",
   verifyToken,
@@ -60,12 +60,12 @@ router.get("/pdf",
 
 /**
  * GET /api/exportar/teste/plano
- * Testar verificaÃ§Ã£o de plano (apenas para desenvolvimento)
+ * Testar verificação de plano (apenas para desenvolvimento)
  */
 router.get("/teste/plano", verifyToken, obterInfoPlano, (req, res) => {
   res.json({
     status: "ok",
-    message: "Teste de verificaÃ§Ã£o de plano",
+    message: "Teste de verificação de plano",
     plano: req.planoInfo,
     usuario: {
       ReferenciaID: req.user.ReferenciaID,
@@ -77,7 +77,7 @@ router.get("/teste/plano", verifyToken, obterInfoPlano, (req, res) => {
 
 /**
  * GET /api/exportar/status
- * Status das funcionalidades de exportaÃ§Ã£o
+ * Status das funcionalidades de exportação
  */
 router.get("/status", verifyToken, obterInfoPlano, (req, res) => {
   const plano = req.planoInfo;
@@ -112,7 +112,7 @@ router.use((err, req, res, next) => {
   if (err.status === 401) {
     return res.status(401).json({
       status: "error",
-      message: "NÃ£o autorizado - faÃ§a login primeiro",
+      message: "Não autorizado - faça login primeiro",
       login_url: "/login",
       timestamp: new Date().toISOString()
     });

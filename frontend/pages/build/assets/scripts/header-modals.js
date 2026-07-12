@@ -745,6 +745,13 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
+    const btnAppleLogin = document.getElementById('btnAppleLogin');
+    if (btnAppleLogin) {
+      btnAppleLogin.addEventListener('click', () => {
+        window.location.href = "/auth/apple";
+      });
+    }
+
     // QR Code Login
     const btnQRCodeLogin = document.getElementById('btnQRCodeLogin');
     if (btnQRCodeLogin) {
@@ -873,6 +880,8 @@ document.addEventListener('DOMContentLoaded', function() {
               registerData.oauthId = window.oauthTempData.discordId;
             } else if (window.oauthTempData.provider === 'github') {
               registerData.oauthId = window.oauthTempData.githubId;
+            } else if (window.oauthTempData.provider === 'apple') {
+              registerData.oauthId = window.oauthTempData.appleId;
             }
             registerData.fotoPerfil = window.oauthTempData.fotoPerfil; // foto do perfil do OAuth
           }
@@ -921,6 +930,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnGoogleRegister) {
       btnGoogleRegister.addEventListener('click', () => {
         window.location.href = "/auth/google";
+      });
+    }
+
+    const btnAppleRegister = document.getElementById('btnAppleRegister');
+    if (btnAppleRegister) {
+      btnAppleRegister.addEventListener('click', () => {
+        window.location.href = "/auth/apple";
       });
     }
 

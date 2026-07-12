@@ -1850,6 +1850,58 @@ html {
     height: 16px;
 }
 
+.product-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.edit-product-btn {
+    background: var(--info-soft);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+    padding: 0.4rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out), border-color 0.18s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+.edit-product-btn:hover {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: #3b82f6;
+    color: #bfdbfe;
+    transform: translateY(-1px);
+}
+
+.delete-product-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    padding: 0.4rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out), border-color 0.18s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+.delete-product-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fecaca;
+    transform: translateY(-1px);
+}
+
+.edit-product-btn svg,
+.delete-product-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
 .sugestao-view-content .form-group { margin-bottom: 1rem; }
 .sugestao-view-text { margin: 0.25rem 0 0; color: var(--text-primary, #e6e6e6); font-size: 0.95rem; }
 .sugestao-view-desc { white-space: pre-wrap; max-height: 200px; overflow-y: auto; }

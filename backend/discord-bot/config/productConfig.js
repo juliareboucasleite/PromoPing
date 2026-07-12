@@ -14,7 +14,7 @@ const REVIEWER_ROLE_IDS = (
 const PRODUCT = {
     name: process.env.PRODUCT_NAME || 'SpotiCat',
     slug: (process.env.PRODUCT_SLUG || 'spotcat').toLowerCase().replace(/[^a-z0-9]/g, ''),
-    paymentUrl: process.env.PRODUCT_PAYMENT_URL || 'https://revolut.me/',
+    paymentUrl: process.env.PRODUCT_PAYMENT_URL || 'https://checkout.revolut.com/pay/9b60e0bf-18bd-486a-9b88-74cb30b68c8a',
     price: process.env.PRODUCT_PRICE || '$5 USD',
     bannerUrl: process.env.PRODUCT_BANNER_URL || null,
     reviewerRoleIds: REVIEWER_ROLE_IDS,
@@ -37,7 +37,7 @@ function buildPurchaseWelcome(user) {
     return (
         `Welcome ${user}!\n\n` +
         `If you are purchasing **${PRODUCT.name}** (${PRODUCT.price}), follow these steps:\n\n` +
-        `**1.** Pay via Revolut → ${PRODUCT.paymentUrl}\n` +
+        `**1.** Pay via [Revolut Checkout](${PRODUCT.paymentUrl})\n` +
         `**2.** Send proof of payment in this channel (screenshot or receipt)\n` +
         `**3.** Wait for staff to verify and release your access\n\n` +
         'This helps us deliver your license faster. Thank you for your purchase.'

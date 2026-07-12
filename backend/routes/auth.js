@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import express from "express";
 import passport from "passport";
 import {
@@ -13,6 +13,9 @@ import {
 import {
     pool
 } from "../database/db.js";
+import {
+    buildPasswordResetEmail
+} from "../services/emailTemplates.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import {
@@ -60,10 +63,17 @@ import {
     validateUserSessionRefreshToken
 } from "../services/userSessions.service.js";
 import QRCode from "qrcode";
+import crypto from "crypto";
+import {
+    isAppleAuthConfigured,
+    getAppleAuthorizeUrl,
+    exchangeAppleAuthCode,
+    parseAppleUserName,
+} from "../utils/appleOAuth.js";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
-}); // Garante que .env estÃ¡ sendo lido da raiz
+}); // Garante que .env está sendo lido da raiz
 
 const router = express.Router();
 
@@ -93,7 +103,7 @@ const USER_SELECT_FIELDS = `
     dinheiro_poupado
 `;
 
-// ExpiraÃ§Ã£o: access 30 dias, refresh 60 dias (renovaÃ§Ã£o automÃ¡tica)
+// Expiração: access 30 dias, refresh 60 dias (renovação automática)
 const JWT_ACCESS_EXPIRY = "30d";
 const JWT_REFRESH_EXPIRY = "60d";
 
@@ -125,7 +135,7 @@ async function emitirTokensComSessao(req, ReferenciaID, email) {
     return { token, refreshToken, sessionId };
 }
 
-/** Token de curta duraÃ§Ã£o (5 min) usado apenas para completar 2FA no login. */
+/** Token de curta duração (5 min) usado apenas para completar 2FA no login. */
 function gerarToken2FAPending(ReferenciaID, email) {
     const secret = process.env.JWT_SECRET;
     return jwt.sign(
@@ -139,13 +149,13 @@ function gerarCodigo() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// FunÃ§Ã£o para enviar email
-async function enviarEmail(to, subject, text) {
+// Função para enviar email
+async function enviarEmail(to, subject, content, plainText) {
     try {
         const {
             sendEmail
         } = await import("../services/notify.js");
-        await sendEmail(to, subject, text);
+        await sendEmail(to, subject, content, plainText);
         console.log(` Email enviado para ${to}`);
         return {
             success: true
@@ -187,17 +197,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
                     // Verificar se profile tem emails
                     if (!profile.emails || profile.emails.length === 0) {
-                        const error = new Error("Email nÃ£o fornecido pelo Google. Certifique-se de que seu email estÃ¡ visÃ­vel no Google.");
-                        console.error("[GOOGLE STRATEGY] Erro: Email nÃ£o fornecido pelo Google");
+                        const error = new Error("Email não fornecido pelo Google. Certifique-se de que seu email está visível no Google.");
+                        console.error("[GOOGLE STRATEGY] Erro: Email não fornecido pelo Google");
                         return done(error, null);
                     }
 
                     const email = profile.emails[0].value;
                     const googleId = profile.id;
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-                    const nome = profile.displayName || profile.name?.givenName || 'UsuÃ¡rio Google';
+                    const nome = profile.displayName || profile.name?.givenName || 'Usuário Google';
 
-                    console.log("[GOOGLE STRATEGY] Processando usuÃ¡rio:", { email, nome, googleId });
+                    console.log("[GOOGLE STRATEGY] Processando usuário:", { email, nome, googleId });
 
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
@@ -230,8 +240,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                     );
                                 }
                             } catch (updateErr) {
-                                // Se campo nÃ£o existe, tentar atualizar apenas o que existe
-                                console.log("[GOOGLE STRATEGY] Erro ao atualizar (campo pode nÃ£o existir):", updateErr.message);
+                                // Se campo não existe, tentar atualizar apenas o que existe
+                                console.log("[GOOGLE STRATEGY] Erro ao atualizar (campo pode não existir):", updateErr.message);
                                 try {
                                     if (fotoPerfil) {
                                         await pool.query(
@@ -240,7 +250,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                         );
                                     }
                                 } catch (fotoErr) {
-                                    console.log("[GOOGLE STRATEGY] FotoPerfil nÃ£o existe, ignorando");
+                                    console.log("[GOOGLE STRATEGY] FotoPerfil não existe, ignorando");
                                 }
                                 try {
                                     if (googleId) {
@@ -250,22 +260,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                         );
                                     }
                                 } catch (googleIdErr) {
-                                    console.log("[GOOGLE STRATEGY] google_id nÃ£o existe, ignorando");
+                                    console.log("[GOOGLE STRATEGY] google_id não existe, ignorando");
                                 }
                             }
                         }
-                        console.log("[GOOGLE STRATEGY] UsuÃ¡rio Google jÃ¡ existe:", email);
+                        console.log("[GOOGLE STRATEGY] Usuário Google já existe:", email);
                     } else {
-                        // Determinar PerfilId: se nÃ£o existe admin (PerfilId=1), o primeiro registro vira admin; caso contrÃ¡rio, padrÃ£o user (2)
+                        // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
                         const [adminCountRows] = await pool.query(
                             "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
                         );
                         const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
                         
-                        // Gerar ReferenciaID para novo usuÃ¡rio
+                        // Gerar ReferenciaID para novo usuário
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Inserir novo usuÃ¡rio com foto de perfil, google_id e campos necessÃ¡rios
+                        // Inserir novo usuário com foto de perfil, google_id e campos necessários
                         try {
                             // Tentar inserir com google_id, FotoPerfil, SenhaHash, Ativo e PerfilId
                             const [result] = await pool.query(
@@ -273,18 +283,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 [novaReferenciaID, nome, email, null, fotoPerfil, googleId, '', perfilId]
                             );
                             referenciaID = novaReferenciaID;
-                            console.log("[GOOGLE STRATEGY] Novo usuÃ¡rio criado com ReferenciaID:", referenciaID);
+                            console.log("[GOOGLE STRATEGY] Novo usuário criado com ReferenciaID:", referenciaID);
                             
-                            // Atualizar mÃ©tricas automaticamente
+                            // Atualizar métricas automaticamente
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
+                                console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
                             } catch (metricError) {
-                                console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
+                                console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                             }
                         } catch (insertErr) {
                             console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (primeira tentativa):', insertErr.stack || insertErr.message || insertErr);
-                            // Se campos nÃ£o existem, tentar inserir sem eles
+                            // Se campos não existem, tentar inserir sem eles
                             try {
                                 const [result] = await pool.query(
                                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
@@ -292,7 +302,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 );
                                 referenciaID = novaReferenciaID;
                                 
-                                // Tentar atualizar google_id separadamente se possÃ­vel
+                                // Tentar atualizar google_id separadamente se possível
                                 if (googleId) {
                                     try {
                                         await pool.query(
@@ -300,27 +310,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo google_id nÃ£o existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
                                     }
                                 }
                                 
-                                // Atualizar mÃ©tricas automaticamente
+                                // Atualizar métricas automaticamente
                                 try {
                                     await atualizarMetricasAutomaticamente();
-                                    console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
                                 } catch (metricError) {
-                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                                 }
                             } catch (insertErr2) {
                                 console.error('[GOOGLE STRATEGY] Erro ao inserir utilizador (segunda tentativa):', insertErr2.stack || insertErr2.message || insertErr2);
-                                // Se FotoPerfil nÃ£o existe, inserir sem ele mas com campos essenciais
+                                // Se FotoPerfil não existe, inserir sem ele mas com campos essenciais
                                 const [result] = await pool.query(
                                     "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), 1)",
                                     [novaReferenciaID, nome, email, null, '', perfilId]
                                 );
                                 referenciaID = novaReferenciaID;
                                 
-                                // Tentar atualizar google_id separadamente se possÃ­vel
+                                // Tentar atualizar google_id separadamente se possível
                                 if (googleId) {
                                     try {
                                         await pool.query(
@@ -328,11 +338,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [googleId, referenciaID]
                                         );
                                     } catch (googleIdErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo google_id nÃ£o existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo google_id não existe, ignorando");
                                     }
                                 }
                                 
-                                // Tentar atualizar FotoPerfil separadamente se possÃ­vel
+                                // Tentar atualizar FotoPerfil separadamente se possível
                                 if (fotoPerfil) {
                                     try {
                                         await pool.query(
@@ -340,16 +350,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                             [fotoPerfil, referenciaID]
                                         );
                                     } catch (fotoErr) {
-                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil nÃ£o existe, ignorando");
+                                        console.log("[GOOGLE STRATEGY] Campo FotoPerfil não existe, ignorando");
                                     }
                                 }
                                 
-                                // Atualizar mÃ©tricas automaticamente
+                                // Atualizar métricas automaticamente
                                 try {
                                     await atualizarMetricasAutomaticamente();
-                                    console.log("[GOOGLE STRATEGY] MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Google");
+                                    console.log("[GOOGLE STRATEGY] Métricas atualizadas após criação de novo utilizador via Google");
                                 } catch (metricError) {
-                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar mÃ©tricas:", metricError);
+                                    console.error("[GOOGLE STRATEGY] Erro ao atualizar métricas:", metricError);
                                 }
                             }
                         }
@@ -362,7 +372,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         [referenciaID, "email"]
                     );
 
-                    // Salvar tokens OAuth para sincronizaÃ§Ã£o de calendÃ¡rio
+                    // Salvar tokens OAuth para sincronização de calendário
                     if (accessToken) {
                         try {
                             // Garantir que a tabela existe
@@ -384,17 +394,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                             `);
 
-                            // Garantir Ã­ndice/constraint Ãºnico em ReferenciaID para ON CONFLICT funcionar no Postgres
+                            // Garantir índice/constraint único em ReferenciaID para ON CONFLICT funcionar no Postgres
                             try {
                                 await pool.query(
                                     "CREATE UNIQUE INDEX IF NOT EXISTS idx_google_oauth_tokens_referenciaid ON google_oauth_tokens (ReferenciaID)"
                                 );
                             } catch (idxErr) {
-                                // Alguns ambientes (compat shim) podem nÃ£o suportar IF NOT EXISTS na criaÃ§Ã£o de index; ignorar erros
-                                console.log("[GOOGLE STRATEGY] Aviso ao criar Ã­ndice Ãºnico google_oauth_tokens.ReferenciaID:", idxErr.message || idxErr);
+                                // Alguns ambientes (compat shim) podem não suportar IF NOT EXISTS na criação de index; ignorar erros
+                                console.log("[GOOGLE STRATEGY] Aviso ao criar índice único google_oauth_tokens.ReferenciaID:", idxErr.message || idxErr);
                             }
 
-                            // Calcular data de expiraÃ§Ã£o (tokens do Google geralmente expiram em 1 hora)
+                            // Calcular data de expiração (tokens do Google geralmente expiram em 1 hora)
                             const expiresAt = new Date();
                             expiresAt.setHours(expiresAt.getHours() + 1);
 
@@ -409,10 +419,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                      updated_at = NOW()`,
                                 [referenciaID, accessToken, refreshToken || null, expiresAt, 'calendar.readonly']
                             );
-                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronizaÃ§Ã£o de calendÃ¡rio");
+                            console.log("[GOOGLE STRATEGY] Tokens OAuth salvos para sincronização de calendário");
                         } catch (tokenErr) {
                             console.error("[GOOGLE STRATEGY] Erro ao salvar tokens OAuth:", tokenErr);
-                            // NÃ£o falhar o login se nÃ£o conseguir salvar tokens
+                            // Não falhar o login se não conseguir salvar tokens
                         }
                     }
 
@@ -432,7 +442,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         )
     );
 } else {
-    // Google OAuth nÃ£o configurado - silencioso
+    // Google OAuth não configurado - silencioso
 }
 
 // estrategia do github
@@ -452,10 +462,10 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    // GitHub pode nÃ£o ter email pÃºblico, entÃ£o precisamos buscar da API
+                    // GitHub pode não ter email público, então precisamos buscar da API
                     let email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
-                    // Se nÃ£o houver email no perfil, tentar buscar da API do GitHub
+                    // Se não houver email no perfil, tentar buscar da API do GitHub
                     if (!email) {
                         try {
                             const response = await fetch('https://api.github.com/user/emails', {
@@ -481,7 +491,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
                     const fotoPerfil = profile.photos && profile.photos[0] ? profile.photos[0].value :
                         profile._json ?.avatar_url || null;
-                    const nome = profile.displayName || profile.username || 'UsuÃ¡rio GitHub';
+                    const nome = profile.displayName || profile.username || 'Usuário GitHub';
 
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
@@ -501,15 +511,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                                     [fotoPerfil, referenciaID]
                                 );
                             } catch (updateErr) {
-                                console.log("Erro ao atualizar foto de perfil (campo pode nÃ£o existir):", updateErr.message);
+                                console.log("Erro ao atualizar foto de perfil (campo pode não existir):", updateErr.message);
                             }
                         }
-                        console.log("UsuÃ¡rio GitHub jÃ¡ existe:", email);
+                        console.log("Usuário GitHub já existe:", email);
                     } else {
-                        // Gerar ReferenciaID para novo usuÃ¡rio
+                        // Gerar ReferenciaID para novo usuário
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Inserir novo usuÃ¡rio com foto de perfil se disponÃ­vel
+                        // Inserir novo usuário com foto de perfil se disponível
                         try {
                             const [result] = await pool.query(
                                 "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, FotoPerfil, SenhaHash) VALUES (?, ?, ?, ?, ?, ?)",
@@ -517,30 +527,30 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                             );
                             referenciaID = novaReferenciaID;
 
-                            // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via GitHub
+                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via GitHub");
+                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
                             } catch (metricError) {
-                                console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
-                                // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
+                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                                // Não bloquear resposta em caso de erro nas métricas
                             }
                         } catch (insertErr) {
                             console.error('[GITHUB STRATEGY] Erro ao inserir utilizador com FotoPerfil:', insertErr.stack || insertErr.message || insertErr);
-                            // Se campo FotoPerfil nÃ£o existe, inserir sem ele
+                            // Se campo FotoPerfil não existe, inserir sem ele
                             const [result] = await pool.query(
                                 "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash) VALUES (?, ?, ?, ?, ?)",
                                 [novaReferenciaID, nome, email, null, '']
                             );
                             referenciaID = novaReferenciaID;
 
-                            // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via GitHub
+                            // Atualizar métricas automaticamente quando novo utilizador é criado via GitHub
                             try {
                                 await atualizarMetricasAutomaticamente();
-                                console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via GitHub");
+                                console.log(" Métricas atualizadas após criação de novo utilizador via GitHub");
                             } catch (metricError) {
-                                console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
-                                // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
+                                console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                                // Não bloquear resposta em caso de erro nas métricas
                             }
                         }
                     }
@@ -565,7 +575,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         )
     );
 } else {
-    // GitHub OAuth nÃ£o configurado - silencioso
+    // GitHub OAuth não configurado - silencioso
 }
 
 // uma estrategia que eu peguei de um bot q usei em 2020 usando js
@@ -585,7 +595,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    console.log(" [DISCORD STRATEGY] ========== INÃCIO DA ESTRATÃ‰GIA ==========");
+                    console.log(" [DISCORD STRATEGY] ========== INÍCIO DA ESTRATÉGIA ==========");
                     console.log(" [DISCORD STRATEGY] Profile recebido:", {
                         id: profile.id,
                         username: profile.username,
@@ -594,10 +604,10 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         verified: profile.verified
                     });
 
-                    // Verificar se o email estÃ¡ disponÃ­vel e verificado
+                    // Verificar se o email está disponível e verificado
                     if (!profile.email) {
-                        const error = new Error("Email nÃ£o fornecido pelo Discord. Certifique-se de que seu email estÃ¡ verificado no Discord.");
-                        console.error(" Erro: Email nÃ£o fornecido pelo Discord");
+                        const error = new Error("Email não fornecido pelo Discord. Certifique-se de que seu email está verificado no Discord.");
+                        console.error(" Erro: Email não fornecido pelo Discord");
                         return done(error, null);
                     }
 
@@ -606,25 +616,25 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     const username = profile.username;
                     const avatar = profile.avatar;
 
-                    // Verificar se usuÃ¡rio Discord jÃ¡ existe no JSON
+                    // Verificar se usuário Discord já existe no JSON
                     let discordUser = findDiscordUser(discordId);
 
                     if (discordUser && discordUser.ReferenciaID) {
-                        // UsuÃ¡rio Discord jÃ¡ existe e estÃ¡ associado - LOGIN DIRETO
-                        console.log(" UsuÃ¡rio Discord jÃ¡ registrado - Login direto:", discordUser.username);
+                        // Usuário Discord já existe e está associado - LOGIN DIRETO
+                        console.log(" Usuário Discord já registrado - Login direto:", discordUser.username);
 
-                        // Garantir que discord_id estÃ¡ salvo no banco (caso nÃ£o esteja)
+                        // Garantir que discord_id está salvo no banco (caso não esteja)
                         try {
                             await pool.query(
                                 "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ? AND (discord_id IS NULL OR discord_id = '')",
                                 [discordId, discordUser.ReferenciaID]
                             );
                         } catch (dbError) {
-                            console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode nÃ£o existir):", dbError.message);
+                            console.log(" [DISCORD STRATEGY] Erro ao atualizar discord_id (coluna pode não existir):", dbError.message);
                             // Continuar mesmo se falhar
                         }
 
-                        // Garantir que estÃ¡ na tabela contasconectadas
+                        // Garantir que está na tabela contasconectadas
                         try {
                             await pool.query(
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
@@ -636,7 +646,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         const { token, refreshToken } = gerarParesToken(discordUser.ReferenciaID, discordUser.email);
 
-                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuÃ¡rio:", discordUser.ReferenciaID);
+                        console.log(" [DISCORD STRATEGY] Login direto realizado para usuário:", discordUser.ReferenciaID);
                         const userObject = {
                             ReferenciaID: discordUser.ReferenciaID,
                             email: discordUser.email,
@@ -648,9 +658,9 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         return done(null, userObject);
                     }
 
-                    // UsuÃ¡rio Discord nÃ£o existe ou nÃ£o estÃ¡ associado
+                    // Usuário Discord não existe ou não está associado
                     if (!discordUser) {
-                        // Registrar novo usuÃ¡rio Discord no JSON
+                        // Registrar novo usuário Discord no JSON
                         discordUser = registerDiscordUser({
                             id: discordId,
                             username: username,
@@ -659,7 +669,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         });
                     }
 
-                    // Verificar se usuÃ¡rio existe no banco de dados
+                    // Verificar se usuário existe no banco de dados
                     const [rows] = await pool.query(
                         `SELECT ${USER_SELECT_FIELDS}
                          FROM Utilizadores
@@ -672,11 +682,11 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         const existingUser = rows[0] || {};
                         const existingNome = existingUser.Nome ?? existingUser.nome;
                         const existingReferenciaID = existingUser.ReferenciaID ?? existingUser.referenciaid;
-                        // UsuÃ¡rio jÃ¡ existe no banco - ASSOCIAR DISCORD
-                        console.log(" UsuÃ¡rio existente encontrado - Associando Discord:", existingNome);
+                        // Usuário já existe no banco - ASSOCIAR DISCORD
+                        console.log(" Usuário existente encontrado - Associando Discord:", existingNome);
                         referenciaID = existingReferenciaID;
 
-                        // Associar Discord com usuÃ¡rio do banco
+                        // Associar Discord com usuário do banco
                         linkDiscordUser(discordId, referenciaID);
                         
                         // Atualizar discord_id no banco de dados (se a coluna existir)
@@ -685,10 +695,10 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "UPDATE utilizadores SET discord_id = ? WHERE ReferenciaID = ?",
                                 [discordId, referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuÃ¡rio ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] discord_id ${discordId} salvo no banco para usuário ${referenciaID}`);
                         } catch (dbError) {
-                            console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode nÃ£o existir):", dbError.message);
-                            // Continuar mesmo se falhar - o linkDiscordUser jÃ¡ foi feito
+                            console.error(" [DISCORD STRATEGY] Erro ao salvar discord_id (coluna pode não existir):", dbError.message);
+                            // Continuar mesmo se falhar - o linkDiscordUser já foi feito
                         }
 
                         // Inserir ou atualizar na tabela contasconectadas
@@ -697,16 +707,16 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW()) ON CONFLICT (ReferenciaID, Tipo) DO UPDATE SET Conectado = 1, DataConexao = NOW()",
                                 [referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuÃ¡rio ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] Discord inserido/atualizado em contasconectadas para usuário ${referenciaID}`);
                         } catch (contasError) {
                             console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
                     } else {
-                        // Gerar ReferenciaID para novo usuÃ¡rio
+                        // Gerar ReferenciaID para novo usuário
                         const novaReferenciaID = gerarReferenciaID();
                         
-                        // Criar novo usuÃ¡rio no banco (tentar com discord_id, se falhar, criar sem)
-                        console.log("ðŸ†• Criando novo usuÃ¡rio no banco:", username);
+                        // Criar novo usuário no banco (tentar com discord_id, se falhar, criar sem)
+                        console.log("🆕 Criando novo usuário no banco:", username);
                         let result;
                         try {
                             // Tentar criar com discord_id
@@ -714,11 +724,11 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                                 "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, discord_id, SenhaHash) VALUES (?, ?, ?, 1, ?, ?)",
                                 [novaReferenciaID, username, email, discordId, '']
                             );
-                            console.log(` [DISCORD STRATEGY] Novo usuÃ¡rio criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
+                            console.log(` [DISCORD STRATEGY] Novo usuário criado com ReferenciaID ${novaReferenciaID} e discord_id ${discordId}`);
                         } catch (dbError) {
-                            console.error(' [DISCORD STRATEGY] Erro ao criar usuÃ¡rio com discord_id:', dbError.stack || dbError.message || dbError);
-                            // Se falhar (coluna nÃ£o existe), criar sem discord_id
-                            console.log(" [DISCORD STRATEGY] Coluna discord_id nÃ£o encontrada, criando usuÃ¡rio sem ela");
+                            console.error(' [DISCORD STRATEGY] Erro ao criar usuário com discord_id:', dbError.stack || dbError.message || dbError);
+                            // Se falhar (coluna não existe), criar sem discord_id
+                            console.log(" [DISCORD STRATEGY] Coluna discord_id não encontrada, criando usuário sem ela");
                             [result] = await pool.query(
                                 "INSERT INTO utilizadores (ReferenciaID, Nome, Email, Ativo, SenhaHash) VALUES (?, ?, ?, 1, ?)",
                                 [novaReferenciaID, username, email, '']
@@ -726,13 +736,13 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                         }
                         referenciaID = novaReferenciaID;
 
-                        // Inserir Discord na tabela contasconectadas para novo usuÃ¡rio
+                        // Inserir Discord na tabela contasconectadas para novo usuário
                         try {
                             await pool.query(
                                 "INSERT INTO contasconectadas (ReferenciaID, Tipo, Conectado, DataConexao) VALUES (?, 'discord', 1, NOW())",
                                 [referenciaID]
                             );
-                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuÃ¡rio ${referenciaID}`);
+                            console.log(` [DISCORD STRATEGY] Discord inserido em contasconectadas para novo usuário ${referenciaID}`);
                         } catch (contasError) {
                             console.error(" [DISCORD STRATEGY] Erro ao inserir em contasconectadas:", contasError.message);
                         }
@@ -744,30 +754,30 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
 
                         const planoFreeId = planoFree.length > 0 ? (planoFree[0].Id ?? planoFree[0].id ?? 1) : 1; // Fallback para ID 1
 
-                        // Criar configuraÃ§Ã£o do usuÃ¡rio com plano FREE
+                        // Criar configuração do usuário com plano FREE
                         await pool.query(
                             "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
                             [referenciaID, "discord", planoFreeId]
                         );
 
-                        console.log(` UsuÃ¡rio Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
+                        console.log(` Usuário Discord ${username} registrado com plano FREE (ID: ${planoFreeId})`);
 
-                        // Associar Discord com novo usuÃ¡rio
+                        // Associar Discord com novo usuário
                         linkDiscordUser(discordId, referenciaID);
 
-                        // Atualizar mÃ©tricas automaticamente quando novo utilizador Ã© criado via Discord
+                        // Atualizar métricas automaticamente quando novo utilizador é criado via Discord
                         try {
                             await atualizarMetricasAutomaticamente();
-                            console.log(" MÃ©tricas atualizadas apÃ³s criaÃ§Ã£o de novo utilizador via Discord");
+                            console.log(" Métricas atualizadas após criação de novo utilizador via Discord");
                         } catch (metricError) {
-                            console.error(" Erro ao atualizar mÃ©tricas apÃ³s criaÃ§Ã£o de utilizador:", metricError);
-                            // NÃ£o bloquear resposta em caso de erro nas mÃ©tricas
+                            console.error(" Erro ao atualizar métricas após criação de utilizador:", metricError);
+                            // Não bloquear resposta em caso de erro nas métricas
                         }
                     }
 
                     const { token, refreshToken } = gerarParesToken(referenciaID, email);
 
-                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuÃ¡rio:", referenciaID);
+                    console.log(" [DISCORD STRATEGY] Token JWT gerado para usuário:", referenciaID);
                     const userObject = {
                         ReferenciaID: referenciaID,
                         email,
@@ -778,7 +788,7 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
                     console.log(" [DISCORD STRATEGY] Chamando done() com user:", JSON.stringify(userObject, null, 2));
                     return done(null, userObject);
                 } catch (error) {
-                    console.error(" [DISCORD STRATEGY] ERRO na autenticaÃ§Ã£o Discord:", error);
+                    console.error(" [DISCORD STRATEGY] ERRO na autenticação Discord:", error);
                     console.error(" [DISCORD STRATEGY] Stack trace:", error.stack);
                     return done(error, null);
                 }
@@ -786,13 +796,13 @@ if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
         )
     );
 } else {
-    // Discord OAuth nÃ£o configurado - silencioso
+    // Discord OAuth não configurado - silencioso
 }
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-// Verificar se usuÃ¡rio Discord jÃ¡ existe
+// Verificar se usuário Discord já existe
 router.get('/discord/check/:discordId', async (req, res) => {
     try {
         const {
@@ -801,24 +811,24 @@ router.get('/discord/check/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            // UsuÃ¡rio jÃ¡ existe - pode fazer login direto
+            // Usuário já existe - pode fazer login direto
             res.json({
                 exists: true,
-                message: "UsuÃ¡rio Discord jÃ¡ registrado - pode fazer login direto",
+                message: "Usuário Discord já registrado - pode fazer login direto",
                 user: {
                     username: discordUser.username,
                     email: discordUser.email
                 }
             });
         } else {
-            // UsuÃ¡rio nÃ£o existe - precisa registrar
+            // Usuário não existe - precisa registrar
             res.json({
                 exists: false,
-                message: "UsuÃ¡rio Discord nÃ£o encontrado - precisa registrar primeiro"
+                message: "Usuário Discord não encontrado - precisa registrar primeiro"
             });
         }
     } catch (error) {
-        console.error(" Erro ao verificar usuÃ¡rio Discord:", error);
+        console.error(" Erro ao verificar usuário Discord:", error);
         res.status(500).json({
             error: "Erro interno do servidor"
         });
@@ -834,7 +844,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
         const discordUser = findDiscordUser(discordId);
 
         if (discordUser && discordUser.ReferenciaID) {
-            console.log(" Login direto via rota alternativa para usuÃ¡rio:", discordUser.ReferenciaID);
+            console.log(" Login direto via rota alternativa para usuário:", discordUser.ReferenciaID);
 
             const { token, refreshToken } = await emitirTokensComSessao(req, discordUser.ReferenciaID, discordUser.email);
 
@@ -869,7 +879,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
             res.send(html);
         } else {
             res.status(404).json({
-                error: "UsuÃ¡rio Discord nÃ£o encontrado"
+                error: "Usuário Discord não encontrado"
             });
         }
     } catch (error) {
@@ -880,7 +890,7 @@ router.get('/discord/direct/:discordId', async (req, res) => {
     }
 });
 
-// ServiÃ§os SMS e WhatsApp foram removidos - apenas Email e Discord disponÃ­veis
+// Serviços SMS e WhatsApp foram removidos - apenas Email e Discord disponíveis
 
 // Buscar contas por nome/email/username (estilo Pinterest)
 router.get("/search-accounts", async (req, res) => {
@@ -898,20 +908,22 @@ router.get("/search-accounts", async (req, res) => {
 
         const searchTerm = `%${query.trim()}%`;
 
-        // Buscar usuÃ¡rios por nome, email ou username (usando nome como username)
         const [userRows] = await pool.query(
-            `SELECT Id, Nome, Email, FotoPerfil 
-       FROM Utilizadores 
-       WHERE (Nome LIKE ? OR Email LIKE ?) 
-       AND Ativo = 1 
-       AND EmailVerificado = 1
+            `SELECT referenciaid AS "ReferenciaID", nome AS "Nome", email AS "Email", fotoperfil AS "FotoPerfil"
+       FROM utilizadores
+       WHERE (nome ILIKE ? OR email ILIKE ?)
+       AND ativo = 1
+       AND emailverificado = 1
        LIMIT 10`,
             [searchTerm, searchTerm]
         );
 
         // Mascarar emails para privacidade
         const accounts = userRows.map(user => {
-            const email = user.Email || '';
+            const email = user.Email || user.email || '';
+            const nome = user.Nome || user.nome || '';
+            const referenciaID = user.ReferenciaID || user.referenciaid || '';
+            const fotoPerfil = user.FotoPerfil || user.fotoperfil || null;
             const [localPart, domain] = email.split('@');
 
             let maskedEmail = '';
@@ -929,11 +941,11 @@ router.get("/search-accounts", async (req, res) => {
             }
 
             return {
-                ReferenciaID: user.ReferenciaID,
-                nome: user.Nome,
-                email: email, // Email real para envio
-                maskedEmail: maskedEmail, // Email mascarado para exibiÃ§Ã£o
-                fotoPerfil: user.FotoPerfil || null
+                ReferenciaID: referenciaID,
+                nome,
+                email,
+                maskedEmail,
+                fotoPerfil,
             };
         });
 
@@ -960,27 +972,27 @@ router.post("/forgot-password", async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 status: "error",
-                error: "Email Ã© obrigatÃ³rio",
+                error: "Email é obrigatório",
             });
         }
 
-        // Buscar usuÃ¡rio
+        // Buscar usuário
         const [userRows] = await pool.query(
             "SELECT ReferenciaID, Nome, Email FROM Utilizadores WHERE Email = ?",
             [email]
         );
 
-        // SEMPRE retornar sucesso (por seguranÃ§a, nÃ£o revelar se email existe)
+        // SEMPRE retornar sucesso (por segurança, não revelar se email existe)
         if (userRows.length === 0) {
             return res.json({
                 status: "ok",
-                message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
+                message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
             });
         }
 
         const user = userRows[0];
 
-        // Gerar token Ãºnico
+        // Gerar token único
         const crypto = await import("crypto");
         const token = crypto.default.randomBytes(32).toString("hex");
 
@@ -988,7 +1000,7 @@ router.post("/forgot-password", async (req, res) => {
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 24);
 
-        // Criar tabela se nÃ£o existir
+        // Criar tabela se não existir
         await pool.query(`
       CREATE TABLE IF NOT EXISTS password_reset_tokens (
         Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -1006,7 +1018,7 @@ router.post("/forgot-password", async (req, res) => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-        // Invalidar tokens anteriores do usuÃ¡rio
+        // Invalidar tokens anteriores do usuário
         await pool.query(
             "UPDATE password_reset_tokens SET Used = 1 WHERE ReferenciaID = ? AND Used = 0",
             [user.ReferenciaID]
@@ -1018,79 +1030,17 @@ router.post("/forgot-password", async (req, res) => {
             [user.ReferenciaID, token, user.Email, expiresAt]
         );
 
-        // URL de reset (ajustar conforme ambiente)
-        const baseUrl = process.env.FRONTEND_URL || "http://127.0.0.1:3000";
+        const baseUrl = (process.env.FRONTEND_URL || process.env.BASE_URL || "https://promoping.pt").replace(/\/$/, "");
         const resetUrl = `${baseUrl}/inc/forgot-password.html?token=${token}`;
 
-        // Template de email estilo Pinterest
-        const emailHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-PT">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Redefinir senha - PromoPing</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; max-width: 600px;">
-                <!-- Header -->
-                <tr>
-                  <td style="padding: 40px 40px 20px; text-align: center;">
-                    <div style="width: 60px; height: 60px; background-color: #ff6b35; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                      <span style="color: #ffffff; font-size: 32px; font-weight: bold;">P</span>
-                    </div>
-                    <h1 style="margin: 0; color: #000000; font-size: 24px; font-weight: 600;">Recebemos o teu pedido</h1>
-                  </td>
-                </tr>
-                
-                <!-- Content -->
-                <tr>
-                  <td style="padding: 0 40px 20px;">
-                    <p style="margin: 0 0 30px; color: #000000; font-size: 16px; line-height: 24px;">JÃ¡ podes repor a tua palavra-passe!</p>
-                    
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td align="center" style="padding: 20px 0;">
-                          <a href="${resetUrl}" style="display: inline-block; background-color: #e60023; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 24px; font-size: 16px; font-weight: 600; text-align: center;">Redefinir senha</a>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 20px;">Informamos que tens 24 horas para escolher uma palavra-passe. Depois disso, terÃ¡s de solicitar uma nova.</p>
-                    
-                    <p style="margin: 20px 0 0; color: #666666; font-size: 14px; line-height: 20px;">NÃ£o solicitaste uma nova palavra-passe? Podes ignorar este e-mail.</p>
-                  </td>
-                </tr>
-                
-                <!-- Footer -->
-                <tr>
-                  <td style="padding: 40px; border-top: 1px solid #e5e5e5;">
-                    <p style="margin: 0 0 10px; color: #666666; font-size: 12px; line-height: 18px;">Este e-mail foi enviado para <strong>${user.Email}</strong></p>
-                    <p style="margin: 10px 0; color: #999999; font-size: 12px;">
-                      <a href="${baseUrl}" style="color: #666666; text-decoration: none;">Central de Ajuda</a> Â· 
-                      <a href="${baseUrl}/pages/privacidade.html" style="color: #666666; text-decoration: none;">PolÃ­tica de Privacidade</a> Â· 
-                      <a href="${baseUrl}/pages/termos.html" style="color: #666666; text-decoration: none;">Termos e condiÃ§Ãµes</a>
-                    </p>
-                    <p style="margin: 20px 0 0; color: #999999; font-size: 11px; line-height: 16px;">PromoPing. Todos os direitos reservados.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
+        const userEmail = user.Email || user.email || email;
+        const { subject, html, text } = buildPasswordResetEmail({
+            resetUrl,
+            userEmail,
+            baseUrl,
+        });
 
-        // Enviar email
-        const emailResult = await enviarEmail(
-            user.Email,
-            "RepÃµe a palavra-passe - PromoPing",
-            emailHtml
-        );
+        const emailResult = await enviarEmail(userEmail, subject, html, text);
 
         if (emailResult.success) {
             console.log(`[FORGOT-PASSWORD] Email de reset enviado para ${user.Email}`);
@@ -1098,14 +1048,14 @@ router.post("/forgot-password", async (req, res) => {
 
         res.json({
             status: "ok",
-            message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
+            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
         });
     } catch (err) {
-        console.error("[FORGOT-PASSWORD] Erro ao processar solicitaÃ§Ã£o:", err);
-        // Sempre retornar sucesso por seguranÃ§a
+        console.error("[FORGOT-PASSWORD] Erro ao processar solicitação:", err);
+        // Sempre retornar sucesso por segurança
         res.json({
             status: "ok",
-            message: "Se este email estiver cadastrado, vocÃª receberÃ¡ um link para redefinir sua senha.",
+            message: "Se este email estiver cadastrado, você receberá um link para redefinir sua senha.",
         });
     }
 });
@@ -1120,11 +1070,11 @@ router.get("/reset-password/:token", async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 status: "error",
-                error: "Token Ã© obrigatÃ³rio",
+                error: "Token é obrigatório",
             });
         }
 
-        // Buscar token vÃ¡lido
+        // Buscar token válido
         const [tokenRows] = await pool.query(
             `SELECT u.Email
        FROM password_reset_tokens prt
@@ -1136,7 +1086,7 @@ router.get("/reset-password/:token", async (req, res) => {
         if (tokenRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Token invÃ¡lido ou expirado",
+                error: "Token inválido ou expirado",
             });
         }
 
@@ -1165,7 +1115,7 @@ router.post("/reset-password", async (req, res) => {
         if (!token || !newPassword) {
             return res.status(400).json({
                 status: "error",
-                error: "Token e nova senha sÃ£o obrigatÃ³rios",
+                error: "Token e nova senha são obrigatórios",
             });
         }
 
@@ -1176,7 +1126,7 @@ router.post("/reset-password", async (req, res) => {
             });
         }
 
-        // Buscar token vÃ¡lido
+        // Buscar token válido
         const [tokenRows] = await pool.query(
             `SELECT u.ReferenciaID
        FROM password_reset_tokens prt
@@ -1188,7 +1138,7 @@ router.post("/reset-password", async (req, res) => {
         if (tokenRows.length === 0) {
             return res.status(400).json({
                 status: "error",
-                error: "Token invÃ¡lido ou expirado",
+                error: "Token inválido ou expirado",
             });
         }
 
@@ -1210,7 +1160,7 @@ router.post("/reset-password", async (req, res) => {
             [token]
         );
 
-        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuÃ¡rio ${tokenData.ReferenciaID}`);
+        console.log(`[RESET-PASSWORD] Senha redefinida com sucesso para usuário ${tokenData.ReferenciaID}`);
 
         res.json({
             status: "ok",
@@ -1237,7 +1187,7 @@ router.post("/login", async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({
                 status: "error",
-                error: "Email e senha sÃ£o obrigatÃ³rios",
+                error: "Email e senha são obrigatórios",
             });
         }
 
@@ -1258,7 +1208,7 @@ router.post("/login", async (req, res) => {
         }
 
         const user = rows[0];
-        console.log(" UsuÃ¡rio retornado:", user);
+        console.log(" Usuário retornado:", user);
 
         const userEmail = user.Email ?? user.email;
         const userNome = user.Nome ?? user.nome;
@@ -1312,7 +1262,7 @@ router.post("/login", async (req, res) => {
                 }
             } catch (error) {
                 console.error("[AUTH] Erro ao verificar data de desativação:", error);
-                // Em caso de erro, permitir tentativa de reativaÃ§Ã£o
+                // Em caso de erro, permitir tentativa de reativação
                 canReactivate = true;
             }
 
@@ -1705,7 +1655,7 @@ router.post("/register", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Determinar PerfilId: se não existe admin (PerfilId=1), o primeiro registro vira admin; caso contrário, padrão user (2)
-        console.log("[REGISTRO] Verificando perfil do usuÃ¡rio...");
+        console.log("[REGISTRO] Verificando perfil do usuário...");
         const [adminCountRows] = await pool.query(
             "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
         );
@@ -1738,6 +1688,13 @@ router.post("/register", async (req, res) => {
                 values.push(oauthId);
                 placeholders.push('?');
                 console.log("[REGISTRO] Incluindo google_id no registro:", oauthId);
+            }
+
+            if (oauthProvider === 'apple' && oauthId) {
+                fields.push('apple_id');
+                values.push(oauthId);
+                placeholders.push('?');
+                console.log("[REGISTRO] Incluindo apple_id no registro:", oauthId);
             }
             
             if (fotoPerfil) {
@@ -1774,6 +1731,18 @@ router.post("/register", async (req, res) => {
                         console.log("[REGISTRO] Campo google_id não existe, ignorando");
                     }
                 }
+
+                if (oauthProvider === 'apple' && oauthId) {
+                    try {
+                        await pool.query(
+                            "UPDATE Utilizadores SET apple_id = ? WHERE ReferenciaID = ?",
+                            [oauthId, referenciaID]
+                        );
+                        console.log("[REGISTRO] apple_id atualizado após criação:", oauthId);
+                    } catch (appleIdErr) {
+                        console.log("[REGISTRO] Campo apple_id não existe, ignorando");
+                    }
+                }
                 
                 // Tentar atualizar FotoPerfil separadamente se disponível
                 if (fotoPerfil) {
@@ -1804,7 +1773,7 @@ router.post("/register", async (req, res) => {
         console.log(`[REGISTRO] Plano FREE ID: ${planoFreeId}`);
 
         // Criar configuração do usuário
-        console.log("[REGISTRO] Criando configuraÃ§Ã£o do usuÃ¡rio...");
+        console.log("[REGISTRO] Criando configuração do usuário...");
         try {
             // Verificar se já existe configuração para este usuário
             const [existingConfig] = await pool.query(
@@ -1814,14 +1783,14 @@ router.post("/register", async (req, res) => {
 
             if (existingConfig.length > 0) {
                 // Atualizar configuração existente
-                console.log("[REGISTRO] ConfiguraÃ§Ã£o jÃ¡ existe, atualizando...");
+                console.log("[REGISTRO] Configuração já existe, atualizando...");
                 await pool.query(
                     "UPDATE configutilizador SET CanalPreferido = ?, PlanoAtualId = ? WHERE ReferenciaID = ?",
                     ["email", planoFreeId, referenciaID]
                 );
                 console.log("[REGISTRO] Configuração do usuário atualizada");
             } else {
-                // Inserir nova configuraÃ§Ã£o
+                // Inserir nova configuração
                 console.log("[REGISTRO] Inserindo nova configuração...");
                 await pool.query(
                     "INSERT INTO configutilizador (ReferenciaID, CanalPreferido, PlanoAtualId) VALUES (?, ?, ?)",
@@ -1877,7 +1846,7 @@ router.post("/register", async (req, res) => {
                 const messageHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
           <h2 style="color: #ff6b35; text-align: center;">Verificação de Conta</h2>
-          <p>OlÃ¡ <b>${nome}</b>,</p>
+          <p>Olá <b>${nome}</b>,</p>
           <p>Obrigado por se registrar no <b>PromoPing</b>!</p>
           <p>Use o código abaixo para verificar sua conta:</p>
           <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px solid #ff6b35;">
@@ -2164,6 +2133,252 @@ router.get("/google/callback", (req, res) => {
         });
     }
 });
+
+async function findOrCreateAppleUser({ appleId, email, nome, emailVerified }) {
+    try {
+        const [byApple] = await pool.query(
+            "SELECT ReferenciaID, Nome, Email FROM Utilizadores WHERE apple_id = ? LIMIT 1",
+            [appleId]
+        );
+        if (byApple.length > 0) {
+            const user = byApple[0];
+            await pool.query(
+                "UPDATE Utilizadores SET UltimoLogin = NOW() WHERE ReferenciaID = ?",
+                [user.ReferenciaID]
+            );
+            return {
+                ReferenciaID: user.ReferenciaID,
+                email: user.Email,
+                nome: user.Nome,
+                appleId,
+            };
+        }
+    } catch (dbErr) {
+        console.log("[APPLE] Erro ao buscar por apple_id (coluna pode não existir):", dbErr.message);
+    }
+
+    if (email) {
+        const [byEmail] = await pool.query(
+            "SELECT ReferenciaID, Nome, Email FROM Utilizadores WHERE Email = ? LIMIT 1",
+            [email]
+        );
+        if (byEmail.length > 0) {
+            const user = byEmail[0];
+            try {
+                await pool.query(
+                    "UPDATE Utilizadores SET apple_id = ?, UltimoLogin = NOW() WHERE ReferenciaID = ?",
+                    [appleId, user.ReferenciaID]
+                );
+            } catch (linkErr) {
+                console.log("[APPLE] Erro ao vincular apple_id:", linkErr.message);
+            }
+            return {
+                ReferenciaID: user.ReferenciaID,
+                email: user.Email,
+                nome: user.Nome,
+                appleId,
+            };
+        }
+    }
+
+    const referenciaID = gerarReferenciaID();
+    const nomeFinal = nome || "Utilizador Apple";
+    const emailVerificado = emailVerified ? 1 : (email ? 1 : 0);
+
+    const [adminCountRows] = await pool.query(
+        "SELECT COUNT(*) as total FROM Utilizadores WHERE PerfilId = 1"
+    );
+    const perfilId = (adminCountRows[0]?.total || 0) === 0 ? 1 : 2;
+
+    try {
+        await pool.query(
+            "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, apple_id, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW(), ?)",
+            [referenciaID, nomeFinal, email, null, appleId, "", perfilId, emailVerificado]
+        );
+    } catch (insertErr) {
+        console.log("[APPLE] Inserção com apple_id falhou, tentando sem coluna:", insertErr.message);
+        await pool.query(
+            "INSERT INTO Utilizadores (ReferenciaID, Nome, Email, Telefone, SenhaHash, Ativo, PerfilId, DataRegisto, EmailVerificado) VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), ?)",
+            [referenciaID, nomeFinal, email, null, "", perfilId, emailVerificado]
+        );
+        try {
+            await pool.query(
+                "UPDATE Utilizadores SET apple_id = ? WHERE ReferenciaID = ?",
+                [appleId, referenciaID]
+            );
+        } catch (appleIdErr) {
+            console.log("[APPLE] Campo apple_id não existe, ignorando");
+        }
+    }
+
+    try {
+        await atualizarMetricasAutomaticamente();
+    } catch (metricError) {
+        console.error("[APPLE] Erro ao atualizar métricas:", metricError);
+    }
+
+    return {
+        ReferenciaID: referenciaID,
+        email,
+        nome: nomeFinal,
+        appleId,
+    };
+}
+
+router.get("/apple", async (req, res) => {
+    if (!isAppleAuthConfigured()) {
+        return res.status(400).json({
+            error: "Sign in with Apple não configurado. Defina APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID e APPLE_PRIVATE_KEY no .env",
+        });
+    }
+
+    try {
+        const state = crypto.randomBytes(16).toString("hex");
+        res.cookie("apple_oauth_state", state, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 10 * 60 * 1000,
+            path: "/",
+        });
+
+        const url = await getAppleAuthorizeUrl(state);
+        res.redirect(url);
+    } catch (err) {
+        console.error("[APPLE] Erro ao iniciar OAuth:", err);
+        res.status(500).json({
+            error: "Erro ao iniciar autenticação com Apple",
+        });
+    }
+});
+
+router.post(
+    "/apple/callback",
+    express.urlencoded({ extended: true }),
+    async (req, res) => {
+        const loginUrl = process.env.LOGIN_URL || "/login";
+
+        const saveOAuthData = (oauthData) => {
+            res.cookie("oauth_temp_data", JSON.stringify(oauthData), {
+                httpOnly: false,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 15 * 60 * 1000,
+            });
+        };
+
+        if (!isAppleAuthConfigured()) {
+            return res.status(400).json({
+                error: "Sign in with Apple não configurado",
+            });
+        }
+
+        const { code, state, user: userField, error: appleError } = req.body || {};
+
+        if (appleError) {
+            console.error("[APPLE CALLBACK] Erro da Apple:", appleError);
+            return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent(appleError)}`);
+        }
+
+        const savedState = req.cookies?.apple_oauth_state;
+        res.clearCookie("apple_oauth_state", { path: "/" });
+
+        if (!state || !savedState || state !== savedState) {
+            console.error("[APPLE CALLBACK] State inválido");
+            return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent("State inválido")}`);
+        }
+
+        if (!code) {
+            return res.redirect(`${loginUrl}?error=auth_failed&details=${encodeURIComponent("Código ausente")}`);
+        }
+
+        try {
+            const appleProfile = await exchangeAppleAuthCode(code);
+            const nome = parseAppleUserName(userField);
+
+            let user = await findOrCreateAppleUser({
+                appleId: appleProfile.appleId,
+                email: appleProfile.email,
+                nome,
+                emailVerified: appleProfile.emailVerified,
+            });
+
+            if (!user.ReferenciaID || !user.email) {
+                const oauthData = {
+                    provider: "apple",
+                    email: user.email || appleProfile.email || null,
+                    nome: user.nome || nome || null,
+                    appleId: appleProfile.appleId,
+                    timestamp: Date.now(),
+                };
+                saveOAuthData(oauthData);
+                return res.redirect("/index.html?oauth_data=apple&action=complete");
+            }
+
+            try {
+                await pool.query(
+                    "UPDATE Utilizadores SET apple_id = ? WHERE ReferenciaID = ?",
+                    [appleProfile.appleId, user.ReferenciaID]
+                );
+            } catch (dbError) {
+                console.log("[APPLE CALLBACK] Erro ao salvar apple_id:", dbError.message);
+            }
+
+            const { token, refreshToken } = await emitirTokensComSessao(req, user.ReferenciaID, user.email);
+
+            const returnTo = req.cookies?.oauth_return_to;
+            const redirectPath =
+                returnTo && typeof returnTo === "string" && returnTo.startsWith("/")
+                    ? returnTo
+                    : "/dashboard";
+
+            const escapedEmail = (user.email || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const escapedNome = (user.nome || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const escapedRedirect = redirectPath.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+            const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Apple Login - PromoPing</title>
+        </head>
+        <body>
+          <script>
+            localStorage.setItem('PROMOPING_TOKEN', '${token}');
+            localStorage.setItem('PROMOPING_REFRESH_TOKEN', '${refreshToken}');
+            localStorage.setItem('token', '${token}');
+            localStorage.setItem('user', JSON.stringify({
+              ReferenciaID: '${user.ReferenciaID}',
+              email: '${escapedEmail}',
+              nome: '${escapedNome}',
+              loginMethod: 'apple'
+            }));
+            window.location.href = '${escapedRedirect}';
+          </script>
+          <p>Redirecionando...</p>
+        </body>
+        </html>
+      `;
+
+            res.clearCookie("oauth_return_to", { path: "/" });
+            res.send(html);
+        } catch (err) {
+            console.error("[APPLE CALLBACK] Erro:", err);
+            const oauthData = {
+                provider: "apple",
+                email: null,
+                nome: parseAppleUserName(userField),
+                appleId: null,
+                timestamp: Date.now(),
+            };
+            saveOAuthData(oauthData);
+            const details = err.message || "Erro na autenticação Apple";
+            return res.redirect(
+                `/index.html?oauth_data=apple&action=complete&error=auth_failed&details=${encodeURIComponent(details)}`
+            );
+        }
+    }
+);
 
 //rotas onde é usado o github
 router.get("/github", (req, res) => {

@@ -5,14 +5,14 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-//  FUNÇÃO CRÍTICA: GERAÇÃO DE CÓDIGO 
+//  FUNção CRÍTICA: GERAção DE CÓDIGO 
 // Função gerar código de 6 dígitos nunca mexa nisso pelo amor de deus
 // Se tu mudar essa lógica, pode gerar códigos duplicados ou inválidos
 function gerarCodigo() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-//  ATENÇÃO: ENVIO DE EMAIL 
+//  ATENção: ENVIO DE EMAIL 
 // isso envia o codigo pro utilizador algo que foi dificil de fazer, mude caso saiba se nao, nao mexa
 // E aí todo mundo fica sem conseguir fazer login direito
 router.post("/email/send", async (req, res) => {
@@ -93,7 +93,7 @@ router.post("/email/verify", async (req, res) => {
     );
 
 
-    // Gera token JWT - NÃO MEXA
+    // Gera token JWT - Não MEXA
     // Se tu mudar o expiresIn ou a estrutura do payload, vai quebrar o login
     // E aí todo mundo vai ter que fazer login de novo toda hora
     const token = jwt.sign({ id: rows[0].Id }, process.env.JWT_SECRET, {

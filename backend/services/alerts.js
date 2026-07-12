@@ -2,6 +2,7 @@ import { pool } from "../database/db.js";
 import { formatPriceDisplay } from "../utils/format.js";
 import { notifySubscribersOfPromotion } from "./newsletterNotifier.js";
 import { isPlausiblePrice, describePriceRejection } from "../utils/priceValidation.js";
+import { buildPriceChangeEmail, buildTargetPriceEmail } from "./emailTemplates.js";
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
 
@@ -72,65 +73,32 @@ async function sendTargetAlert(product, novoPreco, precoAlvo) {
       [product.ReferenciaID]
     );
     const user = userRows[0] || {};
-    const userName = user.Nome || "Usuário";
+    const userName = user.Nome || "Utilizador";
     const prefs = await getNotificationPreferences(product.ReferenciaID);
 
-    const messageHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; color: #333;">
-        <div style="background: linear-gradient(135deg, #ff9800 0%, #ff6b35 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-          <h2 style="color: white; margin: 0; font-size: 24px;">🎯 Preço Alvo Atingido!</h2>
-        </div>
-        
-        <div style="background: white; padding: 30px; border-radius: 0 0 8px 8px;">
-          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
-            Olá <b>${userName}</b>,
-          </p>
-          
-          <p style="font-size: 16px; color: #333; line-height: 1.6;">
-            Ótimas notícias! O preço do produto <b>${product.Nome}</b> atingiu o seu preço alvo!
-          </p>
-          
-          <div style="background: #f0f8ff; border-left: 4px solid #ff9800; padding: 20px; margin: 25px 0; border-radius: 4px;">
-            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Produto:</b> ${product.Nome}</p>
-            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Loja:</b> ${product.Loja || 'Loja'}</p>
-            <p style="margin: 5px 0; font-size: 14px; color: #666;"><b>Preço Alvo:</b> ${formatPriceDisplay(precoAlvo)}</p>
-            <p style="margin: 5px 0; font-size: 16px; color: #28a745; font-weight: bold;"><b>Preço Atual:</b> ${formatPriceDisplay(novoPreco)}</p>
-            <p style="margin: 5px 0; font-size: 14px; color: #28a745; font-weight: bold;"><b>Você economizou:</b> ${formatPriceDisplay(savings)} (${savingsPercent}%)</p>
-          </div>
-
-          <div style="text-align: center; margin: 25px 0;">
-            <a href="${product.Link}" target="_blank" 
-               style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #ff9800 0%, #ff6b35 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-              Ver Produto Agora
-            </a>
-          </div>
-
-          <p style="text-align: center; color: #856404; font-size: 14px; font-weight: 600; margin-top: 20px;">
-            ⚠️ Aproveite antes que o preço volte a subir!
-          </p>
-
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;" />
-
-          <p style="font-size: 13px; color: #666; text-align: center;">
-            Atenciosamente, <br/>
-            <b>Equipe PromoPing</b><br/>
-            <small>Esta é uma notificação automática — não responda a este email.</small>
-          </p>
-        </div>
-      </div>
-    `;
+    const emailContent = buildTargetPriceEmail({
+      productName: product.Nome,
+      storeName: product.Loja,
+      targetPrice: formatPriceDisplay(precoAlvo),
+      currentPrice: formatPriceDisplay(novoPreco),
+      savingsLabel: formatPriceDisplay(savings),
+      savingsPercent: `${savingsPercent}%`,
+      productUrl: product.Link,
+      userName,
+    });
 
     if (prefs.email && user.Email) {
       const { sendEmail } = await import("./notify.js");
       await sendEmail(
         user.Email,
-        `🎯 Preço Alvo Atingido: ${product.Nome}`,
-        messageHtml
+        emailContent.subject,
+        emailContent.html,
+        emailContent.text
       );
       console.log(`[ALERTS] Email de preço alvo enviado para ${user.Email}`);
       await pool.query(
         "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-        [product.ReferenciaID, product.Id, "email", messageHtml, true, savings]
+        [product.ReferenciaID, product.Id, "email", emailContent.text, true, savings]
       );
     }
 
@@ -168,72 +136,36 @@ async function sendPriceChangeAlert(product, novoPreco, precoAnterior) {
     const diferenca = novoPreco - precoAnterior;
     const percentual = ((diferenca / precoAnterior) * 100).toFixed(1);
     const isIncrease = diferenca > 0;
-    
-    const messageHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; color: #333;">
-        
-        <style>
-          @media (prefers-color-scheme: dark) {
-            div { background: #1e1e1e !important; color: #f0f0f0 !important; border: 1px solid #333 !important; }
-            h2 { color: #4dabf7 !important; }
-            .alert-box { background: #2d3748 !important; border: 1px solid #4a5568 !important; }
-            .price-up { color: #fc8181 !important; }
-            .price-down { color: #68d391 !important; }
-            a.btn { background: #4dabf7 !important; color: #fff !important; }
-          }
-        </style>
-
-        <h2 style="color: #1e90ff; text-align: center;">
-          ${isIncrease ? '' : ''} Preço ${isIncrease ? 'Subiu' : 'Desceu'}
-        </h2>
-        
-        <div class="alert-box" style="padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin: 20px 0;">
-          <p><b> Produto:</b> ${product.Nome}</p>
-          <p><b> Loja:</b> ${product.Loja}</p>
-          <p><b> Preço anterior:</b> ${formatPriceDisplay(precoAnterior)}</p>
-          <p><b> Preço atual:</b> <span class="${isIncrease ? 'price-up' : 'price-down'}">${formatPriceDisplay(novoPreco)}</span></p>
-          <p><b> Mudança:</b> ${isIncrease ? '+' : ''}${formatPriceDisplay(Math.abs(diferenca))} (${isIncrease ? '+' : ''}${percentual}%)</p>
-        </div>
-
-        <div style="text-align: center; margin: 20px 0;">
-          <a class="btn" href="${product.Link}" target="_blank" 
-             style="display: inline-block; padding: 12px 24px; background: #1e90ff; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">
-             Ver produto
-          </a>
-        </div>
-
-        <p style="text-align: center; color: #666; font-size: 14px;">
-          ${isIncrease ? 'O preço subiu - considere aguardar uma promoção.' : 'O preço desceu - pode ser uma boa oportunidade!'}
-        </p>
-
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;" />
-
-        <p style="font-size: 13px; color: #666; text-align: center;">
-          Atenciosamente, <br/>
-          <b>Equipe PromoPing </b><br/>
-          <small>Esta é uma notificação automática — não responda a este email.</small>
-        </p>
-      </div>
-    `;
+    const changeLabel = `${isIncrease ? "+" : "-"}${formatPriceDisplay(Math.abs(diferenca))}`;
+    const changePercent = `${isIncrease ? "+" : ""}${percentual}%`;
 
     const [userRows] = await pool.query(
       "SELECT Email, Telefone, Nome, discord_id FROM utilizadores WHERE ReferenciaID = ?",
       [product.ReferenciaID]
     );
     const user = userRows[0] || {};
-    const userName = user.Nome || "Usuário";
+    const userName = user.Nome || "Utilizador";
     const prefs = await getNotificationPreferences(product.ReferenciaID);
+
+    const emailContent = buildPriceChangeEmail({
+      productName: product.Nome,
+      storeName: product.Loja,
+      previousPrice: formatPriceDisplay(precoAnterior),
+      currentPrice: formatPriceDisplay(novoPreco),
+      changeLabel,
+      changePercent,
+      productUrl: product.Link,
+      isIncrease,
+      userName,
+    });
 
     if (prefs.email && user.Email) {
       const { sendEmail } = await import("./notify.js");
-      const emailSubject = isIncrease
-        ? `📈 Preço Subiu: ${product.Nome}`
-        : `📉 Preço Baixou: ${product.Nome}`;
-      await sendEmail(user.Email, emailSubject, messageHtml);
+      await sendEmail(user.Email, emailContent.subject, emailContent.html, emailContent.text);
       console.log(`[ALERTS] Email de mudança de preço enviado para ${user.Email}`);
       await pool.query(
         "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
-        [product.ReferenciaID, product.Id, "email", messageHtml, true, Math.abs(diferenca)]
+        [product.ReferenciaID, product.Id, "email", emailContent.text, true, Math.abs(diferenca)]
       );
     }
 
@@ -310,6 +242,94 @@ export async function processAlerts(product, novoPreco, precoAnterior) {
     
   } catch (error) {
     console.error(" Erro ao processar alertas:", error.message);
+  }
+}
+
+/**
+ * Notifica o utilizador quando a equipa de suporte altera manualmente o preço no painel admin.
+ * Envia email sempre (ignora preferências) se o utilizador tiver email válido.
+ */
+export async function notifyAdminProductPriceUpdate(product, novoPreco, precoAnterior) {
+  try {
+    if (!product?.ReferenciaID) return { sent: false, reason: "missing_user" };
+
+    const parsedNew = Number(novoPreco);
+    const parsedOld = Number(precoAnterior);
+    if (!Number.isFinite(parsedNew) || parsedNew === parsedOld) {
+      return { sent: false, reason: "unchanged_price" };
+    }
+
+    const [userRows] = await pool.query(
+      "SELECT Email, Nome FROM utilizadores WHERE ReferenciaID = ?",
+      [product.ReferenciaID]
+    );
+    const user = userRows[0];
+    if (!user?.Email) {
+      console.warn(`[ADMIN-ALERTS] Utilizador ${product.ReferenciaID} sem email — notificação não enviada`);
+      return { sent: false, reason: "no_email" };
+    }
+
+    const userName = user.Nome || "Utilizador";
+    const precoAlvo = Number(product.PrecoAlvo) || 0;
+    const { sendEmail } = await import("./notify.js");
+
+    if (precoAlvo > 0 && parsedNew <= precoAlvo) {
+      const savings = precoAlvo - parsedNew;
+      const savingsPercent = ((savings / precoAlvo) * 100).toFixed(1);
+      const emailContent = buildTargetPriceEmail({
+        productName: product.Nome,
+        storeName: product.Loja,
+        targetPrice: formatPriceDisplay(precoAlvo),
+        currentPrice: formatPriceDisplay(parsedNew),
+        savingsLabel: formatPriceDisplay(savings),
+        savingsPercent: `${savingsPercent}%`,
+        productUrl: product.Link,
+        userName,
+        updatedBySupport: true,
+      });
+
+      await sendEmail(user.Email, emailContent.subject, emailContent.html, emailContent.text);
+      console.log(`[ADMIN-ALERTS] Email de preço alvo (suporte) enviado para ${user.Email}`);
+    } else {
+      const diferenca = parsedNew - parsedOld;
+      const percentual = parsedOld > 0 ? ((diferenca / parsedOld) * 100).toFixed(1) : "0.0";
+      const isIncrease = diferenca > 0;
+      const changeLabel = `${isIncrease ? "+" : "-"}${formatPriceDisplay(Math.abs(diferenca))}`;
+      const changePercent = `${isIncrease ? "+" : ""}${percentual}%`;
+
+      const emailContent = buildPriceChangeEmail({
+        productName: product.Nome,
+        storeName: product.Loja,
+        previousPrice: formatPriceDisplay(parsedOld),
+        currentPrice: formatPriceDisplay(parsedNew),
+        changeLabel,
+        changePercent,
+        productUrl: product.Link,
+        isIncrease,
+        userName,
+        updatedBySupport: true,
+      });
+
+      await sendEmail(user.Email, emailContent.subject, emailContent.html, emailContent.text);
+      console.log(`[ADMIN-ALERTS] Email de preço atualizado (suporte) enviado para ${user.Email}`);
+    }
+
+    await pool.query(
+      "INSERT INTO Notificacoes (ReferenciaID, ProdutoId, Tipo, Mensagem, Enviada, DataEnvio, ValorPoupado) VALUES (?, ?, ?, ?, ?, NOW(), ?)",
+      [
+        product.ReferenciaID,
+        product.Id,
+        "email",
+        `[Suporte] Preço atualizado para ${formatPriceDisplay(parsedNew)}`,
+        true,
+        Math.abs(parsedNew - parsedOld),
+      ]
+    );
+
+    return { sent: true, email: user.Email };
+  } catch (error) {
+    console.error("[ADMIN-ALERTS] Erro ao notificar utilizador sobre atualização de preço:", error.message);
+    return { sent: false, reason: "error", error: error.message };
   }
 }
 

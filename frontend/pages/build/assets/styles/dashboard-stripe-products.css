@@ -1,7 +1,7 @@
 /* =====================================================================
    PRODUCTS PAGE — STRIPE-STYLE OVERRIDE
    Apenas chrome (header, filtros, card outer, botões, modais).
-   NÃO mexe no conteúdo interno do card (.product-content-dashboard,
+   Não mexe no conteúdo interno do card (.product-content-dashboard,
    .price-section-dashboard, .history-section-dashboard) — esse
    continua igual conforme pedido.
    Carregar SEMPRE depois de dashboard-stripe.css.

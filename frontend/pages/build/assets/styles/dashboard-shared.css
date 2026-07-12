@@ -152,7 +152,7 @@ body.dashboard-body * {
     }
 }
 
-/* ===== NAVEGAÇÃO SUPERIOR ===== */
+/* ===== NAVEGAção SUPERIOR ===== */
 
 .dashboard-nav {
     background: #fff;
@@ -345,7 +345,7 @@ body.dashboard-body * {
     gap: 12px;
 }
 
-/* ===== CARTÃO ADICIONAR PRODUTO ===== */
+/* ===== CARTão ADICIONAR PRODUTO ===== */
 
 .add-product-card {
     background: #fff;
@@ -424,7 +424,7 @@ body.dashboard-body * {
     background: linear-gradient(135deg, #dc7c35, #f4af55);
 }
 
-/* ===== SEÇÃO PRODUTOS ===== */
+/* ===== SEção PRODUTOS ===== */
 
 .products-section {
     margin-bottom: 32px;
@@ -557,7 +557,7 @@ body.dashboard-body * {
     box-shadow: 0 0 0 3px rgba(244, 175, 85, 0.15);
 }
 
-/* ===== BOTÃO REFRESH ===== */
+/* ===== BOTão REFRESH ===== */
 .refresh-btn {
     padding: 12px;
     border: 2px solid #e9ecef;
@@ -1284,7 +1284,7 @@ body.dashboard-body * {
     transform: rotate(180deg);
 }
 
-/* ===== BOTÃO DE RESET ICON ===== */
+/* ===== BOTão DE RESET ICON ===== */
 .reset-icon-btn {
     background: none;
     border: none;
@@ -1314,7 +1314,7 @@ body.dashboard-body * {
     transform: rotate(180deg);
 }
 
-/* ===== PREFERÊNCIAS DE NOTIFICAÇÃO ===== */
+/* ===== PREFERÊNCIAS DE NOTIFICAção ===== */
 
 .notification-preferences {
     display: flex;
@@ -1784,7 +1784,7 @@ input:checked + .toggle-slider:before {
   transform: translateY(0);
 }
 
-/* ===== GARANTIR CORES LARANJA NO BOTÃO ===== */
+/* ===== GARANTIR CORES LARANJA NO BOTão ===== */
 .upgrade-modal .upgrade-btn,
 .upgrade-modal .upgrade-btn:link,
 .upgrade-modal .upgrade-btn:visited,
@@ -2553,7 +2553,7 @@ input:checked + .toggle-slider:before {
   transform: rotate(180deg);
 }
 
-/* ===== SEÇÃO DE PLANO ===== */
+/* ===== SEção DE PLANO ===== */
 .plan-info {
     display: flex;
     flex-direction: column;

@@ -27,7 +27,7 @@ module.exports = {
 
             if (users.length === 0) {
                 await connection.end();
-                return message.reply(' **Você não está registado!** Use `!registar <email> <senha>` para criar uma conta.');
+                return message.reply(' **Você não está registado!** Use `!registar` para criar conta no site PromoPing.');
             }
 
             const user = users[0];

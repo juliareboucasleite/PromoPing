@@ -19,18 +19,23 @@
   <meta name="twitter:title" content="PromoPing - Price monitoring and alerts">
   <meta name="twitter:description" content="PromoPing is a price monitoring service for Portuguese online stores. Track products, set target prices, and receive alerts by email or Discord when prices drop.">
   <meta name="twitter:image" content="https://promoping.pt/assets/images/PromoPing.png">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-810832454"></script>
+  <!-- Analytics: carrega após a página estar interativa -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-810832454');
+    window.addEventListener('load', function () {
+      window.setTimeout(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=AW-810832454';
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'AW-810832454');
+      }, 2500);
+    });
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/styles/style.css">
-  <link rel="stylesheet" href="assets/styles/dashboard.css">
   <link rel="stylesheet" href="assets/styles/header.css">
   <link rel="stylesheet" href="assets/styles/dashboard-shared.css">
   <link rel="stylesheet" href="assets/styles/register.css">
@@ -38,16 +43,8 @@
   <link rel="stylesheet" href="assets/styles/cookie-banner.css">
   <link rel="stylesheet" href="assets/styles/footer.css">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
-  <script src="assets/scripts/request-manager.js"></script>
-  <script src="assets/scripts/notification-system.js"></script>
-  <script src="assets/scripts/header-modals.js"></script>
-  <script src="inc/load-includes-index.js"></script>
-  <script src="assets/scripts/cookie-banner.js"></script>
-  <script src="assets/scripts/testimonials.js"></script>
-  <script src="assets/traducoes/ingles.js"></script>
-  <script src="assets/traducoes/portugues.js"></script>
-  <script src="assets/traducoes/espanhol.js"></script>
-  <script src="assets/traducoes/frances.js"></script>
+</head>
+<body class="theme-promoping">
   <script>
     // Verificar parâmetros de erro na URL e abrir modal de login se necessário
     document.addEventListener("DOMContentLoaded", function () {
@@ -96,9 +93,10 @@
                   // Mostrar mensagem informativa
                   const registerErrorMessage = document.getElementById('registerErrorMessage');
                   if (registerErrorMessage) {
-                    const providerName = oauthInfo.provider === 'google' ? 'Google' : 
-                                       oauthInfo.provider === 'discord' ? 'Discord' : 
-                                       oauthInfo.provider === 'github' ? 'GitHub' : 'OAuth';
+                    const providerName = oauthInfo.provider === 'google' ? 'Google' :
+                                       oauthInfo.provider === 'discord' ? 'Discord' :
+                                       oauthInfo.provider === 'github' ? 'GitHub' :
+                                       oauthInfo.provider === 'apple' ? 'Apple' : 'OAuth';
                     registerErrorMessage.textContent = `Complete seu cadastro com os dados do ${providerName}.`;
                     registerErrorMessage.style.display = 'block';
                     registerErrorMessage.style.color = '#ff6b35';
@@ -391,20 +389,33 @@
     }
 
     const translationsGB = window.translationsGB || {};
-    const translationsES = window.translationsES || {};
-    const translationsFR = window.translationsFR || {};
+    function getTranslationsES() { return window.translationsES || {}; }
+    function getTranslationsFR() { return window.translationsFR || {}; }
 
-    const LANG_ORDER = ['EN', 'PT', 'ES', 'FR'];
-    function getNextLang(cur) {
-      const i = LANG_ORDER.indexOf(cur);
-      return LANG_ORDER[(i + 1) % LANG_ORDER.length];
+    const translationScriptUrls = {
+      ES: 'assets/traducoes/espanhol.js',
+      FR: 'assets/traducoes/frances.js'
+    };
+    const translationScriptLoading = {};
+
+    function loadTranslationScript(code) {
+      if (!translationScriptUrls[code]) return Promise.resolve();
+      if (code === 'ES' && window.translationsES) return Promise.resolve();
+      if (code === 'FR' && window.translationsFR) return Promise.resolve();
+      if (translationScriptLoading[code]) return translationScriptLoading[code];
+
+      translationScriptLoading[code] = new Promise(function (resolve, reject) {
+        const script = document.createElement('script');
+        script.src = translationScriptUrls[code];
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+
+      return translationScriptLoading[code];
     }
 
-    // Os mapas existentes (translationsGB/ES/FR) têm chaves em PT e valores na lingua-alvo.
-    // Como o markup base agora é EN, derivamos mapas com chave EN para todas as linguas.
-    const translationsEnToPt = Object.fromEntries(
-      Object.entries(translationsGB).map(([pt, en]) => [en, pt])
-    );
     function buildEnKeyedMap(otherMap) {
       const out = {};
       for (const [pt, en] of Object.entries(translationsGB)) {
@@ -412,11 +423,22 @@
       }
       return out;
     }
-    const translationsEnToEs = buildEnKeyedMap(translationsES);
-    const translationsEnToFr = buildEnKeyedMap(translationsFR);
+
+    const translationsEnToPt = Object.fromEntries(
+      Object.entries(translationsGB).map(([pt, en]) => [en, pt])
+    );
 
     function getTranslationMap(code) {
-      return { PT: translationsEnToPt, ES: translationsEnToEs, FR: translationsEnToFr }[code] || null;
+      if (code === 'PT') return translationsEnToPt;
+      if (code === 'ES') return buildEnKeyedMap(getTranslationsES());
+      if (code === 'FR') return buildEnKeyedMap(getTranslationsFR());
+      return null;
+    }
+
+    const LANG_ORDER = ['EN', 'PT', 'ES', 'FR'];
+    function getNextLang(cur) {
+      const i = LANG_ORDER.indexOf(cur);
+      return LANG_ORDER[(i + 1) % LANG_ORDER.length];
     }
 
     const heroTitleRotatorPhrases = {
@@ -524,7 +546,7 @@
     }
 
     // Alterna idioma: EN → PT → ES → FR → EN (ciclo no botão)
-    function toggleLanguage() {
+    async function toggleLanguage() {
       const langDesktop = document.getElementById('lang-text-desktop');
       const langMobile = document.getElementById('lang-text-mobile');
       const langSingle = document.getElementById('lang-text');
@@ -533,6 +555,14 @@
 
       const cur = lang.textContent.trim();
       const next = getNextLang(cur);
+
+      try {
+        if (next === 'ES' || next === 'FR') {
+          await loadTranslationScript(next);
+        }
+      } catch (err) {
+        console.warn('Falha ao carregar traduções:', err);
+      }
 
       if (langDesktop) langDesktop.textContent = next;
       if (langMobile) langMobile.textContent = next;
@@ -743,9 +773,7 @@
       }
     });
   </script>
-</head>
 
-<body class="theme-promoping">
   <div id="header-placeholder"></div>
   <main>
     <section class="pp-hero">
@@ -771,7 +799,7 @@
           </div>
         </div>
         <div class="pp-hero-right">
-          <img src="assets/images/hero-phone.png" alt="PromoPing App" class="pp-hero-logo">
+          <img src="assets/images/hero-phone.png" alt="PromoPing App" class="pp-hero-logo" width="320" height="640" decoding="async" fetchpriority="high">
         </div>
       </div>
     </section>
@@ -1312,6 +1340,16 @@
               </button>
             </div>
 
+            <!-- Apple -->
+            <div class="social-button-wrapper" data-test-id="apple-connect-button">
+              <button class="social-button apple-button" id="btnAppleLogin" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                </svg>
+                <span>Continue with Apple</span>
+              </button>
+            </div>
+
             <!-- QR Code -->
             <div class="qr-code-button-wrapper">
               <button class="qr-code-button" id="btnQRCodeLogin" aria-label="QR code login button" type="button" tabindex="0">
@@ -1507,6 +1545,16 @@
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
                 <span>Continuar com Google</span>
+              </button>
+            </div>
+
+            <!-- Apple -->
+            <div class="social-button-wrapper" data-test-id="apple-connect-button">
+              <button class="social-button apple-button" id="btnAppleRegister" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                </svg>
+                <span>Continuar com Apple</span>
               </button>
             </div>
           </div>
@@ -1740,7 +1788,16 @@
       </div>
     </div>
   </div>
-  <script src="assets/scripts/support-widget.js"></script>
+  <script defer src="assets/scripts/request-manager.js"></script>
+  <script defer src="assets/scripts/memory-guard.js"></script>
+  <script defer src="assets/scripts/notification-system.js"></script>
+  <script defer src="assets/scripts/header-modals.js"></script>
+  <script defer src="assets/traducoes/ingles.js"></script>
+  <script defer src="assets/traducoes/portugues.js"></script>
+  <script defer src="inc/load-includes-index.js"></script>
+  <script defer src="assets/scripts/cookie-banner.js"></script>
+  <script defer src="assets/scripts/testimonials.js"></script>
+  <script defer src="assets/scripts/support-widget.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (window.initSupportWidgetFront) window.initSupportWidgetFront();

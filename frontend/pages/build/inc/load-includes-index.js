@@ -201,16 +201,24 @@ async function fetchGitHubVersion() {
 async function checkVersion() {
   const versionBadge = document.querySelector('.version-badge span');
   if (versionBadge) {
-    // Busca a versão mais recente do GitHub
-    const latestVersion = await fetchGitHubVersion();
-    versionBadge.textContent = latestVersion;
-    
-    // Armazena a versão para uso no modal
-    versionBadge.dataset.version = latestVersion;
+    versionBadge.textContent = 'v2.3.3';
+
+    const loadRemoteVersion = async () => {
+      const latestVersion = await fetchGitHubVersion();
+      versionBadge.textContent = latestVersion;
+      versionBadge.dataset.version = latestVersion;
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => { loadRemoteVersion().catch(() => {}); }, { timeout: 8000 });
+    } else {
+      setTimeout(() => { loadRemoteVersion().catch(() => {}); }, 5000);
+    }
     
     // Ao clicar, mostra informações detalhadas da versão em um modal
     versionBadge.addEventListener('click', function() {
-      showVersionInfo(latestVersion);
+      const version = versionBadge.dataset.version || versionBadge.textContent || 'v2.3.3';
+      showVersionInfo(version);
     });
   }
 }

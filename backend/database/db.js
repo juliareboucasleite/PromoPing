@@ -73,7 +73,7 @@ function normalizeMysqlSqlForPg(sql) {
     .replace(/`/g, '"')
     .replace(/\bDATABASE\(\)/gi, "current_schema()")
     .replace(/\bCURDATE\(\)/gi, "CURRENT_DATE")
-    // NÃO substituir NOW() — é válido em PG e equivalente; substituir só causa ruído nas regras.
+    // Não substituir NOW() — é válido em PG e equivalente; substituir só causa ruído nas regras.
     .replace(/\bint\(\d+\)\s+unsigned/gi, "INTEGER")
     .replace(/\bint\(\d+\)/gi, "INTEGER")
     .replace(/\btinyint\(1\)/gi, "BOOLEAN")

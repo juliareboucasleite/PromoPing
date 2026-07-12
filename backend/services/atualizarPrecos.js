@@ -30,7 +30,7 @@ export async function atualizarPrecos(referenciaID) {
   // VerificacaoIntervalo removido - usar valor padrão
   // ESSE INTERVALO AQUI É O QUE CONTROLA COM QUE FREQUÊNCIA PODE ATUALIZAR
   // Premium tem intervalo = 0 (pode sempre), outros planos têm intervalo maior
-  // NÃO MUDE ESSA LÓGICA SEM ENTENDER OS PLANOS
+  // Não MUDE ESSA LÓGICA SEM ENTENDER OS PLANOS
   const intervalo = 1; // 1 hora por padrão
 
   // Buscar produtos do utilizador
@@ -62,7 +62,7 @@ export async function atualizarPrecos(referenciaID) {
       );
 
       // Salvar no histórico
-      // ESSA FUNÇÃO AQUI SALVA O PREÇO NO HISTÓRICO PRA PODER VER EVOLUÇÃO
+      // ESSA FUNção AQUI SALVA O PREÇO NO HISTÓRICO PRA PODER VER EVOLUção
       // Se tu remover isso, perde o histórico de preços
       await salvarPreco(p.Id, novoPreco);
 
