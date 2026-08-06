@@ -1,16 +1,29 @@
+const { getLinkedUser, setDiscordNotificationPreference } = require('../../utils/discordProductService');
+
 module.exports = {
     name: 'parar',
     aliases: ['stop', 'off', 'desativar'],
-    description: 'Para o monitoramento automático de preços.',
-    execute: async (client, message, args, botInstance) => {
-        if (!botInstance.isMonitoring) {
-            await message.reply(' O monitoramento já está parado!');
-            return;
+    category: 'Produtos',
+    description: 'Desativa alertas de preço por Discord DM.',
+    execute: async (client, message) => {
+        try {
+            const user = await getLinkedUser(message.author.id);
+            if (!user) {
+                return message.reply('**Não estás ligado ao PromoPing.** Usa `!login` para conectar a tua conta.');
+            }
+
+            await setDiscordNotificationPreference(user.ReferenciaID, false);
+
+            await message.reply(
+                '**Alertas por Discord desativados.**\n' +
+                'Os teus produtos continuam a ser monitorizados no site.\n' +
+                'Usa `!iniciar` quando quiseres voltar a receber DMs.'
+            );
+
+            console.log(`[DISCORD] Alertas Discord desativados por ${message.author.username}`);
+        } catch (error) {
+            console.error('[DISCORD] Erro no comando parar:', error);
+            await message.reply('**Erro interno.** Tenta novamente dentro de alguns minutos.');
         }
-        
-        botInstance.isMonitoring = false;
-        await message.reply('**Monitoramento parado!**\nO bot não verificará mais mudanças de preços automaticamente.\nUse `!iniciar` para reativar.');
-        
-        console.log(`[DISCORD] Monitoramento parado por ${message.author.username}`);
-    }
+    },
 };

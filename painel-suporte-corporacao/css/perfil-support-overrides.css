@@ -1,0 +1,236 @@
+/* Perfil do suporte — layout do utilizador com tema escuro do painel */
+
+body .dashboard-container {
+    max-width: none;
+    width: 100%;
+}
+
+.support-profile-shell,
+.support-profile-shell .dashboard-section.active {
+    background: var(--bg-base);
+    color: var(--text-secondary);
+}
+
+.support-profile-shell .profile-page-inner {
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+.support-profile-shell .page-header-perfil {
+    border-bottom-color: var(--border-subtle);
+}
+
+.support-profile-shell .page-eyebrow {
+    color: var(--accent);
+}
+
+.support-profile-shell .page-header-perfil .page-title,
+.support-profile-shell .card-title,
+.support-profile-shell .settings-row-label,
+.support-profile-shell .settings-row-value,
+.support-profile-shell .connected-block-title {
+    color: var(--text-primary);
+}
+
+.support-profile-shell .page-header-perfil .page-subtitle,
+.support-profile-shell .card-subtitle,
+.support-profile-shell .settings-row-value.is-placeholder,
+.support-profile-shell .connected-block-desc,
+.support-profile-shell .twofa-status {
+    color: var(--text-muted);
+}
+
+.support-profile-shell .page-header-perfil .page-greeting {
+    color: var(--text-secondary);
+}
+
+/* Cards */
+.support-profile-shell .profile-card {
+    border-bottom-color: var(--border-subtle);
+}
+
+.support-profile-shell .profile-card--primary {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.support-profile-shell .card-header--settings {
+    border-bottom-color: var(--border-subtle);
+}
+
+.support-profile-shell .settings-badge {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+    color: var(--text-secondary);
+}
+
+.support-profile-shell .settings-row {
+    border-bottom-color: var(--border-subtle);
+}
+
+.support-profile-shell .connected-block + .connected-block {
+    border-top-color: var(--border-subtle);
+}
+
+/* Inputs */
+.support-profile-shell .form-input,
+.support-profile-shell .settings-input {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    box-shadow: none;
+}
+
+.support-profile-shell .form-input:focus,
+.support-profile-shell .settings-input:focus {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+}
+
+.support-profile-shell .form-input::placeholder,
+.support-profile-shell .settings-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Botões */
+.support-profile-shell .secondary-btn {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+}
+
+.support-profile-shell .secondary-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.support-profile-shell .save-btn {
+    background: var(--accent-gradient);
+    border: 1px solid transparent;
+    color: #0a0a0b;
+    font-weight: 600;
+}
+
+.support-profile-shell .save-btn:hover {
+    filter: brightness(1.05);
+}
+
+.support-profile-shell .secondary-btn,
+.support-profile-shell .save-btn {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* 2FA */
+.support-profile-shell .twofa-status {
+    padding: 0 1.25rem 0.75rem;
+    font-size: 0.86rem;
+}
+
+.support-profile-shell .twofa-status.is-active {
+    color: #86efac;
+    font-weight: 600;
+}
+
+.support-profile-shell .twofa-status.is-pending {
+    color: var(--accent-strong);
+    font-weight: 600;
+}
+
+.support-profile-shell .profile-2fa-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    background: var(--success-soft);
+    color: #86efac;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.support-profile-shell .connected-block {
+    padding: 0 1.25rem 1rem;
+}
+
+/* account-profile.css força display:flex em todos os modais */
+.modal-overlay {
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-overlay.show {
+    display: flex !important;
+}
+
+/* Corrigir grid do account-profile nos modais */
+.modal-overlay .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    grid-template-columns: unset;
+    border-bottom: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.modal-overlay form,
+.modal-overlay .modal-actions,
+.modal-overlay #twoFASetupStep1,
+.modal-overlay #twoFASetupStep2 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.modal-hint {
+    margin: 0 0 1rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+
+.twofa-send-email-wrap {
+    margin-top: 0.5rem;
+}
+
+.twofa-send-email-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .support-profile-shell .card-header--settings {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .support-profile-shell .card-header-actions {
+        justify-content: flex-end;
+    }
+
+    .support-profile-shell .settings-row {
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
+        min-height: auto;
+    }
+
+    .support-profile-shell .settings-row-control--inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

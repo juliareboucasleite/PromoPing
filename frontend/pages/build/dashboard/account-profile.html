@@ -1291,7 +1291,7 @@
         async function enviarCodigo2FADeactivate() {
             var btn = document.getElementById("twoFADisableSendEmailBtn");
             if (!btn) return;
-            var token = localStorage.getItem("token");
+            var token = localStorage.getItem("token") || localStorage.getItem("PROMOPING_TOKEN");
             if (!token) return;
             btn.disabled = true;
             var originalText = btn.textContent;
@@ -1592,14 +1592,14 @@
                         // STANDARD
                         document.getElementById("plano-nome").textContent = "Standard";
                         document.getElementById("plano-descricao").textContent = "Standard plan with advanced features";
-                        document.getElementById("plano-intervalo").textContent = "30 minutes (Standard)";
-                        document.getElementById("plano-produtos").textContent = "Yes (Unlimited)";
+                        document.getElementById("plano-intervalo").textContent = "2 hours (Standard)";
+                        document.getElementById("plano-produtos").textContent = "Yes (50 products)";
                     } else if (plano.id === 4) {
                         // PREMIUM
                         document.getElementById("plano-nome").textContent = "Premium";
                         document.getElementById("plano-descricao").textContent = "Premium plan with all features";
-                        document.getElementById("plano-intervalo").textContent = "5 minutes (Premium)";
-                        document.getElementById("plano-produtos").textContent = "Yes (Unlimited)";
+                        document.getElementById("plano-intervalo").textContent = "1 hour (Premium)";
+                        document.getElementById("plano-produtos").textContent = "Yes (100 products)";
                     } else {
                         // FALLBACK se id nÃ£o reconhecido
                         document.getElementById("plano-nome").textContent = "Free";
@@ -1667,7 +1667,7 @@
 
         // tipo: "relatorio" (30 dias, ficheiro relatorio-...) ou "historico" (dias conforme plano, ficheiro historico-...)
         async function exportarPDF(tipo, dias, botaoClicado) {
-            var token = localStorage.getItem("token");
+            var token = localStorage.getItem("token") || localStorage.getItem("PROMOPING_TOKEN");
             if (!token) {
                 alert("Precisa estar logado.");
                 return;
@@ -1694,7 +1694,7 @@
 
                 if (!response.ok) {
                     var errData = await response.json().catch(function() { return {}; });
-                    throw new Errorr(errData.error || errData.message || "Error " + response.status);
+                    throw new Error(errData.error || errData.message || "Error " + response.status);
                 }
 
                 var blob = await response.blob();

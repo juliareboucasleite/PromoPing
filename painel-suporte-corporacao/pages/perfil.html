@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - PromoPing Suporte</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/assets/styles/account-profile.css">
+    <link rel="stylesheet" href="../css/perfil-support-overrides.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,182 +20,6 @@
       gtag('js', new Date());
       gtag('config', 'AW-810832454');
     </script>
-    <style>
-        /* ==== Perfil — visual corporativo ==== */
-        .profile-hero {
-            position: relative;
-            background:
-                linear-gradient(180deg, #16161a 0%, #111114 100%);
-            border: 1px solid var(--border-subtle);
-            border-radius: 14px;
-            padding: 3.6rem 1.85rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-        }
-        .profile-hero::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 3px;
-            background: var(--accent);
-        }
-        .profile-hero-avatar {
-            width: 68px; height: 68px;
-            border-radius: 10px;
-            background: linear-gradient(180deg, #1f1f23 0%, #17171a 100%);
-            border: 1px solid var(--border-default);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.55rem; font-weight: 700; color: var(--accent);
-            flex-shrink: 0;
-            letter-spacing: -0.01em;
-        }
-        .profile-hero-info { flex: 1; min-width: 0; }
-        .profile-hero-info h1 {
-            margin: 0 0 0.15rem;
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.015em;
-        }
-        .profile-hero-info .hero-email {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin: 0;
-            font-variant-numeric: tabular-nums;
-        }
-        .profile-hero-badges {
-            display: flex; flex-wrap: wrap; gap: 0.4rem;
-            margin-top: 0.75rem;
-        }
-        .profile-hero-badge {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            background: var(--bg-elevated);
-            color: var(--text-secondary);
-            padding: 0.28rem 0.7rem;
-            border-radius: 4px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            border: 1px solid var(--border-subtle);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-        .profile-hero-badge svg { color: var(--text-muted); }
-        .profile-hero-badge.green {
-            background: var(--success-soft);
-            color: #86efac;
-            border-color: rgba(34, 197, 94, 0.22);
-        }
-        .profile-hero-badge.green svg { color: #86efac; }
-
-        /* Cards corporativos: cantos discretos, hierarquia clara */
-        .profile-section-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            padding: 0;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-        .profile-section-card .profile-section-title {
-            margin: 0;
-            padding: 1rem 1.5rem;
-            color: var(--text-primary);
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border-bottom: 1px solid var(--border-subtle);
-            background: linear-gradient(180deg, #17171a 0%, #141416 100%);
-        }
-        .profile-section-card .profile-form,
-        .profile-section-card .profile-block {
-            padding: 1.25rem 1.5rem;
-            margin: 0;
-            border-top: none;
-        }
-        .profile-section-card .profile-block + .profile-block {
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 1.25rem;
-        }
-        .profile-section-card .profile-block-title {
-            font-size: 0.92rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0 0 0.3rem;
-            letter-spacing: -0.005em;
-        }
-        .profile-section-card .profile-block-desc {
-            color: var(--text-muted);
-            font-size: 0.83rem;
-            line-height: 1.55;
-            margin: 0 0 0.85rem;
-        }
-
-        /* Linhas do formulário em grid 2 colunas */
-        .profile-section-card .profile-row {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            align-items: center;
-            gap: 1.25rem;
-            padding: 0.85rem 0;
-            border-top: 1px solid var(--border-subtle);
-        }
-        .profile-section-card .profile-row:first-of-type { border-top: none; padding-top: 0; }
-        .profile-section-card .profile-label {
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .profile-section-card .profile-value { color: var(--text-primary); font-size: 0.92rem; }
-
-        /* Botões secundários: outline corporativo */
-        .profile-action-btn,
-        .profile-secondary-btn {
-            background: transparent;
-            border: 1px solid var(--border-default);
-            color: var(--text-secondary);
-            padding: 0.45rem 0.95rem;
-            border-radius: 6px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: border-color 0.18s var(--ease-out), color 0.18s var(--ease-out), background 0.18s var(--ease-out);
-        }
-        .profile-action-btn:hover,
-        .profile-secondary-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-soft);
-        }
-
-        .profile-section-card .form-actions {
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid var(--border-subtle);
-            display: flex;
-            gap: 0.6rem;
-            justify-content: flex-end;
-        }
-
-        @media (max-width: 720px) {
-            .profile-section-card .profile-row {
-                grid-template-columns: 1fr;
-                gap: 0.4rem;
-            }
-            .profile-hero {
-                flex-direction: column;
-                align-items: flex-start;
-                text-align: left;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -224,100 +50,121 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="dashboard-main">
-            <section class="dashboard-section active" style="display: flex; flex-direction: column;">
-                <!-- Hero -->
-                <div class="profile-hero">
-                    <div class="profile-hero-avatar" id="profileHeroAvatar">?</div>
-                    <div class="profile-hero-info">
-                        <h1 id="profileHeroName">A carregar…</h1>
-                        <p class="hero-email" id="profileHeroEmail">—</p>
-                        <div class="profile-hero-badges">
-                            <span class="profile-hero-badge">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                Equipa de suporte
-                            </span>
-                            <span class="profile-hero-badge green" id="profile2FABadge" style="display:none">
+        <main class="dashboard-main support-profile-shell">
+            <section class="dashboard-section active">
+                <div class="profile-page-inner">
+                    <header class="page-header page-header-perfil">
+                        <div class="page-header-left">
+                            <span class="page-eyebrow">Equipa de suporte</span>
+                            <h1 class="page-title">Dados pessoais</h1>
+                            <p class="page-subtitle">Faça a gestão da sua identidade, segurança e formas de contacto num único lugar.</p>
+                            <span class="page-greeting" id="profilePageGreeting">A carregar…</span>
+                            <span class="profile-2fa-badge" id="profile2FABadge" style="display:none">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                 2FA ativo
                             </span>
                         </div>
-                    </div>
-                </div>
+                    </header>
 
-                <div class="profile-container">
-                    <!-- Card: Conta -->
-                    <div class="profile-section-card">
-                        <h2 class="profile-section-title">Dados da conta</h2>
-                        <form id="profileForm" class="profile-form">
-                            <div class="profile-row">
-                                <label class="profile-label" for="profileName">Nome</label>
-                                <div class="profile-value">
-                                    <input type="text" id="profileName" class="form-input profile-input" required placeholder="Nome completo">
+                    <div class="profile-layout">
+                        <div class="profile-left">
+                            <div class="profile-card profile-card--primary">
+                                <div class="card-header card-header--settings">
+                                    <div class="card-header-copy">
+                                        <div class="card-title-row">
+                                            <h2 class="card-title">Dados pessoais</h2>
+                                            <span class="settings-badge">Conta de suporte</span>
+                                        </div>
+                                        <p class="card-subtitle">Atualize os dados principais da conta e configure contactos de recuperação.</p>
+                                    </div>
+                                    <div class="card-header-actions">
+                                        <button type="button" class="secondary-btn" id="cancelBtn">Cancelar</button>
+                                        <button type="submit" class="save-btn" form="profileForm">Guardar</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="profile-row">
-                                <span class="profile-label">Senha</span>
-                                <div class="profile-value profile-value-actions">
-                                    <span class="profile-masked">••••••••</span>
-                                    <button type="button" id="changePasswordBtn" class="profile-action-btn">Alterar senha</button>
-                                </div>
-                            </div>
-                            <div class="profile-row">
-                                <label class="profile-label" for="profileEmail">E-mail</label>
-                                <div class="profile-value">
-                                    <input type="email" id="profileEmail" class="form-input profile-input" required placeholder="seu@email.com">
-                                </div>
-                            </div>
-                            <div class="profile-row">
-                                <span class="profile-label">E-mail de backup</span>
-                                <div class="profile-value profile-value-actions">
-                                    <button type="button" id="addBackupEmailBtn" class="profile-action-btn">Adicionar e-mail de backup</button>
-                                </div>
-                            </div>
-                            <div class="profile-row">
-                                <span class="profile-label">Telefone para contato</span>
-                                <div class="profile-value profile-value-actions">
-                                    <span id="profilePhoneDisplay" class="profile-masked">—</span>
-                                    <button type="button" id="addPhoneBtn" class="profile-action-btn">Incluir número</button>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="modal-submit-button">Guardar alterações</button>
-                                <button type="button" class="modal-cancel-button" id="cancelBtn">Cancelar</button>
-                            </div>
-                        </form>
-                    </div>
+                                <form id="profileForm" class="profile-form profile-form--primary">
+                                    <div class="settings-rows">
+                                        <div class="settings-row">
+                                            <label class="settings-row-label" for="profileName">Nome</label>
+                                            <div class="settings-row-control">
+                                                <input type="text" id="profileName" class="form-input settings-input" required placeholder="Nome completo">
+                                            </div>
+                                        </div>
 
-                    <!-- Card: Login social -->
-                    <div class="profile-section-card">
-                        <h2 class="profile-section-title">Acesso & ligações</h2>
-                        <div class="profile-block">
-                            <h3 class="profile-block-title">Contas do Google</h3>
-                            <p class="profile-block-desc">Aceda ao PromoPing usando a sua conta do Google.</p>
-                            <div class="profile-block-action">
-                                <button type="button" id="connectGoogleBtn" class="profile-secondary-btn">Conectar conta do Google</button>
-                            </div>
-                        </div>
-                        <div class="profile-block">
-                            <h3 class="profile-block-title">Chaves de acesso</h3>
-                            <p class="profile-block-desc">Aceda à conta com segurança usando biometria, PIN do dispositivo ou chave de segurança física. Verifique navegadores e dispositivos compatíveis antes de utilizar.</p>
-                            <div class="profile-block-action">
-                                <button type="button" id="addAccessKeyBtn" class="profile-secondary-btn">Adicionar chave de acesso</button>
-                            </div>
-                        </div>
-                    </div>
+                                        <div class="settings-row">
+                                            <div class="settings-row-label">Senha</div>
+                                            <div class="settings-row-control settings-row-control--inline">
+                                                <div class="settings-row-meta">
+                                                    <span class="settings-row-value is-placeholder">Atualize a sua palavra-passe sempre que precisar.</span>
+                                                </div>
+                                                <button type="button" id="changePasswordBtn" class="secondary-btn">Atualizar sua senha</button>
+                                            </div>
+                                        </div>
 
-                    <!-- Card: Segurança -->
-                    <div class="profile-section-card">
-                        <h2 class="profile-section-title">Segurança</h2>
-                        <div class="profile-block" id="twoFABlock">
-                            <h3 class="profile-block-title">Autenticação de duas etapas</h3>
-                            <p class="profile-block-desc">Reforce a segurança da conta ativando vários métodos de autenticação para confirmar a sua identidade.</p>
-                            <div class="profile-block-action">
-                                <span id="twoFAStatusText" class="profile-2fa-status"></span>
-                                <button type="button" id="add2FABtn" class="profile-secondary-btn">Adicionar método de autenticação</button>
-                                <button type="button" id="disable2FABtn" class="profile-secondary-btn" style="display: none; border-color: rgba(239,68,68,0.5); color: #f87171;">Desativar 2FA</button>
+                                        <div class="settings-row">
+                                            <label class="settings-row-label" for="profileEmail">E-mail</label>
+                                            <div class="settings-row-control">
+                                                <input type="email" id="profileEmail" class="form-input settings-input" required placeholder="seu@email.com">
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-row">
+                                            <div class="settings-row-label">E-mail de backup</div>
+                                            <div class="settings-row-control settings-row-control--inline">
+                                                <div class="settings-row-meta">
+                                                    <span class="settings-row-value is-placeholder">Nenhum e-mail de backup configurado.</span>
+                                                </div>
+                                                <button type="button" id="addBackupEmailBtn" class="secondary-btn">Adicionar e-mail de backup</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-row">
+                                            <div class="settings-row-label">Telefone para contato</div>
+                                            <div class="settings-row-control settings-row-control--inline">
+                                                <div class="settings-row-meta">
+                                                    <span class="settings-row-value" id="profilePhoneDisplay">Nenhum número configurado.</span>
+                                                </div>
+                                                <button type="button" id="addPhoneBtn" class="secondary-btn">Incluir novo número de contato</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="profile-card profile-card--primary">
+                                <div class="card-header card-header--settings">
+                                    <div class="card-header-copy">
+                                        <h2 class="card-title">Acesso & ligações</h2>
+                                        <p class="card-subtitle">Conecte contas externas e métodos de autenticação adicionais.</p>
+                                    </div>
+                                </div>
+                                <div class="connected-block">
+                                    <h3 class="connected-block-title">Contas do Google</h3>
+                                    <p class="connected-block-desc">Aceda ao PromoPing usando a sua conta do Google.</p>
+                                    <button type="button" id="connectGoogleBtn" class="secondary-btn">Conectar conta do Google</button>
+                                </div>
+                                <div class="connected-block">
+                                    <h3 class="connected-block-title">Chaves de acesso</h3>
+                                    <p class="connected-block-desc">Aceda à conta com segurança usando biometria, PIN do dispositivo ou chave de segurança física.</p>
+                                    <button type="button" id="addAccessKeyBtn" class="secondary-btn">Adicionar chave de acesso</button>
+                                </div>
+                            </div>
+
+                            <div class="profile-card profile-card--primary" id="twoFA-card">
+                                <div class="card-header card-header--settings">
+                                    <div class="card-header-copy">
+                                        <h2 class="card-title">Autenticação de duas etapas (2FA)</h2>
+                                        <p class="card-subtitle">Proteja a sua conta com um código por e-mail ou uma app autenticadora.</p>
+                                    </div>
+                                    <div class="card-header-actions">
+                                        <button type="button" id="cancel2FASetupBtn" class="secondary-btn" style="display: none;">Cancelar configuração</button>
+                                        <button type="button" id="add2FABtn" class="secondary-btn">Ativar 2FA</button>
+                                        <button type="button" id="disable2FABtn" class="secondary-btn deactivate-btn" style="display: none;">Desativar 2FA</button>
+                                    </div>
+                                </div>
+                                <div class="twofa-section">
+                                    <div id="twoFAStatusText" class="twofa-status"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -382,18 +229,18 @@
                 <button type="button" class="modal-close" id="close2FAModal">&times;</button>
             </div>
             <div id="twoFASetupStep1">
-                <p class="profile-block-desc" style="margin-bottom: 1rem;">Escolha o método:</p>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button type="button" id="twoFAMethodTotp" class="profile-secondary-btn">App autenticador (TOTP)</button>
-                    <button type="button" id="twoFAMethodEmail" class="profile-secondary-btn">Código por e-mail</button>
+                <p class="connected-block-desc" style="margin: 0 0 1rem 1.5rem;">Escolha o método:</p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 0 1.5rem 1rem;">
+                    <button type="button" id="twoFAMethodTotp" class="secondary-btn">App autenticador (TOTP)</button>
+                    <button type="button" id="twoFAMethodEmail" class="secondary-btn">Código por e-mail</button>
                 </div>
             </div>
-            <div id="twoFASetupStep2" style="display: none;">
+            <div id="twoFASetupStep2" style="display: none; padding: 0 1.5rem 1rem;">
                 <div id="twoFAQRWrap" style="margin-bottom: 1rem; text-align: center;"></div>
                 <div id="twoFAEmailSent" style="display: none; margin-bottom: 1rem;">
-                    <p class="profile-block-desc">Foi enviado um código para o seu e-mail. Introduza-o abaixo.</p>
+                    <p class="connected-block-desc">Foi enviado um código para o seu e-mail. Introduza-o abaixo.</p>
                 </div>
-                <p id="twoFABackupCodes" class="profile-block-desc" style="word-break: break-all; font-size: 0.8rem; margin-bottom: 1rem;"></p>
+                <p id="twoFABackupCodes" class="connected-block-desc" style="word-break: break-all; font-size: 0.8rem; margin-bottom: 1rem;"></p>
                 <div class="form-group">
                     <label class="form-label" for="twoFACodeInput">Código de verificação</label>
                     <input type="text" id="twoFACodeInput" class="form-input" placeholder="6 dígitos" maxlength="8" pattern="[0-9]*" inputmode="numeric">
@@ -414,9 +261,13 @@
                 <button type="button" class="modal-close" id="closeDisable2FAModal">&times;</button>
             </div>
             <form id="disable2FAForm">
+                <p class="modal-hint">Introduza o código da app autenticadora, do e-mail ou um código de backup.</p>
                 <div class="form-group">
                     <label class="form-label" for="disable2FACode">Código atual (app ou e-mail)</label>
-                    <input type="text" id="disable2FACode" class="form-input" placeholder="6 dígitos" maxlength="8">
+                    <input type="text" id="disable2FACode" class="form-input" placeholder="6 dígitos" maxlength="8" autocomplete="one-time-code">
+                </div>
+                <div id="disable2FASendEmailWrap" class="twofa-send-email-wrap" style="display: none;">
+                    <button type="button" id="disable2FASendEmailBtn" class="twofa-send-email-link">Enviar código por e-mail</button>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="modal-submit-button" style="background: #dc2626;">Desativar</button>

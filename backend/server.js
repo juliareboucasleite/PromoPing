@@ -599,6 +599,11 @@ app.get("/openapi.yaml", (req, res) => {
     res.sendFile(path.join(__dirname, "../openapi.yaml"));
 });
 
+// Raiz do painel de suporte — evita 404 em /painel-suporte-corporacao/
+app.get(["/painel-suporte-corporacao", "/painel-suporte-corporacao/"], (req, res) => {
+    res.redirect(302, "/painel-suporte-corporacao/pages/login.html");
+});
+
 // Em produção, o NGINX serve o frontend estático
 // Em desenvolvimento, o Express serve o frontend
 const isProduction = process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND !== 'true';

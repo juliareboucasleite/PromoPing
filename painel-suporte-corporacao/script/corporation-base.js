@@ -85,7 +85,11 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const sidebarNav = document.querySelector('.sidebar-nav');
-        if (sidebarNav && !sidebarNav.querySelector('[data-business-applications-link]')) {
+        const hasEmpresasLink = sidebarNav && (
+            sidebarNav.querySelector('[data-business-applications-link]') ||
+            sidebarNav.querySelector('a[href="empresas.html"]')
+        );
+        if (sidebarNav && !hasEmpresasLink) {
             const link = document.createElement('a');
             const currentPath = window.location.pathname || '';
             link.href = 'empresas.html';

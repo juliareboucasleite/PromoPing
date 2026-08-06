@@ -97,14 +97,60 @@ function mapApplicationRow(row) {
 }
 
 async function getPlanByName(name, connection = pool) {
+  if (!name) return null;
+
   const [rows] = await connection.query(
     `SELECT Id, Nome, LimiteProdutos
        FROM planos
-      WHERE Nome = ?
+      WHERE LOWER(Nome) = LOWER(?)
       LIMIT 1`,
     [name]
   );
   return rows[0] || null;
+}
+
+async function ensureCorporatePlan(connection = pool) {
+  const existing =
+    (await getPlanByName("Corporate", connection)) ||
+    (await getPlanByName("Corporativo", connection));
+
+  if (existing) return existing;
+
+  const [premiumPlan] = await connection.query(
+    `SELECT Id, Nome, LimiteProdutos
+       FROM planos
+      WHERE LOWER(Nome) = 'premium'
+      LIMIT 1`
+  );
+
+  const limiteProdutos = premiumPlan?.LimiteProdutos ?? 500;
+
+  const [insertResult] = await connection.query(
+    `INSERT INTO planos (
+        Nome, Preco, LimiteProdutos, HistoricoDias, IntervaloVerificacao,
+        PermiteSMS, Relatorios, LinksPlanos, LinksPlanosAnual, PrecoAnual
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING Id, Nome, LimiteProdutos`,
+    ["Corporate", 49.9, limiteProdutos, 365, "0", 1, "corporativo", null, null, 499.0]
+  );
+
+  return insertResult?.rows?.[0] || null;
+}
+
+async function resolveBusinessPlan(requestedPlanName, connection = pool) {
+  const candidates = [
+    requestedPlanName,
+    "Corporate",
+    "Corporativo",
+    "Premium"
+  ].filter(Boolean);
+
+  for (const name of candidates) {
+    const plan = await getPlanByName(name, connection);
+    if (plan) return plan;
+  }
+
+  return await ensureCorporatePlan(connection);
 }
 
 async function ensureUserConfig(referenciaID, planId, limiteProdutos, connection) {
@@ -323,9 +369,10 @@ router.post("/:id/approve", async (req, res) => {
       });
     }
 
-    const requestedPlan =
-      (await getPlanByName(application.requested_plan_name, connection)) ||
-      (await getPlanByName("Corporate", connection));
+    const requestedPlan = await resolveBusinessPlan(
+      application.requested_plan_name,
+      connection
+    );
 
     if (!requestedPlan) {
       await connection.rollback();

@@ -607,16 +607,16 @@ class PromoPingBot {
 
     setupEventHandlers() {
         // Quando o bot se conecta
-        this.client.once('clientReady', async () => {
+        const handleClientReady = async () => {
             console.log(`[DISCORD] Bot conectado como ${this.client.user.tag}`);
-            console.log(`[DISCORD] Iniciando monitoramento de preços, Twitch e notícias...`);
+            console.log(`[DISCORD] Iniciando workers de comunidade (Twitch, notícias, giveaways)...`);
             this.reconnectAttempts = 0; // Reset contador de reconexão
             try {
                 await setupDatabase();
             } catch (dbSetupError) {
                 console.error('[DISCORD] Erro ao alinhar schema do bot:', dbSetupError.message);
             }
-            this.startMonitoring();
+            console.log('[DISCORD] Alertas de preço são enviados pelo backend (alerts.js) — polling local desativado.');
             this.startTwitchMonitoring();
             this.startNewsMonitoring();
             this.startMemeMonitoring();
@@ -653,7 +653,8 @@ class PromoPingBot {
             
             // Registrar comandos de barra (slash commands)
             await this.registerSlashCommands();
-        });
+        };
+        this.client.once('clientReady', handleClientReady);
 
         // Handler para erros de conexão
         this.client.on('error', (error) => {
@@ -2104,7 +2105,7 @@ class PromoPingBot {
             await this.finalizeTicketClose(channel, interaction.user, reason);
             await interaction.editReply({ content: 'Ticket closed. The channel will be deleted shortly.' });
         } catch (error) {
-            console.error('[DISCORD] Error closing ticket via modal:', error);
+            console.error('Error closing ticket via modal:', error);
             await interaction.editReply({ content: 'An error occurred while closing the ticket.' }).catch(() => {});
         }
     }
@@ -2148,7 +2149,7 @@ class PromoPingBot {
                 });
                 await owner.send({ embeds: [dmEmbed] }).catch(() => {});
             } catch (error) {
-                console.warn('[DISCORD] Could not DM ticket owner on close:', error.message);
+                console.warn('Could not DM ticket owner on close:', error.message);
             }
         }
 
@@ -2693,13 +2694,9 @@ class PromoPingBot {
     }
 
     async startMonitoring() {
-        this.isMonitoring = true;
-
-        setInterval(async () => {
-            if (this.isMonitoring) {
-                await this.checkPriceChanges();
-            }
-        }, this.checkInterval * 60 * 1000);
+        // Mantido por compatibilidade: alertas de preço são processados pelo backend.
+        this.isMonitoring = false;
+        console.log('[DISCORD] startMonitoring() ignorado — alertas de preço via backend/alerts.js');
     }
 
     async startTwitchMonitoring() {
@@ -3687,6 +3684,24 @@ class PromoPingBot {
                     .setName('produtos')
                     .setDescription('Lista seus produtos monitorados'),
                 new SlashCommandBuilder()
+                    .setName('plano')
+                    .setDescription('Mostra o teu plano PromoPing e limites'),
+                new SlashCommandBuilder()
+                    .setName('adicionar')
+                    .setDescription('Adiciona um produto para monitorizar preços')
+                    .addStringOption(option =>
+                        option.setName('link')
+                            .setDescription('Link do produto (http/https)')
+                            .setRequired(true))
+                    .addStringOption(option =>
+                        option.setName('preco')
+                            .setDescription('Preço alvo em euros (ex: 29.99)')
+                            .setRequired(true))
+                    .addStringOption(option =>
+                        option.setName('nome')
+                            .setDescription('Nome do produto (opcional)')
+                            .setRequired(false)),
+                new SlashCommandBuilder()
                     .setName('login')
                     .setDescription('Liga a tua conta PromoPing através do site'),
                 new SlashCommandBuilder()
@@ -3903,6 +3918,8 @@ class PromoPingBot {
                 'status': 'status',
                 'ajuda': 'ajuda',
                 'produtos': 'produtos',
+                'plano': 'plano',
+                'adicionar': 'adicionar',
                 'login': 'login',
                 'registar': 'registar',
                 'social-feed': 'social-feed',
@@ -3946,6 +3963,13 @@ class PromoPingBot {
                         args.push(`<#${canal.id}>`);
                     }
                     if (url) args.push(url);
+                } else if (commandName === 'adicionar') {
+                    const link = interaction.options.get('link')?.value;
+                    const preco = interaction.options.get('preco')?.value;
+                    const nome = interaction.options.get('nome')?.value;
+                    if (link) args.push(link);
+                    if (preco) args.push(preco);
+                    if (nome) args.push(nome);
                 } else if (commandName === 'clear') {
                     // Para clear, passar quantidade
                     const quantidade = interaction.options.get('quantidade')?.value;

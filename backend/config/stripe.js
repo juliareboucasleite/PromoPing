@@ -34,8 +34,8 @@ export const PLANOS_STRIPE = {
     preco: 12.99,
     stripe_price_id: process.env.STRIPE_STANDARD_PRICE_ID, // Price ID específico para Standard
     stripe_checkout_url: process.env.STRIPE_STANDARD_CHECKOUT_URL || 'https://buy.stripe.com/dRm3cv73u8IG4MQ2hpeZ202', // Link direto do Stripe
-    limite_produtos: 50, // Ilimitado
-    verificacao_intervalo: 0.5, // 30 minutos
+    limite_produtos: 50,
+    verificacao_intervalo: 2, // 2 horas
     relatorios: true
   },
   4: { // PREMIUM
@@ -43,8 +43,8 @@ export const PLANOS_STRIPE = {
     preco: 15.30,
     stripe_price_id: process.env.STRIPE_PREMIUM_PRICE_ID, // Configurar no .env
     stripe_checkout_url: process.env.STRIPE_PREMIUM_CHECKOUT_URL || 'https://buy.stripe.com/aFa14ncnO6Ay0wA7BJeZ203', // Link direto do Stripe
-    limite_produtos: 100, // Ilimitado
-    verificacao_intervalo: 0.083, // 5 minutos
+    limite_produtos: 100,
+    verificacao_intervalo: 1, // 1 hora
     relatorios: true
   }
 };

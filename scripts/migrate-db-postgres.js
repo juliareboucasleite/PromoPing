@@ -141,6 +141,9 @@ async function migrate() {
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Basic'`, [49.9]);
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Standard'`, [129.9]);
   await pool.query(`UPDATE planos SET precoanual = ? WHERE nome = 'Premium'`, [153.6]);
+  await pool.query(`UPDATE planos SET intervaloverificacao = '2' WHERE LOWER(nome) = 'standard'`);
+  await pool.query(`UPDATE planos SET intervaloverificacao = '1' WHERE LOWER(nome) = 'premium'`);
+  console.log(" Intervalos de verificação Standard (2h) e Premium (1h) atualizados");
 
   const [corporatePlanRows] = await pool.query(
     `SELECT Id FROM planos WHERE Nome = 'Corporate' LIMIT 1`

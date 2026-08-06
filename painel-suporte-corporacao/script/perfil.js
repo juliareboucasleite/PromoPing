@@ -39,7 +39,7 @@
     }
 
     let userHasPassword = null;
-    let twoFAStatus = { enabled: false };
+    let twoFAStatus = { enabled: false, pending: false, method: null };
 
     async function loadProfile() {
         try {
@@ -56,19 +56,20 @@
             if (emailInput) emailInput.value = email;
             if (phoneDisplay) {
                 const phone = user.Telefone || user.telefone || user.phone;
-                phoneDisplay.textContent = phone ? phone : '—';
+                if (phone) {
+                    phoneDisplay.textContent = phone;
+                    phoneDisplay.classList.remove('is-placeholder');
+                } else {
+                    phoneDisplay.textContent = 'Nenhum número configurado.';
+                    phoneDisplay.classList.add('is-placeholder');
+                }
             }
 
-            // Populate hero
-            const heroName = document.getElementById('profileHeroName');
-            const heroEmail = document.getElementById('profileHeroEmail');
-            const heroAvatar = document.getElementById('profileHeroAvatar');
-            if (heroName) heroName.textContent = nome || 'Sem nome';
-            if (heroEmail) heroEmail.textContent = email || '—';
-            if (heroAvatar) {
-                const initials = (nome || '?').split(' ').slice(0, 2)
-                    .map(s => s[0]?.toUpperCase() || '').join('') || '?';
-                heroAvatar.textContent = initials;
+            const pageGreeting = document.getElementById('profilePageGreeting');
+            if (pageGreeting) {
+                pageGreeting.textContent = nome
+                    ? `Olá, ${nome}`
+                    : (email ? `Olá, ${email}` : 'Olá');
             }
 
             userHasPassword = null;
@@ -79,25 +80,55 @@
         }
     }
 
+    function update2FAUI() {
+        const statusEl = document.getElementById('twoFAStatusText');
+        const addBtn = document.getElementById('add2FABtn');
+        const disableBtn = document.getElementById('disable2FABtn');
+        const cancelSetupBtn = document.getElementById('cancel2FASetupBtn');
+        const heroBadge = document.getElementById('profile2FABadge');
+
+        if (statusEl) {
+            statusEl.classList.remove('is-active', 'is-pending');
+            if (twoFAStatus.enabled) {
+                const methodLabel = twoFAStatus.method === 'email' ? 'código por e-mail' : 'app autenticadora';
+                statusEl.textContent = `A autenticação de duas etapas está ativa (${methodLabel}).`;
+                statusEl.classList.add('is-active');
+            } else if (twoFAStatus.pending) {
+                statusEl.textContent = 'Configuração iniciada mas ainda não concluída. Pode continuar ou cancelar.';
+                statusEl.classList.add('is-pending');
+            } else {
+                statusEl.textContent = '';
+            }
+        }
+
+        if (addBtn) {
+            addBtn.textContent = twoFAStatus.pending ? 'Continuar configuração' : 'Ativar 2FA';
+            addBtn.style.display = twoFAStatus.enabled ? 'none' : 'inline-flex';
+        }
+        if (cancelSetupBtn) {
+            cancelSetupBtn.style.display = twoFAStatus.pending ? 'inline-flex' : 'none';
+        }
+        if (disableBtn) {
+            disableBtn.style.display = twoFAStatus.enabled ? 'inline-flex' : 'none';
+        }
+        if (heroBadge) {
+            heroBadge.style.display = twoFAStatus.enabled ? 'inline-flex' : 'none';
+        }
+    }
+
     async function load2FAStatus() {
         try {
             const response = await fetchAuth('/api/user/2fa/status');
             const data = await response.json();
-            twoFAStatus = data.twoFA || { enabled: false };
-            const statusEl = document.getElementById('twoFAStatusText');
-            const addBtn = document.getElementById('add2FABtn');
-            const disableBtn = document.getElementById('disable2FABtn');
-            if (statusEl) statusEl.textContent = twoFAStatus.enabled ? 'Ativo' : '';
-            if (addBtn) addBtn.style.display = twoFAStatus.enabled ? 'none' : 'inline-block';
-            if (disableBtn) disableBtn.style.display = twoFAStatus.enabled ? 'inline-block' : 'none';
-            const heroBadge = document.getElementById('profile2FABadge');
-            if (heroBadge) heroBadge.style.display = twoFAStatus.enabled ? 'inline-flex' : 'none';
+            twoFAStatus = {
+                enabled: !!(data.twoFA && data.twoFA.enabled),
+                pending: !!(data.twoFA && data.twoFA.pending),
+                method: (data.twoFA && data.twoFA.method) || null
+            };
+            update2FAUI();
         } catch (e) {
-            twoFAStatus = { enabled: false };
-            const addBtn = document.getElementById('add2FABtn');
-            const disableBtn = document.getElementById('disable2FABtn');
-            if (addBtn) addBtn.style.display = 'inline-block';
-            if (disableBtn) disableBtn.style.display = 'none';
+            twoFAStatus = { enabled: false, pending: false, method: null };
+            update2FAUI();
         }
     }
 
@@ -176,7 +207,8 @@
     function openPhoneModal() {
         const phoneDisplay = document.getElementById('profilePhoneDisplay');
         const current = phoneDisplay ? phoneDisplay.textContent : '';
-        document.getElementById('phoneInput').value = current === '—' ? '' : current;
+        const empty = !current || current === '—' || current === 'Nenhum número configurado.';
+        document.getElementById('phoneInput').value = empty ? '' : current;
         document.getElementById('phoneModal').classList.add('show');
     }
 
@@ -193,7 +225,15 @@
                 body: JSON.stringify({ telefone: telefone || null })
             });
             const el = document.getElementById('profilePhoneDisplay');
-            if (el) el.textContent = telefone || '—';
+            if (el) {
+                if (telefone) {
+                    el.textContent = telefone;
+                    el.classList.remove('is-placeholder');
+                } else {
+                    el.textContent = 'Nenhum número configurado.';
+                    el.classList.add('is-placeholder');
+                }
+            }
             showAlert('Telefone guardado.');
             closePhoneModal();
         } catch (err) {
@@ -276,6 +316,10 @@
 
     function openDisable2FAModal() {
         document.getElementById('disable2FACode').value = '';
+        const sendEmailWrap = document.getElementById('disable2FASendEmailWrap');
+        if (sendEmailWrap) {
+            sendEmailWrap.style.display = twoFAStatus.method === 'email' ? 'block' : 'none';
+        }
         document.getElementById('disable2FAModal').classList.add('show');
     }
 
@@ -301,6 +345,32 @@
         } catch (err) {
             showAlert(err.message || 'Código inválido.');
         }
+    }
+
+    async function sendDisable2FAEmailCode() {
+        try {
+            await fetchAuth('/api/user/2fa/send-email-code', { method: 'POST' });
+            showAlert('Código enviado para o seu e-mail.');
+        } catch (err) {
+            showAlert(err.message || 'Erro ao enviar código.');
+        }
+    }
+
+    async function cancel2FASetup() {
+        showConfirm(
+            'Cancelar a configuração de 2FA em curso? Não precisa de introduzir nenhum código.',
+            'Cancelar configuração',
+            async () => {
+                try {
+                    await fetchAuth('/api/user/2fa/cancel-setup', { method: 'POST' });
+                    close2FAModal();
+                    showAlert('Configuração de 2FA cancelada.');
+                    load2FAStatus();
+                } catch (err) {
+                    showAlert(err.message || 'Erro ao cancelar configuração.');
+                }
+            }
+        );
     }
 
     function init() {
@@ -341,7 +411,9 @@
 
         // 2FA
         document.getElementById('add2FABtn')?.addEventListener('click', open2FAModal);
+        document.getElementById('cancel2FASetupBtn')?.addEventListener('click', cancel2FASetup);
         document.getElementById('disable2FABtn')?.addEventListener('click', openDisable2FAModal);
+        document.getElementById('disable2FASendEmailBtn')?.addEventListener('click', sendDisable2FAEmailCode);
         document.getElementById('twoFAMethodTotp')?.addEventListener('click', () => start2FASetup('totp'));
         document.getElementById('twoFAMethodEmail')?.addEventListener('click', () => start2FASetup('email'));
         document.getElementById('twoFAVerifyBtn')?.addEventListener('click', verify2FASetup);
@@ -353,7 +425,10 @@
 
         [ 'changePasswordModal', 'phoneModal', 'twoFAModal', 'disable2FAModal' ].forEach(function (id) {
             const el = document.getElementById(id);
-            if (el) el.addEventListener('click', function (e) { if (e.target === el) { el.classList.remove('show'); } });
+            if (el) {
+                el.classList.remove('show');
+                el.addEventListener('click', function (e) { if (e.target === el) { el.classList.remove('show'); } });
+            }
         });
 
         loadProfile();

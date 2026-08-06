@@ -54,11 +54,13 @@ export async function getStatus(referenciaID) {
         [referenciaID]
     );
     if (rows.length === 0) {
-        return { enabled: false, method: null };
+        return { enabled: false, pending: false, method: null };
     }
     const r = rows[0];
+    const enabled = !!r.enabled;
     return {
-        enabled: !!r.enabled,
+        enabled,
+        pending: !enabled,
         method: r.method || null,
         createdAt: r.created_at
     };
@@ -299,6 +301,27 @@ export async function verifyCode(referenciaID, code) {
     }
 
     throw new Error("Codigo invalido ou expirado");
+}
+
+/**
+ * Cancela uma configuração 2FA pendente (enabled = 0).
+ */
+export async function cancelSetup(referenciaID) {
+    const [rows] = await pool.query(
+        "SELECT enabled FROM user_2fa WHERE ReferenciaID = ?",
+        [referenciaID]
+    );
+    if (rows.length === 0) {
+        return { cancelled: false };
+    }
+    if (rows[0].enabled) {
+        throw new Error("2FA ja ativo. Use desativar com codigo.");
+    }
+    await pool.query(
+        "DELETE FROM user_2fa WHERE ReferenciaID = ? AND enabled = 0",
+        [referenciaID]
+    );
+    return { cancelled: true };
 }
 
 /**

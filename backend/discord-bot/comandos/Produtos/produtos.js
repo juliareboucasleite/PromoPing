@@ -48,10 +48,10 @@ module.exports = {
             if (produtos.length === 0) {
                 const embed = new EmbedBuilder()
                     .setTitle('Seus Produtos')
-                    .setDescription('**Você ainda não tem produtos monitorados.**\n\nAdicione produtos através do website PromoPing para começar a monitorar preços!')
+                    .setDescription('**Você ainda não tem produtos monitorados.**\n\nAdicione produtos com `!adicionar <link> <preço-alvo>` ou pelo website PromoPing.')
                     .addFields({
                         name: 'Como Adicionar Produtos',
-                        value: '1. Acesse o website PromoPing\n2. Faça login com suas credenciais\n3. Adicione produtos para monitorar\n4. Volte aqui e use `!produtos` novamente',
+                        value: '1. Use `!adicionar https://loja.pt/produto 49.99`\n2. Ou acesse promoping.pt/dashboard\n3. Use `!produtos` para ver a lista\n4. Use `!plano` para ver limites do teu plano',
                         inline: false
                     })
                     .setColor(0xffa500)

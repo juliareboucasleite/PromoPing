@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="assets/styles/cookie-banner.css">
   <link rel="stylesheet" href="assets/styles/footer.css">
   <link rel="icon" type="image/png" href="assets/images/PromoPing.png">
+  <script src="assets/traducoes/ingles.js"></script>
 </head>
 <body class="theme-promoping">
   <script>
@@ -297,14 +298,22 @@
         '.pricing-header p',
         '.popular-badge',
         '.pricing-card .period',
+        '.pricing-card .card-header h3',
         '.pricing-card .features li',
+        '.links-title',
+        '.system-label',
+        '.system-versions',
+        '.footer-link span',
         '.pp-cta h2',
         '.pp-cta p',
         '.pp-cta a',
         '.pp-connect-title',
+        '.pp-connect-title',
         '.pp-connect-desc-1',
         '.pp-connect-desc-2',
         '.pp-connect-desc-3',
+        '.pp-partners-eyebrow',
+        '.pp-partners-title',
         '.pp-discord-bot-cta span',
         '.pp-discord-community-cta span',
         '.pp-connect-slogan',
@@ -388,11 +397,21 @@
       }, 500);
     }
 
-    const translationsGB = window.translationsGB || {};
+    function getTranslationsGB() {
+      return window.translationsGB || {};
+    }
+
+    function getTranslationsEnToPt() {
+      return Object.fromEntries(
+        Object.entries(getTranslationsGB()).map(([pt, en]) => [en, pt])
+      );
+    }
+
     function getTranslationsES() { return window.translationsES || {}; }
     function getTranslationsFR() { return window.translationsFR || {}; }
 
     const translationScriptUrls = {
+      EN: 'assets/traducoes/ingles.js',
       ES: 'assets/traducoes/espanhol.js',
       FR: 'assets/traducoes/frances.js'
     };
@@ -400,6 +419,7 @@
 
     function loadTranslationScript(code) {
       if (!translationScriptUrls[code]) return Promise.resolve();
+      if (code === 'EN' && Object.keys(getTranslationsGB()).length > 0) return Promise.resolve();
       if (code === 'ES' && window.translationsES) return Promise.resolve();
       if (code === 'FR' && window.translationsFR) return Promise.resolve();
       if (translationScriptLoading[code]) return translationScriptLoading[code];
@@ -418,18 +438,14 @@
 
     function buildEnKeyedMap(otherMap) {
       const out = {};
-      for (const [pt, en] of Object.entries(translationsGB)) {
+      for (const [pt, en] of Object.entries(getTranslationsGB())) {
         if (otherMap[pt]) out[en] = otherMap[pt];
       }
       return out;
     }
 
-    const translationsEnToPt = Object.fromEntries(
-      Object.entries(translationsGB).map(([pt, en]) => [en, pt])
-    );
-
     function getTranslationMap(code) {
-      if (code === 'PT') return translationsEnToPt;
+      if (code === 'PT') return getTranslationsEnToPt();
       if (code === 'ES') return buildEnKeyedMap(getTranslationsES());
       if (code === 'FR') return buildEnKeyedMap(getTranslationsFR());
       return null;
@@ -557,6 +573,9 @@
       const next = getNextLang(cur);
 
       try {
+        if (Object.keys(getTranslationsGB()).length === 0) {
+          await loadTranslationScript('EN');
+        }
         if (next === 'ES' || next === 'FR') {
           await loadTranslationScript(next);
         }
@@ -578,7 +597,7 @@
 
     // Função auxiliar para traduzir texto preservando HTML interno (map = objeto PT -> idioma)
     function translateTextWithHTML(element, originalText, map) {
-      const t = map || translationsGB;
+      const t = map || getTranslationsGB();
       if (element.children.length > 0 || element.querySelector('a, span, strong, em')) {
         const fullText = element.textContent || element.innerText;
         const translated = t[fullText.trim()];
@@ -696,7 +715,7 @@
 
     function translateToEnglish() {
       saveOriginalTexts();
-      applyTranslations(translationsGB);
+      applyTranslations(getTranslationsGB());
       syncHeroTitleRotator(true);
     }
 
@@ -772,6 +791,10 @@
         });
       }
     });
+
+    window.toggleLanguage = toggleLanguage;
+    window.translateToEnglish = translateToEnglish;
+    window.restoreOriginalTexts = restoreOriginalTexts;
   </script>
 
   <div id="header-placeholder"></div>

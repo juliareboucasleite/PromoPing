@@ -99,29 +99,8 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// Função para alternar o idioma (PT/EN). No index chama tradução/restauro se existir.
-function toggleLanguage() {
-  const langTextDesktop = document.getElementById('lang-text-desktop');
-  const langTextMobile = document.getElementById('lang-text-mobile');
-  const langTextSingle = document.getElementById('lang-text');
-  
-  const langText = langTextDesktop || langTextMobile || langTextSingle;
-  if (!langText) return;
-  
-  const currentLang = langText.textContent.trim();
-  
-  if (currentLang === 'PT') {
-    if (langTextDesktop) langTextDesktop.textContent = 'EN';
-    if (langTextMobile) langTextMobile.textContent = 'EN';
-    if (langTextSingle) langTextSingle.textContent = 'EN';
-    if (typeof window.translateToEnglish === 'function') window.translateToEnglish();
-  } else {
-    if (langTextDesktop) langTextDesktop.textContent = 'PT';
-    if (langTextMobile) langTextMobile.textContent = 'PT';
-    if (langTextSingle) langTextSingle.textContent = 'PT';
-    if (typeof window.restoreOriginalTexts === 'function') window.restoreOriginalTexts();
-  }
-}
+// toggleLanguage é definido no index.html (ciclo EN → PT → ES → FR).
+// Não redefinir aqui — sobrescrevia a tradução correta para PT.
 
 // Inicializa funcionalidades do footer: status, tooltips, versão, rolagem suave etc.
 function initializeFooterFunctionality() {

@@ -108,7 +108,7 @@ class ScraperScheduler:
         logger.info(" Iniciando agendador do PromoPing Scraper...")
         
         # Calcular intervalo mínimo baseado nos planos
-        # Premium: 1 min, Standard: 30 min, Basic: 4h, Free: 24h
+        # Premium: 1h, Standard: 2h, Basic: 4h, Free: 24h
         # Verifica a cada 1 minuto (para Premium) mas só executa produtos que podem ser atualizados
         interval_check = 60  # Verificar a cada 1 minuto
         

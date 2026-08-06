@@ -79,12 +79,13 @@ export async function obterDadosRelatorio({ referenciaID, dataInicio, dataFim })
     let historicoMap = new Map();
 
     if (productIds.length > 0) {
+        const inPlaceholders = productIds.map(() => "?").join(",");
         const [histRows] = await pool.query(
             `SELECT ProdutoId, Preco, DataRegisto
              FROM historicoprecos
-             WHERE ProdutoId IN (?) AND DataRegisto <= ?
+             WHERE ProdutoId IN (${inPlaceholders}) AND DataRegisto <= ?
              ORDER BY DataRegisto ASC`,
-            [productIds, fim]
+            [...productIds, fim]
         );
         historicoMap = buildHistoricoMap(histRows);
     }

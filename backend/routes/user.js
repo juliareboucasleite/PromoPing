@@ -12,7 +12,8 @@ import {
   verifyAndEnable,
   verifyCode,
   disable,
-  sendEmailCode
+  sendEmailCode,
+  cancelSetup
 } from "../services/twoFactorService.js";
 
 const router = express.Router();
@@ -1209,6 +1210,16 @@ router.post("/2fa/verify-setup", verifyToken, async (req, res) => {
     return res.json({ status: "ok", ...result });
   } catch (err) {
     console.error("[USER] Erro ao ativar 2FA:", err);
+    return res.status(400).json({ status: "error", error: err.message });
+  }
+});
+
+router.post("/2fa/cancel-setup", verifyToken, async (req, res) => {
+  try {
+    const result = await cancelSetup(req.user.ReferenciaID);
+    return res.json({ status: "ok", ...result });
+  } catch (err) {
+    console.error("[USER] Erro ao cancelar setup 2FA:", err);
     return res.status(400).json({ status: "error", error: err.message });
   }
 });

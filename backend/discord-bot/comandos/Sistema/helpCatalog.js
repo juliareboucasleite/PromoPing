@@ -55,12 +55,15 @@ function buildModules(prefix) {
                 `${prefix}registar`,
                 `${prefix}login`,
                 `${prefix}sair`,
+                `${prefix}plano`,
                 `${prefix}produtos`,
+                `${prefix}adicionar <link> <preco>`,
             ],
             setup: [
                 "Usa `registar` para abrir o site e criar conta.",
                 "Usa `login` para conectar a conta existente no site.",
-                "Depois usa `produtos`, `iniciar` e `parar` para o teu acompanhamento.",
+                "Depois usa `adicionar`, `produtos` e `plano` para gerir o teu acompanhamento.",
+                "Usa `iniciar` e `parar` para ativar ou desativar alertas por Discord DM.",
             ],
         },
         {
