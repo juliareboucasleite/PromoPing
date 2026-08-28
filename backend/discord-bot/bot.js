@@ -964,7 +964,7 @@ class PromoPingBot {
             categoryLabel = null,
             channelPrefix = 'ticket',
             extraDescription = null,
-            paymentLink = null,
+            paymentLinks = null,
         } = options;
 
         const channelName = ticketHelpers.getTicketChannelName(user, channelPrefix);
@@ -1001,16 +1001,20 @@ class PromoPingBot {
         const mentionText = `${user} ${ticketHelpers.buildStaffMention()}`;
 
         const components = [ticketButtonsRow];
-        if (paymentLink && paymentLink.startsWith('http')) {
-            components.push(
-                new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
-                        .setLabel('Pay with Revolut')
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(paymentLink)
-                        .setEmoji('💳')
-                )
-            );
+        if (Array.isArray(paymentLinks) && paymentLinks.length > 0) {
+            const paymentRow = new ActionRowBuilder();
+            for (const link of paymentLinks.slice(0, 5)) {
+                if (!link?.url?.startsWith('http')) continue;
+                const button = new ButtonBuilder()
+                    .setLabel(link.label)
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(link.url);
+                if (link.emoji) button.setEmoji(link.emoji);
+                paymentRow.addComponents(button);
+            }
+            if (paymentRow.components.length > 0) {
+                components.push(paymentRow);
+            }
         }
 
         const welcomeMsg = await ticketChannel.send({
@@ -1072,7 +1076,7 @@ class PromoPingBot {
                 extraDescription: isPurchase
                     ? productConfig.buildPurchaseWelcome(user)
                     : productConfig.buildHelpWelcome(),
-                paymentLink: isPurchase ? productConfig.PRODUCT.paymentUrl : null,
+                paymentLinks: isPurchase ? productConfig.getPaymentLinks() : null,
             });
 
             await interaction.editReply({

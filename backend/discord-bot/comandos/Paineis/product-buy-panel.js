@@ -50,7 +50,10 @@ module.exports = {
                     '• Explain your issue clearly\n' +
                     '• Send screenshots or payment proof if needed\n' +
                     '• Avoid opening duplicate tickets\n\n' +
-                    `**Purchase:** select *Buy / Obtain Product* — payment via [Revolut Checkout](${PRODUCT.paymentUrl})\n\n` +
+                    '**Purchase:** select *Buy / Obtain Product* — payment via:\n' +
+                    `• [Revolut Checkout](${PRODUCT.paymentUrl})\n` +
+                    `• [PayPal (EUR)](${PRODUCT.paypalUrlEur})\n` +
+                    `• [PayPal (USD)](${PRODUCT.paypalUrlUsd})\n\n` +
                     '💜 We will assist you as quickly as possible.\n\n' +
                     '*Beware of scams — our team will never DM you first.*'
                 )
